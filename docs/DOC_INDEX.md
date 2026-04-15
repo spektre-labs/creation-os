@@ -6,6 +6,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 |----------|----------|---------|
 | [README.md](../README.md) | Everyone | Problem, measured table, BSC primer, invariants, build, limitations, theory links, Living Kernel v6 |
 | [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md) | Integrators, thesis writers | What `creation_os_v6.c` does, evidence class, non-claims, M01–M18 map, `make check-v6` |
+| [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md) | Integrators, thesis writers | v7 = v6 + M19–M23 hallucination-shaped σ toys; `make check-v7` |
 | [PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) | General reader | Plain-language paradigm contrast + explicit non-claims |
 | [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md) | Everyone | English-only rule for committed repo |
 | [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) | Reviewers, integrators | Frequent misinterpretations → one-line correction + canonical link (figures, benchmarks, allocation guidance) |
@@ -36,7 +37,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [cursor_briefing_creation_os.md](cursor_briefing_creation_os.md) | Cursor users | Editor integration notes |
 | [cursor_integration_creation_os.md](cursor_integration_creation_os.md) | Cursor users | Deeper integration |
 
-**Quick verify:** from repository root of this tree, `make check` (build + structural tests) and `make check-v6` when the Living Kernel is in scope (see [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
+**Quick verify:** from repository root of this tree, `make check` (build + structural tests); `make check-v6` / `make check-v7` when editing those sources ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)).
 
 ---
 

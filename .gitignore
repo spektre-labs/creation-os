@@ -1,6 +1,7 @@
 .build/
 creation_os
 creation_os_v6
+creation_os_v7
 oracle_speaks
 oracle_ultimate
 gemm_vs_bsc

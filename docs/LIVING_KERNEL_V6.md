@@ -1,5 +1,7 @@
 # Living Kernel — `creation_os_v6.c` (v6.0)
 
+**Sibling:** v7 extends this scaffold with M19–M23 “hallucination-shaped” σ toys — see **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)** and `make check-v7`.
+
 **Audience:** integrators, thesis writers, hostile reviewers, and anyone asking *what this second binary is for* and *why it is not interchangeable with `creation_os_v2.c` or with frontier LM tables*.
 
 **Evidence class (default):** **Lab demo / schematic C** — the same discipline as §2–§6, §8–§26 in [MODULE_EVIDENCE_INDEX.md](MODULE_EVIDENCE_INDEX.md). It is **not** a harness substitute, not a clinical consciousness proof, and not a reproduction of named papers inside this file.

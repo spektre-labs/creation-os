@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make check
    ```
-   This builds `creation_os` from `creation_os_v2.c` (`-I.` for `core/*.h` NEON) and runs `tests/test_bsc_core.c`. If your change touches **`creation_os_v6.c`** or v6 Makefile targets, also run **`make check-v6`** (Living Kernel self-test suite).
+   This builds `creation_os` from `creation_os_v2.c` (`-I.` for `core/*.h` NEON) and runs `tests/test_bsc_core.c`. If your change touches **`creation_os_v6.c`** / **`creation_os_v7.c`** or their Makefile targets, also run **`make check-v6`** / **`make check-v7`**.
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -24,6 +24,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make bench-agi-gate` | Parliament (odd K) + memory-bank argmin bench |
 | `make check` | `standalone` + `test` (CI default) |
 | `make check-v6` | `creation_os_v6.c` + `--self-test` (30 checks) |
+| `make check-v7` | `creation_os_v7.c` + `--self-test` (35 checks) |
 | `make all` | `standalone`, `oracle`, `bench`, `physics`, `test` |
 
 ## C code

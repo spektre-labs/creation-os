@@ -11,6 +11,7 @@ From the **root of this directory** (where `creation_os_v2.c` lives):
 ```bash
 make check
 make check-v6   # Living Kernel — run when v6 source or its tests/docs change
+make check-v7   # Hallucination Killer — run when v7 source or its tests/docs change
 make publish-github
 ```
 
@@ -36,7 +37,7 @@ User-facing policy: [SECURITY.md](../SECURITY.md). Developer-oriented abuse patt
 
 ## 4. CI
 
-Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6` on Ubuntu for pushes and PRs to `main` / `master`.
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6 && make check-v7` on Ubuntu for pushes and PRs to `main` / `master`.
 
 ---
 

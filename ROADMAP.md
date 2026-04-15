@@ -24,7 +24,15 @@ This file tracks **what is already in the reference C kernel** versus **platform
 | Doc + discipline | [x] | [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md); README + COMMON_MISREADINGS + MODULE appendix |
 | Build | [x] | `make check-v6` |
 
-**Not** a replacement for §7 `make bench`, NEON coherence batch, or HV parliament bench — see LIVING_KERNEL doc *non-claims*.
+## Shipped as `creation_os_v7.c` (Hallucination Killer — v6 + M19–M23)
+
+| Item | Status | Notes |
+|------|--------|------|
+| Third standalone C11 binary | [x] | `creation_os_v7.c` — M19–M23 σ toys + 35 `self_test` checks |
+| Doc + discipline | [x] | [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md); README + CHANGELOG + DOC_INDEX |
+| Build | [x] | `make check-v7`; CI with v2 + v6 |
+
+**Not** a replacement for §7 `make bench`, NEON coherence batch, or HV parliament bench — see LIVING_KERNEL / HALLUCINATION_KILLER doc *non-claims*.
 
 ## AGI platform — 22 forward modules (planned)
 

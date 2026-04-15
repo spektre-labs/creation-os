@@ -14,6 +14,7 @@ Maintainer shortcut (clone + rsync + commit + push): see [MAINTAINERS.md](MAINTA
 ```bash
 make check
 make check-v6   # if creation_os_v6.c / v6 docs changed — Living Kernel self-tests
+make check-v7   # if creation_os_v7.c / v7 docs changed — Hallucination Killer self-tests
 make bench    # recommended before citing throughput in README or talks
 git status
 ```

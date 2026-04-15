@@ -2,7 +2,7 @@
 
 ## Mission
 
-Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os). **One command:** `make all`. **One file to read first:** `creation_os_v2.c`. **Living Kernel (v6):** [`creation_os_v6.c`](../creation_os_v6.c) + [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md); run **`make check-v6`** when editing it.
+Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os). **One command:** `make all`. **One file to read first:** `creation_os_v2.c`. **Living Kernel (v6):** [`creation_os_v6.c`](../creation_os_v6.c) + [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md); **`make check-v6`** when editing it. **Hallucination Killer (v7):** [`creation_os_v7.c`](../creation_os_v7.c) + [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md); **`make check-v7`** when editing it.
 
 ## Invariants
 
@@ -16,6 +16,7 @@ Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-
 |------|------|
 | `creation_os_v2.c` | Full §1–§26 reference program |
 | `creation_os_v6.c` | Living Kernel — σ–K–L scaffold, M01–M18 schematic modules |
+| `creation_os_v7.c` | Hallucination Killer — v6 + M19–M23 hallucination-shaped σ toys |
 | `core/cos_bsc.h` | Shared HV primitives for split `.c` files |
 | `tests/test_bsc_core.c` | σ / MAJ / XOR / ROTL / Noether / Crystal lock |
 | `core/gemm_vs_bsc.c` | `cos_gemm_bench_main()` — linked by `bench/gemm_vs_bsc.c` |

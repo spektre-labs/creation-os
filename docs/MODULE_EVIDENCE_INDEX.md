@@ -47,6 +47,14 @@
 
 Canonical prose: **[LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)**.
 
+## Appendix — `creation_os_v7.c` (Hallucination Killer, M19–M23)
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M19–M23 + genesis + self-test | **Lab demo (C)** | `make check-v7` (`./creation_os_v7 --self-test`) |
+
+Canonical prose: **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)**.
+
 ---
 
 *Spektre Labs · Creation OS · 2026*

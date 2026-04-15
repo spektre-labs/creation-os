@@ -26,6 +26,7 @@
 | “One C file is the entire production safety system for robots.” | Layered safety needs mechanics + control + **your** gates; σ receipts are one **audit** ingredient. | COHERENCE doc (Robotics section), ADVERSARIAL (Architecture attacks) |
 | “We can skip `make check` if README only changed.” | **Run it anyway** before merge — numbers and prose drift together. | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | “`creation_os_v6.c` reproduces COGITATE / IIT / named papers or replaces `make bench`.” | **Forbidden merge:** v6 is a **schematic** σ–K–L kernel with **internal** `self_test` checks — not a paper replication, not harness scores, not the 4096-bit BSC reference (`creation_os_v2.c` + `make test`). | [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
+| “`creation_os_v7.c` kills production hallucinations / vendor LM behavior.” | **Forbidden merge:** v7 adds toy σ readouts (anchors, association, bluff, context rot, JEPA–Oracle); `self_test` is internal consistency, not measured frontier hallucination rates. | [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 
 ---
 
