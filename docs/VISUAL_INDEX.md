@@ -12,6 +12,7 @@ All graphics in this tree are **original SVG** (vector, scalable) — **no stock
 | [assets/gemm-vs-bsc-memory-ops.svg](assets/gemm-vs-bsc-memory-ops.svg) | Light | Benchmark story — **32×** memory and **192×** op-proxy (README definitions) + legend |
 | [assets/evidence-ladder.svg](assets/evidence-ladder.svg) | Dark | CLAIM_DISCIPLINE / committee — Arithmetic → Measured → Harness + lab-demo band |
 | [assets/planes-abc.svg](assets/planes-abc.svg) | Light | ANALYSIS / AGI map — Planes A–B–C with flow arrows |
+| [assets/reddit-hook-banner.svg](assets/reddit-hook-banner.svg) | Dark | README **above-the-fold** — drive-by / Reddit hook + `make check-v16` CTA strip |
 
 ## Design system (editorial)
 
@@ -31,7 +32,7 @@ Paths are relative to the **repository root** of the `creation-os` checkout.
 
 ## Mermaid
 
-The root [README.md](../README.md) includes a **Mermaid** flowchart (GitHub-native render). Edit that block if the parity story changes.
+The [README.md](../README.md) includes a **Mermaid** flowchart (GitHub-native render). The conceptual monorepo uses the same pattern on its landing page: [spektre-protocol README](https://github.com/spektre-labs/spektre-protocol/blob/main/README.md) (when that checkout includes this tree as `creation-os/`).
 
 ## Citation hygiene for figures
 

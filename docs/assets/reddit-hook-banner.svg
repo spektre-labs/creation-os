@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 200" role="img" aria-labelledby="t2 d2">
+  <title id="t2">Creation OS  one file, enforced invariants</title>
+  <desc id="d2">Banner for README: BSC cognitive architecture hook</desc>
+  <defs>
+    <linearGradient id="b" x1="0" y1="0" x2="1100" y2="200" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#061018"/>
+      <stop offset="0.5" stop-color="#0e2844"/>
+      <stop offset="1" stop-color="#102a50"/>
+    </linearGradient>
+  </defs>
+  <rect width="1100" height="200" rx="12" fill="url(#b)" stroke="#2a5a9a" stroke-width="1"/>
+  <text x="550" y="58" text-anchor="middle" fill="#b8d4ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" letter-spacing="0.22em">BINARY SPATTER CODES · Ã · ONE REPO · RUNS ON SILICON</text>
+  <text x="550" y="118" text-anchor="middle" fill="#ffffff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="700">Cognitive architecture you can actually compile.</text>
+  <text x="550" y="158" text-anchor="middle" fill="#7aa8e0" font-family="ui-monospace,Menlo,monospace" font-size="14">make check-v16  ’  66 self-tests  ·  not another Python wrapper</text>
+</svg>

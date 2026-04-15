@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
+</p>
+
+> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify** (`make check` … `make check-v16`). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+
+<p align="center">
+  <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
+  <img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/>
+  <img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/>
+  <img src="https://img.shields.io/badge/tests-66%20%28v16%29-success?style=for-the-badge" alt="tests"/>
+</p>
+
 # Creation OS
 
 **Cognitive architecture in Binary Spatter Codes.**
@@ -20,6 +33,10 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 **The MatMul-free mind (v11):** sixth program [`creation_os_v11.c`](creation_os_v11.c) — v10 **plus** M34 matmul-free LM **toy** (ternary BitLinear accumulations, element-wise MLGRU step, illustrative power/token placeholders). **`make check-v11`** (49 self-tests). **[docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)** — schematic only; not a trained BitNet-class model or published benchmark reproduction.
 
 **The Tensor mind (v12):** seventh program [`creation_os_v12.c`](creation_os_v12.c) — v11 **plus** M35–M37 **classical** toys (MPS-style contraction, singular-value “entanglement” entropy readout, TN sequence head with uniform logits). **`make check-v12`** (52 self-tests). **[docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)** — not quantum hardware, not a trained tensor-network LM, not area-law physics claims.
+
+**The Silicon mind (v15):** eighth program [`creation_os_v15.c`](creation_os_v15.c) — v12 **plus** M38–M40 **scale discipline** (int64 FLOP / volume schematics with overflow checks, TN param accounting in raw vs “millions”, JEPA prior-σ carry for selective decode). **`make check-v15`** (58 self-tests). Canonical evidence framing: **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**.
+
+**The Unified field (v16):** ninth program [`creation_os_v16.c`](creation_os_v16.c) — v15 **plus** M41–M44 **literature-aligned schematics** (resonator-style VSA unbind toy, Kanerva SDM critical-radius bridge with anchor calibration, EBM-native latent relax with σ-budgeted iterations, KAN-edge spline toy). **`make check-v16`** (66 self-tests). **Not** reproduced arXiv benchmarks — harness-only story hooks with explicit non-claims in-file.
 
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
@@ -64,6 +81,8 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **The Real Mind v10 (v9 + M30–M33)** | [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
 | **The MatMul-free mind v11 (v10 + M34)** | [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
 | **The Tensor mind v12 (v11 + M35–M37)** | [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
+| **The Silicon mind v15 (v12 + M38–M40)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) · `make check-v15` |
+| **The Unified field v16 (v15 + M41–M44)** | `creation_os_v16.c` (header + §45f) · `make check-v16` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
@@ -78,7 +97,7 @@ Read **in order** once before citing any number or narrative title from this tre
 3. [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) — minimum metadata when a metric leaves the lab.  
 4. [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) — which binary is which (`creation_os` vs `creation_os_v6` … `v12`), self-test counts, CI.  
 5. [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) — §1–§26 in `creation_os_v2.c`: evidence class per section before you cite a module headline.  
-6. Scoped kernel docs for any line you cite from v6–v12: [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).  
+6. Scoped kernel docs for any line you cite from v6–v12 (and v15–v16 scoped headers): [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md); v15/v16 discipline and hooks live in `creation_os_v15.c` / `creation_os_v16.c` and **CLAIM_DISCIPLINE**.  
 7. [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) — hostile review simulation before submission.
 
 | Artifact | Epistemic role | Evidence class for new claims |
