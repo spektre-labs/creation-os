@@ -1,6 +1,6 @@
 # Living Kernel — `creation_os_v6.c` (v6.0)
 
-**Siblings:** v7 extends this scaffold with M19–M23 “hallucination-shaped” σ toys — **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)** · `make check-v7`. v9 adds M24–M29 silicon/stack schematics — **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)** · `make check-v9`. v10 adds M30–M33 distillation / few-shot / swarm / abstention toys — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`.
+**Siblings:** v7 extends this scaffold with M19–M23 “hallucination-shaped” σ toys — **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)** · `make check-v7`. v9 adds M24–M29 silicon/stack schematics — **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)** · `make check-v9`. v10 adds M30–M33 distillation / few-shot / swarm / abstention toys — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`. v11 adds M34 matmul-free LM schematic — **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)** · `make check-v11`.
 
 **Audience:** integrators, thesis writers, hostile reviewers, and anyone asking *what this second binary is for* and *why it is not interchangeable with `creation_os_v2.c` or with frontier LM tables*.
 

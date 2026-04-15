@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make check
    ```
-   This builds `creation_os` from `creation_os_v2.c` (`-I.` for `core/*.h` NEON) and runs `tests/test_bsc_core.c`. If your change touches **`creation_os_v6.c`**, **`creation_os_v7.c`**, **`creation_os_v9.c`**, or **`creation_os_v10.c`** or their Makefile targets, also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, or **`make check-v10`**.
+   This builds `creation_os` from `creation_os_v2.c` (`-I.` for `core/*.h` NEON) and runs `tests/test_bsc_core.c`. If your change touches **`creation_os_v6.c`**, **`creation_os_v7.c`**, **`creation_os_v9.c`**, **`creation_os_v10.c`**, or **`creation_os_v11.c`** or their Makefile targets, also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, **`make check-v10`**, or **`make check-v11`**.
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -27,6 +27,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make check-v7` | `creation_os_v7.c` + `--self-test` (35 checks) |
 | `make check-v9` | `creation_os_v9.c` + `--self-test` (41 checks) |
 | `make check-v10` | `creation_os_v10.c` + `--self-test` (46 checks) |
+| `make check-v11` | `creation_os_v11.c` + `--self-test` (49 checks) |
 | `make all` | `standalone`, `oracle`, `bench`, `physics`, `test` |
 
 ## C code

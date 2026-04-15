@@ -1,6 +1,6 @@
 # Hallucination Killer — `creation_os_v7.c` (v7.0)
 
-**Audience:** integrators and reviewers asking how **v7** relates to **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)), **v9** ([PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), and **`creation_os_v2.c`**.
+**Audience:** integrators and reviewers asking how **v7** relates to **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)), **v9** ([PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), and **`creation_os_v2.c`**.
 
 **Evidence class:** same as v6 — **Lab demo / schematic C** ([CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md)). This file does **not** ship a trained LM, does **not** replace `make bench`, and does **not** assert frontier hallucination rates from named vendors.
 

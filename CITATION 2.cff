@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+title: Creation OS
+message: >-
+  If you use this software or its documentation in academic work, please cite
+  using the metadata below and include the git commit SHA and evidence class
+  for any performance or benchmark claims (see docs/REPRO_BUNDLE_TEMPLATE.md).
+type: software
+authors:
+  - family-names: Rainio
+    given-names: Lauri Elias
+    affiliation: Spektre Labs
+    orcid: 'https://orcid.org/0009-0006-0903-8541'
+repository-code: 'https://github.com/spektre-labs/creation-os'
+url: 'https://github.com/spektre-labs/creation-os'
+license: AGPL-3.0-or-later
+version: '2.0'
+date-released: '2026-04-15'
+keywords:
+  - binary spatter codes
+  - hyperdimensional computing
+  - vector symbolic architectures
+  - cognitive architecture
+  - coherence
+  - microbenchmarking

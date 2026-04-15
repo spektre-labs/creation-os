@@ -17,6 +17,7 @@ make check-v6   # if creation_os_v6.c / v6 docs changed — Living Kernel self-t
 make check-v7   # if creation_os_v7.c / v7 docs changed — Hallucination Killer self-tests
 make check-v9   # if creation_os_v9.c / v9 docs changed — Parameters in Silicon self-tests
 make check-v10  # if creation_os_v10.c / v10 docs changed — The Real Mind self-tests
+make check-v11  # if creation_os_v11.c / v11 docs changed — MatMul-free mind self-tests
 make bench    # recommended before citing throughput in README or talks
 git status
 ```

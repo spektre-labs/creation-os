@@ -14,6 +14,7 @@ make check-v6   # Living Kernel — run when v6 source or its tests/docs change
 make check-v7   # Hallucination Killer — run when v7 source or its tests/docs change
 make check-v9   # Parameters in Silicon — run when v9 source or its tests/docs change
 make check-v10  # The Real Mind — run when v10 source or its tests/docs change
+make check-v11  # MatMul-free mind — run when v11 source or its tests/docs change
 make publish-github
 ```
 
@@ -39,7 +40,7 @@ User-facing policy: [SECURITY.md](../SECURITY.md). Developer-oriented abuse patt
 
 ## 4. CI
 
-Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10` on Ubuntu for pushes and PRs to `main` / `master`.
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11` on Ubuntu for pushes and PRs to `main` / `master`.
 
 ---
 

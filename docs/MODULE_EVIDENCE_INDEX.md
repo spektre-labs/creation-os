@@ -71,6 +71,14 @@ Canonical prose: **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)**.
 
 Canonical prose: **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)**.
 
+## Appendix — `creation_os_v11.c` (The MatMul-free mind, M34)
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M34 + genesis + self-test | **Lab demo (C)** | `make check-v11` (`./creation_os_v11 --self-test`) |
+
+Canonical prose: **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)**.
+
 ---
 
 *Spektre Labs · Creation OS · 2026*

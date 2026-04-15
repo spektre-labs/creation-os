@@ -2,6 +2,8 @@
 
 **Audience:** integrators comparing **v10** to **v9** ([PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)), **v7** ([HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)), and **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
 
+**Next sibling:** **v11** — matmul-free LM schematic (M34): [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md) · `make check-v11`.
+
 **Evidence class:** same as prior standalone kernels — **Lab demo / schematic C** ([CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md)). The title is **narrative**, not a claim of artificial general intelligence, measured MMLU reproduction, or a substitute for `creation_os_v2.c` + `make test`.
 
 ---

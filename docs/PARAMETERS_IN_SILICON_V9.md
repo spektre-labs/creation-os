@@ -1,6 +1,6 @@
 # Parameters in Silicon — `creation_os_v9.c` (v9.0)
 
-**Audience:** integrators comparing **v9** to **v7** ([HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), and **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
+**Audience:** integrators comparing **v9** to **v7** ([HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), and **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
 
 **Evidence class:** same as v6/v7 — **Lab demo / schematic C** ([CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md)). This file does **not** ship silicon tape-out flows, vendor-measured TOPS/W claims as ground truth, or a replacement for `creation_os_v2.c` + `make test`.
 
@@ -21,7 +21,7 @@
 
 **Genesis** wires M24–M29 with **deterministic** values so **`make check-v9`** (41 `self_test` checks) stays reproducible.
 
-**Sibling:** v10 adds M30–M33 (distillation / few-shot / swarm / abstention schematics) — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`.
+**Sibling:** v10 adds M30–M33 (distillation / few-shot / swarm / abstention schematics) — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`. **v11** adds M34 (matmul-free LM toy) — **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)** · `make check-v11`.
 
 ---
 

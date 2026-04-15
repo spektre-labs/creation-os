@@ -1,0 +1,16 @@
+.build/
+creation_os
+creation_os_v6
+creation_os_v7
+creation_os_v9
+creation_os_v10
+oracle_speaks
+oracle_ultimate
+gemm_vs_bsc
+coherence_gate_batch
+hv_agi_gate_neon
+genesis
+qhdc
+test_bsc
+.DS_Store
+*.o

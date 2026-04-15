@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 # Publish this portable Creation OS directory to https://github.com/spektre-labs/creation-os
 # Requires working GitHub auth (SSH key, or HTTPS + credential, or: gh auth login).
+#
+# CANONICAL REPO ONLY: spektre-labs/creation-os. Do not point a parent monorepo's git remote
+# here; see docs/CANONICAL_GIT_REPOSITORY.md.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -11,7 +14,7 @@ if [[ ! -f creation_os_v2.c ]]; then
   exit 1
 fi
 
-make check && make check-v6 && make check-v7 && make check-v9 && make check-v10
+make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11
 
 REMOTE="${CREATION_OS_REMOTE:-https://github.com/spektre-labs/creation-os.git}"
 BRANCH="${CREATION_OS_BRANCH:-main}"
@@ -30,7 +33,7 @@ rsync -a --delete --exclude '.git' "$ROOT/" "$STAGE/repo/"
 cd "$STAGE/repo"
 
 # Never ship local Makefile binaries (rsync ignores .git only; artifacts may exist on disk).
-for bin in creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
+for bin in creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
   rm -f "$bin"
 done
 rm -rf .build

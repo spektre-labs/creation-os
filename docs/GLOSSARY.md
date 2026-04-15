@@ -39,6 +39,7 @@ Canonical discipline terms live in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md). T
 | **`make check-v7`** | Builds `creation_os_v7` and runs `./creation_os_v7 --self-test` (35 internal checks). See [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md). |
 | **`make check-v9`** | Builds `creation_os_v9` and runs `./creation_os_v9 --self-test` (41 internal checks). See [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md). |
 | **`make check-v10`** | Builds `creation_os_v10` and runs `./creation_os_v10 --self-test` (46 internal checks). See [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md). |
+| **`make check-v11`** | Builds `creation_os_v11` and runs `./creation_os_v11 --self-test` (49 internal checks). See [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md), [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md). |
 
 ---
 

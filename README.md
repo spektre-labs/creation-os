@@ -17,6 +17,8 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 **The Real Mind (v10):** fifth program [`creation_os_v10.c`](creation_os_v10.c) — v9 **plus** M30–M33 narrative toys (distillation ratio, prototypical few-shot distance, specialist swarm routing, max-σ generation abstention gate). **`make check-v10`** (46 self-tests). **[docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)** — title is **schematic**; not an AGI or benchmark claim.
 
+**The MatMul-free mind (v11):** sixth program [`creation_os_v11.c`](creation_os_v11.c) — v10 **plus** M34 matmul-free LM **toy** (ternary BitLinear accumulations, element-wise MLGRU step, illustrative power/token placeholders). **`make check-v11`** (49 self-tests). **[docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)** — schematic only; not a trained BitNet-class model or published benchmark reproduction.
+
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
 **Compressed orientation (plain language):** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — paradigm contrast, proved invariants, and explicit **non-claims**.
@@ -33,6 +35,7 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Common misreadings (structured corrections)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
 | **Claim discipline (evidence classes)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
 | **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
+| **Canonical Git (only real remote)** | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
 | **Features & standalone builds (one-page map)** | [docs/FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | **Security** | [SECURITY.md](SECURITY.md) |
@@ -57,10 +60,11 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Hallucination Killer v7 (v6 + M19–M23)** | [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md) · `make check-v7` |
 | **Parameters in Silicon v9 (v7 + M24–M29)** | [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md) · `make check-v9` |
 | **The Real Mind v10 (v9 + M30–M33)** | [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
+| **The MatMul-free mind v11 (v10 + M34)** | [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
-**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
+**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [The MatMul-free mind (v11)](#the-matmul-free-mind-v11) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
 -----
 
@@ -231,6 +235,14 @@ COGNITION
 
 -----
 
+## The MatMul-free mind (v11)
+
+[`creation_os_v11.c`](creation_os_v11.c) is the **v10 scaffold plus M34**: a ternary weight **accumulation** path (no dense matmul in this toy), one element-wise MLGRU-style recurrence over the hidden vector, and fixed illustrative `power_watts` / `tokens_per_sec` fields for narrative alignment with edge-power storylines. Same evidence class as v6–v10 — internal `self_test` algebra, not a trained matmul-free LM or vendor silicon proof.
+
+**Verify:** `make check-v11` (49 tests). **Doc:** [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
+
+-----
+
 ## Architecture
 
 ![Module stack: single file → three planes → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
@@ -292,6 +304,7 @@ make check-v6      # Living Kernel (`creation_os_v6.c`) + `--self-test` (30 chec
 make check-v7      # Hallucination Killer (`creation_os_v7.c`) + `--self-test` (35 checks)
 make check-v9      # Parameters in Silicon (`creation_os_v9.c`) + `--self-test` (41 checks)
 make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 checks)
+make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 checks)
 make standalone
 ./creation_os
 ```
@@ -310,6 +323,9 @@ This is a research prototype. Specific limitations:
 - **Cognitive modules** are BSC implementations of cognitive primitives. They demonstrate that these computations can be expressed in three bit operations. They are not validated against cognitive science benchmarks.
 - **Living Kernel (`creation_os_v6.c`)** is a **second** program: schematic σ–K–L composition + M01–M18 *toys*. The 30 `self_test` checks are **internal consistency**, not clinical consciousness proof, not COGITATE reproduction, and not a substitute for `make bench` or NEON/HV receipts. See [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md).
 - **`creation_os_v7.c`** is a **third** program: v6 **plus** M19–M23 hallucination-*shaped* σ channels; 35 `self_test` checks. Still **not** measured LM hallucination rates — see [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md).
+- **`creation_os_v9.c`** is a **fourth** program: v7 **plus** M24–M29 stack/silicon-*shaped* σ toys; 41 checks — not tape-out or vendor TOPS/W claims — see [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md).
+- **`creation_os_v10.c`** is a **fifth** program: v9 **plus** M30–M33 distillation / routing / abstention toys; 46 checks — see [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md).
+- **`creation_os_v11.c`** is a **sixth** program: v10 **plus** M34 matmul-free LM **schematic**; 49 checks — not a trained BitNet-class model or published throughput reproduction — see [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
 
 -----
 
@@ -322,6 +338,9 @@ This is a research prototype. Specific limitations:
 5. **The entire architecture runs on any hardware** — no GPU, no framework, no dependencies.
 6. **Living Kernel v6** packages cross-domain σ narratives (alignment, RDP, rewind, ghost boot) behind one **executable** gate — useful for thesis structure and for separating *proved in this file* from *cited externally* ([LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)).
 7. **Hallucination Killer v7** adds **five** more σ-shaped readouts (anchors, association, bluff, context rot, JEPA–Oracle) on the same deterministic gate ([HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md)).
+8. **Parameters in Silicon v9** extends the same gate with M24–M29 stack- and silicon-shaped σ toys ([PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md)).
+9. **The Real Mind v10** adds M30–M33 distillation, few-shot distance, swarm routing, and max-σ abstention schematics ([THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)).
+10. **The MatMul-free mind v11** adds M34 — a ternary accumulation + MLGRU **toy** forward path with zero `sigma_matmul` in this file’s definition of “no matmul” ([THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)).
 
 -----
 
