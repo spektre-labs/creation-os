@@ -1,0 +1,5 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+cmake_minimum_required(VERSION 3.16)
+project(creation_os_ghost_boot LANGUAGES CXX)
+add_library(gda_llama_integration STATIC gda_llama_integration.cpp)
+target_include_directories(gda_llama_integration PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}")

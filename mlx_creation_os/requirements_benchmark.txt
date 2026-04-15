@@ -1,2 +1,0 @@
-# Optional — Phase 27 benchmark_runner Chroma persistence (pip install -r requirements_benchmark.txt)
-chromadb>=0.4.0
