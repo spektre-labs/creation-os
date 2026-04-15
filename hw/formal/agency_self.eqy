@@ -1,0 +1,15 @@
+[gold]
+read_verilog -sv ../../rtl/cos_agency_iron_combo.sv
+prep -top cos_agency_iron_combo
+flatten
+opt
+
+[gate]
+read_verilog -sv ../../rtl/cos_agency_iron_combo.sv
+prep -top cos_agency_iron_combo
+flatten
+opt
+
+[strategy sat_all]
+use sat
+depth 4

@@ -2,7 +2,7 @@
   <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
 </p>
 
-> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** (`make check` plus **`check-v6` … `check-v26`**, **204** self-tests on the current flagship). **Ship to GitHub `main` with one command:** **`make push-main`** (merge-gate + rsync + push to **spektre-labs/creation-os**). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** (`make check` plus every **`check-v6` … `check-v26`** self-test, **204** checks on the current flagship). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <p align="center">
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
@@ -70,6 +70,8 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Common misreadings (structured corrections)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
 | **Claim discipline (evidence classes)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
 | **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
+| **RTL silicon mirror (SV + Chisel + Yosys + Rust + SBY + EQY)** | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) · `make formal-rtl-lint` · `make stack-ultimate` · `make rust-iron-lint` |
+| **Full stack (formalism → silicon map)** | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
 | **Canonical Git (only real remote)** | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
 | **Features & standalone builds (one-page map)** | [docs/FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |

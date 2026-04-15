@@ -48,8 +48,9 @@ This page is the **single map** of what exists in this portable **Creation OS** 
 
 ## CI and publish
 
-- **CI** (`.github/workflows/ci.yml` on **spektre-labs/creation-os**): `make merge-gate` (portable `check` + `check-v6` … `check-v26`).
-- **Push product `main`** (`tools/publish_to_creation_os_github.sh` via **`make push-main`**): `make merge-gate` before rsync; strips listed binaries; pushes only to **https://github.com/spektre-labs/creation-os** (not a parent monorepo).
+- **CI** (`.github/workflows/ci.yml`): `make merge-gate` (portable `check` + `check-v6` … `check-v26`).
+- **Monorepo path CI** (repo root `.github/workflows/creation-os-ci.yml`): same `make merge-gate` when only `creation-os/**` changes.
+- **Publish** (`tools/publish_to_creation_os_github.sh`): `make merge-gate` before rsync; strips all listed binaries so they are never committed upstream.
 
 ---
 

@@ -1,0 +1,11 @@
+[package]
+name = "spektre-iron-gate"
+version = "0.1.0"
+edition = "2021"
+license = "AGPL-3.0-or-later"
+description = "Memory-safe mirror of agency/formal iron combinational policy (Creation OS stack)"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]

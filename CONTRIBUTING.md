@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make merge-gate
    ```
-   This runs **`make check`** (portable `creation_os` + `test_bsc_core`) and **`make check-v6` … `make check-v26`** (every flagship `--self-test`, including **204** checks on v26). Same command as CI and **`make push-main`** preflight. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once.
+   This runs **`make check`** (portable `creation_os` + `test_bsc_core`) and **`make check-v6` … `make check-v26`** (every flagship `--self-test`, including **204** checks on v26). Same command as CI and `make publish-github` preflight. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -31,6 +31,10 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make check-v11` | `creation_os_v11.c` + `--self-test` (49 checks) |
 | `make check-v12` | `creation_os_v12.c` + `--self-test` (52 checks) |
 | `make check-v15` … `make check-v26` | v15 Silicon mind through v26 G500 echo orbit (`--self-test`; exact counts in `make help`) |
+| `make formal-rtl-lint` | Verilator lint on `rtl/*.sv` |
+| `make stack-ultimate` | Lint + Yosys elab + SAT prove + Verilator sim + Rust iron + Chisel (SKIPs OK) |
+| `make rust-iron-lint` | `cargo fmt --check` + `clippy -D warnings` on iron gate |
+| `make stack-nucleon` / `make stack-singularity` | SymbiYosys + EQY layers (see `hw/formal/README.md`) |
 | `make all` | `standalone`, `oracle`, `bench`, `physics`, `test` |
 
 ## C code
@@ -49,7 +53,7 @@ See [SECURITY.md](SECURITY.md). Maintainer-oriented notes: [docs/SECURITY_DEVELO
 
 ## Publishing this tree to GitHub
 
-Maintainers: [docs/MAINTAINERS.md](docs/MAINTAINERS.md) — push product **`main`** with **`make push-main`** (runs `merge-gate` then publishes to **spektre-labs/creation-os**; same as `make publish-github`).
+Maintainers: [docs/MAINTAINERS.md](docs/MAINTAINERS.md) (`make publish-github` after `make merge-gate`).
 
 ---
 

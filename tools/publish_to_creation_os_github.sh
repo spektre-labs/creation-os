@@ -1,16 +1,9 @@
 #!/usr/bin/env bash
-# Push this portable Creation OS tree to the product repo https://github.com/spektre-labs/creation-os
-# branch main (clone + rsync + commit + git push). Invoked by: make push-main  OR  make publish-github
+# Publish this portable Creation OS directory to https://github.com/spektre-labs/creation-os
+# Requires working GitHub auth (SSH key, or HTTPS + credential, or: gh auth login).
 #
-# Auth: SSH remote URL, OR HTTPS with gh auth login, OR one-shot PAT:
-#   GITHUB_TOKEN=ghp_... make push-main
-# (script injects x-access-token into the default HTTPS URL; do not commit tokens.)
-# Override URL: CREATION_OS_REMOTE=https://github.com/.../creation-os.git
-# Override branch: CREATION_OS_BRANCH=main
-# Override commit message: CREATION_OS_COMMIT_MSG='...'
-#
-# CANONICAL REPO ONLY: spektre-labs/creation-os. Do not set creation-os as origin on a parent
-# monorepo root; see docs/CANONICAL_GIT_REPOSITORY.md.
+# CANONICAL REPO ONLY: spektre-labs/creation-os. Do not point a parent monorepo's git remote
+# here; see docs/CANONICAL_GIT_REPOSITORY.md.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -21,13 +14,9 @@ if [[ ! -f creation_os_v2.c ]]; then
   exit 1
 fi
 
-make merge-gate
+make merge-gate && make stack-ultimate && make rust-iron-lint
 
-DEFAULT_REMOTE="https://github.com/spektre-labs/creation-os.git"
-REMOTE="${CREATION_OS_REMOTE:-$DEFAULT_REMOTE}"
-if [[ -n "${GITHUB_TOKEN:-}" && "$REMOTE" == "$DEFAULT_REMOTE" ]]; then
-  REMOTE="https://x-access-token:${GITHUB_TOKEN}@github.com/spektre-labs/creation-os.git"
-fi
+REMOTE="${CREATION_OS_REMOTE:-https://github.com/spektre-labs/creation-os.git}"
 BRANCH="${CREATION_OS_BRANCH:-main}"
 MSG="${CREATION_OS_COMMIT_MSG:-Publish portable Creation OS tree}"
 

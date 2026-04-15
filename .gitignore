@@ -40,3 +40,12 @@ Makefile 2
 .gitignore 2
 LICENSE 2
 CITATION 2.cff
+hw/chisel/target/
+hw/chisel/project/target/
+hw/chisel/project/project/
+hw/chisel/generated/
+hw/chisel/.bsp/
+hw/rust/spektre-iron-gate/target/
+hw/formal/agency_ctrl_prove/
+hw/formal/agency_ctrl_cover/
+hw/formal/agency_self/

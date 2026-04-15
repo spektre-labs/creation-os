@@ -4,8 +4,11 @@ CC = cc
 CFLAGS = -O2 -march=native -Wall -std=c11
 LDFLAGS = -lm
 BUILDDIR = .build
+# Verilator 5+: --timing with --lint-only (Ubuntu 24.04+). Override: make VERILATOR_LINT_FLAGS=-Wall formal-rtl-lint
+VERILATOR_LINT_FLAGS = -Wall --timing
+RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help merge-gate push-main publish-github standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 all clean
+.PHONY: help merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -62,8 +65,21 @@ help:
 	@echo "  check-v25  — standalone-v25 + test-v25 (v25 only)"
 	@echo "  check-v26  — standalone-v26 + test-v26 (v26 only)"
 	@echo "  merge-gate — portable check + every flagship self-test (v6..v26); same as CI / publish preflight"
-	@echo "  push-main    — push THIS tree to https://github.com/spektre-labs/creation-os main (alias of publish-github)"
-	@echo "  publish-github — same as push-main (merge-gate + rsync + commit + push; needs auth)"
+	@echo "  formal-rtl-lint — Verilator --lint-only on rtl/*.sv (SKIP if verilator missing)"
+	@echo "  formal-rtl-sim  — Verilator --binary + run cos_silicon_chip_tb (SKIP if verilator missing)"
+	@echo "  yosys-elab      — Yosys elaborate_rtl.ys (SKIP if yosys missing)"
+	@echo "  yosys-prove-agency — Yosys sat -prove-asserts on cos_agency_iron_formal"
+	@echo "  rust-iron-test  — cargo test in hw/rust/spektre-iron-gate (SKIP if cargo missing)"
+	@echo "  rust-iron-lint  — cargo fmt --check + clippy -D warnings (iron gate)"
+	@echo "  hardware-supreme — formal-rtl-lint + yosys-elab + rust-iron-test + chisel-compile (SKIPs OK)"
+	@echo "  stack-ultimate  — hardware-supreme + yosys-prove + sim + chisel-verilog (CI fast gate)"
+	@echo "  formal-sby-agency / formal-sby-cover-agency — SymbiYosys (SKIP if sby missing)"
+	@echo "  eqy-agency-self — EQY self-equivalence on cos_agency_iron_combo (SKIP if eqy missing)"
+	@echo "  oss-formal-extreme — SBY prove+cover + Yosys SAT + EQY + rust-iron-lint"
+	@echo "  stack-nucleon / stack-singularity — formal stacks (see CONTRIBUTING)"
+	@echo "  check-rtl       — formal-rtl-lint only"
+	@echo "  chisel-compile / chisel-verilog — hw/chisel (SKIP if sbt missing)"
+	@echo "  publish-github — rsync this tree → fresh creation-os clone + push main (needs auth)"
 	@echo "  bench      — GEMM vs BSC microbench (host-dependent throughput)"
 	@echo "  bench-coherence — batch Hamming gate (NEON on AArch64, else scalar)"
 	@echo "  bench-agi-gate — K-agent parliament + memory-bank argmin (NEON scan)"
@@ -95,6 +111,109 @@ merge-gate:
 	@$(MAKE) check-v25
 	@$(MAKE) check-v26
 	@echo "merge-gate: OK (Creation OS portable + v6..v26 self-tests)"
+
+check-rtl: formal-rtl-lint
+
+yosys-elab:
+	@if command -v yosys >/dev/null 2>&1; then \
+		cd hw/yosys && yosys -q elaborate_rtl.ys && echo "yosys-elab: OK"; \
+	else \
+		echo "yosys-elab: SKIP (apt/brew install yosys)"; \
+	fi
+
+rust-iron-test:
+	@if command -v cargo >/dev/null 2>&1; then \
+		cargo test --manifest-path hw/rust/spektre-iron-gate/Cargo.toml && echo "rust-iron-test: OK"; \
+	else \
+		echo "rust-iron-test: SKIP (install Rust / cargo)"; \
+	fi
+
+hardware-supreme: formal-rtl-lint yosys-elab rust-iron-test chisel-compile
+	@echo "hardware-supreme: OK (all hardware layers attempted; SKIPs logged above)"
+
+yosys-prove-agency:
+	@if command -v yosys >/dev/null 2>&1; then \
+		cd hw/yosys && yosys -q prove_agency_comb.ys && echo "yosys-prove-agency: OK"; \
+	else \
+		echo "yosys-prove-agency: SKIP (apt/brew install yosys)"; \
+	fi
+
+stack-ultimate: hardware-supreme yosys-prove-agency formal-rtl-sim chisel-verilog
+	@echo "stack-ultimate: OK (lint + elab + prove + sim + chisel verilog + rust; SKIPs logged above)"
+
+formal-sby-agency:
+	@if command -v sby >/dev/null 2>&1; then \
+		cd hw/formal && sby -f agency_ctrl_prove.sby && echo "formal-sby-agency: OK"; \
+	else \
+		echo "formal-sby-agency: SKIP (install SymbiYosys / YosysHQ OSS CAD Suite)"; \
+	fi
+
+stack-nucleon: stack-ultimate formal-sby-agency
+	@echo "stack-nucleon: OK (ultimate + SymbiYosys agency prove; SKIPs logged above)"
+
+formal-sby-cover-agency:
+	@if command -v sby >/dev/null 2>&1; then \
+		cd hw/formal && sby -f agency_ctrl_cover.sby && echo "formal-sby-cover-agency: OK"; \
+	else \
+		echo "formal-sby-cover-agency: SKIP (install SymbiYosys / YosysHQ OSS CAD Suite)"; \
+	fi
+
+eqy-agency-self:
+	@if command -v eqy >/dev/null 2>&1; then \
+		cd hw/formal && eqy agency_self.eqy && echo "eqy-agency-self: OK"; \
+	else \
+		echo "eqy-agency-self: SKIP (install EQY / OSS CAD Suite)"; \
+	fi
+
+rust-iron-lint:
+	@if command -v cargo >/dev/null 2>&1; then \
+		cargo fmt --manifest-path hw/rust/spektre-iron-gate/Cargo.toml -- --check && \
+		cargo clippy --manifest-path hw/rust/spektre-iron-gate/Cargo.toml -- -D warnings && \
+		echo "rust-iron-lint: OK"; \
+	else \
+		echo "rust-iron-lint: SKIP (install Rust / cargo)"; \
+	fi
+
+oss-formal-extreme: formal-sby-agency yosys-prove-agency formal-sby-cover-agency eqy-agency-self rust-iron-lint
+	@echo "oss-formal-extreme: OK (YosysHQ-class formal bundle; SKIPs logged above)"
+
+stack-singularity: stack-nucleon formal-sby-cover-agency eqy-agency-self rust-iron-lint
+	@echo "stack-singularity: OK (nucleon + cover + EQY + rust lint; SKIPs logged above)"
+
+formal-rtl-lint: $(RTL_SV)
+	@if command -v verilator >/dev/null 2>&1; then \
+		verilator --lint-only $(VERILATOR_LINT_FLAGS) $(RTL_SV) && echo "formal-rtl-lint: OK"; \
+	else \
+		echo "formal-rtl-lint: SKIP (apt/brew install verilator)"; \
+	fi
+
+chisel-compile:
+	@if command -v sbt >/dev/null 2>&1; then \
+		cd hw/chisel && sbt compile && echo "chisel-compile: OK"; \
+	else \
+		echo "chisel-compile: SKIP (install JDK 17+ and sbt)"; \
+	fi
+
+chisel-verilog: chisel-compile
+	@if command -v sbt >/dev/null 2>&1; then \
+		mkdir -p hw/chisel/generated && \
+		cd hw/chisel && sbt -DchiselTargetDir=generated "runMain spektre.core.GenVerilog" && \
+		echo "chisel-verilog: OK (see hw/chisel/generated/)"; \
+	else \
+		echo "chisel-verilog: SKIP"; \
+	fi
+
+formal-rtl-sim: $(RTL_SV)
+	@if command -v verilator >/dev/null 2>&1; then \
+		rm -rf .build/vrtl && mkdir -p .build/vrtl && \
+		verilator --binary $(VERILATOR_LINT_FLAGS) -Wno-STMTDLY --top-module cos_silicon_chip_tb \
+			-Mdir .build/vrtl \
+			rtl/cos_silicon_chip_tb.sv rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv \
+			rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv && \
+		./.build/vrtl/Vcos_silicon_chip_tb && echo "formal-rtl-sim: OK"; \
+	else \
+		echo "formal-rtl-sim: SKIP (verilator not in PATH)"; \
+	fi
 
 standalone: creation_os_v2.c
 	$(CC) $(CFLAGS) -I. -o creation_os creation_os_v2.c $(LDFLAGS)
@@ -269,8 +388,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc
+	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc
 
-# Canonical product remote: spektre-labs/creation-os (main). See docs/CANONICAL_GIT_REPOSITORY.md
-push-main publish-github:
+publish-github:
 	@bash tools/publish_to_creation_os_github.sh

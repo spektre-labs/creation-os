@@ -5,7 +5,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 ## Canonical Git (non-negotiable)
 
 - **Only** [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os) on GitHub is the real Creation OS remote. Read **[docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md)**.
-- **Never** add that URL as `origin` on a parent “protocol” / umbrella monorepo, and **never** `git push` Creation OS from outside the Creation OS repo root. Use a normal clone of `creation-os` or **`make push-main`** from **this** tree’s root (`creation_os_v2.c` present) to update **spektre-labs/creation-os** `main`.
+- **Never** add that URL as `origin` on a parent “protocol” / umbrella monorepo, and **never** `git push` Creation OS from outside the Creation OS repo root. Use a normal clone of `creation-os` or `make publish-github` from **this** tree’s root (`creation_os_v2.c` present).
 
 ## Language
 
@@ -27,9 +27,10 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 ## Navigation
 
 - Full doc map: [docs/DOC_INDEX.md](docs/DOC_INDEX.md)
+- **RTL / formal / silicon mirror:** [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) — after `rtl/*.sv` edits run **`make formal-rtl-lint`**; for CI parity run **`make stack-ultimate`** and **`make rust-iron-lint`**; with **YosysHQ OSS CAD Suite** locally, **`make stack-singularity`** exercises SBY + EQY (`hw/formal/README.md`).
 - Contributor workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
 - External “superiority” claims must cite [docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md) or [docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md](docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md) — never invent paper outcomes not stated there.
-- **Scope:** treat this checkout as **Creation OS only**; kernel PRs and measured claims live here. **Publishing to product `main`:** **`make push-main`** (see [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md)).
+- **Scope:** treat this checkout as **Creation OS only**; kernel PRs and measured claims live here. **Publishing:** [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md).
 
 ---
 

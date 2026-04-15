@@ -1,0 +1,17 @@
+[options]
+mode cover
+depth 12
+
+[engines]
+smtbmc
+
+[files]
+../../rtl/cos_agency_iron_combo.sv
+../../rtl/cos_agency_iron_cover.sv
+
+[script]
+read_verilog -sv /src/cos_agency_iron_combo.sv
+read_verilog -sv /src/cos_agency_iron_cover.sv
+prep -top cos_agency_iron_cover
+flatten
+opt

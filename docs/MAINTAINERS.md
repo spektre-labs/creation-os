@@ -10,7 +10,7 @@ From the **root of this directory** (where `creation_os_v2.c` lives):
 
 ```bash
 make merge-gate
-make push-main
+make publish-github
 ```
 
 This clones `spektre-labs/creation-os`, `rsync`s this tree (excluding `.git`), commits if there are diffs, and pushes `main`. See [publish_checklist_creation_os.md](publish_checklist_creation_os.md) and environment variables `CREATION_OS_REMOTE`, `CREATION_OS_BRANCH`, `CREATION_OS_COMMIT_MSG` in that file.
@@ -35,7 +35,7 @@ User-facing policy: [SECURITY.md](../SECURITY.md). Developer-oriented abuse patt
 
 ## 4. CI
 
-Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — **`make merge-gate`** on Ubuntu for pushes and PRs to `main` / `master` (portable `check` plus `check-v6` … `check-v26`). Product pushes use **`make push-main`** on your machine (never the parent monorepo as `git push` target for this tree).
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — **`make merge-gate`** on Ubuntu for pushes and PRs to `main` / `master` (portable `check` plus `check-v6` … `check-v26`). When this tree is embedded in **spektre-protocol**, path-filtered CI also runs: [`creation-os-ci.yml`](https://github.com/spektre-labs/spektre-protocol/blob/main/.github/workflows/creation-os-ci.yml).
 
 ---
 

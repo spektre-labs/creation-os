@@ -9,7 +9,7 @@ All steps below assume **this directory is the Creation OS product** — no othe
 
 ## 1. Before you push
 
-Maintainer shortcut (merge-gate + clone + rsync + commit + push to **spektre-labs/creation-os** `main`): see [MAINTAINERS.md](MAINTAINERS.md) — **`make push-main`** (alias: `make publish-github`).
+Maintainer shortcut (clone + rsync + commit + push): see [MAINTAINERS.md](MAINTAINERS.md) (`make publish-github`).
 
 ```bash
 make merge-gate   # portable check + v6..v26 self-tests (same as CI / publish script)
@@ -28,7 +28,7 @@ Confirm `LICENSE`, `README.md`, and `docs/` read the way you want on GitHub’s 
 From **this directory** (where `creation_os_v2.c` lives), with GitHub credentials working (`gh auth login` or SSH):
 
 ```bash
-make push-main
+make publish-github
 ```
 
 Optional environment variables:
