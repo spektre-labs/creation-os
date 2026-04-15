@@ -29,6 +29,8 @@ Canonical discipline terms live in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md). T
 | **Lab demo (C)** | Evidence class: smoke / pedagogy in C; not harness frontier scores. |
 | **`make check`** | `standalone` + `test`: structural gate used in CI. |
 | **`make bench`** | Runs GEMM vs BSC microbench; host-dependent wall time — see [BENCHMARK_PROTOCOL.md](BENCHMARK_PROTOCOL.md). |
+| **`cos_hv_hamming_hw`** | Same Hamming count as `cos_hv_hamming`, **AArch64 NEON** fast path (prefetch + `vcnt`); scalar elsewhere — see [NATIVE_COHERENCE_NEON.md](NATIVE_COHERENCE_NEON.md). |
+| **`make bench-coherence`** | Batch Hamming gate microbench (`bench/coherence_gate_batch.c`). |
 
 ---
 

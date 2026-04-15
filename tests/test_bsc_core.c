@@ -2,6 +2,9 @@
  * σ invariants and structural checks (directive spec).
  */
 #include "../core/creation_os.h"
+#if defined(__aarch64__)
+#include "../core/cos_neon_hamming.h"
+#endif
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -123,6 +126,15 @@ int main(void)
     if (!p7)
         fails++;
     report("Crystal lock", p7, s_bad, "memcmp(identity,rec2)!=0 after 1-bit sig flip");
+
+#if defined(__aarch64__)
+    uint32_t h_sc = cos_hv_hamming(x, y);
+    uint32_t h_hw = cos_hv_hamming_hw(x, y);
+    int p8 = (h_sc == h_hw);
+    if (!p8)
+        fails++;
+    report("NEON Hamming==scalar", p8, (float)h_hw, "(AArch64 hardware path)");
+#endif
 
     printf("\nSummary: %d tests failed (0 ok)\n", fails);
     return fails ? 1 : 0;

@@ -5,7 +5,7 @@ CFLAGS = -O2 -march=native -Wall -std=c11
 LDFLAGS = -lm
 BUILDDIR = .build
 
-.PHONY: help standalone core oracle bench physics test check all clean publish-github
+.PHONY: help standalone core oracle bench bench-coherence physics test check all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -18,6 +18,7 @@ help:
 	@echo "  check      — standalone + test (use before PR / CI)"
 	@echo "  publish-github — rsync this tree → fresh creation-os clone + push main (needs auth)"
 	@echo "  bench      — GEMM vs BSC microbench (host-dependent throughput)"
+	@echo "  bench-coherence — batch Hamming gate (NEON on AArch64, else scalar)"
 	@echo "  oracle     — oracle_speaks, oracle_ultimate"
 	@echo "  physics    — genesis, qhdc"
 	@echo "  core       — compile core/*.c to .build/*.o"
@@ -45,6 +46,10 @@ bench: bench/gemm_vs_bsc.c core/gemm_vs_bsc.c
 	$(CC) $(CFLAGS) -o gemm_vs_bsc bench/gemm_vs_bsc.c core/gemm_vs_bsc.c $(LDFLAGS)
 	./gemm_vs_bsc
 
+bench-coherence: bench/coherence_gate_batch.c core/cos_bsc.h core/cos_neon_hamming.h
+	$(CC) $(CFLAGS) -o coherence_gate_batch bench/coherence_gate_batch.c $(LDFLAGS)
+	./coherence_gate_batch
+
 physics: physics/genesis.c physics/qhdc_core.c
 	$(CC) $(CFLAGS) -o genesis physics/genesis.c $(LDFLAGS)
 	$(CC) $(CFLAGS) -o qhdc physics/qhdc_core.c $(LDFLAGS)
@@ -57,7 +62,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) creation_os oracle_speaks oracle_ultimate gemm_vs_bsc genesis qhdc test_bsc
+	rm -rf $(BUILDDIR) creation_os oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch genesis qhdc test_bsc
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh
