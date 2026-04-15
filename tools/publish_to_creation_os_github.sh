@@ -29,7 +29,15 @@ if ! git clone --branch "$BRANCH" "$REMOTE" "$STAGE/repo" 2>/dev/null; then
   git -C "$STAGE/repo" checkout "$BRANCH"
 fi
 
-rsync -a --delete --exclude '.git' "$ROOT/" "$STAGE/repo/"
+# Exclude macOS-style duplicate paths ("filename 2.ext") — never ship accidental copies.
+RSYNC_EXCLUDES=(
+  --exclude='.git'
+  --exclude='* 2.md' --exclude='* 2.c' --exclude='* 2.h' --exclude='* 2.sh'
+  --exclude='* 2.yml' --exclude='* 2.txt' --exclude='* 2.cpp' --exclude='* 2.cff'
+  --exclude='* 2.bib' --exclude='Makefile 2' --exclude='.gitignore 2' --exclude='LICENSE 2'
+  --exclude='* 2/' --exclude='CITATION 2.cff'
+)
+rsync -a --delete "${RSYNC_EXCLUDES[@]}" "$ROOT/" "$STAGE/repo/"
 cd "$STAGE/repo"
 
 # Never ship local Makefile binaries (rsync ignores .git only; artifacts may exist on disk).
