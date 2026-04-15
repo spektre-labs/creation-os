@@ -175,7 +175,7 @@ Dual licensing (AGPL + commercial) is documented in **README** and **COMMERCIAL_
 | Shared vocabulary | [GLOSSARY.md](GLOSSARY.md) |
 | §7 benchmark audit trail | [BENCHMARK_PROTOCOL.md](BENCHMARK_PROTOCOL.md) |
 | English-only policy | [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md) |
-| Viral misreadings FAQ | [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) |
+| Common misreadings (structured) | [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) |
 | Maintainer publish + merge gate | [MAINTAINERS.md](MAINTAINERS.md) |
 
 ---

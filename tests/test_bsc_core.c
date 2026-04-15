@@ -136,6 +136,54 @@ int main(void)
     if (!p8)
         fails++;
     report("NEON Hamming==scalar", p8, (float)h_hw, "(AArch64 hardware path)");
+
+    uint64_t maj_s[COS_W], maj_h[COS_W];
+    cos_hv_maj3(maj_s, x, y, nx);
+    cos_hv_maj3_hw(maj_h, x, y, nx);
+    int p_maj = memcmp(maj_s, maj_h, sizeof(maj_s)) == 0;
+    if (!p_maj)
+        fails++;
+    report("NEON MAJ3==scalar", p_maj, 0.0f, "(bundle)");
+
+    uint64_t xb[COS_W], xbh[COS_W];
+    for (int w = 0; w < COS_W; w++)
+        xb[w] = x[w] ^ y[w];
+    cos_hv_bind_xor_hw(xbh, x, y);
+    int p_bind = memcmp(xb, xbh, sizeof(xb)) == 0;
+    if (!p_bind)
+        fails++;
+    report("NEON XOR bind==scalar", p_bind, 0.0f, "(association)");
+
+    uint64_t acc[COS_W], acc_h[COS_W], add[COS_W];
+    memcpy(acc, x, sizeof(acc));
+    memcpy(acc_h, x, sizeof(acc_h));
+    cos_hv_random(&rng, add);
+    for (int w = 0; w < COS_W; w++)
+        acc[w] ^= add[w];
+    cos_hv_xor_inplace_hw(acc_h, add);
+    int p_xip = memcmp(acc, acc_h, sizeof(acc)) == 0;
+    if (!p_xip)
+        fails++;
+    report("NEON XOR inplace==scalar", p_xip, 0.0f, "(accumulator bind)");
+
+    float s_hw = cos_hv_sigma_hw(x, y);
+    int p_sig = approx(cos_hv_sigma(x, y), s_hw, 1e-6f);
+    if (!p_sig)
+        fails++;
+    report("NEON sigma==scalar", p_sig, s_hw, "(Hamming-derived)");
+
+    uint64_t trace[COS_W];
+    memset(trace, 0, sizeof(trace));
+    for (int w = 0; w < 4; w++)
+        trace[w] = ~0ULL;
+    uint32_t mm_s = 0;
+    for (int w = 0; w < COS_W; w++)
+        mm_s += (uint32_t)__builtin_popcountll((x[w] ^ y[w]) & trace[w]);
+    uint32_t mm_h = cos_hv_measurement_mismatch_hw(x, y, trace);
+    int p_mm = (mm_s == mm_h);
+    if (!p_mm)
+        fails++;
+    report("NEON projector==scalar", p_mm, (float)mm_h, "(256-bit trace)");
 #endif
 
     /* K=3 bit-parliament equals per-lane MAJ3 (same bit geometry). */

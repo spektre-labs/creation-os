@@ -30,7 +30,7 @@ check: standalone test
 	@echo "check: OK (standalone + test)"
 
 standalone: creation_os_v2.c
-	$(CC) $(CFLAGS) -o creation_os creation_os_v2.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -I. -o creation_os creation_os_v2.c $(LDFLAGS)
 
 core: $(BUILDDIR)
 	@for f in core/*.c; do \

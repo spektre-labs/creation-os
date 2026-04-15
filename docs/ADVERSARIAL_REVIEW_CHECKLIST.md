@@ -39,7 +39,7 @@ Use this as a **pre-submission** gate for papers, theses, and public posts that 
 
 | Attack | Safe response |
 |--------|----------------|
-| “Results are not reproducible without GPUs.” | `creation_os_v2.c` is **stdlib + libm**; `cc -O2` line in README; `make check` on Linux CI. |
+| “Results are not reproducible without GPUs.” | `creation_os_v2.c` is **stdlib + libm**; `cc -O2 -I.` line in README; `make check` on Linux CI. |
 | “Throughput numbers are not portable.” | True — **Measured (microbench)** requires host log; arithmetic ratios do not. |
 
 ---

@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make check
    ```
-   This builds `creation_os` from `creation_os_v2.c` and runs `tests/test_bsc_core.c`.
+   This builds `creation_os` from `creation_os_v2.c` (`-I.` for `core/*.h` NEON) and runs `tests/test_bsc_core.c`.
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -29,7 +29,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 
 - **Standard:** C11 (`-std=c11`).
 - **License:** New files under this tree should carry SPDX `AGPL-3.0-or-later` and the project’s copyright notice (match headers in `creation_os_v2.c` / `tests/`).
-- **Style:** Match surrounding files; avoid drive-by reformat of unrelated lines.
+- **Style:** Match surrounding files; avoid bulk reformat of unrelated lines.
 
 ## README policy
 

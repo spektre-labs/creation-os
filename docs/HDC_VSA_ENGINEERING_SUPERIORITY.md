@@ -44,7 +44,7 @@ Large-scale similarity stacks **invest in** XOR + population-count paths for Ham
 
 ---
 
-## 5. One paragraph you can paste into a deck (English)
+## 5. One-paragraph slide summary (English)
 
 > Hyperdimensional computing and vector symbolic architectures are a **mature research line** with peer-reviewed surveys on encodings (Aygun et al., 2023), comparative VSA operator taxonomies (Schlegel et al., 2021), and explicit neural-vs-HDC trade studies (Ma & Jiao, 2022). Creation OS **instantiates** that lineage for coherence-heavy systems: **bitwise** binding/bundling, **Hamming-derived** σ, and **measured** inner-loop cost tables — while keeping **frontier LM scores** on the **harness** path and toy demos in the **lab** evidence class.
 

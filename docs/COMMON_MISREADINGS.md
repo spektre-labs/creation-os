@@ -1,13 +1,19 @@
 # Common misreadings — quick corrections (English-only repo)
 
-**Use:** paste a link to a row when correcting a thread. Pair with [PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) for the friendly intro.
+**Use:** cite the **Misreading** column and the **Where to read** link in reviews, audits, and external summaries. Pair with [PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) for a short orientation.
 
 **Language:** this file is **English** — the [language policy](LANGUAGE_POLICY.md) applies to all committed docs here.
+
+**Figures:** SVG labels live in repository text — verify the committed `<text>` nodes (see [VISUAL_INDEX.md](VISUAL_INDEX.md)); do not treat lossy raster exports as authoritative strings.
 
 ---
 
 | Misreading | Correction (one sentence) | Where to read |
 |------------|-----------------------------|----------------|
+| “The diagram literally says mollock / malloc / no heap except stack.” | That was **never** repo policy; some SVGs previously held **corrupt bytes** in `<text>` nodes (control characters / invalid UTF-8), which rendered as junk glyphs — public diagram labels are now **ASCII** (`/` separators) in `docs/assets/*.svg`. | [VISUAL_INDEX.md](VISUAL_INDEX.md), committed SVG source |
+| “README says this C file never uses `malloc`.” | The portable kernel is **pedagogical C11**; workspace **M4 / native** guidance may prefer `aligned_alloc` for hot buffers — that is **silicon guidance**, not a claim that every line in every subtree is `malloc`-free. | `.cursorrules` (Creation OS), [ANALYSIS.md](ANALYSIS.md) |
+| “A raster export of the README is sufficient citation.” | **Cite the Markdown revision** (commit hash); raster exports drop footnotes, blur small text, and are not canonical for numbers or qualifiers. | README *Measured results* footnotes, [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
+| “Scope disclaimers only appear deep in the README.” | **Forbidden merges** and the evidence ladder are linked in the README documentation hub and beside the benchmark table. | README *Documentation hub*, [evidence-ladder.svg](assets/evidence-ladder.svg) |
 | “This repo replaces transformers / GPT-class models.” | It does **not**; the portable file is a **teaching kernel** and cost-shape demo; full inference stays in other planes when integrated. | README *AGI map*, [ANALYSIS.md](ANALYSIS.md) |
 | “192× means 192× better on benchmarks like MMLU.” | **Forbidden merge:** 192× is an **op-count proxy** for the defined microbench, not a harness score delta. | [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) (Forbidden merges) |
 | “σ is consciousness in the philosophy sense.” | Section 13 is a **toy composite** in C demos, not a clinical or philosophical proof. | README *Limitations*, [MODULE_EVIDENCE_INDEX.md](MODULE_EVIDENCE_INDEX.md) |

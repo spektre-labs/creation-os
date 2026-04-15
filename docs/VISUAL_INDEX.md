@@ -26,6 +26,14 @@ The root [README.md](../README.md) includes a **Mermaid** flowchart (GitHub-nati
 
 Use any text editor or Inkscape / Figma import. Keep **fonts** as generic `ui-sans-serif, system-ui, sans-serif` or `ui-monospace` so CI and headless renders do not depend on custom font installs.
 
+**Public diagrams:** keep visible `<text>` in **plain ASCII** when you can (use `/` instead of exotic punctuation). That avoids replacement glyphs (`U+FFFD`), invalid UTF-8 sequences, and ambiguous renderings — if a label reads as garbage, inspect the committed SVG text, not a lossy raster of the README. See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) for the canonical “diagram vs policy” distinction.
+
+## Citation hygiene for figures
+
+1. **Cite committed Markdown or SVG** at a specific revision; raster excerpts are not canonical for footnotes or small numerals.
+2. **Evidence ladder** ([evidence-ladder.svg](assets/evidence-ladder.svg)) applies to **numbers** too: microbench rows do not graduate to harness claims without the matching protocol row.
+3. **Revision drift:** diff the cited commit against `main` here before attributing text that does not match the current tree.
+
 ---
 
 *Spektre Labs · Creation OS · 2026*

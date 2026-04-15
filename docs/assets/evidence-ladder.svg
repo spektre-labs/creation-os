@@ -9,7 +9,7 @@
     </linearGradient>
   </defs>
   <rect width="100%" height="100%" fill="#0f172a"/>
-  <text x="380" y="34" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" font-weight="700">Evidence ladder (one headline ’ one class)</text>
+  <text x="380" y="34" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" font-weight="700">Evidence ladder (one headline, one class)</text>
   <rect x="40" y="60" width="200" height="64" rx="8" fill="#164e63" stroke="#22d3ee" stroke-width="1.5"/>
   <text x="140" y="92" text-anchor="middle" fill="#ecfeff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Arithmetic</text>
   <text x="140" y="110" text-anchor="middle" fill="#99f6e4" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">ops &amp; RAM from D, dtype</text>
@@ -23,6 +23,6 @@
   <polygon points="278,88 288,92 278,96" fill="#64748b"/>
   <polygon points="518,88 528,92 518,96" fill="#64748b"/>
   <rect x="120" y="148" width="520" height="52" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="1"/>
-  <text x="380" y="182" text-anchor="middle" fill="#fed7aa" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Lab demo (C) and repository-reality rows live beside these  never blend with MMLU in one headline</text>
-  <text x="380" y="208" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">CLAIM_DISCIPLINE.md · Spektre Labs</text>
+  <text x="380" y="182" text-anchor="middle" fill="#fed7aa" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Lab demo (C) and repository-reality rows live beside these; never blend with MMLU in one headline</text>
+  <text x="380" y="208" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">CLAIM_DISCIPLINE.md / Spektre Labs</text>
 </svg>

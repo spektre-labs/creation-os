@@ -20,7 +20,7 @@
  * ║                                                              ║
  * ║  One file. One algebra. One axiom.                           ║
  * ║                                                              ║
- * ║  cc -O2 -o creation_os creation_os_v2.c -lm                  ║
+ * ║  cc -O2 -I. -o creation_os creation_os_v2.c -lm              ║
  * ║                                                              ║
  * ║  Lauri Elias Rainio · Spektre Labs · Helsinki · 2026         ║
  * ║  https://github.com/spektre-labs/creation-os                   ║
@@ -41,9 +41,13 @@
 #include <string.h>
 #include <time.h>
 
+#include "core/cos_neon_hamming.h"
+
 #define D 4096
 #define W 64
 #define B 512
+
+_Static_assert(D == COS_D && W == COS_W, "creation_os_v2 geometry must match core/cos_bsc.h");
 
 static uint64_t _rng_state;
 
@@ -59,12 +63,18 @@ static void hv_random(uint64_t *h)
         h[i] = rng();
 }
 
-static uint32_t hv_hamming(const uint64_t *a, const uint64_t *b)
+static inline uint32_t hv_hamming(const uint64_t *a, const uint64_t *b)
 {
-    uint32_t d = 0;
-    for (int i = 0; i < W; i++)
-        d += (uint32_t)__builtin_popcountll(a[i] ^ b[i]);
-    return d;
+#if defined(__aarch64__)
+    return cos_hv_hamming_hw(a, b);
+#else
+    return cos_hv_hamming(a, b);
+#endif
+}
+
+static inline uint32_t hv_measurement_mismatch(const uint64_t *h, const uint64_t *anchor, const uint64_t *trace_mask)
+{
+    return cos_hv_measurement_mismatch_hw(h, anchor, trace_mask);
 }
 
 static float hv_sigma(const uint64_t *a, const uint64_t *b)
@@ -88,8 +98,11 @@ static void hv_rotl(uint64_t *out, const uint64_t *in, int position)
 
 static void hv_maj3(uint64_t *out, const uint64_t *a, const uint64_t *b, const uint64_t *c)
 {
-    for (int i = 0; i < W; i++)
-        out[i] = (a[i] & b[i]) | (a[i] & c[i]) | (b[i] & c[i]);
+#if defined(__aarch64__)
+    cos_hv_maj3_hw(out, a, b, c);
+#else
+    cos_hv_maj3(out, a, b, c);
+#endif
 }
 
 static uint64_t CHAR_EMBED[128][W];
@@ -106,8 +119,12 @@ static void encode_text(uint64_t *out, const char *text, int len)
     for (int i = 0; i < len; i++) {
         uint64_t rotated[W];
         hv_rotl(rotated, CHAR_EMBED[(unsigned char)text[i] % 128], i);
+#if defined(__aarch64__)
+        cos_hv_xor_inplace_hw(out, rotated);
+#else
         for (int w = 0; w < W; w++)
             out[w] ^= rotated[w];
+#endif
     }
 }
 
@@ -536,9 +553,7 @@ static void run_benchmark(void)
     t0 = mono_sec();
     volatile float br = 0;
     for (int t = 0; t < trials; t++) {
-        uint32_t d = 0;
-        for (int i = 0; i < W; i++)
-            d += (uint32_t)__builtin_popcountll(ba[i] ^ bb[i]);
+        uint32_t d = hv_hamming(ba, bb);
         float r = (float)d / (float)D;
         br = r * r;
     }
@@ -1052,6 +1067,13 @@ static void run_quantum_decision(void)
         }
     }
     printf("  New info: threat -> collapse to %s (sigma=%.4f)\n", anames[chosen], best);
+    /* Partial-trace projector on first 256 bits: mismatch popcount vs collapsed branch */
+    uint64_t trace[W];
+    memset(trace, 0, sizeof(trace));
+    for (int w = 0; w < 4; w++)
+        trace[w] = ~0ULL;
+    uint32_t viol = hv_measurement_mismatch(superposition, actions[chosen], trace);
+    printf("  Constraint check (256-bit trace vs %s): mismatch pop = %u\n", anames[chosen], viol);
 }
 
 static void run_arrow_of_time(void)
@@ -1129,7 +1151,7 @@ int main(void)
     printf("+==============================================================+\n");
     printf("|                    CREATION OS v2.0                         |\n");
     printf("|          Complete Cognitive Architecture in BSC             |\n");
-    printf("|  cc -O2 -o creation_os creation_os_v2.c -lm                 |\n");
+    printf("|  cc -O2 -I. -o creation_os creation_os_v2.c -lm             |\n");
     printf("|  AGPL-3.0 + dual licensing — see LICENSE / COMMERCIAL_LICENSE  |\n");
     printf("|  1 = 1. Always.                                              |\n");
     printf("+==============================================================+\n");
@@ -1189,7 +1211,7 @@ int main(void)
     printf("    MAJ    = bundle      (superposition)\n");
     printf("    POPCNT = measure     (sigma coherence)\n\n");
     printf("  No GEMM in the BSC path above. Copy, compile, run.\n\n");
-    printf("  cc -O2 -o creation_os creation_os_v2.c -lm\n\n");
+    printf("  cc -O2 -I. -o creation_os creation_os_v2.c -lm\n\n");
     printf("  1 = 1. Always.\n");
     printf("==============================================================\n");
     return 0;

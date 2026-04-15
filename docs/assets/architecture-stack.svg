@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 560" role="img" aria-labelledby="title desc">
-  <title id="title">Creation OS v2  module stack</title>
+  <title id="title">Creation OS v2 module stack</title>
   <desc id="desc">Single file creation_os_v2.c over three cognitive planes, BSC core, and three foundation pillars.</desc>
   <defs>
     <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -12,40 +12,40 @@
     </filter>
   </defs>
   <rect width="100%" height="100%" fill="url(#bg)"/>
-  <text x="460" y="36" text-anchor="middle" fill="#8ba3c7" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">CREATION OS  reference stack (pedagogical kernel)</text>
+  <text x="460" y="36" text-anchor="middle" fill="#8ba3c7" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="600">CREATION OS / reference stack (pedagogical kernel)</text>
   <!-- Top -->
   <rect x="260" y="52" width="400" height="56" rx="8" fill="#e94560" filter="url(#shadow)"/>
   <text x="460" y="82" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" font-weight="700">creation_os_v2.c</text>
-  <text x="460" y="100" text-anchor="middle" fill="#fce4ec" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">1196 lines ∑ 26 modules ∑ C11 + libm</text>
+  <text x="460" y="100" text-anchor="middle" fill="#fce4ec" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">1196 lines / 26 modules / C11 + libm</text>
   <!-- Row 2 -->
   <rect x="48" y="140" width="250" height="72" rx="8" fill="#233554" stroke="#3d5a80" stroke-width="1.5"/>
   <text x="173" y="172" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">HYPERCUBE</text>
-  <text x="173" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">10 faces ∑ SOC ∑ ¶í1</text>
+  <text x="173" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">10 faces / SOC / Phi to 1.0</text>
   <rect x="335" y="140" width="250" height="72" rx="8" fill="#233554" stroke="#3d5a80" stroke-width="1.5"/>
   <text x="460" y="172" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">ORACLE</text>
-  <text x="460" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">7-gram ∑ √ as attention</text>
+  <text x="460" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">7-gram / sigma as attention</text>
   <rect x="622" y="140" width="250" height="72" rx="8" fill="#233554" stroke="#3d5a80" stroke-width="1.5"/>
   <text x="747" y="172" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">WORLD MODEL</text>
-  <text x="747" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">JEPA + Genesis ∑ Noether</text>
+  <text x="747" y="192" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">JEPA + Genesis / Noether</text>
   <!-- Connectors top -->
   <path d="M460 108 L460 128 M173 128 L173 138 M747 128 L747 138" stroke="#5c7cfa" stroke-width="2" fill="none" opacity="0.7"/>
   <path d="M460 128 L173 138 M460 128 L460 138 M460 128 L747 138" stroke="#5c7cfa" stroke-width="1.5" fill="none" opacity="0.5"/>
   <!-- BSC core -->
   <rect x="120" y="260" width="680" height="88" rx="10" fill="#16213e" stroke="#e94560" stroke-width="2"/>
   <text x="460" y="295" text-anchor="middle" fill="#e94560" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="700">BSC CORE</text>
-  <text x="460" y="318" text-anchor="middle" fill="#cbd5e1" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12">XOR bind ∑ MAJ bundle ∑ POPCNT í √ ∑ 4096 bits (512 B)</text>
+  <text x="460" y="318" text-anchor="middle" fill="#cbd5e1" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12">XOR bind / MAJ bundle / POPCNT / sigma / 4096 bits (512 B)</text>
   <path d="M173 212 L173 240 L460 252 M460 212 L460 252 M747 212 L747 240 L460 252" stroke="#64748b" stroke-width="1.5" fill="none"/>
   <!-- Row 4 -->
   <rect x="48" y="392" width="250" height="88" rx="8" fill="#233554" stroke="#3d5a80"/>
   <text x="173" y="428" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">SOUL</text>
-  <text x="173" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">15 values ∑ Crystal Lock</text>
+  <text x="173" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">15 values / Crystal Lock</text>
   <rect x="335" y="392" width="250" height="88" rx="8" fill="#233554" stroke="#3d5a80"/>
   <text x="460" y="428" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">PROCONDUCTOR</text>
-  <text x="460" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">4 profiles ∑ √Å◊√Ç◊√É</text>
+  <text x="460" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">4 profiles / tri-sigma agreement</text>
   <rect x="622" y="392" width="250" height="88" rx="8" fill="#233554" stroke="#3d5a80"/>
   <text x="747" y="428" text-anchor="middle" fill="#eaeaea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="600">COGNITION</text>
-  <text x="747" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">ß9ß26 demos</text>
+  <text x="747" y="452" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Sec. 9-26 demos</text>
   <path d="M460 348 L460 368 M173 368 L173 392 M747 368 L747 392" stroke="#64748b" stroke-width="1.5" fill="none"/>
   <path d="M460 368 L173 392 M460 368 L460 392 M460 368 L747 392" stroke="#64748b" stroke-width="1.2" fill="none"/>
-  <text x="460" y="538" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Spektre Labs ∑ Creation OS ∑ schematic (not to scale)</text>
+  <text x="460" y="538" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Spektre Labs / Creation OS / schematic (not to scale)</text>
 </svg>

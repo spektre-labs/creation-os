@@ -3,13 +3,17 @@
 **Cognitive architecture in Binary Spatter Codes.**
 
 ```
-cc -O2 -o creation_os creation_os_v2.c -lm
+cc -O2 -I. -o creation_os creation_os_v2.c -lm
 ./creation_os
 ```
 
 One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 
-**Drive-by / forum reader?** Start here: [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — why the paradigm *feels* opposite to default ML, what is actually proven, and what is **not** claimed.
+**Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
+**Compressed orientation (plain language):** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — paradigm contrast, proved invariants, and explicit **non-claims**.
+
+**Misreadings and claim boundaries:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) (structured corrections) · [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) (evidence classes, forbidden merges) · [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) (diagram sources and edit rules).
 
 -----
 
@@ -17,7 +21,9 @@ One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 
 | Resource | Link |
 |----------|------|
-| **Paradigm snapshot (ELI5 / link-thread)** | [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) |
+| **Paradigm snapshot (plain-language)** | [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) |
+| **Common misreadings (structured corrections)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
+| **Claim discipline (evidence classes)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
 | **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | **Security** | [SECURITY.md](SECURITY.md) |
@@ -40,7 +46,6 @@ One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 | **HV parliament + NEON retrieval** | [docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
-| **Common misreadings (FAQ table)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
 
 **On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
@@ -219,16 +224,16 @@ COGNITION
 
 ```bash
 # Any platform
-cc -O2 -o creation_os creation_os_v2.c -lm
+cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 # Apple Silicon (M1–M4), native ISA
-cc -O2 -march=native -o creation_os creation_os_v2.c -lm
+cc -O2 -I. -march=native -o creation_os creation_os_v2.c -lm
 
 # Apple Silicon — optional SME experiment (may SIGILL without streaming context)
-cc -O2 -march=armv9-a+sme -o creation_os creation_os_v2.c -lm
+cc -O2 -I. -march=armv9-a+sme -o creation_os creation_os_v2.c -lm
 
 # x86-64
-cc -O2 -march=native -o creation_os creation_os_v2.c -lm
+cc -O2 -I. -march=native -o creation_os creation_os_v2.c -lm
 ```
 
 With Make (same flags as repo `Makefile`):
@@ -290,7 +295,7 @@ This repository holds the **portable kernel** and measured claims; theory citati
 
 **Checkable structure.** §8 shows XOR-sum conservation after symmetric interactions; §4 / §26 show tamper sensitivity on identity chains. That is a different failure mode than silent numeric drift in an unconstrained float pipeline: you get **discrete, replayable** violations.
 
-**Deployment surface.** `creation_os_v2.c` is **stdlib + libm only** — no framework, no CUDA graph, no Python import tax for the teaching kernel. The same algebra is what later wires into native / MLX / llama paths; this file is the **portable proof** you can ship to any reviewer who can run `cc`.
+**Deployment surface.** `creation_os_v2.c` plus **`core/*.h`** (same tree; `cc … -I.`) is **stdlib + libm only** — no framework, no CUDA graph, no Python import tax for the teaching kernel. NEON hypervector ops live in headers; the same algebra wires into native / MLX / llama paths in extended checkouts.
 
 **AGI-relevant boundary.** This single file does **not** claim benchmark parity with frontier chat models. It **does** show that a broad slice of cognitive primitives (metacognition, ToM, moral compromise, consensus, sleep consolidation, …) can live in **one** small C program built only from XOR / MAJ / POPCOUNT — which is the point of the **26-module** layout: **composition under one algebra**, not a second hidden stack.
 
@@ -357,7 +362,7 @@ flowchart LR
 | Stricter than typical write-ups | How this tree enforces it |
 |----------------------------------|---------------------------|
 | Baseline separation | Harness vs native vs C demo = **different evidence classes**; ANALYSIS and **CLAIM_DISCIPLINE** require **two-row** reporting when both appear. |
-| Reproducibility | One TU (`creation_os_v2.c`) compiles with **stdlib + libm**; invariants print to stdout; `make bench` regenerates throughput on your metal. |
+| Reproducibility | One TU (`creation_os_v2.c` + `core/*.h`, `cc -I.`) compiles with **stdlib + libm**; invariants print to stdout; `make bench` regenerates throughput on your metal. |
 | Bounded language | **Limitations** lists what the Oracle, JEPA toy, and benchmark are *not* — no silent upgrade from “demonstrates mechanism” to “beats frontier.” |
 | Falsifiable core | Algebraic and conservation statements are **discrete**; a counterexample is a log line, not a vague “worse loss.” |
 | AGI-relevant honesty | Full-stack receipts (`cos_*`, Planes A–C) are mapped in ANALYSIS; this README’s file is the **portable spine**, not the entire production claim. |

@@ -25,6 +25,7 @@ static inline void cos_hv_random(uint64_t *state, uint64_t *h)
         h[i] = cos_rng(state);
 }
 
+/** Scalar Hamming (reference). On AArch64, cos_neon_hamming.h adds cos_hv_hamming_hw / MAJ3 / bind / σ_hw. */
 static inline uint32_t cos_hv_hamming(const uint64_t *a, const uint64_t *b)
 {
     uint32_t d = 0;
