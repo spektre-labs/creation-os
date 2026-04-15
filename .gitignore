@@ -15,3 +15,18 @@ qhdc
 test_bsc
 .DS_Store
 *.o
+
+# macOS Finder "duplicate" filenames — never commit (publish script also prunes these).
+* 2.md
+* 2.c
+* 2.h
+* 2.sh
+* 2.yml
+* 2.txt
+* 2.cpp
+* 2.cff
+* 2.bib
+Makefile 2
+.gitignore 2
+LICENSE 2
+CITATION 2.cff
