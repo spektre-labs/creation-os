@@ -29,6 +29,12 @@ fi
 rsync -a --delete --exclude '.git' "$ROOT/" "$STAGE/repo/"
 cd "$STAGE/repo"
 
+# Never ship local Makefile binaries (rsync ignores .git only; artifacts may exist on disk).
+for bin in creation_os test_bsc gemm_vs_bsc coherence_gate_batch oracle_speaks oracle_ultimate genesis qhdc; do
+  rm -f "$bin"
+done
+rm -rf .build
+
 if git diff --quiet && git diff --cached --quiet; then
   echo "No file changes vs remote — nothing to commit."
   exit 0
