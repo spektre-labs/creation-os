@@ -5,7 +5,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 ## Canonical Git (non-negotiable)
 
 - **Only** [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os) on GitHub is the real Creation OS remote. Read **[docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md)**.
-- **Never** add that URL as `origin` on a parent “protocol” / umbrella monorepo, and **never** `git push` Creation OS from outside the Creation OS repo root. Use a normal clone of `creation-os` or `make publish-github` from **this** tree’s root (`creation_os_v2.c` present).
+- **Never** add that URL as `origin` on a parent “protocol” / umbrella monorepo, and **never** `git push` Creation OS from outside the Creation OS repo root. Use a normal clone of `creation-os` or **`make push-main`** from **this** tree’s root (`creation_os_v2.c` present) to update **spektre-labs/creation-os** `main`.
 
 ## Language
 
@@ -20,7 +20,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## What to optimize for
 
-- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](creation_os_v6.c), [`creation_os_v7.c`](creation_os_v7.c), [`creation_os_v9.c`](creation_os_v9.c), [`creation_os_v10.c`](creation_os_v10.c), [`creation_os_v11.c`](creation_os_v11.c), or [`creation_os_v12.c`](creation_os_v12.c), also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, **`make check-v10`**, **`make check-v11`**, or **`make check-v12`** respectively (Living Kernel through Tensor mind self-tests).
+- **Correctness:** before merge, run **`make merge-gate`** from this directory (portable `check` + every flagship **`check-v6` … `check-v26`** self-test matrix). For a tight loop while editing one file, `make test` and the matching **`make check-vN`** alone are acceptable until the final commit.
 - **Portability:** Prefer C11 + libm; optional `-march=native` is Makefile default — document if you change it.
 - **Minimal diffs:** Do not refactor unrelated modules; match existing style.
 
@@ -29,7 +29,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 - Full doc map: [docs/DOC_INDEX.md](docs/DOC_INDEX.md)
 - Contributor workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
 - External “superiority” claims must cite [docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md) or [docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md](docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md) — never invent paper outcomes not stated there.
-- **Scope:** treat this checkout as **Creation OS only**; kernel PRs and measured claims live here. **Publishing:** [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md).
+- **Scope:** treat this checkout as **Creation OS only**; kernel PRs and measured claims live here. **Publishing to product `main`:** **`make push-main`** (see [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md)).
 
 ---
 

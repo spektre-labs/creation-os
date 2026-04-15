@@ -1,9 +1,16 @@
 #!/usr/bin/env bash
-# Publish this portable Creation OS directory to https://github.com/spektre-labs/creation-os
-# Requires working GitHub auth (SSH key, or HTTPS + credential, or: gh auth login).
+# Push this portable Creation OS tree to the product repo https://github.com/spektre-labs/creation-os
+# branch main (clone + rsync + commit + git push). Invoked by: make push-main  OR  make publish-github
 #
-# CANONICAL REPO ONLY: spektre-labs/creation-os. Do not point a parent monorepo's git remote
-# here; see docs/CANONICAL_GIT_REPOSITORY.md.
+# Auth: SSH remote URL, OR HTTPS with gh auth login, OR one-shot PAT:
+#   GITHUB_TOKEN=ghp_... make push-main
+# (script injects x-access-token into the default HTTPS URL; do not commit tokens.)
+# Override URL: CREATION_OS_REMOTE=https://github.com/.../creation-os.git
+# Override branch: CREATION_OS_BRANCH=main
+# Override commit message: CREATION_OS_COMMIT_MSG='...'
+#
+# CANONICAL REPO ONLY: spektre-labs/creation-os. Do not set creation-os as origin on a parent
+# monorepo root; see docs/CANONICAL_GIT_REPOSITORY.md.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -14,9 +21,13 @@ if [[ ! -f creation_os_v2.c ]]; then
   exit 1
 fi
 
-make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11 && make check-v12 && make check-v15 && make check-v16
+make merge-gate
 
-REMOTE="${CREATION_OS_REMOTE:-https://github.com/spektre-labs/creation-os.git}"
+DEFAULT_REMOTE="https://github.com/spektre-labs/creation-os.git"
+REMOTE="${CREATION_OS_REMOTE:-$DEFAULT_REMOTE}"
+if [[ -n "${GITHUB_TOKEN:-}" && "$REMOTE" == "$DEFAULT_REMOTE" ]]; then
+  REMOTE="https://x-access-token:${GITHUB_TOKEN}@github.com/spektre-labs/creation-os.git"
+fi
 BRANCH="${CREATION_OS_BRANCH:-main}"
 MSG="${CREATION_OS_COMMIT_MSG:-Publish portable Creation OS tree}"
 
@@ -39,7 +50,7 @@ find "$STAGE/repo" -depth \( -name '* 2.*' -o -name '* 2' \) ! -path '*/.git/*' 
 cd "$STAGE/repo"
 
 # Never ship local Makefile binaries (rsync ignores .git only; artifacts may exist on disk).
-for bin in creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
+for bin in creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
   rm -f "$bin"
 done
 rm -rf .build

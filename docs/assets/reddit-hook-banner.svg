@@ -1,15 +1,49 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 200" role="img" aria-labelledby="t2 d2">
-  <title id="t2">Creation OS  one file, enforced invariants</title>
-  <desc id="d2">Banner for README: BSC cognitive architecture hook</desc>
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" role="img" aria-labelledby="rb-title rb-desc">
+  <title id="rb-title">Creation OS: one tree, enforced invariants</title>
+  <desc id="rb-desc">README instrument banner: BSC architecture, merge-gate matrix, 204 self-tests on v26. Original artwork; not affiliated with any space agency.</desc>
   <defs>
-    <linearGradient id="b" x1="0" y1="0" x2="1100" y2="200" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#061018"/>
-      <stop offset="0.5" stop-color="#0e2844"/>
-      <stop offset="1" stop-color="#102a50"/>
+    <linearGradient id="rb-bg" x1="0" y1="0" x2="1200" y2="260" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#020617"/>
+      <stop offset="0.5" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#0a1f3d"/>
     </linearGradient>
+    <linearGradient id="rb-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22d3ee"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <pattern id="rb-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#38bdf8" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+    <clipPath id="rb-clip">
+      <rect width="1200" height="260" rx="14"/>
+    </clipPath>
+    <filter id="rb-glow" x="-3%" y="-3%" width="106%" height="106%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
   </defs>
-  <rect width="1100" height="200" rx="12" fill="url(#b)" stroke="#2a5a9a" stroke-width="1"/>
-  <text x="550" y="58" text-anchor="middle" fill="#b8d4ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" letter-spacing="0.22em">BINARY SPATTER CODES · Ã · ONE REPO · RUNS ON SILICON</text>
-  <text x="550" y="118" text-anchor="middle" fill="#ffffff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="700">Cognitive architecture you can actually compile.</text>
-  <text x="550" y="158" text-anchor="middle" fill="#7aa8e0" font-family="ui-monospace,Menlo,monospace" font-size="14">make check-v16  ’  66 self-tests  ·  not another Python wrapper</text>
+  <g clip-path="url(#rb-clip)">
+    <rect width="1200" height="260" fill="url(#rb-bg)"/>
+    <rect width="1200" height="260" fill="url(#rb-grid)"/>
+  </g>
+  <rect x="0" y="0" width="1200" height="4" rx="14" fill="url(#rb-accent)"/>
+  <g stroke="#7dd3fc" stroke-width="1" fill="none" opacity="0.5">
+    <path d="M14 22 L14 10 L26 10"/>
+    <path d="M1186 22 L1186 10 L1174 10"/>
+    <path d="M14 238 L14 250 L26 250"/>
+    <path d="M1186 238 L1186 250 L1174 250"/>
+  </g>
+  <text x="32" y="30" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.12em">FIG 02 / KERNEL BANNER</text>
+  <rect x="28" y="42" width="178" height="30" rx="6" fill="#020617" stroke="#334155" stroke-width="1"/>
+  <text x="117" y="62" text-anchor="middle" fill="#22d3ee" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" letter-spacing="0.1em">CREATION OS</text>
+  <text x="600" y="88" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" letter-spacing="0.2em">BINARY SPATTER CODES / ONE REPO / RUNS ON SILICON</text>
+  <text x="600" y="138" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="800" filter="url(#rb-glow)">Cognitive architecture you can actually compile.</text>
+  <text x="600" y="176" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace,Menlo,monospace" font-size="13">SELF_TEST_MAX=204 (v26) / MATRIX=merge-gate / RECEIPTS=ON</text>
+  <text x="600" y="198" text-anchor="middle" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="11">CLASS=schematic C lab demo / NOT PYTHON WRAPPER</text>
+  <rect x="0" y="214" width="1200" height="46" fill="#020617" fill-opacity="0.92"/>
+  <line x1="0" y1="214" x2="1200" y2="214" stroke="#1e293b" stroke-width="1"/>
+  <text x="40" y="238" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="10">BUILD=C11+libm / TARGET=portable + v6..v26 self-test</text>
+  <text x="40" y="254" fill="#475569" font-family="ui-monospace,Menlo,monospace" font-size="9">PATH=creation-os/docs/assets/reddit-hook-banner.svg</text>
+  <text x="1160" y="244" text-anchor="end" fill="#22d3ee" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="600">DISPLAY OK</text>
 </svg>

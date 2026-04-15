@@ -1,40 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 228" role="img" aria-labelledby="t d">
-  <title id="t">Creation OS three planes summary</title>
-  <desc id="d">Plane A inference, Plane B Python MLX orchestration, Plane C native receipts; portable v2 file is not the entire tree.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 268" role="img" aria-labelledby="pa-t pa-d">
+  <title id="pa-t">Creation OS three planes summary</title>
+  <desc id="pa-d">Plane A inference, Plane B MLX orchestration, Plane C native receipts. Instrument schematic; original artwork.</desc>
   <defs>
-    <linearGradient id="bgp" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" style="stop-color:#ffffff"/>
-      <stop offset="100%" style="stop-color:#f1f5f9"/>
+    <linearGradient id="pa-bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
     </linearGradient>
-    <filter id="pc" x="-5%" y="-5%" width="110%" height="115%">
+    <pattern id="pa-grid" width="32" height="32" patternUnits="userSpaceOnUse">
+      <path d="M32 0H0V32" fill="none" stroke="#94a3b8" stroke-opacity="0.18" stroke-width="0.75"/>
+    </pattern>
+    <filter id="pa-pc" x="-5%" y="-5%" width="110%" height="115%">
       <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.07"/>
     </filter>
-    <marker id="af" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-      <path d="M0 0 L8 4 L0 8 Z" fill="#94a3b8"/>
+    <marker id="pa-af" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+      <path d="M0 0 L8 4 L0 8 Z" fill="#64748b"/>
     </marker>
   </defs>
-  <rect width="100%" height="100%" fill="url(#bgp)"/>
+  <rect width="920" height="268" fill="url(#pa-bg)"/>
+  <rect width="920" height="268" fill="url(#pa-grid)"/>
   <rect x="0" y="0" width="920" height="3" fill="#6366f1"/>
-  <text x="460" y="38" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="800">Full stack / three planes</text>
-  <text x="460" y="58" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Detail in ANALYSIS.md — optional paths vary by checkout</text>
-  <rect x="28" y="78" width="272" height="120" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2" filter="url(#pc)"/>
-  <text x="164" y="114" text-anchor="middle" fill="#5b21b6" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="800">Plane A</text>
-  <text x="164" y="138" text-anchor="middle" fill="#6b21a8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">Inference + superkernel</text>
+  <text x="20" y="26" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.1em">FIG 05 / THREE PLANES</text>
+  <text x="460" y="48" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="800">Full stack / three planes</text>
+  <text x="460" y="68" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Detail in ANALYSIS.md / optional paths vary by checkout</text>
+  <rect x="28" y="86" width="272" height="120" rx="12" fill="#fff" stroke="#7c3aed" stroke-width="2" filter="url(#pa-pc)"/>
+  <text x="164" y="118" text-anchor="middle" fill="#5b21b6" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700">PLANE A</text>
+  <text x="164" y="140" text-anchor="middle" fill="#6b21a8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">Inference + superkernel</text>
   <text x="164" y="162" text-anchor="middle" fill="#7e22ce" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">llama.cpp + Spektre / GEMM path</text>
-  <text x="164" y="182" text-anchor="middle" fill="#9333ea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">SK8 / GDA bridge where integrated</text>
-  <rect x="324" y="78" width="272" height="120" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2" filter="url(#pc)"/>
-  <text x="460" y="114" text-anchor="middle" fill="#1e40af" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="800">Plane B</text>
-  <text x="460" y="138" text-anchor="middle" fill="#1e3a8a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">MLX / Python orchestration</text>
+  <text x="164" y="184" text-anchor="middle" fill="#9333ea" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">SK8 / GDA bridge where integrated</text>
+  <rect x="324" y="86" width="272" height="120" rx="12" fill="#fff" stroke="#2563eb" stroke-width="2" filter="url(#pa-pc)"/>
+  <text x="460" y="118" text-anchor="middle" fill="#1e40af" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700">PLANE B</text>
+  <text x="460" y="140" text-anchor="middle" fill="#1e3a8a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">MLX / Python orchestration</text>
   <text x="460" y="162" text-anchor="middle" fill="#2563eb" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Receipts / policy / harness vs native</text>
-  <text x="460" y="182" text-anchor="middle" fill="#3b82f6" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Evaluation hygiene lives here</text>
-  <rect x="620" y="78" width="272" height="120" rx="12" fill="#fff" stroke="#0d9488" stroke-width="2" filter="url(#pc)"/>
-  <text x="756" y="114" text-anchor="middle" fill="#115e59" font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="800">Plane C</text>
-  <text x="756" y="138" text-anchor="middle" fill="#134e4a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">native_m4 / dylib</text>
+  <text x="460" y="184" text-anchor="middle" fill="#3b82f6" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Evaluation hygiene lives here</text>
+  <rect x="620" y="86" width="272" height="120" rx="12" fill="#fff" stroke="#0d9488" stroke-width="2" filter="url(#pa-pc)"/>
+  <text x="756" y="118" text-anchor="middle" fill="#115e59" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700">PLANE C</text>
+  <text x="756" y="140" text-anchor="middle" fill="#134e4a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600">native_m4 / dylib</text>
   <text x="756" y="162" text-anchor="middle" fill="#0f766e" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">NEON sigma / Metal LW / cos_*</text>
-  <text x="756" y="182" text-anchor="middle" fill="#14b8a6" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Audit surfaces when present</text>
-  <line x1="300" y1="138" x2="318" y2="138" stroke="#cbd5e1" stroke-width="2.5" marker-end="url(#af)"/>
-  <line x1="596" y1="138" x2="614" y2="138" stroke="#cbd5e1" stroke-width="2.5" marker-end="url(#af)"/>
-  <text x="460" y="216" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="500">creation_os_v2.c = portable spine / not the entire production tree</text>
-  <text x="460" y="232" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Spektre Labs / Creation OS</text>
+  <text x="756" y="184" text-anchor="middle" fill="#14b8a6" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Audit surfaces when present</text>
+  <line x1="300" y1="146" x2="318" y2="146" stroke="#cbd5e1" stroke-width="2.5" marker-end="url(#pa-af)"/>
+  <line x1="596" y1="146" x2="614" y2="146" stroke="#cbd5e1" stroke-width="2.5" marker-end="url(#pa-af)"/>
+  <text x="460" y="228" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="500">creation_os_v2.c = portable spine / not the entire production tree</text>
+  <rect x="0" y="236" width="920" height="32" fill="#0f172a"/>
+  <line x1="0" y1="236" x2="920" y2="236" stroke="#334155" stroke-width="1"/>
+  <text x="20" y="256" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="9">SPEKTRE LABS / CREATION OS / FIG 05</text>
+  <text x="900" y="256" text-anchor="end" fill="#6366f1" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600">FLOW A TO B TO C</text>
 </svg>

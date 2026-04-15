@@ -9,13 +9,8 @@
 From the **root of this directory** (where `creation_os_v2.c` lives):
 
 ```bash
-make check
-make check-v6   # Living Kernel — run when v6 source or its tests/docs change
-make check-v7   # Hallucination Killer — run when v7 source or its tests/docs change
-make check-v9   # Parameters in Silicon — run when v9 source or its tests/docs change
-make check-v10  # The Real Mind — run when v10 source or its tests/docs change
-make check-v11  # MatMul-free mind — run when v11 source or its tests/docs change
-make publish-github
+make merge-gate
+make push-main
 ```
 
 This clones `spektre-labs/creation-os`, `rsync`s this tree (excluding `.git`), commits if there are diffs, and pushes `main`. See [publish_checklist_creation_os.md](publish_checklist_creation_os.md) and environment variables `CREATION_OS_REMOTE`, `CREATION_OS_BRANCH`, `CREATION_OS_COMMIT_MSG` in that file.
@@ -40,7 +35,7 @@ User-facing policy: [SECURITY.md](../SECURITY.md). Developer-oriented abuse patt
 
 ## 4. CI
 
-Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11` on Ubuntu for pushes and PRs to `main` / `master`.
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — **`make merge-gate`** on Ubuntu for pushes and PRs to `main` / `master` (portable `check` plus `check-v6` … `check-v26`). Product pushes use **`make push-main`** on your machine (never the parent monorepo as `git push` target for this tree).
 
 ---
 

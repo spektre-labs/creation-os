@@ -6,11 +6,15 @@ on:
   pull_request:
     branches: [main, master]
 
+concurrency:
+  group: creation-os-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   c11-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Structural build and tests
-        run: make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11 && make check-v12 && make check-v15 && make check-v16
+      - name: Merge gate (portable + v6..v26 self-tests)
+        run: make merge-gate

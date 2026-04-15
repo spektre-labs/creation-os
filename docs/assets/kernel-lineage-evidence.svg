@@ -1,45 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 340" role="img" aria-labelledby="kt kd">
-  <title id="kt">Portable proof vs standalone lab demos</title>
-  <desc id="kd">creation_os_v2 with test and bench versus creation_os_v6 through v11 self_test only lab demo class C.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 372" role="img" aria-labelledby="kl-t kl-d">
+  <title id="kl-t">Portable proof vs standalone lab demos</title>
+  <desc id="kl-d">Dual bay layout: portable proof vs lab demos v6 through v26. Instrument diagram; original artwork.</desc>
   <defs>
-    <linearGradient id="bgk" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" style="stop-color:#f8fafc"/>
-      <stop offset="100%" style="stop-color:#e2e8f0"/>
+    <linearGradient id="kl-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f8fafc"/>
+      <stop offset="100%" stop-color="#e2e8f0"/>
     </linearGradient>
-    <filter id="fk" x="-3%" y="-3%" width="106%" height="106%">
+    <pattern id="kl-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#94a3b8" stroke-opacity="0.2" stroke-width="0.75"/>
+    </pattern>
+    <filter id="kl-fk" x="-3%" y="-3%" width="106%" height="106%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
     </filter>
-    <linearGradient id="accProof" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" style="stop-color:#059669"/>
-      <stop offset="100%" style="stop-color:#10b981"/>
+    <linearGradient id="kl-proof" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#10b981"/>
     </linearGradient>
-    <linearGradient id="accLab" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" style="stop-color:#ea580c"/>
-      <stop offset="100%" style="stop-color:#fb923c"/>
+    <linearGradient id="kl-lab" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#ea580c"/>
+      <stop offset="100%" stop-color="#fb923c"/>
+    </linearGradient>
+    <linearGradient id="kl-top" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#6366f1"/>
     </linearGradient>
   </defs>
-  <rect width="100%" height="100%" fill="url(#bgk)"/>
-  <rect x="0" y="0" width="960" height="4" fill="#0f172a"/>
-  <text x="480" y="40" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="800">Kernel lineage / evidence class</text>
-  <text x="480" y="62" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Doctoral read path  do not merge columns in one headline claim</text>
-  <rect x="40" y="88" width="400" height="200" rx="14" fill="#fff" stroke="#059669" stroke-width="2.5" filter="url(#fk)"/>
-  <rect x="40" y="88" width="400" height="36" rx="14" fill="url(#accProof)"/>
-  <text x="240" y="112" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="800" letter-spacing="0.04em">PORTABLE PROOF</text>
-  <text x="240" y="148" text-anchor="middle" fill="#0f172a" font-family="ui-monospace,monospace" font-size="13" font-weight="700">creation_os_v2.c</text>
-  <text x="240" y="172" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Invariant / arithmetic / measured</text>
-  <text x="240" y="194" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make test / make bench / MODULE_EVIDENCE_INDEX</text>
-  <text x="240" y="222" text-anchor="middle" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="600">4096-bit BSC reference in one file</text>
-  <text x="240" y="258" text-anchor="middle" fill="#059669" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="700">Thesis body material (with limits)</text>
-  <rect x="520" y="88" width="400" height="200" rx="14" fill="#fff" stroke="#ea580c" stroke-width="2.5" filter="url(#fk)"/>
-  <rect x="520" y="88" width="400" height="36" rx="14" fill="url(#accLab)"/>
-  <text x="720" y="112" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="800" letter-spacing="0.04em">STANDALONE LAB DEMOS</text>
-  <text x="720" y="148" text-anchor="middle" fill="#0f172a" font-family="ui-monospace,monospace" font-size="11" font-weight="700">v6 / v7 / v9 / v10 / v11 / v12</text>
-  <text x="720" y="170" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Lab demo (C) only</text>
-  <text x="720" y="192" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make check-v6 ... check-v11 / self_test</text>
-  <text x="720" y="214" text-anchor="middle" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="600">Narrative sigma scaffolds / M01-M37</text>
-  <text x="720" y="236" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">1024-bit pack in v6 line / not harness or tape-out</text>
-  <text x="720" y="258" text-anchor="middle" fill="#c2410c" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="700">Appendix-only unless walled</text>
-  <text x="480" y="310" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">CLAIM_DISCIPLINE forbidden merges 5-6 / RESEARCH_AND_THESIS_ARCHITECTURE section 0</text>
-  <text x="480" y="328" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Spektre Labs / Creation OS / docs/assets/kernel-lineage-evidence.svg</text>
+  <rect width="960" height="372" fill="url(#kl-bg)"/>
+  <rect width="960" height="372" fill="url(#kl-grid)"/>
+  <rect x="0" y="0" width="960" height="4" fill="url(#kl-top)"/>
+  <text x="20" y="26" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.1em">FIG 04 / KERNEL LINEAGE</text>
+  <text x="480" y="52" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" font-weight="800">Kernel lineage / evidence class</text>
+  <text x="480" y="74" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Doctoral read path / do not merge columns in one headline claim</text>
+  <rect x="40" y="96" width="400" height="200" rx="14" fill="#fff" stroke="#059669" stroke-width="2.5" filter="url(#kl-fk)"/>
+  <rect x="40" y="96" width="400" height="36" rx="14" fill="url(#kl-proof)"/>
+  <text x="240" y="120" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="800" letter-spacing="0.08em">BAY A / PORTABLE PROOF</text>
+  <text x="240" y="156" text-anchor="middle" fill="#0f172a" font-family="ui-monospace,Menlo,monospace" font-size="13" font-weight="700">creation_os_v2.c</text>
+  <text x="240" y="180" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Invariant / arithmetic / measured</text>
+  <text x="240" y="202" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make test / make bench / MODULE_EVIDENCE_INDEX</text>
+  <text x="240" y="228" text-anchor="middle" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="600">4096-bit BSC reference in one file</text>
+  <text x="240" y="264" text-anchor="middle" fill="#059669" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="700">Thesis body material (with limits)</text>
+  <rect x="520" y="96" width="400" height="200" rx="14" fill="#fff" stroke="#ea580c" stroke-width="2.5" filter="url(#kl-fk)"/>
+  <rect x="520" y="96" width="400" height="36" rx="14" fill="url(#kl-lab)"/>
+  <text x="720" y="120" text-anchor="middle" fill="#fff" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="800" letter-spacing="0.08em">BAY B / LAB DEMOS</text>
+  <text x="720" y="156" text-anchor="middle" fill="#0f172a" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700">v6 / v7 / v9 ... / v24 / v25 / v26</text>
+  <text x="720" y="178" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Lab demo (C) only</text>
+  <text x="720" y="200" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make check-v6 ... check-v26 / self_test</text>
+  <text x="720" y="222" text-anchor="middle" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="600">Narrative sigma scaffolds / M01-M176</text>
+  <text x="720" y="242" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">1024-bit pack in v6 line / not harness or tape-out</text>
+  <text x="720" y="264" text-anchor="middle" fill="#c2410c" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="700">Appendix-only unless walled</text>
+  <text x="480" y="316" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">CLAIM_DISCIPLINE forbidden merges 5-6 / RESEARCH_AND_THESIS_ARCHITECTURE section 0</text>
+  <rect x="0" y="336" width="960" height="36" fill="#0f172a"/>
+  <line x1="0" y1="336" x2="960" y2="336" stroke="#334155" stroke-width="1"/>
+  <text x="20" y="358" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="9">ASSET=docs/assets/kernel-lineage-evidence.svg</text>
+  <text x="940" y="358" text-anchor="end" fill="#10b981" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600">FIG 04 LOCKED</text>
 </svg>

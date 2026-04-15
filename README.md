@@ -2,14 +2,16 @@
   <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
 </p>
 
-> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify** (`make check` … `make check-v16`). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** (`make check` plus **`check-v6` … `check-v26`**, **204** self-tests on the current flagship). **Ship to GitHub `main` with one command:** **`make push-main`** (merge-gate + rsync + push to **spektre-labs/creation-os**). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <p align="center">
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
   <img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/>
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/>
-  <img src="https://img.shields.io/badge/tests-66%20%28v16%29-success?style=for-the-badge" alt="tests"/>
+  <img src="https://img.shields.io/badge/tests-204%20%28v26%29-success?style=for-the-badge" alt="tests"/>
 </p>
+
+<p align="center"><sub>Figures, palette, and embedding rules: <a href="docs/VISUAL_INDEX.md">docs/VISUAL_INDEX.md</a></sub></p>
 
 # Creation OS
 
@@ -37,6 +39,20 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 **The Silicon mind (v15):** eighth program [`creation_os_v15.c`](creation_os_v15.c) — v12 **plus** M38–M40 **scale discipline** (int64 FLOP / volume schematics with overflow checks, TN param accounting in raw vs “millions”, JEPA prior-σ carry for selective decode). **`make check-v15`** (58 self-tests). Canonical evidence framing: **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**.
 
 **The Unified field (v16):** ninth program [`creation_os_v16.c`](creation_os_v16.c) — v15 **plus** M41–M44 **literature-aligned schematics** (resonator-style VSA unbind toy, Kanerva SDM critical-radius bridge with anchor calibration, EBM-native latent relax with σ-budgeted iterations, KAN-edge spline toy). **`make check-v16`** (66 self-tests). **Not** reproduced arXiv benchmarks — harness-only story hooks with explicit non-claims in-file.
+
+**Ship mode (v20):** tenth flagship [`creation_os_v20.c`](creation_os_v20.c) — everything in v16 **plus** **M45–M64** *twenty pillars*: one-surface genesis, fluid σ telemetry, proactive abstention, ANE handoff marker, mmap/64B/prefetch/branchless/five-unit story flags, receipts anchor, constitutional σ ceiling, zero-copy view, retrieval-first attention, distillation fingerprint, federated gossip blend, four-rung degradation ladder, coherence pulse, privacy vault, SME sentinel, and a **ship seal** latch. **`make check-v20`** (86 self-tests). **Schematic product narrative** — not a consumer device, not regulatory certification, not “just download from App Store”; compare to iPhone only as **adoption metaphor** (it boots clean and refuses sloppy merges).
+
+**AGI sovereign stack (v21):** eleventh flagship [`creation_os_v21.c`](creation_os_v21.c) — v20 ship mode **plus** **M65–M76** *sovereign stack* hooks: closed Plane A loop, Plane B budget, Plane C anchor, parliament blend σ, tool gate, episodic flush, reflection gain, deliberation / red-team caps, human veto, kill-switch drill, receipt parent hash, and **sovereign seal**. **`make check-v21`** (99 self-tests). **Governance and safety schematic** — not autonomous agents, not benchmark AGI, not regulatory sign-off.
+
+**Twenty colossal insights (v22):** twelfth flagship [`creation_os_v22.c`](creation_os_v22.c) — v21 **plus** **M77–M96** *web-anchored insight stack* (2025 international AI safety report discourse, technical safeguards updates, Singapore-consensus research priorities, Guaranteed Safe AI–style world-model / spec / verifier tripod — all as **schematic latches** in §45i). **`make check-v22`** (120 self-tests). **Not** certified safety, **not** government policy implementation, **not** a substitute for external audit or harness tables.
+
+**AGI-schematic affordances (v23):** thirteenth flagship [`creation_os_v23.c`](creation_os_v23.c) — v22 **plus** **M97–M116** *agent-stack story flags* (tiered memory, planner–worker decomposition, tool reliability, computer-use / GUI slot, long-horizon checkpoints, session-decay compensator, multi-agent handoff, sandboxed execution, audit traces, retrieval–tool fuse, etc.), with **web anchors** in §45j to public 2026 agent narratives (e.g. [mem0 agent memory](https://mem0.ai/blog/state-of-ai-agent-memory-2026), [Zylos computer-use GUI agents](https://zylos.ai/research/2026-02-08-computer-use-gui-agents), [Zylos long-running agents](https://zylos.ai/research/2026-01-16-long-running-ai-agents)). **`make check-v23`** (141 self-tests). **Not** a production agent, **not** measured GUI benchmark scores in-file, **not** literal AGI.
+
+**arXiv sci-fi echo latches (v24):** fourteenth flagship [`creation_os_v24.c`](creation_os_v24.c) — v23 **plus** **M117–M136** *twenty real arXiv preprint hooks* (wormholes, ER/EPR, Dyson bubbles / stellar engines, Everett many-worlds geometry, undecidability / Meta-ToE, algorithmic idealism, simulation business models, TARDIS supernova spectra, homogenization PDEs, …) as **§45k** citation latches + receipt. **`make check-v24`** (162 self-tests). **Not** a reproduction of any paper’s results — **lab demo (C)** and bibliographic echo only; read each paper on [arXiv](https://arxiv.org/).
+
+**Enterprise pain ledger (v25):** fifteenth flagship [`creation_os_v25.c`](creation_os_v25.c) — v24 **plus** **M137–M156** *explicit routes* from widely cited **enterprise / regulator pain classes** to **already-shipped in-tree story hooks** (e.g. [OWASP Top 10 for LLM Applications 2025](https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025) LLM01–LLM10 → abstention, vault, receipts, sandbox, caps; [EU AI Act 2024/1689](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689) Arts. 9–11, 13–15, 19 → risk tier, lineage, audit trail, transparency slot, logging). **`make check-v25`** (183 self-tests). **Value:** one compile-time **map** from public problem taxonomies to your σ / receipt vocabulary — **not** compliance certification, **not** a replacement for security or legal teams.
+
+**Fortune Global 500 echo orbit (v26):** sixteenth flagship [`creation_os_v26.c`](creation_os_v26.c) — v25 **plus** **M157–M176** *twenty mega-cap operating themes* (public journalism / survey discourse only) **echo-routed** onto the same **M45–M116** σ / receipt story hooks as §45n documents — a wider **narrative index**, not membership in any index, not remediation of real Fortune 500 incidents, not consulting. **`make check-v26`** (204 self-tests).
 
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
@@ -83,6 +99,13 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **The Tensor mind v12 (v11 + M35–M37)** | [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
 | **The Silicon mind v15 (v12 + M38–M40)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) · `make check-v15` |
 | **The Unified field v16 (v15 + M41–M44)** | `creation_os_v16.c` (header + §45f) · `make check-v16` |
+| **Ship mode v20 (v16 + M45–M64 twenty pillars)** | `creation_os_v20.c` (§45g) · `make check-v20` |
+| **AGI sovereign stack v21 (v20 + M65–M76)** | `creation_os_v21.c` (§45h) · `make check-v21` |
+| **Twenty colossal insights v22 (v21 + M77–M96)** | `creation_os_v22.c` (§45i) · `make check-v22` |
+| **AGI-schematic affordances v23 (v22 + M97–M116)** | `creation_os_v23.c` (§45j) · `make check-v23` |
+| **arXiv sci-fi echo latches v24 (v23 + M117–M136)** | `creation_os_v24.c` (§45k) · `make check-v24` |
+| **Enterprise pain ledger v25 (v24 + M137–M156)** | `creation_os_v25.c` (§45m) · `make check-v25` |
+| **Fortune Global 500 echo orbit v26 (v25 + M157–M176)** | `creation_os_v26.c` (§45n) · `make check-v26` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
@@ -97,7 +120,7 @@ Read **in order** once before citing any number or narrative title from this tre
 3. [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) — minimum metadata when a metric leaves the lab.  
 4. [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) — which binary is which (`creation_os` vs `creation_os_v6` … `v12`), self-test counts, CI.  
 5. [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) — §1–§26 in `creation_os_v2.c`: evidence class per section before you cite a module headline.  
-6. Scoped kernel docs for any line you cite from v6–v12 (and v15–v16 scoped headers): [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md); v15/v16 discipline and hooks live in `creation_os_v15.c` / `creation_os_v16.c` and **CLAIM_DISCIPLINE**.  
+6. Scoped kernel docs for any line you cite from v6–v12 (and v15–v26 scoped headers): [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md); v15–v26 discipline, pillars, sovereign stack, insight stack, AGI affordances, arXiv echoes, enterprise pain ledger, and Global 500 echo orbit live in `creation_os_v15.c` … `creation_os_v26.c` and **CLAIM_DISCIPLINE**.  
 7. [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) — hostile review simulation before submission.
 
 | Artifact | Epistemic role | Evidence class for new claims |

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 628" role="img" aria-labelledby="title desc">
   <title id="title">Creation OS v2 reference module stack</title>
   <desc id="desc">Single-file kernel creation_os_v2.c over Hypercube, Oracle, World model, BSC core, and Soul, Proconductor, Cognition pillars.</desc>
   <defs>
@@ -26,11 +26,16 @@
     <filter id="soft" x="-4%" y="-4%" width="108%" height="108%">
       <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#000" flood-opacity="0.25"/>
     </filter>
+    <pattern id="as-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#38bdf8" stroke-opacity="0.05" stroke-width="1"/>
+    </pattern>
   </defs>
   <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect width="960" height="628" fill="url(#as-grid)"/>
   <rect x="0" y="0" width="960" height="3" fill="#38bdf8" opacity="0.85"/>
+  <text x="940" y="24" text-anchor="end" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.1em">FIG 08 / MODULE STACK</text>
   <text x="480" y="40" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600" letter-spacing="0.12em">CREATION OS / REFERENCE STACK</text>
-  <text x="480" y="58" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Pedagogical kernel ? not the full production tree (see Planes A?C)</text>
+  <text x="480" y="58" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Pedagogical kernel / not the full production tree (see Planes A-C)</text>
   <rect x="248" y="72" width="464" height="62" rx="10" fill="url(#hero)" filter="url(#elev)"/>
   <text x="480" y="104" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="700">creation_os_v2.c</text>
   <text x="480" y="124" text-anchor="middle" fill="#fecdd3" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">1218 lines / 26 modules / C11 + libm</text>
@@ -59,9 +64,13 @@
   <text x="480" y="484" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Sec. 5 demos</text>
   <rect x="650" y="404" width="270" height="92" rx="10" fill="url(#panel)" stroke="#475569" stroke-width="1" filter="url(#soft)"/>
   <text x="785" y="442" text-anchor="middle" fill="#f1f5f9" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="700">COGNITION</text>
-  <text x="785" y="464" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Sec. 9?26 demos</text>
-  <text x="785" y="484" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Metacognition / sleep / ?</text>
+  <text x="785" y="464" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Sec. 9-26 demos</text>
+  <text x="785" y="484" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Metacognition / sleep / ...</text>
   <path d="M480 364 L480 388 M175 388 L175 404 M785 388 L785 404" stroke="#64748b" stroke-width="1.5" fill="none" stroke-linecap="round"/>
   <path d="M480 388 L175 404 M480 388 L480 404 M480 388 L785 404" stroke="#475569" stroke-width="1.25" fill="none" stroke-linecap="round" opacity="0.75"/>
   <text x="480" y="576" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Spektre Labs / Creation OS / schematic layout (not to scale)</text>
+  <rect x="0" y="598" width="960" height="30" fill="#020617"/>
+  <line x1="0" y1="598" x2="960" y2="598" stroke="#334155" stroke-width="1"/>
+  <text x="24" y="618" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9">ASSET=docs/assets/architecture-stack.svg | CLASS=pedagogical schematic</text>
+  <text x="936" y="618" text-anchor="end" fill="#38bdf8" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600">FIG 08 LOCKED</text>
 </svg>

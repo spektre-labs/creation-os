@@ -23,7 +23,8 @@ All releases, CI, and contributor `git clone` / `git push` for Creation OS must 
 | Goal | Do this |
 |------|---------|
 | Daily work | Work in a **clone whose root is** the Creation OS repo (this directory when checked out alone). |
-| Publish from a nested copy | From **this** directory (where `creation_os_v2.c` exists), run `make publish-github` — see [publish_checklist_creation_os.md](publish_checklist_creation_os.md). That script clones `spektre-labs/creation-os` to a temp dir, rsyncs **this** tree, commits, and pushes. |
+| **Push to product `main`** | From **this** directory (where `creation_os_v2.c` exists), run **`make push-main`** — same as `make publish-github`: `make merge-gate`, then clone `spektre-labs/creation-os`, rsync **this** tree, commit if needed, **`git push`** to that repo’s `main`. See [publish_checklist_creation_os.md](publish_checklist_creation_os.md). If you only have an umbrella checkout, the parent folder may offer **`make push-main`** that delegates here — same end result on **creation-os** `main`. |
+| Publish (alias) | `make publish-github` — identical to **`make push-main`**. |
 | CI | GitHub Actions on **spektre-labs/creation-os** only (see `.github/workflows/ci.yml` here). |
 
 ---

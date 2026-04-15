@@ -1,42 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" role="img" aria-labelledby="t d">
-  <title id="t">GEMM vs BSC memory and op proxy at D equals 4096</title>
-  <desc id="d">Structural ratios 32 times memory and 192 times op proxy; bar widths schematic; throughput requires make bench.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 392" role="img" aria-labelledby="gm-t gm-d">
+  <title id="gm-t">GEMM vs BSC memory and op proxy at D equals 4096</title>
+  <desc id="gm-d">Structural ratios 32x memory and 192x op proxy; schematic bars. Original artwork.</desc>
   <defs>
-    <filter id="sh" x="-2%" y="-2%" width="104%" height="108%">
+    <pattern id="gm-grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#cbd5e1" stroke-opacity="0.5" stroke-width="0.6"/>
+    </pattern>
+    <filter id="gm-sh" x="-2%" y="-2%" width="104%" height="108%">
       <feDropShadow dx="0" dy="1" stdDeviation="2" flood-color="#0f172a" flood-opacity="0.06"/>
     </filter>
   </defs>
-  <rect width="100%" height="100%" fill="#fafafa"/>
+  <rect width="800" height="392" fill="#fafafa"/>
+  <rect width="800" height="392" fill="url(#gm-grid)"/>
   <rect x="0" y="0" width="800" height="4" fill="#0f172a"/>
-  <text x="400" y="36" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="800">Structural ratios (D = 4096)</text>
-  <text x="400" y="58" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Arithmetic from encodings — throughput is host-measured (see make bench)</text>
-  <rect x="560" y="76" width="220" height="72" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1" filter="url(#sh)"/>
-  <text x="670" y="98" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="700">LEGEND</text>
-  <rect x="576" y="108" width="14" height="10" rx="2" fill="#2563eb"/>
-  <text x="598" y="117" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">GEMM float32 cosine proxy</text>
-  <rect x="576" y="124" width="14" height="10" rx="2" fill="#10b981"/>
-  <text x="598" y="133" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">BSC XOR + POPCNT path</text>
-  <text x="32" y="110" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Memory / vector</text>
-  <text x="32" y="126" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">bytes per pattern</text>
-  <rect x="160" y="92" width="380" height="40" rx="6" fill="#e2e8f0"/>
-  <rect x="160" y="92" width="380" height="40" rx="6" fill="#2563eb" opacity="0.9" filter="url(#sh)"/>
-  <text x="350" y="118" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700">16 384 B (float32 @ D)</text>
-  <rect x="160" y="92" width="12" height="40" rx="4" fill="#10b981"/>
-  <line x1="172" y1="112" x2="220" y2="112" stroke="#059669" stroke-width="1.5"/>
-  <text x="228" y="116" fill="#065f46" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="800">512 B</text>
-  <rect x="320" y="138" width="56" height="22" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
-  <text x="348" y="154" text-anchor="middle" fill="#047857" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="800">32x</text>
-  <text x="32" y="210" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Op proxy / trial</text>
-  <text x="32" y="226" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">FLOPs vs bit-ops (README defs)</text>
-  <rect x="160" y="192" width="380" height="40" rx="6" fill="#e2e8f0"/>
-  <rect x="160" y="192" width="380" height="40" rx="6" fill="#4f46e5" opacity="0.92" filter="url(#sh)"/>
-  <text x="350" y="218" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700">24 576 FLOPs (cosine proxy)</text>
-  <rect x="160" y="192" width="2" height="40" rx="1" fill="#f59e0b"/>
-  <line x1="162" y1="212" x2="200" y2="212" stroke="#d97706" stroke-width="1.5"/>
-  <text x="208" y="216" fill="#92400e" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="800">128 bit-ops</text>
-  <rect x="300" y="238" width="64" height="22" rx="6" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
-  <text x="332" y="254" text-anchor="middle" fill="#b45309" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10" font-weight="800">192x</text>
-  <text x="400" y="310" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Thin bars are schematic width — ratios are definitional, not pixel-exact</text>
-  <text x="400" y="328" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Spektre Labs / Creation OS / BENCHMARK_PROTOCOL.md</text>
+  <text x="20" y="26" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.1em">FIG 07 / STRUCTURAL RATIOS</text>
+  <text x="400" y="52" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="17" font-weight="800">Structural ratios (D = 4096)</text>
+  <text x="400" y="74" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Arithmetic from encodings / throughput is host-measured (see make bench)</text>
+  <rect x="560" y="92" width="220" height="72" rx="8" fill="#fff" stroke="#e2e8f0" stroke-width="1" filter="url(#gm-sh)"/>
+  <text x="670" y="114" text-anchor="middle" fill="#0f172a" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="700">LEGEND</text>
+  <rect x="576" y="124" width="14" height="10" rx="2" fill="#2563eb"/>
+  <text x="598" y="133" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">GEMM float32 cosine proxy</text>
+  <rect x="576" y="140" width="14" height="10" rx="2" fill="#10b981"/>
+  <text x="598" y="149" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">BSC XOR + POPCNT path</text>
+  <text x="32" y="126" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Memory / vector</text>
+  <text x="32" y="142" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">bytes per pattern</text>
+  <rect x="160" y="108" width="380" height="40" rx="6" fill="#e2e8f0"/>
+  <rect x="160" y="108" width="380" height="40" rx="6" fill="#2563eb" opacity="0.9" filter="url(#gm-sh)"/>
+  <text x="350" y="134" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700">16 384 B (float32 @ D)</text>
+  <rect x="160" y="108" width="12" height="40" rx="4" fill="#10b981"/>
+  <line x1="172" y1="128" x2="220" y2="128" stroke="#059669" stroke-width="1.5"/>
+  <text x="228" y="132" fill="#065f46" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="800">512 B</text>
+  <rect x="320" y="154" width="56" height="22" rx="6" fill="#ecfdf5" stroke="#10b981" stroke-width="1"/>
+  <text x="348" y="170" text-anchor="middle" fill="#047857" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="800">32x</text>
+  <text x="32" y="226" fill="#334155" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Op proxy / trial</text>
+  <text x="32" y="242" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">FLOPs vs bit-ops (README defs)</text>
+  <rect x="160" y="208" width="380" height="40" rx="6" fill="#e2e8f0"/>
+  <rect x="160" y="208" width="380" height="40" rx="6" fill="#4f46e5" opacity="0.92" filter="url(#gm-sh)"/>
+  <text x="350" y="234" text-anchor="middle" fill="#fff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="700">24 576 FLOPs (cosine proxy)</text>
+  <rect x="160" y="208" width="2" height="40" rx="1" fill="#f59e0b"/>
+  <line x1="162" y1="228" x2="200" y2="228" stroke="#d97706" stroke-width="1.5"/>
+  <text x="208" y="232" fill="#92400e" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="800">128 bit-ops</text>
+  <rect x="300" y="254" width="64" height="22" rx="6" fill="#fffbeb" stroke="#f59e0b" stroke-width="1"/>
+  <text x="332" y="270" text-anchor="middle" fill="#b45309" font-family="ui-monospace,Menlo,monospace" font-size="10" font-weight="800">192x</text>
+  <text x="400" y="318" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Thin bars are schematic width / ratios are definitional, not pixel-exact</text>
+  <rect x="0" y="336" width="800" height="56" fill="#0f172a"/>
+  <line x1="0" y1="336" x2="800" y2="336" stroke="#334155" stroke-width="1"/>
+  <text x="24" y="358" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="9">REF=BENCHMARK_PROTOCOL.md | HOST METADATA REQUIRED FOR THROUGHPUT</text>
+  <text x="776" y="358" text-anchor="end" fill="#f59e0b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600">FIG 07 LOCKED</text>
+  <text x="400" y="378" text-anchor="middle" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="8">SPEKTRE LABS / CREATION OS</text>
 </svg>

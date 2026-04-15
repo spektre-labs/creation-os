@@ -9,19 +9,15 @@ All steps below assume **this directory is the Creation OS product** — no othe
 
 ## 1. Before you push
 
-Maintainer shortcut (clone + rsync + commit + push): see [MAINTAINERS.md](MAINTAINERS.md) (`make publish-github`).
+Maintainer shortcut (merge-gate + clone + rsync + commit + push to **spektre-labs/creation-os** `main`): see [MAINTAINERS.md](MAINTAINERS.md) — **`make push-main`** (alias: `make publish-github`).
 
 ```bash
-make check
-make check-v6   # if creation_os_v6.c / v6 docs changed — Living Kernel self-tests
-make check-v7   # if creation_os_v7.c / v7 docs changed — Hallucination Killer self-tests
-make check-v9   # if creation_os_v9.c / v9 docs changed — Parameters in Silicon self-tests
-make check-v10  # if creation_os_v10.c / v10 docs changed — The Real Mind self-tests
-make check-v11  # if creation_os_v11.c / v11 docs changed — MatMul-free mind self-tests
-make check-v12  # if creation_os_v12.c / v12 docs changed — Tensor mind self-tests
-make bench    # recommended before citing throughput in README or talks
+make merge-gate   # portable check + v6..v26 self-tests (same as CI / publish script)
+make bench        # recommended before citing throughput in README or talks
 git status
 ```
+
+For a minimal smoke test only (not sufficient before publish): `make check`.
 
 Confirm `LICENSE`, `README.md`, and `docs/` read the way you want on GitHub’s first screen.
 
@@ -32,7 +28,7 @@ Confirm `LICENSE`, `README.md`, and `docs/` read the way you want on GitHub’s 
 From **this directory** (where `creation_os_v2.c` lives), with GitHub credentials working (`gh auth login` or SSH):
 
 ```bash
-make publish-github
+make push-main
 ```
 
 Optional environment variables:
@@ -43,7 +39,7 @@ Optional environment variables:
 | `CREATION_OS_BRANCH` | `main` | Branch to update |
 | `CREATION_OS_COMMIT_MSG` | `Publish portable Creation OS tree` | Commit message on the **creation-os** repo |
 
-The script runs **`make check`**, clones **creation-os**, **rsync**s this tree (excluding `.git`), commits if there are changes, and **`git push`**.
+The script runs **`make merge-gate`**, clones **creation-os**, **rsync**s this tree (excluding `.git`), commits if there are changes, and **`git push`**.
 
 ---
 

@@ -11,7 +11,7 @@
 
 ## Build
 
-- [ ] `make check` passes locally from repo root of this tree.
+- [ ] **`make merge-gate`** passes locally from the root of this tree (`creation_os_v2.c` directory). Use `make check` or `make check-vN` only for tight loops while editing; gate the PR with **`merge-gate`**.
 
 ## Terms (optional)
 
