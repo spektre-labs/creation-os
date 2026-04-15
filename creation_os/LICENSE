@@ -1,0 +1,16 @@
+Creation OS — Licensing
+Copyright (c) 2026 Lauri Elias Rainio / Spektre Labs, Helsinki
+
+This program is free software: you can redistribute it and/or modify it
+under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+The full license text is available at:
+https://www.gnu.org/licenses/agpl-3.0.html
+
+Commercial licensing (production services, products, embedded deployments):
+spektrelabs@proton.me — dual licensing; see repository root COMMERCIAL_LICENSE.md
+and LICENSE_PROTOCOL.md.
+
+Research, evaluation, and personal use under AGPL-3.0-or-later are encouraged.

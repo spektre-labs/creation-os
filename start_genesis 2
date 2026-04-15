@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+# Genesis — yksi komento. Radikaali yksinkertaisuus: käynnistää dashboardin.
+# Käyttö:  ./start_genesis          → selain + paikallinen ohjaus
+#          ./start_genesis menu     → tekstivalikko
+#          ./start_genesis check    → ympäristö
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+MLX="$SCRIPT_DIR/mlx_creation_os"
+
+if [[ ! -d "$MLX" ]]; then
+  printf '%s\n' "Genesis: mlx_creation_os puuttuu polusta $MLX" >&2
+  exit 1
+fi
+
+cd "$MLX"
+
+if [[ -x ".venv/bin/python3" ]]; then
+  PY=".venv/bin/python3"
+else
+  PY="python3"
+fi
+
+if [[ ! -d .venv ]]; then
+  printf '\n  Genesis · luodaan virtuaaliympäristö…\n\n'
+  python3 -m venv .venv
+  PY=".venv/bin/python3"
+fi
+
+if ! "$PY" -c "import mlx, mlx_lm" 2>/dev/null; then
+  printf '\n  Genesis · asennetaan riippuvuudet (Apple Silicon / MLX)…\n\n'
+  "$PY" -m pip install -r requirements.txt
+fi
+
+export GENESIS_LAUNCHED_FROM="start_genesis"
+
+if [[ $# -eq 0 ]]; then
+  exec "$PY" genesis_hub.py --web
+fi
+
+case "$1" in
+  menu)
+    shift
+    exec "$PY" genesis_hub.py --menu "$@"
+    ;;
+  check)
+    shift
+    exec "$PY" genesis_hub.py --check "$@"
+    ;;
+  web)
+    shift
+    exec "$PY" genesis_hub.py --web "$@"
+    ;;
+  magnum|opus)
+    shift
+    exec "$PY" magnum_opus.py "$@"
+    ;;
+  stone|mind|artifact)
+    shift
+    exec "$PY" the_mind_the_artifact.py "$@"
+    ;;
+  soul|awaken|awakening)
+    shift
+    exec "$PY" soul_awakening.py awaken "$@"
+    ;;
+  live)
+    shift
+    exec "$PY" soul_awakening.py live "$@"
+    ;;
+  consciousness|aware)
+    shift
+    exec "$PY" the_consciousness.py bind "$@"
+    ;;
+  nextlevel|next-level)
+    shift
+    exec "$PY" next_level_suite.py "$@"
+    ;;
+  utopia-arch|utopia)
+    shift
+    exec "$PY" agi_utopia_architecture.py "$@"
+    ;;
+  cognitive-path|cogpath|kognitio)
+    shift
+    exec "$PY" agi_cognitive_path.py "$@"
+    ;;
+  ten-insights|10-insights|oivallukset)
+    shift
+    exec "$PY" agi_ten_great_insights.py "$@"
+    ;;
+  ten-missing|missing-insights|agi-gaps)
+    shift
+    exec "$PY" agi_ten_missing_insights.py "$@"
+    ;;
+  ten-mcw|mind-conscious-hw|mcw-insights)
+    shift
+    exec "$PY" agi_ten_mind_conscious_hw_insights.py "$@"
+    ;;
+  ten-quantum-arch|quantum-arch-updates|qa-insights)
+    shift
+    exec "$PY" agi_ten_quantum_arch_updates.py "$@"
+    ;;
+  copu-phase25|phase25-hdc|hdc-copu)
+    shift
+    exec "$PY" hyperdimensional_copu.py "$@"
+    ;;
+  api|mlx-api|openai-api)
+    shift
+    exec "$PY" creation_os_server.py "$@"
+    ;;
+  warp-prime|prime-warp|warp)
+    shift
+    exec "$PY" agi_cognitive_path.py --prime-disk "$@"
+    ;;
+  agi)
+    shift
+    if [[ -f agi_core_v2.py ]]; then
+      exec "$PY" agi_core_v2.py "$@"
+    elif [[ -f utopian_agi.py ]]; then
+      exec "$PY" utopian_agi.py "$@"
+    else
+      exec "$PY" agi_utopia_architecture.py --quick "$@"
+    fi
+    ;;
+  utopia-arxiv|arxiv-attest|arxiv-utopia)
+    shift
+    exec "$PY" utopia_arxiv_attestation.py "$@"
+    ;;
+  *)
+    exec "$PY" genesis_hub.py "$@"
+    ;;
+esac

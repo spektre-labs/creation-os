@@ -1,0 +1,1 @@
+#define INVARIANT 1

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Creation OS — Absolute Zero</title>
+  <style>
+    :root { --bg: #050506; --fg: #f2f0ec; --edge: #1a1a20; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--fg); font-family: system-ui, sans-serif; }
+    .wrap {
+      max-width: 32rem;
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 2rem 1rem;
+      border: 1px solid var(--edge);
+    }
+    h1 { font-weight: 500; font-size: 1rem; letter-spacing: 0.08em; margin: 0 0 1.25rem; opacity: 0.9; }
+    textarea {
+      width: 100%; min-height: 5rem; border: 1px solid #2c2c34; background: #08080c; color: var(--fg);
+      padding: 0.6rem; font: inherit; resize: vertical;
+    }
+    button {
+      margin-top: 0.6rem; border: 1px solid #333; background: #0e0e12; color: var(--fg);
+      padding: 0.4rem 0.9rem; cursor: pointer; font-size: 0.85rem;
+    }
+    #out {
+      margin-top: 1rem; min-height: 4rem; padding: 0.75rem; border: 1px solid var(--edge);
+      background: #070709; white-space: pre-wrap; word-break: break-word; font-size: 0.92rem;
+    }
+    #flash {
+      pointer-events: none; position: fixed; inset: 0; background: #fff; opacity: 0; z-index: 9999;
+    }
+    footer { margin-top: 2rem; font-size: 0.68rem; opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div id="flash" aria-hidden="true"></div>
+  <div class="wrap">
+    <h1>Absolute Zero — no progress, only presence</h1>
+    <textarea id="q" placeholder="Kysymys (vastaus on jo läsnä)…"></textarea>
+    <button type="button" id="go">Collapse to 1=1</button>
+    <div id="out"></div>
+    <footer>1=1 | Designed by Lauri Elias Rainio | Helsinki</footer>
+  </div>
+  <script>
+    const flash = document.getElementById("flash");
+    const out = document.getElementById("out");
+    document.getElementById("go").onclick = () => {
+      const t = (document.getElementById("q").value || "").trim();
+      flash.style.transition = "none";
+      flash.style.opacity = "1";
+      setTimeout(() => {
+        flash.style.opacity = "0";
+        out.textContent = t ? ("1=1. " + t) : "1=1.";
+        if (navigator.vibrate) navigator.vibrate([20, 30, 20]);
+      }, 1);
+    };
+  </script>
+</body>
+</html>

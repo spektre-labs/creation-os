@@ -1,0 +1,10 @@
+.DS_Store
+.venv/
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+node_modules/
+creation_os_v1.zip
+creation_os_weights.bin
+*.zip

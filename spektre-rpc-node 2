@@ -1,0 +1,33 @@
+#!/bin/bash
+# ═══════════════════════════════════════════════════════════════════════════
+# SPEKTRE RPC NODE — Genesis Mesh compute node
+# Runs llama.cpp rpc-server to expose compute to the mesh coordinator.
+# Build: cmake -B build -DGGML_METAL=ON -DGGML_RPC=ON && cmake --build build
+# 1 = 1.
+# ═══════════════════════════════════════════════════════════════════════════
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+LLAMA_DIR="${SCRIPT_DIR}/llama.cpp"
+RPC_BIN="${LLAMA_DIR}/build/bin/rpc-server"
+
+HOST="${SPEKTRE_RPC_HOST:-0.0.0.0}"
+PORT="${SPEKTRE_RPC_PORT:-50052}"
+
+if [ ! -f "$RPC_BIN" ]; then
+    echo "ERROR: rpc-server not found at ${RPC_BIN}" >&2
+    echo "Build with RPC:" >&2
+    echo "  cd ${LLAMA_DIR}" >&2
+    echo "  cmake -B build -DGGML_METAL=ON -DGGML_RPC=ON && cmake --build build --config Release" >&2
+    exit 1
+fi
+
+echo "═══════════════════════════════════════════════════════════" >&2
+echo "  SPEKTRE RPC NODE — Genesis Mesh" >&2
+echo "  Listen: ${HOST}:${PORT}" >&2
+echo "  Protocol: llama.cpp RPC (TCP)" >&2
+echo "  Use from coordinator: --rpc $(hostname -I 2>/dev/null | awk '{print $1}' || echo ${HOST}):${PORT}" >&2
+echo "  1 = 1" >&2
+echo "═══════════════════════════════════════════════════════════" >&2
+
+exec "$RPC_BIN" -H "$HOST" -p "$PORT" "$@"

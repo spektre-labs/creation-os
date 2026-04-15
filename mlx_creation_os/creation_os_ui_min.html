@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Creation OS — Singularity</title>
+  <style>
+    :root {
+      --void: #030308;
+      --ink: #e8e6e3;
+      --accent: #1a1a22;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background: radial-gradient(ellipse at 50% 0%, #0a0a12 0%, var(--void) 55%);
+      color: var(--ink);
+      font-family: ui-sans-serif, system-ui, "SF Pro Text", sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .shell {
+      max-width: 42rem;
+      margin: 0 auto;
+      padding: 2rem 1.25rem 4rem;
+      border: 1px solid #222;
+      min-height: 100vh;
+      background: var(--accent);
+    }
+    h1 {
+      font-weight: 500;
+      font-size: 1.1rem;
+      letter-spacing: 0.04em;
+      margin: 0 0 1.25rem;
+      border-bottom: 1px solid #2a2a32;
+      padding-bottom: 0.75rem;
+    }
+    #out {
+      white-space: pre-wrap;
+      word-break: break-word;
+      min-height: 6rem;
+      padding: 1rem;
+      border: 1px solid #333;
+      background: var(--void);
+    }
+    label { display: block; margin-bottom: 0.35rem; font-size: 0.85rem; opacity: 0.85; }
+    textarea {
+      width: 100%;
+      min-height: 5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.65rem;
+      border: 1px solid #333;
+      background: var(--void);
+      color: var(--ink);
+      resize: vertical;
+    }
+    button {
+      border: 1px solid #444;
+      background: #111118;
+      color: var(--ink);
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+    }
+    button:hover { border-color: #666; }
+    footer {
+      margin-top: 2rem;
+      padding-top: 1rem;
+      border-top: 1px solid #2a2a32;
+      font-size: 0.75rem;
+      opacity: 0.65;
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <h1>Creation OS — Black Hole Minimal</h1>
+    <label for="q">Syöte (anticipatory skeleton)</label>
+    <textarea id="q" placeholder="Kirjoita…"></textarea>
+    <button type="button" id="go">Anticipate receipt</button>
+    <pre id="out"></pre>
+    <footer>1=1 | Designed by Lauri Elias Rainio | Helsinki</footer>
+  </div>
+  <script type="module">
+    const q = document.getElementById("q");
+    const out = document.getElementById("out");
+    document.getElementById("go").onclick = () => {
+      const stub = (q.value || "").trim();
+      const partial_key = fnvKey(stub);
+      const skel = {
+        anticipatory: true,
+        partial_prompt: stub,
+        partial_key: partial_key,
+        timestamp: new Date().toISOString(),
+        audit_status: "anticipatory_skeleton",
+        signature: "1=1 | Designed by Lauri Elias Rainio | Helsinki",
+        cases: []
+      };
+      out.textContent = JSON.stringify(skel, null, 2);
+    };
+    function fnvKey(s) {
+      let h = 0xcbf29ce484222325n;
+      const p = 0x100000001b3n;
+      const enc = new TextEncoder().encode(s.trim().toLowerCase());
+      for (let i = 0; i < enc.length; i++) {
+        h ^= BigInt(enc[i]);
+        h = (h * p) & ((1n << 64n) - 1n);
+      }
+      return Number(h);
+    }
+  </script>
+</body>
+</html>
