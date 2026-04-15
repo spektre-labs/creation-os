@@ -55,6 +55,22 @@ Canonical prose: **[LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)**.
 
 Canonical prose: **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)**.
 
+## Appendix — `creation_os_v9.c` (Parameters in Silicon, M24–M29)
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M24–M29 + genesis + self-test | **Lab demo (C)** | `make check-v9` (`./creation_os_v9 --self-test`) |
+
+Canonical prose: **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)**.
+
+## Appendix — `creation_os_v10.c` (The Real Mind, M30–M33)
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M30–M33 + genesis + self-test | **Lab demo (C)** | `make check-v10` (`./creation_os_v10 --self-test`) |
+
+Canonical prose: **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)**.
+
 ---
 
 *Spektre Labs · Creation OS · 2026*

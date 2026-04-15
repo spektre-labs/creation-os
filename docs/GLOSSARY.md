@@ -37,6 +37,8 @@ Canonical discipline terms live in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md). T
 | **Living Kernel (`creation_os_v6.c`)** | Second standalone C11 program: σ–`K`–`L`–`S` scaffold + M01–M18 **schematic** modules; **1024-bit** packed BSC here — not the 4096-bit `COS_D` reference. |
 | **`make check-v6`** | Builds `creation_os_v6` and runs `./creation_os_v6 --self-test` (30 internal checks). See [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md). |
 | **`make check-v7`** | Builds `creation_os_v7` and runs `./creation_os_v7 --self-test` (35 internal checks). See [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md). |
+| **`make check-v9`** | Builds `creation_os_v9` and runs `./creation_os_v9 --self-test` (41 internal checks). See [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md). |
+| **`make check-v10`** | Builds `creation_os_v10` and runs `./creation_os_v10 --self-test` (46 internal checks). See [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md). |
 
 ---
 

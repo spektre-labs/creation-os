@@ -15,7 +15,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## What to optimize for
 
-- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](../creation_os_v6.c) or [`creation_os_v7.c`](../creation_os_v7.c), also run **`make check-v6`** / **`make check-v7`** respectively (Living Kernel vs Hallucination Killer self-tests).
+- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](../creation_os_v6.c), [`creation_os_v7.c`](../creation_os_v7.c), [`creation_os_v9.c`](../creation_os_v9.c), or [`creation_os_v10.c`](../creation_os_v10.c), also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, or **`make check-v10`** respectively (Living Kernel, Hallucination Killer, Parameters in Silicon, The Real Mind self-tests).
 - **Portability:** Prefer C11 + libm; optional `-march=native` is Makefile default — document if you change it.
 - **Minimal diffs:** Do not refactor unrelated modules; match existing style.
 

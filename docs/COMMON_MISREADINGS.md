@@ -27,6 +27,8 @@
 | “We can skip `make check` if README only changed.” | **Run it anyway** before merge — numbers and prose drift together. | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | “`creation_os_v6.c` reproduces COGITATE / IIT / named papers or replaces `make bench`.” | **Forbidden merge:** v6 is a **schematic** σ–K–L kernel with **internal** `self_test` checks — not a paper replication, not harness scores, not the 4096-bit BSC reference (`creation_os_v2.c` + `make test`). | [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 | “`creation_os_v7.c` kills production hallucinations / vendor LM behavior.” | **Forbidden merge:** v7 adds toy σ readouts (anchors, association, bluff, context rot, JEPA–Oracle); `self_test` is internal consistency, not measured frontier hallucination rates. | [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
+| “`creation_os_v9.c` is a tape-out / RTL / measured TOPS/W proof.” | **Forbidden merge:** v9 adds **schematic** stack/silicon-shaped σ toys (M24–M29); numbers are placeholders unless separately validated against real silicon or benchmarks. | [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
+| “`creation_os_v10.c` *is* a distilled LM / AGI / measured MMLU proof.” | **Forbidden merge:** v10 adds closed-form **toys** (M30–M33); `self_test` checks internal consistency, not public benchmark rows or a trained model. | [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md), [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 
 ---
 

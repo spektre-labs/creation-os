@@ -13,6 +13,10 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 **Hallucination Killer (v7):** third program [`creation_os_v7.c`](creation_os_v7.c) — everything in v6 **plus** M19–M23 schematic detectors (anchor collapse, association ratio, bluff σ, context rot, JEPA–Oracle representation error). **`make check-v7`** (35 self-tests). **[docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md)**.
 
+**Parameters in Silicon (v9):** fourth program [`creation_os_v9.c`](creation_os_v9.c) — v7 **plus** M24–M29 stack/hardware-shaped σ toys (neuromorphic event path, CIM transfer σ, memory wall, BNN toy, silicon compiler estimates, heterogeneous routing table). **`make check-v9`** (41 self-tests). **[docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md)** — not tape-out or measured vendor silicon claims.
+
+**The Real Mind (v10):** fifth program [`creation_os_v10.c`](creation_os_v10.c) — v9 **plus** M30–M33 narrative toys (distillation ratio, prototypical few-shot distance, specialist swarm routing, max-σ generation abstention gate). **`make check-v10`** (46 self-tests). **[docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)** — title is **schematic**; not an AGI or benchmark claim.
+
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
 **Compressed orientation (plain language):** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — paradigm contrast, proved invariants, and explicit **non-claims**.
@@ -29,6 +33,7 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Common misreadings (structured corrections)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
 | **Claim discipline (evidence classes)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
 | **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
+| **Features & standalone builds (one-page map)** | [docs/FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | **Security** | [SECURITY.md](SECURITY.md) |
 | **Agent rules (Copilot / Cursor)** | [AGENTS.md](AGENTS.md) |
@@ -50,10 +55,12 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **HV parliament + NEON retrieval** | [docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
 | **Living Kernel v6 (σ–K–L scaffold, M01–M18)** | [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md) · `make check-v6` |
 | **Hallucination Killer v7 (v6 + M19–M23)** | [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md) · `make check-v7` |
+| **Parameters in Silicon v9 (v7 + M24–M29)** | [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md) · `make check-v9` |
+| **The Real Mind v10 (v9 + M30–M33)** | [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
-**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
+**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
 -----
 
@@ -208,6 +215,22 @@ COGNITION
 
 -----
 
+## Parameters in Silicon (v9)
+
+[`creation_os_v9.c`](creation_os_v9.c) is the **v7 scaffold plus M24–M29**: neuromorphic event toy, CIM `σ_transfer` schematic, memory-wall fraction, BNN XNOR-style toy, illustrative “silicon compiler” LUT/energy placeholders, and a heterogeneous compute routing table. Same evidence class as v6/v7 — **schematic C**, not verified RTL or foundry results.
+
+**Verify:** `make check-v9` (41 tests). **Doc:** [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md).
+
+-----
+
+## The Real Mind (v10)
+
+[`creation_os_v10.c`](creation_os_v10.c) is the **v9 scaffold plus M30–M33**: a toy distillation curve, two-vector prototypical classification, a fixed specialist-routing table, and a max-σ gate that chooses generate vs abstain. Same evidence class as v6–v9 — internal `self_test` algebra, not frontier LM scores.
+
+**Verify:** `make check-v10` (46 tests). **Doc:** [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md).
+
+-----
+
 ## Architecture
 
 ![Module stack: single file → three planes → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
@@ -267,6 +290,8 @@ make help          # list targets
 make check         # standalone + structural tests (recommended before PR)
 make check-v6      # Living Kernel (`creation_os_v6.c`) + `--self-test` (30 checks)
 make check-v7      # Hallucination Killer (`creation_os_v7.c`) + `--self-test` (35 checks)
+make check-v9      # Parameters in Silicon (`creation_os_v9.c`) + `--self-test` (41 checks)
+make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 checks)
 make standalone
 ./creation_os
 ```
