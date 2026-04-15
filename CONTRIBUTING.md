@@ -21,6 +21,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make test` | σ / Noether / crystal structural tests |
 | `make bench` | GEMM vs BSC microbench (prints host-dependent rates) |
 | `make bench-coherence` | Batch Hamming coherence gate (NEON on AArch64) |
+| `make bench-agi-gate` | Parliament (odd K) + memory-bank argmin bench |
 | `make check` | `standalone` + `test` (CI default) |
 | `make all` | `standalone`, `oracle`, `bench`, `physics`, `test` |
 

@@ -23,6 +23,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [GLOSSARY.md](GLOSSARY.md) | Cross-discipline readers | σ, BSC, HV, Planes, evidence class — quick definitions |
 | [BENCHMARK_PROTOCOL.md](BENCHMARK_PROTOCOL.md) | Anyone citing §7 / `make bench` | Fixed D, W, trials; op proxy; repro archive; falsifiers |
 | [NATIVE_COHERENCE_NEON.md](NATIVE_COHERENCE_NEON.md) | Edge / robotics integrators | AArch64 NEON Hamming gate; `make bench-coherence` |
+| [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) | Multi-agent / memory systems | K-agent bit parliament + NEON bank argmin; `make bench-agi-gate` |
 | [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) | Authors, reviewers | Evidence classes, forbidden merges, falsifiers |
 | [EXTERNAL_EVIDENCE_AND_POSITIONING.md](EXTERNAL_EVIDENCE_AND_POSITIONING.md) | Papers, investors | Kanerva / VSA survey / lm-eval anchors |
 | [HDC_VSA_ENGINEERING_SUPERIORITY.md](HDC_VSA_ENGINEERING_SUPERIORITY.md) | Strategy, decks | Literature-backed HDC vs NN trade-offs + FAISS Hamming note + repo bridge |

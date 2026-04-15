@@ -5,6 +5,8 @@
 #if defined(__aarch64__)
 #include "../core/cos_neon_hamming.h"
 #endif
+#include "../core/cos_neon_retrieval.h"
+#include "../core/cos_parliament.h"
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -135,6 +137,34 @@ int main(void)
         fails++;
     report("NEON Hamming==scalar", p8, (float)h_hw, "(AArch64 hardware path)");
 #endif
+
+    /* K=3 bit-parliament equals per-lane MAJ3 (same bit geometry). */
+    uint64_t pa[COS_W], pb[COS_W], pc[COS_W], pmaj[COS_W], pout[COS_W];
+    cos_hv_random(&rng, pa);
+    cos_hv_random(&rng, pb);
+    cos_hv_random(&rng, pc);
+    uint64_t rows3[3 * COS_W];
+    memcpy(rows3, pa, sizeof(pa));
+    memcpy(rows3 + COS_W, pb, sizeof(pb));
+    memcpy(rows3 + 2 * COS_W, pc, sizeof(pc));
+    cos_hv_bit_parliament(pout, rows3, 3);
+    cos_hv_maj3(pmaj, pa, pb, pc);
+    int p_par = memcmp(pout, pmaj, sizeof(pout)) == 0;
+    if (!p_par)
+        fails++;
+    report("Parliament K=3==MAJ3", p_par, 0.0f, "(bit-majority)");
+
+    /* Argmin over small bank: row 0 equals query. */
+    uint64_t qv[COS_W], bank[16 * COS_W];
+    cos_hv_random(&rng, qv);
+    for (int r = 0; r < 16; r++)
+        cos_hv_random(&rng, bank + (size_t)r * COS_W);
+    memcpy(bank, qv, sizeof(qv));
+    int arg = cos_hv_argmin_hamming_rows_hw(qv, bank, 16);
+    int p_arg = (arg == 0);
+    if (!p_arg)
+        fails++;
+    report("Argmin bank hit row0", p_arg, (float)arg, "(NEON or scalar Hamming)");
 
     printf("\nSummary: %d tests failed (0 ok)\n", fails);
     return fails ? 1 : 0;

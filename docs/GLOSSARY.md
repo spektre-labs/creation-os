@@ -31,6 +31,9 @@ Canonical discipline terms live in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md). T
 | **`make bench`** | Runs GEMM vs BSC microbench; host-dependent wall time — see [BENCHMARK_PROTOCOL.md](BENCHMARK_PROTOCOL.md). |
 | **`cos_hv_hamming_hw`** | Same Hamming count as `cos_hv_hamming`, **AArch64 NEON** fast path (prefetch + `vcnt`); scalar elsewhere — see [NATIVE_COHERENCE_NEON.md](NATIVE_COHERENCE_NEON.md). |
 | **`make bench-coherence`** | Batch Hamming gate microbench (`bench/coherence_gate_batch.c`). |
+| **Parliament (`cos_hv_bit_parliament`)** | Odd-K per-bit majority fusion of agent hypervectors — [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md). |
+| **Argmin bank (`cos_hv_argmin_hamming_rows_hw`)** | Row scan for nearest HV under Hamming — NEON on AArch64 — same doc. |
+| **`make bench-agi-gate`** | Parliament + memory-bank argmin microbench (`bench/hv_agi_gate_neon.c`). |
 
 ---
 

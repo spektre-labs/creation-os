@@ -25,6 +25,10 @@ On AArch64, `tests/test_bsc_core.c` compares scalar vs hardware Hamming on the s
 
 - This is **distance only**, not a full robot safety stack — see [COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md) and [SECURITY_DEVELOPER_NOTES.md](SECURITY_DEVELOPER_NOTES.md).
 
+## Next gate up-stack
+
+Multi-agent **fusion + bank argmin** loop: [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) (`make bench-agi-gate`).
+
 ---
 
 *Spektre Labs · Creation OS · 2026*
