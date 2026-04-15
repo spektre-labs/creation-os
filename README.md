@@ -19,6 +19,8 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 **The MatMul-free mind (v11):** sixth program [`creation_os_v11.c`](creation_os_v11.c) — v10 **plus** M34 matmul-free LM **toy** (ternary BitLinear accumulations, element-wise MLGRU step, illustrative power/token placeholders). **`make check-v11`** (49 self-tests). **[docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)** — schematic only; not a trained BitNet-class model or published benchmark reproduction.
 
+**The Tensor mind (v12):** seventh program [`creation_os_v12.c`](creation_os_v12.c) — v11 **plus** M35–M37 **classical** toys (MPS-style contraction, singular-value “entanglement” entropy readout, TN sequence head with uniform logits). **`make check-v12`** (52 self-tests). **[docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)** — not quantum hardware, not a trained tensor-network LM, not area-law physics claims.
+
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
 **Compressed orientation (plain language):** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — paradigm contrast, proved invariants, and explicit **non-claims**.
@@ -42,11 +44,11 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Agent rules (Copilot / Cursor)** | [AGENTS.md](AGENTS.md) |
 | **Repro bundle template (cite numbers)** | [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) |
 | **HDC / VSA literature → engineering map** | [docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md) |
-| **Figures & SVG index** | [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) |
+| **Figures & SVG index (design system)** | [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) |
 | **Push / release checklist (this repo only)** | [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md) |
 | **Cursor briefing** | [docs/cursor_briefing_creation_os.md](docs/cursor_briefing_creation_os.md) |
 | **Cursor integration** | [docs/cursor_integration_creation_os.md](docs/cursor_integration_creation_os.md) |
-| **Research program & thesis-grade spine** | [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) |
+| **Research program & thesis-grade spine** | [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) · [Doctoral read path](#doctoral-and-committee-read-path) (this README) |
 | **Software citation (CFF)** | [CITATION.cff](CITATION.cff) |
 | **BibTeX (LaTeX)** | [docs/CITATION.bib](docs/CITATION.bib) |
 | **Adversarial pre-review** | [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) |
@@ -61,10 +63,34 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 | **Parameters in Silicon v9 (v7 + M24–M29)** | [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md) · `make check-v9` |
 | **The Real Mind v10 (v9 + M30–M33)** | [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
 | **The MatMul-free mind v11 (v10 + M34)** | [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
+| **The Tensor mind v12 (v11 + M35–M37)** | [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
-**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [The MatMul-free mind (v11)](#the-matmul-free-mind-v11) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
+-----
+
+## Doctoral and committee read path
+
+Read **in order** once before citing any number or narrative title from this tree:
+
+1. [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) — evidence classes, forbidden merges, falsifiers for the portable core.  
+2. [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) — RQ1–RQ4, contributions C1–C6, threats to validity, thesis chapter outline, pre-defense gates.  
+3. [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) — minimum metadata when a metric leaves the lab.  
+4. [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) — which binary is which (`creation_os` vs `creation_os_v6` … `v12`), self-test counts, CI.  
+5. [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) — §1–§26 in `creation_os_v2.c`: evidence class per section before you cite a module headline.  
+6. Scoped kernel docs for any line you cite from v6–v12: [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).  
+7. [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) — hostile review simulation before submission.
+
+| Artifact | Epistemic role | Evidence class for new claims |
+|----------|----------------|----------------------------------|
+| `creation_os_v2.c` + `make test` / `make bench` | Portable proof + microbench | Invariant / arithmetic / measured (as documented) |
+| `creation_os_v6.c` … `creation_os_v12.c` + `make check-v*` | **Extended lab demos** (narrative σ scaffolding, extra modules) | **Lab demo (C)** only — internal `self_test` consistency, not harness rows, tape-out, trained LM reproduction, or quantum hardware |
+
+**Rule for dissertations:** treat v6–v12 as **separate appendices** with their own evidence-class headers; do not fold their toy outputs into the same tables as §7 throughput without an explicit wall (see **CLAIM_DISCIPLINE** §1).
+
+![Portable proof vs standalone lab demos (evidence classes) — see VISUAL_INDEX](docs/assets/kernel-lineage-evidence.svg)
+
+**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [The MatMul-free mind (v11)](#the-matmul-free-mind-v11) · [The Tensor mind (v12)](#the-tensor-mind-v12) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
 -----
 
@@ -90,7 +116,7 @@ That gap is structural: it changes **who can run the inner loop** of similarity 
 | Ops per similarity | 24,576 FLOPs | 128 bit ops | **192×** |
 | Throughput | ~227K trials/sec | ~109M trials/sec | **~480×** |
 
-![Structural memory and op-proxy ratios (D=4096, schematic bars)](docs/assets/gemm-vs-bsc-memory-ops.svg)
+![Structural memory and op-proxy ratios (D=4096) — legend + schematic bar widths](docs/assets/gemm-vs-bsc-memory-ops.svg)
 
 **Note:** Float32 cosine and BSC σ operate at different precision levels. This benchmark measures computational cost for the same geometric task (distance between representations), not bitwise equivalence of the results.
 
@@ -108,7 +134,7 @@ Throughput figures are host-dependent; run `make bench` (or §7 inside `./creati
 
 ## What is BSC?
 
-![XOR bind → MAJ bundle → POPCNT coherence (three primitives)](docs/assets/bsc-primitives.svg)
+![XOR bind → MAJ bundle → POPCNT → sigma definition (three primitives)](docs/assets/bsc-primitives.svg)
 
 Binary Spatter Codes (Kanerva, 1997) represent information as high-dimensional binary vectors. Three operations:
 
@@ -243,9 +269,17 @@ COGNITION
 
 -----
 
+## The Tensor mind (v12)
+
+[`creation_os_v12.c`](creation_os_v12.c) is the **v11 scaffold plus M35–M37**: a capped-bond **MPS-style** contraction toy, a normalized-entropy readout on a singular-value vector (named “entanglement” **metaphorically**), and a tiny TN sequence head over a uniform log-probability prior. Same evidence class as v6–v11 — **not** a quantum device claim, not a trained TN-LM, not calibrated area-law physics.
+
+**Verify:** `make check-v12` (52 tests). **Doc:** [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
+
+-----
+
 ## Architecture
 
-![Module stack: single file → three planes → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
+![Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
 
 ```
               ┌──────────────────────────────┐
@@ -305,6 +339,7 @@ make check-v7      # Hallucination Killer (`creation_os_v7.c`) + `--self-test` (
 make check-v9      # Parameters in Silicon (`creation_os_v9.c`) + `--self-test` (41 checks)
 make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 checks)
 make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 checks)
+make check-v12     # Tensor mind (`creation_os_v12.c`) + `--self-test` (52 checks)
 make standalone
 ./creation_os
 ```
@@ -326,6 +361,7 @@ This is a research prototype. Specific limitations:
 - **`creation_os_v9.c`** is a **fourth** program: v7 **plus** M24–M29 stack/silicon-*shaped* σ toys; 41 checks — not tape-out or vendor TOPS/W claims — see [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md).
 - **`creation_os_v10.c`** is a **fifth** program: v9 **plus** M30–M33 distillation / routing / abstention toys; 46 checks — see [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md).
 - **`creation_os_v11.c`** is a **sixth** program: v10 **plus** M34 matmul-free LM **schematic**; 49 checks — not a trained BitNet-class model or published throughput reproduction — see [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
+- **`creation_os_v12.c`** is a **seventh** program: v11 **plus** M35–M37 classical tensor-train / entropy / sequence-head **toys**; 52 checks — not quantum hardware, not TN-LM harness rows — see [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
 
 -----
 
@@ -341,6 +377,7 @@ This is a research prototype. Specific limitations:
 8. **Parameters in Silicon v9** extends the same gate with M24–M29 stack- and silicon-shaped σ toys ([PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md)).
 9. **The Real Mind v10** adds M30–M33 distillation, few-shot distance, swarm routing, and max-σ abstention schematics ([THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)).
 10. **The MatMul-free mind v11** adds M34 — a ternary accumulation + MLGRU **toy** forward path with zero `sigma_matmul` in this file’s definition of “no matmul” ([THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)).
+11. **The Tensor mind v12** adds M35–M37 — MPS contraction, entropy readout, and sequence-head **schematics** on classical `double` math only ([THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)).
 
 -----
 
@@ -377,7 +414,7 @@ This repository holds the **portable kernel** and measured claims; theory citati
 
 ## AGI map (how this file relates to the full stack)
 
-![Planes A–C summary (full detail in ANALYSIS.md)](docs/assets/planes-abc.svg)
+![Planes A–C summary with flow arrows (full detail in ANALYSIS.md)](docs/assets/planes-abc.svg)
 
 The public **`creation_os_v2.c`** kernel is the **pedagogical spine** (Plane “teaching”: one TU, LOCs quoted in this README).
 
@@ -420,7 +457,7 @@ This README’s benchmark table is the **microbench / lab** class; cite it as su
 
 ## Publication-hard (what that phrase means here)
 
-![Evidence ladder — one headline number, one class (see CLAIM_DISCIPLINE.md)](docs/assets/evidence-ladder.svg)
+![Evidence ladder (dark): Arithmetic → Measured → Harness + lab-demo band](docs/assets/evidence-ladder.svg)
 
 ```mermaid
 flowchart LR

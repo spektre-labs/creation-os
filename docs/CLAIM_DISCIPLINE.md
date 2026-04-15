@@ -27,6 +27,8 @@
 2. **Oracle toy corpus fluency × chat model quality** — the Oracle proves σ-as-attention mechanics, not BLEU parity with GPT-class LMs.
 3. **JEPA toy energy descent × generalization** — energy falls because the codebook stores pairs; generalization is a separate claim requiring held-out evaluation.
 4. **“4096 bits” × “replaces QFT / SM dynamics”** — explicitly out of scope; Standard Model toys in-tree are labeled as **not lattice QFT** where documented.
+5. **v11 M34 matmul-free LM schematic × published BitNet / matmul-free LM throughput, memory, or accuracy** — `make check-v11` proves internal toy wiring only; field numbers need paper + harness (or equivalent) with their own evidence class.
+6. **`creation_os_v6`–`creation_os_v12` green `self_test` × frontier LM quality, silicon tape-out, quantum hardware results, or harness leaderboard claim** — lab demo (C) only; never substitute an in-file oracle pass for an external evaluation artifact.
 
 ---
 

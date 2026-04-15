@@ -4,6 +4,8 @@
 
 **Run:** `./creation_os` (build per README) or `make standalone && ./creation_os` for full stdout tour; `make test` for **algebraic** checks only (subset of §1 / shared primitives).
 
+**Scope:** this table is **only** `creation_os_v2.c` §1–§26. Standalone v6–v12 binaries use M-prefixed blocks — see appendices below and per-version **Threats / How to cite** in each canonical doc. Committee read order: [README.md](../README.md#doctoral-and-committee-read-path).
+
 | § | Module | Primary evidence class | Artifact |
 |---|--------|------------------------|----------|
 | 1 | BSC Core | **Verified (invariant)** + parts **Arithmetic** | `make test` (`tests/test_bsc_core.c`); σ definitions in README |
@@ -78,6 +80,14 @@ Canonical prose: **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)**.
 | M34 + genesis + self-test | **Lab demo (C)** | `make check-v11` (`./creation_os_v11 --self-test`) |
 
 Canonical prose: **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)**.
+
+## Appendix — `creation_os_v12.c` (The Tensor mind, M35–M37)
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M35–M37 + genesis + self-test | **Lab demo (C)** | `make check-v12` (`./creation_os_v12 --self-test`) |
+
+Canonical prose: **[THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)**.
 
 ---
 

@@ -13,6 +13,9 @@ Use this as a **pre-submission** gate for papers, theses, and public posts that 
 | “You report 192× and also cite MMLU — so the model is 192× better.” | **Forbidden merge #1** in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md); README *Measured results* footnotes; evidence ladder in README *Publication-hard*. |
 | “`make bench` throughput equals chat quality.” | Different classes: microbench vs LM quality; README *Limitations*; [RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md) RQ3. |
 | “Invariant tests imply harness parity.” | `make test` covers **algebraic** σ / MAJ / Noether / crystal demos — not ARC/MMLU; ANALYSIS *Evaluation modes*. |
+| “`make check-v6` … `make check-v12` green means frontier LM / silicon / quantum is proven.” | **Forbidden merge #6** in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md); v6–v12 are **Lab demo (C)** only; [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md); README [doctoral read path](../README.md#doctoral-and-committee-read-path). |
+| “MatMul-free mind (v11) reproduces BitNet / matmul-free LM papers.” | **Forbidden merge #5**; [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md) threats + non-claims. |
+| “Hallucination Killer (v7) reports measured chat-model hallucination rates.” | [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md) non-claims; no `lm-eval` rows in-tree. |
 
 ---
 
@@ -80,4 +83,4 @@ Use this as a **pre-submission** gate for papers, theses, and public posts that 
 
 ---
 
-*Spektre Labs · Creation OS · 2026 · Pair with [MODULE_EVIDENCE_INDEX.md](MODULE_EVIDENCE_INDEX.md) and [COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md).*
+*Spektre Labs · Creation OS · 2026 · Pair with [README.md](../README.md#doctoral-and-committee-read-path) (committee order), [MODULE_EVIDENCE_INDEX.md](MODULE_EVIDENCE_INDEX.md), and [COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md).*

@@ -2,7 +2,7 @@
 
 **Audience:** dissertation committees, safety reviewers, systems researchers, and internal authors who must not confuse *pedagogy* with *production claims*.
 
-**Companion artifacts:** portable kernel [`creation_os_v2.c`](../creation_os_v2.c); discipline [`CLAIM_DISCIPLINE.md`](CLAIM_DISCIPLINE.md); reproduction [`REPRO_BUNDLE_TEMPLATE.md`](REPRO_BUNDLE_TEMPLATE.md); full-stack map [`ANALYSIS.md`](ANALYSIS.md); external anchors [`EXTERNAL_EVIDENCE_AND_POSITIONING.md`](EXTERNAL_EVIDENCE_AND_POSITIONING.md); HDC engineering map [`HDC_VSA_ENGINEERING_SUPERIORITY.md`](HDC_VSA_ENGINEERING_SUPERIORITY.md).
+**Companion artifacts:** portable kernel [`creation_os_v2.c`](../creation_os_v2.c); standalone v6–v12 map [`FEATURES_AND_STANDALONE_BUILDS.md`](FEATURES_AND_STANDALONE_BUILDS.md); discipline [`CLAIM_DISCIPLINE.md`](CLAIM_DISCIPLINE.md); reproduction [`REPRO_BUNDLE_TEMPLATE.md`](REPRO_BUNDLE_TEMPLATE.md); full-stack map [`ANALYSIS.md`](ANALYSIS.md); external anchors [`EXTERNAL_EVIDENCE_AND_POSITIONING.md`](EXTERNAL_EVIDENCE_AND_POSITIONING.md); HDC engineering map [`HDC_VSA_ENGINEERING_SUPERIORITY.md`](HDC_VSA_ENGINEERING_SUPERIORITY.md); committee read order in [README.md](../README.md#doctoral-and-committee-read-path).
 
 ---
 
@@ -16,6 +16,21 @@ This tree is deliberately split into two epistemic roles:
 | **Systems hypothesis** | Planes A–C in **ANALYSIS** | A route to wrap **real** inference (GEMM-backed), Python orchestration, and native receipts **without** pretending the teaching file *is* the full stack. |
 
 A thesis-level reader should never merge those two rows into one “we shipped AGI” sentence. The contribution is **geometry + measurement discipline + a composable map**, not a leaderboard trophy extracted from the teaching binary.
+
+### Standalone kernels `creation_os_v6.c`–`creation_os_v12.c` (third row — lab demo only)
+
+These programs are **not** extensions of the portable proof row at a new evidence class. They are **narrative σ scaffolds** with extra modules (M01–M37 depending on version), each gated by `make check-v6` … `make check-v12` via in-file `self_test` counters. **Epistemic class:** **Lab demo (C)** per **CLAIM_DISCIPLINE** — internal consistency on closed-form toys, **not** `lm-eval` harness rows, not silicon sign-off, not trained LM reproduction.
+
+| Program | Typical thesis use | Must not be cited as |
+|---------|--------------------|----------------------|
+| `creation_os_v6.c` | Appendix pedagogy for “living kernel” story under explicit limits | Harness accuracy, production deployment proof |
+| `creation_os_v7.c` | Shapes for hallucination *metaphor* with σ readouts | Measured LM hallucination rates |
+| `creation_os_v9.c` | Stack / silicon *schematics* next to σ | Tape-out, power, or foundry validation |
+| `creation_os_v10.c` | Distillation / swarm / abstention *toys* | MMLU / ARC tables or “real mind” AGI |
+| `creation_os_v11.c` | Matmul-free LM *channel* (M34) beside v10 | BitNet-class throughput, memory, or paper-matched accuracy |
+| `creation_os_v12.c` | Classical MPS / “entanglement” *toys* (M35–M37) beside v11 | Quantum hardware results, TN-LM SOTA, calibrated area laws |
+
+**Cross-link:** per-version scope and non-claims — [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md).
 
 ---
 
@@ -103,6 +118,12 @@ Prefer **retrieval and kernel gates before transformer spend** where the archite
 | JEPA toy energy ≠ generalization | README *Limitations* + forbidden merge #3 |
 | Optional paths missing locally | ANALYSIS standalone note; forward references |
 | Scope creep in prose | AGENTS + CLAIM_DISCIPLINE + this document |
+| v6–v12 `self_test` pass ≠ harness or silicon proof | **FEATURES_AND_STANDALONE_BUILDS** + per-version docs; forbidden merges #5–#6 in **CLAIM_DISCIPLINE** |
+| v7 “hallucination killer” σ toys ≠ LM hallucination benchmarks | **HALLUCINATION_KILLER_V7** non-claims; do not imply measured chat-model rates |
+| v9 stack / CIM / neuromorphic labels ≠ tape-out | **PARAMETERS_IN_SILICON_V9** evidence class; no foundry receipts in-tree |
+| v10 illustrative `student_mmlu` etc. ≠ public harness | **THE_REAL_MIND_V10** non-claims; separate row if real scores exist elsewhere |
+| v11 M34 matmul-free schematic ≠ BitNet / Zhu-class tables | **THE_MATMUL_FREE_MIND_V11** + forbidden merge #5 |
+| v12 M35–M37 tensor / “entanglement” toys ≠ quantum device or TN-LM harness | **THE_TENSOR_MIND_V12**; classical `double` scaffolding only |
 
 **What “publication-hard” does *not* mean.**  
 It does not grant peer-reviewed status to every demo. It means: claims are **typed**, **reproducible**, and **falsifiable** at the class that actually applies.
@@ -160,7 +181,8 @@ Dual licensing (AGPL + commercial) is documented in **README** and **COMMERCIAL_
 7. **Evaluation ethics** — evidence ladder, forbidden merges, harness vs native.  
 8. **Reproducibility** — bundle template + CI.  
 9. **Conclusion** — what is proven vs hypothesized; open problems from **ROADMAP**.  
-10. **(Optional) Industry-scale challenges** — public narratives only: [COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md).
+10. **(Optional) Industry-scale challenges** — public narratives only: [COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md).  
+11. **(Optional) Standalone v6–v12 appendices** — one appendix per binary with evidence class header **Lab demo (C)**; cite `make check-v*` + git SHA; no mixing with §5 microbench or harness tables without a wall ([README.md](../README.md#doctoral-and-committee-read-path) read path).
 
 ---
 
@@ -168,6 +190,8 @@ Dual licensing (AGPL + commercial) is documented in **README** and **COMMERCIAL_
 
 | Gate | Document |
 |------|----------|
+| Doctoral / committee read order (first pass) | [README.md](../README.md#doctoral-and-committee-read-path) |
+| v6–v12 binary vs module map + CI | [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) |
 | Hostile review simulation (category errors, toys, physics, repro, license) | [ADVERSARIAL_REVIEW_CHECKLIST.md](ADVERSARIAL_REVIEW_CHECKLIST.md) |
 | Per-section evidence class (§1–§26) | [MODULE_EVIDENCE_INDEX.md](MODULE_EVIDENCE_INDEX.md) |
 | LaTeX bibliography | [CITATION.bib](CITATION.bib) (and [CITATION.cff](../CITATION.cff) for CFF-aware tools) |

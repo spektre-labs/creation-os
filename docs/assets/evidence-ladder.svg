@@ -1,28 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 220" role="img" aria-labelledby="t d">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" role="img" aria-labelledby="t d">
   <title id="t">Evidence class ladder</title>
-  <desc id="d">Do not merge microbench, lab demo, and harness rows without labels.</desc>
+  <desc id="d">Arithmetic, measured microbench, and harness classes in order; lab demo sits below — do not merge without labels.</desc>
   <defs>
-    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" style="stop-color:#0ea5e9"/>
-      <stop offset="100%" style="stop-color:#6366f1"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" style="stop-color:#020617"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
     </linearGradient>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" style="stop-color:#22d3ee"/>
+      <stop offset="50%" style="stop-color:#38bdf8"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+    <filter id="glow" x="-4%" y="-4%" width="108%" height="112%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.35"/>
+    </filter>
   </defs>
-  <rect width="100%" height="100%" fill="#0f172a"/>
-  <text x="380" y="34" text-anchor="middle" fill="#e2e8f0" font-family="ui-sans-serif,system-ui,sans-serif" font-size="15" font-weight="700">Evidence ladder (one headline, one class)</text>
-  <rect x="40" y="60" width="200" height="64" rx="8" fill="#164e63" stroke="#22d3ee" stroke-width="1.5"/>
-  <text x="140" y="92" text-anchor="middle" fill="#ecfeff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Arithmetic</text>
-  <text x="140" y="110" text-anchor="middle" fill="#99f6e4" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">ops &amp; RAM from D, dtype</text>
-  <rect x="280" y="60" width="200" height="64" rx="8" fill="#1e3a5f" stroke="#38bdf8"/>
-  <text x="380" y="92" text-anchor="middle" fill="#f0f9ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Measured microbench</text>
-  <text x="380" y="110" text-anchor="middle" fill="#bae6fd" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make bench + archive host</text>
-  <rect x="520" y="60" width="200" height="64" rx="8" fill="#312e81" stroke="#a5b4fc"/>
-  <text x="620" y="92" text-anchor="middle" fill="#eef2ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Harness / frontier</text>
-  <text x="620" y="110" text-anchor="middle" fill="#c7d2fe" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">lm-eval + SHA + model id</text>
-  <path d="M240 92 L278 92 M480 92 L518 92" stroke="#64748b" stroke-width="2"/>
-  <polygon points="278,88 288,92 278,96" fill="#64748b"/>
-  <polygon points="518,88 528,92 518,96" fill="#64748b"/>
-  <rect x="120" y="148" width="520" height="52" rx="8" fill="#1e293b" stroke="#f97316" stroke-width="1"/>
-  <text x="380" y="182" text-anchor="middle" fill="#fed7aa" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11">Lab demo (C) and repository-reality rows live beside these; never blend with MMLU in one headline</text>
-  <text x="380" y="208" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">CLAIM_DISCIPLINE.md / Spektre Labs</text>
+  <rect width="100%" height="100%" fill="url(#bg)"/>
+  <rect x="0" y="0" width="820" height="3" fill="url(#g1)" opacity="0.9"/>
+  <text x="410" y="38" text-anchor="middle" fill="#f1f5f9" font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="800">Evidence ladder</text>
+  <text x="410" y="58" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">One headline number — one evidence class (CLAIM_DISCIPLINE)</text>
+  <rect x="36" y="80" width="228" height="72" rx="10" fill="#164e63" stroke="#22d3ee" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="150" y="114" text-anchor="middle" fill="#ecfeff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="800">Arithmetic</text>
+  <text x="150" y="134" text-anchor="middle" fill="#99f6e4" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">ops and RAM from D, dtype</text>
+  <rect x="296" y="80" width="228" height="72" rx="10" fill="#1e3a5f" stroke="#38bdf8" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="410" y="114" text-anchor="middle" fill="#f0f9ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="800">Measured</text>
+  <text x="410" y="134" text-anchor="middle" fill="#bae6fd" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">make bench + archived host</text>
+  <rect x="556" y="80" width="228" height="72" rx="10" fill="#312e81" stroke="#a5b4fc" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="670" y="114" text-anchor="middle" fill="#eef2ff" font-family="ui-sans-serif,system-ui,sans-serif" font-size="13" font-weight="800">Harness</text>
+  <text x="670" y="134" text-anchor="middle" fill="#c7d2fe" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">lm-eval JSON + SHA + model id</text>
+  <path d="M264 116 L294 116 M524 116 L554 116" stroke="url(#g1)" stroke-width="2.5" stroke-linecap="round"/>
+  <polygon points="294,110 306,116 294,122" fill="#38bdf8"/>
+  <polygon points="554,110 566,116 554,122" fill="#a5b4fc"/>
+  <rect x="100" y="172" width="620" height="64" rx="10" fill="#1e293b" stroke="#f97316" stroke-width="1.5" filter="url(#glow)"/>
+  <text x="410" y="200" text-anchor="middle" fill="#fed7aa" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600">Lab demo (C) + verified invariants — beside the ladder, not inside harness rows</text>
+  <text x="410" y="220" text-anchor="middle" fill="#fdba74" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Never blend microbench with MMLU in one headline sentence</text>
+  <text x="410" y="248" text-anchor="middle" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="9">Spektre Labs / Creation OS / docs/CLAIM_DISCIPLINE.md</text>
 </svg>

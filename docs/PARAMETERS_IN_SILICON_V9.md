@@ -1,6 +1,6 @@
 # Parameters in Silicon — `creation_os_v9.c` (v9.0)
 
-**Audience:** integrators comparing **v9** to **v7** ([HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), and **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
+**Audience:** integrators comparing **v9** to **v7** ([HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), **v12** ([THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)), and **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)).
 
 **Evidence class:** same as v6/v7 — **Lab demo / schematic C** ([CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md)). This file does **not** ship silicon tape-out flows, vendor-measured TOPS/W claims as ground truth, or a replacement for `creation_os_v2.c` + `make test`.
 
@@ -21,7 +21,7 @@
 
 **Genesis** wires M24–M29 with **deterministic** values so **`make check-v9`** (41 `self_test` checks) stays reproducible.
 
-**Sibling:** v10 adds M30–M33 (distillation / few-shot / swarm / abstention schematics) — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`. **v11** adds M34 (matmul-free LM toy) — **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)** · `make check-v11`.
+**Sibling:** v10 adds M30–M33 (distillation / few-shot / swarm / abstention schematics) — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`. **v11** adds M34 (matmul-free LM toy) — **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)** · `make check-v11`. **v12** adds M35–M37 (tensor-train toys) — **[THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)** · `make check-v12`.
 
 ---
 
@@ -40,6 +40,21 @@ Same warning flags as v6/v7 for unused pedagogical statics.
 - **Not** a verified FPGA or ASIC flow; **not** foundry sign-off or power/area from silicon measurement.
 - **Not** a substitute for neuromorphic, CIM, or BNN research benchmarks — numbers in structs are **narrative placeholders** unless separately validated.
 - **Not** clinical or safety certification.
+
+---
+
+## Threats to validity (brief)
+
+| Threat | Mitigation in-repo |
+|--------|---------------------|
+| “Silicon” in the title read as tape-out proof | M24–M29 are **schematics**; [RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md) §0 v9 column and §5 threats row |
+| Compiler / orchestrator estimates as vendor facts | Non-claims above; separate **Measured** or **Harness** class if you publish real silicon |
+
+---
+
+## How to cite
+
+**Lab demo (C).** `make check-v9` + git SHA + build line ([REPRO_BUNDLE_TEMPLATE.md](REPRO_BUNDLE_TEMPLATE.md)). Do not cite `sigma_stack`, `sigma_transfer`, etc. as measured foundry data. Doctoral read path: [README.md](../README.md#doctoral-and-committee-read-path).
 
 ---
 

@@ -16,6 +16,7 @@ This page is the **single map** of what exists in this portable **Creation OS** 
 | `creation_os_v9` | `creation_os_v9.c` | v7 + M24–M29 stack / silicon-shaped σ schematics | `make check-v9` | 41 | [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md) |
 | `creation_os_v10` | `creation_os_v10.c` | v9 + M30–M33 distillation / few-shot / swarm / abstention toys | `make check-v10` | 46 | [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md) |
 | `creation_os_v11` | `creation_os_v11.c` | v10 + M34 matmul-free LM toy (ternary BitLinear + MLGRU forward) | `make check-v11` | 49 | [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md) |
+| `creation_os_v12` | `creation_os_v12.c` | v11 + M35–M37 classical MPS / entanglement-meter / TN-sequence toys | `make check-v12` | 52 | [THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md) |
 
 ---
 
@@ -29,19 +30,20 @@ This page is the **single map** of what exists in this portable **Creation OS** 
 | `creation_os_v9.c` | M01–M29 | All of v7 + neuromorphic/CIM/memory-wall/BNN/silicon-stack/hetero **schematics** |
 | `creation_os_v10.c` | M01–M33 | All of v9 + distilled-mind toy, prototypical few-shot, specialist swarm, σ-aware abstention gate |
 | `creation_os_v11.c` | M01–M34 | All of v10 + matmul-free language-model schematic (M34) |
+| `creation_os_v12.c` | M01–M37 | All of v11 + MPS encoder, entanglement σ-meter, TN sequence head (toys) |
 
 ---
 
 ## CI and publish
 
-- **CI** (`.github/workflows/ci.yml`): `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11`.
+- **CI** (`.github/workflows/ci.yml`): `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10 && make check-v11 && make check-v12`.
 - **Publish** (`tools/publish_to_creation_os_github.sh`): same checks before rsync; strips all listed binaries so they are never committed upstream.
 
 ---
 
 ## Misreadings to avoid
 
-See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) — especially rows for v6, v7, v9, v10, and v11 so schematic demos are not confused with harness scores, silicon tape-out, or “real AGI.”
+See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) — especially rows for v6–v12 so schematic demos are not confused with harness scores, silicon tape-out, quantum hardware claims, or “real AGI.”
 
 ---
 

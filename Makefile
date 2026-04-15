@@ -5,7 +5,7 @@ CFLAGS = -O2 -march=native -Wall -std=c11
 LDFLAGS = -lm
 BUILDDIR = .build
 
-.PHONY: help standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 check check-v6 check-v7 check-v9 check-v10 check-v11 all clean publish-github
+.PHONY: help standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -19,18 +19,27 @@ help:
 	@echo "  standalone-v9 — build creation_os_v9 (Parameters in Silicon + self-test)"
 	@echo "  standalone-v10 — build creation_os_v10 (The Real Mind + self-test)"
 	@echo "  standalone-v11 — build creation_os_v11 (MatMul-free mind + self-test)"
+	@echo "  standalone-v12 — build creation_os_v12 (Tensor mind + self-test)"
+	@echo "  standalone-v15 — build creation_os_v15 (Silicon mind + self-test)"
+	@echo "  standalone-v16 — build creation_os_v16 (Unified field + self-test)"
 	@echo "  test       — run tests/test_bsc_core (sigma, Noether, crystal)"
 	@echo "  test-v6    — ./creation_os_v6 --self-test (30 checks; builds v6 first)"
 	@echo "  test-v7    — ./creation_os_v7 --self-test (35 checks; builds v7 first)"
 	@echo "  test-v9    — ./creation_os_v9 --self-test (41 checks; builds v9 first)"
 	@echo "  test-v10   — ./creation_os_v10 --self-test (46 checks; builds v10 first)"
 	@echo "  test-v11   — ./creation_os_v11 --self-test (49 checks; builds v11 first)"
+	@echo "  test-v12   — ./creation_os_v12 --self-test (52 checks; builds v12 first)"
+	@echo "  test-v15   — ./creation_os_v15 --self-test (58 checks; builds v15 first)"
+	@echo "  test-v16   — ./creation_os_v16 --self-test (66 checks; builds v16 first)"
 	@echo "  check      — standalone + test (use before PR / CI)"
 	@echo "  check-v6   — standalone-v6 + test-v6 (v6 only)"
 	@echo "  check-v7   — standalone-v7 + test-v7 (v7 only)"
 	@echo "  check-v9   — standalone-v9 + test-v9 (v9 only)"
 	@echo "  check-v10  — standalone-v10 + test-v10 (v10 only)"
 	@echo "  check-v11  — standalone-v11 + test-v11 (v11 only)"
+	@echo "  check-v12  — standalone-v12 + test-v12 (v12 only)"
+	@echo "  check-v15  — standalone-v15 + test-v15 (v15 only)"
+	@echo "  check-v16  — standalone-v16 + test-v16 (v16 only)"
 	@echo "  publish-github — rsync this tree → fresh creation-os clone + push main (needs auth)"
 	@echo "  bench      — GEMM vs BSC microbench (host-dependent throughput)"
 	@echo "  bench-coherence — batch Hamming gate (NEON on AArch64, else scalar)"
@@ -61,6 +70,15 @@ standalone-v10: creation_os_v10.c
 
 standalone-v11: creation_os_v11.c
 	$(CC) $(CFLAGS) -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v11 creation_os_v11.c $(LDFLAGS)
+
+standalone-v12: creation_os_v12.c
+	$(CC) $(CFLAGS) -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v12 creation_os_v12.c $(LDFLAGS)
+
+standalone-v15: creation_os_v15.c
+	$(CC) $(CFLAGS) -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v15 creation_os_v15.c $(LDFLAGS)
+
+standalone-v16: creation_os_v16.c
+	$(CC) $(CFLAGS) -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v16 creation_os_v16.c $(LDFLAGS)
 
 core: $(BUILDDIR)
 	@for f in core/*.c; do \
@@ -123,11 +141,29 @@ test-v11: standalone-v11
 check-v11: standalone-v11 test-v11
 	@echo "check-v11: OK (v11 MatMul-free mind)"
 
+test-v12: standalone-v12
+	./creation_os_v12 --self-test
+
+check-v12: standalone-v12 test-v12
+	@echo "check-v12: OK (v12 Tensor mind)"
+
+test-v15: standalone-v15
+	./creation_os_v15 --self-test
+
+check-v15: standalone-v15 test-v15
+	@echo "check-v15: OK (v15 Silicon mind)"
+
+test-v16: standalone-v16
+	./creation_os_v16 --self-test
+
+check-v16: standalone-v16 test-v16
+	@echo "check-v16: OK (v16 Unified field)"
+
 all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc
+	rm -rf $(BUILDDIR) creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

@@ -1,6 +1,6 @@
 # Hallucination Killer — `creation_os_v7.c` (v7.0)
 
-**Audience:** integrators and reviewers asking how **v7** relates to **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)), **v9** ([PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), and **`creation_os_v2.c`**.
+**Audience:** integrators and reviewers asking how **v7** relates to **v6** ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)), **v9** ([PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)), **v10** ([THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)), **v11** ([THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)), **v12** ([THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)), and **`creation_os_v2.c`**.
 
 **Evidence class:** same as v6 — **Lab demo / schematic C** ([CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md)). This file does **not** ship a trained LM, does **not** replace `make bench`, and does **not** assert frontier hallucination rates from named vendors.
 
@@ -37,6 +37,21 @@ Same warning flags as v6 for unused pedagogical statics.
 - **Not** a measured hallucination benchmark on a public LM.
 - **Not** clinical or safety certification.
 - **Not** the 4096-bit BSC reference kernel — that remains **`creation_os_v2.c`** + `make test`.
+
+---
+
+## Threats to validity (brief)
+
+| Threat | Mitigation in-repo |
+|--------|---------------------|
+| “Hallucination killer” implies LM hallucination rates | M19–M23 are **σ-shaped scalars** on toy wiring; [RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md) §5 threats row for v7 |
+| Title vs evidence | **Lab demo (C)**; hostile framing: [ADVERSARIAL_REVIEW_CHECKLIST.md](ADVERSARIAL_REVIEW_CHECKLIST.md) §A (v6–v11) |
+
+---
+
+## How to cite
+
+**Lab demo (C).** `make check-v7` + git SHA + build line ([REPRO_BUNDLE_TEMPLATE.md](REPRO_BUNDLE_TEMPLATE.md)). Forbidden: merge M19–M23 outputs with public LM hallucination metrics without a harness wall (**CLAIM_DISCIPLINE** #6). Broader thesis table: [RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md).
 
 ---
 

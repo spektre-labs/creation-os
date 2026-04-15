@@ -4,14 +4,15 @@ Single entry point for humans and automation. **All committed prose here is Engl
 
 | Document | Audience | Purpose |
 |----------|----------|---------|
-| [README.md](../README.md) | Everyone | Problem, measured table, BSC primer, invariants, build, limitations, theory links, standalone v6–v11 |
+| [README.md](../README.md) | Everyone | Problem, measured table, BSC primer, invariants, build, limitations, theory links, standalone v6–v12; [doctoral read path](../README.md#doctoral-and-committee-read-path) (committee order) |
 | [CANONICAL_GIT_REPOSITORY.md](CANONICAL_GIT_REPOSITORY.md) | Everyone, agents | Only `spektre-labs/creation-os` is real; parent protocol trees are not publish roots |
-| [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) | Everyone | One-page map: `creation_os` vs v6/v7/v9/v10/v11, `make check*`, module ranges, CI |
+| [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) | Everyone | One-page map: `creation_os` vs v6/v7/v9/v10/v11/v12, `make check*`, module ranges, CI |
 | [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md) | Integrators, thesis writers | What `creation_os_v6.c` does, evidence class, non-claims, M01–M18 map, `make check-v6` |
 | [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md) | Integrators, thesis writers | v7 = v6 + M19–M23 hallucination-shaped σ toys; `make check-v7` |
 | [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md) | Integrators, thesis writers | v9 = v7 + M24–M29 stack/silicon σ schematics; `make check-v9` |
 | [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md) | Integrators, thesis writers | v10 = v9 + M30–M33 distillation / few-shot / swarm / abstention toys; `make check-v10` |
 | [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md) | Integrators, thesis writers | v11 = v10 + M34 matmul-free LM schematic; `make check-v11` |
+| [THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md) | Integrators, thesis writers | v12 = v11 + M35–M37 MPS / entanglement-meter / TN-sequence toys; `make check-v12` |
 | [PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) | General reader | Plain-language paradigm contrast + explicit non-claims |
 | [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md) | Everyone | English-only rule for committed repo |
 | [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) | Reviewers, integrators | Frequent misinterpretations → one-line correction + canonical link (figures, benchmarks, allocation guidance) |
@@ -36,13 +37,13 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [HDC_VSA_ENGINEERING_SUPERIORITY.md](HDC_VSA_ENGINEERING_SUPERIORITY.md) | Strategy, decks | Literature-backed HDC vs NN trade-offs + FAISS Hamming note + repo bridge |
 | [REPRO_BUNDLE_TEMPLATE.md](REPRO_BUNDLE_TEMPLATE.md) | Anyone publishing numbers | Archive checklist for microbench + harness rows |
 | [ANALYSIS.md](ANALYSIS.md) | Full-stack readers | Planes A–C, parity program, frontier tables (optional paths as forward references) |
-| [VISUAL_INDEX.md](VISUAL_INDEX.md) | Decks, teachers | SVG figures + Mermaid notes |
+| [VISUAL_INDEX.md](VISUAL_INDEX.md) | Decks, teachers | SVG catalog + design system + Mermaid notes; `kernel-lineage-evidence.svg` |
 | [publish_checklist_creation_os.md](publish_checklist_creation_os.md) | Maintainers | Push **this** tree to **creation-os** `main` — checklist + `make publish-github` |
 | [MLX_GUIDE.md](MLX_GUIDE.md) | MLX integrators | Python / MLX paths where applicable |
 | [cursor_briefing_creation_os.md](cursor_briefing_creation_os.md) | Cursor users | Editor integration notes |
 | [cursor_integration_creation_os.md](cursor_integration_creation_os.md) | Cursor users | Deeper integration |
 
-**Quick verify:** from repository root of this tree, `make check` (build + structural tests); `make check-v6` / `make check-v7` / `make check-v9` / `make check-v10` / `make check-v11` when editing those sources ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)). **What ships where:** [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md).
+**Quick verify:** from repository root of this tree, `make check` (build + structural tests); `make check-v6` / `make check-v7` / `make check-v9` / `make check-v10` / `make check-v11` / `make check-v12` when editing those sources ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md), [THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md), [THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)). **What ships where:** [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md).
 
 ---
 

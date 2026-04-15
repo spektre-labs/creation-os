@@ -30,7 +30,7 @@ This file tracks **what is already in the reference C kernel** versus **platform
 |------|--------|------|
 | Third standalone C11 binary | [x] | `creation_os_v7.c` — M19–M23 σ toys + 35 `self_test` checks |
 | Doc + discipline | [x] | [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md); README + CHANGELOG + DOC_INDEX |
-| Build | [x] | `make check-v7` / `make check-v9` / `make check-v10` / `make check-v11`; CI with v2 + v6 + v7 + v9 + v10 + v11 |
+| Build | [x] | `make check-v7` / `make check-v9` / `make check-v10` / `make check-v11` / `make check-v12`; CI with v2 + v6 + v7 + v9 + v10 + v11 + v12 |
 
 **Not** a replacement for §7 `make bench`, NEON coherence batch, or HV parliament bench — see LIVING_KERNEL / HALLUCINATION_KILLER doc *non-claims*.
 
@@ -57,6 +57,14 @@ This file tracks **what is already in the reference C kernel** versus **platform
 | Sixth standalone C11 binary | [x] | `creation_os_v11.c` — M34 matmul-free LM schematic + 49 `self_test` checks |
 | Doc + discipline | [x] | [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md); README + CHANGELOG + MODULE appendix |
 | Build | [x] | `make check-v11` |
+
+## Shipped as `creation_os_v12.c` (The Tensor mind — v11 + M35–M37)
+
+| Item | Status | Notes |
+|------|--------|------|
+| Seventh standalone C11 binary | [x] | `creation_os_v12.c` — M35–M37 classical MPS / entropy / TN-head toys + 52 `self_test` checks |
+| Doc + discipline | [x] | [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md); README + CHANGELOG + MODULE appendix |
+| Build | [x] | `make check-v12` |
 
 ## AGI platform — 22 forward modules (planned)
 

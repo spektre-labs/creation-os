@@ -14,13 +14,13 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## Evidence hygiene (non-negotiable)
 
-1. Read [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) before editing benchmark prose or numbers; for thesis-level scope and non-goals read [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md).
+1. Read [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) before editing benchmark prose or numbers; for thesis-level scope and non-goals read [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md). When editing dissertation-facing prose, follow the ordered **doctoral read path** in [README.md](README.md#doctoral-and-committee-read-path) so v6–v12 stay **Lab demo (C)** and never substitute for harness, silicon, or quantum claims.
 2. Never merge **microbench throughput** with **harness MMLU / ARC** in a single headline sentence.
 3. **Arithmetic ratios** (192× ops, 32× RAM) in the README follow from the stated `D=4096` encodings; **throughput** requires `make bench` + archived host metadata ([docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md)).
 
 ## What to optimize for
 
-- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](creation_os_v6.c), [`creation_os_v7.c`](creation_os_v7.c), [`creation_os_v9.c`](creation_os_v9.c), [`creation_os_v10.c`](creation_os_v10.c), or [`creation_os_v11.c`](creation_os_v11.c), also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, **`make check-v10`**, or **`make check-v11`** respectively (Living Kernel, Hallucination Killer, Parameters in Silicon, The Real Mind, MatMul-free mind self-tests).
+- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](creation_os_v6.c), [`creation_os_v7.c`](creation_os_v7.c), [`creation_os_v9.c`](creation_os_v9.c), [`creation_os_v10.c`](creation_os_v10.c), [`creation_os_v11.c`](creation_os_v11.c), or [`creation_os_v12.c`](creation_os_v12.c), also run **`make check-v6`**, **`make check-v7`**, **`make check-v9`**, **`make check-v10`**, **`make check-v11`**, or **`make check-v12`** respectively (Living Kernel through Tensor mind self-tests).
 - **Portability:** Prefer C11 + libm; optional `-march=native` is Makefile default — document if you change it.
 - **Minimal diffs:** Do not refactor unrelated modules; match existing style.
 
