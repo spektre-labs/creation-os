@@ -8,6 +8,8 @@ This repository ships **C reference code**, a **Makefile**, and **documentation*
 - Supply-chain tampering with binaries built from this source.
 - **Misrepresentation** of benchmark or safety properties (epistemic / reputational risk — mitigated by [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)).
 
+Developer-oriented abuse patterns (benchmark laundering, supply chain): [docs/SECURITY_DEVELOPER_NOTES.md](docs/SECURITY_DEVELOPER_NOTES.md).
+
 ## Supported versions
 
 | Line | Support |

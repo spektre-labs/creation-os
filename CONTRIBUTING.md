@@ -35,7 +35,11 @@ Do **not** delete or contradict existing **Limitations**, **Measured results** f
 
 ## Security
 
-See [SECURITY.md](SECURITY.md).
+See [SECURITY.md](SECURITY.md). Maintainer-oriented notes: [docs/SECURITY_DEVELOPER_NOTES.md](docs/SECURITY_DEVELOPER_NOTES.md).
+
+## Publishing this tree to GitHub
+
+Maintainers: [docs/MAINTAINERS.md](docs/MAINTAINERS.md) (`make publish-github` after `make check`).
 
 ---
 

@@ -9,6 +9,8 @@ All steps below assume **this directory is the Creation OS product** — no othe
 
 ## 1. Before you push
 
+Maintainer shortcut (clone + rsync + commit + push): see [MAINTAINERS.md](MAINTAINERS.md) (`make publish-github`).
+
 ```bash
 make check
 make bench    # recommended before citing throughput in README or talks
