@@ -9,12 +9,15 @@ cc -O2 -o creation_os creation_os_v2.c -lm
 
 One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 
+**Drive-by / forum reader?** Start here: [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — why the paradigm *feels* opposite to default ML, what is actually proven, and what is **not** claimed.
+
 -----
 
 ## Documentation hub
 
 | Resource | Link |
 |----------|------|
+| **Paradigm snapshot (ELI5 / link-thread)** | [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) |
 | **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
 | **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
 | **Security** | [SECURITY.md](SECURITY.md) |
@@ -25,6 +28,16 @@ One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 | **Push / release checklist (this repo only)** | [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md) |
 | **Cursor briefing** | [docs/cursor_briefing_creation_os.md](docs/cursor_briefing_creation_os.md) |
 | **Cursor integration** | [docs/cursor_integration_creation_os.md](docs/cursor_integration_creation_os.md) |
+| **Research program & thesis-grade spine** | [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) |
+| **Software citation (CFF)** | [CITATION.cff](CITATION.cff) |
+| **BibTeX (LaTeX)** | [docs/CITATION.bib](docs/CITATION.bib) |
+| **Adversarial pre-review** | [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) |
+| **§1–§26 evidence classes** | [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) |
+| **Industry challenges → coherence receipts** | [docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md) |
+| **Glossary (σ, BSC, Planes, …)** | [docs/GLOSSARY.md](docs/GLOSSARY.md) |
+| **§7 / `make bench` protocol** | [docs/BENCHMARK_PROTOCOL.md](docs/BENCHMARK_PROTOCOL.md) |
+| **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
+| **Common misreadings (FAQ table)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
 
 **On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
@@ -349,6 +362,10 @@ flowchart LR
 If a sentence cannot point to **(a)** a line of C, **(b)** a command, or **(c)** an evidence-class label, it does not belong in a “results” paragraph — that single editorial rule is already **stricter than most paper abstracts** in applied ML.
 
 **Canonical discipline doc:** [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
+**Dissertation- and committee-grade map (research questions, contributions C1–C6, threats to validity, suggested chapter outline):** [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md).
+
+**Academic citation metadata:** [CITATION.cff](CITATION.cff) (include commit SHA + evidence class when citing numbers).
 
 -----
 

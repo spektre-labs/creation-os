@@ -4,12 +4,12 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## Language
 
-- **Committed files:** English only (`README.md`, `docs/*.md`, comments you add for maintainers).
-- Do not introduce Finnish or other non-English text into tracked markdown or source.
+- **Canonical policy:** [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) — **English only** for all committed prose and new maintainer-facing comments.
+- Do not introduce non-English technical documentation into tracked markdown or source.
 
 ## Evidence hygiene (non-negotiable)
 
-1. Read [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) before editing benchmark prose or numbers.
+1. Read [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) before editing benchmark prose or numbers; for thesis-level scope and non-goals read [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md).
 2. Never merge **microbench throughput** with **harness MMLU / ARC** in a single headline sentence.
 3. **Arithmetic ratios** (192× ops, 32× RAM) in the README follow from the stated `D=4096` encodings; **throughput** requires `make bench` + archived host metadata ([docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md)).
 

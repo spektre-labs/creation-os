@@ -2,6 +2,8 @@
 
 **Purpose:** make every sentence in READMEs, papers, and investor decks **survive cross-examination** — not by louder adjectives, but by **binding claims to evidence classes** and **forbidding known failure modes** (mixed baselines, silent precision drift, demo-as-harness).
 
+**Repository language:** all committed prose is **English only** — [LANGUAGE_POLICY.md](LANGUAGE_POLICY.md).
+
 ---
 
 ## 1. Evidence classes (never merge without a wall)
@@ -69,6 +71,8 @@ This document is the line between them.
 ## 6. Peer-reviewed and community anchors (outside the diff)
 
 For **bibliography-ready** links and a short “what the field already agrees on vs what this git tree proves” table, see **[EXTERNAL_EVIDENCE_AND_POSITIONING.md](EXTERNAL_EVIDENCE_AND_POSITIONING.md)**.
+
+For **research questions, contribution list, threats to validity, and a suggested dissertation chapter outline**, see **[RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md)**.
 
 ---
 

@@ -1,6 +1,6 @@
 # ROADMAP
 
-This file tracks **what is already in the reference C kernel** versus **platform-scale modules** that belong to the wider Spektre / Creation OS program. For **how to cite benchmarks and avoid mixed baselines**, read **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**; for the **three-plane architecture and AGI primitive map**, read **[docs/ANALYSIS.md](docs/ANALYSIS.md)**.
+This file tracks **what is already in the reference C kernel** versus **platform-scale modules** that belong to the wider Spektre / Creation OS program. For **how to cite benchmarks and avoid mixed baselines**, read **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**; for **research questions, thesis chapter outline, and threats to validity**, read **[docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md)**; for the **three-plane architecture and AGI primitive map**, read **[docs/ANALYSIS.md](docs/ANALYSIS.md)**.
 
 ## Shipped in `creation_os_v2.c` (v2.0 reference)
 
