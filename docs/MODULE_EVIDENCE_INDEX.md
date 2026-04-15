@@ -37,4 +37,16 @@
 
 ---
 
+## Appendix — `creation_os_v6.c` (Living Kernel, M01–M18)
+
+**Not** part of the §1–§26 table above: v6 is a **separate binary** with its own module labels (M01–M18). Default evidence class: **Lab demo / schematic C** — same thesis verbs as §2–§26 unless you attach external primary sources.
+
+| Block | Primary evidence class | Artifact |
+|-------|--------------------------|----------|
+| M01–M18 + genesis + self-test | **Lab demo (C)** — internal algebra & toy gates | `make check-v6` (`./creation_os_v6 --self-test`) |
+
+Canonical prose: **[LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md)**.
+
+---
+
 *Spektre Labs · Creation OS · 2026*

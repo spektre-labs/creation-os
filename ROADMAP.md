@@ -16,6 +16,16 @@ This file tracks **what is already in the reference C kernel** versus **platform
 | §8 | [x] | Genesis / Noether |
 | §9–§26 | [x] | Metacognition … Authentication (stdout demos) |
 
+## Shipped as `creation_os_v6.c` (Living Kernel — narrative σ scaffold)
+
+| Item | Status | Notes |
+|------|--------|------|
+| Second standalone C11 binary | [x] | `creation_os_v6.c` — M01–M18 toys + 30 `self_test` checks |
+| Doc + discipline | [x] | [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md); README + COMMON_MISREADINGS + MODULE appendix |
+| Build | [x] | `make check-v6` |
+
+**Not** a replacement for §7 `make bench`, NEON coherence batch, or HV parliament bench — see LIVING_KERNEL doc *non-claims*.
+
 ## AGI platform — 22 forward modules (planned)
 
 Format: checkbox, name, one line. These are **not** the §9–§26 demos above; they describe **product-scale** extensions beyond the reference file.

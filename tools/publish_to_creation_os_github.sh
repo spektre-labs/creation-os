@@ -30,7 +30,7 @@ rsync -a --delete --exclude '.git' "$ROOT/" "$STAGE/repo/"
 cd "$STAGE/repo"
 
 # Never ship local Makefile binaries (rsync ignores .git only; artifacts may exist on disk).
-for bin in creation_os test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
+for bin in creation_os creation_os_v6 test_bsc gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon oracle_speaks oracle_ultimate genesis qhdc; do
   rm -f "$bin"
 done
 rm -rf .build

@@ -2,7 +2,7 @@
 
 ## Mission
 
-Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os). **One command:** `make all`. **One file to read first:** `creation_os_v2.c`.
+Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os). **One command:** `make all`. **One file to read first:** `creation_os_v2.c`. **Living Kernel (v6):** [`creation_os_v6.c`](../creation_os_v6.c) + [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md); run **`make check-v6`** when editing it.
 
 ## Invariants
 
@@ -15,6 +15,7 @@ Repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-
 | Path | Role |
 |------|------|
 | `creation_os_v2.c` | Full §1–§26 reference program |
+| `creation_os_v6.c` | Living Kernel — σ–K–L scaffold, M01–M18 schematic modules |
 | `core/cos_bsc.h` | Shared HV primitives for split `.c` files |
 | `tests/test_bsc_core.c` | σ / MAJ / XOR / ROTL / Noether / Crystal lock |
 | `core/gemm_vs_bsc.c` | `cos_gemm_bench_main()` — linked by `bench/gemm_vs_bsc.c` |

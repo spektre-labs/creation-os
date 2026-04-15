@@ -34,6 +34,8 @@ Canonical discipline terms live in [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md). T
 | **Parliament (`cos_hv_bit_parliament`)** | Odd-K per-bit majority fusion of agent hypervectors — [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md). |
 | **Argmin bank (`cos_hv_argmin_hamming_rows_hw`)** | Row scan for nearest HV under Hamming — NEON on AArch64 — same doc. |
 | **`make bench-agi-gate`** | Parliament + memory-bank argmin microbench (`bench/hv_agi_gate_neon.c`). |
+| **Living Kernel (`creation_os_v6.c`)** | Second standalone C11 program: σ–`K`–`L`–`S` scaffold + M01–M18 **schematic** modules; **1024-bit** packed BSC here — not the 4096-bit `COS_D` reference. |
+| **`make check-v6`** | Builds `creation_os_v6` and runs `./creation_os_v6 --self-test` (30 internal checks). See [LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md). |
 
 ---
 

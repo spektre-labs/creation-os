@@ -15,7 +15,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## What to optimize for
 
-- **Correctness:** `make test` must pass.
+- **Correctness:** `make test` must pass. If you edit [`creation_os_v6.c`](../creation_os_v6.c), also run **`make check-v6`** (30 self-tests on the Living Kernel).
 - **Portability:** Prefer C11 + libm; optional `-march=native` is Makefile default — document if you change it.
 - **Minimal diffs:** Do not refactor unrelated modules; match existing style.
 

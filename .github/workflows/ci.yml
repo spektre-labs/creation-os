@@ -13,4 +13,4 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Structural build and tests
-        run: make check
+        run: make check && make check-v6

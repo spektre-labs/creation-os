@@ -7,7 +7,9 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 ./creation_os
 ```
 
-One file. 1196 lines. 26 modules. Any hardware with a C compiler.
+**Primary reference:** one file (`creation_os_v2.c`), 26 modules, any hardware with a C compiler.
+
+**Living Kernel (v6):** second standalone program [`creation_os_v6.c`](creation_os_v6.c) — σ–K–L–S formal scaffold plus M01–M18 narrative modules (RDP, alignment tax, σ-tape, ghost boot, Gödel-boundary toy, …). Verify with **`make check-v6`** (30 deterministic self-tests). Full scope, evidence class, and non-claims: **[docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)**.
 
 **Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
@@ -44,10 +46,11 @@ One file. 1196 lines. 26 modules. Any hardware with a C compiler.
 | **§7 / `make bench` protocol** | [docs/BENCHMARK_PROTOCOL.md](docs/BENCHMARK_PROTOCOL.md) |
 | **NEON coherence gate (AArch64)** | [docs/NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
 | **HV parliament + NEON retrieval** | [docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
+| **Living Kernel v6 (σ–K–L scaffold, M01–M18)** | [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md) · `make check-v6` |
 | **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
 | **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
 
-**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
+**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
 
 -----
 
@@ -184,6 +187,16 @@ COGNITION
 
 -----
 
+## Living Kernel (v6)
+
+[`creation_os_v6.c`](creation_os_v6.c) is a **separate** single-file program: a **coherence composition kernel** (σ, `K`, `K_eff`, Lagrangian `L`, action `S`) with **M01–M18** modules that name real research threads (RDP, RLHF tax, RAIN-style rewind, test-time reduction, weight-space merge, SBIP-shaped boundary, …) at **schematic** fidelity. It uses a **1024-bit** packed BSC layout here — not the **4096-bit** `COS_D` / `creation_os_v2.c` geometry.
+
+**Why keep it:** it is **hard in the engineering sense** — thirty **deterministic** `self_test` checks (`make check-v6`) that lock the algebra and toy gates without pretending to be a harness or a paper reproduction. It complements the **measured** microbench path (`make bench`) and the **native** NEON / parliament paths documented under *Frontier complement*.
+
+**Discipline:** treat v6 like §2–§26 demos for citations: **lab demo / schematic** unless you add external evidence per [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). Full map and non-claims: **[docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)**.
+
+-----
+
 ## Architecture
 
 ![Module stack: single file → three planes → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
@@ -241,6 +254,7 @@ With Make (same flags as repo `Makefile`):
 ```bash
 make help          # list targets
 make check         # standalone + structural tests (recommended before PR)
+make check-v6      # Living Kernel (`creation_os_v6.c`) + `--self-test` (30 checks)
 make standalone
 ./creation_os
 ```
@@ -257,6 +271,7 @@ This is a research prototype. Specific limitations:
 - **JEPA learning** is codebook memorization with correlative blending. Energy decreases because the codebook stores training pairs, not because the model has learned to generalize to unseen data.
 - **GEMM benchmark** compares computational cost of the same geometric task (vector distance) at different precision levels. The 192× ops ratio is measured and real. Whether binary precision is sufficient for a given application is an empirical question.
 - **Cognitive modules** are BSC implementations of cognitive primitives. They demonstrate that these computations can be expressed in three bit operations. They are not validated against cognitive science benchmarks.
+- **Living Kernel (`creation_os_v6.c`)** is a **second** program: schematic σ–K–L composition + M01–M18 *toys*. The 30 `self_test` checks are **internal consistency**, not clinical consciousness proof, not COGITATE reproduction, and not a substitute for `make bench` or NEON/HV receipts. See [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md).
 
 -----
 
@@ -267,6 +282,7 @@ This is a research prototype. Specific limitations:
 3. **Noether conservation holds under symmetric XOR** — a formal invariant, not an approximation.
 4. **26 cognitive primitives fit in ~1200 lines of C** — the algebra is compact.
 5. **The entire architecture runs on any hardware** — no GPU, no framework, no dependencies.
+6. **Living Kernel v6** packages cross-domain σ narratives (alignment, RDP, rewind, ghost boot) behind one **executable** gate — useful for thesis structure and for separating *proved in this file* from *cited externally* ([LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)).
 
 -----
 
