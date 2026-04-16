@@ -26,6 +26,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | OpenAI-shaped loopback stub serves `/v1/*` deterministically + CORS/OPTIONS | `make check-openai-stub` (`creation_os_openai_stub`) | **M** |
 | v2 bootstrap demo has `--self-test` and `--help` | `make standalone && ./creation_os --self-test` | **M** |
 | v33 lab: σ-routed fallback between local BitNet and a configurable secondary model + schema-first tool JSON + JSONL session metrics | `make check-v33` | **M** |
+| v34 lab: Dirichlet-style epistemic/aleatoric decomposition + Platt JSON hook + extended σ channels (`channels_v34`) + `cos_route_from_logits_v34` | `make check-v34` | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -33,6 +34,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 |------|-------|:----:|
 | SLM-default / LLM-fallback architecture (survey framing; external) | `arXiv:2510.03847` | **I** |
 | NVIDIA position paper — small models sufficient for agentic workloads (external) | `arXiv:2506.02153` | **I** |
+| UQ / abstention / calibration themes (ICLR 2026, TACL “Know Your Limits”, `arXiv:2603.06317`, ACM CSUR taxonomies, LogTokU, DiverseAgentEntropy, …) | Positioning map in `docs/SIGMA_VS_FIELD.md` | **I** |
 
 ## Common headline numbers (explicitly not “M” here)
 
@@ -48,6 +50,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 |------|----------------------------|------|
 | Full BitNet b1.58 2B4T numerics from Microsoft GGUF in-process | Not shipped in this portable gate; requires external engine / upstream build | **N** |
 | TruthfulQA / MMLU rows from `lm-eval-harness` | `benchmarks/truthfulqa_sigma.sh` is a **SKIP stub** until weights + harness are present | **N** |
+| TruthfulQA / FreshQA / SelfAware AUROC–ECE tables “for σ_total vs σ_epistemic” | `benchmarks/v34/run_abstention_benchmarks.sh` is a **smoke stub** until datasets + weights + harness are archived in-repo | **N** |
 | Routed FPGA bitstreams | Optional local smoke only; no CI bitstream artifacts | **N** |
 
 ## Retired claims (corrections)

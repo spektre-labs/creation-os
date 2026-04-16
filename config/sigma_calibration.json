@@ -1,0 +1,6 @@
+{
+  "platt_a": -6.0,
+  "platt_b": 0.0,
+  "fit_target": "sigma_epistemic_raw",
+  "notes": "Placeholder coefficients; not M-tier until TruthfulQA / FreshQA / SelfAware fits are archived."
+}

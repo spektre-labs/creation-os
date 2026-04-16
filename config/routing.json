@@ -1,4 +1,5 @@
 {
+  "routing_mode": "legacy",
   "channels": {
     "logit_entropy": 0.85,
     "top_margin": 0.92

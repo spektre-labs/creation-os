@@ -23,6 +23,7 @@ creation_os_suite_stub
 creation_os_native_m4
 creation_os_v31
 creation_os_v33
+creation_os_v34
 
 # v33 harness / local metrics (generated)
 benchmarks/v33/metrics_run/
