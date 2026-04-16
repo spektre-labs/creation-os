@@ -12,7 +12,8 @@ All graphics in this tree are **original SVG** (vector, scalable) — **no stock
 | [assets/gemm-vs-bsc-memory-ops.svg](assets/gemm-vs-bsc-memory-ops.svg) | Light | Benchmark story — **32×** memory and **192×** op-proxy (README definitions) + legend |
 | [assets/evidence-ladder.svg](assets/evidence-ladder.svg) | Dark | CLAIM_DISCIPLINE / committee — Arithmetic → Measured → Harness + lab-demo band |
 | [assets/planes-abc.svg](assets/planes-abc.svg) | Light | ANALYSIS / AGI map — Planes A–B–C with flow arrows |
-| [assets/reddit-hook-banner.svg](assets/reddit-hook-banner.svg) | Dark | README **above-the-fold** — drive-by hook + merge-gate / 204 tests CTA (schematic C) |
+| [assets/reddit-hook-banner.svg](assets/reddit-hook-banner.svg) | Dark | README **above-the-fold** — drive-by hook + merge-gate / **184** checks @ v26 CTA (lab demo class) |
+| [assets/readme-scan-map.svg](assets/readme-scan-map.svg) | Light | README **Contents** — inverted pyramid / L1–L3 scan map (FIG 09) |
 | [Monorepo landing hero](../../docs/assets/landing-hero.svg) | Dark | Parent **spektre-protocol** README banner (FIG 01 / archive display) |
 
 ## Figure register (stable IDs)
@@ -29,6 +30,7 @@ Use these IDs when citing figures in slides or thesis text so captions stay stab
 | **06** | [`assets/bsc-primitives.svg`](assets/bsc-primitives.svg) |
 | **07** | [`assets/gemm-vs-bsc-memory-ops.svg`](assets/gemm-vs-bsc-memory-ops.svg) |
 | **08** | [`assets/architecture-stack.svg`](assets/architecture-stack.svg) |
+| **09** | [`assets/readme-scan-map.svg`](assets/readme-scan-map.svg) |
 
 ## Flight-ops display language (mission-control inspired)
 

@@ -2,116 +2,240 @@
   <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
 </p>
 
-> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** — portable **`make check`** plus **`make check-v6`** … **`make check-v26`** (each target runs that version’s matrix). The current flagship **`./creation_os_v26 --self-test`** is **184** checks in one harness. It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+<h1 align="center">Creation OS</h1>
+
+<p align="center">
+  <strong>Coherence you can compile.</strong><br/>
+  <sub>Binary Spatter Codes · σ as a first-class signal · portable C11 · no framework on the teaching kernel</sub><br/>
+  <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
+</p>
+
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v26`). Flagship **`./creation_os_v26 --self-test`** runs **184** checks in one harness. This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <p align="center">
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
   <img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/>
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/>
-  <img src="https://img.shields.io/badge/tests-184%20%28v26%29-success?style=for-the-badge" alt="tests"/>
+  <img src="https://img.shields.io/badge/v26%20harness-184%20checks-success?style=for-the-badge" alt="v26 self-test checks"/>
+  <a href="docs/DOC_INDEX.md"><img src="https://img.shields.io/badge/docs-DOC__INDEX-slategray?style=for-the-badge" alt="docs index"/></a>
 </p>
 
-<p align="center"><sub>Figures, palette, and embedding rules: <a href="docs/VISUAL_INDEX.md">docs/VISUAL_INDEX.md</a></sub></p>
+<p align="center"><sub>Figure palette &amp; SVG rules: <a href="docs/VISUAL_INDEX.md">docs/VISUAL_INDEX.md</a></sub></p>
 
-# Creation OS
+---
 
-**Cognitive architecture in Binary Spatter Codes.**
+## Contents
+
+| I want to… | Jump to |
+|:--|:--|
+| **Run CI locally / ship a PR** | [Sixty seconds](#run-it-in-sixty-seconds) · [Build](#build) · [Contributing](CONTRIBUTING.md) |
+| **Understand the product story** | [At a glance](#at-a-glance) · [Flagship table](#flagship-programs) · [The problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [LLM stacks vs Creation OS](#llm-vs-creation-os-comparison) |
+| **Not mis-cite a headline** | [Claim discipline](docs/CLAIM_DISCIPLINE.md) · [Common misreadings](docs/COMMON_MISREADINGS.md) · [Doctoral path](#doctoral-and-committee-read-path) |
+| **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
+| **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
+
+**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [Architecture](#architecture) · [Limitations](#limitations) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [License](#license)
+
+<a id="readme-scan-map-fig-09"></a>
+
+### Readme scan map (FIG 09)
+
+<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README inverted pyramid: L1 outcome, L2 scan, L3 depth (FIG 09)"/></p>
+
+<p align="center"><sub><strong>FIG 09</strong> — how this page is read: outcome first, then scannable tables and diagrams, then deep sections. Register and palette: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+
+---
+
+## At a glance
+
+```mermaid
+flowchart TB
+  subgraph who["Who lands here?"]
+    A["Curious skimmer"]
+    B["Engineer shipping a patch"]
+    C["Reviewer / committee"]
+  end
+  subgraph path["Fast path"]
+    A --> A1["Grey quote + CLAIM_DISCIPLINE"]
+    B --> B1["make merge-gate"]
+    C --> C1["Doctoral path + evidence ladder"]
+  end
+```
+
+**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic harnesses** (`creation_os_v6.c` … `creation_os_v26.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
+
+<p align="center">
+  <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–C — teaching spine vs production stack (summary diagram)"/></a><br/>
+  <sub><strong>Planes A–C</strong> (teaching · llama/MLX · native M4) — detail and receipts in <a href="docs/ANALYSIS.md">ANALYSIS.md</a> and <a href="#agi-map-how-this-file-relates-to-the-full-stack">AGI map</a> below.</sub>
+</p>
+
+| Quick visual | What it is for |
+|:--|:--|
+| [Evidence ladder](docs/assets/evidence-ladder.svg) | Where a **number** is allowed to sit (arithmetic → measured → harness / lab demo) — pairs with [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md). |
+| [BSC primitives](docs/assets/bsc-primitives.svg) | XOR → MAJ → POPCOUNT / σ strip — same story as [What is BSC?](#what-is-bsc). |
+| [GEMM vs BSC bars](docs/assets/gemm-vs-bsc-memory-ops.svg) | **32×** / **192×** shape at D=4096 — same table as [Measured results](#measured-results-4096-dimensions-100k-trials). |
+
+---
+
+## Run it in sixty seconds
+
+```mermaid
+flowchart LR
+  C["make check"] --> M["check-v6 … check-v26"]
+  M --> G["make merge-gate"]
+```
+
+```bash
+git clone https://github.com/spektre-labs/creation-os.git
+cd creation-os
+make merge-gate
+# spot-check current head:
+make check-v26 && ./creation_os_v26 --self-test   # expect 184/184 PASS
+```
+
+*Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”.
+
+**Plain-language orientation:** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · **Misreadings:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md)
+
+**Smallest demo (bootstrap only, not the merge gate):**
 
 ```
 cc -O2 -I. -o creation_os creation_os_v2.c -lm
 ./creation_os
 ```
 
-**Primary reference:** one file (`creation_os_v2.c`), 26 modules, any hardware with a C compiler.
+**Primary reference:** one file ([`creation_os_v2.c`](creation_os_v2.c)), **26 modules** (§1–§26), **4096-bit** `COS_D` geometry — any host with a C11 compiler + libm.
 
-**Living Kernel (v6):** second standalone program [`creation_os_v6.c`](creation_os_v6.c) — σ–K–L–S formal scaffold plus M01–M18 narrative modules (RDP, alignment tax, σ-tape, ghost boot, Gödel-boundary toy, …). Verify with **`make check-v6`** (30 deterministic self-tests). Full scope, evidence class, and non-claims: **[docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)**.
+---
 
-**Hallucination Killer (v7):** third program [`creation_os_v7.c`](creation_os_v7.c) — everything in v6 **plus** M19–M23 schematic detectors (anchor collapse, association ratio, bluff σ, context rot, JEPA–Oracle representation error). **`make check-v7`** (35 self-tests). **[docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md)**.
+## Flagship programs
 
-**Parameters in Silicon (v9):** fourth program [`creation_os_v9.c`](creation_os_v9.c) — v7 **plus** M24–M29 stack/hardware-shaped σ toys (neuromorphic event path, CIM transfer σ, memory wall, BNN toy, silicon compiler estimates, heterogeneous routing table). **`make check-v9`** (41 self-tests). **[docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md)** — not tape-out or measured vendor silicon claims.
+Each `creation_os_vN.c` is a **separate** single-file program. Counts are **`--self-test` checks** for that binary. Use full targets, e.g. `make check-v26`.
 
-**The Real Mind (v10):** fifth program [`creation_os_v10.c`](creation_os_v10.c) — v9 **plus** M30–M33 narrative toys (distillation ratio, prototypical few-shot distance, specialist swarm routing, max-σ generation abstention gate). **`make check-v10`** (46 self-tests). **[docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)** — title is **schematic**; not an AGI or benchmark claim.
+| Ver | File | One-line hook | `make` | Checks |
+|:---:|:--|:--|:--|--:|
+| v6 | [`creation_os_v6.c`](creation_os_v6.c) | σ–K–L–S + M01–M18 | `check-v6` | 30 |
+| v7 | [`creation_os_v7.c`](creation_os_v7.c) | + M19–M23 detectors | `check-v7` | 35 |
+| v9 | [`creation_os_v9.c`](creation_os_v9.c) | + M24–M29 silicon toys | `check-v9` | 41 |
+| v10 | [`creation_os_v10.c`](creation_os_v10.c) | + M30–M33 routing / abstention | `check-v10` | 46 |
+| v11 | [`creation_os_v11.c`](creation_os_v11.c) | + M34 matmul-free LM toy | `check-v11` | 49 |
+| v12 | [`creation_os_v12.c`](creation_os_v12.c) | + M35–M37 tensor schematics | `check-v12` | 52 |
+| v15 | [`creation_os_v15.c`](creation_os_v15.c) | + M38–M40 scale discipline | `check-v15` | 58 |
+| v16 | [`creation_os_v16.c`](creation_os_v16.c) | + M41–M44 literature toys | `check-v16` | 66 |
+| v20 | [`creation_os_v20.c`](creation_os_v20.c) | + M45–M64 ship pillars | `check-v20` | 86 |
+| v21 | [`creation_os_v21.c`](creation_os_v21.c) | + M65–M76 sovereign stack | `check-v21` | 99 |
+| v22 | [`creation_os_v22.c`](creation_os_v22.c) | + M77–M96 insight stack | `check-v22` | 120 |
+| v23 | [`creation_os_v23.c`](creation_os_v23.c) | + M97–M116 agent affordances | `check-v23` | 141 |
+| v24 | [`creation_os_v24.c`](creation_os_v24.c) | + M117–M136 arXiv echoes | `check-v24` | 162 |
+| v25 | [`creation_os_v25.c`](creation_os_v25.c) | + M137–M156 enterprise ledger | `check-v25` | 183 |
+| v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
 
-**The MatMul-free mind (v11):** sixth program [`creation_os_v11.c`](creation_os_v11.c) — v10 **plus** M34 matmul-free LM **toy** (ternary BitLinear accumulations, element-wise MLGRU step, illustrative power/token placeholders). **`make check-v11`** (49 self-tests). **[docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)** — schematic only; not a trained BitNet-class model or published benchmark reproduction.
+```mermaid
+flowchart LR
+  subgraph spine["Portable spine"]
+    V2["creation_os_v2.c<br/>§1–§26 · one TU"]
+  end
+  subgraph lab["Standalone lab programs"]
+    V6["v6 … v12<br/>1024-bit demos"]
+    V15["v15 … v26<br/>headers + harness"]
+  end
+  V2 -.->|same sigma language; different evidence class| V6
+  V6 --> V15
+  V15 --> H["Headline harness<br/>184 checks @ v26"]
+```
 
-**The Tensor mind (v12):** seventh program [`creation_os_v12.c`](creation_os_v12.c) — v11 **plus** M35–M37 **classical** toys (MPS-style contraction, singular-value “entanglement” entropy readout, TN sequence head with uniform logits). **`make check-v12`** (52 self-tests). **[docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)** — not quantum hardware, not a trained tensor-network LM, not area-law physics claims.
+**Evidence class:** v6–v26 = **lab demo (C)** unless you add external harness / silicon proof — [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). **Per-version narrative:** [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) + headers inside each `creation_os_v*.c`. **Lineage at a glance:** [kernel-lineage diagram](docs/assets/kernel-lineage-evidence.svg) (also under [Doctoral path](#doctoral-and-committee-read-path)).
 
-**The Silicon mind (v15):** eighth program [`creation_os_v15.c`](creation_os_v15.c) — v12 **plus** M38–M40 **scale discipline** (int64 FLOP / volume schematics with overflow checks, TN param accounting in raw vs “millions”, JEPA prior-σ carry for selective decode). **`make check-v15`** (58 self-tests). Canonical evidence framing: **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**.
+**Frontier complement:** AArch64 **4096-bit** σ / Hamming / MAJ / XOR in `core/cos_neon_*.h` — bit-parallel similarity; not a substitute for published LM harness rows.
 
-**The Unified field (v16):** ninth program [`creation_os_v16.c`](creation_os_v16.c) — v15 **plus** M41–M44 **literature-aligned schematics** (resonator-style VSA unbind toy, Kanerva SDM critical-radius bridge with anchor calibration, EBM-native latent relax with σ-budgeted iterations, KAN-edge spline toy). **`make check-v16`** (66 self-tests). **Not** reproduced arXiv benchmarks — harness-only story hooks with explicit non-claims in-file.
+**Still lost?** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) · [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md)
 
-**Ship mode (v20):** tenth flagship [`creation_os_v20.c`](creation_os_v20.c) — everything in v16 **plus** **M45–M64** *twenty pillars*: one-surface genesis, fluid σ telemetry, proactive abstention, ANE handoff marker, mmap/64B/prefetch/branchless/five-unit story flags, receipts anchor, constitutional σ ceiling, zero-copy view, retrieval-first attention, distillation fingerprint, federated gossip blend, four-rung degradation ladder, coherence pulse, privacy vault, SME sentinel, and a **ship seal** latch. **`make check-v20`** (86 self-tests). **Schematic product narrative** — not a consumer device, not regulatory certification, not “just download from App Store”; compare to iPhone only as **adoption metaphor** (it boots clean and refuses sloppy merges).
-
-**AGI sovereign stack (v21):** eleventh flagship [`creation_os_v21.c`](creation_os_v21.c) — v20 ship mode **plus** **M65–M76** *sovereign stack* hooks: closed Plane A loop, Plane B budget, Plane C anchor, parliament blend σ, tool gate, episodic flush, reflection gain, deliberation / red-team caps, human veto, kill-switch drill, receipt parent hash, and **sovereign seal**. **`make check-v21`** (99 self-tests). **Governance and safety schematic** — not autonomous agents, not benchmark AGI, not regulatory sign-off.
-
-**Twenty colossal insights (v22):** twelfth flagship [`creation_os_v22.c`](creation_os_v22.c) — v21 **plus** **M77–M96** *web-anchored insight stack* (2025 international AI safety report discourse, technical safeguards updates, Singapore-consensus research priorities, Guaranteed Safe AI–style world-model / spec / verifier tripod — all as **schematic latches** in §45i). **`make check-v22`** (120 self-tests). **Not** certified safety, **not** government policy implementation, **not** a substitute for external audit or harness tables.
-
-**AGI-schematic affordances (v23):** thirteenth flagship [`creation_os_v23.c`](creation_os_v23.c) — v22 **plus** **M97–M116** *agent-stack story flags* (tiered memory, planner–worker decomposition, tool reliability, computer-use / GUI slot, long-horizon checkpoints, session-decay compensator, multi-agent handoff, sandboxed execution, audit traces, retrieval–tool fuse, etc.), with **web anchors** in §45j to public 2026 agent narratives (e.g. [mem0 agent memory](https://mem0.ai/blog/state-of-ai-agent-memory-2026), [Zylos computer-use GUI agents](https://zylos.ai/research/2026-02-08-computer-use-gui-agents), [Zylos long-running agents](https://zylos.ai/research/2026-01-16-long-running-ai-agents)). **`make check-v23`** (141 self-tests). **Not** a production agent, **not** measured GUI benchmark scores in-file, **not** literal AGI.
-
-**arXiv sci-fi echo latches (v24):** fourteenth flagship [`creation_os_v24.c`](creation_os_v24.c) — v23 **plus** **M117–M136** *twenty real arXiv preprint hooks* (wormholes, ER/EPR, Dyson bubbles / stellar engines, Everett many-worlds geometry, undecidability / Meta-ToE, algorithmic idealism, simulation business models, TARDIS supernova spectra, homogenization PDEs, …) as **§45k** citation latches + receipt. **`make check-v24`** (162 self-tests). **Not** a reproduction of any paper’s results — **lab demo (C)** and bibliographic echo only; read each paper on [arXiv](https://arxiv.org/).
-
-**Enterprise pain ledger (v25):** fifteenth flagship [`creation_os_v25.c`](creation_os_v25.c) — v24 **plus** **M137–M156** *explicit routes* from widely cited **enterprise / regulator pain classes** to **already-shipped in-tree story hooks** (e.g. [OWASP Top 10 for LLM Applications 2025](https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025) LLM01–LLM10 → abstention, vault, receipts, sandbox, caps; [EU AI Act 2024/1689](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689) Arts. 9–11, 13–15, 19 → risk tier, lineage, audit trail, transparency slot, logging). **`make check-v25`** (183 self-tests). **Value:** one compile-time **map** from public problem taxonomies to your σ / receipt vocabulary — **not** compliance certification, **not** a replacement for security or legal teams.
-
-**Fortune Global 500 echo orbit (v26):** sixteenth flagship [`creation_os_v26.c`](creation_os_v26.c) — v25 **plus** **M157–M176** *twenty mega-cap operating themes* (public journalism / survey discourse only) **echo-routed** onto the same **M45–M116** σ / receipt story hooks as §45n documents — a wider **narrative index**, not membership in any index, not remediation of real Fortune 500 incidents, not consulting. **`make check-v26`** (204 self-tests).
-
-**Frontier complement (geometry, not a harness substitute):** native **4096-bit** σ / Hamming / MAJ / XOR paths (`core/cos_neon_*.h` on AArch64) target **bit-parallel** similarity and retrieval latency; frontier LMs stay on the **transformer / harness** evidence class unless you publish `lm-eval` rows under [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
-
-**Compressed orientation (plain language):** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) — paradigm contrast, proved invariants, and explicit **non-claims**.
-
-**Misreadings and claim boundaries:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) (structured corrections) · [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) (evidence classes, forbidden merges) · [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) (diagram sources and edit rules).
-
------
+---
 
 ## Documentation hub
 
-| Resource | Link |
-|----------|------|
-| **Paradigm snapshot (plain-language)** | [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) |
-| **Common misreadings (structured corrections)** | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
-| **Claim discipline (evidence classes)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
-| **Index (all docs)** | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
-| **RTL silicon mirror (SV + Chisel + Yosys + Rust + SBY + EQY)** | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) · `make formal-rtl-lint` · `make stack-ultimate` · `make rust-iron-lint` |
-| **Full stack (formalism → silicon map)** | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
-| **Canonical Git (only real remote)** | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
-| **Features & standalone builds (one-page map)** | [docs/FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md) |
-| **Contributing** | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| **Security** | [SECURITY.md](SECURITY.md) |
-| **Agent rules (Copilot / Cursor)** | [AGENTS.md](AGENTS.md) |
-| **Repro bundle template (cite numbers)** | [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) |
-| **HDC / VSA literature → engineering map** | [docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md) |
-| **Figures & SVG index (design system)** | [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) |
-| **Push / release checklist (this repo only)** | [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md) |
-| **Cursor briefing** | [docs/cursor_briefing_creation_os.md](docs/cursor_briefing_creation_os.md) |
-| **Cursor integration** | [docs/cursor_integration_creation_os.md](docs/cursor_integration_creation_os.md) |
-| **Research program & thesis-grade spine** | [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) · [Doctoral read path](#doctoral-and-committee-read-path) (this README) |
-| **Software citation (CFF)** | [CITATION.cff](CITATION.cff) |
-| **BibTeX (LaTeX)** | [docs/CITATION.bib](docs/CITATION.bib) |
-| **Adversarial pre-review** | [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) |
-| **§1–§26 evidence classes** | [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) |
-| **Industry challenges → coherence receipts** | [docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md) |
-| **Glossary (σ, BSC, Planes, …)** | [docs/GLOSSARY.md](docs/GLOSSARY.md) |
-| **§7 / `make bench` protocol** | [docs/BENCHMARK_PROTOCOL.md](docs/BENCHMARK_PROTOCOL.md) |
-| **NEON coherence gate (AArch64)** | [docs/NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
-| **HV parliament + NEON retrieval** | [docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
-| **Living Kernel v6 (σ–K–L scaffold, M01–M18)** | [docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md) · `make check-v6` |
-| **Hallucination Killer v7 (v6 + M19–M23)** | [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md) · `make check-v7` |
-| **Parameters in Silicon v9 (v7 + M24–M29)** | [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md) · `make check-v9` |
-| **The Real Mind v10 (v9 + M30–M33)** | [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
-| **The MatMul-free mind v11 (v10 + M34)** | [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
-| **The Tensor mind v12 (v11 + M35–M37)** | [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
-| **The Silicon mind v15 (v12 + M38–M40)** | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) · `make check-v15` |
-| **The Unified field v16 (v15 + M41–M44)** | `creation_os_v16.c` (header + §45f) · `make check-v16` |
-| **Ship mode v20 (v16 + M45–M64 twenty pillars)** | `creation_os_v20.c` (§45g) · `make check-v20` |
-| **AGI sovereign stack v21 (v20 + M65–M76)** | `creation_os_v21.c` (§45h) · `make check-v21` |
-| **Twenty colossal insights v22 (v21 + M77–M96)** | `creation_os_v22.c` (§45i) · `make check-v22` |
-| **AGI-schematic affordances v23 (v22 + M97–M116)** | `creation_os_v23.c` (§45j) · `make check-v23` |
-| **arXiv sci-fi echo latches v24 (v23 + M117–M136)** | `creation_os_v24.c` (§45k) · `make check-v24` |
-| **Enterprise pain ledger v25 (v24 + M137–M156)** | `creation_os_v25.c` (§45m) · `make check-v25` |
-| **Fortune Global 500 echo orbit v26 (v25 + M157–M176)** | `creation_os_v26.c` (§45n) · `make check-v26` |
-| **English-only policy (committed files)** | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
-| **Maintainers (publish, merge gate)** | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
+**Reading UX (patterns that consistently score well):** lead with the reader’s **job-to-be-done**; use **inverted pyramid** (outcome before history); **chunk** dense lists into small tables; **progressive disclosure** (`<details>`) for power users; keep **one canonical index** so the mental map never forks ([docs/DOC_INDEX.md](docs/DOC_INDEX.md)). *Pointers, not a second README:* [Nielsen Norman — inverted pyramid](https://www.nngroup.com/articles/inverted-pyramid/), [progressive disclosure](https://www.nngroup.com/articles/progressive-disclosure/), [how users read on the web](https://www.nngroup.com/articles/how-users-read-on-the-web/).
 
------
+**Figures (stable IDs — cite the SVG + commit):** full register in [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md). On this README page, the highest-signal assets are:
+
+| FIG | File | Where it shows up here |
+|:---:|:--|:--|
+| **03** | [evidence-ladder.svg](docs/assets/evidence-ladder.svg) | [Publication-hard](#publication-hard-what-that-phrase-means-here) |
+| **04** | [kernel-lineage-evidence.svg](docs/assets/kernel-lineage-evidence.svg) | [Doctoral path](#doctoral-and-committee-read-path) |
+| **05** | [planes-abc.svg](docs/assets/planes-abc.svg) | [At a glance](#at-a-glance) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) |
+| **06** | [bsc-primitives.svg](docs/assets/bsc-primitives.svg) | [What is BSC?](#what-is-bsc) |
+| **07** | [gemm-vs-bsc-memory-ops.svg](docs/assets/gemm-vs-bsc-memory-ops.svg) | [Measured results](#measured-results-4096-dimensions-100k-trials) |
+| **08** | [architecture-stack.svg](docs/assets/architecture-stack.svg) | [Architecture](#architecture) |
+| **09** | [readme-scan-map.svg](docs/assets/readme-scan-map.svg) | [Contents / scan map](#readme-scan-map-fig-09) |
+
+### Tier 1 — default paths
+
+| You need… | Open |
+|:--|:--|
+| Full map of markdown | [docs/DOC_INDEX.md](docs/DOC_INDEX.md) |
+| Evidence / headline rules | [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md) |
+| Mis-readings we fixed | [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) |
+| Binaries & CI matrix | [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) |
+| Plain-language snapshot | [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) |
+| Figure & SVG rules | [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md) |
+| Push hygiene | [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md) |
+
+### Tier 2 — benchmarks, thesis, industry
+
+| Topic | Doc |
+|:--|:--|
+| Analysis / Planes A–C | [docs/ANALYSIS.md](docs/ANALYSIS.md) |
+| `make bench` / §7 protocol | [docs/BENCHMARK_PROTOCOL.md](docs/BENCHMARK_PROTOCOL.md) |
+| §1–§26 evidence index | [docs/MODULE_EVIDENCE_INDEX.md](docs/MODULE_EVIDENCE_INDEX.md) |
+| Thesis spine (RQ, threats, contributions) | [docs/RESEARCH_AND_THESIS_ARCHITECTURE.md](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md) · [Doctoral path below](#doctoral-and-committee-read-path) |
+| Repro bundle for published numbers | [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md) |
+| HDC/VSA ↔ engineering | [docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md) |
+| Industry ↔ receipts | [docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md](docs/COHERENCE_RECEIPTS_INDUSTRY_ALIGNMENT.md) |
+| Glossary | [docs/GLOSSARY.md](docs/GLOSSARY.md) |
+
+### Tier 3 — silicon, remotes, governance
+
+| Topic | Doc |
+|:--|:--|
+| RTL mirror (SV, Chisel, Yosys, Rust, formal) | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) |
+| Formalism → silicon | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
+| Git remotes | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
+| Contributing · security · agent rules | [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [AGENTS.md](AGENTS.md) |
+| Maintainers + merge gate | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
+| English-only policy | [docs/LANGUAGE_POLICY.md](docs/LANGUAGE_POLICY.md) |
+| Citation metadata | [CITATION.cff](CITATION.cff) · [docs/CITATION.bib](docs/CITATION.bib) |
+
+<details>
+<summary><strong>Kernel & bench shortcuts</strong> (v6–v12 docs; v15–v26 in-file headers; NEON; HV)</summary>
+
+| Track | Doc · command |
+|:--|:--|
+| v6 | [LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md) · `make check-v6` |
+| v7 | [HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md) · `make check-v7` |
+| v9 | [PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md) · `make check-v9` |
+| v10 | [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
+| v11 | [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
+| v12 | [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
+| v15–v26 | Headers in `creation_os_v15.c` … `creation_os_v26.c` · `make check-v15` … `make check-v26` |
+| NEON coherence | [NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
+| HV parliament | [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
+
+RTL tooling: `make formal-rtl-lint` · `make stack-ultimate` · `make rust-iron-lint`.
+
+</details>
+
+<details>
+<summary><strong>Pre-flight & editor tooling</strong></summary>
+
+| | |
+|:--|:--|
+| Adversarial review | [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) |
+| External evidence positioning | [docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md](docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md) |
+| Cursor briefing / integration | [docs/cursor_briefing_creation_os.md](docs/cursor_briefing_creation_os.md) · [docs/cursor_integration_creation_os.md](docs/cursor_integration_creation_os.md) |
+
+</details>
+
+---
 
 ## Doctoral and committee read path
 
@@ -126,7 +250,7 @@ Read **in order** once before citing any number or narrative title from this tre
 7. [docs/ADVERSARIAL_REVIEW_CHECKLIST.md](docs/ADVERSARIAL_REVIEW_CHECKLIST.md) — hostile review simulation before submission.
 
 | Artifact | Epistemic role | Evidence class for new claims |
-|----------|----------------|----------------------------------|
+|:--|:--|:--|
 | `creation_os_v2.c` + `make test` / `make bench` | Portable proof + microbench | Invariant / arithmetic / measured (as documented) |
 | `creation_os_v6.c` … `creation_os_v12.c` + `make check-v*` | **Extended lab demos** (narrative σ scaffolding, extra modules) | **Lab demo (C)** only — internal `self_test` consistency, not harness rows, tape-out, trained LM reproduction, or quantum hardware |
 
@@ -134,17 +258,40 @@ Read **in order** once before citing any number or narrative title from this tre
 
 ![Portable proof vs standalone lab demos (evidence classes) — see VISUAL_INDEX](docs/assets/kernel-lineage-evidence.svg)
 
-**On this page:** [Problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [Living Kernel (v6)](#living-kernel-v6) · [Hallucination Killer (v7)](#hallucination-killer-v7) · [Parameters in Silicon (v9)](#parameters-in-silicon-v9) · [The Real Mind (v10)](#the-real-mind-v10) · [The MatMul-free mind (v11)](#the-matmul-free-mind-v11) · [The Tensor mind (v12)](#the-tensor-mind-v12) · [Architecture](#architecture) · [Build](#build) · [Limitations](#limitations) · [Demonstrates](#what-this-demonstrates) · [Theory](#theoretical-foundation) · [Why it wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Paradigm shift](#paradigm-shift-what-changes--quoted-discipline) · [Receipts roadmap](#road-from-this-readme-to-production-receipts) · [Publication-hard](#publication-hard-what-that-phrase-means-here) · [License](#license)
-
------
+---
 
 ## Product repository
 
 **[spektre-labs/creation-os](https://github.com/spektre-labs/creation-os)** — this tree is the portable kernel, `make test` / `make bench`, CI, and engineering docs. **Push hygiene:** [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md).
 
------
+```mermaid
+flowchart TB
+  subgraph story["Narrative arc below this heading"]
+    P["The problem + measured table"]
+    B["BSC + invariants + 26 modules"]
+    D["Deep dives v6–v12 + architecture"]
+    E["Theory + AGI map + publication-hard"]
+  end
+  P --> B --> D --> E
+```
+
+---
 
 ## The problem
+
+```mermaid
+flowchart TB
+  subgraph gemm["Float32 cosine @ D=4096"]
+    G1["24,576 MAC-style FLOPs<br/>per similarity (proxy)"]
+    G2["16 KiB per vector (pair)"]
+  end
+  subgraph bsc["BSC σ @ D=4096"]
+    B1["128 bit-ops<br/>XOR + POPCNT lanes"]
+    B2["512 B per vector (pair)"]
+  end
+  gemm --> story["Same geometric task<br/>different precision story"]
+  bsc --> story
+```
 
 Modern AI computes similarity between two 4096-dimensional representations using 24,576 floating-point operations (multiply-accumulate for cosine similarity).
 
@@ -155,7 +302,7 @@ That gap is structural: it changes **who can run the inner loop** of similarity 
 ## Measured results (4096 dimensions, 100K trials)
 
 | Metric | GEMM (float32 cosine) | BSC (XOR + POPCNT) | Ratio |
-|--------|------------------------|--------------------|-------|
+|:--|--:|--:|--:|
 | Memory per vector | 16,384 bytes | 512 bytes | **32×** |
 | Ops per similarity | 24,576 FLOPs | 128 bit ops | **192×** |
 | Throughput | ~227K trials/sec | ~109M trials/sec | **~480×** |
@@ -174,7 +321,69 @@ Throughput figures are host-dependent; run `make bench` (or §7 inside `./creati
 4. **Falsifiers** for the algebra shipped here: a reproducible run where self-distance is non-zero, Noether XOR-sum drifts without the asymmetric interaction the toy allows, or documented MAJ bounds failing under fixed seeds — any of these would break the “one file, one geometry” story.
 5. **Evidence ladder:** this table is **microbench / lab** class. Do not merge it with harness MMLU, ARC, or chat-quality rows in a single headline — see **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)** and **[docs/ANALYSIS.md](docs/ANALYSIS.md)** (*Evaluation modes*).
 
------
+---
+
+<a id="llm-vs-creation-os-comparison"></a>
+
+## Traditional LLM stacks vs Creation OS (bounded engineering comparison)
+
+This section answers a professional question: **where does a bit-geometry / σ-first stack legitimately beat a typical “large transformer + framework + runtime” path**, and where does it **not** try to compete? The bar is not louder marketing — it is **separate scoreboards**, **named evidence classes**, and **falsifiers** you can run locally ([CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md)).
+
+### Two scoreboards (do not merge them)
+
+| Scoreboard | Question it answers | Typical artifact | Creation OS anchor in this tree |
+|:--|:--|:--|:--|
+| **Generative quality / task accuracy** | Does the model solve benchmarks and user tasks at frontier level? | `lm-eval` JSON, human eval, product metrics | **Not claimed** by `creation_os_v2.c` or the Oracle/JEPA toys alone — see [Limitations](#limitations) |
+| **Geometric inner loop + memory + audit** | For a **fixed** representation width, what does *similarity*, *storage*, and *discrete checking* cost? | GEMM cosine vs packed HV distance | **Measured + arithmetic** — [Measured results](#measured-results-4096-dimensions-100k-trials), `make bench`, invariants |
+
+**Professional superiority (the defensible kind)** is about **not mixing those scoreboards in one sentence**, shipping **receipts** for the second, and wiring the first only when a harness row exists — [ANALYSIS](docs/ANALYSIS.md) (*Evaluation modes*), [EXTERNAL_EVIDENCE_AND_POSITIONING](docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md).
+
+### Side-by-side: systems properties
+
+| Dimension | Typical frontier LLM stack | Creation OS map (this README + Planes A–C in ANALYSIS) | Why the comparison is fair / bounded |
+|:--|:--|:--|:--|
+| **Primary inner product** | FP/BF16 matmuls + softmax attention over learned embeddings | **XOR + POPCOUNT / σ** on packed hypervectors for the *same geometric “who is close to whom” job* at stated `D` | Same *task class* (distance / coherence), **different precision** — note on [Measured results](#measured-results-4096-dimensions-100k-trials) |
+| **Memory per stored vector (4096-d task shape)** | `2 × D × 4` bytes for FP32 pair participation in cosine-style scoring | **512 B** for the packed layout used here | **Arithmetic** from declared encodings |
+| **Ops proxy per similarity (stated model)** | ~`6D` multiply-add style FLOPs for cosine (as documented in this README) | **128 bit-ops** (64 XOR + 64 POPCOUNT lanes at `D=4096`) | **Arithmetic** op-count story; throughput is **measured** |
+| **Throughput @ inner loop** | Dominated by memory bandwidth + GEMM kernels on GPU/AMX | **~10⁸+ trials/sec class** on CPU for the microbench configuration — run `make bench` | **Measured** — host-dependent; archive flags + `uname` for any external cite |
+| **Reproducibility of “it works”** | Often a stack of Python, CUDA/cuDNN, custom ops, version pins | **`cc -O2 -I. … -lm`** for the teaching kernel; `make merge-gate` for maintainer bar | **Repository reality** — see [Run it in sixty seconds](#run-it-in-sixty-seconds) |
+| **Discrete falsifiers** | Failures can be ambiguous (numerical drift, nondeterminism, distributed race) | **Printed invariants** — self-distance, MAJ bounds, Noether sum under stated toy rules | **Verified** class for the portable core — [Verified invariants](#verified-invariants) |
+| **Audit trail for coherence** | Logits, losses, attention maps (continuous, high-dimensional) | **σ / Hamming** as a **single receipt language** across kernel, codebook, gates | **Design contract** — [Why this wins where it matters](#why-this-wins-where-it-matters-engineering-not-slogans), [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) |
+| **Dependency / supply chain** | Heavy runtime + kernels + often cloud | **stdlib + libm** for the portable TU; native headers for NEON path | **Deployment surface** — not a claim about model *quality* |
+| **Where LLMs are unambiguously ahead** | Open-ended generation, broad world knowledge, SOTA on harnesses after large-scale training | This tree **demonstrates mechanism + cost shape**; headline LM scores require **harness** artifacts | **Forbidden merge** without two-row reporting — [CLAIM_DISCIPLINE §2](docs/CLAIM_DISCIPLINE.md) |
+
+### Where Creation OS is structurally strong (and how we say it without hype)
+
+1. **Cost of geometry at the inner loop.** For the **4096-bit BSC layout** and the **float32 cosine proxy** documented above, the **192×** ops-ratio and **32×** RAM-ratio are not marketing adjectives — they are **counting statements** anyone can re-derive from `D` and word width. That is the sense in which the approach is **“superior” on silicon per distance check**: fewer joules and bytes for the *declared* similarity primitive, before you spend a full forward pass.
+
+2. **Priority order that matches real autonomy economics.** Lookup / kernel / cheap structure first, **transformer last** — the same pattern described for heterogeneous dispatch in the broader Creation OS story ([AGI map](#agi-map-how-this-file-relates-to-the-full-stack)). Traditional stacks often invert that priority because the embedding model is the only hammer.
+
+3. **Professional epistemology.** The repository **names forbidden merges** (microbench × MMLU, toy oracle × chat quality, v6–v12 self_test × frontier LM claims) and ships **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)** as the **editorial law**. That is a **quality bar** many industrial LLM write-ups do not meet: one headline number, one evidence class.
+
+4. **Composition under one algebra.** Twenty-six cognitive modules in **one** small C program built from **three** bit primitives is not “we beat GPT”; it is **a proof of compositional discipline** — you can reason about interactions without a second hidden stack ([26 modules](#26-modules)).
+
+5. **Field alignment without over-claiming.** Hypervector / HDC lines and Hamming ANN precedent are mapped to evidence class in **[docs/HDC_VSA_ENGINEERING_SUPERIORITY.md](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md)** — literature for *why the engineering story is timely*, separate from *what this git SHA proves tonight*.
+
+### Where traditional LLM stacks still win (say this out loud)
+
+- **Open-ended fluency and knowledge breadth** after large-scale pretraining and RLHF-style alignment.
+- **Official benchmark rows** (MMLU, ARC, …) that require **harness** archives, not `--self-test` greens.
+- **Ecosystem velocity** (fine-tuning recipes, quantization, serving frameworks) around matmul-first models.
+
+None of the above negates the **inner-loop** and **receipt** advantages — it **bounds** them. The serious pitch is **heterogeneous**: keep the frontier LM where it earns its keep, and run **σ / Hamming / POPCOUNT** where distance, memory, and discrete checks dominate latency and audit surface.
+
+### Decision lens (for architects, not cheerleaders)
+
+| If your bottleneck is… | Favor… | Receipt to demand |
+|:--|:--|:--|
+| **Per-token matmul energy** on edge / embedded | Bit-parallel similarity + small-footprint C | `make bench`, `core/cos_neon_*.h` notes in ANALYSIS |
+| **Audit / safety case** needing discrete checks | Invariants + tamper-sensitive chains + σ-gates | `./creation_os` invariant block; CLAIM_DISCIPLINE |
+| **Highest-quality long-form chat** | Frontier transformer + harnessed eval | Archived `lm-eval` + model id |
+| **“One geometry” across tools** | σ as first-class signal end-to-end | [Why this wins where it matters](#why-this-wins-where-it-matters-engineering-not-slogans) |
+
+**Bottom line:** Creation OS is **professionally “superior”** where the claim is **measured or countable**, **cross-examinable**, and **not smuggled** into a benchmark headline it did not earn. That restraint is itself the **quality moat**.
+
+---
 
 ## What is BSC?
 
@@ -197,7 +406,7 @@ float sigma = ((float)d / 4096.0f) * ((float)d / 4096.0f);
 
 Creation OS extends BSC with σ-coherence: `σ(a,b) = (hamming(a,b)/D)²`. This function measures structural similarity between any two representations in the architecture.
 
------
+---
 
 ## Verified invariants
 
@@ -212,7 +421,7 @@ Noether XOR-sum   = 0.000000   conserved under symmetric XOR interaction
 JEPA energy       → ~-60%      codebook learns context→target mappings
 ```
 
------
+---
 
 ## 26 modules
 
@@ -269,7 +478,7 @@ COGNITION
   §26 Authentication ───── XOR signature chain. Tampering detected at σ > 0.
 ```
 
------
+---
 
 ## Living Kernel (v6)
 
@@ -279,7 +488,7 @@ COGNITION
 
 **Discipline:** treat v6 like §2–§26 demos for citations: **lab demo / schematic** unless you add external evidence per [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). Full map and non-claims: **[docs/LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)**.
 
------
+---
 
 ## Hallucination Killer (v7)
 
@@ -287,7 +496,7 @@ COGNITION
 
 **Verify:** `make check-v7` (35 tests). **Doc:** [docs/HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md).
 
------
+---
 
 ## Parameters in Silicon (v9)
 
@@ -295,7 +504,7 @@ COGNITION
 
 **Verify:** `make check-v9` (41 tests). **Doc:** [docs/PARAMETERS_IN_SILICON_V9.md](docs/PARAMETERS_IN_SILICON_V9.md).
 
------
+---
 
 ## The Real Mind (v10)
 
@@ -303,7 +512,7 @@ COGNITION
 
 **Verify:** `make check-v10` (46 tests). **Doc:** [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md).
 
------
+---
 
 ## The MatMul-free mind (v11)
 
@@ -311,7 +520,7 @@ COGNITION
 
 **Verify:** `make check-v11` (49 tests). **Doc:** [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
 
------
+---
 
 ## The Tensor mind (v12)
 
@@ -319,7 +528,7 @@ COGNITION
 
 **Verify:** `make check-v12` (52 tests). **Doc:** [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
 
------
+---
 
 ## Architecture
 
@@ -355,7 +564,7 @@ COGNITION
  └────────────┘   └─────────────────┘   └───────────────┘
 ```
 
------
+---
 
 ## Build
 
@@ -390,7 +599,7 @@ make standalone
 
 Requirements: C11 compiler + libm.
 
------
+---
 
 ## Limitations
 
@@ -407,7 +616,7 @@ This is a research prototype. Specific limitations:
 - **`creation_os_v11.c`** is a **sixth** program: v10 **plus** M34 matmul-free LM **schematic**; 49 checks — not a trained BitNet-class model or published throughput reproduction — see [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
 - **`creation_os_v12.c`** is a **seventh** program: v11 **plus** M35–M37 classical tensor-train / entropy / sequence-head **toys**; 52 checks — not quantum hardware, not TN-LM harness rows — see [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
 
------
+---
 
 ## What this demonstrates
 
@@ -423,7 +632,7 @@ This is a research prototype. Specific limitations:
 10. **The MatMul-free mind v11** adds M34 — a ternary accumulation + MLGRU **toy** forward path with zero `sigma_matmul` in this file’s definition of “no matmul” ([THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)).
 11. **The Tensor mind v12** adds M35–M37 — MPS contraction, entropy readout, and sequence-head **schematics** on classical `double` math only ([THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)).
 
------
+---
 
 ## Theoretical foundation
 
@@ -440,7 +649,9 @@ This repository holds the **portable kernel** and measured claims; theory citati
 
 **Extended narrative:** full three-plane map (llama.cpp + superkernel, MLX, native M4), evidence classes (harness vs microbench vs lab demo), AGI `cos_*` batches, and publication gates — **[docs/ANALYSIS.md](docs/ANALYSIS.md)** (same technical story as this README, with file-level anchors; some paths are forward references when optional trees are not on disk). **Claim discipline (what you may merge in one headline):** **[docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)**.
 
------
+---
+
+<a id="why-this-wins-where-it-matters-engineering-not-slogans"></a>
 
 ## Why this wins where it matters (engineering, not slogans)
 
@@ -454,7 +665,7 @@ This repository holds the **portable kernel** and measured claims; theory citati
 
 **AGI-relevant boundary.** This single file does **not** claim benchmark parity with frontier chat models. It **does** show that a broad slice of cognitive primitives (metacognition, ToM, moral compromise, consensus, sleep consolidation, …) can live in **one** small C program built only from XOR / MAJ / POPCOUNT — which is the point of the **26-module** layout: **composition under one algebra**, not a second hidden stack.
 
------
+---
 
 ## AGI map (how this file relates to the full stack)
 
@@ -465,7 +676,7 @@ The public **`creation_os_v2.c`** kernel is the **pedagogical spine** (Plane “
 The **production** Creation OS stack (Planes A–C in ANALYSIS) adds, without replacing the algebra:
 
 | Plane | Role (summary) |
-|-------|------------------|
+|:--|:--|
 | **A — llama.cpp + superkernel** | GEMM inference stays here; SK8 superkernel + GDA bridge steer logits and masks with σ / Hamming paths. |
 | **B — MLX / Python** | Orchestration, receipts, harness vs native evaluation modes, ARC / policy tooling. |
 | **C — native M4 dylib** | NEON σ batches, optional Metal living weights, dispatcher — `cos_agi*` / `cos_mega*` style primitives for receipts and audits. |
@@ -474,21 +685,21 @@ The **production** Creation OS stack (Planes A–C in ANALYSIS) adds, without re
 
 **Why that matters for AGI work:** long-horizon autonomy needs **contracts** (what was measured, on what hardware, with what receipt). A bit-geometry first pipeline gives you a place to attach those contracts **before** the expensive forward pass — the same design move as “lookup / kernel / transformer last” in Creation OS dispatch rules.
 
------
+---
 
 ## Paradigm shift (what changes — quoted discipline)
 
 From the analysis doc: the repository **does not** claim that 4096 bits replace QFT or that MMLU moves without harness runs. **What changes** is engineering + epistemology:
 
 | Dimension | Typical LLM-only story | Creation OS map |
-|-----------|------------------------|-----------------|
+|:--|:--|:--|
 | Unit of measure | Loss / logits scattered | **σ / Hamming** one receipt language |
 | Priority | “Call the big model first” | **Cheap structure first** (LSH, codebook, σ gates) then generation |
 | AGI primitives | Float Python only | **Native `cos_agi*` / `cos_mega*`** plus optional **4096-bit HV receipts** for audit (`cos_agi_hv_*` family in full tree) |
 
 This README’s benchmark table is the **microbench / lab** class; cite it as such next to any frontier row.
 
------
+---
 
 ## Road from this README to production receipts
 
@@ -497,7 +708,7 @@ This README’s benchmark table is the **microbench / lab** class; cite it as su
 3. Use **`creation_os_v2.c`** as the **portable** artifact for “here is the algebra”; use **Planes A–C** for “here is how it wraps real inference.”  
 4. Keep **AGPL + dual license** on shipped sources; commercial path stays in `COMMERCIAL_LICENSE.md`.
 
------
+---
 
 ## Publication-hard (what that phrase means here)
 
@@ -515,7 +726,7 @@ flowchart LR
 **Not** marketing volume. **Yes** — a standard of argument that many peer-reviewed ML systems papers do not meet on **baseline hygiene**: mixed eval modes, appendix-thin reproducibility, and “task-defined-after-results” tables are common; this repository names those failure modes and blocks them by construction where possible.
 
 | Stricter than typical write-ups | How this tree enforces it |
-|----------------------------------|---------------------------|
+|:--|:--|
 | Baseline separation | Harness vs native vs C demo = **different evidence classes**; ANALYSIS and **CLAIM_DISCIPLINE** require **two-row** reporting when both appear. |
 | Reproducibility | One TU (`creation_os_v2.c` + `core/*.h`, `cc -I.`) compiles with **stdlib + libm**; invariants print to stdout; `make bench` regenerates throughput on your metal. |
 | Bounded language | **Limitations** lists what the Oracle, JEPA toy, and benchmark are *not* — no silent upgrade from “demonstrates mechanism” to “beats frontier.” |
@@ -530,7 +741,7 @@ If a sentence cannot point to **(a)** a line of C, **(b)** a command, or **(c)**
 
 **Academic citation metadata:** [CITATION.cff](CITATION.cff) (include commit SHA + evidence class when citing numbers).
 
------
+---
 
 ## License
 
@@ -541,6 +752,8 @@ If a sentence cannot point to **(a)** a line of C, **(b)** a command, or **(c)**
 Lauri Elias Rainio · Spektre Labs · Helsinki  
 ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541)
 
------
+---
+
+**End of README.** Quick re-entry: [`make merge-gate`](#run-it-in-sixty-seconds) · [DOC_INDEX](docs/DOC_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
 
 *2026 · Spektre Labs · Helsinki*

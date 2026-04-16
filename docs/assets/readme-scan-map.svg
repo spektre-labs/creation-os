@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" role="img" aria-labelledby="rs-t rs-d">
+  <title id="rs-t">README scan map / inverted pyramid</title>
+  <desc id="rs-d">Three-layer scan map: outcome first, scannable tables and diagrams, deep technical sections last. Flight-ops style diagram; original artwork for Creation OS README.</desc>
+  <defs>
+    <linearGradient id="rs-wash" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f1f5f9"/>
+    </linearGradient>
+    <linearGradient id="rs-accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="50%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0369a1"/>
+    </linearGradient>
+    <pattern id="rs-grid" width="36" height="36" patternUnits="userSpaceOnUse">
+      <path d="M36 0H0V36" fill="none" stroke="#94a3b8" stroke-opacity="0.22" stroke-width="0.7"/>
+    </pattern>
+    <filter id="rs-sh" x="-3%" y="-3%" width="106%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+  <rect width="900" height="420" fill="url(#rs-wash)"/>
+  <rect width="900" height="420" fill="url(#rs-grid)"/>
+  <rect x="0" y="0" width="900" height="4" fill="url(#rs-accent)"/>
+  <text x="24" y="28" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600" letter-spacing="0.12em">FIG 09 / README SCAN MAP</text>
+  <text x="450" y="56" text-anchor="middle" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" font-weight="800">Inverted pyramid on one page</text>
+  <text x="450" y="76" text-anchor="middle" fill="#64748b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="500">Outcome first / tables and Mermaid / deep dives last</text>
+  <path d="M450 88 L450 102" stroke="#cbd5e1" stroke-width="2"/>
+  <polygon points="450,108 444,102 456,102" fill="#64748b"/>
+  <rect x="48" y="112" width="804" height="70" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.5" filter="url(#rs-sh)"/>
+  <text x="72" y="138" fill="#065f46" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="700">L1 / OUTCOME</text>
+  <text x="72" y="158" fill="#064e3b" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Grey quote + merge gate + 184 harness row</text>
+  <text x="72" y="176" fill="#047857" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Portable C11 kernel, falsifiable sigma story, CLAIM_DISCIPLINE before screenshots</text>
+  <path d="M450 182 L450 196" stroke="#cbd5e1" stroke-width="2"/>
+  <polygon points="450,202 444,196 456,196" fill="#64748b"/>
+  <rect x="48" y="206" width="804" height="70" rx="12" fill="#ffffff" stroke="#0ea5e9" stroke-width="1.5" filter="url(#rs-sh)"/>
+  <text x="72" y="232" fill="#0369a1" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="700">L2 / SCAN</text>
+  <text x="72" y="252" fill="#0f172a" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">Contents + badges + tables + Mermaid + figure strip</text>
+  <text x="72" y="270" fill="#475569" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Layer-cake friendly: headings carry meaning; body is optional on first pass</text>
+  <path d="M450 276 L450 290" stroke="#cbd5e1" stroke-width="2"/>
+  <polygon points="450,296 444,290 456,290" fill="#64748b"/>
+  <rect x="48" y="300" width="804" height="70" rx="12" fill="#fff7ed" stroke="#ea580c" stroke-width="1.5" filter="url(#rs-sh)"/>
+  <text x="72" y="326" fill="#9a3412" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="700">L3 / DEPTH</text>
+  <text x="72" y="346" fill="#7c2d12" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="700">BSC + invariants + 26 modules + AGI map + publication-hard</text>
+  <text x="72" y="364" fill="#9a3412" font-family="ui-sans-serif,system-ui,sans-serif" font-size="10">Read when citing numbers, thesis structure, or stack receipts</text>
+  <rect x="0" y="382" width="900" height="38" fill="#0f172a"/>
+  <line x1="0" y1="382" x2="900" y2="382" stroke="#334155" stroke-width="1"/>
+  <text x="24" y="404" fill="#94a3b8" font-family="ui-monospace,Menlo,monospace" font-size="9">MODE=README | VERIFY=CLAIM_DISCIPLINE | ASSET=SVG | REF=VISUAL_INDEX</text>
+  <text x="876" y="404" text-anchor="end" fill="#22d3ee" font-family="ui-monospace,Menlo,monospace" font-size="9" font-weight="600">FIG 09 LOCKED</text>
+</svg>
