@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Creation OS v61 — SLSA-3 provenance generation for the hardened
+# v61 binary using the official slsa-github-generator reusable
+# workflow.  Keyless Sigstore signing via OIDC.
+#
+# Triggered on release publish or manual dispatch (to limit token use).
+
+name: slsa
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  id-token: write   # required for OIDC keyless signing
+  contents: read
+  actions: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      digest: ${{ steps.hash.outputs.digest }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build hardened v61
+        run: make standalone-v61-hardened
+      - name: Compute artifact digest
+        id: hash
+        run: |
+          set -euo pipefail
+          sha=$(sha256sum creation_os_v61_hardened | awk '{print $1}')
+          echo "digest=$sha" >> "$GITHUB_OUTPUT"
+          echo "sha256: $sha"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: creation_os_v61_hardened
+          path: creation_os_v61_hardened
+
+  provenance:
+    needs: build
+    permissions:
+      id-token: write
+      contents: read
+      actions: read
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.digest }}  creation_os_v61_hardened"
+      upload-assets: true

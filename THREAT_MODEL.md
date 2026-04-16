@@ -106,3 +106,53 @@ actions* from ambiguous-intent caller requests.
 All seven invariants are exercised by `make check-v60`; the 2 000-case
 `stress_random_invariants` sweep also confirms no decision outside the
 valid range and no "ALLOW with reason_bits ≠ 0".
+
+## 8. v61 Σ-Citadel extension
+
+v61 composes two new primitives on top of v60 and threads them
+through the whole DARPA-CHACE menu:
+
+### 8.1 Lattice (BLP + Biba + MLS compartments)
+
+| Attack | v60 layer | v61 layer | Composed result |
+| --- | --- | --- | --- |
+| ClawWorm writes into code pages | α-dominated → `DENY_INTENT` | Biba no-write-up → `DENY_LATTICE` | **DENY_BOTH** (belt + braces) |
+| DDIPE reads secrets | α-dominated → `DENY_INTENT` | BLP no-read-up → `DENY_LATTICE` | **DENY_BOTH** |
+| Confused-deputy cross-compartment | caps subset fails → `DENY_CAP` | compartment mask fails → `DENY_LATTICE` | **DENY_BOTH** |
+| Runtime patch of code page | `code_page_hash ≠ baseline` → `DENY_INTEGRITY` | quote mismatches baseline at next attest → verifier halt | **DENY_V60** + attested quote divergence |
+
+Composition decision surface (`cos_v61_compose`): `ALLOW`,
+`DENY_V60`, `DENY_LATTICE`, `DENY_BOTH`.  Branchless 4-way mux; 61
+tests cover every combination.
+
+### 8.2 Attestation chain
+
+- Default: deterministic XOR-fold-256 over `(code_page_hash,
+  caps_state_hash, sigma_state_hash, lattice_hash, nonce)`.
+- `COS_V61_LIBSODIUM=1`: BLAKE2b-256 via `crypto_generichash`.
+- Offline verifier compares quote against baseline; divergence →
+  system halt (seL4 notification in the CAmkES composition).
+
+Tier claim: **M** (runtime-checked, 61 tests include sensitivity to
+every input field and constant-time equality); quote-as-MAC is
+**M** only with libsodium enabled.
+
+### 8.3 Defence-in-depth composition (`make chace`)
+
+`make chace` runs the full DARPA-CHACE menu on the host and reports
+PASS / honest-SKIP / FAIL per layer.  Missing tools SKIP; they never
+silently PASS.  Matrix on macOS M4 typical run: 10 PASS, 5 SKIP,
+0 FAIL (seL4, eBPF, WASI-SDK, docker, cosign SKIP on a vanilla
+dev machine).
+
+### 8.4 Non-claims specific to v61
+
+- v61 does not ship a TPM 2.0 driver.  Quote input is caller-
+  provided; Secure-Enclave binding is P-tier.
+- v61 does not instantiate the seL4 CAmkES component; the
+  `sel4/sigma_shield.camkes` file is a contract only.  CAmkES build
+  in CI is P-tier.
+- CHERI capability pointers are **documentation only**.
+- `make slsa` emits a local SLSA v1.0-shaped predicate for
+  inspection; real SLSA-3 attestation requires Sigstore Rekor
+  inclusion via `.github/workflows/slsa.yml`.

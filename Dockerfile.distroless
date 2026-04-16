@@ -1,0 +1,37 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Creation OS v61 — distroless runtime container for creation_os_v61.
+#
+# Multi-stage build: compile with Debian clang, copy the single static
+# binary into a Google distroless base image (no shell, no package
+# manager, minimal attack surface).  Supports SLSA-3 provenance via
+# the workflow in `.github/workflows/slsa.yml`.
+#
+# Build:
+#   docker build -f Dockerfile.distroless -t creation-os-v61:distroless .
+# Run:
+#   docker run --rm -it creation-os-v61:distroless --self-test
+
+FROM debian:12-slim AS build
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends clang make \
+ && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+COPY src/v61 /src/v61
+
+RUN clang -O2 -std=c11 -Wall -Wextra \
+      -D_FORTIFY_SOURCE=3 -fstack-protector-strong \
+      -fstack-clash-protection -fPIE -Wl,-pie \
+      -I/src/v61 -o /creation_os_v61 \
+      /src/v61/creation_os_v61.c /src/v61/citadel.c -lm
+
+# --- distroless runtime --------------------------------------------
+# gcr.io/distroless/cc-debian12 has libc + libstdc++ only — no shell.
+FROM gcr.io/distroless/cc-debian12:nonroot
+
+COPY --from=build /creation_os_v61 /creation_os_v61
+USER nonroot
+ENTRYPOINT ["/creation_os_v61"]
+CMD ["--self-test"]

@@ -1,5 +1,140 @@
 # Changelog
 
+## v61 Σ-Citadel — composed defence-in-depth (DARPA-CHACE menu) (2026-04-17)
+
+- **Driving oivallus.** The 2026 advanced-security menu for AI agents
+  is **composed**, not chosen: seL4 microkernel + Wasmtime userland
+  sandbox + eBPF LSM + MLS lattice + hardware attestation + Sigstore
+  signing + SLSA-3 provenance + reproducible build + distroless
+  runtime.  DARPA's CHACE programme studies that composition; no
+  open-source AI-agent runtime had shipped all of it as one runnable
+  gate.  `v61` is that gate.  It adds two new M-tier primitives
+  (BLP + Biba + MLS lattice kernel, and a deterministic 256-bit
+  attestation quote) and ties every external layer into one `make
+  chace` aggregator that **PASSes present layers and SKIPs missing
+  ones honestly** (never silently downgrading).
+- **v61 Σ-Citadel kernel** (`src/v61/citadel.{h,c}` + driver
+  `src/v61/creation_os_v61.c`).  `cos_v61_lattice_check(subj, obj,
+  op)` implements Bell-LaPadula (no-read-up / no-write-down over
+  8-bit clearance), Biba (no-read-down / no-write-up over 8-bit
+  integrity), and 16-bit MLS compartments in one branchless kernel.
+  All three lanes compute unconditionally; op (`READ`/`WRITE`/`EXEC`)
+  selects via AND-masks; `EXEC` requires both read and write to
+  pass.  `cos_v61_lattice_check_policy` adds an optional
+  `min_integrity` quarantine rule.  `cos_v61_lattice_check_batch`
+  prefetches 16 lanes ahead for batch throughput.
+- **Attestation chain.** `cos_v61_quote256` computes a deterministic
+  256-bit digest over
+  `(code_page_hash || caps_state_hash || sigma_state_hash ||
+  lattice_hash || nonce || reserved_padding)`.  Default: four-lane
+  XOR-fold with SplitMix constants — deterministic, equality-
+  sensitive, not a MAC.  With `COS_V61_LIBSODIUM=1` the quote is
+  BLAKE2b-256 via libsodium `crypto_generichash`.
+  `cos_v61_ct_equal256` is constant-time 256-bit equality (OR-fold
+  reduction).  `cos_v61_quote256_hex` emits a 64-char hex string
+  with no allocation.
+- **Composition with v60.** `cos_v61_compose(v60_decision,
+  lattice_allowed)` gives a four-valued branchless decision
+  `{ALLOW, DENY_V60, DENY_LATTICE, DENY_BOTH}`.  No short-circuit;
+  4-way mux via `(CONST * mask)` OR.
+- **61-test self-test suite** (`creation_os_v61 --self-test` via
+  `make check-v61`): version & policy defaults, BLP no-read-up /
+  read-down / no-write-down / write-up / equal, Biba no-read-down /
+  read-up / no-write-up / write-down, combined BLP+Biba strict ∧
+  equal-is-always-ok, compartment match / missing / empty,
+  `EXEC` conservatism, unknown-op denial, policy quarantine,
+  batch=scalar equivalence on 64-element random trace, quote
+  determinism + per-field sensitivity (`code_page_hash` /
+  `caps_state_hash` / `sigma_state_hash` / `lattice_hash` /
+  `nonce`), hex round-trip, `ct_equal256` null-safe + self-equal,
+  compose all four surfaces + null + tag strings, allocator
+  null / aligned / zeroed + `sizeof == 64`, four adversarial
+  scenarios (ClawWorm Biba, DDIPE BLP, compartment isolation,
+  runtime-patch quote), 2000-case stress invariant.  ASAN + UBSAN
+  builds pass all 61 tests.
+- **Microbench**: `make microbench-v61` → 6.1 × 10⁸ lattice
+  decisions/s on Apple M4 across n ∈ {1024, 16384, 262144} (three-
+  decade batch sweep; L1-resident).
+- **DARPA-CHACE composition (`make chace`).**  One aggregator that
+  runs every layer of the 2026 advanced-security menu locally and
+  in CI and reports **PASS / honest SKIP / FAIL** per layer:
+  1. `check-v60` σ-Shield (81/81)
+  2. `check-v61` Σ-Citadel (61/61)
+  3. `attest`  — emit `ATTESTATION.json`, optional cosign sign
+  4. seL4 CAmkES contract presence (`sel4/sigma_shield.camkes`)
+  5. `wasm-sandbox` — Wasmtime + WASI-SDK (`wasm/example_tool.c`)
+  6. `ebpf-policy` — Linux-only LSM BPF example
+     (`ebpf/sigma_shield.bpf.c`)
+  7. `sandbox-exec` — Darwin sandbox profile (`sandbox/darwin.sb`)
+  8. `harden` + `hardening-check` — OpenSSF 2026 flags + ARM64 PAC
+  9. `sanitize` — ASAN + UBSAN on v58/v59/v60/v61
+  10. `sbom` — CycloneDX-lite 1.5 with SHA-256 per component
+  11. `security-scan` — gitleaks + grep-fallback + URL sanity
+  12. `reproducible-build` — double-build SHA-256 parity
+  13. `sign` — Sigstore cosign sign-blob (OIDC keyless in CI)
+  14. `slsa` — SLSA v1.0 predicate to `PROVENANCE.json`
+  15. `distroless` — `gcr.io/distroless/cc-debian12:nonroot`
+- **Defence-in-depth plumbing (new files).**
+  - `sel4/sigma_shield.camkes` + `sel4/README.md` — component
+    contract (three endpoints: authorize, lattice_check,
+    attest_quote; zero network caps; sibling Wasmtime tool sandbox).
+  - `wasm/example_tool.c` — minimal capability-mediated tool.
+  - `scripts/v61/wasm_harness.sh` — Wasmtime sandbox harness with
+    honest WASI-SDK / wasmtime SKIPs.
+  - `ebpf/sigma_shield.bpf.c` — LSM BPF prog that blocks `execve`
+    unless σ-Shield has published a PID key to a pinned BPF map.
+  - `scripts/v61/ebpf_build.sh` — Linux-only build; SKIP elsewhere.
+  - `sandbox/darwin.sb` — `sandbox-exec` profile (deny default; no
+    network; no DYLD_ injection; read-only FS; writes limited to
+    `.build/`).
+  - `sandbox/openbsd_pledge.c` — pledge/unveil wrapper stub.
+  - `scripts/v61/sandbox_exec.sh` — runs v61 self-test under the
+    Darwin sandbox profile.
+  - `nix/v61.nix` — reproducible Nix build recipe.
+  - `Dockerfile.distroless` — multi-stage Debian build → distroless
+    runtime.
+  - `scripts/security/attest.sh` — emit ATTESTATION.json +
+    optional cosign sign-blob.
+  - `scripts/security/sign.sh` — cosign keyless sign of hardened
+    binaries + SBOM.
+  - `scripts/security/slsa.sh` — local SLSA v1.0 predicate emitter.
+  - `scripts/security/chace.sh` — the CHACE aggregator.
+  - `scripts/v61/microbench.sh` — 3-point lattice timing sweep.
+- **Makefile.** New targets: `standalone-v61`, `standalone-v61-
+  hardened`, `test-v61`, `check-v61`, `microbench-v61`, `asan-v61`,
+  `ubsan-v61`, `attest`, `sign`, `slsa`, `wasm-sandbox`,
+  `ebpf-policy`, `sandbox-exec`, `distroless`, `nix-build`,
+  `sel4-check`, `chace`.  `harden` and `sanitize` now include v61.
+  `clean` sweeps `creation_os_v61*`, `.build/wasm`, `.build/ebpf`,
+  `ATTESTATION.json`, `PROVENANCE.json`.  `V61_EXTRA_CFLAGS` /
+  `V61_EXTRA_LDFLAGS` wire `COS_V61_LIBSODIUM=1` → `-lsodium`.
+- **v57 Verified Agent integration.** New slot
+  `defense_in_depth_stack` (tier **M**, owner v61, target
+  `make check-v61`) in `src/v57/verified_agent.c` and
+  `scripts/v57/verify_agent.sh`.  `make verify-agent` now walks
+  thirteen slots.
+- **CI workflows.** `.github/workflows/chace.yml` runs `make chace`
+  on ubuntu-latest + macos-latest on push / PR / weekly cron.
+  `.github/workflows/slsa.yml` ships SLSA-3 provenance via
+  `slsa-framework/slsa-github-generator@v2.0.0` on release.
+- **Docs.** `docs/v61/THE_CITADEL.md`, `docs/v61/ARCHITECTURE.md`,
+  `docs/v61/POSITIONING.md`, `docs/v61/paper_draft.md`; updates to
+  `SECURITY.md`, `THREAT_MODEL.md`, `README.md`, `docs/DOC_INDEX.md`.
+- **Non-claims.** v61 does **not** replace seL4 / Wasmtime / gVisor;
+  it composes via contracts.  TPM 2.0 / Apple Secure Enclave
+  binding is P-tier (v61 accepts external hash input).  CHERI is
+  documented as a target; no M4 hardware path.  `make slsa` locally
+  emits a SLSA-v1.0 predicate *stub*; real SLSA-3 attestation with
+  Rekor inclusion ships via the CI workflow.
+- **Files added** (18 new): `src/v61/{citadel.h,citadel.c,
+  creation_os_v61.c}`, `docs/v61/{THE_CITADEL,ARCHITECTURE,POSITIONING,
+  paper_draft}.md`, `sel4/{sigma_shield.camkes,README.md}`,
+  `wasm/example_tool.c`, `ebpf/sigma_shield.bpf.c`,
+  `sandbox/{darwin.sb,openbsd_pledge.c}`, `nix/v61.nix`,
+  `Dockerfile.distroless`, `scripts/v61/{microbench,wasm_harness,
+  ebpf_build,sandbox_exec}.sh`, `scripts/security/{attest,sign,slsa,
+  chace}.sh`, `.github/workflows/{chace,slsa}.yml`.
+
 ## v60 σ-Shield + security multi-peak — runtime security kernel & next-level hardening (2026-04-16)
 
 - **Driving oivallus.** Q2 2026 LLM-agent attack literature converges

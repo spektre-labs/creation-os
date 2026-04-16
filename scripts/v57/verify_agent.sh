@@ -79,6 +79,7 @@ SLOTS=(
     "kv_cache_eviction|M|v58|check-v58"
     "adaptive_compute_budget|M|v59|check-v59"
     "runtime_security_kernel|M|v60|check-v60"
+    "defense_in_depth_stack|M|v61|check-v61"
 )
 
 PASS_LIST=()

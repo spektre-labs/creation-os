@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Creation OS v61 — CHACE aggregator CI.  Runs `make chace` on both
+# ubuntu-latest and macos-latest.  SKIPs are accepted (the whole point
+# is that missing tools should not gate the pipeline; FAILs are the
+# only hard gate).
+
+name: chace
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"     # Monday 06:00 UTC weekly
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  chace:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System info
+        run: uname -a && clang --version
+
+      - name: Install optional CHACE tools
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wasmtime clang libbpf-dev
+
+      - name: Run CHACE aggregator
+        env:
+          COSIGN_EXPERIMENTAL: "0"   # keep keyless signing off in PR runs
+        run: make chace

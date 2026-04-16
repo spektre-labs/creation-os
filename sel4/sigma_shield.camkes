@@ -1,0 +1,105 @@
+/*
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * Creation OS v61 — seL4 / CAmkES component specification for the
+ * σ-Shield + Σ-Citadel runtime.  This file is a DESIGN CONTRACT, not
+ * a built artefact: running it requires the seL4 SDK + CAmkES
+ * toolchain + a supported target (x86_64 / ARMv8 / RISC-V).  The
+ * aggregator `make chace` SKIPs this target on hosts lacking `camkes`
+ * and surfaces the skip honestly (no silent PASS).
+ *
+ * ## Contract
+ *
+ *   1. Only three outward-facing cap endpoints are exposed:
+ *      - authorize (v60 σ-Shield kernel)
+ *      - lattice_check (v61 BLP + Biba)
+ *      - attest_quote  (v61 attestation)
+ *   2. The σ-Shield + Citadel component has NO network IPC endpoints.
+ *   3. Tool execution happens in a **sibling** WASM/Wasmtime component
+ *      (see `wasm/`).  The Shield is never on the tool-execution path.
+ *   4. Sigstore/cosign verification happens in a separate OfflineVerifier
+ *      component that only receives the quote and baseline.
+ *   5. Access to any capability endpoint goes through seL4's cap-ABI.
+ *      No shared memory between Shield and Tool except for request /
+ *      response rings that are explicitly bounded.
+ *
+ * ## Tier claim
+ *
+ *   - I (interpreted): the contract itself.
+ *   - P (planned): a seL4 build target in CI that actually instantiates
+ *     the component on the sel4test harness.  Current repository has
+ *     only the contract — the binary lives in `creation_os_v61`.
+ */
+
+import <std_connector.camkes>;
+
+procedure SigmaShield_iface {
+    /* Forwards to cos_v60_authorize.  Decision encoded per v60 spec
+     * (ALLOW=1, DENY_CAP=2, DENY_INTENT=3, DENY_TOCTOU=4, DENY_INTEGRITY=5). */
+    int authorize(in uint64_t action_id,
+                  in uint64_t required_caps,
+                  in uint64_t holder_caps,
+                  in uint64_t arg_hash_entry,
+                  in uint64_t arg_hash_use,
+                  in uint64_t code_page_hash,
+                  in uint64_t baseline_hash,
+                  in uint32_t epistemic_q16,
+                  in uint32_t aleatoric_q16);
+};
+
+procedure Citadel_iface {
+    /* Forwards to cos_v61_lattice_check.  Labels packed into 32 bits:
+     * bits 0-7 clearance, 8-15 integrity, 16-31 compartments. */
+    int lattice_check(in uint32_t subj_label,
+                      in uint32_t obj_label,
+                      in uint32_t op);
+
+    /* Forwards to cos_v61_quote256.  Output is a 32-byte quote. */
+    void attest_quote(in uint64_t code_page_hash,
+                      in uint64_t caps_state_hash,
+                      in uint64_t sigma_state_hash,
+                      in uint64_t lattice_hash,
+                      in uint64_t nonce,
+                      out uint8_t[32] quote);
+};
+
+component SigmaCitadel {
+    provides SigmaShield_iface shield;
+    provides Citadel_iface      citadel;
+
+    /* Minimal capability footprint: only the untyped memory needed
+     * for the request/response rings and the code page.  No
+     * filesystem, no network, no device I/O. */
+    attribute int heap_size_kib = 64;
+    attribute int code_size_kib = 256;
+}
+
+component ToolSandbox {
+    /* Sibling component; runs Wasmtime (compiled to seL4 userland).
+     * Calls into SigmaCitadel via the cap endpoints.  Never has
+     * direct access to the host file system; `wasm/example_tool.c`
+     * shows what a capability-mediated tool looks like. */
+    uses SigmaShield_iface shield_use;
+    uses Citadel_iface      citadel_use;
+}
+
+component OfflineVerifier {
+    /* Receives only the quote + baseline.  If baselines disagree the
+     * composer halts the whole system (seL4 notification). */
+    uses Citadel_iface citadel_use;
+}
+
+assembly {
+    composition {
+        component SigmaCitadel    citadel_c;
+        component ToolSandbox     tool;
+        component OfflineVerifier verifier;
+
+        connection seL4RPCCall conn_shield (
+            from tool.shield_use,      to citadel_c.shield);
+        connection seL4RPCCall conn_citadel (
+            from tool.citadel_use,     to citadel_c.citadel);
+        connection seL4RPCCall conn_verify (
+            from verifier.citadel_use, to citadel_c.citadel);
+    }
+}

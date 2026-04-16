@@ -115,6 +115,21 @@ static const v57_slot_t k_slots[] = {
                           "(constant-time; branchless; 81 tests; "
                           "refuses α-dominated intent regardless of caps)",
     },
+    {
+        .slot           = "defense_in_depth_stack",
+        .owner_versions = "v61",
+        .make_target    = "make check-v61",
+        .best_tier      = V57_TIER_M,
+        .summary        = "Σ-Citadel: BLP + Biba + MLS-compartment "
+                          "lattice (branchless) + deterministic "
+                          "256-bit attestation quote (BLAKE2b via "
+                          "libsodium opt-in) + composition with v60; "
+                          "ships seL4 CAmkES + Wasmtime + eBPF + "
+                          "sandbox-exec + pledge + Nix + distroless "
+                          "+ Sigstore + SLSA-v1.0 stubs under "
+                          "`make chace` (PASS on present layers, "
+                          "SKIP honestly on missing ones)",
+    },
 };
 
 static const int k_slot_count =

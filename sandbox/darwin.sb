@@ -1,0 +1,43 @@
+;; SPDX-License-Identifier: AGPL-3.0-or-later
+;;
+;; Creation OS v61 — Darwin sandbox-exec profile for σ-Shield runtime.
+;;
+;; Usage:
+;;   sandbox-exec -f sandbox/darwin.sb ./creation_os_v61 --self-test
+;;
+;; Strategy: start from `allow default` (Apple's "sandbox-exec
+;; compatibility" baseline) and deny the things σ-Shield must not do:
+;; network, DYLD injection, and arbitrary exec outside CWD / /usr.
+;; A deny-default profile is the long-term goal but requires per-macOS
+;; tuning; this profile gives a real defence layer today without
+;; aborting on every Apple-internal sysctl.
+
+(version 1)
+
+;; Baseline: allow what Apple defaults to for this binary class.
+(allow default)
+
+;; ---- Hard denies --------------------------------------------------
+
+;; No network whatsoever — this is the one the Shield actually enforces.
+(deny network*)
+
+;; No DYLD_* dylib injection.
+(deny file-read*
+       (regex #"DYLD_.*"))
+
+;; No exec outside of CWD, /usr/*, /bin, /System.
+(deny process-exec)
+(allow process-exec
+       (subpath (param "CWD"))
+       (subpath "/usr")
+       (subpath "/bin")
+       (subpath "/System"))
+
+;; No writes outside of .build/ and /tmp/.
+(deny file-write*)
+(allow file-write*
+       (subpath (string-append (param "CWD") "/.build"))
+       (subpath "/tmp")
+       (subpath "/private/tmp")
+       (subpath "/private/var/folders"))

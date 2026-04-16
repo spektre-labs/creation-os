@@ -153,10 +153,19 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + next-level hardening stack)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition)
 
-Creation OS takes security as an **architecture**, not a checklist. The
-security surface has three layers, all runnable locally and in CI:
+Creation OS takes security as an **architecture**, not a checklist.
+`v61` ships **the first open-source AI-agent runtime that composes
+every layer of the 2026 advanced-security menu** — seL4 CAmkES
+contract, Wasmtime WASM sandbox, eBPF LSM policy, Bell-LaPadula +
+Biba + MLS lattice, deterministic 256-bit attestation quote,
+Sigstore cosign, SLSA-v1.0 provenance, Nix reproducible build,
+distroless container, Darwin sandbox-exec, OpenBSD pledge — into
+one `make chace` aggregator that reports **PASS** on present layers
+and **honest SKIP** on missing ones, never silently downgrading.
+
+Four security layers, all runnable locally and in CI:
 
 1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
    gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
@@ -164,21 +173,32 @@ security surface has three layers, all runnable locally and in CI:
    regardless of caps — closes the Q2 2026 ambiguous-payload class
    (DDIPE, ClawWorm, Malicious Intermediary). **81 / 81 deterministic
    self-tests** at `make check-v60`.
-2. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
-   flags + ARM64 `-mbranch-protection=standard` + PIE), `make sanitize`
-   (ASAN on v58 / v59 / v60 + UBSAN on v60, all self-tests),
-   `make hardening-check` (PIE / canary / fortify verified on
-   `creation_os_v60_hardened`).
-3. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
+2. **v61 Σ-Citadel** — Bell-LaPadula + Biba + MLS-compartment lattice
+   (branchless, 6.1 × 10⁸ decisions/s on M4) + deterministic 256-bit
+   attestation quote (BLAKE2b-256 via libsodium opt-in) + composition
+   with v60.  **61 / 61 self-tests** at `make check-v61`.  Full
+   DARPA-CHACE menu dispatched by `make chace`.
+3. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+   flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
+   v57 / v58 / v59 / v60 / v61), `make sanitize` (ASAN on v58 / v59 /
+   v60 / v61 + UBSAN on v60 / v61, all self-tests), `make hardening-check`
+   (PIE / canary / fortify verified).
+4. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with
    `.gitleaks.toml` allowlist + grep-only fallback + hardcoded-URL
-   sanity), `make reproducible-build` (double-build SHA-256 compare).
-   Pre-commit hooks: `.pre-commit-config.yaml` runs gitleaks,
-   whitespace / EOL hygiene, `.env` guard, pre-push runs the layered
-   `scripts/security/scan.sh`. CI enforces the same: [`.github/workflows/security.yml`](.github/workflows/security.yml)
-   runs gitleaks (full history), harden, sanitize, security-scan,
-   SBOM artefact upload, and reproducible-build across macOS +
-   Linux on every push / PR + weekly.
+   sanity), `make reproducible-build` (double-build SHA-256 compare),
+   `make nix-build` (Nix hermetic build), `make attest`
+   (ATTESTATION.json + optional Sigstore cosign), `make slsa`
+   (SLSA v1.0 predicate stub), `make distroless` (gcr.io/distroless
+   runtime container).  Pre-commit hooks: `.pre-commit-config.yaml`
+   runs gitleaks, whitespace / EOL hygiene, `.env` guard, pre-push
+   runs the layered `scripts/security/scan.sh`.  CI:
+   [`.github/workflows/security.yml`](.github/workflows/security.yml)
+   (gitleaks + harden + sanitize + scan + SBOM + repro),
+   [`.github/workflows/chace.yml`](.github/workflows/chace.yml)
+   (`make chace` on macOS + Linux),
+   [`.github/workflows/slsa.yml`](.github/workflows/slsa.yml)
+   (SLSA-3 provenance via `slsa-github-generator`).
 
 See [`SECURITY.md`](SECURITY.md) for the full policy, supported
 versions, reporting process, and active guarantees; see
@@ -304,8 +324,9 @@ flowchart LR
 | **v58** | **σ-Cache** — σ-decomposed KV-cache eviction. Per-token signal = **epistemic ε (keep) + attention + recency − aleatoric α (discount) + sink lift**. Threshold via K-th-largest non-sink score (capacity budget); decision is a **four-valued tag** (FULL / INT8 / INT4 / EVICT) from branchless bitmask arithmetic. NEON 4-accumulator SoA scoring path, 64-byte aligned scratch, explicit prefetch. Extends the v57 Verified Agent with a `kv_cache_eviction` slot (tier **M**) | `check-v58` · `microbench-v58` | **68/68** | first KV-eviction policy to use σ = (ε, α) decomposition — [docs/v58/THE_SIGMA_CACHE.md](docs/v58/THE_SIGMA_CACHE.md) · [docs/v58/ARCHITECTURE.md](docs/v58/ARCHITECTURE.md) · [docs/v58/POSITIONING.md](docs/v58/POSITIONING.md) · [paper](docs/v58/paper_draft.md) |
 | **v59** | **σ-Budget** — σ-decomposed adaptive test-time compute budget controller. Consumes per-step ε / α and emits a **four-valued tag** (`CONTINUE` / `EARLY_EXIT` / `EXPAND` / `ABSTAIN`) via a branchless kernel. Only policy that can refuse compute on α-dominated problems — TAB / CoDE-Stop / LYNX / DTSR / DiffAdapt / Coda / AdaCtrl / Risk-Control BF all use a scalar signal. NEON 4-accumulator SoA readiness reduction, 64-byte aligned scratch. Registered as the `adaptive_compute_budget` slot (tier **M**) in the v57 Verified Agent | `check-v59` · `microbench-v59` | **69/69** | first adaptive-compute-budget policy to use σ = (ε, α) decomposition; 1.1-1.5 × 10⁸ decisions / s — [docs/v59/THE_SIGMA_BUDGET.md](docs/v59/THE_SIGMA_BUDGET.md) · [docs/v59/ARCHITECTURE.md](docs/v59/ARCHITECTURE.md) · [docs/v59/POSITIONING.md](docs/v59/POSITIONING.md) · [paper](docs/v59/paper_draft.md) |
 | **v60** | **σ-Shield** — runtime security kernel: first capability kernel to gate on a σ = (ε, α) intent decomposition. Five-valued branchless authorise: `ALLOW` / `DENY_CAP` / `DENY_INTENT` / `DENY_TOCTOU` / `DENY_INTEGRITY`. Refuses α-dominated intent *regardless* of capability — closes the Q2 2026 ambiguous-payload class (DDIPE 2604.03081, ClawWorm 2603.15727, Malicious Intermediary 2604.08407) that beats signature / allowlist defenses. Constant-time hash equality, TOCTOU-free `arg_hash_at_entry ↔ at_use`, code-page integrity, sticky-deny for `DLSYM` / `MMAP_EXEC` / `SELF_MODIFY`. No allocation, no `if`, no syscalls on the hot path. Registered as `runtime_security_kernel` slot (tier **M**) in the v57 Verified Agent. Companion: [`SECURITY.md`](SECURITY.md), [`THREAT_MODEL.md`](THREAT_MODEL.md), `make harden` / `sanitize` / `hardening-check` / `sbom` / `security-scan` / `reproducible-build` | `check-v60` · `microbench-v60` | **81/81** | sibling of v59 — v59 refuses to *compute* on α-dom, v60 refuses to *act* on α-dom — [docs/v60/THE_SIGMA_SHIELD.md](docs/v60/THE_SIGMA_SHIELD.md) · [docs/v60/ARCHITECTURE.md](docs/v60/ARCHITECTURE.md) · [docs/v60/POSITIONING.md](docs/v60/POSITIONING.md) · [paper](docs/v60/paper_draft.md) |
+| **v61** | **Σ-Citadel** — composed defence-in-depth stack.  **First open-source AI-agent runtime to ship the full DARPA-CHACE advanced-security menu** as one `make chace` aggregator that PASSes on present layers and **SKIPs missing ones honestly** (never silently downgrading).  Kernel: branchless Bell-LaPadula + Biba + MLS-compartment lattice (`READ`/`WRITE`/`EXEC` with op-masked lanes), 8 × 8 × 16-bit labels, **6.1 × 10⁸ decisions/s on M4**; deterministic 256-bit attestation quote over `(code || caps || σ-state || lattice || nonce)` with constant-time 256-bit equality; `COS_V61_LIBSODIUM=1` swaps the XOR-fold for BLAKE2b-256 via libsodium `crypto_generichash`; `cos_v61_compose` gives a 4-valued `ALLOW` / `DENY_V60` / `DENY_LATTICE` / `DENY_BOTH` composed with v60 σ-Shield.  Ships seL4 CAmkES component contract (`sel4/sigma_shield.camkes`), Wasmtime WASM sandbox harness + example tool, eBPF LSM policy (`ebpf/sigma_shield.bpf.c`), Darwin sandbox-exec profile (`sandbox/darwin.sb`), OpenBSD pledge/unveil stub, Nix reproducible build (`nix/v61.nix`), distroless Dockerfile (`Dockerfile.distroless`), Sigstore cosign sign hook, SLSA v1.0 predicate emitter.  Registered as the `defense_in_depth_stack` slot (tier **M**) in the v57 Verified Agent | `check-v61` · `microbench-v61` · `attest` · `chace` · `slsa` · `distroless` | **61/61** | one command (`make chace`) for the full CHACE menu — [docs/v61/THE_CITADEL.md](docs/v61/THE_CITADEL.md) · [docs/v61/ARCHITECTURE.md](docs/v61/ARCHITECTURE.md) · [docs/v61/POSITIONING.md](docs/v61/POSITIONING.md) · [paper](docs/v61/paper_draft.md) |
 
-The first five are **integration scaffolds (C)** — policy + plumbing, not live engines. Caller brings the transformer, tool runtime, or multi-model client. **v57 is a convergence artifact** — it composes those five (plus v47 / v48 / v49) into one queryable table with one verification command. **v58 adds the KV-cache eviction layer**, **v59 adds the adaptive-compute-budget controller**, and **v60 adds the runtime security kernel** (σ-Shield — first capability kernel with σ-decomposed intent gate) as branchless kernels registered into that registry. Full tier tags: [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
+The first five are **integration scaffolds (C)** — policy + plumbing, not live engines. Caller brings the transformer, tool runtime, or multi-model client. **v57 is a convergence artifact** — it composes those five (plus v47 / v48 / v49) into one queryable table with one verification command. **v58 adds the KV-cache eviction layer**, **v59 adds the adaptive-compute-budget controller**, **v60 adds the runtime security kernel** (σ-Shield — first capability kernel with σ-decomposed intent gate), and **v61 adds the composed defence-in-depth stack** (Σ-Citadel — BLP + Biba + MLS lattice + attestation + the full DARPA-CHACE menu via `make chace`). Full tier tags: [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
 
 These milestones extend the portable spine with **agent routing**, **MCP**, **RTL / ASIC hooks**, a **neuromorphic toy**, a **σ-threshold / QEC analogy**, **σ-guided test-time compute scaffolding**, **σ-guided self-play scaffolding**, **σ-guided knowledge distillation (loss contracts + curriculum + ensemble + calibration)**, a **σ-native inference proxy** (`creation_os_proxy`: OpenAI-shaped loopback HTTP + per-token σ demo streaming), **σ-introspection** (`creation_os_v45`: calibration gap + doubt reward + internal-probe stub), a **σ-optimized BitNet-facing pipeline** (`creation_os_v46`: fast σ-from-logits + SIMD reductions + adaptive quant policy + `benchmarks/v46/SPEED_TABLE.md`), a **verification / claims-hygiene lab** (`creation_os_v47` + `make verify`: ACSL contracts, extended SymbiYosys depth, Hypothesis properties, ZK-σ API stub), a **σ-armored red-team lab** (`creation_os_v48`: σ-pattern anomaly + σ-gated sandbox + fail-closed defense stack + `make red-team` / `make merge-gate-v48`), a **certification-grade assurance pack** (`make certify`: DO-178C-aligned documentation + MC/DC driver + binary hygiene + trace automation — **not** FAA/EASA certification), and a **v50 benchmark rollup harness** (`make v50-benchmark`: `benchmarks/v50/FINAL_RESULTS.md` + critic FAQ + Reddit draft — Category 1–3 eval JSON slots are **explicit STUBs** until a pinned engine+dataset harness exists) — all **outside** `make merge-gate`. Tier tags (“M” vs “P”) live in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md); the cross-layer map is [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md).
 

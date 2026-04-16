@@ -10,13 +10,12 @@ actually make (and the ones we do not), and the active hardening controls.
 The merge-gate guarantees runtime-checked correctness (M-tier) on the
 main branch, head-of-tree.  Older tags are **not** maintained for
 security fixes; if you depend on an older tag, pin the commit, own the
-patch.  The σ-labs (v56, v57, v58, v59, v60) have no network code path
-by construction.
+patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) M-tier |
-| tagged v59 and earlier | reproducible only | yes at tag time | — |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) M-tier |
+| tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
 
@@ -48,6 +47,16 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   Branchless capability authorise + σ-gated intent + TOCTOU-free args +
   code-page integrity.  Priority cascade is exhaustive and `reason_bits`
   is multi-cause honest.
+- **v61 Σ-Citadel** (`make check-v61`, 61 tests; `make chace` for the
+  full composed menu).  Branchless Bell-LaPadula + Biba + MLS-compartment
+  lattice; deterministic 256-bit attestation quote with constant-time
+  equality; libsodium BLAKE2b-256 opt-in (`COS_V61_LIBSODIUM=1`).
+  Ships seL4 CAmkES contract, Wasmtime sandbox harness, eBPF LSM
+  policy, Darwin sandbox-exec profile, OpenBSD pledge stub, Nix
+  reproducible recipe, distroless Dockerfile, Sigstore sign hook,
+  SLSA v1.0 predicate emitter — all dispatched by `make chace` which
+  PASSes present layers and **SKIPs missing ones honestly**, never
+  silently downgrading.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
@@ -64,7 +73,12 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
 
 - **Not a sandbox in itself.**  v60 σ-Shield is a capability *gate*.
   The process still runs in its host address space; for sandbox-grade
-  isolation compose with seL4 / WASM / Fuchsia upstream.
+  isolation compose with seL4 / WASM / Fuchsia upstream — v61 ships
+  contracts (CAmkES, Wasmtime harness, sandbox-exec, pledge) but the
+  external toolchains are not re-implemented inside this repo.
+- **Default v61 quote is not a MAC.**  The XOR-fold-256 fallback is
+  deterministic and equality-sensitive, nothing more.  Enable
+  `COS_V61_LIBSODIUM=1` for BLAKE2b-256 via libsodium `crypto_generichash`.
 - **Not a zero-day detector.**  σ-Shield gates on **caller-provided
   σ, caller-provided required-caps, caller-provided arg-hash**.  A
   compromised σ producer can still issue an ALLOW; that is why v56
@@ -74,9 +88,15 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   baseline hashes are caller-provided.
 - **No formal proof of σ-Shield** yet (F-tier).  Frama-C annotations
   are a planned follow-up.
-- **No network code path** on any σ-lab (v56-v60).  If a future lab
+- **No network code path** on any σ-lab (v56-v61).  If a future lab
   needs network, it will ship with ShieldNet-style MITM + σ gating as
   a separate module.
+- **CHERI capability pointers** are documented as a target but not
+  active: Apple M4 has no CHERI path.  When Morello-class hardware is
+  available the v61 lattice is designed to lift onto CHERI caps.
+- **SLSA-3** requires Sigstore Rekor inclusion via OIDC; that is
+  wired in `.github/workflows/slsa.yml` but **`make slsa` locally**
+  only emits a SLSA v1.0-shaped predicate stub for inspection.
 
 ## Threat model
 
@@ -89,12 +109,19 @@ beat signature defenses.
 ## Local-dev hardening (developer quick-start)
 
 ```
-make harden            # OpenSSF 2026 flags + ARM64 branch-protection
-make sanitize          # ASAN + UBSAN matrix runs v58/v59/v60 self-tests
+make harden            # OpenSSF 2026 flags + ARM64 branch-protection (v57..v61)
+make sanitize          # ASAN + UBSAN matrix runs v58/v59/v60/v61 self-tests
 make hardening-check   # verify PIE / canaries / fortify on harden build
 make security-scan     # gitleaks + grep-fallback + hardcoded URL check
 make sbom              # emit SBOM.json (CycloneDX 1.5)
 make reproducible-build  # double-build digest compare
+
+# v61 CHACE composition — one command for the whole defence-in-depth menu
+make chace             # seL4 + Wasmtime + eBPF + sandbox-exec + hardening
+                       # + sanitizer + SBOM + scan + repro + attest + sign
+                       # + slsa + distroless.  PASS / honest-SKIP / FAIL.
+make attest            # ATTESTATION.json (v61 quote; optional cosign sign)
+make slsa              # PROVENANCE.json (SLSA v1.0 predicate stub)
 ```
 
 Pre-commit hooks:
@@ -111,10 +138,16 @@ sweep, and a reject-`.env` guard.
 ## Supply-chain posture
 
 - **AGPL-3.0-or-later** on every source file (SPDX headers).
-- **No runtime dependencies** on any v56-v60 lab (pure C11 + libc).
+- **No runtime dependencies** on any v56-v61 lab (pure C11 + libc;
+  libsodium is opt-in for v61 attestation strength).
 - **SBOM** ships per-component in `SBOM.json` (CycloneDX 1.5).
 - **Reproducible builds**: `make reproducible-build` double-builds and
-  compares SHA-256.  SLSA L3 provenance (sigstore + Rekor + isolated
-  CI build) is on the P-tier roadmap.
+  compares SHA-256.  Nix-based reproducible build recipe in
+  `nix/v61.nix`.  SLSA-3 provenance ships via
+  `.github/workflows/slsa.yml` using `slsa-github-generator` + keyless
+  OIDC Sigstore signing on release.
+- **Distroless runtime**: `Dockerfile.distroless` copies the single
+  static binary into `gcr.io/distroless/cc-debian12:nonroot` — no
+  shell, no package manager.
 - **.gitleaks.toml** allowlists only explicit docs / fixtures; any
   accidental secret blocks the pre-commit hook.
