@@ -1,5 +1,43 @@
 # Changelog
 
+## v54 σ-proconductor scaffold (2026-04-16)
+
+- **Structural claim, not a live ensemble.** σ is the missing
+  routing signal in the 2024–2026 multi-LLM literature
+  (MoA / RouteLLM / MoMA / FrugalGPT / Bayesian Orchestration /
+  MoErging). v54 encodes σ as the routing + aggregation + abstention
+  signal over frontier subagents. See `docs/v54/POSITIONING.md`.
+- **Honest network story.** `src/v54/` makes **no network calls**
+  (creation.md invariant #3). The scaffold is the orchestration
+  policy; callers supply per-agent responses + σ. The self-test is
+  fully deterministic, offline, and embeddings-free.
+- **Registry + defaults:** `src/v54/proconductor.{c,h}` —
+  `v54_subagent_t`, `v54_proconductor_t`, five hand-tuned reference
+  profiles (`claude`, `gpt`, `gemini`, `deepseek`, `local_bitnet`).
+- **Dispatch policy:** `src/v54/dispatch.{c,h}` — keyword-heuristic
+  classifier; deterministic top-K selector (stakes-scaled K ∈ {1, 2, 4}
+  with an easy-query shortcut when σ_primary < 0.10); σ-weighted
+  aggregator with five outcomes:
+  `V54_AGG_CONSENSUS`, `V54_AGG_SIGMA_WINNER`,
+  `V54_AGG_ABSTAIN_SIGMA`, `V54_AGG_ABSTAIN_DISAGREE`,
+  `V54_AGG_EMPTY`.
+- **Disagreement analyzer:** `src/v54/disagreement.{c,h}` —
+  lexical-Jaccard similarity over tokens with outlier detection.
+  Pluggable; a production runtime swaps the kernel for an embedding
+  backend without touching the rest of the pipeline.
+- **Profile learner:** `src/v54/learn_profiles.{c,h}` — EWMA
+  (α = 0.05) on per-domain σ + observed-accuracy;
+  `v54_learn_from_aggregation()` attributes ground truth to the winner
+  only (non-winners receive "unknown" so no false reward/punishment).
+- **Paper draft:** `docs/v54/paper_draft.md` — "σ-Proconductor: σ as
+  the Missing Routing Signal for Multi-LLM Ensembles" (I-tier
+  position paper with explicit follow-up router benchmark scope).
+- **Architecture + positioning:** `docs/v54/ARCHITECTURE.md`,
+  `docs/v54/POSITIONING.md` (side-by-side vs MoA / RouteLLM / MoMA /
+  FrugalGPT / Bayesian Orchestration / MoErging).
+- **Makefile:** `make check-v54` (14/14 self-test); `make standalone-v54`;
+  help + `.PHONY` updated. **Not** part of `merge-gate`.
+
 ## v53 σ-governed harness scaffold (2026-04-16)
 
 - **Structural critique, not clone.** Takes Claude Code's public harness

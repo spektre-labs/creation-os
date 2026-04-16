@@ -23,6 +23,9 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v53/ARCHITECTURE.md](v53/ARCHITECTURE.md) | Harness / runtime readers | v53: σ-governed harness scaffold — σ-TAOR loop, σ-dispatch, σ-compression, `creation.md` loader |
 | [v53/POSITIONING.md](v53/POSITIONING.md) | Reviewers comparing with Claude Code | v53: side-by-side positioning vs Claude Code (structural, not empirical) |
 | [v53/paper_draft.md](v53/paper_draft.md) | Paper readers | v53: position paper "Harness Architecture: σ-Governance vs Time-Limits in Agentic Coding" (I-tier) |
+| [v54/ARCHITECTURE.md](v54/ARCHITECTURE.md) | Multi-LLM / routing readers | v54: σ-proconductor scaffold — σ-profile routing, σ-weighted aggregation, disagreement abstain, EWMA learner |
+| [v54/POSITIONING.md](v54/POSITIONING.md) | Reviewers comparing with MoA / RouteLLM / MoMA / Bayesian Orchestration | v54: side-by-side positioning vs 2024–2026 routing literature |
+| [v54/paper_draft.md](v54/paper_draft.md) | Paper readers | v54: position paper "σ-Proconductor: σ as the Missing Routing Signal for Multi-LLM Ensembles" (I-tier) |
 | [creation.md](../creation.md) | Agent operators / contributors | Project **invariants** (not instructions) + σ-profile per task type |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |

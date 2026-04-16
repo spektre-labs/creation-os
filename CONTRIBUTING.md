@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make merge-gate
    ```
-   This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v53)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
+   This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v40)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -39,6 +39,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make v50-benchmark` | Optional v50 rollup: STUB eval JSON slots + assurance logs + `benchmarks/v50/FINAL_RESULTS.md` |
 | `make check-v51` | Optional v51 integration scaffold: cognitive loop + σ-gated agent self-test (13/13) |
 | `make check-v53` | Optional v53 σ-governed harness scaffold: σ-TAOR loop + σ-dispatch + σ-compression + `creation.md` loader self-test (13/13) |
+| `make check-v54` | Optional v54 σ-proconductor scaffold: multi-LLM orchestration policy — registry + classify + select + σ-weighted aggregate + disagreement abstain + profile learner self-test (14/14); no network |
 | `make formal-rtl-lint` | Verilator lint on `rtl/*.sv` |
 | `make stack-ultimate` | Lint + Yosys elab + SAT prove + Verilator sim + Rust iron + Chisel (SKIPs OK) |
 | `make rust-iron-lint` | `cargo fmt --check` + `clippy -D warnings` on iron gate |

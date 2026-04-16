@@ -63,6 +63,9 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v53 lab: `creation.md` invariants file at repo root | `cat creation.md` | **M** (invariants authored; loader parses them) |
 | v53 lab: paper draft "Harness Architecture: σ-Governance vs Time-Limits" (`docs/v53/paper_draft.md`) | open in any viewer | **I** (position paper; benchmark deferred to follow-up) |
 | v53 lab: σ-governed coding agent running against real repos with real tools | N/A | **P** (requires tool runtime, sub-process dispatcher, model integration) |
+| v54 lab: σ-proconductor scaffold (registry + classify + select + aggregate + disagreement analyzer + EWMA learner) | `make check-v54` (14/14) | **M** (scaffold; no network; no embeddings) |
+| v54 lab: paper draft "σ-Proconductor: σ as the Missing Routing Signal for Multi-LLM Ensembles" (`docs/v54/paper_draft.md`) | open in any viewer | **I** (position paper; router benchmark deferred to follow-up) |
+| v54 lab: live Claude / GPT / Gemini / DeepSeek ensemble with real billing + measured σ-profiles | N/A | **P** (requires HTTP client, embedding backend, billing layer, measured profile corpus) |
 | v51 lab: static web σ-dashboard mock (`src/v51/ui/web.html`) | open in any browser | **M** (static; no live model) |
 | v51 lab: one-line installer `scripts/v51/install.sh` | `bash scripts/v51/install.sh` | **M** (dry-run by design) |
 | v51 lab: signed public `curl \| sh` installer + `creation-os` wrapper CLI | N/A | **P** (requires signed release + wrapper binary) |

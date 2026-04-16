@@ -78,6 +78,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v50 | Benchmarks / public falsifiability | `make v50-benchmark` rollup (`FINAL_RESULTS.md`) + critic FAQ + Reddit draft (engine harness still external) |
 | v51 | Integration scaffold / UX spec | `make check-v51` (cognitive loop + σ-gated agent + sandbox) + `config/v51_experience.yaml` + `src/v51/ui/web.html` + `scripts/v51/install.sh` (dry-run) + `docs/v51/ARCHITECTURE.md` |
 | v53 | σ-governed harness scaffold / positioning | `make check-v53` (σ-TAOR loop + σ-dispatch + σ-compression + `creation.md` loader) + `creation.md` at repo root + `docs/v53/ARCHITECTURE.md` + `docs/v53/POSITIONING.md` + `docs/v53/paper_draft.md` |
+| v54 | σ-proconductor scaffold / positioning | `make check-v54` (classify + select + aggregate + disagreement + profile learner; no network) + `docs/v54/ARCHITECTURE.md` + `docs/v54/POSITIONING.md` + `docs/v54/paper_draft.md` |
 
 ## v40 working paper title (only when threshold harness exists)
 

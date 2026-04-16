@@ -21,6 +21,7 @@ echo "| \`make certify\` | v49 DO-178C-aligned assurance pack (formal targets + 
 echo "| \`make v50-benchmark\` | v50 rollup report + STUB eval slots + assurance logs |"
 echo "| \`make check-v51\` | v51 integration scaffold self-test (cognitive loop + σ-gated agent) |"
 echo "| \`make check-v53\` | v53 σ-governed harness scaffold self-test (σ-TAOR + σ-dispatch + σ-compression + creation.md loader) |"
+echo "| \`make check-v54\` | v54 σ-proconductor scaffold self-test (multi-LLM orchestration policy: registry + classify + select + σ-weighted aggregate + disagreement abstain + profile learner; no network) |"
 echo "| \`make merge-gate\` | Portable flagship gate (v2 + v6..v29) |"
 echo "| \`make formal-sby-v37\` | v37 σ-pipeline SymbiYosys (SKIP if \`sby\` missing) |"
 echo
