@@ -21,6 +21,8 @@
  * [M182] Eight-channel σ telemetry (rotated references)
  * [M183] Abstention gate vs fixed threshold
  * [M184] `--inference` trace writer (`inference_trace.json`)
+ * [M185] mmap / COSB on-disk codebook (`src/tokenizer/cos_codebook_mmap.c`)
+ * [M186] Tier-2 MAJ sliding byte bundle (`byte_bundle_maj_sliding`)
  *
  * Compile: see Makefile `standalone-v27`
  * Test:    ./creation_os_v27 --self-test
@@ -35,6 +37,13 @@
 
 #include "core/cos_bsc.h"
 #include "src/tokenizer/cos_tokenizer.h"
+#include "src/tokenizer/cos_codebook_mmap.h"
+
+#ifdef COS_GDA27_RUST
+extern int creation_os_gda27_rust_encode(uint32_t v, char *out, int cap);
+extern uint32_t creation_os_gda27_rust_decode(const char *s);
+extern void creation_os_gda27_link_force(void);
+#endif
 
 static int g_checks;
 static int g_fails;
@@ -74,7 +83,7 @@ static float mean_sigma8(const uint64_t *ctx)
     return acc / 8.f;
 }
 
-static int run_inference_trace(const char *text, const char *path)
+static int run_inference_trace(const char *text, const char *path, const CosCodebook *cb)
 {
     BpeMergeTable merges;
     bpe_default_merges(&merges);
@@ -85,7 +94,14 @@ static int run_inference_trace(const char *text, const char *path)
     memset(ctx, 0, sizeof(ctx));
     for (int i = 0; i < n; i++) {
         uint64_t th[COS_W], pos[COS_W];
-        bpe_id_to_hypervector(ids[i], 0xC0FFEEULL ^ (uint64_t)i, th);
+        if (cb) {
+            if (cos_codebook_lookup(cb, ids[i], th) != 0)
+                return -1;
+            /* Mix per-position seed without breaking mmap row identity class. */
+            th[0] ^= 0xC0FFEEULL ^ (uint64_t)i;
+        } else {
+            bpe_id_to_hypervector(ids[i], 0xC0FFEEULL ^ (uint64_t)i, th);
+        }
         cos_hv_rotl(pos, th, i);
         for (int w = 0; w < COS_W; w++)
             ctx[w] ^= pos[w];
@@ -103,6 +119,7 @@ static int run_inference_trace(const char *text, const char *path)
         return -1;
     fprintf(f, "{\n  \"schema\": \"creation_os.v27.inference_trace\",\n");
     fprintf(f, "  \"tiers\": [\"bpe_stub\", \"byte_xor\", \"gda27_literal\"],\n");
+    fprintf(f, "  \"codebook_mmap\": %s,\n", cb ? "true" : "false");
     fprintf(f, "  \"input\": ");
     json_escape(f, text);
     fprintf(f, ",\n  \"token_count\": %d,\n", n);
@@ -205,9 +222,41 @@ static int self_test(void)
     }
 
     const char *tmpf = "inference_trace_selftest.tmp";
-    int trc = run_inference_trace("ping", tmpf);
+    int trc = run_inference_trace("ping", tmpf, NULL);
     st("inference_trace_ok", trc == 0);
     remove(tmpf);
+
+    const char *cbpath = "cb_v27_selftest.tmp";
+    st("codebook_write_ok", cos_codebook_write_file(cbpath, 64u) == 0);
+    CosCodebook *cb = cos_codebook_mmap_open(cbpath);
+    st("codebook_mmap_open_ok", cb != NULL);
+    uint64_t hv_cb[COS_W], hv_fill[COS_W];
+    st("codebook_lookup_ok", cb && cos_codebook_lookup(cb, 19u, hv_cb) == 0);
+    cos_codebook_row_fill(19u, hv_fill);
+    st("codebook_row_matches_fill", cb && memcmp(hv_cb, hv_fill, sizeof(hv_cb)) == 0);
+    int trc2 = run_inference_trace("token", tmpf, cb);
+    st("inference_trace_mmap_ok", trc2 == 0);
+    remove(tmpf);
+    cos_codebook_mmap_close(cb);
+    remove(cbpath);
+
+    uint64_t xor_b[COS_W], maj_b[COS_W];
+    const uint8_t raw2[] = {0xDEu, 0xADu, 0xBEu, 0xEFu, 0x00u, 0x77u};
+    byte_bundle(raw2, (int)sizeof(raw2), xor_b);
+    byte_bundle_maj_sliding(raw2, (int)sizeof(raw2), maj_b);
+    st("byte_maj_sliding_differs_xor", cos_hv_hamming(maj_b, xor_b) > 0u);
+
+#ifdef COS_GDA27_RUST
+    creation_os_gda27_link_force();
+    char rb[32], cb2[32];
+    int re = creation_os_gda27_rust_encode(815u, rb, (int)sizeof(rb));
+    int ce = gda27_encode_uint(815u, cb2, (int)sizeof(cb2));
+    st("rust_gda27_encode815_len", re > 0 && re == ce);
+    st("rust_c_strings_match815", strcmp(rb, cb2) == 0);
+    uint32_t rd = creation_os_gda27_rust_decode(rb);
+    uint32_t cd = gda27_decode_uint(cb2);
+    st("rust_gda27_roundtrip815", rd == 815u && cd == 815u);
+#endif
 
     printf("%d/%d PASS\n", g_checks - g_fails, g_checks);
     return g_fails ? 1 : 0;
@@ -236,7 +285,13 @@ int main(int argc, char **argv)
 
     if (do_inf && text) {
         byte_codebook_build(0xC0DEC0DEC0DEC0DEULL);
-        if (run_inference_trace(text, trace) != 0) {
+        const char *cbp = getenv("COS_CODEBOOK_PATH");
+        CosCodebook *cb = NULL;
+        if (cbp && cbp[0])
+            cb = cos_codebook_mmap_open(cbp);
+        int rc = run_inference_trace(text, trace, cb);
+        cos_codebook_mmap_close(cb);
+        if (rc != 0) {
             fprintf(stderr, "v27: could not write %s\n", trace);
             return 2;
         }
@@ -247,5 +302,6 @@ int main(int argc, char **argv)
     fprintf(stderr, "Creation OS v27 — usage:\n");
     fprintf(stderr, "  %s --self-test\n", argv[0]);
     fprintf(stderr, "  %s --inference \"text\" [--trace-out path]\n", argv[0]);
+    fprintf(stderr, "Env: COS_CODEBOOK_PATH=/path/to/COSB.bin enables mmap Tier-1 table HV path.\n");
     return 1;
 }

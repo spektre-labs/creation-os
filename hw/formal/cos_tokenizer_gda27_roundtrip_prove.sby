@@ -1,0 +1,14 @@
+[options]
+mode prove
+
+[engines]
+smtbmc
+
+[files]
+../../rtl/cos_gda27_roundtrip_formal.sv
+
+[script]
+read_verilog -sv /src/cos_gda27_roundtrip_formal.sv
+prep -top cos_gda27_roundtrip_formal
+flatten
+opt

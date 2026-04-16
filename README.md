@@ -12,7 +12,7 @@
 
 <p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
-> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v27`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**64** checks — still **lab demo (C)**). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v27`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <table align="center">
   <tbody>
@@ -105,7 +105,7 @@ cd creation-os
 make merge-gate
 # spot-check current head:
 make check-v26 && ./creation_os_v26 --self-test   # expect 184/184 PASS
-make check-v27 && ./creation_os_v27 --self-test   # expect 64/64 PASS (tokenizer scaffold)
+make check-v27 && ./creation_os_v27 --self-test   # expect 70/70 PASS (tokenizer scaffold)
 ```
 
 *Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`**; expect **`64/64 PASS`** from **`./creation_os_v27 --self-test`**.
@@ -144,7 +144,7 @@ Each `creation_os_vN.c` is a **separate** single-file program (v27 links small `
 | v24 | [`creation_os_v24.c`](creation_os_v24.c) | + M117–M136 arXiv echoes | `check-v24` | 162 |
 | v25 | [`creation_os_v25.c`](creation_os_v25.c) | + M137–M156 enterprise ledger | `check-v25` | 183 |
 | v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
-| v27 | [`creation_os_v27.c`](creation_os_v27.c) | + M177–M184 vocab / tokenizer / inference trace scaffold | `check-v27` | **64** |
+| v27 | [`creation_os_v27.c`](creation_os_v27.c) | + M177–M186 vocab / tokenizer / mmap COSB / inference trace | `check-v27` | **70** |
 
 ```mermaid
 %%{init: {'theme':'neutral'}}%%
@@ -235,7 +235,7 @@ flowchart LR
 | v10 | [THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md) · `make check-v10` |
 | v11 | [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
 | v12 | [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
-| v27 | [VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · `make check-v27` · `make bench-tokenizer-v27` |
+| v27 | [VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · `make check-v27` · `make bench-tokenizer-v27` · `make bench-v27-all` |
 | v15–v26 | Headers in `creation_os_v15.c` … `creation_os_v26.c` · `make check-v15` … `make check-v26` |
 | NEON coherence | [NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
 | HV parliament | [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
@@ -559,9 +559,9 @@ COGNITION
 
 ## Creation OS v27 (vocab / tokenizer scaffold)
 
-[`creation_os_v27.c`](creation_os_v27.c) is a **separate** flagship binary plus small tokenizer sources under [`src/tokenizer/`](src/tokenizer/) — **Tier-1 BPE stand-in**, **Tier-2 byte codebook + XOR-bind bundle**, **Tier-3 base-27 literal codec stub**, `--inference "…"` JSON trace, and **64** deterministic `self_test` checks. **Evidence class:** **lab demo (C)** — not a trained 32K multilingual BPE, not FPGA closure, not `lm-eval` rows.
+[`creation_os_v27.c`](creation_os_v27.c) is a **separate** flagship binary plus tokenizer sources under [`src/tokenizer/`](src/tokenizer/) — **Tier-1 BPE stand-in + optional COSB mmap table**, **Tier-2 byte codebook + XOR / MAJ sliding bundle**, **Tier-3 base-27 literal codec (+ optional Rust staticlib)**, `--inference "…"` JSON trace, and **70** deterministic `self_test` checks. **Evidence class:** **lab demo (C)** — not a trained multilingual LM tokenizer artifact, not FPGA closure, not `lm-eval` rows.
 
-**Verify:** `make check-v27` · **Roadmap vs shipped:** [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · **Microbench:** `make bench-tokenizer-v27`
+**Verify:** `make check-v27` · **Roadmap vs shipped:** [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · **Microbenches:** `make bench-tokenizer-v27` · `make bench-v27-all` · **Formal (optional):** `make formal-sby-tokenizer`
 
 ---
 
@@ -630,7 +630,7 @@ make check-v9      # Parameters in Silicon (`creation_os_v9.c`) + `--self-test` 
 make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 checks)
 make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 checks)
 make check-v12     # Tensor mind (`creation_os_v12.c`) + `--self-test` (52 checks)
-make check-v27     # v27 tokenizer scaffold (`creation_os_v27.c` + `src/tokenizer/*.c`) + `--self-test` (64 checks)
+make check-v27     # v27 tokenizer scaffold (`creation_os_v27.c` + `src/tokenizer/*.c`) + `--self-test` (70 checks)
 make standalone
 ./creation_os
 ```
@@ -653,7 +653,7 @@ This is a research prototype. Specific limitations:
 - **`creation_os_v10.c`** is a **fifth** program: v9 **plus** M30–M33 distillation / routing / abstention toys; 46 checks — see [docs/THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md).
 - **`creation_os_v11.c`** is a **sixth** program: v10 **plus** M34 matmul-free LM **schematic**; 49 checks — not a trained BitNet-class model or published throughput reproduction — see [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
 - **`creation_os_v12.c`** is a **seventh** program: v11 **plus** M35–M37 classical tensor-train / entropy / sequence-head **toys**; 52 checks — not quantum hardware, not TN-LM harness rows — see [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
-- **`creation_os_v27.c`** is an **eighth** program: **M177–M184** vocab / tokenizer / inference-trace **scaffold** with `src/tokenizer/*.c`; 64 checks — **not** a trained 32K multilingual BPE, not FPGA timing proof, not “coherent LM” quality — see [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md).
+- **`creation_os_v27.c`** is an **eighth** program: **M177–M186** vocab / tokenizer / mmap COSB / inference-trace **scaffold** with `src/tokenizer/*.c`; 70 checks — **not** a trained multilingual LM tokenizer product, not FPGA timing proof, not “coherent LM” quality — see [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md).
 
 ---
 

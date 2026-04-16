@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -56,7 +56,7 @@ help:
 	@echo "  test-v24   — ./creation_os_v24 --self-test (162 checks; builds v24 first)"
 	@echo "  test-v25   — ./creation_os_v25 --self-test (183 checks; builds v25 first)"
 	@echo "  test-v26   — ./creation_os_v26 --self-test (184 checks; builds v26 first)"
-	@echo "  test-v27   — ./creation_os_v27 --self-test (64 checks; builds v27 first)"
+	@echo "  test-v27   — ./creation_os_v27 --self-test (70 checks; builds v27 first)"
 	@echo "  check      — standalone + test (use before PR / CI)"
 	@echo "  check-v6   — standalone-v6 + test-v6 (v6 only)"
 	@echo "  check-v7   — standalone-v7 + test-v7 (v7 only)"
@@ -93,6 +93,11 @@ help:
 	@echo "  bench      — GEMM vs BSC microbench (host-dependent throughput)"
 	@echo "  bench-coherence — batch Hamming gate (NEON on AArch64, else scalar)"
 	@echo "  bench-agi-gate — K-agent parliament + memory-bank argmin (NEON scan)"
+	@echo "  gen-cos-codebook — write COSB mmap table (.build/cos_codebook_32k.bin by default)"
+	@echo "  bench-binding-fidelity / bench-vocab-scaling / bench-vs-transformer — v27 microbenches"
+	@echo "  bench-v27-all — tokenizer + binding + scaling + transformer-ops comparison"
+	@echo "  standalone-v27-rust — optional Rust GDA27 staticlib + v27 binary (needs cargo)"
+	@echo "  formal-sby-tokenizer — SymbiYosys BMC on GDA27 roundtrip (SKIP if sby missing)"
 	@echo "  oracle     — oracle_speaks, oracle_ultimate"
 	@echo "  physics    — genesis, qhdc"
 	@echo "  core       — compile core/*.c to .build/*.o"
@@ -167,6 +172,13 @@ formal-sby-cover-agency:
 		cd hw/formal && sby -f agency_ctrl_cover.sby && echo "formal-sby-cover-agency: OK"; \
 	else \
 		echo "formal-sby-cover-agency: SKIP (install SymbiYosys / YosysHQ OSS CAD Suite)"; \
+	fi
+
+formal-sby-tokenizer:
+	@if command -v sby >/dev/null 2>&1; then \
+		cd hw/formal && sby -f cos_tokenizer_gda27_roundtrip_prove.sby && echo "formal-sby-tokenizer: OK"; \
+	else \
+		echo "formal-sby-tokenizer: SKIP (install SymbiYosys / YosysHQ OSS CAD Suite)"; \
 	fi
 
 eqy-agency-self:
@@ -274,6 +286,29 @@ standalone-v25: creation_os_v25.c
 standalone-v26: creation_os_v26.c
 	$(CC) $(CFLAGS) -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v26 creation_os_v26.c $(LDFLAGS)
 
+# v27 links tokenizer helpers + mmap codebook path (POSIX mmap; Windows generator still works).
+TOKENIZER_V27_SRCS = src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c src/tokenizer/cos_codebook_mmap.c
+
+standalone-v27: creation_os_v27.c $(TOKENIZER_V27_SRCS)
+	$(CC) $(CFLAGS) -I. -o creation_os_v27 creation_os_v27.c $(TOKENIZER_V27_SRCS) $(LDFLAGS)
+
+GDA27_RUST_A = experimental/gda27_rust/target/release/libcreation_os_gda27.a
+
+rust-gda27-lib:
+	@if command -v cargo >/dev/null 2>&1; then \
+		cd experimental/gda27_rust && cargo build --release && echo "rust-gda27-lib: OK"; \
+	else \
+		echo "rust-gda27-lib: SKIP (cargo missing)"; exit 2; \
+	fi
+
+standalone-v27-rust: rust-gda27-lib creation_os_v27.c $(TOKENIZER_V27_SRCS) experimental/gda27_rust/creation_os_gda27_link.c
+	$(CC) $(CFLAGS) -I. -DCOS_GDA27_RUST=1 -o creation_os_v27 creation_os_v27.c $(TOKENIZER_V27_SRCS) experimental/gda27_rust/creation_os_gda27_link.c $(GDA27_RUST_A) $(LDFLAGS)
+
+gen-cos-codebook: tools/gen_cos_codebook.c src/tokenizer/cos_codebook_mmap.c
+	@mkdir -p $(BUILDDIR)
+	$(CC) $(CFLAGS) -I. -o $(BUILDDIR)/gen_cos_codebook tools/gen_cos_codebook.c src/tokenizer/cos_codebook_mmap.c $(LDFLAGS)
+	@$(BUILDDIR)/gen_cos_codebook
+
 core: $(BUILDDIR)
 	@for f in core/*.c; do \
 	  b=$$(basename "$$f" .c); \
@@ -297,9 +332,24 @@ bench-agi-gate: bench/hv_agi_gate_neon.c core/cos_bsc.h core/cos_neon_hamming.h 
 	$(CC) $(CFLAGS) -o hv_agi_gate_neon bench/hv_agi_gate_neon.c $(LDFLAGS)
 	./hv_agi_gate_neon
 
-bench-tokenizer-v27: benchmarks/tokenizer_throughput.c src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c
-	$(CC) $(CFLAGS) -I. -o tokenizer_throughput benchmarks/tokenizer_throughput.c src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c $(LDFLAGS)
+bench-tokenizer-v27: benchmarks/tokenizer_throughput.c $(TOKENIZER_V27_SRCS)
+	$(CC) $(CFLAGS) -I. -o tokenizer_throughput benchmarks/tokenizer_throughput.c $(TOKENIZER_V27_SRCS) $(LDFLAGS)
 	./tokenizer_throughput
+
+bench-binding-fidelity: benchmarks/binding_fidelity.c $(TOKENIZER_V27_SRCS)
+	$(CC) $(CFLAGS) -I. -o binding_fidelity benchmarks/binding_fidelity.c $(TOKENIZER_V27_SRCS) $(LDFLAGS)
+	./binding_fidelity
+
+bench-vocab-scaling: benchmarks/vocab_scaling.c src/tokenizer/cos_codebook_mmap.c
+	$(CC) $(CFLAGS) -I. -o vocab_scaling benchmarks/vocab_scaling.c src/tokenizer/cos_codebook_mmap.c $(LDFLAGS)
+	./vocab_scaling
+
+bench-vs-transformer: benchmarks/vs_transformer.c core/cos_bsc.h
+	$(CC) $(CFLAGS) -I. -o vs_transformer benchmarks/vs_transformer.c $(LDFLAGS)
+	./vs_transformer
+
+bench-v27-all: bench-tokenizer-v27 bench-binding-fidelity bench-vocab-scaling bench-vs-transformer
+	@echo "bench-v27-all: OK"
 
 physics: physics/genesis.c physics/qhdc_core.c
 	$(CC) $(CFLAGS) -o genesis physics/genesis.c $(LDFLAGS)
@@ -409,7 +459,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 tokenizer_throughput oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json
+	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

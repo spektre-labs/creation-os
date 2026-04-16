@@ -25,6 +25,8 @@ void bpe_id_to_hypervector(uint32_t id, uint64_t seed, uint64_t *hv);
 void byte_codebook_build(uint64_t seed);
 void byte_symbol_hypervector(uint8_t b, uint64_t *hv);
 void byte_bundle(const uint8_t *data, int len, uint64_t *out);
+/** Tier-2: sliding 3-byte MAJ window (pads tail by repeating last byte). */
+void byte_bundle_maj_sliding(const uint8_t *data, int len, uint64_t *out);
 
 int gda27_encode_uint(uint32_t v, char *out27, int cap);
 uint32_t gda27_decode_uint(const char *in27);

@@ -17,6 +17,9 @@ creation_os_v25
 creation_os_v26
 creation_os_v27
 tokenizer_throughput
+binding_fidelity
+vocab_scaling
+vs_transformer
 oracle_speaks
 oracle_ultimate
 gemm_vs_bsc
@@ -52,6 +55,7 @@ hw/chisel/project/project/
 hw/chisel/generated/
 hw/chisel/.bsp/
 hw/rust/spektre-iron-gate/target/
+experimental/gda27_rust/target/
 hw/formal/agency_ctrl_prove/
 hw/formal/agency_ctrl_cover/
 hw/formal/agency_self/

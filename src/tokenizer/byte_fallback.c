@@ -3,6 +3,15 @@
 
 #include "cos_tokenizer.h"
 
+static uint8_t pad_at(const uint8_t *data, int len, int idx)
+{
+    if (len <= 0)
+        return 0;
+    if (idx < len)
+        return data[idx];
+    return data[len - 1];
+}
+
 static uint64_t g_byte_table[COS_TOK_BYTE_TABLE][COS_W];
 
 void byte_codebook_build(uint64_t seed)
@@ -30,5 +39,21 @@ void byte_bundle(const uint8_t *data, int len, uint64_t *out)
         byte_symbol_hypervector(data[k], row);
         for (int i = 0; i < COS_W; i++)
             out[i] ^= row[i];
+    }
+}
+
+void byte_bundle_maj_sliding(const uint8_t *data, int len, uint64_t *out)
+{
+    memset(out, 0, sizeof(uint64_t) * COS_W);
+    if (len <= 0)
+        return;
+    for (int k = 0; k < len; k++) {
+        uint64_t a[COS_W], b[COS_W], c[COS_W], m[COS_W];
+        byte_symbol_hypervector(pad_at(data, len, k), a);
+        byte_symbol_hypervector(pad_at(data, len, k + 1), b);
+        byte_symbol_hypervector(pad_at(data, len, k + 2), c);
+        cos_hv_maj3(m, a, b, c);
+        for (int i = 0; i < COS_W; i++)
+            out[i] ^= m[i];
     }
 }
