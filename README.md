@@ -12,7 +12,7 @@
 
 <p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
-> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v27`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v28`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <table align="center">
   <tbody>
@@ -46,7 +46,7 @@
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
 | **Agents / contributors / security** | [AGENTS.md](AGENTS.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [MAINTAINERS](docs/MAINTAINERS.md) |
 
-**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
+**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
 
 <a id="readme-scan-map-fig-09"></a>
 
@@ -75,7 +75,7 @@ flowchart TB
   end
 ```
 
-**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic `check-v6` … `check-v27` self-tests** (`creation_os_v6.c` … `creation_os_v27.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
+**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic `check-v6` … `check-v28` self-tests** (`creation_os_v6.c` … `creation_os_v28.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
 
 <p align="center">
   <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="96%" alt="Planes A–C — teaching spine vs production stack (summary diagram)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></a><br/>
@@ -95,7 +95,7 @@ flowchart TB
 ```mermaid
 %%{init: {'theme':'neutral'}}%%
 flowchart LR
-  C["make check"] --> M["check-v6 … check-v27"]
+  C["make check"] --> M["check-v6 … check-v28"]
   M --> G["make merge-gate"]
 ```
 
@@ -106,9 +106,10 @@ make merge-gate
 # spot-check current head:
 make check-v26 && ./creation_os_v26 --self-test   # expect 184/184 PASS
 make check-v27 && ./creation_os_v27 --self-test   # expect 70/70 PASS (tokenizer scaffold)
+make check-v28 && ./creation_os_v28 --self-test   # expect 29/29 PASS (LM integration shell)
 ```
 
-*Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`**; expect **`64/64 PASS`** from **`./creation_os_v27 --self-test`**.
+*Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`** and **`check-v28`**; expect **`70/70 PASS`** / **`29/29 PASS`** from **`./creation_os_v27 --self-test`** / **`./creation_os_v28 --self-test`**.
 
 **Plain-language orientation:** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · **Misreadings:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md)
 
@@ -125,7 +126,7 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 ## Flagship programs
 
-Each `creation_os_vN.c` is a **separate** single-file program (v27 links small `src/tokenizer/*.c` helpers). Counts are **`--self-test` checks** for that binary. Use full targets, e.g. `make check-v26` or `make check-v27`.
+Each `creation_os_vN.c` is a **separate** single-file program (v27 links tokenizer helpers; v28 links import/nn/server helpers). Counts are **`--self-test` checks** for that binary. Use full targets, e.g. `make check-v26`, `make check-v27`, or `make check-v28`.
 
 | Ver | File | One-line hook | `make` | Checks |
 |:---:|:--|:--|:--|--:|
@@ -145,6 +146,7 @@ Each `creation_os_vN.c` is a **separate** single-file program (v27 links small `
 | v25 | [`creation_os_v25.c`](creation_os_v25.c) | + M137–M156 enterprise ledger | `check-v25` | 183 |
 | v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
 | v27 | [`creation_os_v27.c`](creation_os_v27.c) | + M177–M186 vocab / tokenizer / mmap COSB / inference trace | `check-v27` | **70** |
+| v28 | [`creation_os_v28.c`](creation_os_v28.c) | + M190–M199 GGUF + mmap + spawn + tokenizer probe + sampler + chat + JSON escape + HTTP + σ toys | `check-v28` | **29** |
 
 ```mermaid
 %%{init: {'theme':'neutral'}}%%
@@ -154,14 +156,14 @@ flowchart LR
   end
   subgraph lab["Standalone lab programs"]
     V6["v6 … v12<br/>1024-bit demos"]
-    V15["v15 … v27<br/>headers + self-tests"]
+    V15["v15 … v28<br/>headers + self-tests"]
   end
   V2 -.->|same sigma language; different evidence class| V6
   V6 --> V15
-  V15 --> H["Merge-gate row<br/>184 @ v26 + 64 @ v27"]
+    V15 --> H["Merge-gate row<br/>184 @ v26 + 70 @ v27 + 29 @ v28"]
 ```
 
-**Evidence class:** v6–v27 = **lab demo (C)** unless you add external harness / silicon proof — [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). **Per-version narrative:** [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) + headers inside each `creation_os_v*.c`. **Lineage at a glance:** [kernel-lineage diagram](docs/assets/kernel-lineage-evidence.svg) (also under [Doctoral path](#doctoral-and-committee-read-path)).
+**Evidence class:** v6–v27 = **lab demo (C)** unless you add external harness / silicon proof; v28 is an **integration harness (C)** — [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). **Per-version narrative:** [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) + headers inside each `creation_os_v*.c`. **Lineage at a glance:** [kernel-lineage diagram](docs/assets/kernel-lineage-evidence.svg) (also under [Doctoral path](#doctoral-and-committee-read-path)).
 
 **Frontier complement:** AArch64 **4096-bit** σ / Hamming / MAJ / XOR in `core/cos_neon_*.h` — bit-parallel similarity; not a substitute for published LM harness rows.
 
@@ -236,6 +238,7 @@ flowchart LR
 | v11 | [THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md) · `make check-v11` |
 | v12 | [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
 | v27 | [VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · `make check-v27` · `make bench-tokenizer-v27` · `make bench-v27-all` |
+| v28 | `Dockerfile` · `benchmarks/lm_eval.sh` · `benchmarks/hallucination_reduction.md` · `make check-v28` |
 | v15–v26 | Headers in `creation_os_v15.c` … `creation_os_v26.c` · `make check-v15` … `make check-v26` |
 | NEON coherence | [NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
 | HV parliament | [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
@@ -565,6 +568,30 @@ COGNITION
 
 ---
 
+<a id="v28-lm-integration"></a>
+
+## Creation OS v28 (LM integration shell)
+
+[`creation_os_v28.c`](creation_os_v28.c) wires a **portable integration shell** for “full LM pipeline” work without pretending the merge gate downloads multi‑GB weights:
+
+- **GGUF:** minimal v3 reader + tensor-data base offset + tiny writer fixture (`src/import/gguf_parser.c`)
+- **mmap I/O:** `cos_gguf_mmap_read_at` for aligned tensor blob reads (`src/import/gguf_mmap.c`, POSIX)
+- **External engine:** `posix_spawnp` stdout capture via `CREATION_OS_BITNET_CPP` (+ optional stdin / extra argv envs; `src/import/bitnet_spawn.c`)
+- **tokenizer.json:** vocab entry counter for HF-style `model.vocab` maps (`src/import/tokenizer_json.c`, `--tokenizer-stats`)
+- **Sampling:** temperature / top‑k / top‑p (`src/nn/sampler.c`)
+- **Chat framing:** small Llama‑3‑style text template (`src/nn/chat_template.c`)
+- **σ abstention toy:** entropy gate on **toy logits** (not model logits unless you plug a real engine)
+- **HTTP:** loopback **OpenAI-shaped** `POST /v1/chat/completions` + `GET /health` with JSON escaping (`src/server/http_chat.c` + `src/server/json_esc.c`, POSIX)
+- **CLI alias:** `make cos_lm` copies `creation_os_v28` → `cos_lm`
+- **Docker:** root `Dockerfile` builds `creation_os_v28` (weights must be mounted/supplied out-of-band)
+- **Harness hooks:** `benchmarks/lm_eval.sh`, `benchmarks/hallucination_reduction.md`
+
+**Third-party weights (example target):** Microsoft’s **BitNet b1.58 2B4T** GGUF releases on Hugging Face (MIT). Use official artifacts + `bitnet.cpp` for matched numerics; cite upstream in any publication-facing materials.
+
+**Verify:** `make check-v28`
+
+---
+
 ## Architecture
 
 <p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
@@ -631,6 +658,7 @@ make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 che
 make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 checks)
 make check-v12     # Tensor mind (`creation_os_v12.c`) + `--self-test` (52 checks)
 make check-v27     # v27 tokenizer scaffold (`creation_os_v27.c` + `src/tokenizer/*.c`) + `--self-test` (70 checks)
+make check-v28     # v28 LM integration shell (`creation_os_v28.c` + import/nn/server helpers) + `--self-test` (29 checks)
 make standalone
 ./creation_os
 ```
@@ -654,6 +682,7 @@ This is a research prototype. Specific limitations:
 - **`creation_os_v11.c`** is a **sixth** program: v10 **plus** M34 matmul-free LM **schematic**; 49 checks — not a trained BitNet-class model or published throughput reproduction — see [docs/THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md).
 - **`creation_os_v12.c`** is a **seventh** program: v11 **plus** M35–M37 classical tensor-train / entropy / sequence-head **toys**; 52 checks — not quantum hardware, not TN-LM harness rows — see [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
 - **`creation_os_v27.c`** is an **eighth** program: **M177–M186** vocab / tokenizer / mmap COSB / inference-trace **scaffold** with `src/tokenizer/*.c`; 70 checks — **not** a trained multilingual LM tokenizer product, not FPGA timing proof, not “coherent LM” quality — see [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md).
+- **`creation_os_v28.c`** is a **ninth** program: **M190–M199** LM **integration shell** (`src/import`, `src/nn`, `src/server`); 29 checks — **not** an in-process BitNet b1.58 2B4T forward, not `lm-eval` rows by itself, not a weights bundle — see [#v28-lm-integration](#v28-lm-integration).
 
 ---
 

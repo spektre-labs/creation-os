@@ -20,7 +20,7 @@ Guidance for autonomous coding tools (Cursor, Copilot, etc.) working **in this t
 
 ## What to optimize for
 
-- **Correctness:** before merge, run **`make merge-gate`** from this directory (portable `check` + every flagship **`check-v6` … `check-v27`** self-test matrix). For a tight loop while editing one file, `make test` and the matching **`make check-vN`** alone are acceptable until the final commit.
+- **Correctness:** before merge, run **`make merge-gate`** from this directory (portable `check` + every flagship **`check-v6` … `check-v28`** self-test matrix). For a tight loop while editing one file, `make test` and the matching **`make check-vN`** alone are acceptable until the final commit.
 - **Portability:** Prefer C11 + libm; optional `-march=native` is Makefile default — document if you change it.
 - **Minimal diffs:** Do not refactor unrelated modules; match existing style.
 
