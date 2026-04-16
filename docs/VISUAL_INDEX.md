@@ -57,7 +57,7 @@ Paths are relative to the **repository root** of the `creation-os` checkout.
 
 ## Mermaid
 
-The [README.md](../README.md) includes a **Mermaid** flowchart (GitHub-native render). The conceptual monorepo uses the same pattern on its landing page: [spektre-protocol README](https://github.com/spektre-labs/spektre-protocol/blob/main/README.md) (when that checkout includes this tree as `creation-os/`).
+The [README.md](../README.md) flowcharts use `%%{init: {'theme':'neutral'}}%%` so **GitHub light/dark** renders with similar contrast (avoid default “hot” Mermaid colors beside Spektral SVGs). The conceptual monorepo uses the same pattern on its landing page: [spektre-protocol README](https://github.com/spektre-labs/spektre-protocol/blob/main/README.md) (when that checkout includes this tree as `creation-os/`).
 
 ## Citation hygiene for figures
 

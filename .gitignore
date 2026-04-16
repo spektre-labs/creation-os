@@ -39,6 +39,10 @@ test_bsc
 Makefile 2
 .gitignore 2
 LICENSE 2
+.envrc 2
+Earthfile 2
+Justfile 2
+flake 2.nix
 CITATION 2.cff
 hw/chisel/target/
 hw/chisel/project/target/

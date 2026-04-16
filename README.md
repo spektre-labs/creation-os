@@ -10,7 +10,7 @@
   <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
 </p>
 
-> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v26`). Flagship **`./creation_os_v26 --self-test`** runs **184** checks in one harness. This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v26`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <p align="center">
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
@@ -34,8 +34,9 @@
 | **Not mis-cite a headline** | [Claim discipline](docs/CLAIM_DISCIPLINE.md) · [Common misreadings](docs/COMMON_MISREADINGS.md) · [Doctoral path](#doctoral-and-committee-read-path) |
 | **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
+| **Agents / contributors / security** | [AGENTS.md](AGENTS.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [MAINTAINERS](docs/MAINTAINERS.md) |
 
-**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [Architecture](#architecture) · [Limitations](#limitations) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [License](#license)
+**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
 
 <a id="readme-scan-map-fig-09"></a>
 
@@ -50,7 +51,7 @@
 ## At a glance
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b','secondaryColor':'#f8fafc','tertiaryColor':'#fff'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart TB
   subgraph who["Who lands here?"]
     A["Curious skimmer"]
@@ -64,7 +65,7 @@ flowchart TB
   end
 ```
 
-**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic harnesses** (`creation_os_v6.c` … `creation_os_v26.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
+**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic `check-v6` … `check-v26` self-tests** (`creation_os_v6.c` … `creation_os_v26.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
 
 <p align="center">
   <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–C — teaching spine vs production stack (summary diagram)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></a><br/>
@@ -82,7 +83,7 @@ flowchart TB
 ## Run it in sixty seconds
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   C["make check"] --> M["check-v6 … check-v26"]
   M --> G["make merge-gate"]
@@ -134,7 +135,7 @@ Each `creation_os_vN.c` is a **separate** single-file program. Counts are **`--s
 | v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   subgraph spine["Portable spine"]
     V2["creation_os_v2.c<br/>§1–§26 · one TU"]
@@ -269,7 +270,7 @@ Read **in order** once before citing any number or narrative title from this tre
 **[spektre-labs/creation-os](https://github.com/spektre-labs/creation-os)** — this tree is the portable kernel, `make test` / `make bench`, CI, and engineering docs. **Push hygiene:** [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md).
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart TB
   subgraph story["Narrative arc below this heading"]
     P["The problem + measured table"]
@@ -285,7 +286,7 @@ flowchart TB
 ## The problem
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart TB
   subgraph gemm["Float32 cosine @ D=4096"]
     G1["24,576 MAC-style FLOPs<br/>per similarity (proxy)"]
@@ -722,7 +723,7 @@ This README’s benchmark table is the **microbench / lab** class; cite it as su
 <p align="center"><img src="docs/assets/evidence-ladder.svg" width="96%" alt="Evidence ladder (dark): Arithmetic → Measured → Harness + lab-demo band" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 ```mermaid
-%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
+%%{init: {'theme':'neutral'}}%%
 flowchart LR
   B["Microbench: make bench + host log"]
   I["Invariants: make test / creation_os"]
@@ -762,6 +763,6 @@ ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541)
 
 ---
 
-**End of README.** Quick re-entry: [`make merge-gate`](#run-it-in-sixty-seconds) · [DOC_INDEX](docs/DOC_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
+**End of README.** Quick re-entry: [`make merge-gate`](#run-it-in-sixty-seconds) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
 
 *2026 · Spektre Labs · Helsinki*
