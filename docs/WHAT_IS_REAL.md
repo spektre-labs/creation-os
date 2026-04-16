@@ -59,6 +59,10 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v50 lab: final benchmark rollup (`FINAL_RESULTS.md` + STUB eval JSON slots) | `make v50-benchmark` | **M** |
 | v50 lab: frontier-comparable accuracy tables filled with real eval JSON | `benchmarks/v50/*.json` (non-stub) | **P** (requires pinned engine + datasets) |
 | v51 lab: integration scaffold (cognitive loop + σ-gated agent + sandbox + ring memory) | `make check-v51` (13/13) | **M** (scaffold; not a live engine) |
+| v53 lab: σ-governed harness scaffold (σ-TAOR loop + σ-dispatch + σ-compress + `creation.md` loader) | `make check-v53` (13/13) | **M** (scaffold + structural critique; not a coding agent) |
+| v53 lab: `creation.md` invariants file at repo root | `cat creation.md` | **M** (invariants authored; loader parses them) |
+| v53 lab: paper draft "Harness Architecture: σ-Governance vs Time-Limits" (`docs/v53/paper_draft.md`) | open in any viewer | **I** (position paper; benchmark deferred to follow-up) |
+| v53 lab: σ-governed coding agent running against real repos with real tools | N/A | **P** (requires tool runtime, sub-process dispatcher, model integration) |
 | v51 lab: static web σ-dashboard mock (`src/v51/ui/web.html`) | open in any browser | **M** (static; no live model) |
 | v51 lab: one-line installer `scripts/v51/install.sh` | `bash scripts/v51/install.sh` | **M** (dry-run by design) |
 | v51 lab: signed public `curl \| sh` installer + `creation-os` wrapper CLI | N/A | **P** (requires signed release + wrapper binary) |

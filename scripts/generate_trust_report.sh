@@ -20,6 +20,7 @@ echo "| \`make merge-gate-v48\` | Optional heavy gate: verify + red-team + check
 echo "| \`make certify\` | v49 DO-178C-aligned assurance pack (formal targets + MC/DC driver + audit + trace; not FAA/EASA certification) |"
 echo "| \`make v50-benchmark\` | v50 rollup report + STUB eval slots + assurance logs |"
 echo "| \`make check-v51\` | v51 integration scaffold self-test (cognitive loop + σ-gated agent) |"
+echo "| \`make check-v53\` | v53 σ-governed harness scaffold self-test (σ-TAOR + σ-dispatch + σ-compression + creation.md loader) |"
 echo "| \`make merge-gate\` | Portable flagship gate (v2 + v6..v29) |"
 echo "| \`make formal-sby-v37\` | v37 σ-pipeline SymbiYosys (SKIP if \`sby\` missing) |"
 echo

@@ -1,5 +1,38 @@
 # Changelog
 
+## v53 σ-governed harness scaffold (2026-04-16)
+
+- **Structural critique, not clone.** Takes Claude Code's public harness
+  primitives (`nO` / `h2A` / TAOR / `wU2` / sub-agents / `claude.md` /
+  Plan Mode / fork agents / 4-layer compression) as given, and encodes
+  σ-governance over the top. See `docs/v53/POSITIONING.md`.
+- **σ-TAOR loop:** `src/v53/harness/loop.{c,h}` —
+  `while (tool_call && σ < threshold && σ_ewma < drift_cap && making_progress)`.
+  Five distinct abstain outcomes (`ABSTAIN_SIGMA`, `ABSTAIN_DRIFT`,
+  `ABSTAIN_NO_PROG`, `ABSTAIN_NO_TOOLS`, `BUDGET_EXHAUSTED`) + `COMPLETE`
+  + reserved `SAFETY_BLOCK`. Consumes v51 `cognitive_step` for per-iter σ.
+- **σ-triggered sub-agent dispatch:** `src/v53/harness/dispatch.{c,h}` —
+  specialist spawn policy keyed on per-domain σ (security / performance /
+  correctness defaults). Specialist runs in fresh context; returns
+  summary + own σ (Mama Claude: uncorrelated context = test-time compute).
+- **σ-prioritized compression:** `src/v53/harness/compress.{c,h}` —
+  qualitative scoring (σ-resolution +2.0, invariant-reference +1.5,
+  tool-use +1.0, peak σ +σ, filler −0.5); `v53_compress_batch` percentile
+  cutoff keeps learning moments + invariant refs ahead of routine filler.
+- **`creation.md` loader:** `src/v53/harness/project_context.{c,h}` —
+  conservative markdown parser. Counts invariants, conventions,
+  σ-profile rows. Missing file → `ok = 0`.
+- **Invariants file:** `creation.md` at repo root — **invariants**,
+  not instructions; σ-profile per task type; explicit rule "invariant
+  beats convention; two-invariant conflict ⇒ abstain + surface".
+- **Paper draft:** `docs/v53/paper_draft.md` — "Harness Architecture:
+  Why σ-Governance Beats Time-Limits in Agentic Coding" (I-tier
+  position paper; explicit follow-up benchmark scope).
+- **Architecture + positioning:** `docs/v53/ARCHITECTURE.md`,
+  `docs/v53/POSITIONING.md`.
+- **Makefile:** `make check-v53` (13/13 self-test); `make standalone-v53`;
+  help + `.PHONY` updated. **Not** part of `merge-gate`.
+
 ## v51 AGI-complete integration scaffold (2026-04-16)
 
 - **Scaffold:** `src/v51/cognitive_loop.{c,h}` — six-phase loop

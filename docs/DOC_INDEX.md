@@ -20,6 +20,10 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v50/FAQ_CRITICS.md](v50/FAQ_CRITICS.md) | Public critique / review readers | v50: pre-baked answers to common dismissal patterns (tier-honest) |
 | [benchmarks/v50/FINAL_RESULTS.md](../benchmarks/v50/FINAL_RESULTS.md) | Benchmark readers | v50 rollup report (regenerate via `make v50-benchmark`) |
 | [v51/ARCHITECTURE.md](v51/ARCHITECTURE.md) | Integration / reviewer readers | v51: six-phase cognitive loop + σ-gated agent + full-stack diagram (scaffold tier) |
+| [v53/ARCHITECTURE.md](v53/ARCHITECTURE.md) | Harness / runtime readers | v53: σ-governed harness scaffold — σ-TAOR loop, σ-dispatch, σ-compression, `creation.md` loader |
+| [v53/POSITIONING.md](v53/POSITIONING.md) | Reviewers comparing with Claude Code | v53: side-by-side positioning vs Claude Code (structural, not empirical) |
+| [v53/paper_draft.md](v53/paper_draft.md) | Paper readers | v53: position paper "Harness Architecture: σ-Governance vs Time-Limits in Agentic Coding" (I-tier) |
+| [creation.md](../creation.md) | Agent operators / contributors | Project **invariants** (not instructions) + σ-profile per task type |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |
