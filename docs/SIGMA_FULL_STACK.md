@@ -80,3 +80,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v42 working paper title (only when self-play + eval harness exists)
 
 **“σ-Guided Self-Play: Uncertainty-Decomposed Reward Signals Enable Data-Free Self-Improvement of Language Models”**
+
+## v43 working paper title (only when KD + eval harness exists)
+
+**“σ-Guided Knowledge Distillation: Uncertainty-Weighted Targets Reduce Hallucination Transfer in Small Students”**

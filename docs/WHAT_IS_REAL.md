@@ -40,6 +40,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v41 lab: GSM8K / MATH / AIME **scaling harness** (“2B + σ beats 70B”) | `make bench-v41-scaling` (exits 0 as **stub**; real curves require external weights + eval CLI + REPRO bundle) | **M** |
 | v42 lab: σ-guided **self-play** scaffold (challenger/solver/replay + σ-shaped reward + curriculum hook) | `make check-v42` | **M** |
 | v42 lab: self-play **improvement curve** harness (“data-free self-RL beats GSM8K”) | `make bench-v42-curve` (exits 0 as **stub**; real runs require external weights + self-play driver + eval CLI + REPRO bundle) | **M** |
+| v43 lab: σ-guided **knowledge distillation** math (weighted KL + progressive stages + multi-teacher ensemble + σ calibration loss) | `make check-v43` | **M** |
+| v43 lab: KD **quality** harness (TruthfulQA / calibration / toxic transfer vs standard KD) | `make bench-v43-distill` (exits 0 as **stub**; real runs require teacher+student weights + distill driver + eval CLI + REPRO bundle) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -94,6 +96,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “σ-threshold theorem is proven for LLMs in this repo” | v40 ships **definitions + diagnostics + decoder**; the exponential suppression claim is **hypothesis / P-tier** until measured and archived | **N** |
 | “**2B BitNet + σ-guided test-time compute matches 70B** on GSM8K/AIME in this repo” | v41 ships **policy + toy integration** only; any crossover budget claim is **P-tier** until `benchmarks/v41/budget_*.json` exists with archived harness metadata | **N** |
 | “**σ-only reward replaces all external verifiers** for self-play RL in this repo” | v42 ships **toy consistency + σ decomposition** only; any “no external data ever” claim is **N** until archived self-play + eval harnesses exist | **N** |
+| “**σ-weighted KD always beats standard KD** on TruthfulQA / toxic transfer in this repo” | v43 ships **scalar loss contracts** only; any A/B headline is **N** until `benchmarks/v43/distill_*.json` exists with archived harness metadata | **N** |
 
 ## Retired claims (corrections)
 
