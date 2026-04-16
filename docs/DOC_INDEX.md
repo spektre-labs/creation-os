@@ -13,6 +13,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v43_sigma_distill.md](v43_sigma_distill.md) | Integrators, distillation readers | v43 lab: σ-weighted KD + progressive curriculum + multi-teacher ensemble + calibration (`make check-v43`) |
 | [v44_inference_proxy.md](v44_inference_proxy.md) | Integrators, serving readers | v44 lab: σ-proxy (`creation_os_proxy`) + OpenAI-shaped loopback HTTP + demo SSE (`make check-v44`) |
 | [v45_introspection.md](v45_introspection.md) | Integrators, calibration readers | v45 lab: σ-introspection (calibration gap, doubt reward, internal probe stub; `make check-v45`) |
+| [v46_bitnet_sigma.md](v46_bitnet_sigma.md) | Integrators, BitNet / CPU inference readers | v46 lab: σ-from-logits fast path + SIMD + adaptive quant + SPEED_TABLE scaffold (`make check-v46`) |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |

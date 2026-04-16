@@ -71,6 +71,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v43 | Learning / orchestration | σ-guided knowledge distillation (uncertainty-weighted KL, anti-transfer term, staged curriculum, multi-teacher σ ensemble, σ calibration) |
 | v44 | Serving / orchestration | σ-native inference proxy (engine-agnostic gate, OpenAI-shaped API + σ fields, demo per-token σ streaming) |
 | v45 | Meta-cognition / calibration | σ-introspection (calibration gap, doubt reward, internal σ placeholder, paradox scatter harness stub) |
+| v46 | Inference / efficiency | σ-optimized BitNet-facing pipeline (σ-from-logits scans, SIMD reductions, adaptive quant policy, e2e bench stub) |
 
 ## v40 working paper title (only when threshold harness exists)
 
@@ -95,3 +96,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v45 working paper title (only when introspection harness exists)
 
 **“σ as Introspection: Calibrated Self-Knowledge in Language Models via Epistemic Uncertainty Decomposition”**
+
+## v46 working paper title (only when BitNet+σ harness exists)
+
+**“σ-Optimized BitNet Serving: Near-Zero-Margin σ Telemetry on CPU-Efficient Ternary Inference”**

@@ -46,6 +46,9 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v44 lab: σ-proxy **latency overhead** harness (“<5% overhead vs raw engine”) | `make bench-v44-overhead` (exits 0 as **stub**; real runs require pinned engine + load generator + archived JSON) | **M** |
 | v45 lab: σ-**introspection** (calibration gap + doubt-reward + internal probe stub) | `make check-v45` | **M** |
 | v45 lab: **Gemini paradox / introspection scatter** harness (accuracy vs calibration_gap) | `make bench-v45-paradox` (exits 0 as **stub**; real runs require multi-model eval + archived JSON + plot inputs) | **M** |
+| v46 lab: fast **σ-from-logits** scans + SIMD reductions + adaptive quant policy (`creation_os_v46`) | `make check-v46` | **M** |
+| v46 lab: **SPEED_TABLE** positioning scaffold (BitNet/Qwen/etc. headline cells) | [benchmarks/v46/SPEED_TABLE.md](../benchmarks/v46/SPEED_TABLE.md) (tiers tagged **I/M/N** inside the doc) | **M** |
+| v46 lab: **e2e** BitNet+σ bench matrix (latency/energy/accuracy/honesty JSON) | `make bench-v46-e2e` (exits 0 as **stub**; real runs require bitnet.cpp harness + archived JSON) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -105,6 +108,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “**Mid-stream retraction is safe** against arbitrary tokenizer + engine streams in this repo” | SSE demo lines are **not** a guaranteed rewind protocol until integrated with a real streaming parser + engine cancellation contract | **N** |
 | “**Public Table 1** introspection scatter (Gemini vs Claude vs BitNet+σ) exists in this repo” | v45 ships **deterministic lab math + stubs** only; any model-point scatter is **N** until `benchmarks/v45/introspection_*.json` is archived with harness metadata | **N** |
 | “**σ_internal from real hidden states** is shipped for vLLM/SGLang/bitnet.cpp in this repo” | `v45_probe_internals_lab` is a **deterministic placeholder** until engine hooks + weights bundle exist | **N** |
+| “**Wall-clock σ overhead is <3%** (or 0.17%) on BitNet 2B in this repo” | v46 ships **math + SIMD micro-ops** only; any percent headline is **N** until `benchmarks/v46/*.json` contains pinned host + tokenizer + engine metadata | **N** |
+| “**accuracy_answered** / abstention curves for BitNet+σ are archived here” | `creation_os_v46` is currently **self-test only**; any leaderboard row is **N** until eval CLI exists | **N** |
 
 ## Retired claims (corrections)
 

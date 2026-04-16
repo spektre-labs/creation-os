@@ -32,6 +32,7 @@ creation_os_v42
 creation_os_v43
 creation_os_proxy
 creation_os_v45
+creation_os_v46
 creation_os_mcp
 
 # v33 harness / local metrics (generated)
@@ -57,6 +58,10 @@ benchmarks/v44/*.png
 benchmarks/v45/*.json
 benchmarks/v45/*.jsonl
 benchmarks/v45/*.png
+
+benchmarks/v46/*.json
+benchmarks/v46/*.jsonl
+benchmarks/v46/*.png
 
 # Optional upstream checkouts / weights (never commit)
 external/BitNet/
