@@ -1,0 +1,8 @@
+{
+  "sigma_local_threshold": 0.4,
+  "sigma_api_threshold": 0.8,
+  "verifier_abstain_epistemic": 0.7,
+  "draft_model": "bitnet-2b4t",
+  "verifier_model": "qwen3.5-4b",
+  "notes": "Draft/verifier binaries live in model registry / env (v33). This file is routing thresholds only until a merged schema lands."
+}

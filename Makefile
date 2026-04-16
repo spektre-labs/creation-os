@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -45,6 +45,7 @@ help:
 	@echo "  standalone-v31 — build creation_os_v31 (v31 lab: optional upstream wrapper + σ math self-test; not merge-gate)"
 	@echo "  standalone-v33 — build creation_os_v33 (v33 lab: σ-routed fallback + schema metrics; not merge-gate)"
 	@echo "  standalone-v34 — build creation_os_v34 (v34 lab: σ decompose + Platt + channels_v34; not merge-gate)"
+	@echo "  standalone-v35 — build creation_os_v35 (v35 lab: σ-guided speculative decode hooks; not merge-gate)"
 	@echo "  cos_lm       — copy creation_os_v28 → cos_lm (CLI alias for LM entrypoint)"
 	@echo "  test       — run tests/test_bsc_core (sigma, Noether, crystal)"
 	@echo "  test-v6    — ./creation_os_v6 --self-test (30 checks; builds v6 first)"
@@ -88,6 +89,8 @@ help:
 	@echo "  check-v33  — standalone-v33 + test-v33 (v33 lab only; not merge-gate)"
 	@echo "  test-v34   — ./creation_os_v34 --self-test (v34 lab only)"
 	@echo "  check-v34  — standalone-v34 + test-v34 (v34 lab only; not merge-gate)"
+	@echo "  test-v35   — ./creation_os_v35 --self-test (v35 lab only)"
+	@echo "  check-v35  — standalone-v35 + test-v35 (v35 lab only; not merge-gate)"
 	@echo "  standalone-openai-stub — build creation_os_openai_stub (loopback OpenAI-shaped /v1 shim)"
 	@echo "  test-openai-stub   — ./creation_os_openai_stub --self-test (5 checks)"
 	@echo "  check-openai-stub  — standalone-openai-stub + test-openai-stub (optional; not merge-gate)"
@@ -367,6 +370,12 @@ V34_SRCS = src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels_v34.c 
 standalone-v34: src/v34/creation_os_v34.c $(V34_SRCS)
 	$(CC) $(CFLAGS) -I. -o creation_os_v34 src/v34/creation_os_v34.c $(V34_SRCS) $(LDFLAGS)
 
+# v35: σ-guided speculative decoding (adaptive K + dual-verify policy; no weights in-tree).
+V35_SRCS = src/v35/spec_decode.c src/sigma/decompose.c
+
+standalone-v35: src/v35/creation_os_v35.c $(V35_SRCS)
+	$(CC) $(CFLAGS) -I. -o creation_os_v35 src/v35/creation_os_v35.c $(V35_SRCS) $(LDFLAGS)
+
 # Optional: OpenAI-shaped loopback stub for wiring local tools (no weights; POSIX-only).
 standalone-openai-stub: creation_os_openai_stub.c src/server/json_esc.c
 	$(CC) $(CFLAGS) -I. -o creation_os_openai_stub creation_os_openai_stub.c src/server/json_esc.c $(LDFLAGS)
@@ -625,11 +634,17 @@ test-v34: standalone-v34
 check-v34: standalone-v34 test-v34
 	@echo "check-v34: OK (v34 σ-decompose + Platt + channels_v34 self-test)"
 
+test-v35: standalone-v35
+	./creation_os_v35 --self-test
+
+check-v35: standalone-v35 test-v35
+	@echo "check-v35: OK (v35 σ-guided speculative decode hooks)"
+
 all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf
+	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh
