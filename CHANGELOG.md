@@ -1,5 +1,72 @@
 # Changelog
 
+## v58 σ-Cache — σ-decomposed KV-cache eviction with a branchless NEON kernel (2026-04-16)
+
+- **Driving oivallus.** Q2 2026 KV-cache eviction literature
+  (StreamingLLM, H2O, SnapKV, PyramidKV, KIVI, KVQuant, SAGE-KV,
+  G-KV, EntropyCache, Attention-Gate) uses **one scalar** signal
+  per token: position, attention mass, quantisation residue, or
+  entropy. **Nobody** uses a **decomposed** σ = (ε, α) signal —
+  even though the rest of the Creation OS stack already speaks
+  that dialect (v34 Dirichlet split, v55 σ₃ triangulation, v56
+  σ-governed IP-TTT, v57 σ-tiered registry). **v58 closes that
+  gap** at the KV-cache layer.
+- **Policy.** Per-token retention score
+  `s(t) = α_ε·ε(t) + β·attn(t) + γ·recency(t) − δ·α(t) + sink_lift(t)`,
+  budgeted by `τ_keep = K-th largest non-sink score` where `K =
+  max(capacity − sinks_present, 0)`. Four-valued decision: **FULL
+  / INT8 / INT4 / EVICTED** by per-token precision thresholds
+  `τ_full`, `τ_int8` layered under the budget — a token that
+  clears `τ_int8` but misses `τ_keep` is still EVICTED.
+- **Kernel (`src/v58/sigma_cache.c`).** Branchless hot path: 0/1
+  lane masks from float compares combined with `| & ~`; a
+  four-way branchless mux assembles the tag byte. Compaction
+  writes every index unconditionally and advances by a 0/1 kept
+  flag. Scratch via `aligned_alloc(64, ⌈n·4/64⌉·64)`. Prefetch 16
+  lanes ahead. An explicit NEON 4-accumulator SoA score reduction
+  (`cos_v58_score_soa_neon`) materialises the `.cursorrules`
+  item 5 pattern (four lanes, three `vfmaq_f32` stages) and is
+  tested against a scalar reference within 1e-4.
+- **Self-test (`creation_os_v58 --self-test`).** **68 / 68**
+  deterministic assertions covering: version / default-policy
+  invariants, score monotonicity in each axis (ε↑, attn↑, α↓),
+  branchless recency window equivalence, translation invariance,
+  attention-scale order preservation, sink lift dominance, scalar
+  ≡ batched equivalence, NEON-SoA ≡ scalar-SoA within tolerance,
+  null safety across `decide` and `compact`, n=0 edge case, sinks
+  always kept, `kept + evicted == n`, `kept_total ≤ capacity +
+  sinks`, zero-capacity forces all-evict, monotone capacity,
+  determinism under fixed policy + seed, threshold populated in
+  summary, two 10-iteration random stress tests, and compaction
+  equivalence.
+- **Microbench (`make microbench-v58`).** 3-point sweep
+  (N = 1024 / 4096 / 16384); deterministic across runs; prints
+  ms/iter, decisions/s, kept histogram, and the selected threshold
+  so reviewers can audit the policy externally.
+- **Composition into the Verified Agent (v57).** v58 is
+  registered as a new `kv_cache_eviction` slot in
+  `src/v57/verified_agent.c` (owner: v58, tier: **M**, target:
+  `make check-v58`). `make verify-agent` now reports **10** slots
+  (7 PASS + 3 SKIP + 0 FAIL on a baseline host) and breaks
+  aggregate status if `check-v58` fails.
+- **Non-claims.** v58 ships the **policy + kernel + proof of
+  correctness**. It does **not** claim lower perplexity than H2O
+  / SnapKV / KIVI / EntropyCache on any standard benchmark — that
+  requires end-to-end integration with a transformer runtime and
+  belongs to a future **P-tier** measurement. Formal memory-safety
+  proofs belong to the v47 slot, not v58. σ-decomposition
+  novelty belongs to v34; v58 claims novelty for **σ applied as a
+  KV-cache eviction policy**.
+- **Files.** `src/v58/sigma_cache.{h,c}`,
+  `src/v58/creation_os_v58.c`, `scripts/v58/microbench.sh`,
+  `docs/v58/{THE_SIGMA_CACHE,ARCHITECTURE,POSITIONING,paper_draft}.md`.
+- **Cross-doc.** `README.md` σ-lab table v31–v57 → v31–v58 with a
+  new row; `docs/DOC_INDEX.md` adds the `docs/v58/` entries;
+  `scripts/v57/verify_agent.sh` adds `kv_cache_eviction` to its
+  `SLOTS` array; `Makefile` gets `standalone-v58`, `test-v58`,
+  `check-v58`, `microbench-v58` targets; `.gitignore` adds
+  `creation_os_v58` and `creation_os_v58_asan`.
+
 ## v57 The Verified Agent — convergence of v33–v56 (2026-04-16)
 
 - **No new σ math.** v57 is the *convergence artifact* of the

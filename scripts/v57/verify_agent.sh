@@ -76,6 +76,7 @@ SLOTS=(
     "do178c_assurance_pack|I|v49|certify"
     "red_team_suite|I|v48+v49|red-team"
     "convergence_self_test|M|v57|check-v57"
+    "kv_cache_eviction|M|v58|check-v58"
 )
 
 PASS_LIST=()

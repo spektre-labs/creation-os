@@ -85,6 +85,15 @@ static const v57_slot_t k_slots[] = {
         .summary        = "Garak + DeepTeam + σ-property red-team "
                           "(aggregator; SKIPs without tooling)",
     },
+    {
+        .slot           = "kv_cache_eviction",
+        .owner_versions = "v58",
+        .make_target    = "make check-v58",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Cache: σ-decomposed KV-cache eviction + "
+                          "per-token precision tier + branchless NEON "
+                          "kernel (deterministic self-test + microbench)",
+    },
 };
 
 static const int k_slot_count =

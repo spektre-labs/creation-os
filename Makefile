@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -134,6 +134,9 @@ help:
 	@echo "  check-v55  — standalone-v55 + test-v55 (v55 σ₃-speculative scaffold only; not merge-gate)"
 	@echo "  check-v56  — standalone-v56 + test-v56 (v56 σ-Constitutional scaffold only; not merge-gate)"
 	@echo "  check-v57  — standalone-v57 + test-v57 (v57 Verified Agent convergence registry only; not merge-gate)"
+	@echo "  standalone-v58 — build creation_os_v58 (v58 σ-Cache: σ-decomposed KV-cache eviction kernel + per-token precision tier + branchless NEON path; no model; no network; not merge-gate)"
+	@echo "  check-v58  — standalone-v58 + test-v58 (v58 σ-Cache eviction + branchless kernel + ≥50 invariant tests)"
+	@echo "  microbench-v58 — deterministic σ-Cache kernel timing on synthetic data (scripts/v58/microbench.sh)"
 	@echo "  verify-agent — live aggregate driver (scripts/v57/verify_agent.sh); dispatches each composition slot's owning make target and reports PASS / SKIP / FAIL honestly (SKIP on missing tools, never silent PASS)"
 	@echo "  test-mcp   — ./creation_os_mcp --self-test (MCP σ server lab only)"
 	@echo "  check-mcp  — standalone-mcp + test-mcp (MCP lab only; not merge-gate)"
@@ -698,6 +701,18 @@ V57_SRCS = src/v57/invariants.c src/v57/verified_agent.c
 standalone-v57: src/v57/creation_os_v57.c $(V57_SRCS)
 	$(CC) $(CFLAGS) -Isrc/v57 -o creation_os_v57 src/v57/creation_os_v57.c $(V57_SRCS) $(LDFLAGS)
 
+# v58: σ-Cache — σ-decomposed KV-cache eviction policy + branchless
+# decision kernel + per-token precision tier + NEON 4-accumulator SoA
+# scorer.  No model, no network, no Accelerate / Metal / Core ML / SME
+# enablement; portable C11 + optional NEON.  See src/v58/sigma_cache.h
+# for the Q1–Q2 2026 KV-cache literature gap that drives the design
+# (EntropyCache uses single-channel entropy; v58 uses v34 epistemic /
+# aleatoric decomposition + Heavy-Hitter prior + StreamingLLM sink).
+V58_SRCS = src/v58/sigma_cache.c
+
+standalone-v58: src/v58/creation_os_v58.c $(V58_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v58 -o creation_os_v58 src/v58/creation_os_v58.c $(V58_SRCS) $(LDFLAGS)
+
 # v36: MCP-native σ server (JSON-RPC over STDIO + optional HTTP shim).
 MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c
 
@@ -1068,6 +1083,18 @@ test-v57: standalone-v57
 check-v57: standalone-v57 test-v57
 	@echo "check-v57: OK (v57 Verified Agent convergence registry self-test)"
 
+test-v58: standalone-v58
+	./creation_os_v58 --self-test
+
+check-v58: standalone-v58 test-v58
+	@echo "check-v58: OK (v58 σ-Cache eviction + branchless kernel self-test)"
+
+# v58 microbench — deterministic synthetic-workload kernel timing
+# (no model, no network).  See scripts/v58/microbench.sh for the
+# wrapper that runs a parameter sweep.
+microbench-v58: standalone-v58
+	@bash scripts/v58/microbench.sh
+
 # verify-agent: live aggregate driver for the Verified Agent.
 # Walks the composition slots declared in src/v57/verified_agent.c and
 # dispatches each slot's owning make target.  PASS / SKIP / FAIL is reported
@@ -1087,7 +1114,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
+	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh
