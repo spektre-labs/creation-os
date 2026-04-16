@@ -130,11 +130,12 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 **Optional lab (not the merge gate):** OpenAI-shaped loopback stub with **minimal CORS** so a page on another `127.0.0.1` port can POST `/v1/chat/completions`; plus a tiny **suite lab** CLI (`creation_os_suite_stub`) and static page — see [docs/LOCAL_OPENAI_STUB.md](docs/LOCAL_OPENAI_STUB.md) and [docs/SUITE_LAB.md](docs/SUITE_LAB.md). Quick path: `make standalone-openai-stub && make standalone-suite-stub`, then `./scripts/launch_suite.sh`. This does **not** load weights or replace an IDE; scope boundaries: [docs/FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md).
 
-**Native M4 lab (Apple-only, not the merge gate):** hardware-first helpers meant to collapse abstraction (aligned buffers, POPCNT logits shaping, GCD dispatch). Build/run:
+**Native M4 lab (Apple-only, not the merge gate):** hardware-first helpers meant to collapse abstraction (aligned buffers, **NEON popcount logits shaping**, optional **Metal** dispatch, and **GCD-parallel** NEON for large vocabs). Build/run:
 
 ```
 make check-native-m4
 ./creation_os_native_m4 --help
+./creation_os_native_m4 --bench --vocab 65536 --iters 200 --parallel
 ```
 
 Metal and SME are intentionally **opt-in** and guarded: `native_m4/` is where those kernels live, but claims remain tier-tagged per [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) until they have archived receipts.

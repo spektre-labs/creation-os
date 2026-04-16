@@ -381,7 +381,6 @@ native-m4:
 		clang++ -O2 -Wall -std=c++17 -ObjC++ -fobjc-arc \
 			-c native_m4/cos_living_weights_neon.mm -o $(BUILDDIR)/cos_living_weights_neon.o && \
 		clang++ -O2 -Wall -std=c++17 -ObjC++ -fobjc-arc \
-			-framework Metal \
 			-c native_m4/cos_living_weights_metal.mm -o $(BUILDDIR)/cos_living_weights_metal.o && \
 		clang++ -O2 -Wall -std=c++17 -ObjC++ -fobjc-arc \
 			-framework Foundation -framework Metal \

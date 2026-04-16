@@ -33,13 +33,14 @@ static int float_buffers_close(const float *a, const float *b, int n, float eps)
 
 static int self_test(void)
 {
-    const int vocab = 256; /* multiple of 16 for NEON fast path */
+    const int vocab = 65536; /* triggers NEON parallel path on Apple AArch64 */
     const float scale = 0.125f;
     uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
     float *base = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
     float *neon = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    float *par = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
     float *metal = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
-    if (!rep || !base || !neon || !metal) {
+    if (!rep || !base || !neon || !par || !metal) {
         fprintf(stderr, "FAIL alloc\n");
         return 2;
     }
@@ -48,14 +49,25 @@ static int self_test(void)
         rep[i] = (uint8_t)((i * 37) & 0xFF);
         base[i] = 0.0f;
         neon[i] = 0.0f;
+        par[i] = 0.0f;
         metal[i] = 0.0f;
     }
 
-    memcpy(neon, base, (size_t)vocab * sizeof(float));
     cos_living_weights_inplace(base, rep, vocab, scale);
-    cos_living_weights_neon(neon, rep, vocab, scale);
+
+    for (int i = 0; i < vocab; i++)
+        neon[i] = 0.0f;
+    cos_living_weights_neon_range(neon, rep, 0, vocab, scale);
     if (!float_buffers_close(base, neon, vocab, 1e-4f)) {
         fprintf(stderr, "FAIL NEON mismatch vs scalar\n");
+        return 2;
+    }
+
+    for (int i = 0; i < vocab; i++)
+        par[i] = 0.0f;
+    cos_living_weights_neon_parallel(par, rep, vocab, scale);
+    if (!float_buffers_close(base, par, vocab, 1e-4f)) {
+        fprintf(stderr, "FAIL NEON parallel mismatch vs scalar\n");
         return 2;
     }
 
@@ -84,11 +96,12 @@ static int self_test(void)
     free(rep);
     free(base);
     free(neon);
+    free(par);
     free(metal);
     return 0;
 }
 
-static void bench_once(int vocab, int iters)
+static void bench_once(int vocab, int iters, int parallel)
 {
     uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
     float *logits = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
@@ -109,12 +122,16 @@ static void bench_once(int vocab, int iters)
         /* reset each iter to keep workload stable */
         for (int i = 0; i < vocab; i++)
             logits[i] = 0.0f;
-        cos_living_weights_neon(logits, rep, vocab, 0.125f);
+        if (parallel)
+            cos_living_weights_neon_parallel(logits, rep, vocab, 0.125f);
+        else
+            cos_living_weights_neon_range(logits, rep, 0, vocab, 0.125f);
     }
     clock_gettime(CLOCK_MONOTONIC, &t1);
     double sec = (double)(t1.tv_sec - t0.tv_sec) + (double)(t1.tv_nsec - t0.tv_nsec) / 1e9;
     double tok_per_s = (double)iters * (double)vocab / sec;
-    fprintf(stderr, "bench: NEON vocab=%d iters=%d -> %.3e tokens/s (wall)\n", vocab, iters, tok_per_s);
+    fprintf(stderr, "bench: NEON%s vocab=%d iters=%d -> %.3e tokens/s (wall)\n",
+            parallel ? "+GCD" : "", vocab, iters, tok_per_s);
 
     free(rep);
     free(logits);
@@ -125,7 +142,7 @@ int main(int argc, char **argv)
     if (argc >= 2 && (!strcmp(argv[1], "--self-test") || !strcmp(argv[1], "--selftest")))
         return self_test();
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
-        printf("usage: %s [--self-test] [--bench]\n", argv[0]);
+        printf("usage: %s [--self-test] [--bench [--vocab N] [--iters K] [--parallel]]\n", argv[0]);
         printf("\n");
         printf("Native M4 lab binary (opt-in). Not part of merge-gate.\n");
         printf("\n");
@@ -137,7 +154,22 @@ int main(int argc, char **argv)
         return 0;
     }
     if (argc >= 2 && !strcmp(argv[1], "--bench")) {
-        bench_once(1 << 16, 200);
+        int vocab = 1 << 16;
+        int iters = 200;
+        int parallel = 0;
+        for (int i = 2; i < argc; i++) {
+            if (!strcmp(argv[i], "--vocab") && i + 1 < argc)
+                vocab = atoi(argv[++i]);
+            else if (!strcmp(argv[i], "--iters") && i + 1 < argc)
+                iters = atoi(argv[++i]);
+            else if (!strcmp(argv[i], "--parallel"))
+                parallel = 1;
+        }
+        bench_once(vocab, iters, parallel);
+        if (parallel == 0 && vocab >= 65536) {
+            fprintf(stderr, "bench: also running parallel (--parallel) for large vocab...\n");
+            bench_once(vocab, iters, 1);
+        }
         return 0;
     }
 
