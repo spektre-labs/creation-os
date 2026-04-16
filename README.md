@@ -205,7 +205,7 @@ Metal and SME are intentionally **opt-in** and guarded: `native_m4/` is where th
 
 **v31 “purge lab” (optional, not the merge gate):** a POSIX-first direction to **wrap upstream BitNet inference** instead of rewriting kernels, while keeping σ-telemetry honest. Start here: [docs/v31_README.md](docs/v31_README.md). Verify math self-test with `make check-v31`.
 
-**Primary reference:** one file ([`creation_os_v2.c`](creation_os_v2.c)), **26 modules** (§1–§26), **4096-bit** `COS_D` geometry — any host with a C11 compiler + libm.
+**Primary reference:** one file ([`creation_os_v2.c`](creation_os_v2.c)), **~1246 lines**, **26 modules** (§1–§26), **4096-bit** `COS_D` geometry — any host with a C11 compiler + libm.
 
 ---
 
@@ -727,13 +727,14 @@ COGNITION
 
 This section is the **single map** for “our LLM story” in **this repository**: what is **shipped as C**, what is **wired for external engines**, and what stays **honestly out-of-tree** (weights, `lm-eval` archives, P&R). It is written to pair with the **evidence ladder** ([FIG 03](#publication-hard)) and [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
-### What landed recently (v27 → v29), in one view
+### What landed recently (v27 → v29 + optional σ spine), in one view
 
 | Layer | What it is | Where it lives | Merge gate |
 |:--|:--|:--|:--|
 | **Text boundary + tokenizer scaffold** | Tiered tokenizer story (BPE stand-in, byte codebook / XOR–MAJ bundles, optional COSB mmap table, inference trace JSON) | [`creation_os_v27.c`](creation_os_v27.c) + [`src/tokenizer/`](src/tokenizer/) | `make check-v27` (**70**) |
 | **LM integration shell** | GGUF v3 subset + **tensor-data base** + **mmap reads**; **external engine** stdout capture (`CREATION_OS_BITNET_CPP` + optional stdin/extra argv); **tokenizer.json** vocab counting (`--tokenizer-stats`); **sampling** (temperature / top‑k / top‑p) with **64B-aligned** buffers + **AArch64 NEON** max-reduction; **Llama‑3-ish chat framing**; **loopback HTTP** (`/v1/chat/completions`, `/health`) with **JSON escaping**; **σ toy** on logits; **`make cos_lm`** alias; Docker image builds **v28** without bundling weights | [`creation_os_v28.c`](creation_os_v28.c) + [`src/import/`](src/import/) + [`src/nn/`](src/nn/) + [`src/server/`](src/server/) | `make check-v28` (**29**) |
 | **Collapse harness (LM “hard parts” without lying)** | **mmap GGUF tensor views** (no multi‑GB `malloc` memcpy); **eight σ scalar channels** + abstention gate on **real-shaped logits**; **XNOR / Hamming-style attention toy** for alternative similarity geometry; **BitNet-shaped forward stub** (deterministic logits for plumbing); **threshold JSON**; **benchmark shell stubs** + optional **Yosys** SV smoke | [`creation_os_v29.c`](creation_os_v29.c) + [`src/import/gguf_loader.c`](src/import/gguf_loader.c) + [`src/sigma/channels.c`](src/sigma/channels.c) + [`src/nn/attention_xnor.c`](src/nn/attention_xnor.c) + [`config/sigma_thresholds.json`](config/sigma_thresholds.json) + [`hdl/synthesis/`](hdl/synthesis/) | `make check-v29` (**22**) |
+| **σ / agent / silicon labs (v31–v40)** | MCP server, σ decomposition + spec hooks, router/schema, `σ_hardware` + crossbar SV sim, RTL σ-pipeline + ASIC tile drivers, independence / syndrome / threshold story | [`#sigma-labs-v31-v40`](#sigma-labs-v31-v40) · [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) | **Not** `merge-gate` — `make check-v31`, `check-v33` … `check-v40`, `check-mcp`, HDL targets in `make help` |
 | **OpenAI-shaped localhost stub (optional)** | Loopback-only **`/v1/models`**, **`/v1/chat/completions`**, **`/v1/completions`** + **`GET /health`**; deterministic stub strings; **no SSE streaming** (`stream:true` → **501**) | [`creation_os_openai_stub.c`](creation_os_openai_stub.c) + [`docs/LOCAL_OPENAI_STUB.md`](docs/LOCAL_OPENAI_STUB.md) + [`vscode-extension/setup_continue.md`](vscode-extension/setup_continue.md) | `make check-openai-stub` (**5**; **not** part of `merge-gate`) |
 
 For a **tier-tagged** “what is real vs imported vs not claimed” table, see [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
@@ -764,7 +765,7 @@ For a **tier-tagged** “what is real vs imported vs not claimed” table, see [
 ```
                  ┌─────────────────────────────┐
                  │      creation_os_v2.c       │
-                 │   1196 lines · 26 modules   │
+                 │   ~1246 lines · 26 modules   │
                  └──────────────┬──────────────┘
                                 │
           ┌─────────────────────┼─────────────────────┐
@@ -796,6 +797,8 @@ For a **tier-tagged** “what is real vs imported vs not claimed” table, see [
 
 ## Build
 
+Hand `cc` (minimal; flags are yours):
+
 ```bash
 # Any platform
 cc -O2 -I. -o creation_os creation_os_v2.c -lm
@@ -810,23 +813,40 @@ cc -O2 -I. -march=armv9-a+sme -o creation_os creation_os_v2.c -lm
 cc -O2 -I. -march=native -o creation_os creation_os_v2.c -lm
 ```
 
-With Make (same flags as repo `Makefile`):
+With **Make**, the repo default is **`CFLAGS = -O2 -march=native -Wall -std=c11`** and **`LDFLAGS = -lm`** (see root `Makefile`). Teaching kernel + structural tests:
 
 ```bash
-make help          # list targets
-make check         # standalone + structural tests (recommended before PR)
+make help          # full target list (labs, RTL, benches)
+make check         # `standalone` + `tests/test_bsc_core` (good before a small PR)
+make merge-gate    # `check` + `check-v6` … `check-v29` (maintainer / CI bar)
+```
+
+Flagship **`creation_os_vN`** binaries (each is its own `standalone-vN` + `test-vN`):
+
+```bash
 make check-v6      # Living Kernel (`creation_os_v6.c`) + `--self-test` (30 checks)
 make check-v7      # Hallucination Killer (`creation_os_v7.c`) + `--self-test` (35 checks)
 make check-v9      # Parameters in Silicon (`creation_os_v9.c`) + `--self-test` (41 checks)
 make check-v10     # The Real Mind (`creation_os_v10.c`) + `--self-test` (46 checks)
 make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 checks)
 make check-v12     # Tensor mind (`creation_os_v12.c`) + `--self-test` (52 checks)
+make check-v15     # Silicon mind (`creation_os_v15.c`) + `--self-test` (58 checks)
+make check-v16     # Unified field (`creation_os_v16.c`) + `--self-test` (66 checks)
+make check-v20     # Ship mode (`creation_os_v20.c`) + `--self-test` (86 checks)
+make check-v21     # AGI sovereign stack (`creation_os_v21.c`) + `--self-test` (99 checks)
+make check-v22     # Twenty colossal insights (`creation_os_v22.c`) + `--self-test` (120 checks)
+make check-v23     # AGI affordances (`creation_os_v23.c`) + `--self-test` (141 checks)
+make check-v24     # arXiv echo latches (`creation_os_v24.c`) + `--self-test` (162 checks)
+make check-v25     # Enterprise pain ledger (`creation_os_v25.c`) + `--self-test` (183 checks)
+make check-v26     # Global 500 echo orbit (`creation_os_v26.c`) + `--self-test` (184 checks)
 make check-v27     # v27 tokenizer scaffold (`creation_os_v27.c` + `src/tokenizer/*.c`) + `--self-test` (70 checks)
 make check-v28     # v28 LM integration shell (`creation_os_v28.c` + import/nn/server helpers) + `--self-test` (29 checks)
 make check-v29     # v29 collapse harness (`creation_os_v29.c` + mmap GGUF view + σ + XNOR + BitNet stub) + `--self-test` (22 checks)
-make standalone
+make standalone    # build `creation_os` from `creation_os_v2.c` only
 ./creation_os
 ```
+
+**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31–v40)](#sigma-labs-v31-v40), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, etc.; see `make help`.
 
 Requirements: C11 compiler + libm.
 
@@ -857,7 +877,7 @@ This is a research prototype. Specific limitations:
 1. **Transformer attention can be implemented as σ** — no matrix multiply required for the similarity computation at the core of attention.
 2. **JEPA-style world models work in BSC** — energy-based learning where energy = σ.
 3. **Noether conservation holds under symmetric XOR** — a formal invariant, not an approximation.
-4. **26 cognitive primitives fit in ~1200 lines of C** — the algebra is compact.
+4. **26 cognitive primitives fit in one ~1.25k-line C file** (`creation_os_v2.c` as of this tree) — the algebra is compact.
 5. **The entire architecture runs on any hardware** — no GPU, no framework, no dependencies.
 6. **Living Kernel v6** packages cross-domain σ narratives (alignment, RDP, rewind, ghost boot) behind one **executable** gate — useful for thesis structure and for separating *proved in this file* from *cited externally* ([LIVING_KERNEL_V6.md](docs/LIVING_KERNEL_V6.md)).
 7. **Hallucination Killer v7** adds **five** more σ-shaped readouts (anchors, association, bluff, context rot, JEPA–Oracle) on the same deterministic gate ([HALLUCINATION_KILLER_V7.md](docs/HALLUCINATION_KILLER_V7.md)).
@@ -995,6 +1015,6 @@ ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541)
 
 ---
 
-**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
+**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [σ labs v31–v40](#sigma-labs-v31-v40) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
 
 *2026 · Spektre Labs · Helsinki*

@@ -111,7 +111,7 @@ help:
 	@echo "  check-native-m4      — ./creation_os_native_m4 --self-test (SKIP on non-Apple)"
 	@echo "  bench-native-m4      — buffer-sizes smoke + --bench 65536×30 --warmup 3 --scalar (SKIP on non-Apple)"
 	@echo "  reviewer — run critic-facing checks (v26 + v2 self-test + tier tags)"
-	@echo "  merge-gate — portable check + every flagship self-test (v6..v28); same as CI / publish preflight"
+	@echo "  merge-gate — portable check + every flagship self-test (v6..v29); same as CI / publish preflight"
 	@echo "  formal-rtl-lint — Verilator --lint-only on rtl/*.sv (SKIP if verilator missing)"
 	@echo "  formal-rtl-sim  — Verilator --binary + run cos_silicon_chip_tb (SKIP if verilator missing)"
 	@echo "  yosys-elab      — Yosys elaborate_rtl.ys (SKIP if yosys missing)"

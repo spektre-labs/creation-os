@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make merge-gate
    ```
-   This runs **`make check`** (portable `creation_os` + `test_bsc_core`) and **`make check-v6` … `make check-v26`** (every flagship `--self-test`, including **204** checks on v26). Same command as CI and `make publish-github` preflight. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
+   This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v40)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -23,7 +23,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make bench-coherence` | Batch Hamming coherence gate (NEON on AArch64) |
 | `make bench-agi-gate` | Parliament (odd K) + memory-bank argmin bench |
 | `make check` | `standalone` + `test` (portable kernel gate) |
-| `make merge-gate` | Full matrix: `check` + `check-v6` … `check-v26` (CI / publish / PR-ready) |
+| `make merge-gate` | Full matrix: `check` + `check-v6` … `check-v29` (CI / publish / PR-ready) |
 | `make check-v6` | `creation_os_v6.c` + `--self-test` (30 checks) |
 | `make check-v7` | `creation_os_v7.c` + `--self-test` (35 checks) |
 | `make check-v9` | `creation_os_v9.c` + `--self-test` (41 checks) |
@@ -31,6 +31,8 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make check-v11` | `creation_os_v11.c` + `--self-test` (49 checks) |
 | `make check-v12` | `creation_os_v12.c` + `--self-test` (52 checks) |
 | `make check-v15` … `make check-v26` | v15 Silicon mind through v26 G500 echo orbit (`--self-test`; exact counts in `make help`) |
+| `make check-v27` … `make check-v29` | Tokenizer scaffold (v27), LM integration shell (v28), collapse harness (v29) — merge-gate includes these |
+| `make check-v31` / `check-v33`–`v40`, `check-mcp` | Optional σ / agent / MCP labs — **not** merge-gate |
 | `make formal-rtl-lint` | Verilator lint on `rtl/*.sv` |
 | `make stack-ultimate` | Lint + Yosys elab + SAT prove + Verilator sim + Rust iron + Chisel (SKIPs OK) |
 | `make rust-iron-lint` | `cargo fmt --check` + `clippy -D warnings` on iron gate |
