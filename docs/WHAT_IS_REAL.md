@@ -25,6 +25,14 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | XNOR / Hamming-style attention toy runs on tiny tensors | `src/nn/attention_xnor.c` + `make check-v29` | **M** |
 | OpenAI-shaped loopback stub serves `/v1/*` deterministically + CORS/OPTIONS | `make check-openai-stub` (`creation_os_openai_stub`) | **M** |
 | v2 bootstrap demo has `--self-test` and `--help` | `make standalone && ./creation_os --self-test` | **M** |
+| v33 lab: σ-routed fallback between local BitNet and a configurable secondary model + schema-first tool JSON + JSONL session metrics | `make check-v33` | **M** |
+
+## Interpretive tier (literature positioning; not measured in-repo)
+
+| Claim | Notes | Tier |
+|------|-------|:----:|
+| SLM-default / LLM-fallback architecture (survey framing; external) | `arXiv:2510.03847` | **I** |
+| NVIDIA position paper — small models sufficient for agentic workloads (external) | `arXiv:2506.02153` | **I** |
 
 ## Common headline numbers (explicitly not “M” here)
 

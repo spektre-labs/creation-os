@@ -1,0 +1,18 @@
+[
+  {
+    "name": "bitnet-2b4t",
+    "binary": "external/BitNet/build/bin/llama-cli",
+    "model_path": "models/bitnet-2b4t/model.gguf",
+    "is_local": true,
+    "api_base": "",
+    "cost_per_token": 0.0
+  },
+  {
+    "name": "phi-fallback",
+    "binary": "/bin/true",
+    "model_path": "/dev/null",
+    "is_local": true,
+    "api_base": "",
+    "cost_per_token": 0.0
+  }
+]

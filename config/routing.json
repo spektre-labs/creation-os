@@ -1,0 +1,9 @@
+{
+  "channels": {
+    "logit_entropy": 0.85,
+    "top_margin": 0.92
+  },
+  "fallback_model": "phi-fallback",
+  "fallback_endpoint": "",
+  "max_fallback_budget_per_session": 8
+}

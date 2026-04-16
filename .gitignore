@@ -22,6 +22,11 @@ creation_os_openai_stub
 creation_os_suite_stub
 creation_os_native_m4
 creation_os_v31
+creation_os_v33
+
+# v33 harness / local metrics (generated)
+benchmarks/v33/metrics_run/
+metrics/session_*.jsonl
 
 # Optional upstream checkouts / weights (never commit)
 external/BitNet/
