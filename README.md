@@ -44,6 +44,8 @@
 
 <p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
+> **MCP product hook:** `creation_os_mcp` is an **MCP server** that exposes σ measurement + abstention helpers (`measure_sigma`, `should_abstain`, `sigma_report`) to **any MCP-capable client** — see `docs/MCP_SIGMA.md`, `config/claude_desktop_config.json`, and `.cursor/mcp.json`.
+
 > **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v29`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward); **`./creation_os_v29 --self-test`** adds a **v29 collapse harness** (**22** checks — mmap GGUF view + σ channels + XNOR toy + BitNet stub; tier tags in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md)). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <table align="center">

@@ -1,10 +1,8 @@
 {
-  "logit_entropy": 0.85,
-  "top_margin": 0.92,
-  "prediction_stability": 0.15,
-  "attention_entropy": 0.8,
-  "kv_coherence": 0.7,
-  "vsa_binding_error": 0.25,
-  "repetition": 0.6,
-  "grammar": 0.3
+  "threshold_profile": {
+    "strict": { "min_p_correct": 0.55, "epistemic_unit": 0.35 },
+    "moderate": { "min_p_correct": 0.42, "epistemic_unit": 0.50 },
+    "permissive": { "min_p_correct": 0.30, "epistemic_unit": 0.65 }
+  },
+  "notes": "MCP server uses min_p_correct heuristically until this file is parsed per-field."
 }

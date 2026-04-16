@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "creation-os-sigma": {
+      "command": "./creation_os_mcp",
+      "args": ["--transport", "stdio"],
+      "env": {
+        "SIGMA_CALIBRATION": "config/sigma_calibration.json",
+        "SIGMA_THRESHOLDS": "config/sigma_thresholds.json"
+      }
+    }
+  }
+}
