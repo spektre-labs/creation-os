@@ -1,0 +1,23 @@
+# Creation OS — editor config.  Consistency across contributors
+# avoids whitespace-only diffs that pollute security review.
+
+root = true
+
+[*]
+end_of_line        = lf
+insert_final_newline = true
+charset            = utf-8
+trim_trailing_whitespace = true
+indent_style       = space
+indent_size        = 4
+max_line_length    = 100
+
+[Makefile]
+indent_style = tab
+
+[*.{yml,yaml,json,toml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+max_line_length = off

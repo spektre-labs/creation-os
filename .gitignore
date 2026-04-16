@@ -38,6 +38,29 @@ creation_os_v48
 creation_os_v51
 creation_os_v53
 creation_os_v54
+creation_os_v55
+creation_os_v56
+creation_os_v57
+creation_os_v58
+creation_os_v59
+creation_os_v60
+creation_os_v57_hardened
+creation_os_v58_hardened
+creation_os_v59_hardened
+creation_os_v60_hardened
+creation_os_v58_asan
+creation_os_v59_asan
+creation_os_v60_asan
+creation_os_v60_ubsan
+creation_os_v58_asan.dSYM/
+creation_os_v59_asan.dSYM/
+creation_os_v60_asan.dSYM/
+creation_os_v60_ubsan.dSYM/
+SBOM.json
+# Local environment overrides — never commit (use .env.example as template)
+.env
+.env.*
+!.env.example
 creation_os_mcp
 
 # v33 harness / local metrics (generated)
@@ -155,12 +178,3 @@ docs/v49/certification/coverage/html/
 # v50 benchmark intermediates (generated)
 benchmarks/v50/*.json
 benchmarks/v50/*.log
-creation_os_v55
-creation_os_v56
-creation_os_v57
-creation_os_v58
-creation_os_v58_asan
-creation_os_v58_asan.dSYM/
-creation_os_v59
-creation_os_v59_asan
-creation_os_v59_asan.dSYM/

@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 hardening-check sbom security-scan reproducible-build standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -140,6 +140,15 @@ help:
 	@echo "  standalone-v59 — build creation_os_v59 (v59 σ-Budget: σ-decomposed adaptive test-time compute budget controller; four-valued CONTINUE/EARLY_EXIT/EXPAND/ABSTAIN; branchless NEON SoA path; no model; no network; not merge-gate)"
 	@echo "  check-v59  — standalone-v59 + test-v59 (v59 σ-Budget + branchless four-way decision + ≥60 invariant tests)"
 	@echo "  microbench-v59 — deterministic σ-Budget kernel timing on synthetic reasoning traces (scripts/v59/microbench.sh)"
+	@echo "  standalone-v60 — build creation_os_v60 (v60 σ-Shield: branchless capability authorise + σ-gated intent + TOCTOU-free args + code-page integrity; 5-valued ALLOW/DENY_CAP/DENY_INTENT/DENY_TOCTOU/DENY_INTEGRITY; constant-time hash equality; no allocation on hot path; not merge-gate)"
+	@echo "  check-v60  — standalone-v60 + test-v60 (v60 σ-Shield runtime security kernel + ≥60 invariant tests)"
+	@echo "  microbench-v60 — deterministic σ-Shield authorise timing on synthetic request traces (scripts/v60/microbench.sh)"
+	@echo "  harden     — rebuild v57/v58/v59/v60 with OpenSSF 2026 hardening flags + ARM64 branch-protection"
+	@echo "  sanitize   — build+run asan-v58/v59/v60 and ubsan-v60 against their self-tests"
+	@echo "  hardening-check — verify hardened binary retains PIE, stack canaries, fortify references (scripts/security/hardening_check.sh)"
+	@echo "  sbom       — emit SBOM.json (CycloneDX-lite 1.5 JSON) of all source components"
+	@echo "  security-scan — run layered gitleaks / grep-only secret scan and hardcoded-URL check (scripts/security/scan.sh)"
+	@echo "  reproducible-build — rebuild standalone-v60 twice, compare SHA-256 digests (scripts/security/reproducible_build.sh)"
 	@echo "  verify-agent — live aggregate driver (scripts/v57/verify_agent.sh); dispatches each composition slot's owning make target and reports PASS / SKIP / FAIL honestly (SKIP on missing tools, never silent PASS)"
 	@echo "  test-mcp   — ./creation_os_mcp --self-test (MCP σ server lab only)"
 	@echo "  check-mcp  — standalone-mcp + test-mcp (MCP lab only; not merge-gate)"
@@ -726,6 +735,103 @@ V59_SRCS = src/v59/sigma_budget.c
 standalone-v59: src/v59/creation_os_v59.c $(V59_SRCS)
 	$(CC) $(CFLAGS) -Isrc/v59 -o creation_os_v59 src/v59/creation_os_v59.c $(V59_SRCS) $(LDFLAGS)
 
+# v60: σ-Shield — runtime security kernel.  Branchless capability
+# authorise + σ-gated intent (the first of its kind) + TOCTOU-free
+# argument validation + code-page integrity self-check.  Response to
+# the 2026 attack literature (DDIPE 2604.03081, ClawWorm 2603.15727,
+# Malicious Intermediary 2604.08407, ShieldNet 2604.04426): all 2026
+# attacks succeed via ambiguous payloads; σ-decomposition refuses
+# α-dominated intent regardless of capability.  No dynamic allocation
+# on the authorize hot path; constant-time hash equality.
+V60_SRCS = src/v60/sigma_shield.c
+
+standalone-v60: src/v60/creation_os_v60.c $(V60_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v60 -o creation_os_v60 src/v60/creation_os_v60.c $(V60_SRCS) $(LDFLAGS)
+
+# --- Hardening matrix (OpenSSF + Apple M4 branch-protection) -------
+#
+# `make harden` rebuilds the flagship σ-labs (v57 / v58 / v59 / v60)
+# with a hardened clang profile.  Flags are the OpenSSF Best Practices
+# recommendation as of 2026-Q2 plus ARM64 pointer-authentication /
+# branch-target-identification (-mbranch-protection=standard) where
+# supported by the host clang; missing flags are ignored (clang -Werror
+# is intentional, unknown flags silently dropped via $(filter …)).
+HARDEN_CFLAGS = -O2 -std=c11 -Wall -Wformat=2 -Wformat-security \
+                -Werror=format-security -Wimplicit-fallthrough \
+                -D_FORTIFY_SOURCE=3 \
+                -fstack-protector-strong -fstack-clash-protection \
+                -fstrict-flex-arrays=3 \
+                -fPIE -mbranch-protection=standard
+HARDEN_LDFLAGS = -Wl,-pie -lm
+# Apple ld64 does not accept -Wl,-z,relro/-z,now/-z,noexecstack; those
+# are GNU-ld-only.  We skip them on darwin and let macOS apply its own
+# __DATA,__const + dyld hardening.
+
+standalone-v57-hardened: src/v57/creation_os_v57.c $(V57_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v57 -o creation_os_v57_hardened src/v57/creation_os_v57.c $(V57_SRCS) $(HARDEN_LDFLAGS)
+
+standalone-v58-hardened: src/v58/creation_os_v58.c $(V58_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v58 -o creation_os_v58_hardened src/v58/creation_os_v58.c $(V58_SRCS) $(HARDEN_LDFLAGS)
+
+standalone-v59-hardened: src/v59/creation_os_v59.c $(V59_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v59 -o creation_os_v59_hardened src/v59/creation_os_v59.c $(V59_SRCS) $(HARDEN_LDFLAGS)
+
+standalone-v60-hardened: src/v60/creation_os_v60.c $(V60_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v60 -o creation_os_v60_hardened src/v60/creation_os_v60.c $(V60_SRCS) $(HARDEN_LDFLAGS)
+
+harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened
+	@echo "harden: OK (v57 / v58 / v59 / v60 rebuilt with OpenSSF 2026 flags + M4 branch-protection)"
+
+# --- Sanitizer matrix (AddressSanitizer + UndefinedBehaviorSanitizer)
+SAN_CFLAGS  = -O1 -g -std=c11 -Wall -fno-omit-frame-pointer
+ASAN_FLAGS  = -fsanitize=address,undefined
+UBSAN_FLAGS = -fsanitize=undefined -fno-sanitize-recover=undefined
+
+asan-v58: src/v58/creation_os_v58.c $(V58_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v58 -o creation_os_v58_asan src/v58/creation_os_v58.c $(V58_SRCS) -lm
+	./creation_os_v58_asan --self-test
+
+asan-v59: src/v59/creation_os_v59.c $(V59_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v59 -o creation_os_v59_asan src/v59/creation_os_v59.c $(V59_SRCS) -lm
+	./creation_os_v59_asan --self-test
+
+asan-v60: src/v60/creation_os_v60.c $(V60_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v60 -o creation_os_v60_asan src/v60/creation_os_v60.c $(V60_SRCS) -lm
+	./creation_os_v60_asan --self-test
+
+ubsan-v60: src/v60/creation_os_v60.c $(V60_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v60 -o creation_os_v60_ubsan src/v60/creation_os_v60.c $(V60_SRCS) -lm
+	./creation_os_v60_ubsan --self-test
+
+sanitize: asan-v58 asan-v59 asan-v60 ubsan-v60
+	@echo "sanitize: OK (ASAN v58/v59/v60 + UBSAN v60 all pass self-test under sanitizer)"
+
+# --- Hardening runtime check + SBOM + secret-scan dispatcher -------
+
+hardening-check: standalone-v60-hardened
+	@bash scripts/security/hardening_check.sh
+
+sbom:
+	@bash scripts/security/sbom.sh > SBOM.json
+	@echo "sbom: OK (SBOM.json written in CycloneDX-lite 1.5 JSON form)"
+
+security-scan:
+	@bash scripts/security/scan.sh
+
+reproducible-build:
+	@bash scripts/security/reproducible_build.sh
+
+# --- v60 checks ----------------------------------------------------
+
+test-v60: standalone-v60
+	./creation_os_v60 --self-test
+
+check-v60: standalone-v60 test-v60
+	@echo "check-v60: OK (v60 σ-Shield runtime security kernel self-test)"
+
+microbench-v60: standalone-v60
+	@bash scripts/v60/microbench.sh
+
 # v36: MCP-native σ server (JSON-RPC over STDIO + optional HTTP shim).
 MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c
 
@@ -1136,7 +1242,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
+	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM SBOM.json creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

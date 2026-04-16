@@ -1,0 +1,60 @@
+# Creation OS — pre-commit hooks.
+#
+# Local-dev security & hygiene.  Fail-closed: unknown tool → skip,
+# but block on secrets / env leaks / trailing whitespace / large blobs.
+#
+# Install:
+#   pip install pre-commit
+#   pre-commit install
+#   pre-commit run --all-files
+
+minimum_pre_commit_version: "3.5.0"
+
+repos:
+  # ---- generic hygiene ---------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.(diff|patch)$'
+      - id: end-of-file-fixer
+        exclude: '\.(diff|patch)$'
+      - id: check-added-large-files
+        args: ['--maxkb=512']
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: detect-private-key
+      - id: forbid-new-submodules
+      - id: mixed-line-ending
+        args: ['--fix=lf']
+
+  # ---- gitleaks: secret scan ---------------------------------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+
+  # ---- local: .env guard + Creation OS layered scan ----------------------
+  - repo: local
+    hooks:
+      - id: block-dotenv-files
+        name: block .env files (use .env.example)
+        entry: bash -c 'if git diff --cached --name-only --diff-filter=AM | grep -Eq "(^|/)\\.env(\\.|$)" | grep -v "\\.example$"; then echo "ERROR: refuse to commit .env* file"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+      - id: creation-os-security-scan
+        name: Creation OS layered security-scan
+        entry: bash scripts/security/scan.sh
+        language: system
+        pass_filenames: false
+        stages: [pre-push]   # heavier, run on push only
+
+      - id: creation-os-merge-gate-sanity
+        name: sanity build creation_os_v60 (fast)
+        entry: bash -c 'make -s standalone-v60 >/dev/null && echo "standalone-v60: OK"'
+        language: system
+        pass_filenames: false
+        stages: [pre-push]

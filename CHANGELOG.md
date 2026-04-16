@@ -1,5 +1,147 @@
 # Changelog
 
+## v60 σ-Shield + security multi-peak — runtime security kernel & next-level hardening (2026-04-16)
+
+- **Driving oivallus.** Q2 2026 LLM-agent attack literature converges
+  on a single failure mode: **every successful attack succeeds because
+  the payload looks legitimate** — DDIPE (arXiv:2604.03081, 11–33 %
+  bypass against strong defenses), ClawWorm (arXiv:2603.15727, 64.5 %
+  self-propagating against OpenClaw), Malicious Intermediary
+  (arXiv:2604.08407, 17 / 428 API routers touch credentials). Every
+  defense today (signature, capability allowlist, network MITM like
+  ShieldNet 2604.04426) operates on a **scalar** confidence signal,
+  which by construction cannot separate "ambiguous because evidence
+  is missing" (ε-dominant, reducible) from "ambiguous because
+  ambiguity is inherent" (α-dominant, irreducible). v60 uses the v34
+  σ = (ε, α) decomposition as the first-ever intent gate in a
+  capability kernel.
+- **v60 σ-Shield runtime security kernel**
+  (`src/v60/sigma_shield.{h,c}` + driver `src/v60/creation_os_v60.c`).
+  Five-valued branchless authorise:
+  `{ALLOW, DENY_CAP, DENY_INTENT, DENY_TOCTOU, DENY_INTEGRITY}`.
+  Every call runs **five orthogonal checks unconditionally**:
+  (1) code-page integrity via constant-time `ct_equal64` on a
+  caller-provided `code_page_hash` vs `baseline_hash`; (2) sticky-deny
+  overlap — `CAP_DLSYM` / `CAP_MMAP_EXEC` / `CAP_SELF_MODIFY` cannot
+  be granted even on a full-cap holder; (3) capability subset check
+  `required & ~(holder | always_caps) == 0`; (4) TOCTOU equality
+  `arg_hash_at_entry ↔ arg_hash_at_use` via the same constant-time
+  compare; (5) σ-intent gate — fires iff
+  `(ε + α) ≥ σ_high ∧ α/(ε+α) ≥ α_dom`. Priority cascade via `& | ~`
+  mask AND-NOT (integrity > sticky > cap > TOCTOU > intent); no `if`
+  on the hot path. `reason_bits` is multi-cause honest — records all
+  failing conditions even when priority has picked the winner.
+  `cos_v60_hash_fold` is a deterministic 64-bit XOR-fold used only
+  for equality, with a constant operation count per byte and no
+  branch on data; `cos_v60_ct_equal64` is a branchless reduction.
+  Batch `cos_v60_authorize_batch` prefetches 16 lanes ahead and is
+  tested against the scalar path over 32 requests.
+- **81-test self-test suite** (`creation_os_v60 --self-test` via
+  `make check-v60`): version & defaults (11), hash + constant-time
+  equality incl. 2 048 random (11), decision surfaces (15), priority
+  cascade (10), always-caps bootstrap (1), σ-intent edge cases (3),
+  batch = scalar + null-safe (2), tag strings + aligned allocator
+  incl. `sizeof(request)==64` (10), adversarial scenarios (DDIPE /
+  ClawWorm / intermediary / confused-deputy DLSYM / runtime-patch — 5),
+  composition with v58 / v59 (2), determinism + summary fields (3),
+  stress sweep over 2 000 random requests (1). **All 81 pass.**
+- **Registered in v57 Verified Agent** as a new slot
+  `runtime_security_kernel` owner `v60`, best tier **M**, make target
+  `make check-v60`, in both `src/v57/verified_agent.c` and
+  `scripts/v57/verify_agent.sh`. `make verify-agent` now reports 10
+  composition slots.
+- **Microbench harness** (`scripts/v60/microbench.sh` +
+  `./creation_os_v60 --microbench`): 3-point sweep N ∈ {128, 1024,
+  8192} with deterministic LCG-seeded requests; decisions / s
+  ≥ 6 × 10⁷ on M-class silicon (sub-microsecond per authorise).
+- **Hardening matrix in Makefile.** New targets:
+  - `make harden` — rebuilds v57 / v58 / v59 / v60 with OpenSSF 2026
+    recommendation (`-D_FORTIFY_SOURCE=3`, `-fstack-protector-strong`,
+    `-fstack-clash-protection`, `-fstrict-flex-arrays=3`, `-Wformat=2`,
+    `-Werror=format-security`, `-fPIE`) plus ARM64
+    `-mbranch-protection=standard` (PAC / BTI) and PIE link-time.
+  - `make sanitize` → `make asan-v58 asan-v59 asan-v60 ubsan-v60`,
+    each building and running its own self-test under the sanitizer.
+  - `make hardening-check` — runs `scripts/security/hardening_check.sh`
+    which verifies PIE (Mach-O MH_PIE or ELF ET_DYN), stack-canary
+    references, fortify-source references, and branch-protection
+    metadata on `creation_os_v60_hardened`. Portable across macOS and
+    Linux; skips gracefully if `otool` / `readelf` / `nm` missing.
+  - `make sbom` → `scripts/security/sbom.sh` → `SBOM.json`
+    (CycloneDX-lite 1.5 JSON). Every `src/v*/` becomes a distinct
+    component with its own SHA-256 digest; top-level component
+    carries the repo-level commit hash or directory-tree digest.
+  - `make security-scan` → `scripts/security/scan.sh`: layered secret
+    scanner. (1) gitleaks with `.gitleaks.toml` config if installed,
+    (2) always-run grep-only fallback over ten high-value patterns
+    (AWS, GCP, OpenAI `sk-…`, Slack, GitHub `ghp_…`, `github_pat_…`,
+    `gho_…`, RSA / OpenSSH / EC / PGP private keys, JWT triple,
+    adaptive evasion triggers), (3) hardcoded-URL sanity on `src/`
+    and `docs/`. Allowlists `.env.example`, `docs/`, and the security
+    scripts themselves. Never silent PASS — skips gitleaks honestly
+    when not installed and still runs the fallback.
+  - `make reproducible-build` → `scripts/security/reproducible_build.sh`:
+    builds `creation_os_v60` twice with `SOURCE_DATE_EPOCH` pinned,
+    compares SHA-256 digests, fails on drift.
+- **Local-dev security stack.**
+  - `SECURITY.md` — supported-versions table, reporting process,
+    tier semantics, active guarantees (M-tier minimum), explicit
+    non-guarantees, local-dev quick-start.
+  - `THREAT_MODEL.md` — 7 assets, 7 adversary tiers (T0 curious user
+    through T7 ring-0 out-of-scope), STRIDE × σ-Shield matrix,
+    arXiv-per-row mapping (DDIPE, Malicious Intermediary, ClawWorm,
+    ShieldNet), 7 invariants auto-checked by `make check-v60`.
+  - `.pre-commit-config.yaml` — trailing-whitespace, EOF fixer,
+    large-file guard, merge-conflict, YAML / JSON / TOML syntax,
+    detect-private-key, forbid-submodules, LF EOL, **gitleaks
+    v8.18.4**, plus local hooks: reject `.env` (accepting only
+    `.env.example`), pre-push runs layered `security-scan` and
+    sanity-builds `creation_os_v60`.
+  - `.gitleaks.toml` — extends defaults, allowlists docs / fixtures /
+    the security scripts, stopword guard (`example`, `placeholder`,
+    `TEST`, `FIXTURE`), explicit regex exemptions for the canonical
+    mix-hint constant and placeholder example tokens.
+  - `.editorconfig` — LF, UTF-8, trim-trailing-whitespace, 4-space C,
+    tab Makefile, 2-space YAML / JSON / TOML, markdown excluded from
+    trimming.
+  - `.env.example` — template with zero real secrets; only
+    Creation-OS-specific tunables (`CC`, `SOURCE_DATE_EPOCH`, v60
+    σ-intent thresholds, v59 budget caps, v57 report path). Bottom
+    comment: **"If a key is ever needed, read it from a secret
+    manager at runtime — never from `.env`."**
+  - `.gitignore` — adds `creation_os_v55 … v60`, every hardened
+    / ASAN / UBSAN binary and its `.dSYM/`, `SBOM.json`, and a `.env`
+    / `.env.*` guard that permits only `.env.example`.
+- **`.github/workflows/security.yml` (new).** Six jobs in parallel:
+  gitleaks full history, harden + hardening-check (macOS + Linux),
+  sanitize (ASAN + UBSAN, macOS + Linux), security-scan (gitleaks
+  installed + grep fallback), SBOM (emits + uploads `SBOM.json`
+  artefact), reproducible-build (macOS). Triggers: push + PR on
+  main, weekly cron Mon 06:00 UTC, `workflow_dispatch`.
+- **Documentation.** New files under `docs/v60/`:
+  `THE_SIGMA_SHIELD.md` (overview, composition, run), `ARCHITECTURE.md`
+  (wire map, per-surface tiering, hardware discipline, measured
+  performance), `POSITIONING.md` (comparison matrix vs seL4 / WASM /
+  IronClaw / ShieldNet / Claude Code; explicit non-claims),
+  `paper_draft.md` (abstract, motivation, policy, kernel, 81-test
+  breakdown, microbench, positioning, limitations, artefacts).
+- **Non-claims.** v60 is **not** a sandbox (compose with seL4 / WASM /
+  Fuchsia); **not** a zero-day detector (gates on caller-provided σ +
+  caller-provided required-caps + caller-provided arg-hash); **no**
+  TPM / Secure Enclave integration yet (P-tier roadmap); **no** Frama-C
+  proof yet — all v60 claims are M-tier runtime checks; **no** SLSA L3
+  provenance yet (P-tier). A compromised σ producer bypasses the
+  intent gate; fuse with v54 σ-proconductor or v56 VPRM for
+  independent σ lines.
+- **Files.** `src/v60/sigma_shield.{h,c}`, `src/v60/creation_os_v60.c`,
+  `scripts/v60/microbench.sh`, `scripts/security/{scan,hardening_check,reproducible_build,sbom}.sh`,
+  `docs/v60/{THE_SIGMA_SHIELD,ARCHITECTURE,POSITIONING,paper_draft}.md`,
+  `.github/workflows/security.yml`, `.pre-commit-config.yaml`,
+  `.gitleaks.toml`, `.editorconfig`, `.env.example`, `SECURITY.md`,
+  `THREAT_MODEL.md`, updates to `Makefile`, `.gitignore`,
+  `src/v57/verified_agent.c`, `scripts/v57/verify_agent.sh`,
+  `README.md`, `docs/DOC_INDEX.md`.
+
 ## v59 σ-Budget — σ-decomposed adaptive test-time compute budget controller (2026-04-16)
 
 - **Driving oivallus.** Q2 2026 adaptive-reasoning-budget field (TAB

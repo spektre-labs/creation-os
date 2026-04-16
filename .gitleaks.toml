@@ -1,0 +1,43 @@
+# Creation OS — gitleaks config.
+#
+# Extends the default rule set and adds a focused allowlist for
+# docs / fixtures that legitimately contain token-shaped example
+# strings.  Anything outside the allowlist still blocks.
+
+title = "Creation OS gitleaks config"
+
+[extend]
+useDefault = true
+
+# ---- allowlist ------------------------------------------------------------
+[allowlist]
+description = "Creation OS allowlist (docs, fixtures, examples)"
+
+paths = [
+    '''\.env\.example$''',
+    '''(^|/)docs/''',
+    '''(^|/)README\.md$''',
+    '''(^|/)CHANGELOG\.md$''',
+    '''(^|/)SECURITY\.md$''',
+    '''(^|/)THREAT_MODEL\.md$''',
+    '''(^|/)scripts/security/''',
+    '''(^|/)\.gitleaks\.toml$''',
+]
+
+regexes = [
+    # Canonical constant used in Creation OS as a mix-hint; NOT a secret.
+    '''0x9E3779B97F4A7C15''',
+    # Placeholder token strings in docs.
+    '''AKIA[0]{16}''',
+    '''sk-[0]{32,}''',
+    '''ghp_[0]{36}''',
+]
+
+commits = []
+
+stopwords = [
+    "example",
+    "placeholder",
+    "TEST",
+    "FIXTURE",
+]

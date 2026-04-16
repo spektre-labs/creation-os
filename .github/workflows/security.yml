@@ -1,0 +1,107 @@
+# Creation OS — security CI workflow.
+#
+# Runs on every push / PR to main; complements the existing ci.yml,
+# codeql.yml, and scorecard.yml workflows.
+#
+# Jobs:
+#   - gitleaks:      full history secret scan
+#   - harden:        builds creation_os_v60_hardened + hardening-check
+#   - sanitize:      ASAN on v58/v59/v60 + UBSAN on v60, all self-tests
+#   - security-scan: scripts/security/scan.sh (grep fallback + URLs)
+#   - sbom:          emits SBOM.json + uploads as artifact
+#   - repro:         scripts/security/reproducible_build.sh
+#
+# All jobs run in parallel; none blocks the others.  All jobs run on
+# ubuntu-latest (where relevant) and macos-latest (M-class silicon
+# for ARM64 branch-protection verification).
+
+name: security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"   # weekly Mon 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  gitleaks:
+    name: gitleaks (full history)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: .gitleaks.toml
+
+  harden:
+    name: harden + hardening-check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: make harden
+        run: make harden
+      - name: make hardening-check
+        run: make hardening-check
+
+  sanitize:
+    name: sanitize (ASAN + UBSAN)
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: make sanitize
+        run: make sanitize
+
+  security-scan:
+    name: security-scan (grep fallback + URLs)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: install gitleaks
+        run: |
+          wget -q -O /tmp/gitleaks.tgz https://github.com/gitleaks/gitleaks/releases/download/v8.18.4/gitleaks_8.18.4_linux_x64.tar.gz
+          tar -xzf /tmp/gitleaks.tgz -C /tmp
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+      - name: make security-scan
+        run: make security-scan
+
+  sbom:
+    name: sbom (CycloneDX 1.5)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: make sbom
+        run: make sbom
+      - name: upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: creation-os-sbom
+          path: SBOM.json
+
+  reproducible-build:
+    name: reproducible-build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: make reproducible-build
+        run: make reproducible-build

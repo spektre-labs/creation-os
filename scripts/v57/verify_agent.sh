@@ -78,6 +78,7 @@ SLOTS=(
     "convergence_self_test|M|v57|check-v57"
     "kv_cache_eviction|M|v58|check-v58"
     "adaptive_compute_budget|M|v59|check-v59"
+    "runtime_security_kernel|M|v60|check-v60"
 )
 
 PASS_LIST=()

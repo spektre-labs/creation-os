@@ -104,6 +104,17 @@ static const v57_slot_t k_slots[] = {
                           "CONTINUE/EARLY_EXIT/EXPAND/ABSTAIN kernel "
                           "(branchless + NEON 4-accum SoA; ≥60 tests)",
     },
+    {
+        .slot           = "runtime_security_kernel",
+        .owner_versions = "v60",
+        .make_target    = "make check-v60",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Shield: first cap-kernel with σ=(ε,α) "
+                          "intent gate + TOCTOU-free arg-hash + "
+                          "code-page integrity + sticky-deny "
+                          "(constant-time; branchless; 81 tests; "
+                          "refuses α-dominated intent regardless of caps)",
+    },
 };
 
 static const int k_slot_count =
