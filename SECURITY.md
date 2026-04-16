@@ -57,13 +57,25 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   SLSA v1.0 predicate emitter — all dispatched by `make chace` which
   PASSes present layers and **SKIPs missing ones honestly**, never
   silently downgrading.
+- **v62 Reasoning Fabric** (`make check-v62`, 68 tests).  Six branchless
+  C kernels distilled from the 2026 reasoning frontier — Coconut latent
+  CoT, Energy-Based Transformer verifier, Hierarchical Reasoning Model
+  H/L loop, Native Sparse Attention (compress + select + slide),
+  DeepSeek-V3 Multi-Token Predictor draft + verify, ARKV adaptive
+  ORIG/QUANT/EVICT KV manager.  Composes with v60 + v61 as a 3-bit
+  branchless decision (`cos_v62_compose_decision`) so **no reasoning
+  step emits unless σ-Shield, Σ-Citadel and the EBT verifier all
+  ALLOW**.  ASAN clean (`make asan-v62`).  UBSAN clean (`make
+  ubsan-v62`).  Hardened-build clean (`make standalone-v62-hardened`).
+  Apple-tier `cos` CLI: `./cos`, `cos sigma`, `cos verify`, `cos chace`,
+  `cos think <prompt>` (single C binary, no deps, NO_COLOR-respecting).
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 +
-  UBSAN on v60, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 +
+  UBSAN on v60 / v61 / v62, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

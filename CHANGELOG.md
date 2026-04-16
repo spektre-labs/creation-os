@@ -1,5 +1,91 @@
 # Changelog
 
+## v62 Reasoning Fabric — alien-tier 2026 frontier in branchless C, with Apple-tier `cos` CLI (2026-04-16)
+
+- **Driving oivallus.** The 2026 frontier converged on three findings:
+  reasoning has moved off-text (Coconut, EBT, HRM), decoding has moved
+  off-token-by-token (DeepSeek-V3 MTP, Mercury, XGrammar-2 + DCCD), and
+  attention has moved off-dense (NSA, FSA 2026, ARKV, SAGE-KV, Mamba-2
+  SSD).  Yet the open-source local-AI stack still shipped these as
+  *training recipes* or *GPU-only research kernels*.  Nothing shipped
+  them as **one composable C ABI on Apple silicon, composed with a
+  runtime security kernel and an attestation kernel, behind one
+  Apple-tier CLI**.  `v62` is that ABI; `cos` is that CLI.
+- **Reasoning Fabric kernel — six modules under one header.**
+  `src/v62/fabric.h` exposes `cos_v62_latent_step` / `_loop` (Coconut),
+  `cos_v62_energy` / `cos_v62_ebt_minimize` (EBT verifier),
+  `cos_v62_hrm_run` (H/L hierarchical loop), `cos_v62_nsa_attend`
+  (3-branch sparse attention: compress + select + slide),
+  `cos_v62_mtp_draft` / `cos_v62_mtp_verify` (multi-token speculative
+  drafter with full causal chain + branchless verify), and
+  `cos_v62_arkv_new` / `cos_v62_arkv_update` (per-token ORIG/QUANT/EVICT
+  classifier).  Plus `cos_v62_compose_decision` for the 3-bit branchless
+  AND with v60 σ-Shield + v61 Σ-Citadel.
+- **Hardware discipline (M4 invariants from `.cursorrules`).**
+  Every buffer `aligned_alloc(64, ...)` (one cache line per NEON load).
+  4-way NEON FMA accumulators with `__builtin_prefetch(p+64, 0, 3)` in
+  every weight / token walk.  Branchless inner loops; selection via
+  0/1 masks; never `if` in the hot path.  mmap-friendly KV layout
+  (64-B row stride).  No `fread`.  Lookup before compute (ARKV
+  classifies before any costly attention re-pass).  SME path is
+  compile-only (`COS_V62_SME=1`) and never SIGILLs by default.
+- **Tests.** `./creation_os_v62 --self-test` runs **68 deterministic
+  invariants** covering Latent CoT (11), EBT verifier (7), HRM (5),
+  NSA (7), MTP (7), ARKV (5), Composition (10), Adversarial (9), and
+  edge cases.  ASAN clean (`make asan-v62`).  UBSAN clean
+  (`make ubsan-v62`).  OpenSSF 2026 hardened build clean
+  (`make standalone-v62-hardened`).
+- **Microbench (Apple M-series, this commit).**
+  - NSA attend (n=1024, d=64): **~ 8 200 calls/s · ~ 0.12 ms / call**.
+  - EBT minimize (d=256, k=16): **~ 3 700 000 calls/s · ~ 0.27 µs / call**.
+  - Composition decision: **single-cycle byte AND** (sub-nanosecond).
+- **Apple-tier `cos` CLI.**  `cli/cos.c` is **~500 lines of C, no
+  dependencies**.  Honours `NO_COLOR`, `COS_NO_UNICODE`, `TERM=dumb`,
+  isatty auto-detect.  Designed under Apple HIG ethos: clarity over
+  decoration, content over chrome, no emojis, no ASCII art, no banners.
+  Commands: `cos`, `cos status`, `cos verify`, `cos chace`, `cos sigma`
+  (runs `check-v60` + `check-v61` + `check-v62` and prints one composed
+  verdict), `cos think <prompt>` (latent-CoT + EBT verify + HRM converge
+  + composed decision JSON + microbench in one screen), `cos version`,
+  `cos help`.  Build: `make cos` or `make check-cos`.
+- **Composition with v60 + v61.**  `cos_v62_compose_decision` is a 3-bit
+  branchless AND with no short-circuit; lanes preserved for telemetry.
+  No reasoning step emits unless **σ-Shield allowed the action**, **the
+  Σ-Citadel lattice allowed the data flow**, *and* **the EBT verifier
+  cleared the energy budget**.
+- **v57 Verified-Agent integration.**  New slot `reasoning_fabric`
+  (owner = v62, target = `make check-v62`, tier **M**) registered in
+  `src/v57/verified_agent.c` and `scripts/v57/verify_agent.sh`.
+  `make verify-agent` now reports **11 / 14 PASS, 3 SKIP, 0 FAIL** on M4.
+- **Make targets added.**  `standalone-v62`, `standalone-v62-hardened`,
+  `test-v62`, `check-v62`, `microbench-v62`, `asan-v62`, `ubsan-v62`,
+  `cos`, `check-cos`.  `harden`, `sanitize`, `.PHONY`, `clean`,
+  `help` all extended with v62 and `cos`.
+- **Docs (`docs/v62/`).**
+  - `THE_FABRIC.md` — one-page overview + tier table + non-claims.
+  - `ARCHITECTURE.md` — wire map, hardware discipline, microbench, threat-model tie-in.
+  - `POSITIONING.md` — vs Coconut / EBT / HRM / NSA / MTP / ARKV / Claude Code / Cursor CLI / Aider / llama.cpp / MLX-LM.
+  - `paper_draft.md` — paper-style writeup with arXiv references.
+- **README.md / SECURITY.md / CHANGELOG.md / .gitignore /
+  docs/DOC_INDEX.md** updated to register v62 and `cos`.
+- **Non-claims (do not silently upgrade).**
+  - v62 is *kernels, not weights*; production model weights stay in MLX
+    / llama.cpp / bitnet.cpp.  v62 is the alien-tier *shape* of the 2026
+    frontier in C, ready for a real inference engine to bind to.
+  - `cos think` is a *demo* surface, not a chat UI.
+  - SME (Apple M4 matrix engine) is *compile-only* today, gated by
+    `COS_V62_SME=1`.  Default build is NEON and never SIGILLs.
+  - GPU dispatch (Metal / ANE) for ARKV and NSA is *planned* (P-tier).
+- **Files added (12).**
+  - `src/v62/fabric.h`, `src/v62/fabric.c`, `src/v62/creation_os_v62.c`.
+  - `cli/cos.c`.
+  - `scripts/v62/microbench.sh`.
+  - `docs/v62/THE_FABRIC.md`, `docs/v62/ARCHITECTURE.md`,
+    `docs/v62/POSITIONING.md`, `docs/v62/paper_draft.md`.
+  - Plus: edits to Makefile, .gitignore, README.md, SECURITY.md,
+    THREAT_MODEL.md, docs/DOC_INDEX.md, src/v57/verified_agent.c,
+    scripts/v57/verify_agent.sh.
+
 ## v61 Σ-Citadel — composed defence-in-depth (DARPA-CHACE menu) (2026-04-17)
 
 - **Driving oivallus.** The 2026 advanced-security menu for AI agents

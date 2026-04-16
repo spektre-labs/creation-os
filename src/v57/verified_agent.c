@@ -130,6 +130,24 @@ static const v57_slot_t k_slots[] = {
                           "`make chace` (PASS on present layers, "
                           "SKIP honestly on missing ones)",
     },
+    {
+        .slot           = "reasoning_fabric",
+        .owner_versions = "v62",
+        .make_target    = "make check-v62",
+        .best_tier      = V57_TIER_M,
+        .summary        = "Reasoning Fabric: 2026 frontier in one C "
+                          "kernel — Coconut latent CoT (arXiv:2412.06769) "
+                          "+ Energy-Based Transformer verifier "
+                          "(arXiv:2507.02092, ICLR 2026) + Hierarchical "
+                          "Reasoning Model H/L loop (arXiv:2506.21734) + "
+                          "Native Sparse Attention 3-branch attend "
+                          "(arXiv:2502.11089) + DeepSeek-V3 Multi-Token "
+                          "Predictor draft (arXiv:2412.19437) + ARKV "
+                          "adaptive-precision KV manager (arXiv:2603.08727); "
+                          "branchless on M4 NEON, 64-byte aligned, mmap-"
+                          "friendly; composes with v60 σ-Shield + v61 "
+                          "Σ-Citadel as a 3-bit decision (≥62 tests)",
+    },
 };
 
 static const int k_slot_count =

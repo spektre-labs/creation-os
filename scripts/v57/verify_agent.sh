@@ -80,6 +80,7 @@ SLOTS=(
     "adaptive_compute_budget|M|v59|check-v59"
     "runtime_security_kernel|M|v60|check-v60"
     "defense_in_depth_stack|M|v61|check-v61"
+    "reasoning_fabric|M|v62|check-v62"
 )
 
 PASS_LIST=()
