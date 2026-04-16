@@ -9,7 +9,6 @@
 - ORCID: 0009-0006-0903-8541
 - GitHub: spektre-labs/creation-os
 - License: SPDX-License-Identifier: AGPL-3.0-or-later (code; see LICENSE)
-- Canonical doc (scope, evidence class, non-claims): docs/LIVING_KERNEL_V6.md
 - 
 - Core formalism:
 - K(t) = ρ · I_Φ · F
@@ -961,6 +960,8 @@ int    dimension;
 int    n_vertices;
 Scalar total_coherence;
 } HypercubeMind;
+
+#define HC_VERTICES 2048 /* capped for 11-dim */
 
 static HypercubeMind hypercube_create(int dim) {
 HypercubeMind hm;

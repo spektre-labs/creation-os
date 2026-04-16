@@ -6,16 +6,23 @@ LDFLAGS = -lm
 BUILDDIR = .build
 # Verilator 5+: --timing with --lint-only (Ubuntu 24.04+). Override: make VERILATOR_LINT_FLAGS=-Wall formal-rtl-lint
 VERILATOR_LINT_FLAGS = -Wall --timing
-RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_silicon_chip_tb.sv
+RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
+infra:
+	@echo "See infra/README.md — flake.nix (nix develop), Earthfile, Justfile, infra/cos_gate (Rust), infra/cos_gate.zig (Zig), infra/config.cue (Cue)."
+	@echo "See omnigate/README.md — polyglot merge-gate runners + nix develop .#omnigate"
+	@echo "See hypervec/README.md — multiprocessing swarm + optional HYPERVEC_MATERIALIZE merge-gate"
+	@echo "See polyglot/README.md — asm / Elixir / Crystal / Lua / Janet / Nim / Racket / WAT shims"
+
 help:
 	@echo "Creation OS — make targets"
 	@echo "  help       — this list"
+	@echo "  infra      — optional Nix / Earthly / Just / Rust / Zig / Cue (see infra/README.md)"
 	@echo "  standalone — build creation_os from creation_os_v2.c"
 	@echo "  standalone-v6 — build creation_os_v6 (Living Kernel + self-test)"
 	@echo "  standalone-v7 — build creation_os_v7 (Hallucination Killer + self-test)"
@@ -47,7 +54,7 @@ help:
 	@echo "  test-v23   — ./creation_os_v23 --self-test (141 checks; builds v23 first)"
 	@echo "  test-v24   — ./creation_os_v24 --self-test (162 checks; builds v24 first)"
 	@echo "  test-v25   — ./creation_os_v25 --self-test (183 checks; builds v25 first)"
-	@echo "  test-v26   — ./creation_os_v26 --self-test (204 checks; builds v26 first)"
+	@echo "  test-v26   — ./creation_os_v26 --self-test (184 checks; builds v26 first)"
 	@echo "  check      — standalone + test (use before PR / CI)"
 	@echo "  check-v6   — standalone-v6 + test-v6 (v6 only)"
 	@echo "  check-v7   — standalone-v7 + test-v7 (v7 only)"
@@ -92,7 +99,7 @@ help:
 check: standalone test
 	@echo "check: OK (standalone + test)"
 
-# Portable kernel test + all standalone --self-test matrices (204 checks on v26). CI and publish script use this.
+# Portable kernel test + all standalone --self-test matrices (184 checks on v26). CI and publish script use this.
 merge-gate:
 	@$(MAKE) check
 	@$(MAKE) check-v6

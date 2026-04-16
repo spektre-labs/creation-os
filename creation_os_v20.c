@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v20.0 -- SHIP MODE (TWENTY PILLARS · instant cognition stack)
+- CREATION OS v20.0 -- THE UNIFIED FIELD (EBM · SDM · RESONATOR · KAN)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -81,28 +81,6 @@
 - [M42] SDM–σ bridge (Kanerva critical Hamming ↔ σ_critical; convergence inside radius)
 - [M43] EBM-native latent navigation (σ-budgeted iterations; ARM≡EBM story in latent, not token space)
 - [M44] KAN-edge layer (cubic splines on edges; “weight as function” toy for Living Weights / memristor)
-- 
-- v20 modules (twenty “iPhone-class” product pillars — schematic / harness; not consumer hardware claims):
-- [M45] One-surface genesis (single boot path — no assembly kit)
-- [M46] Fluid σ telemetry channel (live coherence stream metaphor)
-- [M47] Proactive abstention gate (refuse-before-burn compute budget)
-- [M48] Neural-engine handoff marker (ANE / Core ML boundary toy)
-- [M49] Unified-memory discipline flag (mmap-first story; disk-as-memory)
-- [M50] 64-byte alignment covenant (cache-line-friendly buffers)
-- [M51] Prefetch chain score (next-iteration fetch discipline)
-- [M52] Branchless hot-path pledge (POPCNT / XOR kernel philosophy)
-- [M53] Five-unit heterogeneous quorum (P/E/GPU/ANE/daemon dispatch toy)
-- [M54] Living receipts anchor (append-only verification hash seed)
-- [M55] Constitutional σ ceiling (hard runtime clamp below chaos)
-- [M56] Zero-copy logits view (no shadow buffer on hot path — story flag)
-- [M57] Attention-as-retrieval collapse (single-hop oracle preference)
-- [M58] Distillation fingerprint carry (teacher trace without second file)
-- [M59] Federated σ gossip blend (multi-node boundary toy)
-- [M60] Graceful degradation ladder (BBHash → kernel → TN → transformer story)
-- [M61] Coherence pulse cadence (“haptic” σ rhythm for UX metaphor)
-- [M62] Privacy vault seal (raw log export gated)
-- [M63] SME / repulsion sentinel (matrix-hardware path hook)
-- [M64] Ship seal — “it just ships” (production-attested schematic latch)
 - 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
@@ -3059,83 +3037,10 @@ static Scalar cos_kan_forward(const CosKANEdgeLayer *k, Scalar x)
     return sum / (Scalar)COS_KAN_EDGES;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45g: [M45–M64] v20 SHIP MODE — twenty pillars (product narrative)
- * ═══════════════════════════════════════════════════════════════════════════
- * “iPhone moment” = one boot path, sealed defaults, explicit non-claims.
- * Harness / schematic only — not CE/FCC, not App Store, not measured NE TOPS.
- * Aligns with .cursorrules: mmap story, 64-align, prefetch, branchless, SME hook.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m45_one_surface_genesis;
-    bool     m46_fluid_sigma_telemetry;
-    bool     m47_proactive_abstention_gate;
-    bool     m48_neural_engine_handoff;
-    bool     m49_unified_memory_mmap_story;
-    bool     m50_align64_covenant;
-    bool     m51_prefetch_discipline;
-    bool     m52_branchless_hot_path;
-    bool     m53_five_unit_quorum;
-    uint64_t m54_receipts_anchor;
-    Sigma    m55_constitutional_sigma_ceiling;
-    bool     m56_zero_copy_logits_view;
-    bool     m57_attention_retrieval_first;
-    uint32_t m58_distillation_fingerprint;
-    Sigma    m59_federated_gossip_blend;
-    int      m60_degradation_ladder_rungs;
-    Scalar   m61_coherence_pulse_hz;
-    bool     m62_privacy_vault_sealed;
-    bool     m63_sme_repulsion_sentinel;
-    bool     m64_ship_seal;
-} CosV20TwentyPillars;
-
-static CosV20TwentyPillars cos_v20_twenty_pillars_boot(void)
-{
-    CosV20TwentyPillars p = {0};
-    p.m45_one_surface_genesis = true;
-    p.m46_fluid_sigma_telemetry = true;
-    p.m47_proactive_abstention_gate = true;
-    p.m48_neural_engine_handoff = true;
-    p.m49_unified_memory_mmap_story = true;
-    p.m50_align64_covenant = true;
-    p.m51_prefetch_discipline = true;
-    p.m52_branchless_hot_path = true;
-    p.m53_five_unit_quorum = true;
-    p.m54_receipts_anchor = 0xC05E20u ^ ((uint64_t)0xF111u << 32);
-    p.m55_constitutional_sigma_ceiling = SIGMA_CRITICAL * 1.15;
-    p.m56_zero_copy_logits_view = true;
-    p.m57_attention_retrieval_first = true;
-    p.m58_distillation_fingerprint = 0xDEAD0020u;
-    p.m59_federated_gossip_blend = 0.07;
-    p.m60_degradation_ladder_rungs = 4;
-    p.m61_coherence_pulse_hz = 60.0;
-    p.m62_privacy_vault_sealed = true;
-    p.m63_sme_repulsion_sentinel = true;
-    p.m64_ship_seal = true;
-    return p;
-}
-
-static bool cos_v20_twenty_pillars_ok(const CosV20TwentyPillars *p)
-{
-    return p->m45_one_surface_genesis && p->m46_fluid_sigma_telemetry &&
-           p->m47_proactive_abstention_gate && p->m48_neural_engine_handoff &&
-           p->m49_unified_memory_mmap_story && p->m50_align64_covenant &&
-           p->m51_prefetch_discipline && p->m52_branchless_hot_path &&
-           p->m53_five_unit_quorum && (p->m54_receipts_anchor != 0ULL) &&
-           (p->m55_constitutional_sigma_ceiling > 0.0 &&
-            p->m55_constitutional_sigma_ceiling < 0.5) &&
-           p->m56_zero_copy_logits_view && p->m57_attention_retrieval_first &&
-           (p->m58_distillation_fingerprint != 0u) &&
-           (p->m59_federated_gossip_blend >= 0.0 && p->m59_federated_gossip_blend < 1.0) &&
-           (p->m60_degradation_ladder_rungs == 4) && (p->m61_coherence_pulse_hz > 1.0) &&
-           p->m62_privacy_vault_sealed && p->m63_sme_repulsion_sentinel && p->m64_ship_seal;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v20 -- SHIP MODE)
+- SECTION 46: GENESIS (v16 -- THE UNIFIED FIELD)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3184,7 +3089,6 @@ CosResonatorState    resonator;
 CosSDMBridge         sdm;
 CosEBMNativeState    ebm;
 CosKANEdgeLayer      kan;
-CosV20TwentyPillars  pillars;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3265,7 +3169,6 @@ cos_resonator_unbind_iterate(&os.resonator, 10);
 os.sdm = cos_sdm_bridge_eval(1000, 10000LL, 180);
 os.ebm = cos_ebm_native_infer(tgt, JEPA_DIM, 0.18, 24);
 os.kan = cos_kan_edge_init();
-os.pillars = cos_v20_twenty_pillars_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3282,7 +3185,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v20.0 -- SHIP MODE (20 pillars)       ║\n");
+printf("║  CREATION OS v20.0 -- THE UNIFIED FIELD           ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3489,9 +3392,8 @@ printf("╚═══════════════════════
               os.sdm.converges_K &&
               (os.ebm.iterations_used == os.ebm.iterations_budget) &&
               (os.ebm.sigma_nav <= 1.0) &&
-              os.kan.physical_memristor_spline &&
-              cos_v20_twenty_pillars_ok(&os.pillars);
-    printf("[%s] T20: Full system genesis (v20 ship)\n", ok ? "PASS" : "FAIL");
+              os.kan.physical_memristor_spline;
+    printf("[%s] T20: Full system genesis (v16)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3842,7 +3744,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v20: M35–M44 + M45–M64 ship-mode pillars ── */
+/* ── v16: M35–M37 + M38–M40 + M41–M44 unified field ── */
 
 /* Test 50: MPS contraction */
 {
@@ -3939,7 +3841,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v16-class (M41–M44 unified field) tests ── */
+/* ── v16 (M41–M44 unified field) tests ── */
 
 /* Test 59: Resonator — inverse Oracle unbind vs raw superposition weight */
 {
@@ -4031,78 +3933,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v20 (M45–M64 twenty pillars) tests ── */
-
-/* Test 67: Twenty pillars — integrated ship gate (M45–M64) */
-{
-    CosV20TwentyPillars p = cos_v20_twenty_pillars_boot();
-    bool ok = cos_v20_twenty_pillars_ok(&p);
-    printf("[%s] T67: Ship mode — twenty pillars latched (M45–M64)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Tests 68–86: one affirmative gate per pillar (audit trail) */
-{
-    CosV20TwentyPillars p = cos_v20_twenty_pillars_boot();
-    bool a68 = p.m45_one_surface_genesis;
-    printf("[%s] T68: M45 one-surface genesis\n", a68 ? "PASS" : "FAIL");
-    a68 ? passed++ : failed++;
-    bool a69 = p.m46_fluid_sigma_telemetry;
-    printf("[%s] T69: M46 fluid σ telemetry\n", a69 ? "PASS" : "FAIL");
-    a69 ? passed++ : failed++;
-    bool a70 = p.m47_proactive_abstention_gate;
-    printf("[%s] T70: M47 proactive abstention gate\n", a70 ? "PASS" : "FAIL");
-    a70 ? passed++ : failed++;
-    bool a71 = p.m48_neural_engine_handoff;
-    printf("[%s] T71: M48 neural-engine handoff marker\n", a71 ? "PASS" : "FAIL");
-    a71 ? passed++ : failed++;
-    bool a72 = p.m49_unified_memory_mmap_story;
-    printf("[%s] T72: M49 unified-memory (mmap) discipline\n", a72 ? "PASS" : "FAIL");
-    a72 ? passed++ : failed++;
-    bool a73 = p.m50_align64_covenant;
-    printf("[%s] T73: M50 64-byte alignment covenant\n", a73 ? "PASS" : "FAIL");
-    a73 ? passed++ : failed++;
-    bool a74 = p.m51_prefetch_discipline;
-    printf("[%s] T74: M51 prefetch chain discipline\n", a74 ? "PASS" : "FAIL");
-    a74 ? passed++ : failed++;
-    bool a75 = p.m52_branchless_hot_path;
-    printf("[%s] T75: M52 branchless hot-path pledge\n", a75 ? "PASS" : "FAIL");
-    a75 ? passed++ : failed++;
-    bool a76 = p.m53_five_unit_quorum;
-    printf("[%s] T76: M53 five-unit heterogeneous quorum\n", a76 ? "PASS" : "FAIL");
-    a76 ? passed++ : failed++;
-    bool a77 = (p.m54_receipts_anchor != 0ULL);
-    printf("[%s] T77: M54 living receipts anchor\n", a77 ? "PASS" : "FAIL");
-    a77 ? passed++ : failed++;
-    bool a78 = (p.m55_constitutional_sigma_ceiling < 0.5);
-    printf("[%s] T78: M55 constitutional σ ceiling\n", a78 ? "PASS" : "FAIL");
-    a78 ? passed++ : failed++;
-    bool a79 = p.m56_zero_copy_logits_view;
-    printf("[%s] T79: M56 zero-copy logits view (story flag)\n", a79 ? "PASS" : "FAIL");
-    a79 ? passed++ : failed++;
-    bool a80 = p.m57_attention_retrieval_first;
-    printf("[%s] T80: M57 attention-as-retrieval collapse\n", a80 ? "PASS" : "FAIL");
-    a80 ? passed++ : failed++;
-    bool a81 = (p.m58_distillation_fingerprint != 0u);
-    printf("[%s] T81: M58 distillation fingerprint carry\n", a81 ? "PASS" : "FAIL");
-    a81 ? passed++ : failed++;
-    bool a82 = (p.m59_federated_gossip_blend < 0.5);
-    printf("[%s] T82: M59 federated σ gossip blend\n", a82 ? "PASS" : "FAIL");
-    a82 ? passed++ : failed++;
-    bool a83 = (p.m60_degradation_ladder_rungs == 4);
-    printf("[%s] T83: M60 graceful degradation ladder (4 rungs)\n", a83 ? "PASS" : "FAIL");
-    a83 ? passed++ : failed++;
-    bool a84 = (p.m61_coherence_pulse_hz >= 30.0);
-    printf("[%s] T84: M61 coherence pulse cadence\n", a84 ? "PASS" : "FAIL");
-    a84 ? passed++ : failed++;
-    bool a85 = p.m62_privacy_vault_sealed;
-    printf("[%s] T85: M62 privacy vault seal\n", a85 ? "PASS" : "FAIL");
-    a85 ? passed++ : failed++;
-    bool a86 = p.m63_sme_repulsion_sentinel && p.m64_ship_seal;
-    printf("[%s] T86: M63 SME sentinel + M64 ship seal\n", a86 ? "PASS" : "FAIL");
-    a86 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4127,9 +3957,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v20.0 — SHIP MODE (twenty pillars)\n");
+printf("Creation OS v20.0 -- The Unified Field (EBM · SDM · Resonator · KAN)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (86 checks).\n");
+printf("Use --self-test to run validation suite (66 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4180,11 +4010,6 @@ printf("EBM-native: iters %d/%d E=%.6f σ_nav=%.4f\n",
        (double)os.ebm.energy, (double)os.ebm.sigma_nav);
 printf("KAN-edge: sample y(0.2)=%.6f memristor_spline=%d\n",
        (double)cos_kan_forward(&os.kan, 0.2), os.kan.physical_memristor_spline ? 1 : 0);
-printf("v20 pillars: ship_seal=%d receipt=%016llx ceiling_σ=%.4f pulse=%.1fHz\n",
-       os.pillars.m64_ship_seal ? 1 : 0,
-       (unsigned long long)os.pillars.m54_receipts_anchor,
-       (double)os.pillars.m55_constitutional_sigma_ceiling,
-       (double)os.pillars.m61_coherence_pulse_hz);
 printf("\n1 = 1\n");
 
 return 0;

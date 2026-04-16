@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v24.0 -- TWENTY ARXIV SCI-FI ECHO LATCHES (real preprints → schematic σ hooks; not physics claims)
+- CREATION OS v23.0 -- TWENTY FORMIDABLE AGI-SCHEMATIC AFFORDANCES (agent / memory / GUI discourse → silicon hooks)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -140,7 +140,7 @@
 - [M95] Human-value override persistence latch (veto survives reboot story)
 - [M96] Twenty-insight sovereign seal + parent receipt (v22 latched atop v21+v20)
 - 
-- v23 layer (twenty formidable AGI-schematic affordances — harness / story flags; carried into v24):
+- v23 modules (twenty formidable AGI-schematic affordances — harness / story flags; not frontier AGI):
 - [M97] Tiered agent memory latch (working / scratch / long-term persistence story)
 - [M98] Planner–worker decomposition plane (modular policy + cost ladder toy)
 - [M99] Tool-call reliability σ gate (bounded tool failure budget)
@@ -162,35 +162,13 @@
 - [M115] Cross-session user-scoped continuity seal (identity scope story)
 - [M116] Twenty AGI-affordance seal + parent receipt (v23 latched atop v22)
 - 
-- v24 modules (twenty arXiv sci-fi echo latches — citation / story flags; not reproduced results):
-- [M117] arXiv:2505.02804 — Planckeons as mouths of quantum wormholes / holographic spacetime toy
-- [M118] arXiv:2503.16610 — Black hole complementarity & ER/EPR wormhole entanglement
-- [M119] arXiv:2603.00203 — Stellar engines & Dyson bubbles stability (Kardashev echo)
-- [M120] arXiv:2411.05038 — Spider stellar engine steerable extraterrestrial design
-- [M121] arXiv:2302.13651 — Geometric phases, Everett many-worlds & quantum wormholes
-- [M122] arXiv:2507.22950 — Undecidability in physics / Meta-ToE / “universe not a simulation” narrative
-- [M123] arXiv:2412.02826 — Algorithmic idealism: what should you believe to experience next?
-- [M124] arXiv:2412.20485 — Algorithmic Idealism I (information / experience)
-- [M125] arXiv:2404.08991 — Business models for the simulation hypothesis (simuverse)
-- [M126] arXiv:2401.02443 — Mechanistic observer vs computer-simulated events
-- [M127] arXiv:1306.0533 — Cool horizons for entangled black holes (Maldacena–Susskind)
-- [M128] arXiv:2109.08062 — Quantum embedding simulation of realistic chemistry (near-term QC toy)
-- [M129] arXiv:1708.07390 — Stratifying multiparameter persistent homology (data cosmos topology toy)
-- [M130] arXiv:2008.12792 — MUST for boosted jets (collider oracle lattice toy)
-- [M131] arXiv:1912.11237 — Quantum critical phenomena in an O(4) fermion chain
-- [M132] arXiv:2402.01521 — K-level reasoning / higher-order beliefs in LLMs (strategic depth toy)
-- [M133] arXiv:2309.00678 — YSO clustering & stellar nursery density ladder (astro toy)
-- [M134] arXiv:2412.05238 — Sub-static splitting / rigidity (Einstein σ-model Liouville echo)
-- [M135] arXiv:1401.5469 — TARDIS rapid supernova spectral synthesis (open-source transient engine)
-- [M136] arXiv:1508.05049 — Homogenization under periodically oscillating differential constraints (σ-wave lattice toy)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v24 creation_os_v24.c -lm
-- Test:    ./creation_os_v24 --self-test
+- Compile: cc -O2 -o creation_os_v23 creation_os_v23.c -lm
+- Test:    ./creation_os_v23 --self-test
 - ============================================================================
   */
 
@@ -3420,85 +3398,10 @@ static bool cos_v23_twenty_agi_affordances_ok(const CosV23TwentyAgiAffordances *
            a->m116_agi_affordance_seal;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45k: [M117–M136] v24 TWENTY ARXIV SCI-FI ECHO LATCHES (verified preprint IDs)
- * ═══════════════════════════════════════════════════════════════════════════
- * Each latch names a real arXiv abstract URL (titles paraphrased in-file for brevity).
- * Explicit non-claim: Creation OS does not reproduce these papers’ theorems, numerics,
- * or collider / cosmology conclusions — only receipt-style story flags for CLAIM_DISCIPLINE.
- * Index of https://arxiv.org/abs/… IDs echoed in header M117–M136.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m117_planckeon_wormhole;
-    bool     m118_bh_complementarity_er_epr;
-    bool     m119_dyson_bubble_stellar_stable;
-    bool     m120_spider_stellar_engine;
-    bool     m121_everett_geometric_wormhole;
-    bool     m122_undecidability_meta_toe;
-    bool     m123_algorithmic_idealism_next;
-    bool     m124_algorithmic_idealism_I;
-    bool     m125_simuverse_business_model;
-    bool     m126_mechanistic_observer_sim;
-    bool     m127_cool_horizons_entangled_bhs;
-    bool     m128_quantum_embedding_chemistry;
-    bool     m129_multiparameter_homology_stratify;
-    bool     m130_must_boosted_jets;
-    bool     m131_o4_fermion_quantum_critical;
-    bool     m132_k_level_llm_beliefs;
-    bool     m133_yso_clustering_nursery;
-    bool     m134_substatic_splitting_rigidity;
-    bool     m135_tardis_supernova_spectral;
-    bool     m136_homogenization_oscillating_constraints;
-    uint64_t scifi_arxiv_receipt_parent;
-} CosV24TwentyArxivSciFiHooks;
-
-static CosV24TwentyArxivSciFiHooks cos_v24_twenty_arxiv_scifi_boot(void)
-{
-    CosV24TwentyArxivSciFiHooks h = {0};
-    h.m117_planckeon_wormhole = true;
-    h.m118_bh_complementarity_er_epr = true;
-    h.m119_dyson_bubble_stellar_stable = true;
-    h.m120_spider_stellar_engine = true;
-    h.m121_everett_geometric_wormhole = true;
-    h.m122_undecidability_meta_toe = true;
-    h.m123_algorithmic_idealism_next = true;
-    h.m124_algorithmic_idealism_I = true;
-    h.m125_simuverse_business_model = true;
-    h.m126_mechanistic_observer_sim = true;
-    h.m127_cool_horizons_entangled_bhs = true;
-    h.m128_quantum_embedding_chemistry = true;
-    h.m129_multiparameter_homology_stratify = true;
-    h.m130_must_boosted_jets = true;
-    h.m131_o4_fermion_quantum_critical = true;
-    h.m132_k_level_llm_beliefs = true;
-    h.m133_yso_clustering_nursery = true;
-    h.m134_substatic_splitting_rigidity = true;
-    h.m135_tardis_supernova_spectral = true;
-    h.m136_homogenization_oscillating_constraints = true;
-    h.scifi_arxiv_receipt_parent = 0xA61u ^ ((uint64_t)0x24E24u << 40);
-    return h;
-}
-
-static bool cos_v24_twenty_arxiv_scifi_ok(const CosV24TwentyArxivSciFiHooks *h)
-{
-    return h->m117_planckeon_wormhole && h->m118_bh_complementarity_er_epr &&
-           h->m119_dyson_bubble_stellar_stable && h->m120_spider_stellar_engine &&
-           h->m121_everett_geometric_wormhole && h->m122_undecidability_meta_toe &&
-           h->m123_algorithmic_idealism_next && h->m124_algorithmic_idealism_I &&
-           h->m125_simuverse_business_model && h->m126_mechanistic_observer_sim &&
-           h->m127_cool_horizons_entangled_bhs && h->m128_quantum_embedding_chemistry &&
-           h->m129_multiparameter_homology_stratify && h->m130_must_boosted_jets &&
-           h->m131_o4_fermion_quantum_critical && h->m132_k_level_llm_beliefs &&
-           h->m133_yso_clustering_nursery && h->m134_substatic_splitting_rigidity &&
-           h->m135_tardis_supernova_spectral && h->m136_homogenization_oscillating_constraints &&
-           (h->scifi_arxiv_receipt_parent != 0ULL);
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v24 -- SHIP + STACK + INSIGHTS + AFFORDANCES + ARXIV SCI-FI)
+- SECTION 46: GENESIS (v23 -- SHIP + AGI STACK + INSIGHTS + AGI AFFORDANCES)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3551,7 +3454,6 @@ CosV20TwentyPillars  pillars;
 CosV21AgiSovereignStack agi_stack;
 CosV22TwentyInsights insight_stack;
 CosV23TwentyAgiAffordances agi_affordances;
-CosV24TwentyArxivSciFiHooks arxiv_scifi;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3636,7 +3538,6 @@ os.pillars = cos_v20_twenty_pillars_boot();
 os.agi_stack = cos_v21_agi_stack_boot();
 os.insight_stack = cos_v22_twenty_insights_boot();
 os.agi_affordances = cos_v23_twenty_agi_affordances_boot();
-os.arxiv_scifi = cos_v24_twenty_arxiv_scifi_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3653,7 +3554,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v24.0 -- ARXIV SCI-FI ECHO LATCHES    ║\n");
+printf("║  CREATION OS v23.0 -- AGI-SCHEMATIC AFFORDANCES    ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3864,9 +3765,8 @@ printf("╚═══════════════════════
               cos_v20_twenty_pillars_ok(&os.pillars) &&
               cos_v21_agi_stack_ok(&os.agi_stack) &&
               cos_v22_twenty_insights_ok(&os.insight_stack) &&
-              cos_v23_twenty_agi_affordances_ok(&os.agi_affordances) &&
-              cos_v24_twenty_arxiv_scifi_ok(&os.arxiv_scifi);
-    printf("[%s] T20: Full system genesis (v24 ship + stack + insights + affordances + arXiv sci-fi)\n", ok ? "PASS" : "FAIL");
+              cos_v23_twenty_agi_affordances_ok(&os.agi_affordances);
+    printf("[%s] T20: Full system genesis (v23 ship + stack + insights + AGI affordances)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -4217,7 +4117,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v24: M35–M116 + M117–M136 twenty arXiv sci-fi echo latches (preprint citation hooks) ── */
+/* ── v23: M35–M96 + M97–M116 twenty AGI-schematic affordances (agent discourse hooks) ── */
 
 /* Test 50: MPS contraction */
 {
@@ -4677,80 +4577,6 @@ printf("╚═══════════════════════
     d141 ? passed++ : failed++;
 }
 
-/* ── v24 (M117–M136 twenty arXiv sci-fi echo latches) tests ── */
-
-{
-    CosV24TwentyArxivSciFiHooks h = cos_v24_twenty_arxiv_scifi_boot();
-    bool ok = cos_v24_twenty_arxiv_scifi_ok(&h);
-    printf("[%s] T142: Twenty arXiv sci-fi echo latches (M117–M136)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-{
-    CosV24TwentyArxivSciFiHooks h = cos_v24_twenty_arxiv_scifi_boot();
-    bool e143 = h.m117_planckeon_wormhole;
-    printf("[%s] T143: M117 arXiv:2505.02804 planckeon wormhole mouth\n", e143 ? "PASS" : "FAIL");
-    e143 ? passed++ : failed++;
-    bool e144 = h.m118_bh_complementarity_er_epr;
-    printf("[%s] T144: M118 arXiv:2503.16610 BH complementarity / ER–EPR\n", e144 ? "PASS" : "FAIL");
-    e144 ? passed++ : failed++;
-    bool e145 = h.m119_dyson_bubble_stellar_stable;
-    printf("[%s] T145: M119 arXiv:2603.00203 Dyson bubbles & stellar engines\n", e145 ? "PASS" : "FAIL");
-    e145 ? passed++ : failed++;
-    bool e146 = h.m120_spider_stellar_engine;
-    printf("[%s] T146: M120 arXiv:2411.05038 spider stellar engine\n", e146 ? "PASS" : "FAIL");
-    e146 ? passed++ : failed++;
-    bool e147 = h.m121_everett_geometric_wormhole;
-    printf("[%s] T147: M121 arXiv:2302.13651 Everett many-worlds geometric wormholes\n", e147 ? "PASS" : "FAIL");
-    e147 ? passed++ : failed++;
-    bool e148 = h.m122_undecidability_meta_toe;
-    printf("[%s] T148: M122 arXiv:2507.22950 undecidability / Meta-ToE\n", e148 ? "PASS" : "FAIL");
-    e148 ? passed++ : failed++;
-    bool e149 = h.m123_algorithmic_idealism_next;
-    printf("[%s] T149: M123 arXiv:2412.02826 algorithmic idealism (believe next)\n", e149 ? "PASS" : "FAIL");
-    e149 ? passed++ : failed++;
-    bool e150 = h.m124_algorithmic_idealism_I;
-    printf("[%s] T150: M124 arXiv:2412.20485 Algorithmic Idealism I\n", e150 ? "PASS" : "FAIL");
-    e150 ? passed++ : failed++;
-    bool e151 = h.m125_simuverse_business_model;
-    printf("[%s] T151: M125 arXiv:2404.08991 simuverse business models\n", e151 ? "PASS" : "FAIL");
-    e151 ? passed++ : failed++;
-    bool e152 = h.m126_mechanistic_observer_sim;
-    printf("[%s] T152: M126 arXiv:2401.02443 mechanistic observer vs simulation\n", e152 ? "PASS" : "FAIL");
-    e152 ? passed++ : failed++;
-    bool e153 = h.m127_cool_horizons_entangled_bhs;
-    printf("[%s] T153: M127 arXiv:1306.0533 cool horizons / entangled black holes\n", e153 ? "PASS" : "FAIL");
-    e153 ? passed++ : failed++;
-    bool e154 = h.m128_quantum_embedding_chemistry;
-    printf("[%s] T154: M128 arXiv:2109.08062 quantum embedding chemistry simulation\n", e154 ? "PASS" : "FAIL");
-    e154 ? passed++ : failed++;
-    bool e155 = h.m129_multiparameter_homology_stratify;
-    printf("[%s] T155: M129 arXiv:1708.07390 multiparameter persistent homology\n", e155 ? "PASS" : "FAIL");
-    e155 ? passed++ : failed++;
-    bool e156 = h.m130_must_boosted_jets;
-    printf("[%s] T156: M130 arXiv:2008.12792 MUST boosted jets\n", e156 ? "PASS" : "FAIL");
-    e156 ? passed++ : failed++;
-    bool e157 = h.m131_o4_fermion_quantum_critical;
-    printf("[%s] T157: M131 arXiv:1912.11237 O(4) fermion quantum criticality\n", e157 ? "PASS" : "FAIL");
-    e157 ? passed++ : failed++;
-    bool e158 = h.m132_k_level_llm_beliefs;
-    printf("[%s] T158: M132 arXiv:2402.01521 K-level reasoning in LLMs\n", e158 ? "PASS" : "FAIL");
-    e158 ? passed++ : failed++;
-    bool e159 = h.m133_yso_clustering_nursery;
-    printf("[%s] T159: M133 arXiv:2309.00678 YSO clustering / nursery ladder\n", e159 ? "PASS" : "FAIL");
-    e159 ? passed++ : failed++;
-    bool e160 = h.m134_substatic_splitting_rigidity;
-    printf("[%s] T160: M134 arXiv:2412.05238 sub-static splitting / rigidity\n", e160 ? "PASS" : "FAIL");
-    e160 ? passed++ : failed++;
-    bool e161 = h.m135_tardis_supernova_spectral;
-    printf("[%s] T161: M135 arXiv:1401.5469 TARDIS supernova spectra\n", e161 ? "PASS" : "FAIL");
-    e161 ? passed++ : failed++;
-    bool e162 = h.m136_homogenization_oscillating_constraints &&
-                 (h.scifi_arxiv_receipt_parent != 0ULL);
-    printf("[%s] T162: M136 arXiv:1508.05049 homogenization + sci-fi receipt parent\n", e162 ? "PASS" : "FAIL");
-    e162 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4775,9 +4601,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v24.0 — ARXIV SCI-FI ECHO LATCHES (ship + agent + preprint hooks)\n");
+printf("Creation OS v23.0 — AGI-SCHEMATIC AFFORDANCES (ship + insights + agent hooks)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (162 checks).\n");
+printf("Use --self-test to run validation suite (141 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4845,8 +4671,6 @@ printf("v22 insights: sealed=%d receipt_parent=%016llx (M77–M96 web-anchored s
 printf("v23 AGI affordances: sealed=%d receipt_parent=%016llx (M97–M116 agent-discourse hooks)\n",
        os.agi_affordances.m116_agi_affordance_seal ? 1 : 0,
        (unsigned long long)os.agi_affordances.agi_aff_receipt_parent);
-printf("v24 arXiv sci-fi: receipt_parent=%016llx (M117–M136 https://arxiv.org/abs hooks)\n",
-       (unsigned long long)os.arxiv_scifi.scifi_arxiv_receipt_parent);
 printf("\n1 = 1\n");
 
 return 0;

@@ -49,3 +49,17 @@ hw/rust/spektre-iron-gate/target/
 hw/formal/agency_ctrl_prove/
 hw/formal/agency_ctrl_cover/
 hw/formal/agency_self/
+
+# Nix / direnv / Earthly / Zig / Rust shim
+.direnv/
+result
+result-*
+zig-out/
+.zig-cache/
+.earthly/
+infra/cos_gate/target/
+nimcache/
+polyglot/nim/cos_gate
+
+# Local build artifact (Rust iron gate)
+creation_os_iron_gate

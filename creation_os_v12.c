@@ -65,18 +65,13 @@
 - 
 - v11 module (matmul-free LM schematic; not a trained frontier model):
 - [M34] MatMul-free language model (ternary BitLinear + MLGRU toy forward)
--
-- v12 modules (tensor-train / entanglement toy; not quantum hardware claims):
-- [M35] MPS encoder (toy matrix product state contraction on classical bits)
-- [M36] Entanglement sigma-meter (normalized entropy on singular-value toy)
-- [M37] TN sequence head (MPS-backed toy next-step index; not a trained LM)
 - 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v12 creation_os_v12.c -lm
+- Compile: clang -O2 -march=armv9-a+sme -o creation_os_v12 creation_os_v12.c -lm
 - Test:    ./creation_os_v12 --self-test
 - ============================================================================
   */
@@ -2580,153 +2575,10 @@ static Scalar mmf_forward(MatMulFreeLM *lm, const Scalar *input, int dim)
     return output;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45b: [M35] MPS encoder (toy tensor train; classical only)
- * ═══════════════════════════════════════════════════════════════════════════
- * Matrix product state with capped bond dimension — schematic contraction.
- * Not a claim of quantum advantage, hardware MPS, or trained TN-LM parity.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-#define MPS_SITES    32
-#define MPS_BOND_DIM 4
-#define MPS_PHYS_DIM 2
-
-typedef struct {
-    Scalar tensors[MPS_SITES][MPS_BOND_DIM][MPS_PHYS_DIM][MPS_BOND_DIM];
-    int n_sites;
-    int bond_dim;
-    int total_params;
-} MPSEncoder;
-
-static MPSEncoder mps_create(int sites, int bond)
-{
-    MPSEncoder m = {0};
-    m.n_sites = sites > MPS_SITES ? MPS_SITES : sites;
-    m.bond_dim = bond > MPS_BOND_DIM ? MPS_BOND_DIM : bond;
-    m.total_params = m.n_sites * m.bond_dim * MPS_PHYS_DIM * m.bond_dim;
-    for (int s = 0; s < m.n_sites; s++) {
-        for (int i = 0; i < m.bond_dim; i++) {
-            for (int p = 0; p < MPS_PHYS_DIM; p++) {
-                for (int j = 0; j < m.bond_dim; j++)
-                    m.tensors[s][i][p][j] = (i == j) ? ((p == 0) ? 0.8 : 0.6) : 0.0;
-            }
-        }
-    }
-    return m;
-}
-
-static Scalar mps_contract(const MPSEncoder *m, const int8_t *input, int n)
-{
-    int len = n > m->n_sites ? m->n_sites : n;
-    Scalar state[MPS_BOND_DIM];
-    for (int j = 0; j < m->bond_dim; j++)
-        state[j] = 0.0;
-    state[0] = 1.0;
-
-    for (int s = 0; s < len; s++) {
-        Scalar next[MPS_BOND_DIM];
-        for (int j = 0; j < m->bond_dim; j++)
-            next[j] = 0.0;
-        int p = (input[s] > 0) ? 1 : 0;
-        for (int j = 0; j < m->bond_dim; j++) {
-            for (int i = 0; i < m->bond_dim; i++)
-                next[j] += state[i] * m->tensors[s][i][p][j];
-        }
-        for (int j = 0; j < m->bond_dim; j++)
-            state[j] = next[j];
-    }
-    Scalar result = 0.0;
-    for (int i = 0; i < m->bond_dim; i++)
-        result += state[i] * state[i];
-    return sqrt(result);
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45c: [M36] Entanglement sigma-meter (singular-value toy)
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    Scalar entropy;
-    Scalar max_entropy;
-    Scalar normalized;
-    bool   area_law;
-    Sigma  sigma_entangle;
-} EntanglementMeter;
-
-static EntanglementMeter entanglement_measure(const Scalar *singular_values, int n)
-{
-    EntanglementMeter em;
-    em.entropy = 0.0;
-    em.max_entropy = log((double)(n > 0 ? n : 1));
-    Scalar norm = 0.0;
-    int i;
-    for (i = 0; i < n; i++)
-        norm += singular_values[i] * singular_values[i];
-    for (i = 0; i < n; i++) {
-        Scalar p = (norm > 0.0) ? singular_values[i] * singular_values[i] / norm : 0.0;
-        if (p > 1e-30)
-            em.entropy -= p * log(p);
-    }
-    em.normalized = (em.max_entropy > 0.0) ? (em.entropy / em.max_entropy) : 0.0;
-    em.area_law = (em.normalized < 0.5);
-    em.sigma_entangle = em.normalized;
-    return em;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45d: [M37] TN sequence head (MPS toy predictor)
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    MPSEncoder encoder;
-    int        vocab_size;
-    Scalar     log_probs[64];
-    Scalar     perplexity;
-    Sigma      sigma_sequence;
-} TNSequenceModel;
-
-static TNSequenceModel tn_seq_create(int sites, int bond, int vocab)
-{
-    TNSequenceModel ts;
-    ts.encoder = mps_create(sites, bond);
-    ts.vocab_size = vocab > 64 ? 64 : vocab;
-    ts.perplexity = 100.0;
-    ts.sigma_sequence = 0.5;
-    for (int i = 0; i < ts.vocab_size; i++)
-        ts.log_probs[i] = -log((Scalar)ts.vocab_size);
-    return ts;
-}
-
-static int tn_seq_predict(TNSequenceModel *ts, const int8_t *context, int len)
-{
-    Scalar score = mps_contract(&ts->encoder, context, len);
-    int best = 0;
-    Scalar best_score = -1e30;
-    for (int v = 0; v < ts->vocab_size; v++) {
-        Scalar s = ts->log_probs[v] + score * ((Scalar)v + 1.0) / (Scalar)ts->vocab_size;
-        if (s > best_score) {
-            best_score = s;
-            best = v;
-        }
-    }
-    Scalar entropy = 0.0;
-    Scalar total = 0.0;
-    for (int v = 0; v < ts->vocab_size; v++)
-        total += exp(ts->log_probs[v]);
-    for (int v = 0; v < ts->vocab_size; v++) {
-        Scalar p = exp(ts->log_probs[v]) / total;
-        if (p > 1e-30)
-            entropy -= p * log(p);
-    }
-    ts->sigma_sequence = entropy / log((Scalar)ts->vocab_size);
-    ts->perplexity = exp(entropy);
-    return best;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v12 -- THE TENSOR MIND)
+- SECTION 46: GENESIS (v11 -- THE TENSOR MIND)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -2767,10 +2619,6 @@ PrototypicalNetwork  proto;
 SpecialistSwarm      swarm;
 SigmaAwareGenerator  sigma_gen;
 MatMulFreeLM         mmf;
-MPSEncoder           mps;
-EntanglementMeter    ent_product;
-EntanglementMeter    ent_entangled;
-TNSequenceModel      tn_seq;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -2839,13 +2687,6 @@ os.swarm = swarm_create(4);
 os.sigma_gen = sigma_gen_evaluate(0.1, 0.1, 0.05, 0.1, 0.15, 0.2);
 os.mmf = mmf_create(256, 4);
 
-os.mps = mps_create(16, 4);
-Scalar prod_sv[4] = {1.0, 0.0, 0.0, 0.0};
-os.ent_product = entanglement_measure(prod_sv, 4);
-Scalar mix_sv[4] = {0.5, 0.5, 0.5, 0.5};
-os.ent_entangled = entanglement_measure(mix_sv, 4);
-os.tn_seq = tn_seq_create(16, 4, 27);
-
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
 return os;
@@ -2861,7 +2702,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v12.0 -- THE TENSOR MIND             ║\n");
+printf("║  CREATION OS v12.0 -- THE TENSOR MIND        ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3059,11 +2900,8 @@ printf("╚═══════════════════════
               os.distilled.fits_on_device &&
               (os.proto.n_prototypes == 2) &&
               os.mmf.matmul_free &&
-              (os.mmf.sigma_matmul == 0.0) &&
-              (os.mps.n_sites == 16) &&
-              (os.tn_seq.vocab_size == 27) &&
-              (os.ent_entangled.sigma_entangle > os.ent_product.sigma_entangle);
-    printf("[%s] T20: Full system genesis (v12)\n", ok ? "PASS" : "FAIL");
+              (os.mmf.sigma_matmul == 0.0);
+    printf("[%s] T20: Full system genesis (v11)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3370,7 +3208,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── M34 matmul-free (v11-class) tests ── */
+/* ── v11 Tests ── */
 
 /* Test 47: BitLinear — ternary accumulation path */
 {
@@ -3414,40 +3252,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v12 (M35–M37 tensor toy) tests ── */
-
-/* Test 50: MPS contraction */
-{
-    MPSEncoder m = mps_create(16, 4);
-    int8_t inp[16] = {1, 1, 1, 1, -1, -1, -1, -1, 1, 1, -1, -1, 1, -1, 1, -1};
-    Scalar r = mps_contract(&m, inp, 16);
-    bool ok = (r > 0.0) && (m.total_params > 0);
-    printf("[%s] T50: MPS encoder (tensor contraction)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 51: Entanglement meter (product vs mixed) */
-{
-    Scalar product[4] = {1.0, 0.0, 0.0, 0.0};
-    Scalar mixed[4] = {0.5, 0.5, 0.5, 0.5};
-    EntanglementMeter ep = entanglement_measure(product, 4);
-    EntanglementMeter ee = entanglement_measure(mixed, 4);
-    bool ok = (ep.sigma_entangle < 0.05) && (ee.sigma_entangle > 0.5) && ep.area_law;
-    printf("[%s] T51: Entanglement sigma (product vs mixed)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 52: TN sequence head */
-{
-    TNSequenceModel ts = tn_seq_create(16, 4, 27);
-    int8_t ctx[16] = {1, 1, -1, 1, -1, -1, 1, 1, 1, -1, 1, -1, 1, 1, -1, 1};
-    int pred = tn_seq_predict(&ts, ctx, 16);
-    bool ok = (pred >= 0 && pred < 27) && (ts.sigma_sequence >= 0.0) &&
-              (ts.sigma_sequence <= 1.001) && (ts.perplexity > 0.0);
-    printf("[%s] T52: TN sequence model (MPS prediction head)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -3474,7 +3278,7 @@ return self_test();
 
 printf("Creation OS v12.0 -- The Tensor Mind\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (52 checks).\n");
+printf("Use --self-test to run validation suite (49 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -3510,11 +3314,6 @@ printf("σ_gen: max=%.3f generate=%d abstain=%d\n",
        os.sigma_gen.abstaining ? 1 : 0);
 printf("MatMul-free LM: matmul_sigma=%.3f power_W=%.1f\n",
        (double)os.mmf.sigma_matmul, (double)os.mmf.power_watts);
-printf("MPS sites=%d bond=%d params=%d\n", os.mps.n_sites, os.mps.bond_dim, os.mps.total_params);
-printf("Entangle sigma: product=%.4f mixed=%.4f\n",
-       (double)os.ent_product.sigma_entangle, (double)os.ent_entangled.sigma_entangle);
-printf("TN seq: vocab=%d perplexity=%.2f sigma_seq=%.4f\n",
-       os.tn_seq.vocab_size, (double)os.tn_seq.perplexity, (double)os.tn_seq.sigma_sequence);
 printf("\n1 = 1\n");
 
 return 0;

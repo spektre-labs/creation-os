@@ -24,6 +24,45 @@ module cos_silicon_chip_tb;
   reg        raw_bit;
   wire       syn_q;
 
+  /* LoopLM drum + geodesic + K_eff — “kovimmat oivallukset” suoraan piiriin */
+  reg  [63:0] drum_din;
+  reg  [ 7:0] drum_th;
+  reg  [ 4:0] drum_max;
+  reg         drum_go;
+  wire        drum_done, drum_busy, drum_early;
+  wire [ 4:0] drum_used;
+  wire [63:0] drum_dout;
+
+  wire [15:0] geo_sn;
+  wire [15:0] k_eff;
+
+  cos_looplm_drum u_drum (
+      .clk(clk),
+      .rst_n(rst_n),
+      .start(drum_go),
+      .din_flat(drum_din),
+      .sigma_thresh(drum_th),
+      .max_loops(drum_max),
+      .done(drum_done),
+      .busy(drum_busy),
+      .loops_used(drum_used),
+      .exited_early(drum_early),
+      .dout_flat(drum_dout)
+  );
+
+  cos_geodesic_tick u_geo (
+      .sigma_now(16'd1000),
+      .sigma_tgt(16'd100),
+      .shift(4'd2),
+      .sigma_next(geo_sn)
+  );
+
+  cos_k_eff_bind u_ke (
+      .K(16'd4000),
+      .sigma_q8(8'd128),
+      .K_eff(k_eff)
+  );
+
   cos_formal_iron_combo u_formal (
       .from_depth(fd),
       .to_depth(td),
@@ -75,7 +114,40 @@ module cos_silicon_chip_tb;
   always #5 clk = ~clk;
 
   initial begin
+    rst_n = 1'b0;
+    @(posedge clk);
     rst_n = 1'b1;
+    @(posedge clk);
+
+    drum_go = 1'b0;
+    drum_din = {8 {8'h18}};
+    drum_th = 8'h00;
+    drum_max = 5'd5;
+    @(posedge clk);
+    drum_go = 1'b1;
+    @(posedge clk);
+    drum_go = 1'b0;
+    while (!drum_done) @(posedge clk);
+    c(drum_used == 5'd5);
+    c(drum_early == 1'b0);
+    @(posedge clk);
+    @(posedge clk);
+
+    drum_th = 8'hFF;
+    drum_max = 5'd20;
+    @(posedge clk);
+    drum_go = 1'b1;
+    @(posedge clk);
+    drum_go = 1'b0;
+    while (!drum_done) @(posedge clk);
+    c(drum_used == 5'd1);
+    c(drum_early == 1'b1);
+    @(posedge clk);
+    @(posedge clk);
+
+    c(geo_sn == 16'd775);
+    c(k_eff == 16'd2000);
+
     // formal: same depth
     fd = 6'd2;
     td = 6'd2;

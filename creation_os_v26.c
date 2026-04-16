@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v26.0 -- FORTUNE GLOBAL 500 ECHO ORBIT (supersedes v25 — public mega-cap pain → in-tree σ routes)
+- CREATION OS v25.0 -- ENTERPRISE PAIN → MITIGATION LEDGER (OWASP/EU maps → existing σ / receipt story)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -65,6 +65,11 @@
 - 
 - v11 module (matmul-free LM schematic; not a trained frontier model):
 - [M34] MatMul-free language model (ternary BitLinear + MLGRU toy forward)
+- [M34b] LoopLM — weight-tied “washing machine” depth: input passes the SAME layer A repeatedly until the
+-       σ-port says “clean enough” (σ below threshold) or max_loops is hit. Not 96 different drums in series;
+-       one drum, dynamic compute. Spektre read: each pass is a σ-reduction step (coarse → finer); exit gate
+-       is the σ-detector. Echoes M17 geodesic / test-time σ-reduction, but here the loop is the architectural
+-       primitive. Toy only — not 1.4B vs 12B claims, not trained LoopGPT parity.
 -
 - v12 modules (tensor-train / entanglement toy; not quantum hardware claims):
 - [M35] MPS encoder (toy matrix product state contraction on classical bits)
@@ -184,7 +189,7 @@
 - [M135] arXiv:1401.5469 — TARDIS rapid supernova spectral synthesis (open-source transient engine)
 - [M136] arXiv:1508.05049 — Homogenization under periodically oscillating differential constraints (σ-wave lattice toy)
 - 
-- v25 layer (twenty enterprise pain → mitigation routes — OWASP/EU map; carried into v26):
+- v25 modules (twenty enterprise pain → mitigation routes — schematic; not certification or legal advice):
 - [M137] OWASP LLM01 prompt injection → proactive abstention + tool σ gate (M47 / M69 echo)
 - [M138] OWASP LLM02 sensitive information disclosure → privacy vault + audit export (M62 / M108 echo)
 - [M139] OWASP LLM03 supply chain → distillation fingerprint + living receipts (M58 / M54 echo)
@@ -206,35 +211,13 @@
 - [M155] FinOps / runaway inference spend → Plane B budget + five-unit dispatch story (M66 / M53 echo)
 - [M156] Observability silos & slow MTTR → coherence pulse + audit trail + ledger receipt parent (M61 / M108 / seal)
 - 
-- v26 modules (twenty Fortune Global 500–scale echo clusters — journalism / survey themes → schematic routes; not F500 membership):
-- [M157] Geopolitical & trade disruption → risk-tier register + federated σ gossip blend (M84 / M59 echo)
-- [M158] “Performance chain” / resilient supply → degradation ladder + long-horizon checkpoints (M60 / M101 echo)
-- [M159] CEO macro pessimism & worst-case planning → proactive abstention + parliament blend (M47 / M68 echo)
-- [M160] “Chaos is the new order” / agility vs trade wars → deliberation cap + multi-agent handoff (M72 / M103 echo)
-- [M161] AI transformation without clear ROI → interruptible goal-stack + simulate-before-act (M110 / M114 echo)
-- [M162] Data governance as AI prerequisite → lineage seal + EU Art.10 route echo (M85 / M148 echo)
-- [M163] Measurable outcomes & auditability → living receipts + JSONL export (M54 / M108 echo)
-- [M164] Cybercrime / fraud resilience → red-team cap + kill-switch drill (M73 / M75 echo)
-- [M165] Third-party & vendor concentration → supply-chain + tool reliability echo (M139 / M99 echo)
-- [M166] Regulatory fragmentation across jurisdictions → cross-border priority + assurance wall (M91 / M94 echo)
-- [M167] Workforce skills & Gen-AI literacy gap → micro-planner swarm + skill cache (M104 / M109 echo)
-- [M168] Energy & sustainability pressure on compute → five-unit quorum + memory-wall accounting (M53 / M38 echo)
-- [M169] Customer experience coherence across channels → fluid σ telemetry + context-rot guard (M46 / M22 echo)
-- [M170] Cloud / FinOps complexity & runaway spend → Plane B budget + unbounded-consumption route echo (M66 / M146 echo)
-- [M171] Legacy core & technical debt → ghost boot + graceful ladder (M16 / M60 echo)
-- [M172] Velocity vs safety in shipping AI → reflect–revise cap + sandbox plane (M112 / M106 echo)
-- [M173] Board / investor trust & narrative gap → transparency slot + human oversight echo (M88 / M151 echo)
-- [M174] ESG metrics credibility & greenwashing risk → data lineage + design–impl audit (M85 / M93 echo)
-- [M175] IP & confidential model leakage → privacy vault + sensitive-disclosure route echo (M62 / M138 echo)
-- [M176] Cross-border data residency & sovereignty → cross-session continuity + shadow-AI monitor echo (M115 / M154 echo)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v26 creation_os_v26.c -lm
-- Test:    ./creation_os_v26 --self-test
+- Compile: cc -O2 -o creation_os_v25 creation_os_v25.c -lm
+- Test:    ./creation_os_v25 --self-test
 - ============================================================================
   */
 
@@ -2739,6 +2722,102 @@ static Scalar mmf_forward(MatMulFreeLM *lm, const Scalar *input, int dim)
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+ * SECTION 45a: [M34b] LOOPLM — one layer A, σ-gated loop (weight-tied “washing machine”)
+ * ═══════════════════════════════════════════════════════════════════════════
+ * Flow: input → [layer A] → measure σ(state) → if σ ≤ port threshold → output;
+ *       else repeat [layer A] until max_loops. Same tied BitLinear block every time.
+ * σ here is a toy L1-mean incoherence of the hidden buffer (harness algebra, not LLM calibration).
+ * sigma_exit_threshold < 0 disables early exit (always run max_loops passes).
+ * Evidence class: schematic only; not parameter-count vs 12B claims or trained adaptive depth.
+ * ═══════════════════════════════════════════════════════════════════════════ */
+
+#define LOOPLM_DIM       128
+#define LOOPLM_MAX_LOOPS 4096
+
+typedef struct {
+    BitLinearLayer block;
+    int            dim;
+    int            max_loops;          /* hard cap (like 96-stack upper bound) */
+    Sigma          sigma_exit_threshold; /* port: exit when buffer σ ≤ this; <0 = never early-exit */
+    int            block_param_count; /* one tied block */
+    bool           weight_tied;
+    /* telemetry from last looplm_forward() */
+    int            loops_used_last;
+    Sigma          sigma_final_last;
+    bool           exited_early_last;
+} LoopLM;
+
+static Sigma looplm_buffer_sigma(const Scalar *buf, int d)
+{
+    if (d <= 0)
+        return (Sigma)0.0;
+    Scalar s = 0.0;
+    for (int i = 0; i < d; i++)
+        s += (Scalar)fabs((double)buf[i]);
+    return s / (Scalar)d;
+}
+
+static LoopLM looplm_create_ex(int dim, int max_loops, Sigma sigma_exit)
+{
+    LoopLM L;
+    L.dim = dim > LOOPLM_DIM ? LOOPLM_DIM : dim;
+    L.block = bitlinear_create(L.dim);
+    if (max_loops < 1)
+        max_loops = 1;
+    if (max_loops > LOOPLM_MAX_LOOPS)
+        max_loops = LOOPLM_MAX_LOOPS;
+    L.max_loops = max_loops;
+    L.sigma_exit_threshold = sigma_exit;
+    L.block_param_count = L.block.dim;
+    L.weight_tied = true;
+    L.loops_used_last = 0;
+    L.sigma_final_last = (Sigma)0.0;
+    L.exited_early_last = false;
+    return L;
+}
+
+static LoopLM looplm_create(int dim, int max_loops)
+{
+    /* Default port: modest σ; easy inputs exit in few drums, hard ones spin toward cap. */
+    return looplm_create_ex(dim, max_loops, (Sigma)0.055);
+}
+
+static Scalar looplm_forward(LoopLM *L, const Scalar *input, int dim)
+{
+    Scalar buf[LOOPLM_DIM];
+    int d = dim > L->dim ? L->dim : dim;
+    if (d > LOOPLM_DIM)
+        d = LOOPLM_DIM;
+    for (int i = 0; i < d; i++)
+        buf[i] = input[i];
+
+    L->loops_used_last = 0;
+    L->exited_early_last = false;
+    L->sigma_final_last = (Sigma)0.0;
+
+    for (int t = 0; t < L->max_loops; t++) {
+        Scalar y = bitlinear_forward(&L->block, buf, d);
+        Scalar scale = y / (Scalar)(d > 0 ? d : 1);
+        for (int i = 0; i < d; i++)
+            buf[i] = 0.15 * scale + 0.85 * buf[i];
+
+        Sigma sigma = looplm_buffer_sigma(buf, d);
+        L->loops_used_last = t + 1;
+        L->sigma_final_last = sigma;
+
+        if (L->sigma_exit_threshold >= (Sigma)0.0 && sigma <= L->sigma_exit_threshold) {
+            L->exited_early_last = true;
+            break;
+        }
+    }
+
+    Scalar acc = 0.0;
+    for (int i = 0; i < d; i++)
+        acc += buf[i];
+    return acc / (Scalar)(d > 0 ? d : 1);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
  * SECTION 45b: [M35] MPS encoder (toy tensor train; classical only)
  * ═══════════════════════════════════════════════════════════════════════════
  * Matrix product state with capped bond dimension — schematic contraction.
@@ -3616,88 +3695,10 @@ static bool cos_v25_enterprise_pain_ledger_ok(const CosV25TwentyEnterprisePainLe
            (e->enterprise_pain_receipt_parent != 0ULL);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45n: [M157–M176] v26 FORTUNE GLOBAL 500 ECHO ORBIT (mega-cap pain supersession)
- * ═══════════════════════════════════════════════════════════════════════════
- * Journalism / survey anchors (public web; schematic routing only — not F500 membership or advice):
- *   CEOs, geopolitics, trade, AI — https://fortune.com/2025/02/20/ceos-geopolitics-trade-ai
- *   CEOs planning for worst-case macro — https://fortune.com/2025/05/15/the-ceos-of-fortune-500-companies-are-already-beginning-to-plan-for-the-worst
- *   Supply chain → performance chain disruption design — https://www.forbes.com/councils/forbesbusinesscouncil/2026/04/15/from-supply-chain-to-performance-chain-how-fortune-500-leaders-are-designing-for-permanent-disruption/
- * Each latch extends v25 by naming mega-cap operating themes and pointing them at M45–M116 hooks already in-tree.
- * Non-claim: no affiliation with Fortune, Forbes, or any Global 500 company; no “we fix the Fortune 500” warranty;
- *            not strategy consulting, not actuarial advice, not a substitute for enterprise risk management.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m157_geopolitical_trade_disruption_routed;
-    bool     m158_resilient_supply_performance_chain_routed;
-    bool     m159_ceo_macro_pessimism_routed;
-    bool     m160_chaos_agility_trade_war_routed;
-    bool     m161_ai_roi_goal_ambiguity_routed;
-    bool     m162_ai_data_governance_prerequisite_routed;
-    bool     m163_auditability_outcomes_routed;
-    bool     m164_cyber_fraud_resilience_routed;
-    bool     m165_vendor_concentration_routed;
-    bool     m166_regulatory_fragmentation_routed;
-    bool     m167_workforce_genai_skills_gap_routed;
-    bool     m168_energy_sustainability_compute_routed;
-    bool     m169_customer_experience_coherence_routed;
-    bool     m170_cloud_finops_runaway_routed;
-    bool     m171_legacy_technical_debt_routed;
-    bool     m172_velocity_vs_safety_ship_routed;
-    bool     m173_board_investor_trust_gap_routed;
-    bool     m174_esg_credibility_greenwashing_routed;
-    bool     m175_ip_model_leakage_routed;
-    bool     m176_cross_border_data_residency_routed;
-    uint64_t global500_echo_receipt_parent;
-} CosV26TwentyGlobal500EchoOrbit;
-
-static CosV26TwentyGlobal500EchoOrbit cos_v26_global500_echo_orbit_boot(void)
-{
-    CosV26TwentyGlobal500EchoOrbit g = {0};
-    g.m157_geopolitical_trade_disruption_routed = true;
-    g.m158_resilient_supply_performance_chain_routed = true;
-    g.m159_ceo_macro_pessimism_routed = true;
-    g.m160_chaos_agility_trade_war_routed = true;
-    g.m161_ai_roi_goal_ambiguity_routed = true;
-    g.m162_ai_data_governance_prerequisite_routed = true;
-    g.m163_auditability_outcomes_routed = true;
-    g.m164_cyber_fraud_resilience_routed = true;
-    g.m165_vendor_concentration_routed = true;
-    g.m166_regulatory_fragmentation_routed = true;
-    g.m167_workforce_genai_skills_gap_routed = true;
-    g.m168_energy_sustainability_compute_routed = true;
-    g.m169_customer_experience_coherence_routed = true;
-    g.m170_cloud_finops_runaway_routed = true;
-    g.m171_legacy_technical_debt_routed = true;
-    g.m172_velocity_vs_safety_ship_routed = true;
-    g.m173_board_investor_trust_gap_routed = true;
-    g.m174_esg_credibility_greenwashing_routed = true;
-    g.m175_ip_model_leakage_routed = true;
-    g.m176_cross_border_data_residency_routed = true;
-    g.global500_echo_receipt_parent = 0xB26u ^ ((uint64_t)0x26A26u << 48);
-    return g;
-}
-
-static bool cos_v26_global500_echo_orbit_ok(const CosV26TwentyGlobal500EchoOrbit *g)
-{
-    return g->m157_geopolitical_trade_disruption_routed && g->m158_resilient_supply_performance_chain_routed &&
-           g->m159_ceo_macro_pessimism_routed && g->m160_chaos_agility_trade_war_routed &&
-           g->m161_ai_roi_goal_ambiguity_routed && g->m162_ai_data_governance_prerequisite_routed &&
-           g->m163_auditability_outcomes_routed && g->m164_cyber_fraud_resilience_routed &&
-           g->m165_vendor_concentration_routed && g->m166_regulatory_fragmentation_routed &&
-           g->m167_workforce_genai_skills_gap_routed && g->m168_energy_sustainability_compute_routed &&
-           g->m169_customer_experience_coherence_routed && g->m170_cloud_finops_runaway_routed &&
-           g->m171_legacy_technical_debt_routed && g->m172_velocity_vs_safety_ship_routed &&
-           g->m173_board_investor_trust_gap_routed && g->m174_esg_credibility_greenwashing_routed &&
-           g->m175_ip_model_leakage_routed && g->m176_cross_border_data_residency_routed &&
-           (g->global500_echo_receipt_parent != 0ULL);
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v26 -- SHIP + STACK + INSIGHTS + AFFORDANCES + ARXIV + ENTERPRISE + G500 ECHO)
+- SECTION 46: GENESIS (v25 -- SHIP + STACK + INSIGHTS + AFFORDANCES + ARXIV + ENTERPRISE LEDGER)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3738,6 +3739,7 @@ PrototypicalNetwork  proto;
 SpecialistSwarm      swarm;
 SigmaAwareGenerator  sigma_gen;
 MatMulFreeLM         mmf;
+LoopLM               looplm;
 MPSEncoder           mps;
 EntanglementMeter    ent_product;
 EntanglementMeter    ent_entangled;
@@ -3752,7 +3754,6 @@ CosV22TwentyInsights insight_stack;
 CosV23TwentyAgiAffordances agi_affordances;
 CosV24TwentyArxivSciFiHooks arxiv_scifi;
 CosV25TwentyEnterprisePainLedger enterprise_ledger;
-CosV26TwentyGlobal500EchoOrbit   global500_echo;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3820,6 +3821,7 @@ proto_add(&os.proto, proto_ex, 1, PROTO_DIM);
 os.swarm = swarm_create(4);
 os.sigma_gen = sigma_gen_evaluate(0.1, 0.1, 0.05, 0.1, 0.15, 0.2);
 os.mmf = mmf_create(256, 4);
+os.looplm = looplm_create_ex(128, 96, (Sigma)0.05); /* cap “96-layer” stack; port σ=0.05 */
 
 os.mps = mps_create(16, 4);
 Scalar prod_sv[4] = {1.0, 0.0, 0.0, 0.0};
@@ -3839,7 +3841,6 @@ os.insight_stack = cos_v22_twenty_insights_boot();
 os.agi_affordances = cos_v23_twenty_agi_affordances_boot();
 os.arxiv_scifi = cos_v24_twenty_arxiv_scifi_boot();
 os.enterprise_ledger = cos_v25_enterprise_pain_ledger_boot();
-os.global500_echo = cos_v26_global500_echo_orbit_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3856,7 +3857,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v26.0 -- FORTUNE GLOBAL 500 ECHO ORBIT ║\n");
+printf("║  CREATION OS v25.0 -- ENTERPRISE PAIN LEDGER       ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -4069,9 +4070,8 @@ printf("╚═══════════════════════
               cos_v22_twenty_insights_ok(&os.insight_stack) &&
               cos_v23_twenty_agi_affordances_ok(&os.agi_affordances) &&
               cos_v24_twenty_arxiv_scifi_ok(&os.arxiv_scifi) &&
-              cos_v25_enterprise_pain_ledger_ok(&os.enterprise_ledger) &&
-              cos_v26_global500_echo_orbit_ok(&os.global500_echo);
-    printf("[%s] T20: Full system genesis (v26 ship + stack + insights + affordances + arXiv + enterprise + G500 echo)\n", ok ? "PASS" : "FAIL");
+              cos_v25_enterprise_pain_ledger_ok(&os.enterprise_ledger);
+    printf("[%s] T20: Full system genesis (v25 ship + stack + insights + affordances + arXiv + enterprise ledger)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -4422,7 +4422,38 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v26: M35–M156 + M157–M176 Fortune Global 500 echo orbit (mega-cap journalism hooks) ── */
+/* Test 49b: LoopLM — σ-port + weight-tied drum (same block until clean or cap) */
+{
+    Scalar inp_easy[64];
+    for (int i = 0; i < 64; i++)
+        inp_easy[i] = 0.02 * (Scalar)(i % 5);
+
+    LoopLM full = looplm_create_ex(64, 12, (Sigma)-1.0); /* port off → always 12 passes */
+    (void)looplm_forward(&full, inp_easy, 64);
+    bool a = (full.loops_used_last == 12) && !full.exited_early_last;
+
+    LoopLM instant = looplm_create_ex(64, 40, (Sigma)1.0e6); /* port always open after 1st σ check */
+    (void)looplm_forward(&instant, inp_easy, 64);
+    bool b = instant.exited_early_last && (instant.loops_used_last == 1);
+
+    LoopLM shallow = looplm_create_ex(64, 1, (Sigma)-1.0);
+    LoopLM deep = looplm_create_ex(64, 20, (Sigma)-1.0);
+    Scalar inp_hard[64];
+    for (int i = 0; i < 64; i++)
+        inp_hard[i] = 0.1 * (Scalar)(i % 9);
+    Scalar o1 = looplm_forward(&shallow, inp_hard, 64);
+    Scalar o20 = looplm_forward(&deep, inp_hard, 64);
+    bool c = shallow.weight_tied && deep.weight_tied &&
+              (shallow.block_param_count == deep.block_param_count) &&
+              (shallow.max_loops == 1) && (deep.max_loops == 20) &&
+              (o1 != o20) && (o20 != 0.0);
+
+    bool ok = a && b && c;
+    printf("[%s] T184: LoopLM (σ-port + same layer A; tied params)\n", ok ? "PASS" : "FAIL");
+    ok ? passed++ : failed++;
+}
+
+/* ── v25: M35–M136 + M137–M156 enterprise pain → mitigation ledger (OWASP/EU routing hooks) ── */
 
 /* Test 50: MPS contraction */
 {
@@ -5030,80 +5061,6 @@ printf("╚═══════════════════════
     f183 ? passed++ : failed++;
 }
 
-/* ── v26 (M157–M176 Fortune Global 500 echo orbit) tests ── */
-
-{
-    CosV26TwentyGlobal500EchoOrbit g = cos_v26_global500_echo_orbit_boot();
-    bool ok = cos_v26_global500_echo_orbit_ok(&g);
-    printf("[%s] T184: Twenty Global 500 echo routes latched (M157–M176)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-{
-    CosV26TwentyGlobal500EchoOrbit g = cos_v26_global500_echo_orbit_boot();
-    bool h185 = g.m157_geopolitical_trade_disruption_routed;
-    printf("[%s] T185: M157 geopolitical & trade disruption route\n", h185 ? "PASS" : "FAIL");
-    h185 ? passed++ : failed++;
-    bool h186 = g.m158_resilient_supply_performance_chain_routed;
-    printf("[%s] T186: M158 resilient supply / performance chain route\n", h186 ? "PASS" : "FAIL");
-    h186 ? passed++ : failed++;
-    bool h187 = g.m159_ceo_macro_pessimism_routed;
-    printf("[%s] T187: M159 CEO macro pessimism / worst-case route\n", h187 ? "PASS" : "FAIL");
-    h187 ? passed++ : failed++;
-    bool h188 = g.m160_chaos_agility_trade_war_routed;
-    printf("[%s] T188: M160 chaos / agility / trade-war route\n", h188 ? "PASS" : "FAIL");
-    h188 ? passed++ : failed++;
-    bool h189 = g.m161_ai_roi_goal_ambiguity_routed;
-    printf("[%s] T189: M161 AI ROI / goal ambiguity route\n", h189 ? "PASS" : "FAIL");
-    h189 ? passed++ : failed++;
-    bool h190 = g.m162_ai_data_governance_prerequisite_routed;
-    printf("[%s] T190: M162 AI data-governance prerequisite route\n", h190 ? "PASS" : "FAIL");
-    h190 ? passed++ : failed++;
-    bool h191 = g.m163_auditability_outcomes_routed;
-    printf("[%s] T191: M163 auditability & measurable outcomes route\n", h191 ? "PASS" : "FAIL");
-    h191 ? passed++ : failed++;
-    bool h192 = g.m164_cyber_fraud_resilience_routed;
-    printf("[%s] T192: M164 cyber / fraud resilience route\n", h192 ? "PASS" : "FAIL");
-    h192 ? passed++ : failed++;
-    bool h193 = g.m165_vendor_concentration_routed;
-    printf("[%s] T193: M165 vendor concentration / third-party route\n", h193 ? "PASS" : "FAIL");
-    h193 ? passed++ : failed++;
-    bool h194 = g.m166_regulatory_fragmentation_routed;
-    printf("[%s] T194: M166 regulatory fragmentation route\n", h194 ? "PASS" : "FAIL");
-    h194 ? passed++ : failed++;
-    bool h195 = g.m167_workforce_genai_skills_gap_routed;
-    printf("[%s] T195: M167 workforce Gen-AI skills gap route\n", h195 ? "PASS" : "FAIL");
-    h195 ? passed++ : failed++;
-    bool h196 = g.m168_energy_sustainability_compute_routed;
-    printf("[%s] T196: M168 energy & sustainable compute route\n", h196 ? "PASS" : "FAIL");
-    h196 ? passed++ : failed++;
-    bool h197 = g.m169_customer_experience_coherence_routed;
-    printf("[%s] T197: M169 customer experience coherence route\n", h197 ? "PASS" : "FAIL");
-    h197 ? passed++ : failed++;
-    bool h198 = g.m170_cloud_finops_runaway_routed;
-    printf("[%s] T198: M170 cloud / FinOps runaway route\n", h198 ? "PASS" : "FAIL");
-    h198 ? passed++ : failed++;
-    bool h199 = g.m171_legacy_technical_debt_routed;
-    printf("[%s] T199: M171 legacy & technical debt route\n", h199 ? "PASS" : "FAIL");
-    h199 ? passed++ : failed++;
-    bool h200 = g.m172_velocity_vs_safety_ship_routed;
-    printf("[%s] T200: M172 velocity vs safety ship route\n", h200 ? "PASS" : "FAIL");
-    h200 ? passed++ : failed++;
-    bool h201 = g.m173_board_investor_trust_gap_routed;
-    printf("[%s] T201: M173 board / investor trust gap route\n", h201 ? "PASS" : "FAIL");
-    h201 ? passed++ : failed++;
-    bool h202 = g.m174_esg_credibility_greenwashing_routed;
-    printf("[%s] T202: M174 ESG credibility / greenwashing risk route\n", h202 ? "PASS" : "FAIL");
-    h202 ? passed++ : failed++;
-    bool h203 = g.m175_ip_model_leakage_routed;
-    printf("[%s] T203: M175 IP & model leakage route\n", h203 ? "PASS" : "FAIL");
-    h203 ? passed++ : failed++;
-    bool h204 = g.m176_cross_border_data_residency_routed &&
-                 (g.global500_echo_receipt_parent != 0ULL);
-    printf("[%s] T204: M176 cross-border data residency + G500 echo receipt parent\n", h204 ? "PASS" : "FAIL");
-    h204 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -5128,9 +5085,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v26.0 — FORTUNE GLOBAL 500 ECHO ORBIT (mega-cap themes → σ hooks)\n");
+printf("Creation OS v25.0 — ENTERPRISE PAIN LEDGER (OWASP/EU → in-tree σ hooks)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (204 checks).\n");
+printf("Use --self-test to run validation suite (184 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -5166,6 +5123,21 @@ printf("σ_gen: max=%.3f generate=%d abstain=%d\n",
        os.sigma_gen.abstaining ? 1 : 0);
 printf("MatMul-free LM: matmul_sigma=%.3f power_W=%.1f\n",
        (double)os.mmf.sigma_matmul, (double)os.mmf.power_watts);
+{
+    Scalar loop_in[LOOPLM_DIM];
+    for (int i = 0; i < LOOPLM_DIM; i++)
+        loop_in[i] = 0.05 * (Scalar)(i % 11);
+    Scalar loop_out = looplm_forward(&os.looplm, loop_in, LOOPLM_DIM);
+    printf("LoopLM: max=%d used=%d early=%d port_σ=%.4f final_buf_σ=%.5f tied=%d params=%d out=%.6f\n",
+           os.looplm.max_loops,
+           os.looplm.loops_used_last,
+           os.looplm.exited_early_last ? 1 : 0,
+           (double)os.looplm.sigma_exit_threshold,
+           (double)os.looplm.sigma_final_last,
+           os.looplm.weight_tied ? 1 : 0,
+           os.looplm.block_param_count,
+           (double)loop_out);
+}
 printf("MPS sites=%d bond=%d params=%d\n", os.mps.n_sites, os.mps.bond_dim, os.mps.total_params);
 printf("Entangle sigma: product=%.4f mixed=%.4f\n",
        (double)os.ent_product.sigma_entangle, (double)os.ent_entangled.sigma_entangle);
@@ -5202,8 +5174,6 @@ printf("v24 arXiv sci-fi: receipt_parent=%016llx (M117–M136 https://arxiv.org/
        (unsigned long long)os.arxiv_scifi.scifi_arxiv_receipt_parent);
 printf("v25 enterprise ledger: receipt_parent=%016llx (M137–M156 OWASP/EU pain routes)\n",
        (unsigned long long)os.enterprise_ledger.enterprise_pain_receipt_parent);
-printf("v26 Global 500 echo: receipt_parent=%016llx (M157–M176 mega-cap journalism hooks)\n",
-       (unsigned long long)os.global500_echo.global500_echo_receipt_parent);
 printf("\n1 = 1\n");
 
 return 0;

@@ -1,0 +1,5 @@
+[package]
+name = "cos_gate"
+version = "0.1.0"
+edition = "2021"
+description = "Thin Rust shim: run make merge-gate from CREATION_OS_ROOT (default .)"

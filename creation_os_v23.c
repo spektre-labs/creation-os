@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v23.0 -- TWENTY FORMIDABLE AGI-SCHEMATIC AFFORDANCES (agent / memory / GUI discourse → silicon hooks)
+- CREATION OS v22.0 -- TWENTY COLOSSAL INSIGHTS (2025 safety / verification discourse → silicon hooks)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -118,7 +118,7 @@
 - [M75] Coherence kill-switch (hard stop path tested at boot)
 - [M76] Sovereign stack seal (AGI layer latched with ship mode)
 - 
-- v22 layer (twenty colossal insights — schematic / harness; carried into v23):
+- v22 modules (twenty colossal insights — schematic / harness; not regulatory certification):
 - [M77] International AI safety report receipt latch (multi-nation risk narrative toy)
 - [M78] Pre-deployment hazard identification plane (safeguards-before-ship metaphor)
 - [M79] Quantitative safety envelope (high-assurance bound story; not a proof of safety)
@@ -140,35 +140,13 @@
 - [M95] Human-value override persistence latch (veto survives reboot story)
 - [M96] Twenty-insight sovereign seal + parent receipt (v22 latched atop v21+v20)
 - 
-- v23 modules (twenty formidable AGI-schematic affordances — harness / story flags; not frontier AGI):
-- [M97] Tiered agent memory latch (working / scratch / long-term persistence story)
-- [M98] Planner–worker decomposition plane (modular policy + cost ladder toy)
-- [M99] Tool-call reliability σ gate (bounded tool failure budget)
-- [M100] Computer-use / GUI grounding slot (sandboxed desktop viewport metaphor)
-- [M101] Long-horizon checkpoint receipt chain (task segments → receipts)
-- [M102] Long-session attention decay compensator (bounded σ drift story)
-- [M103] Multi-agent handoff blend quorum (boundary σ toy)
-- [M104] Micro-planner sub-agent swarm hook (specialist delegation story)
-- [M105] Episodic ↔ semantic consolidation gate (sleep-compress echo)
-- [M106] Sandboxed execution plane (no raw host syscall pledge)
-- [M107] Side-effect rate budget ledger armed (tokenized allowance toy)
-- [M108] Audit JSONL trace export slot (observability story)
-- [M109] Procedure / skill cache latch (reusable subroutine library toy)
-- [M110] Interruptible goal-stack priority plane (preemption story)
-- [M111] Uncertainty-quantified action abstention at σ ceiling
-- [M112] Reflect–revise self-correction cap (bounded inner loop)
-- [M113] Retrieval fuse with tool receipt parent (RAG + tool chain toy)
-- [M114] Simulate-before-act dry-run latch (counterfactual σ pass)
-- [M115] Cross-session user-scoped continuity seal (identity scope story)
-- [M116] Twenty AGI-affordance seal + parent receipt (v23 latched atop v22)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v23 creation_os_v23.c -lm
-- Test:    ./creation_os_v23 --self-test
+- Compile: cc -O2 -o creation_os_v22 creation_os_v22.c -lm
+- Test:    ./creation_os_v22 --self-test
 - ============================================================================
   */
 
@@ -3322,86 +3300,10 @@ static bool cos_v22_twenty_insights_ok(const CosV22TwentyInsights *t)
            t->m96_twenty_insight_seal;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45j: [M97–M116] v23 TWENTY AGI-SCHEMATIC AFFORDANCES (web discourse → latches)
- * ═══════════════════════════════════════════════════════════════════════════
- * Public discourse anchors (2026 agent stack narratives; schematic hooks only):
- *   Agent memory tiers / persistence — https://mem0.ai/blog/state-of-ai-agent-memory-2026
- *   Computer-use & GUI agents — https://zylos.ai/research/2026-02-08-computer-use-gui-agents
- *   Long-running agents & decomposition — https://zylos.ai/research/2026-01-16-long-running-ai-agents
- * Explicit non-claim: not autonomous production agents, not measured GUI SOTA, not AGI.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m97_tiered_agent_memory_latch;
-    bool     m98_planner_worker_plane;
-    bool     m99_tool_reliability_sigma_gate;
-    bool     m100_computer_use_gui_slot;
-    bool     m101_long_horizon_checkpoint_chain;
-    bool     m102_session_decay_compensator;
-    bool     m103_multi_agent_handoff_quorum;
-    bool     m104_microplanner_swarm_hook;
-    bool     m105_episodic_semantic_gate;
-    bool     m106_sandboxed_exec_plane;
-    bool     m107_side_effect_budget_ledger;
-    bool     m108_audit_jsonl_export_slot;
-    bool     m109_skill_cache_latch;
-    bool     m110_interruptible_goal_stack;
-    bool     m111_uq_abstention_ceiling;
-    bool     m112_reflect_revise_cap;
-    bool     m113_retrieval_tool_receipt_fuse;
-    bool     m114_simulate_before_act;
-    bool     m115_cross_session_continuity_seal;
-    uint64_t agi_aff_receipt_parent;
-    bool     m116_agi_affordance_seal;
-} CosV23TwentyAgiAffordances;
-
-static CosV23TwentyAgiAffordances cos_v23_twenty_agi_affordances_boot(void)
-{
-    CosV23TwentyAgiAffordances a = {0};
-    a.m97_tiered_agent_memory_latch = true;
-    a.m98_planner_worker_plane = true;
-    a.m99_tool_reliability_sigma_gate = true;
-    a.m100_computer_use_gui_slot = true;
-    a.m101_long_horizon_checkpoint_chain = true;
-    a.m102_session_decay_compensator = true;
-    a.m103_multi_agent_handoff_quorum = true;
-    a.m104_microplanner_swarm_hook = true;
-    a.m105_episodic_semantic_gate = true;
-    a.m106_sandboxed_exec_plane = true;
-    a.m107_side_effect_budget_ledger = true;
-    a.m108_audit_jsonl_export_slot = true;
-    a.m109_skill_cache_latch = true;
-    a.m110_interruptible_goal_stack = true;
-    a.m111_uq_abstention_ceiling = true;
-    a.m112_reflect_revise_cap = true;
-    a.m113_retrieval_tool_receipt_fuse = true;
-    a.m114_simulate_before_act = true;
-    a.m115_cross_session_continuity_seal = true;
-    a.agi_aff_receipt_parent = 0xA61u ^ ((uint64_t)0x23D23u << 32);
-    a.m116_agi_affordance_seal = true;
-    return a;
-}
-
-static bool cos_v23_twenty_agi_affordances_ok(const CosV23TwentyAgiAffordances *a)
-{
-    return a->m97_tiered_agent_memory_latch && a->m98_planner_worker_plane &&
-           a->m99_tool_reliability_sigma_gate && a->m100_computer_use_gui_slot &&
-           a->m101_long_horizon_checkpoint_chain && a->m102_session_decay_compensator &&
-           a->m103_multi_agent_handoff_quorum && a->m104_microplanner_swarm_hook &&
-           a->m105_episodic_semantic_gate && a->m106_sandboxed_exec_plane &&
-           a->m107_side_effect_budget_ledger && a->m108_audit_jsonl_export_slot &&
-           a->m109_skill_cache_latch && a->m110_interruptible_goal_stack &&
-           a->m111_uq_abstention_ceiling && a->m112_reflect_revise_cap &&
-           a->m113_retrieval_tool_receipt_fuse && a->m114_simulate_before_act &&
-           a->m115_cross_session_continuity_seal && (a->agi_aff_receipt_parent != 0ULL) &&
-           a->m116_agi_affordance_seal;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v23 -- SHIP + AGI STACK + INSIGHTS + AGI AFFORDANCES)
+- SECTION 46: GENESIS (v22 -- SHIP + AGI STACK + TWENTY INSIGHTS)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3453,7 +3355,6 @@ CosKANEdgeLayer      kan;
 CosV20TwentyPillars  pillars;
 CosV21AgiSovereignStack agi_stack;
 CosV22TwentyInsights insight_stack;
-CosV23TwentyAgiAffordances agi_affordances;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3537,7 +3438,6 @@ os.kan = cos_kan_edge_init();
 os.pillars = cos_v20_twenty_pillars_boot();
 os.agi_stack = cos_v21_agi_stack_boot();
 os.insight_stack = cos_v22_twenty_insights_boot();
-os.agi_affordances = cos_v23_twenty_agi_affordances_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3554,7 +3454,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v23.0 -- AGI-SCHEMATIC AFFORDANCES    ║\n");
+printf("║  CREATION OS v22.0 -- TWENTY COLOSSAL INSIGHTS     ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3764,9 +3664,8 @@ printf("╚═══════════════════════
               os.kan.physical_memristor_spline &&
               cos_v20_twenty_pillars_ok(&os.pillars) &&
               cos_v21_agi_stack_ok(&os.agi_stack) &&
-              cos_v22_twenty_insights_ok(&os.insight_stack) &&
-              cos_v23_twenty_agi_affordances_ok(&os.agi_affordances);
-    printf("[%s] T20: Full system genesis (v23 ship + stack + insights + AGI affordances)\n", ok ? "PASS" : "FAIL");
+              cos_v22_twenty_insights_ok(&os.insight_stack);
+    printf("[%s] T20: Full system genesis (v22 ship + AGI stack + insights)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -4117,7 +4016,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v23: M35–M96 + M97–M116 twenty AGI-schematic affordances (agent discourse hooks) ── */
+/* ── v22: M35–M76 + M77–M96 twenty colossal insights (web-anchored schematic) ── */
 
 /* Test 50: MPS contraction */
 {
@@ -4504,79 +4403,6 @@ printf("╚═══════════════════════
     c120 ? passed++ : failed++;
 }
 
-/* ── v23 (M97–M116 twenty AGI-schematic affordances) tests ── */
-
-{
-    CosV23TwentyAgiAffordances a = cos_v23_twenty_agi_affordances_boot();
-    bool ok = cos_v23_twenty_agi_affordances_ok(&a);
-    printf("[%s] T121: Twenty AGI-schematic affordances latched (M97–M116)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-{
-    CosV23TwentyAgiAffordances a = cos_v23_twenty_agi_affordances_boot();
-    bool d122 = a.m97_tiered_agent_memory_latch;
-    printf("[%s] T122: M97 tiered agent memory latch\n", d122 ? "PASS" : "FAIL");
-    d122 ? passed++ : failed++;
-    bool d123 = a.m98_planner_worker_plane;
-    printf("[%s] T123: M98 planner–worker decomposition plane\n", d123 ? "PASS" : "FAIL");
-    d123 ? passed++ : failed++;
-    bool d124 = a.m99_tool_reliability_sigma_gate;
-    printf("[%s] T124: M99 tool-call reliability σ gate\n", d124 ? "PASS" : "FAIL");
-    d124 ? passed++ : failed++;
-    bool d125 = a.m100_computer_use_gui_slot;
-    printf("[%s] T125: M100 computer-use / GUI grounding slot\n", d125 ? "PASS" : "FAIL");
-    d125 ? passed++ : failed++;
-    bool d126 = a.m101_long_horizon_checkpoint_chain;
-    printf("[%s] T126: M101 long-horizon checkpoint receipt chain\n", d126 ? "PASS" : "FAIL");
-    d126 ? passed++ : failed++;
-    bool d127 = a.m102_session_decay_compensator;
-    printf("[%s] T127: M102 session attention decay compensator\n", d127 ? "PASS" : "FAIL");
-    d127 ? passed++ : failed++;
-    bool d128 = a.m103_multi_agent_handoff_quorum;
-    printf("[%s] T128: M103 multi-agent handoff quorum\n", d128 ? "PASS" : "FAIL");
-    d128 ? passed++ : failed++;
-    bool d129 = a.m104_microplanner_swarm_hook;
-    printf("[%s] T129: M104 micro-planner swarm hook\n", d129 ? "PASS" : "FAIL");
-    d129 ? passed++ : failed++;
-    bool d130 = a.m105_episodic_semantic_gate;
-    printf("[%s] T130: M105 episodic ↔ semantic consolidation gate\n", d130 ? "PASS" : "FAIL");
-    d130 ? passed++ : failed++;
-    bool d131 = a.m106_sandboxed_exec_plane;
-    printf("[%s] T131: M106 sandboxed execution plane\n", d131 ? "PASS" : "FAIL");
-    d131 ? passed++ : failed++;
-    bool d132 = a.m107_side_effect_budget_ledger;
-    printf("[%s] T132: M107 side-effect budget ledger\n", d132 ? "PASS" : "FAIL");
-    d132 ? passed++ : failed++;
-    bool d133 = a.m108_audit_jsonl_export_slot;
-    printf("[%s] T133: M108 audit JSONL trace export slot\n", d133 ? "PASS" : "FAIL");
-    d133 ? passed++ : failed++;
-    bool d134 = a.m109_skill_cache_latch;
-    printf("[%s] T134: M109 procedure / skill cache latch\n", d134 ? "PASS" : "FAIL");
-    d134 ? passed++ : failed++;
-    bool d135 = a.m110_interruptible_goal_stack;
-    printf("[%s] T135: M110 interruptible goal-stack plane\n", d135 ? "PASS" : "FAIL");
-    d135 ? passed++ : failed++;
-    bool d136 = a.m111_uq_abstention_ceiling;
-    printf("[%s] T136: M111 UQ action abstention ceiling\n", d136 ? "PASS" : "FAIL");
-    d136 ? passed++ : failed++;
-    bool d137 = a.m112_reflect_revise_cap;
-    printf("[%s] T137: M112 reflect–revise self-correction cap\n", d137 ? "PASS" : "FAIL");
-    d137 ? passed++ : failed++;
-    bool d138 = a.m113_retrieval_tool_receipt_fuse;
-    printf("[%s] T138: M113 retrieval + tool receipt fuse\n", d138 ? "PASS" : "FAIL");
-    d138 ? passed++ : failed++;
-    bool d139 = a.m114_simulate_before_act;
-    printf("[%s] T139: M114 simulate-before-act dry-run\n", d139 ? "PASS" : "FAIL");
-    d139 ? passed++ : failed++;
-    bool d140 = a.m115_cross_session_continuity_seal;
-    printf("[%s] T140: M115 cross-session continuity seal\n", d140 ? "PASS" : "FAIL");
-    d140 ? passed++ : failed++;
-    bool d141 = (a.agi_aff_receipt_parent != 0ULL) && a.m116_agi_affordance_seal;
-    printf("[%s] T141: M116 AGI-affordance seal + receipt parent\n", d141 ? "PASS" : "FAIL");
-    d141 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4601,9 +4427,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v23.0 — AGI-SCHEMATIC AFFORDANCES (ship + insights + agent hooks)\n");
+printf("Creation OS v22.0 — TWENTY COLOSSAL INSIGHTS (ship + sovereign stack)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (141 checks).\n");
+printf("Use --self-test to run validation suite (120 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4668,9 +4494,6 @@ printf("v21 AGI stack: planesABC=%d%d%d parliament_σ=%.3f seal=%d\n",
 printf("v22 insights: sealed=%d receipt_parent=%016llx (M77–M96 web-anchored schematic)\n",
        os.insight_stack.m96_twenty_insight_seal ? 1 : 0,
        (unsigned long long)os.insight_stack.insight_receipt_parent);
-printf("v23 AGI affordances: sealed=%d receipt_parent=%016llx (M97–M116 agent-discourse hooks)\n",
-       os.agi_affordances.m116_agi_affordance_seal ? 1 : 0,
-       (unsigned long long)os.agi_affordances.agi_aff_receipt_parent);
 printf("\n1 = 1\n");
 
 return 0;

@@ -1,31 +1,39 @@
 # Canonical Git repository (read first)
 
-## Single source of truth
+## Single push target for this portable kernel
 
-The **only** product Git repository for this portable tree is:
+The **only** GitHub repository that receives **Creation OS kernel / CI / portable-tree** pushes from this product workflow is:
 
 **https://github.com/spektre-labs/creation-os** (`main` branch)
 
-All releases, CI, and contributor `git clone` / `git push` for Creation OS must target **that** repository.
+---
+
+## What stays elsewhere (no kernel push)
+
+| Remote | Purpose |
+|--------|---------|
+| **spektre-labs/spektre-protocol** | Protocol + formal archive (Markdown). Push only when editing that archive. |
+| **spektre-labs/corpus** | Papers and bibliographic material. Push only when editing corpus. |
+| **lauri-elias-rainio/creation-os** | Author Genesis substrate (polyglot). Separate product surface; not the target for `creation_os_v*.c` landings. |
+
+Full role map: **[REPOS_AND_ROLES.md](REPOS_AND_ROLES.md)**.
 
 ---
 
-## What is forbidden
+## Forbidden mistakes
 
-- **Do not** treat a parent monorepo (e.g. any “protocol” or umbrella workspace that happens to contain a `creation-os/` directory) as the canonical place to `git push` Creation OS changes.
-- **Do not** run `git remote add origin https://github.com/spektre-labs/creation-os.git` (or SSH equivalent) on a repository whose root is **not** the Creation OS tree root. That misroutes pushes and corrupts contributor mental models.
-- **Do not** merge unrelated histories from a parent repo into `spektre-labs/creation-os`.
+- Pushing this **creation-os** directory to **protocol** or **corpus** as if it were the kernel home.
+- Treating a **parent monorepo** root as `origin` for Creation OS when the intent is to update **spektre-labs/creation-os**.
 
 ---
 
-## Correct workflows
+## Correct workflow
 
-| Goal | Do this |
-|------|---------|
-| Daily work | Work in a **clone whose root is** the Creation OS repo (this directory when checked out alone). |
-| **Push to product `main`** | From **this** directory (where `creation_os_v2.c` exists), run **`make push-main`** — same as `make publish-github`: `make merge-gate`, then clone `spektre-labs/creation-os`, rsync **this** tree, commit if needed, **`git push`** to that repo’s `main`. See [publish_checklist_creation_os.md](publish_checklist_creation_os.md). If you only have an umbrella checkout, the parent folder may offer **`make push-main`** that delegates here — same end result on **creation-os** `main`. |
-| Publish (alias) | `make publish-github` — identical to **`make push-main`**. |
-| CI | GitHub Actions on **spektre-labs/creation-os** only (see `.github/workflows/ci.yml` here). |
+| Goal | Action |
+|------|--------|
+| Ship kernel + docs + CI | Clone **spektre-labs/creation-os** (or rsync from publish script); **`git push`** to **`main`** only. |
+| Edit protocol canon | Work in **spektre-protocol** clone; push **that** repo. |
+| Edit papers / DOI index | Work in **corpus** clone; push **that** repo. |
 
 ---
 

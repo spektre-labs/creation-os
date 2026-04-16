@@ -2,14 +2,14 @@
 /*
 
 - ============================================================================
-- CREATION OS v15.0 -- THE SILICON MIND
+- CREATION OS v12.0 -- THE TENSOR MIND
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
 - ORCID: 0009-0006-0903-8541
 - GitHub: spektre-labs/creation-os
 - License: SPDX-License-Identifier: AGPL-3.0-or-later (code; see LICENSE)
-- Canonical doc (scope, evidence class, non-claims): docs/CLAIM_DISCIPLINE.md
+- Canonical doc (scope, evidence class, non-claims): docs/THE_TENSOR_MIND_V12.md
 - 
 - Core formalism:
 - K(t) = ρ · I_Φ · F
@@ -71,18 +71,13 @@
 - [M36] Entanglement sigma-meter (normalized entropy on singular-value toy)
 - [M37] TN sequence head (MPS-backed toy next-step index; not a trained LM)
 - 
-- v15 modules (scale / accounting discipline; harness-only, not vendor benchmarks):
-- [M38] int64 FLOP / volume schematics with __builtin_mul_overflow (MHA vs linear toy)
-- [M39] TN compression accountant (explicit “millions of params” vs raw count)
-- [M40] JEPA selective-decode prior (σ delta vs carried oracle state)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v15 creation_os_v15.c -lm
-- Test:    ./creation_os_v15 --self-test
+- Compile: cc -O2 -o creation_os_v12 creation_os_v12.c -lm
+- Test:    ./creation_os_v12 --self-test
 - ============================================================================
   */
 
@@ -94,7 +89,6 @@
 #include <stdbool.h>
 #include <float.h>
 #include <time.h>
-#include <limits.h>
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
@@ -2609,15 +2603,7 @@ static MPSEncoder mps_create(int sites, int bond)
     MPSEncoder m = {0};
     m.n_sites = sites > MPS_SITES ? MPS_SITES : sites;
     m.bond_dim = bond > MPS_BOND_DIM ? MPS_BOND_DIM : bond;
-    {
-        int64_t a = (int64_t)m.n_sites * (int64_t)m.bond_dim;
-        int64_t b = (int64_t)MPS_PHYS_DIM * (int64_t)m.bond_dim;
-        int64_t tp;
-        if (__builtin_mul_overflow(a, b, &tp) || tp > INT_MAX)
-            m.total_params = INT_MAX;
-        else
-            m.total_params = (int)tp;
-    }
+    m.total_params = m.n_sites * m.bond_dim * MPS_PHYS_DIM * m.bond_dim;
     for (int s = 0; s < m.n_sites; s++) {
         for (int i = 0; i < m.bond_dim; i++) {
             for (int p = 0; p < MPS_PHYS_DIM; p++) {
@@ -2737,111 +2723,10 @@ static int tn_seq_predict(TNSequenceModel *ts, const int8_t *context, int len)
     return best;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45e: [M38–M40] Silicon scale discipline (post–v14-class hardening)
- * ═══════════════════════════════════════════════════════════════════════════
- * Failure modes addressed (schematic / harness evidence only):
- *   – int32 overflow in attention-volume and FLOP-style products (H·T²·D)
- *   – TN “compression ratio” when originals are stated in millions vs raw
- *   – JEPA selective decode without prior-σ bookkeeping
- * Uses __builtin_mul_overflow (Clang/GCC; matches creation-os Makefile cc).
- * Not a substitute for hardware profiling or frontier-model claims.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    int64_t std_multihead_attn_flops; /* toy order: 2·H·T²·D mul-adds */
-    int64_t vsa_linear_attn_flops;    /* toy order: 2·H·T·D (binding / scan path) */
-    Scalar  ratio_quad_over_linear;
-    bool    std_flops_representable;
-    bool    int32_volume_would_overflow;
-} CosSiliconFlopSchematic;
-
-static CosSiliconFlopSchematic cos_silicon_flop_schematic(int heads, int n_tokens, int dim)
-{
-    CosSiliconFlopSchematic r = {0};
-    int64_t T = (int64_t)n_tokens;
-    int64_t D = (int64_t)dim;
-    int64_t H = (int64_t)heads;
-    int prod32;
-
-    r.int32_volume_would_overflow =
-        __builtin_mul_overflow(heads, n_tokens, &prod32) ||
-        __builtin_mul_overflow(prod32, n_tokens, &prod32) ||
-        __builtin_mul_overflow(prod32, dim, &prod32);
-
-    int64_t t2, ht2d;
-    bool ok = !__builtin_mul_overflow(T, T, &t2);
-    ok = ok && !__builtin_mul_overflow(t2, D, &ht2d);
-    ok = ok && !__builtin_mul_overflow(ht2d, H, &ht2d);
-    if (ok)
-        ok = !__builtin_mul_overflow(ht2d, 2, &r.std_multihead_attn_flops);
-    r.std_flops_representable = ok;
-
-    int64_t td, htd;
-    bool okv = !__builtin_mul_overflow(T, D, &td);
-    okv = okv && !__builtin_mul_overflow(td, H, &htd);
-    okv = okv && !__builtin_mul_overflow(htd, 2, &r.vsa_linear_attn_flops);
-    if (!okv)
-        r.vsa_linear_attn_flops = 0;
-
-    if (ok && okv && r.vsa_linear_attn_flops > 0)
-        r.ratio_quad_over_linear =
-            (Scalar)r.std_multihead_attn_flops / (Scalar)r.vsa_linear_attn_flops;
-    else
-        r.ratio_quad_over_linear = 0.0;
-    return r;
-}
-
-typedef struct {
-    int64_t original_params_effective;
-    int64_t compressed_tt_params;
-    bool    original_stated_in_millions;
-    Scalar  compression_ratio;
-} CosTNUnitAccountant;
-
-static CosTNUnitAccountant cos_tn_param_account(int64_t original, int64_t compressed,
-    bool original_in_millions)
-{
-    CosTNUnitAccountant a = {0};
-    a.original_stated_in_millions = original_in_millions;
-    if (original_in_millions) {
-        int64_t scaled;
-        if (__builtin_mul_overflow(original, 1000000LL, &scaled))
-            a.original_params_effective = INT64_MAX;
-        else
-            a.original_params_effective = scaled;
-    } else {
-        a.original_params_effective = original;
-    }
-    a.compressed_tt_params = compressed > 0 ? compressed : 1;
-    a.compression_ratio =
-        (Scalar)a.original_params_effective / (Scalar)a.compressed_tt_params;
-    return a;
-}
-
-typedef struct {
-    Sigma prior_sigma_oracle;
-} CosJEPAPriorOracle;
-
-static CosJEPAPriorOracle cos_jepa_prior_init(Sigma initial_prior)
-{
-    CosJEPAPriorOracle j;
-    j.prior_sigma_oracle = initial_prior;
-    return j;
-}
-
-/* Returns |σ_new − σ_prior| and advances the carried oracle prior. */
-static Sigma cos_jepa_selective_decode_delta(CosJEPAPriorOracle *st, Sigma sigma_new)
-{
-    Sigma d = fabs(sigma_new - st->prior_sigma_oracle);
-    st->prior_sigma_oracle = sigma_new;
-    return d;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v15 -- THE SILICON MIND)
+- SECTION 46: GENESIS (v12 -- THE TENSOR MIND)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -2976,7 +2861,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v15.0 -- THE SILICON MIND            ║\n");
+printf("║  CREATION OS v12.0 -- THE TENSOR MIND             ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3178,7 +3063,7 @@ printf("╚═══════════════════════
               (os.mps.n_sites == 16) &&
               (os.tn_seq.vocab_size == 27) &&
               (os.ent_entangled.sigma_entangle > os.ent_product.sigma_entangle);
-    printf("[%s] T20: Full system genesis (v15)\n", ok ? "PASS" : "FAIL");
+    printf("[%s] T20: Full system genesis (v12)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3529,7 +3414,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v15: M35–M37 tensor toy + M38–M40 scale discipline ── */
+/* ── v12 (M35–M37 tensor toy) tests ── */
 
 /* Test 50: MPS contraction */
 {
@@ -3563,69 +3448,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v15 (M38–M40 silicon discipline) tests ── */
-
-/* Test 53: FLOP schematic — safe int64 path + int32 danger flag */
-{
-    CosSiliconFlopSchematic sm = cos_silicon_flop_schematic(8, 64, 256);
-    CosSiliconFlopSchematic bad32 = cos_silicon_flop_schematic(80000, 80000, 4);
-    bool ok = sm.std_flops_representable && !sm.int32_volume_would_overflow &&
-              sm.ratio_quad_over_linear > 1.0 &&
-              bad32.int32_volume_would_overflow;
-    printf("[%s] T53: Silicon FLOP schematic (int64 + int32 hazard)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 54: FLOP schematic — int64 saturation when volume exceeds range */
-{
-    CosSiliconFlopSchematic huge = cos_silicon_flop_schematic(8, 4000000, 4000000);
-    bool ok = !huge.std_flops_representable;
-    printf("[%s] T54: std-attn FLOP count hits int64 representability wall\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 55: TN param accountant — millions vs raw counts */
-{
-    CosTNUnitAccountant mil = cos_tn_param_account(128, 256, true);
-    CosTNUnitAccountant raw = cos_tn_param_account(10000, 100, false);
-    bool ok = (mil.original_params_effective == 128000000LL) &&
-              (fabs(mil.compression_ratio - 500000.0) < 0.5) &&
-              (raw.original_params_effective == 10000LL) &&
-              (fabs(raw.compression_ratio - 100.0) < 1e-5);
-    printf("[%s] T55: TN compression units (millions vs raw)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 56: JEPA selective decode — prior-carrying σ deltas */
-{
-    CosJEPAPriorOracle pr = cos_jepa_prior_init(0.5);
-    Sigma d1 = cos_jepa_selective_decode_delta(&pr, 0.28);
-    Sigma d2 = cos_jepa_selective_decode_delta(&pr, 0.31);
-    bool ok = (fabs(d1 - 0.22) < 1e-9) && (fabs(d2 - 0.03) < 1e-9) &&
-              (fabs(pr.prior_sigma_oracle - 0.31) < 1e-9);
-    printf("[%s] T56: JEPA prior-oracle carry (selective decode)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 57: TN million-scale original saturates int64 (no silent wrap) */
-{
-    int64_t too_big = (INT64_MAX / 1000000LL) + 42LL;
-    CosTNUnitAccountant sat = cos_tn_param_account(too_big, 1, true);
-    bool ok = (sat.original_params_effective == INT64_MAX);
-    printf("[%s] T57: TN million scaler saturates at INT64_MAX\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 58: Quadratic vs linear schematic ratio grows ~linearly in T */
-{
-    CosSiliconFlopSchematic a = cos_silicon_flop_schematic(4, 64, 128);
-    CosSiliconFlopSchematic b = cos_silicon_flop_schematic(4, 128, 128);
-    bool ok = a.std_flops_representable && b.std_flops_representable &&
-              b.ratio_quad_over_linear > a.ratio_quad_over_linear * 1.9;
-    printf("[%s] T58: MHA vs linear cost ratio scales with T\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -3650,9 +3472,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v15.0 -- The Silicon Mind\n");
+printf("Creation OS v12.0 -- The Tensor Mind\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (58 checks).\n");
+printf("Use --self-test to run validation suite (52 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");

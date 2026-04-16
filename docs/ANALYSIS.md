@@ -5,17 +5,13 @@
 
 ---
 
-### Note — `creation-os` checkout
-
-This file ships in the **Creation OS** product tree. **Internal paths** (`creation_os/…`, `mlx_creation_os/…`, `scripts/…`) describe layouts that may exist in an **extended** checkout; in a minimal clone those directories may not exist — use this document as a **map and naming index**, and the **[README](../README.md)** as the **portable entry** (`creation_os_v2.c`, `make bench`, invariants). When a path is missing locally, treat the row as **forward reference**, not a broken promise.
-
----
-
 ### Methodological note
 
-**Authorship & orchestration:** Lauri Elias Rainio · Spektre Labs, Helsinki. Every number carries an **evidence class**. Do not mix classes in a single “headline score.” **Compact checklist (RED / PR / thesis):** [`CLAIM_DISCIPLINE.md`](CLAIM_DISCIPLINE.md). **External literature + benchmark norms (Kanerva BSC/HDC, VSA survey, lm-eval harness):** [`EXTERNAL_EVIDENCE_AND_POSITIONING.md`](EXTERNAL_EVIDENCE_AND_POSITIONING.md). **HDC vs NN / robustness / industry Hamming (curated web map):** [`HDC_VSA_ENGINEERING_SUPERIORITY.md`](HDC_VSA_ENGINEERING_SUPERIORITY.md).
+**Authorship & orchestration:** Lauri Elias Rainio · Spektre Labs, Helsinki. Every number carries an **evidence class**. Do not mix classes in a single “headline score.”
 
-**Published theory (papers, DOIs, PDFs):** [Zenodo — Spektre Labs community](https://zenodo.org/communities/spektre-labs/) — canonical uploads and DOIs for CC BY 4.0 material referenced from this project.
+**Published theory corpus (papers, DOIs, PDFs):** [github.com/spektre-labs/corpus](https://github.com/spektre-labs/corpus) — canonical README + [`papers/`](https://github.com/spektre-labs/corpus/tree/main/papers).
+
+**Repository consortium (protocol · corpus · Genesis · single push target):** [REPOS_AND_ROLES.md](REPOS_AND_ROLES.md).
 
 **Portable single-file BSC demo (C11 anywhere):** [`creation_os/creation_os_v1.c`](creation_os/creation_os_v1.c) — `cc -std=c11 -O2 -o creation_os creation_os_v1.c -lm` — §1–§26 narrative demos (oracle / mind / JEPA / GEMM-vs-BSC timing / …); **pedagogical**, not the full production Spektre + MLX stack.
 
@@ -364,7 +360,7 @@ Sources sampled: OpenAI, Anthropic, Google / DeepMind, BenchLM.ai, aigazine.com,
 
 **Full stack diagram and module taxonomy:** [Creation OS — full architecture & cognitive map (2026)](#creation-os--full-architecture--cognitive-map-2026) (above).
 
-Path: when present, **`mlx_creation_os/`** at the **repository root** beside this `creation-os/` tree (or merged layout you maintain locally). Code is source of truth; this section is an MLX-focused index (Plane B).
+Path: same tree as this file’s parent **`spektre-protocol/`** → **`mlx_creation_os/`**. Code is source of truth; this section is an MLX-focused index (Plane B).
 
 | Area | Entrypoints |
 |------|-------------|

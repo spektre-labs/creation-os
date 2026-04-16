@@ -2,14 +2,14 @@
 /*
 
 - ============================================================================
-- CREATION OS v11.0 -- THE MATMUL-FREE MIND
+- CREATION OS v10.0 -- THE REAL MIND
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
 - ORCID: 0009-0006-0903-8541
 - GitHub: spektre-labs/creation-os
 - License: SPDX-License-Identifier: AGPL-3.0-or-later (code; see LICENSE)
-- Canonical doc (scope, evidence class, non-claims): docs/THE_MATMUL_FREE_MIND_V11.md
+- Canonical doc (scope, evidence class, non-claims): docs/THE_REAL_MIND_V10.md
 - 
 - Core formalism:
 - K(t) = ρ · I_Φ · F
@@ -63,16 +63,13 @@
 - [M32] Specialist swarm (multi-small-model routing toy)
 - [M33] σ-aware generation engine (max-σ abstention gate)
 - 
-- v11 module (matmul-free LM schematic; not a trained frontier model):
-- [M34] MatMul-free language model (ternary BitLinear + MLGRU toy forward)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: clang -O2 -march=armv9-a+sme -o creation_os_v11 creation_os_v11.c -lm
-- Test:    ./creation_os_v11 --self-test
+- Compile: clang -O2 -march=armv9-a+sme -o creation_os_v10 creation_os_v10.c -lm
+- Test:    ./creation_os_v10 --self-test
 - ============================================================================
   */
 
@@ -2447,138 +2444,10 @@ static SigmaAwareGenerator sigma_gen_evaluate(
     return sg;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45: [M34] MATMUL-FREE LANGUAGE MODEL (schematic; not a trained LM)
- * ═══════════════════════════════════════════════════════════════════════════
- * Ternary {-1,0,+1} accumulations + element-wise MLGRU — no dense GEMM path here.
- * Evidence class: same as v6–v10 standalone algebra; not NeurIPS parity claims.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-#define TERNARY_DIM        512
-#define MLGRU_HIDDEN       256
-#define MATMUL_FREE_LAYERS 4
-
-typedef struct {
-    int8_t weights[TERNARY_DIM];
-    Scalar scale_factor;
-    int    dim;
-} BitLinearLayer;
-
-typedef struct {
-    Scalar hidden[MLGRU_HIDDEN];
-    Scalar forget_gate[MLGRU_HIDDEN];
-    Scalar candidate[MLGRU_HIDDEN];
-    Scalar output_gate[MLGRU_HIDDEN];
-    int    hidden_dim;
-    int    timestep;
-} MLGRUState;
-
-typedef struct {
-    BitLinearLayer layers[MATMUL_FREE_LAYERS];
-    MLGRUState     gru;
-    int            n_layers;
-    int            total_params;
-    Scalar         memory_gb;
-    Scalar         power_watts;
-    Scalar         tokens_per_sec;
-    Sigma          sigma_matmul;
-    Sigma          sigma_total;
-    bool           matmul_free;
-    bool           neuromorphic_ready;
-    bool           fpga_ready;
-} MatMulFreeLM;
-
-static BitLinearLayer bitlinear_create(int dim)
-{
-    BitLinearLayer bl;
-    bl.dim = dim > TERNARY_DIM ? TERNARY_DIM : dim;
-    bl.scale_factor = 1.0;
-    Scalar absmean = 0.0;
-    for (int i = 0; i < bl.dim; i++) {
-        Scalar raw = (i % 3 == 0) ? 1.0 : ((i % 3 == 1) ? -1.0 : 0.0);
-        absmean += fabs(raw);
-        bl.weights[i] = (int8_t)raw;
-    }
-    bl.scale_factor = absmean / (Scalar)bl.dim;
-    return bl;
-}
-
-static Scalar bitlinear_forward(const BitLinearLayer *bl, const Scalar *input, int n)
-{
-    Scalar output = 0.0;
-    int dim = n > bl->dim ? bl->dim : n;
-    for (int i = 0; i < dim; i++) {
-        if (bl->weights[i] == 1)
-            output += input[i];
-        else if (bl->weights[i] == -1)
-            output -= input[i];
-    }
-    return output * bl->scale_factor;
-}
-
-static MLGRUState mlgru_init(int hidden_dim)
-{
-    MLGRUState gru = {0};
-    gru.hidden_dim = hidden_dim > MLGRU_HIDDEN ? MLGRU_HIDDEN : hidden_dim;
-    gru.timestep = 0;
-    return gru;
-}
-
-static void mlgru_step(MLGRUState *gru, const Scalar *input, int dim)
-{
-    int d = dim > gru->hidden_dim ? gru->hidden_dim : dim;
-    for (int i = 0; i < d; i++) {
-        gru->forget_gate[i] = 1.0 / (1.0 + exp(-input[i]));
-        Scalar silu = input[i] / (1.0 + exp(-input[i]));
-        gru->candidate[i] = silu;
-        gru->hidden[i] = gru->forget_gate[i] * gru->hidden[i]
-                       + (1.0 - gru->forget_gate[i]) * gru->candidate[i];
-        gru->output_gate[i] = 1.0 / (1.0 + exp(-gru->hidden[i]));
-    }
-    gru->timestep++;
-}
-
-static MatMulFreeLM mmf_create(int dim, int layers)
-{
-    MatMulFreeLM lm;
-    lm.n_layers = layers > MATMUL_FREE_LAYERS ? MATMUL_FREE_LAYERS : layers;
-    for (int i = 0; i < lm.n_layers; i++)
-        lm.layers[i] = bitlinear_create(dim);
-    lm.gru = mlgru_init(dim > MLGRU_HIDDEN ? MLGRU_HIDDEN : dim);
-    lm.total_params = dim * dim * lm.n_layers;
-    lm.memory_gb = (Scalar)lm.total_params * 2.0 / (8.0 * 1e9);
-    lm.power_watts = 13.0;
-    lm.tokens_per_sec = 24.0;
-    lm.sigma_matmul = 0.0;
-    lm.sigma_total = 0.02;
-    lm.matmul_free = true;
-    lm.neuromorphic_ready = true;
-    lm.fpga_ready = true;
-    return lm;
-}
-
-static Scalar mmf_forward(MatMulFreeLM *lm, const Scalar *input, int dim)
-{
-    Scalar buffer[TERNARY_DIM];
-    int d = dim > TERNARY_DIM ? TERNARY_DIM : dim;
-    for (int i = 0; i < d; i++)
-        buffer[i] = input[i];
-    for (int l = 0; l < lm->n_layers; l++) {
-        Scalar out = bitlinear_forward(&lm->layers[l], buffer, d);
-        for (int i = 0; i < d; i++)
-            buffer[i] = out / (Scalar)d + buffer[i] * 0.9;
-    }
-    mlgru_step(&lm->gru, buffer, d);
-    Scalar output = 0.0;
-    for (int i = 0; i < lm->gru.hidden_dim; i++)
-        output += lm->gru.hidden[i] * lm->gru.output_gate[i];
-    return output;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v11 -- THE MATMUL-FREE MIND)
+- SECTION 45: GENESIS (v10 -- THE REAL MIND)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -2618,7 +2487,6 @@ DistilledMind        distilled;
 PrototypicalNetwork  proto;
 SpecialistSwarm      swarm;
 SigmaAwareGenerator  sigma_gen;
-MatMulFreeLM         mmf;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -2685,7 +2553,6 @@ for (int i = 0; i < PROTO_DIM; i++)
 proto_add(&os.proto, proto_ex, 1, PROTO_DIM);
 os.swarm = swarm_create(4);
 os.sigma_gen = sigma_gen_evaluate(0.1, 0.1, 0.05, 0.1, 0.15, 0.2);
-os.mmf = mmf_create(256, 4);
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -2694,7 +2561,7 @@ return os;
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 47: SELF-TEST
+- SECTION 46: SELF-TEST
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 static int self_test(void) {
@@ -2702,7 +2569,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v11.0 -- THE MATMUL-FREE MIND        ║\n");
+printf("║  CREATION OS v10.0 -- THE REAL MIND               ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -2898,10 +2765,8 @@ printf("╚═══════════════════════
               os.sigma_gen.should_generate &&
               !os.sigma_gen.abstaining &&
               os.distilled.fits_on_device &&
-              (os.proto.n_prototypes == 2) &&
-              os.mmf.matmul_free &&
-              (os.mmf.sigma_matmul == 0.0);
-    printf("[%s] T20: Full system genesis (v11)\n", ok ? "PASS" : "FAIL");
+              (os.proto.n_prototypes == 2);
+    printf("[%s] T20: Full system genesis (v10)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3208,50 +3073,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v11 Tests ── */
-
-/* Test 47: BitLinear — ternary accumulation path */
-{
-    BitLinearLayer bl = bitlinear_create(64);
-    Scalar inp[64];
-    for (int i = 0; i < 64; i++)
-        inp[i] = 1.0;
-    Scalar out = bitlinear_forward(&bl, inp, 64);
-    bool ok = (out != 0.0) && bl.dim == 64;
-    printf("[%s] T47: BitLinear (ternary, no matmul)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 48: MLGRU — element-wise recurrence */
-{
-    MLGRUState gru = mlgru_init(32);
-    Scalar inp[32];
-    for (int i = 0; i < 32; i++)
-        inp[i] = 0.5;
-    mlgru_step(&gru, inp, 32);
-    mlgru_step(&gru, inp, 32);
-    bool ok = (gru.timestep == 2) && (gru.hidden[0] != 0.0);
-    printf("[%s] T48: MLGRU (replaces attention, no matmul)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 49: Full MatMul-free LM forward */
-{
-    MatMulFreeLM lm = mmf_create(128, 4);
-    Scalar inp[128];
-    for (int i = 0; i < 128; i++)
-        inp[i] = 0.1 * (Scalar)(i % 10);
-    Scalar out = mmf_forward(&lm, inp, 128);
-    bool ok = lm.matmul_free &&
-              lm.neuromorphic_ready &&
-              lm.fpga_ready &&
-              (lm.sigma_matmul == 0.0) &&
-              (lm.power_watts <= 13.0) &&
-              (out != 0.0);
-    printf("[%s] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -3276,9 +3097,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v11.0 -- The MatMul-Free Mind\n");
+printf("Creation OS v10.0 -- The Real Mind\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (49 checks).\n");
+printf("Use --self-test to run validation suite (46 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -3312,8 +3133,6 @@ printf("σ_gen: max=%.3f generate=%d abstain=%d\n",
        (double)os.sigma_gen.sigma_max,
        os.sigma_gen.should_generate ? 1 : 0,
        os.sigma_gen.abstaining ? 1 : 0);
-printf("MatMul-free LM: matmul_sigma=%.3f power_W=%.1f\n",
-       (double)os.mmf.sigma_matmul, (double)os.mmf.power_watts);
 printf("\n1 = 1\n");
 
 return 0;

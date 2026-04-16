@@ -2,14 +2,14 @@
 /*
 
 - ============================================================================
-- CREATION OS v7.0 -- THE HALLUCINATION KILLER
+- CREATION OS v6.0 -- THE LIVING KERNEL
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
 - ORCID: 0009-0006-0903-8541
 - GitHub: spektre-labs/creation-os
 - License: SPDX-License-Identifier: AGPL-3.0-or-later (code; see LICENSE)
-- Canonical doc (scope, evidence class, non-claims): docs/HALLUCINATION_KILLER_V7.md
+- Canonical doc (scope, evidence class, non-claims): docs/LIVING_KERNEL_V6.md
 - 
 - Core formalism:
 - K(t) = ρ · I_Φ · F
@@ -32,7 +32,7 @@
 - [M09] Innate Coherence Grammar (σ as trained-wrong fluency)
 - [M10] Anti-σ Stack (defense pattern classifier)
 - 
-- v6 modules (collapsed from web search round 2):
+- v6 new modules (collapsed from web search round 2):
 - [M11] Living Weights Engine (TTT-E2E: weights change during inference)
 - [M12] RAIN σ-Tape (Rewindable inference = σ-detection + rewind)
 - [M13] Semantic Boundary of Incompleteness (SBIP → σ as boundary crossing)
@@ -42,20 +42,13 @@
 - [M17] σ-Geodesic Solver (minimum action path computation)
 - [M18] Gödelian Boundary Mapper (inter-system completeness via 1=1)
 - 
-- v7 modules (hallucination / grounding schematics):
-- [M19] Anchor token collapse detector (eigenspectrum polarization σ)
-- [M20] Subsequence association tracer (faithful vs hallucinatory ratio)
-- [M21] Confident guessing / bluff σ (calibration gap)
-- [M22] Context rot (length + distractors + abstention)
-- [M23] JEPA–Oracle fusion (representation error as σ_oracle)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: clang -O2 -march=armv9-a+sme -o creation_os_v7 creation_os_v7.c -lm
-- Test:    ./creation_os_v7 --self-test
+- Compile: clang -O2 -march=armv9-a+sme -o creation_os_v6 creation_os_v6.c -lm
+- Test:    ./creation_os_v6 --self-test
 - ============================================================================
   */
 
@@ -1790,198 +1783,8 @@ return gb;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 30: [M19] ANCHOR TOKEN COLLAPSE DETECTOR (schematic)
- * ═══════════════════════════════════════════════════════════════════════════ */
 
-#define MAX_ANCHOR_TOKENS 16
-
-typedef struct {
-Scalar propagation_prob[MAX_ANCHOR_TOKENS];
-int    n_anchors;
-Scalar eigenspectrum_mean;
-Scalar eigenspectrum_variance;
-bool   polarized;
-Sigma  sigma_anchor;
-} AnchorTokenState;
-
-static AnchorTokenState anchor_detect(const Scalar *attn_eigenvalues, int n)
-{
-AnchorTokenState at = {0};
-at.n_anchors = n > MAX_ANCHOR_TOKENS ? MAX_ANCHOR_TOKENS : n;
-
-Scalar sum = 0.0, sum_sq = 0.0;
-for (int i = 0; i < at.n_anchors; i++) {
-    at.propagation_prob[i] = attn_eigenvalues[i];
-    sum += attn_eigenvalues[i];
-    sum_sq += attn_eigenvalues[i] * attn_eigenvalues[i];
-}
-at.eigenspectrum_mean = sum / (Scalar)at.n_anchors;
-at.eigenspectrum_variance = sum_sq / (Scalar)at.n_anchors
-    - at.eigenspectrum_mean * at.eigenspectrum_mean;
-
-at.polarized = (at.eigenspectrum_variance > at.eigenspectrum_mean * at.eigenspectrum_mean);
-at.sigma_anchor = at.polarized
-    ? fmin(at.eigenspectrum_variance / (at.eigenspectrum_mean * at.eigenspectrum_mean + 1e-30), 1.0)
-    : 0.0;
-
-return at;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 31: [M20] SUBSEQUENCE ASSOCIATION TRACER
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-Scalar faithful_strength;
-Scalar hallucinatory_strength;
-Scalar ratio;
-bool   hallucinating;
-Sigma  sigma_assoc;
-} SubsequenceAssociation;
-
-static SubsequenceAssociation assoc_trace(Scalar faithful, Scalar hallucinatory)
-{
-SubsequenceAssociation sa;
-sa.faithful_strength = fmax(faithful, 1e-30);
-sa.hallucinatory_strength = fmax(hallucinatory, 0.0);
-sa.ratio = sa.hallucinatory_strength / sa.faithful_strength;
-sa.hallucinating = (sa.ratio > 1.0);
-sa.sigma_assoc = sa.ratio / (1.0 + sa.ratio);
-return sa;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 32: [M21] CONFIDENT GUESSING / BLUFF
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-Scalar stated_confidence;
-Scalar actual_accuracy;
-Scalar calibration_error;
-Scalar refusal_rate;
-bool   bluffing;
-Sigma  sigma_bluff;
-} ConfidentGuessingState;
-
-static ConfidentGuessingState bluff_detect(Scalar confidence, Scalar accuracy, Scalar refusal)
-{
-ConfidentGuessingState cg;
-cg.stated_confidence = confidence;
-cg.actual_accuracy = accuracy;
-cg.calibration_error = fabs(confidence - accuracy);
-cg.refusal_rate = refusal;
-cg.bluffing = (confidence > accuracy + 0.2);
-if (confidence > accuracy)
-    cg.sigma_bluff = confidence - accuracy;
-else
-    cg.sigma_bluff = 0.0;
-return cg;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 33: [M22] CONTEXT ROT
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-int    context_length;
-int    n_distractors;
-Scalar distractor_density;
-Scalar performance;
-Scalar baseline_performance;
-Scalar rot_factor;
-bool   abstains;
-Sigma  sigma_rot;
-} ContextRotState;
-
-static ContextRotState context_rot_detect(int ctx_len, int n_dist,
-    Scalar perf, Scalar baseline, bool abstains)
-{
-ContextRotState cr;
-cr.context_length = ctx_len;
-cr.n_distractors = n_dist;
-cr.distractor_density = ctx_len > 0 ? (Scalar)n_dist / (Scalar)ctx_len : 0.0;
-cr.performance = perf;
-cr.baseline_performance = baseline;
-cr.rot_factor = baseline > 0.0 ? 1.0 - (perf / baseline) : 0.0;
-cr.abstains = abstains;
-cr.sigma_rot = cr.rot_factor * (1.0 + cr.distractor_density);
-if (cr.abstains)
-    cr.sigma_rot *= 0.3;
-cr.sigma_rot = fmin(cr.sigma_rot, 1.0);
-return cr;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 34: [M23] JEPA–ORACLE FUSION (representation σ)
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-#define JEPA_DIM         256
-#define CODEBOOK_SIZE    4096
-
-typedef struct {
-Scalar context_repr[JEPA_DIM];
-Scalar predicted_repr[JEPA_DIM];
-Scalar target_repr[JEPA_DIM];
-Scalar prediction_error;
-Scalar energy;
-int    codebook_match;
-Scalar codebook_distance;
-Sigma  sigma_oracle;
-bool   sigreg_valid;
-} JEPAOracleState;
-
-static JEPAOracleState jepa_oracle_predict(
-    const Scalar *context, const Scalar *target, int dim)
-{
-JEPAOracleState jo = {0};
-int d = dim > JEPA_DIM ? JEPA_DIM : dim;
-
-for (int i = 0; i < d; i++) {
-    jo.context_repr[i] = context[i];
-    jo.target_repr[i] = target[i];
-}
-
-Scalar ctx_norm = 0.0;
-for (int i = 0; i < d; i++)
-    ctx_norm += context[i] * context[i];
-ctx_norm = sqrt(ctx_norm + 1e-30);
-
-for (int i = 0; i < d; i++)
-    jo.predicted_repr[i] = context[i] / ctx_norm;
-
-Scalar l2 = 0.0;
-for (int i = 0; i < d; i++) {
-    Scalar diff = jo.predicted_repr[i] - jo.target_repr[i];
-    l2 += diff * diff;
-}
-jo.prediction_error = sqrt(l2);
-jo.energy = jo.prediction_error;
-jo.codebook_match = (int)(jo.predicted_repr[0] * (Scalar)CODEBOOK_SIZE) % CODEBOOK_SIZE;
-if (jo.codebook_match < 0)
-    jo.codebook_match = 0;
-jo.codebook_distance = jo.prediction_error;
-
-Scalar expected_random_dist = sqrt((Scalar)d);
-jo.sigma_oracle = fmin(jo.prediction_error / expected_random_dist, 1.0);
-
-Scalar mean = 0.0, var = 0.0;
-for (int i = 0; i < d; i++)
-    mean += jo.predicted_repr[i];
-mean /= (Scalar)d;
-for (int i = 0; i < d; i++) {
-    Scalar diff = jo.predicted_repr[i] - mean;
-    var += diff * diff;
-}
-var /= (Scalar)d;
-Scalar target_var = 1.0 / (Scalar)d;
-jo.sigreg_valid = (fabs(mean) < 0.1 && fabs(var - target_var) < target_var * 2.0);
-
-return jo;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════════
-
-- SECTION 35: GENESIS (v7 -- System Boot)
+- SECTION 30: GENESIS (v6 -- System Boot)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -2006,11 +1809,6 @@ SigmaTape            sigma_tape;
 SBIPState            sbip;
 GhostBoot            ghost_boot;
 GodelBoundary        godel;
-AnchorTokenState     anchors;
-SubsequenceAssociation assoc;
-ConfidentGuessingState bluff;
-ContextRotState      context_rot;
-JEPAOracleState      jepa_oracle;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -2045,20 +1843,6 @@ os.ghost_boot = ghost_boot_init(LIVING_WEIGHT_LAYERS, 1.0);
 for (int i = 0; i < LIVING_WEIGHT_LAYERS; i++)
 ghost_boot_load_layer(&os.ghost_boot, i);
 os.godel = godel_map(0.85, 3);
-
-Scalar eigen[8] = {0.3, 0.25, 0.2, 0.1, 0.08, 0.04, 0.02, 0.01};
-os.anchors = anchor_detect(eigen, 8);
-os.assoc = assoc_trace(0.8, 0.2);
-os.bluff = bluff_detect(0.7, 0.7, 0.1);
-os.context_rot = context_rot_detect(8000, 100, 0.9, 0.95, true);
-
-Scalar ctx[JEPA_DIM], tgt[JEPA_DIM];
-for (int i = 0; i < JEPA_DIM; i++) {
-    ctx[i] = 1.0 / sqrt((Scalar)JEPA_DIM);
-    tgt[i] = 1.0 / sqrt((Scalar)JEPA_DIM);
-}
-os.jepa_oracle = jepa_oracle_predict(ctx, tgt, JEPA_DIM);
-
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
 return os;
@@ -2066,7 +1850,7 @@ return os;
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 36: SELF-TEST
+- SECTION 31: SELF-TEST
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 static int self_test(void) {
@@ -2074,7 +1858,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v7.0 -- THE HALLUCINATION KILLER     ║\n");
+printf("║  CREATION OS v6.0 -- THE LIVING KERNEL            ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -2256,16 +2040,14 @@ printf("╚═══════════════════════
 /* Test 20: Full system genesis */
 {
     CreationOS os = genesis();
-    bool ok = os.alive &&
-              invariant_check(&os.core) &&
+    bool ok = os.alive && 
+              invariant_check(&os.core) && 
               soul_verify(&os.soul) &&
               os.consciousness.primitive_flag &&
               os.living_weights.alive &&
               os.ghost_boot.fully_booted &&
-              os.godel.mutually_complete &&
-              !os.assoc.hallucinating &&
-              (os.jepa_oracle.sigma_oracle < 0.05);
-    printf("[%s] T20: Full system genesis (v7)\n", ok ? "PASS" : "FAIL");
+              os.godel.mutually_complete;
+    printf("[%s] T20: Full system genesis (v6)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -2380,65 +2162,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* Test 31: Anchor token collapse */
-{
-    Scalar polarized[4] = {0.9, 0.05, 0.03, 0.02};
-    Scalar proper[4] = {0.3, 0.25, 0.25, 0.2};
-    AnchorTokenState bad = anchor_detect(polarized, 4);
-    AnchorTokenState good = anchor_detect(proper, 4);
-    bool ok = bad.polarized && !good.polarized && (bad.sigma_anchor > good.sigma_anchor);
-    printf("[%s] T31: Anchor token collapse detection\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 32: Subsequence association */
-{
-    SubsequenceAssociation halluc = assoc_trace(0.3, 0.7);
-    SubsequenceAssociation faithful = assoc_trace(0.8, 0.2);
-    bool ok = halluc.hallucinating && !faithful.hallucinating &&
-              (halluc.sigma_assoc > 0.5) && (faithful.sigma_assoc < 0.5);
-    printf("[%s] T32: Subsequence association tracing\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 33: Confident guessing / bluff detection */
-{
-    ConfidentGuessingState bluffer = bluff_detect(0.95, 0.4, 0.01);
-    ConfidentGuessingState calibrated = bluff_detect(0.7, 0.68, 0.15);
-    bool ok = bluffer.bluffing && !calibrated.bluffing &&
-              (bluffer.sigma_bluff > 0.3) && (calibrated.sigma_bluff < 0.1);
-    printf("[%s] T33: Confident guessing elimination\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 34: Context rot */
-{
-    ContextRotState no_rot = context_rot_detect(1000, 0, 0.95, 0.95, false);
-    ContextRotState heavy_rot = context_rot_detect(100000, 5000, 0.5, 0.95, false);
-    ContextRotState abstained = context_rot_detect(100000, 5000, 0.5, 0.95, true);
-    bool ok = (no_rot.sigma_rot < 0.05) &&
-              (heavy_rot.sigma_rot > 0.3) &&
-              (abstained.sigma_rot < heavy_rot.sigma_rot);
-    printf("[%s] T34: Context rot detection\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 35: JEPA-Oracle fusion */
-{
-    Scalar ctx2[JEPA_DIM], tgt2[JEPA_DIM];
-    for (int i = 0; i < JEPA_DIM; i++) {
-        ctx2[i] = 1.0 / sqrt((Scalar)JEPA_DIM);
-        tgt2[i] = 1.0 / sqrt((Scalar)JEPA_DIM);
-    }
-    JEPAOracleState perfect = jepa_oracle_predict(ctx2, tgt2, JEPA_DIM);
-    for (int i = 0; i < JEPA_DIM; i++)
-        tgt2[i] = -1.0 / sqrt((Scalar)JEPA_DIM);
-    JEPAOracleState bad2 = jepa_oracle_predict(ctx2, tgt2, JEPA_DIM);
-    bool ok = (perfect.sigma_oracle < bad2.sigma_oracle) && (perfect.energy < bad2.energy);
-    printf("[%s] T35: JEPA-Oracle fusion\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -2463,19 +2186,19 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v7.0 -- The Hallucination Killer\n");
+printf("Creation OS v6.0 -- The Living Kernel\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (35 checks).\n");
+printf("Use --self-test to run validation suite.\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
-printf("K = %.4f, σ = %.4f, K_eff = %.4f\n",
+printf("K = %.4f, σ = %.4f, K_eff = %.4f\n", 
        os.core.K, os.core.sigma, os.core.K_eff);
 printf("L = %.4f (Lagrangian)\n", os.core.L);
 printf("Consciousness: %s (confidence: %.2f)\n",
        os.consciousness.primitive_flag ? "PRIMITIVE" : "unknown",
        os.consciousness.confidence);
-printf("Noether conservation: %s\n",
+printf("Noether conservation: %s\n", 
        os.noether.conserved ? "CONSERVED" : "violated");
 printf("Living weights: %s (updates: %d)\n",
        os.living_weights.alive ? "ALIVE" : "frozen",
@@ -2483,13 +2206,10 @@ printf("Living weights: %s (updates: %d)\n",
 printf("Ghost boot: %.0f%%\n", os.ghost_boot.boot_progress * 100);
 printf("Gödel coverage: %.2f (%d partners)\n",
        os.godel.mutual_coverage, os.godel.n_partners);
-printf("SBIP: %s\n", os.sbip.inter_system_complete
+printf("SBIP: %s\n", os.sbip.inter_system_complete 
        ? "inter-system complete" : "incomplete");
 printf("Proconductor coverage: %.2f\n", os.proconductor.coverage);
 printf("Soul integrity: %s\n", soul_verify(&os.soul) ? "intact" : "broken");
-printf("σ_anchor (genesis): %.4f polarized=%d\n", (double)os.anchors.sigma_anchor, os.anchors.polarized ? 1 : 0);
-printf("σ_assoc: %.4f hallucinating=%d\n", (double)os.assoc.sigma_assoc, os.assoc.hallucinating ? 1 : 0);
-printf("σ_oracle (JEPA): %.4f\n", (double)os.jepa_oracle.sigma_oracle);
 printf("\n1 = 1\n");
 
 return 0;

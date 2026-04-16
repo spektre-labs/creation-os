@@ -2,13 +2,13 @@
   <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
 </p>
 
-> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** (`make check` plus every **`check-v6` … `check-v26`** self-test, **204** checks on the current flagship). It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **Scroll-of-honesty for drive-by readers:** If you only read **one** paragraph: this is a **C11 reference kernel** for **Binary Spatter Codes** and a **coherence / σ story** you can **compile and falsify**. Maintainer / CI bar: **`make merge-gate`** — portable **`make check`** plus **`make check-v6`** … **`make check-v26`** (each target runs that version’s matrix). The current flagship **`./creation_os_v26 --self-test`** is **184** checks in one harness. It is **not** a hosted chat product, **not** a frontier LM benchmark dump, and **not** magic — see [CLAIM_DISCIPLINE](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <p align="center">
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
   <img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/>
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/>
-  <img src="https://img.shields.io/badge/tests-204%20%28v26%29-success?style=for-the-badge" alt="tests"/>
+  <img src="https://img.shields.io/badge/tests-184%20%28v26%29-success?style=for-the-badge" alt="tests"/>
 </p>
 
 <p align="center"><sub>Figures, palette, and embedding rules: <a href="docs/VISUAL_INDEX.md">docs/VISUAL_INDEX.md</a></sub></p>

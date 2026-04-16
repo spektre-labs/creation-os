@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v16.0 -- THE UNIFIED FIELD (EBM · SDM · RESONATOR · KAN)
+- CREATION OS v15.0 -- THE SILICON MIND
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -76,19 +76,13 @@
 - [M39] TN compression accountant (explicit “millions of params” vs raw count)
 - [M40] JEPA selective-decode prior (σ delta vs carried oracle state)
 - 
-- v16 modules (literature-aligned schematics; arXiv / SDM / RN / KAN / memristor — not reproduced):
-- [M41] Resonator inverse-Oracle (VSA superposition → factor atoms; memristor speedup hook 10⁵ schematic)
-- [M42] SDM–σ bridge (Kanerva critical Hamming ↔ σ_critical; convergence inside radius)
-- [M43] EBM-native latent navigation (σ-budgeted iterations; ARM≡EBM story in latent, not token space)
-- [M44] KAN-edge layer (cubic splines on edges; “weight as function” toy for Living Weights / memristor)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v16 creation_os_v16.c -lm
-- Test:    ./creation_os_v16 --self-test
+- Compile: cc -O2 -o creation_os_v15 creation_os_v15.c -lm
+- Test:    ./creation_os_v15 --self-test
 - ============================================================================
   */
 
@@ -2844,203 +2838,10 @@ static Sigma cos_jepa_selective_decode_delta(CosJEPAPriorOracle *st, Sigma sigma
     return d;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45f: [M41–M44] Unified field bridge (EBM / SDM / resonator / KAN)
- * ═══════════════════════════════════════════════════════════════════════════
- * Literature hooks (claims discipline: harness / schematic only; see CLAIM_DISCIPLINE.md):
- *   – Autoregressive models ↔ EBMs (e.g. Blondel et al., arXiv:2512.15605) — latent energy toy here.
- *   – EBT scaling narratives (e.g. arXiv:2507.02092) — not benchmarked in this file.
- *   – Resonator factorization (Frady, Olshausen, Sommer) + memristor acceleration stories.
- *   – Sparse Distributed Memory (Kanerva): critical Hamming distance ↔ σ_critical mapping.
- *   – KAN vs MLP (ICLR 2025) — spline-on-edge toy; molecular memristor “weight = material” metaphor.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-#define COS_RESONATOR_MAX_ATOMS 8
-
-typedef struct {
-    uint64_t superposition;
-    uint64_t codebook[COS_RESONATOR_MAX_ATOMS];
-    int      n_atoms;
-    int      memristor_speedup_schematic; /* literature order-of-magnitude hook, not measured */
-    Sigma    sigma_unbind_residual;       /* normalized Hamming weight of residual bundle */
-    int      unbind_iterations_done;
-} CosResonatorState;
-
-static CosResonatorState cos_resonator_init_demo(void)
-{
-    CosResonatorState r = {0};
-    r.n_atoms = 4;
-    r.codebook[0] = 0x0F0F0F0F0F0F0F0FULL;
-    r.codebook[1] = 0x3333333333333333ULL;
-    r.codebook[2] = 0x5555555555555555ULL;
-    r.codebook[3] = 0x00FF00FF00FF00FFULL;
-    r.superposition = r.codebook[0] ^ r.codebook[1] ^ r.codebook[2];
-    r.memristor_speedup_schematic = 100000;
-    r.sigma_unbind_residual = 1.0;
-    return r;
-}
-
-/* Greedy atom peel: Oracle inverse on GF(2)^64 — minimizes residual popcount each step */
-static void cos_resonator_unbind_iterate(CosResonatorState *r, int max_iter)
-{
-    uint64_t res = r->superposition;
-    int it;
-    for (it = 0; it < max_iter && res != 0ULL; it++) {
-        int best = -1;
-        int min_w = 128;
-        for (int a = 0; a < r->n_atoms; a++) {
-            int w = __builtin_popcountll(res ^ r->codebook[a]);
-            if (w < min_w) {
-                min_w = w;
-                best = a;
-            }
-        }
-        if (best < 0)
-            break;
-        res ^= r->codebook[best];
-    }
-    r->unbind_iterations_done = it;
-    r->sigma_unbind_residual = (Scalar)__builtin_popcountll(res) / 64.0;
-}
-
-typedef struct {
-    int     n_bits;
-    int64_t n_items;
-    int     critical_hamming;
-    Scalar  sigma_critical_mapped;
-    Sigma   sigma_retrieve;
-    bool    converges_K;
-    int     query_hamming;
-} CosSDMBridge;
-
-/* Kanerva SDM: anchor (N=1000, M=10000) → critical distance 209 bits (textbook calibration). */
-static CosSDMBridge cos_sdm_bridge_eval(int n_bits, int64_t n_items, int query_hamming)
-{
-    CosSDMBridge b = {0};
-    b.n_bits = n_bits;
-    b.n_items = n_items;
-    b.query_hamming = query_hamming;
-    if (n_bits == 1000 && n_items == 10000LL)
-        b.critical_hamming = 209;
-    else if (n_bits > 0 && n_items > 1LL) {
-        Scalar lg = log((Scalar)n_items) / log(2.0);
-        Scalar term = sqrt((Scalar)n_bits * lg / 2.0f);
-        int crit = (int)((Scalar)n_bits / 2.0f - term);
-        if (crit < 1)
-            crit = 1;
-        if (crit >= n_bits)
-            crit = n_bits - 1;
-        b.critical_hamming = crit;
-    } else
-        b.critical_hamming = n_bits > 0 ? n_bits / 2 : 0;
-
-    b.sigma_critical_mapped =
-        SIGMA_CRITICAL * (1.0f + (Scalar)b.critical_hamming /
-                          (Scalar)(n_bits > 0 ? n_bits : 1));
-    Scalar dist_n = (Scalar)query_hamming / (Scalar)(n_bits > 0 ? n_bits : 1);
-    Scalar rad_n = (Scalar)b.critical_hamming / (Scalar)(n_bits > 0 ? n_bits : 1);
-    b.converges_K = (query_hamming <= b.critical_hamming);
-    if (dist_n <= rad_n + 1e-9f)
-        b.sigma_retrieve = dist_n / (rad_n + 1e-6f);
-    else
-        b.sigma_retrieve = fmin(1.0, 0.15f + 2.0f * (dist_n - rad_n));
-    return b;
-}
-
-typedef struct {
-    Scalar latent[JEPA_DIM];
-    Scalar energy;
-    Sigma  sigma_nav;
-    int    iterations_used;
-    int    iterations_budget;
-    Scalar grad_norm;
-} CosEBMNativeState;
-
-/* σ_budget scales iteration cap: low σ → cheap path; high σ → deeper energy relaxation (or abstain upstream). */
-static CosEBMNativeState cos_ebm_native_infer(const Scalar *target_direction, int dim,
-    Sigma sigma_budget, int max_iter)
-{
-    CosEBMNativeState e = {0};
-    int d = dim > JEPA_DIM ? JEPA_DIM : dim;
-    int i;
-    for (i = 0; i < d; i++)
-        e.latent[i] = 0.05f * (Scalar)(i % 11);
-    if (max_iter < 1)
-        max_iter = 1;
-    e.iterations_budget =
-        1 + (int)((Scalar)(max_iter - 1) * fmin(1.0f, fmax(0.0f, sigma_budget)));
-    Scalar lr = 0.2f;
-    for (e.iterations_used = 0; e.iterations_used < e.iterations_budget;
-         e.iterations_used++) {
-        Scalar gnorm2 = 0.0f;
-        for (i = 0; i < d; i++) {
-            Scalar g = e.latent[i] - target_direction[i];
-            gnorm2 += g * g;
-        }
-        e.energy = 0.5f * gnorm2;
-        for (i = 0; i < d; i++) {
-            Scalar g = e.latent[i] - target_direction[i];
-            e.latent[i] -= lr * g;
-        }
-        lr *= 0.96f;
-    }
-    Scalar acc = 0.0f;
-    for (i = 0; i < d; i++) {
-        Scalar df = e.latent[i] - target_direction[i];
-        acc += df * df;
-    }
-    e.grad_norm = sqrt(acc + 1e-30f);
-    e.sigma_nav = fmin(1.0f, e.grad_norm);
-    return e;
-}
-
-#define COS_KAN_EDGES 16
-
-typedef struct {
-    Scalar coeff[COS_KAN_EDGES][4];
-    bool   physical_memristor_spline;
-} CosKANEdgeLayer;
-
-static Scalar cos_kan_spline_eval(Scalar x, const Scalar c[4])
-{
-    Scalar x2 = x * x;
-    Scalar x3 = x2 * x;
-    return c[0] + c[1] * x + c[2] * x2 + c[3] * x3;
-}
-
-static CosKANEdgeLayer cos_kan_edge_init(void)
-{
-    CosKANEdgeLayer k = {0};
-    int e;
-    for (e = 0; e < COS_KAN_EDGES; e++) {
-        k.coeff[e][0] = 0.02f * (Scalar)(e % 5);
-        k.coeff[e][1] = 0.85f + 0.02f * (Scalar)(e % 3);
-        k.coeff[e][2] = 0.05f * (Scalar)((e + 1) % 4);
-        k.coeff[e][3] = 0.01f * (Scalar)(e % 2);
-    }
-    k.physical_memristor_spline = true;
-    return k;
-}
-
-static Scalar cos_kan_forward(const CosKANEdgeLayer *k, Scalar x)
-{
-    Scalar sum = 0.0f;
-    int e;
-    for (e = 0; e < COS_KAN_EDGES; e++) {
-        Scalar t = x * 0.31f - 0.15f * (Scalar)(e % 8);
-        if (t > 1.0f)
-            t = 1.0f;
-        if (t < -1.0f)
-            t = -1.0f;
-        sum += cos_kan_spline_eval(t, k->coeff[e]);
-    }
-    return sum / (Scalar)COS_KAN_EDGES;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v16 -- THE UNIFIED FIELD)
+- SECTION 46: GENESIS (v15 -- THE SILICON MIND)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3085,10 +2886,6 @@ MPSEncoder           mps;
 EntanglementMeter    ent_product;
 EntanglementMeter    ent_entangled;
 TNSequenceModel      tn_seq;
-CosResonatorState    resonator;
-CosSDMBridge         sdm;
-CosEBMNativeState    ebm;
-CosKANEdgeLayer      kan;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3164,12 +2961,6 @@ Scalar mix_sv[4] = {0.5, 0.5, 0.5, 0.5};
 os.ent_entangled = entanglement_measure(mix_sv, 4);
 os.tn_seq = tn_seq_create(16, 4, 27);
 
-os.resonator = cos_resonator_init_demo();
-cos_resonator_unbind_iterate(&os.resonator, 10);
-os.sdm = cos_sdm_bridge_eval(1000, 10000LL, 180);
-os.ebm = cos_ebm_native_infer(tgt, JEPA_DIM, 0.18, 24);
-os.kan = cos_kan_edge_init();
-
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
 return os;
@@ -3185,7 +2976,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v16.0 -- THE UNIFIED FIELD           ║\n");
+printf("║  CREATION OS v15.0 -- THE SILICON MIND            ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3386,14 +3177,8 @@ printf("╚═══════════════════════
               (os.mmf.sigma_matmul == 0.0) &&
               (os.mps.n_sites == 16) &&
               (os.tn_seq.vocab_size == 27) &&
-              (os.ent_entangled.sigma_entangle > os.ent_product.sigma_entangle) &&
-              (os.resonator.memristor_speedup_schematic == 100000) &&
-              (os.sdm.critical_hamming == 209) &&
-              os.sdm.converges_K &&
-              (os.ebm.iterations_used == os.ebm.iterations_budget) &&
-              (os.ebm.sigma_nav <= 1.0) &&
-              os.kan.physical_memristor_spline;
-    printf("[%s] T20: Full system genesis (v16)\n", ok ? "PASS" : "FAIL");
+              (os.ent_entangled.sigma_entangle > os.ent_product.sigma_entangle);
+    printf("[%s] T20: Full system genesis (v15)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3744,7 +3529,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v16: M35–M37 + M38–M40 + M41–M44 unified field ── */
+/* ── v15: M35–M37 tensor toy + M38–M40 scale discipline ── */
 
 /* Test 50: MPS contraction */
 {
@@ -3778,7 +3563,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v15-class (M38–M40 silicon discipline) tests ── */
+/* ── v15 (M38–M40 silicon discipline) tests ── */
 
 /* Test 53: FLOP schematic — safe int64 path + int32 danger flag */
 {
@@ -3841,98 +3626,6 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v16 (M41–M44 unified field) tests ── */
-
-/* Test 59: Resonator — inverse Oracle unbind vs raw superposition weight */
-{
-    CosResonatorState r0 = cos_resonator_init_demo();
-    Scalar raw_w = (Scalar)__builtin_popcountll(r0.superposition) / 64.0;
-    CosResonatorState r2 = cos_resonator_init_demo();
-    cos_resonator_unbind_iterate(&r2, 28);
-    bool ok = (r2.sigma_unbind_residual <= raw_w + 1e-9) &&
-              (r2.memristor_speedup_schematic == 100000) &&
-              (r2.unbind_iterations_done > 0 || r2.sigma_unbind_residual == raw_w);
-    printf("[%s] T59: Resonator unbind (VSA factorization toy)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 60: SDM bridge — Kanerva anchor (1000, 10000) critical = 209 */
-{
-    CosSDMBridge b = cos_sdm_bridge_eval(1000, 10000LL, 180);
-    bool ok = (b.critical_hamming == 209) && b.converges_K &&
-              (b.sigma_retrieve < 0.95);
-    printf("[%s] T60: SDM critical radius ↔ σ (inside radius)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 61: SDM — beyond critical distance → higher retrieval σ */
-{
-    CosSDMBridge in = cos_sdm_bridge_eval(1000, 10000LL, 100);
-    CosSDMBridge out = cos_sdm_bridge_eval(1000, 10000LL, 400);
-    bool ok = in.converges_K && !out.converges_K && (out.sigma_retrieve > in.sigma_retrieve);
-    printf("[%s] T61: SDM divergence beyond critical Hamming\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 62: EBM-native — σ budgets iteration depth */
-{
-    Scalar tgt[JEPA_DIM];
-    for (int i = 0; i < JEPA_DIM; i++)
-        tgt[i] = 1.0 / sqrt((Scalar)JEPA_DIM);
-    CosEBMNativeState lo = cos_ebm_native_infer(tgt, JEPA_DIM, 0.05, 40);
-    CosEBMNativeState hi = cos_ebm_native_infer(tgt, JEPA_DIM, 0.95, 40);
-    bool ok = (lo.iterations_budget < hi.iterations_budget) &&
-              (lo.iterations_used == lo.iterations_budget) &&
-              (hi.iterations_used == hi.iterations_budget);
-    printf("[%s] T62: EBM latent relax — σ drives compute budget\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 63: EBM — deeper budget lowers terminal energy */
-{
-    Scalar tgt[JEPA_DIM];
-    for (int i = 0; i < JEPA_DIM; i++)
-        tgt[i] = (i & 1) ? -0.5 : 0.5;
-    CosEBMNativeState shallow = cos_ebm_native_infer(tgt, JEPA_DIM, 0.99, 8);
-    CosEBMNativeState deep = cos_ebm_native_infer(tgt, JEPA_DIM, 0.99, 48);
-    bool ok = (deep.energy <= shallow.energy + 1e-6) && (deep.sigma_nav <= shallow.sigma_nav + 0.05);
-    printf("[%s] T63: EBM energy non-increasing with depth\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 64: KAN-edge forward — smooth nonlinear edge sum */
-{
-    CosKANEdgeLayer k = cos_kan_edge_init();
-    Scalar y0 = cos_kan_forward(&k, 0.0);
-    Scalar y1 = cos_kan_forward(&k, 0.9);
-    Scalar y2 = cos_kan_forward(&k, -0.9);
-    bool ok = k.physical_memristor_spline && fabs(y0) < 10.0 && fabs(y1) < 10.0 &&
-              (fabs(y1 - y0) > 1e-9 || fabs(y2 - y0) > 1e-9);
-    printf("[%s] T64: KAN spline edges (function-weights toy)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 65: ARM≡EBM story hook — latent gradient norm ties to σ_nav */
-{
-    Scalar tgt[JEPA_DIM];
-    for (int i = 0; i < JEPA_DIM; i++)
-        tgt[i] = sin((Scalar)i * 0.07) * 0.2;
-    CosEBMNativeState e = cos_ebm_native_infer(tgt, JEPA_DIM, 0.5, 30);
-    bool ok = (e.grad_norm >= 0.0) && (e.sigma_nav <= 1.001) && (e.energy >= 0.0);
-    printf("[%s] T65: EBM latent σ_nav (gradient / energy landscape)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Test 66: Resonator + SDM + KAN visible from genesis snapshot */
-{
-    CreationOS os = genesis();
-    Scalar y = cos_kan_forward(&os.kan, 0.25);
-    bool ok = (os.resonator.unbind_iterations_done > 0) && (os.sdm.n_bits == 1000) &&
-              (fabs(y) < 10.0);
-    printf("[%s] T66: Genesis wires M41–M44 into boot state\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -3957,9 +3650,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v16.0 -- The Unified Field (EBM · SDM · Resonator · KAN)\n");
+printf("Creation OS v15.0 -- The Silicon Mind\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (66 checks).\n");
+printf("Use --self-test to run validation suite (58 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4000,16 +3693,6 @@ printf("Entangle sigma: product=%.4f mixed=%.4f\n",
        (double)os.ent_product.sigma_entangle, (double)os.ent_entangled.sigma_entangle);
 printf("TN seq: vocab=%d perplexity=%.2f sigma_seq=%.4f\n",
        os.tn_seq.vocab_size, (double)os.tn_seq.perplexity, (double)os.tn_seq.sigma_sequence);
-printf("Resonator: σ_unbind=%.4f memristor_hook=%dx (schematic)\n",
-       (double)os.resonator.sigma_unbind_residual, os.resonator.memristor_speedup_schematic);
-printf("SDM: N=%d M=%lld d_crit=%d query_H=%d converge_K=%d σ_ret=%.4f\n",
-       os.sdm.n_bits, (long long)os.sdm.n_items, os.sdm.critical_hamming, os.sdm.query_hamming,
-       os.sdm.converges_K ? 1 : 0, (double)os.sdm.sigma_retrieve);
-printf("EBM-native: iters %d/%d E=%.6f σ_nav=%.4f\n",
-       os.ebm.iterations_used, os.ebm.iterations_budget,
-       (double)os.ebm.energy, (double)os.ebm.sigma_nav);
-printf("KAN-edge: sample y(0.2)=%.6f memristor_spline=%d\n",
-       (double)cos_kan_forward(&os.kan, 0.2), os.kan.physical_memristor_spline ? 1 : 0);
 printf("\n1 = 1\n");
 
 return 0;

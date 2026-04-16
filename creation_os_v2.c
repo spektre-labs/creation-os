@@ -1,18 +1,27 @@
 /*
  * SPDX-License-Identifier: AGPL-3.0-or-later
  *
- * CREATION OS v2.0 — single-file reference (Binary Spatter Codes + sigma)
- * Copyright (C) 2026 Lauri Elias Rainio | Spektre Labs, Helsinki
+ * =============================================================================
+ * CREATION OS v2.0 — Core Source
+ * Copyright (C) 2026 Lauri Elias Rainio | Spektre Labs
+ * All Rights Reserved.
+ * =============================================================================
  *
- * Open source: GNU Affero General Public License v3.0 or later — see LICENSE.
- * Commercial / proprietary use: separate license from the author; see
- * COMMERCIAL_LICENSE.md
+ * LICENSE NOTICE — DUAL LICENSING
  *
- * WHAT IS THIS
+ * 1. OPEN SOURCE: GNU Affero General Public License v3.0 (AGPL-3.0) or later.
+ *    Full text: LICENSE at repository root. Section 13 applies to modified
+ *    versions offered for interaction over a network.
  *
- * A complete cognitive architecture that replaces matrix multiplication (GEMM)
- * with three bit operations: XOR (bind), MAJ (bundle), POPCOUNT (measure / sigma).
- * Built on Binary Spatter Codes (Kanerva, 1997); sigma coherence (Rainio, 2026).
+ * 2. COMMERCIAL: proprietary / enterprise use requires a separate licence from
+ *    the copyright holder. See COMMERCIAL_LICENSE.md and LICENSE_PROTOCOL.md.
+ *
+ * COMMERCIAL LICENSING CONTACT: spektrelabs@proton.me
+ *
+ * DISCLAIMER: this header is not a substitute for LICENSE or an executed
+ * commercial agreement. See creation_os/LEGAL/SOURCE_FILE_HEADER.c.
+ *
+ * Spektre Labs | Helsinki, Finland — AXIOM: 1 = 1
  *
  * ╔══════════════════════════════════════════════════════════════╗
  * ║                    CREATION OS v2.0                          ║
@@ -20,10 +29,10 @@
  * ║                                                              ║
  * ║  One file. One algebra. One axiom.                           ║
  * ║                                                              ║
- * ║  cc -O2 -I. -o creation_os creation_os_v2.c -lm              ║
+ * ║  cc -std=c11 -O2 -o creation_os creation_os_v1.c -lm         ║
  * ║                                                              ║
  * ║  Lauri Elias Rainio · Spektre Labs · Helsinki · 2026         ║
- * ║  https://github.com/spektre-labs/creation-os                   ║
+ * ║  Papers & corpus: https://github.com/spektre-labs/corpus       ║
  * ║                                                              ║
  * ║  1 = 1. Always.                                              ║
  * ╚══════════════════════════════════════════════════════════════╝
@@ -41,13 +50,9 @@
 #include <string.h>
 #include <time.h>
 
-#include "core/cos_neon_hamming.h"
-
 #define D 4096
 #define W 64
 #define B 512
-
-_Static_assert(D == COS_D && W == COS_W, "creation_os_v2 geometry must match core/cos_bsc.h");
 
 static uint64_t _rng_state;
 
@@ -63,18 +68,12 @@ static void hv_random(uint64_t *h)
         h[i] = rng();
 }
 
-static inline uint32_t hv_hamming(const uint64_t *a, const uint64_t *b)
+static uint32_t hv_hamming(const uint64_t *a, const uint64_t *b)
 {
-#if defined(__aarch64__)
-    return cos_hv_hamming_hw(a, b);
-#else
-    return cos_hv_hamming(a, b);
-#endif
-}
-
-static inline uint32_t hv_measurement_mismatch(const uint64_t *h, const uint64_t *anchor, const uint64_t *trace_mask)
-{
-    return cos_hv_measurement_mismatch_hw(h, anchor, trace_mask);
+    uint32_t d = 0;
+    for (int i = 0; i < W; i++)
+        d += (uint32_t)__builtin_popcountll(a[i] ^ b[i]);
+    return d;
 }
 
 static float hv_sigma(const uint64_t *a, const uint64_t *b)
@@ -98,11 +97,8 @@ static void hv_rotl(uint64_t *out, const uint64_t *in, int position)
 
 static void hv_maj3(uint64_t *out, const uint64_t *a, const uint64_t *b, const uint64_t *c)
 {
-#if defined(__aarch64__)
-    cos_hv_maj3_hw(out, a, b, c);
-#else
-    cos_hv_maj3(out, a, b, c);
-#endif
+    for (int i = 0; i < W; i++)
+        out[i] = (a[i] & b[i]) | (a[i] & c[i]) | (b[i] & c[i]);
 }
 
 static uint64_t CHAR_EMBED[128][W];
@@ -119,12 +115,8 @@ static void encode_text(uint64_t *out, const char *text, int len)
     for (int i = 0; i < len; i++) {
         uint64_t rotated[W];
         hv_rotl(rotated, CHAR_EMBED[(unsigned char)text[i] % 128], i);
-#if defined(__aarch64__)
-        cos_hv_xor_inplace_hw(out, rotated);
-#else
         for (int w = 0; w < W; w++)
             out[w] ^= rotated[w];
-#endif
     }
 }
 
@@ -553,7 +545,9 @@ static void run_benchmark(void)
     t0 = mono_sec();
     volatile float br = 0;
     for (int t = 0; t < trials; t++) {
-        uint32_t d = hv_hamming(ba, bb);
+        uint32_t d = 0;
+        for (int i = 0; i < W; i++)
+            d += (uint32_t)__builtin_popcountll(ba[i] ^ bb[i]);
         float r = (float)d / (float)D;
         br = r * r;
     }
@@ -569,14 +563,10 @@ static void run_benchmark(void)
     printf("    Ops:    %d/trial (proxy)\n", W * 2);
     printf("    Time:   %.6f sec\n\n", bsc_sec);
     if (bsc_sec > 1e-12 && gemm_sec > 1e-12) {
-        double gemm_tps = (double)trials / gemm_sec;
-        double bsc_tps = (double)trials / bsc_sec;
-        printf("  Similarity trials/sec GEMM: %.0f  BSC: %.0f  (ratio %.0fx)\n", gemm_tps, bsc_tps,
-               bsc_tps / gemm_tps);
         printf("  +------------------------------------------+\n");
         printf("  |  BSC wall ~ %.0fx faster (this machine) |\n", gemm_sec / bsc_sec);
-        printf("  |  BSC uses %dx less memory / vector      |\n", (D * 4) / (D / 8));
-        printf("  |  BSC uses %dx fewer operations (proxy)  |\n", (D * 6) / (W * 2));
+        printf("  |  BSC ~ %dx less memory / vector        |\n", (D * 4) / (D / 8));
+        printf("  |  Op proxy ratio GEMM/BSC ~ %dx         |\n", (D * 6) / (W * 2));
         printf("  +------------------------------------------+\n");
     }
     (void)gr;
@@ -1067,13 +1057,6 @@ static void run_quantum_decision(void)
         }
     }
     printf("  New info: threat -> collapse to %s (sigma=%.4f)\n", anames[chosen], best);
-    /* Partial-trace projector on first 256 bits: mismatch popcount vs collapsed branch */
-    uint64_t trace[W];
-    memset(trace, 0, sizeof(trace));
-    for (int w = 0; w < 4; w++)
-        trace[w] = ~0ULL;
-    uint32_t viol = hv_measurement_mismatch(superposition, actions[chosen], trace);
-    printf("  Constraint check (256-bit trace vs %s): mismatch pop = %u\n", anames[chosen], viol);
 }
 
 static void run_arrow_of_time(void)
@@ -1149,19 +1132,10 @@ int main(void)
     init_embeddings();
 
     printf("+==============================================================+\n");
-    printf("|                    CREATION OS v2.0                         |\n");
-    printf("|          Complete Cognitive Architecture in BSC             |\n");
-    printf("|  cc -O2 -I. -o creation_os creation_os_v2.c -lm             |\n");
-    printf("|  AGPL-3.0 + dual licensing — see LICENSE / COMMERCIAL_LICENSE  |\n");
+    printf("|                    CREATION OS v2.0                        |\n");
+    printf("|          Complete Cognitive Architecture in BSC            |\n");
+    printf("|  cc -std=c11 -O2 -o creation_os creation_os_v1.c -lm       |\n");
     printf("|  1 = 1. Always.                                              |\n");
-    printf("+==============================================================+\n");
-    printf("|  S1 BSC Core         S8 Genesis                             |\n");
-    printf("|  S2 Hypercube Mind   S9 Metacognition                       |\n");
-    printf("|  S3 Oracle           S10 Emotional Memory                   |\n");
-    printf("|  S4 Soul             S11 Theory of Mind                     |\n");
-    printf("|  S5 Proconductor     S12 Moral Geodesic                       |\n");
-    printf("|  S6 JEPA             S13 Consciousness Meter                  |\n");
-    printf("|  S7 Benchmark        S14-S26 (see source)                     |\n");
     printf("+==============================================================+\n");
 
     printf("\n--- §1 BSC CORE ----------------------------------------------\n");
@@ -1205,13 +1179,8 @@ int main(void)
     run_authentication();
 
     printf("\n==============================================================\n");
-    printf("  CREATION OS v2.0\n\n");
-    printf("  26 modules. Correlative encoding. Three operations. One axiom.\n");
-    printf("    XOR    = bind        (entanglement)\n");
-    printf("    MAJ    = bundle      (superposition)\n");
-    printf("    POPCNT = measure     (sigma coherence)\n\n");
-    printf("  No GEMM in the BSC path above. Copy, compile, run.\n\n");
-    printf("  cc -O2 -I. -o creation_os creation_os_v2.c -lm\n\n");
+    printf("  CREATION OS v2.0 — 26 modules. Correlative oracle. Three ops. One axiom.\n");
+    printf("  cc -std=c11 -O2 -o creation_os creation_os_v1.c -lm\n");
     printf("  1 = 1. Always.\n");
     printf("==============================================================\n");
     return 0;

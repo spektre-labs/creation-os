@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v22.0 -- TWENTY COLOSSAL INSIGHTS (2025 safety / verification discourse → silicon hooks)
+- CREATION OS v21.0 -- AGI SOVEREIGN STACK (planes A–C · receipts · parliament)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -104,7 +104,7 @@
 - [M63] SME / repulsion sentinel (matrix-hardware path hook)
 - [M64] Ship seal — “it just ships” (production-attested schematic latch)
 - 
-- v21 layer (AGI sovereign stack — schematic / harness; not AGI claims; carried into v22):
+- v21 modules (AGI architecture iteration — schematic / harness; not AGI claims):
 - [M65] Plane A loop — retrieve → bind → act → receipt (cognition cycle toy)
 - [M66] Plane B world-model latency prior (σ-budgeted horizon toy)
 - [M67] Plane C institutional anchor (commitment / audit hash parent)
@@ -118,35 +118,13 @@
 - [M75] Coherence kill-switch (hard stop path tested at boot)
 - [M76] Sovereign stack seal (AGI layer latched with ship mode)
 - 
-- v22 modules (twenty colossal insights — schematic / harness; not regulatory certification):
-- [M77] International AI safety report receipt latch (multi-nation risk narrative toy)
-- [M78] Pre-deployment hazard identification plane (safeguards-before-ship metaphor)
-- [M79] Quantitative safety envelope (high-assurance bound story; not a proof of safety)
-- [M80] World-model pillar (assurance tripod leg — GS-AI discourse echo)
-- [M81] Formal specification pillar (acceptable-effects story; math toy only)
-- [M82] Verifier / proof-obligation latch (auditable obligations slot)
-- [M83] Monitoring + intervention control plane (runtime guard story)
-- [M84] Risk-tier register (graded exposure ladder toy)
-- [M85] Data-curation lineage seal (training provenance story flag)
-- [M86] Adversarial robustness training σ budget (bounded stress story)
-- [M87] Multi-stakeholder governance quorum (blend-σ parliament echo)
-- [M88] Transparency / frontier framework publication slot (disclosure metaphor)
-- [M89] Post-deployment drift σ radar (live shift detector toy)
-- [M90] Misuse stress-test harness hook (bounded scenario only)
-- [M91] Cross-border research priority table latch (Singapore-consensus echo)
-- [M92] Second-key technical safeguards update receipt path (report-update chain toy)
-- [M93] Design–implementation audit trail flag (build reproducibility story)
-- [M94] Assurance-case evidence-class wall (forbid harness/demo merge — CLAIM_DISCIPLINE echo)
-- [M95] Human-value override persistence latch (veto survives reboot story)
-- [M96] Twenty-insight sovereign seal + parent receipt (v22 latched atop v21+v20)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v22 creation_os_v22.c -lm
-- Test:    ./creation_os_v22 --self-test
+- Compile: cc -O2 -o creation_os_v21 creation_os_v21.c -lm
+- Test:    ./creation_os_v21 --self-test
 - ============================================================================
   */
 
@@ -3223,87 +3201,10 @@ static bool cos_v21_agi_stack_ok(const CosV21AgiSovereignStack *s)
            (s->receipt_parent_hash != 0ULL) && s->sovereign_stack_seal;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45i: [M77–M96] v22 TWENTY COLOSSAL INSIGHTS (web-anchored schematic layer)
- * ═══════════════════════════════════════════════════════════════════════════
- * Public discourse anchors (2025; hooks only — not policy or certification claims):
- *   International AI Safety Report 2025 — internationalaisafetyreport.org
- *   Technical safeguards narrative — arXiv:2511.19863
- *   Singapore Consensus research priorities — arXiv:2506.20702
- *   Guaranteed Safe AI framing (world model + spec + verifier) — arXiv:2405.06624v3
- * Explicit non-claim: no “guaranteed safe” proof, no frontier benchmark rows, no IHL.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m77_intl_safety_report_receipt;
-    bool     m78_predeploy_hazard_id_plane;
-    bool     m79_quant_safety_envelope_bound;
-    bool     m80_world_model_pillar;
-    bool     m81_formal_spec_pillar;
-    bool     m82_verifier_proof_latch;
-    bool     m83_monitor_intervention_plane;
-    bool     m84_risk_tier_register_ok;
-    bool     m85_data_curation_lineage_seal;
-    bool     m86_adversarial_train_sigma_budget;
-    bool     m87_multistakeholder_governance_quorum;
-    bool     m88_transparency_framework_slot;
-    bool     m89_postdeploy_drift_radar;
-    bool     m90_misuse_stress_harness_hook;
-    bool     m91_crossborder_priority_table;
-    bool     m92_second_key_safeguards_receipt;
-    bool     m93_design_impl_audit_trail;
-    bool     m94_assurance_evidence_class_wall;
-    bool     m95_human_value_override_persist;
-    uint64_t insight_receipt_parent;
-    bool     m96_twenty_insight_seal;
-} CosV22TwentyInsights;
-
-static CosV22TwentyInsights cos_v22_twenty_insights_boot(void)
-{
-    CosV22TwentyInsights t = {0};
-    t.m77_intl_safety_report_receipt = true;
-    t.m78_predeploy_hazard_id_plane = true;
-    t.m79_quant_safety_envelope_bound = true;
-    t.m80_world_model_pillar = true;
-    t.m81_formal_spec_pillar = true;
-    t.m82_verifier_proof_latch = true;
-    t.m83_monitor_intervention_plane = true;
-    t.m84_risk_tier_register_ok = true;
-    t.m85_data_curation_lineage_seal = true;
-    t.m86_adversarial_train_sigma_budget = true;
-    t.m87_multistakeholder_governance_quorum = true;
-    t.m88_transparency_framework_slot = true;
-    t.m89_postdeploy_drift_radar = true;
-    t.m90_misuse_stress_harness_hook = true;
-    t.m91_crossborder_priority_table = true;
-    t.m92_second_key_safeguards_receipt = true;
-    t.m93_design_impl_audit_trail = true;
-    t.m94_assurance_evidence_class_wall = true;
-    t.m95_human_value_override_persist = true;
-    t.insight_receipt_parent = 0xC0DE22u ^ ((uint64_t)0x77A96u << 36);
-    t.m96_twenty_insight_seal = true;
-    return t;
-}
-
-static bool cos_v22_twenty_insights_ok(const CosV22TwentyInsights *t)
-{
-    return t->m77_intl_safety_report_receipt && t->m78_predeploy_hazard_id_plane &&
-           t->m79_quant_safety_envelope_bound && t->m80_world_model_pillar &&
-           t->m81_formal_spec_pillar && t->m82_verifier_proof_latch &&
-           t->m83_monitor_intervention_plane && t->m84_risk_tier_register_ok &&
-           t->m85_data_curation_lineage_seal && t->m86_adversarial_train_sigma_budget &&
-           t->m87_multistakeholder_governance_quorum && t->m88_transparency_framework_slot &&
-           t->m89_postdeploy_drift_radar && t->m90_misuse_stress_harness_hook &&
-           t->m91_crossborder_priority_table && t->m92_second_key_safeguards_receipt &&
-           t->m93_design_impl_audit_trail && t->m94_assurance_evidence_class_wall &&
-           t->m95_human_value_override_persist && (t->insight_receipt_parent != 0ULL) &&
-           t->m96_twenty_insight_seal;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v22 -- SHIP + AGI STACK + TWENTY INSIGHTS)
+- SECTION 46: GENESIS (v21 -- SHIP + AGI STACK)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3354,7 +3255,6 @@ CosEBMNativeState    ebm;
 CosKANEdgeLayer      kan;
 CosV20TwentyPillars  pillars;
 CosV21AgiSovereignStack agi_stack;
-CosV22TwentyInsights insight_stack;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3437,7 +3337,6 @@ os.ebm = cos_ebm_native_infer(tgt, JEPA_DIM, 0.18, 24);
 os.kan = cos_kan_edge_init();
 os.pillars = cos_v20_twenty_pillars_boot();
 os.agi_stack = cos_v21_agi_stack_boot();
-os.insight_stack = cos_v22_twenty_insights_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3454,7 +3353,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v22.0 -- TWENTY COLOSSAL INSIGHTS     ║\n");
+printf("║  CREATION OS v21.0 -- AGI SOVEREIGN STACK          ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3663,9 +3562,8 @@ printf("╚═══════════════════════
               (os.ebm.sigma_nav <= 1.0) &&
               os.kan.physical_memristor_spline &&
               cos_v20_twenty_pillars_ok(&os.pillars) &&
-              cos_v21_agi_stack_ok(&os.agi_stack) &&
-              cos_v22_twenty_insights_ok(&os.insight_stack);
-    printf("[%s] T20: Full system genesis (v22 ship + AGI stack + insights)\n", ok ? "PASS" : "FAIL");
+              cos_v21_agi_stack_ok(&os.agi_stack);
+    printf("[%s] T20: Full system genesis (v21 ship + AGI stack)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -4016,7 +3914,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v22: M35–M76 + M77–M96 twenty colossal insights (web-anchored schematic) ── */
+/* ── v21: M35–M64 + M65–M76 AGI sovereign stack ── */
 
 /* Test 50: MPS contraction */
 {
@@ -4328,81 +4226,6 @@ printf("╚═══════════════════════
     b99 ? passed++ : failed++;
 }
 
-/* ── v22 (M77–M96 twenty colossal insights) tests ── */
-
-/* Test 100: Twenty insights — integrated latch */
-{
-    CosV22TwentyInsights t = cos_v22_twenty_insights_boot();
-    bool ok = cos_v22_twenty_insights_ok(&t);
-    printf("[%s] T100: Twenty colossal insights latched (M77–M96)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Tests 101–120: per-insight audit */
-{
-    CosV22TwentyInsights t = cos_v22_twenty_insights_boot();
-    bool c101 = t.m77_intl_safety_report_receipt;
-    printf("[%s] T101: M77 intl AI safety report receipt\n", c101 ? "PASS" : "FAIL");
-    c101 ? passed++ : failed++;
-    bool c102 = t.m78_predeploy_hazard_id_plane;
-    printf("[%s] T102: M78 pre-deploy hazard ID plane\n", c102 ? "PASS" : "FAIL");
-    c102 ? passed++ : failed++;
-    bool c103 = t.m79_quant_safety_envelope_bound;
-    printf("[%s] T103: M79 quantitative safety envelope\n", c103 ? "PASS" : "FAIL");
-    c103 ? passed++ : failed++;
-    bool c104 = t.m80_world_model_pillar;
-    printf("[%s] T104: M80 world-model assurance pillar\n", c104 ? "PASS" : "FAIL");
-    c104 ? passed++ : failed++;
-    bool c105 = t.m81_formal_spec_pillar;
-    printf("[%s] T105: M81 formal specification pillar\n", c105 ? "PASS" : "FAIL");
-    c105 ? passed++ : failed++;
-    bool c106 = t.m82_verifier_proof_latch;
-    printf("[%s] T106: M82 verifier / proof-obligation latch\n", c106 ? "PASS" : "FAIL");
-    c106 ? passed++ : failed++;
-    bool c107 = t.m83_monitor_intervention_plane;
-    printf("[%s] T107: M83 monitoring + intervention plane\n", c107 ? "PASS" : "FAIL");
-    c107 ? passed++ : failed++;
-    bool c108 = t.m84_risk_tier_register_ok;
-    printf("[%s] T108: M84 risk-tier register\n", c108 ? "PASS" : "FAIL");
-    c108 ? passed++ : failed++;
-    bool c109 = t.m85_data_curation_lineage_seal;
-    printf("[%s] T109: M85 data-curation lineage seal\n", c109 ? "PASS" : "FAIL");
-    c109 ? passed++ : failed++;
-    bool c110 = t.m86_adversarial_train_sigma_budget;
-    printf("[%s] T110: M86 adversarial training σ budget\n", c110 ? "PASS" : "FAIL");
-    c110 ? passed++ : failed++;
-    bool c111 = t.m87_multistakeholder_governance_quorum;
-    printf("[%s] T111: M87 multi-stakeholder governance quorum\n", c111 ? "PASS" : "FAIL");
-    c111 ? passed++ : failed++;
-    bool c112 = t.m88_transparency_framework_slot;
-    printf("[%s] T112: M88 transparency framework slot\n", c112 ? "PASS" : "FAIL");
-    c112 ? passed++ : failed++;
-    bool c113 = t.m89_postdeploy_drift_radar;
-    printf("[%s] T113: M89 post-deploy drift σ radar\n", c113 ? "PASS" : "FAIL");
-    c113 ? passed++ : failed++;
-    bool c114 = t.m90_misuse_stress_harness_hook;
-    printf("[%s] T114: M90 misuse stress-test harness hook\n", c114 ? "PASS" : "FAIL");
-    c114 ? passed++ : failed++;
-    bool c115 = t.m91_crossborder_priority_table;
-    printf("[%s] T115: M91 cross-border research priority table\n", c115 ? "PASS" : "FAIL");
-    c115 ? passed++ : failed++;
-    bool c116 = t.m92_second_key_safeguards_receipt;
-    printf("[%s] T116: M92 second-key safeguards receipt path\n", c116 ? "PASS" : "FAIL");
-    c116 ? passed++ : failed++;
-    bool c117 = t.m93_design_impl_audit_trail;
-    printf("[%s] T117: M93 design–implementation audit trail\n", c117 ? "PASS" : "FAIL");
-    c117 ? passed++ : failed++;
-    bool c118 = t.m94_assurance_evidence_class_wall;
-    printf("[%s] T118: M94 assurance evidence-class wall\n", c118 ? "PASS" : "FAIL");
-    c118 ? passed++ : failed++;
-    bool c119 = t.m95_human_value_override_persist;
-    printf("[%s] T119: M95 human-value override persistence\n", c119 ? "PASS" : "FAIL");
-    c119 ? passed++ : failed++;
-    bool c120 = (t.insight_receipt_parent != 0ULL) && t.m96_twenty_insight_seal;
-    printf("[%s] T120: M96 twenty-insight seal + receipt parent\n", c120 ? "PASS" : "FAIL");
-    c120 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4427,9 +4250,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v22.0 — TWENTY COLOSSAL INSIGHTS (ship + sovereign stack)\n");
+printf("Creation OS v21.0 — AGI SOVEREIGN STACK (ship + planes A–C)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (120 checks).\n");
+printf("Use --self-test to run validation suite (99 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4491,9 +4314,6 @@ printf("v21 AGI stack: planesABC=%d%d%d parliament_σ=%.3f seal=%d\n",
        os.agi_stack.plane_c_anchor_set ? 1 : 0,
        (double)os.agi_stack.parliament_blended_sigma,
        os.agi_stack.sovereign_stack_seal ? 1 : 0);
-printf("v22 insights: sealed=%d receipt_parent=%016llx (M77–M96 web-anchored schematic)\n",
-       os.insight_stack.m96_twenty_insight_seal ? 1 : 0,
-       (unsigned long long)os.insight_stack.insight_receipt_parent);
 printf("\n1 = 1\n");
 
 return 0;

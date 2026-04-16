@@ -1,0 +1,11 @@
+{
+  "description": "Creation OS sources orbited by the hypervec swarm (relative to creation-os/)",
+  "fragments": [
+    "creation_os_v26.c",
+    "creation_os_v20.c",
+    "creation_os_v6.c",
+    "core/creation_os.h"
+  ],
+  "default_agents": 24,
+  "default_dims": 96
+}

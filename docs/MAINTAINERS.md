@@ -9,7 +9,11 @@
 From the **root of this directory** (where `creation_os_v2.c` lives):
 
 ```bash
-make merge-gate
+make check
+make check-v6   # Living Kernel — run when v6 source or its tests/docs change
+make check-v7   # Hallucination Killer — run when v7 source or its tests/docs change
+make check-v9   # Parameters in Silicon — run when v9 source or its tests/docs change
+make check-v10  # The Real Mind — run when v10 source or its tests/docs change
 make publish-github
 ```
 
@@ -35,7 +39,7 @@ User-facing policy: [SECURITY.md](../SECURITY.md). Developer-oriented abuse patt
 
 ## 4. CI
 
-Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — **`make merge-gate`** on Ubuntu for pushes and PRs to `main` / `master` (portable `check` plus `check-v6` … `check-v26`). When this tree is embedded in **spektre-protocol**, path-filtered CI also runs: [`creation-os-ci.yml`](https://github.com/spektre-labs/spektre-protocol/blob/main/.github/workflows/creation-os-ci.yml).
+Workflow: [.github/workflows/ci.yml](../.github/workflows/ci.yml) — `make check && make check-v6 && make check-v7 && make check-v9 && make check-v10` on Ubuntu for pushes and PRs to `main` / `master`.
 
 ---
 

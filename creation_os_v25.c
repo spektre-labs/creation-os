@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v25.0 -- ENTERPRISE PAIN → MITIGATION LEDGER (OWASP/EU maps → existing σ / receipt story)
+- CREATION OS v24.0 -- TWENTY ARXIV SCI-FI ECHO LATCHES (real preprints → schematic σ hooks; not physics claims)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -162,7 +162,7 @@
 - [M115] Cross-session user-scoped continuity seal (identity scope story)
 - [M116] Twenty AGI-affordance seal + parent receipt (v23 latched atop v22)
 - 
-- v24 layer (twenty arXiv sci-fi echo latches — citation / story flags; carried into v25):
+- v24 modules (twenty arXiv sci-fi echo latches — citation / story flags; not reproduced results):
 - [M117] arXiv:2505.02804 — Planckeons as mouths of quantum wormholes / holographic spacetime toy
 - [M118] arXiv:2503.16610 — Black hole complementarity & ER/EPR wormhole entanglement
 - [M119] arXiv:2603.00203 — Stellar engines & Dyson bubbles stability (Kardashev echo)
@@ -184,35 +184,13 @@
 - [M135] arXiv:1401.5469 — TARDIS rapid supernova spectral synthesis (open-source transient engine)
 - [M136] arXiv:1508.05049 — Homogenization under periodically oscillating differential constraints (σ-wave lattice toy)
 - 
-- v25 modules (twenty enterprise pain → mitigation routes — schematic; not certification or legal advice):
-- [M137] OWASP LLM01 prompt injection → proactive abstention + tool σ gate (M47 / M69 echo)
-- [M138] OWASP LLM02 sensitive information disclosure → privacy vault + audit export (M62 / M108 echo)
-- [M139] OWASP LLM03 supply chain → distillation fingerprint + living receipts (M58 / M54 echo)
-- [M140] OWASP LLM04 insecure output handling → σ-aware generation + context-rot guard (M33 / M22 echo)
-- [M141] OWASP LLM05 excessive agency → human veto + kill-switch + deliberation cap (M74 / M75 / M72 echo)
-- [M142] OWASP LLM06 excessive functionality → sandboxed execution + side-effect ledger (M106 / M107 echo)
-- [M143] OWASP LLM07 system prompt leakage → reflection gain + constitutional σ ceiling (M71 / M55 echo)
-- [M144] OWASP LLM08 vector & embedding weaknesses → retrieval–tool receipt fuse (M113 echo)
-- [M145] OWASP LLM09 misinformation / overreliance → bluff σ + association fidelity (M21 / M20 echo)
-- [M146] OWASP LLM10 unbounded consumption → degradation ladder + Plane B budget (M60 / M66 echo)
-- [M147] EU AI Act Art. 9 risk management → pre-deploy hazard + risk-tier register (M78 / M84 echo)
-- [M148] EU AI Act Art. 10 data governance → data-curation lineage seal (M85 echo)
-- [M149] EU AI Act Art. 11 technical documentation → design–implementation audit trail (M93 echo)
-- [M150] EU AI Act Art. 13 transparency → transparency framework slot (M88 echo)
-- [M151] EU AI Act Art. 14 human oversight → tiered memory + human veto story (M97 / M74 echo)
-- [M152] EU AI Act Art. 15 robustness & cybersecurity → red-team cap + adversarial training budget (M73 / M86 echo)
-- [M153] EU AI Act Art. 19 automatic logging → receipts anchor + JSONL trace slot (M54 / M108 echo)
-- [M154] Shadow AI / unsanctioned models → monitoring–intervention plane + tool gate (M83 / M69 echo)
-- [M155] FinOps / runaway inference spend → Plane B budget + five-unit dispatch story (M66 / M53 echo)
-- [M156] Observability silos & slow MTTR → coherence pulse + audit trail + ledger receipt parent (M61 / M108 / seal)
-- 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
 - Proconductor, JEPA, GEMM, Genesis, Metacognition,
 - Emotional Memory, ToM, Moral Geodesic, Consciousness Meter
 - 
-- Compile: cc -O2 -o creation_os_v25 creation_os_v25.c -lm
-- Test:    ./creation_os_v25 --self-test
+- Compile: cc -O2 -o creation_os_v24 creation_os_v24.c -lm
+- Test:    ./creation_os_v24 --self-test
 - ============================================================================
   */
 
@@ -3517,87 +3495,10 @@ static bool cos_v24_twenty_arxiv_scifi_ok(const CosV24TwentyArxivSciFiHooks *h)
            (h->scifi_arxiv_receipt_parent != 0ULL);
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45m: [M137–M156] v25 ENTERPRISE PAIN → MITIGATION LEDGER (value story)
- * ═══════════════════════════════════════════════════════════════════════════
- * Public pain-class anchors (guidance only — Creation OS does not certify compliance):
- *   OWASP Top 10 for LLM Applications 2025 — https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025
- *   EU Artificial Intelligence Act (Reg. 2024/1689) — https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689
- * Each latch means: “this pain class is explicitly routed to an in-tree schematic hook”
- * (M45–M116 modules named in header M137–M156 lines) — not a deployed control plane replacement.
- * Non-claim: not SOC 2, not ISO 42001, not legal advice, not a substitute for your security team.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     m137_llm01_prompt_injection_routed;
-    bool     m138_llm02_sensitive_disclosure_routed;
-    bool     m139_llm03_supply_chain_routed;
-    bool     m140_llm04_insecure_output_handling_routed;
-    bool     m141_llm05_excessive_agency_routed;
-    bool     m142_llm06_excessive_functionality_routed;
-    bool     m143_llm07_system_prompt_leakage_routed;
-    bool     m144_llm08_vector_embedding_weakness_routed;
-    bool     m145_llm09_misinformation_overreliance_routed;
-    bool     m146_llm10_unbounded_consumption_routed;
-    bool     m147_eu_ai_act_art9_risk_management_routed;
-    bool     m148_eu_ai_act_art10_data_governance_routed;
-    bool     m149_eu_ai_act_art11_technical_documentation_routed;
-    bool     m150_eu_ai_act_art13_transparency_routed;
-    bool     m151_eu_ai_act_art14_human_oversight_routed;
-    bool     m152_eu_ai_act_art15_robustness_cyber_routed;
-    bool     m153_eu_ai_act_art19_logging_routed;
-    bool     m154_shadow_ai_ungoverned_models_routed;
-    bool     m155_finops_runaway_inference_cost_routed;
-    bool     m156_observability_mttr_silo_routed;
-    uint64_t enterprise_pain_receipt_parent;
-} CosV25TwentyEnterprisePainLedger;
-
-static CosV25TwentyEnterprisePainLedger cos_v25_enterprise_pain_ledger_boot(void)
-{
-    CosV25TwentyEnterprisePainLedger e = {0};
-    e.m137_llm01_prompt_injection_routed = true;
-    e.m138_llm02_sensitive_disclosure_routed = true;
-    e.m139_llm03_supply_chain_routed = true;
-    e.m140_llm04_insecure_output_handling_routed = true;
-    e.m141_llm05_excessive_agency_routed = true;
-    e.m142_llm06_excessive_functionality_routed = true;
-    e.m143_llm07_system_prompt_leakage_routed = true;
-    e.m144_llm08_vector_embedding_weakness_routed = true;
-    e.m145_llm09_misinformation_overreliance_routed = true;
-    e.m146_llm10_unbounded_consumption_routed = true;
-    e.m147_eu_ai_act_art9_risk_management_routed = true;
-    e.m148_eu_ai_act_art10_data_governance_routed = true;
-    e.m149_eu_ai_act_art11_technical_documentation_routed = true;
-    e.m150_eu_ai_act_art13_transparency_routed = true;
-    e.m151_eu_ai_act_art14_human_oversight_routed = true;
-    e.m152_eu_ai_act_art15_robustness_cyber_routed = true;
-    e.m153_eu_ai_act_art19_logging_routed = true;
-    e.m154_shadow_ai_ungoverned_models_routed = true;
-    e.m155_finops_runaway_inference_cost_routed = true;
-    e.m156_observability_mttr_silo_routed = true;
-    e.enterprise_pain_receipt_parent = 0xC0DE25u ^ ((uint64_t)0x25F25u << 44);
-    return e;
-}
-
-static bool cos_v25_enterprise_pain_ledger_ok(const CosV25TwentyEnterprisePainLedger *e)
-{
-    return e->m137_llm01_prompt_injection_routed && e->m138_llm02_sensitive_disclosure_routed &&
-           e->m139_llm03_supply_chain_routed && e->m140_llm04_insecure_output_handling_routed &&
-           e->m141_llm05_excessive_agency_routed && e->m142_llm06_excessive_functionality_routed &&
-           e->m143_llm07_system_prompt_leakage_routed && e->m144_llm08_vector_embedding_weakness_routed &&
-           e->m145_llm09_misinformation_overreliance_routed && e->m146_llm10_unbounded_consumption_routed &&
-           e->m147_eu_ai_act_art9_risk_management_routed && e->m148_eu_ai_act_art10_data_governance_routed &&
-           e->m149_eu_ai_act_art11_technical_documentation_routed && e->m150_eu_ai_act_art13_transparency_routed &&
-           e->m151_eu_ai_act_art14_human_oversight_routed && e->m152_eu_ai_act_art15_robustness_cyber_routed &&
-           e->m153_eu_ai_act_art19_logging_routed && e->m154_shadow_ai_ungoverned_models_routed &&
-           e->m155_finops_runaway_inference_cost_routed && e->m156_observability_mttr_silo_routed &&
-           (e->enterprise_pain_receipt_parent != 0ULL);
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v25 -- SHIP + STACK + INSIGHTS + AFFORDANCES + ARXIV + ENTERPRISE LEDGER)
+- SECTION 46: GENESIS (v24 -- SHIP + STACK + INSIGHTS + AFFORDANCES + ARXIV SCI-FI)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3651,7 +3552,6 @@ CosV21AgiSovereignStack agi_stack;
 CosV22TwentyInsights insight_stack;
 CosV23TwentyAgiAffordances agi_affordances;
 CosV24TwentyArxivSciFiHooks arxiv_scifi;
-CosV25TwentyEnterprisePainLedger enterprise_ledger;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3737,7 +3637,6 @@ os.agi_stack = cos_v21_agi_stack_boot();
 os.insight_stack = cos_v22_twenty_insights_boot();
 os.agi_affordances = cos_v23_twenty_agi_affordances_boot();
 os.arxiv_scifi = cos_v24_twenty_arxiv_scifi_boot();
-os.enterprise_ledger = cos_v25_enterprise_pain_ledger_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3754,7 +3653,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v25.0 -- ENTERPRISE PAIN LEDGER       ║\n");
+printf("║  CREATION OS v24.0 -- ARXIV SCI-FI ECHO LATCHES    ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3966,9 +3865,8 @@ printf("╚═══════════════════════
               cos_v21_agi_stack_ok(&os.agi_stack) &&
               cos_v22_twenty_insights_ok(&os.insight_stack) &&
               cos_v23_twenty_agi_affordances_ok(&os.agi_affordances) &&
-              cos_v24_twenty_arxiv_scifi_ok(&os.arxiv_scifi) &&
-              cos_v25_enterprise_pain_ledger_ok(&os.enterprise_ledger);
-    printf("[%s] T20: Full system genesis (v25 ship + stack + insights + affordances + arXiv + enterprise ledger)\n", ok ? "PASS" : "FAIL");
+              cos_v24_twenty_arxiv_scifi_ok(&os.arxiv_scifi);
+    printf("[%s] T20: Full system genesis (v24 ship + stack + insights + affordances + arXiv sci-fi)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -4319,7 +4217,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v25: M35–M136 + M137–M156 enterprise pain → mitigation ledger (OWASP/EU routing hooks) ── */
+/* ── v24: M35–M116 + M117–M136 twenty arXiv sci-fi echo latches (preprint citation hooks) ── */
 
 /* Test 50: MPS contraction */
 {
@@ -4853,80 +4751,6 @@ printf("╚═══════════════════════
     e162 ? passed++ : failed++;
 }
 
-/* ── v25 (M137–M156 enterprise pain → mitigation ledger) tests ── */
-
-{
-    CosV25TwentyEnterprisePainLedger e = cos_v25_enterprise_pain_ledger_boot();
-    bool ok = cos_v25_enterprise_pain_ledger_ok(&e);
-    printf("[%s] T163: Twenty enterprise pain routes latched (M137–M156)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-{
-    CosV25TwentyEnterprisePainLedger e = cos_v25_enterprise_pain_ledger_boot();
-    bool f164 = e.m137_llm01_prompt_injection_routed;
-    printf("[%s] T164: M137 OWASP LLM01 → abstention + tool gate route\n", f164 ? "PASS" : "FAIL");
-    f164 ? passed++ : failed++;
-    bool f165 = e.m138_llm02_sensitive_disclosure_routed;
-    printf("[%s] T165: M138 OWASP LLM02 → vault + audit export route\n", f165 ? "PASS" : "FAIL");
-    f165 ? passed++ : failed++;
-    bool f166 = e.m139_llm03_supply_chain_routed;
-    printf("[%s] T166: M139 OWASP LLM03 → fingerprint + receipts route\n", f166 ? "PASS" : "FAIL");
-    f166 ? passed++ : failed++;
-    bool f167 = e.m140_llm04_insecure_output_handling_routed;
-    printf("[%s] T167: M140 OWASP LLM04 → σ-gen + context-rot route\n", f167 ? "PASS" : "FAIL");
-    f167 ? passed++ : failed++;
-    bool f168 = e.m141_llm05_excessive_agency_routed;
-    printf("[%s] T168: M141 OWASP LLM05 → veto + kill-switch + cap route\n", f168 ? "PASS" : "FAIL");
-    f168 ? passed++ : failed++;
-    bool f169 = e.m142_llm06_excessive_functionality_routed;
-    printf("[%s] T169: M142 OWASP LLM06 → sandbox + side-effect ledger route\n", f169 ? "PASS" : "FAIL");
-    f169 ? passed++ : failed++;
-    bool f170 = e.m143_llm07_system_prompt_leakage_routed;
-    printf("[%s] T170: M143 OWASP LLM07 → reflection + σ ceiling route\n", f170 ? "PASS" : "FAIL");
-    f170 ? passed++ : failed++;
-    bool f171 = e.m144_llm08_vector_embedding_weakness_routed;
-    printf("[%s] T171: M144 OWASP LLM08 → RAG–tool receipt fuse route\n", f171 ? "PASS" : "FAIL");
-    f171 ? passed++ : failed++;
-    bool f172 = e.m145_llm09_misinformation_overreliance_routed;
-    printf("[%s] T172: M145 OWASP LLM09 → bluff σ + association route\n", f172 ? "PASS" : "FAIL");
-    f172 ? passed++ : failed++;
-    bool f173 = e.m146_llm10_unbounded_consumption_routed;
-    printf("[%s] T173: M146 OWASP LLM10 → ladder + Plane B budget route\n", f173 ? "PASS" : "FAIL");
-    f173 ? passed++ : failed++;
-    bool f174 = e.m147_eu_ai_act_art9_risk_management_routed;
-    printf("[%s] T174: M147 EU AI Act Art.9 → hazard + risk-tier route\n", f174 ? "PASS" : "FAIL");
-    f174 ? passed++ : failed++;
-    bool f175 = e.m148_eu_ai_act_art10_data_governance_routed;
-    printf("[%s] T175: M148 EU AI Act Art.10 → lineage seal route\n", f175 ? "PASS" : "FAIL");
-    f175 ? passed++ : failed++;
-    bool f176 = e.m149_eu_ai_act_art11_technical_documentation_routed;
-    printf("[%s] T176: M149 EU AI Act Art.11 → audit trail route\n", f176 ? "PASS" : "FAIL");
-    f176 ? passed++ : failed++;
-    bool f177 = e.m150_eu_ai_act_art13_transparency_routed;
-    printf("[%s] T177: M150 EU AI Act Art.13 → transparency slot route\n", f177 ? "PASS" : "FAIL");
-    f177 ? passed++ : failed++;
-    bool f178 = e.m151_eu_ai_act_art14_human_oversight_routed;
-    printf("[%s] T178: M151 EU AI Act Art.14 → memory tiers + veto route\n", f178 ? "PASS" : "FAIL");
-    f178 ? passed++ : failed++;
-    bool f179 = e.m152_eu_ai_act_art15_robustness_cyber_routed;
-    printf("[%s] T179: M152 EU AI Act Art.15 → red-team + adversarial budget route\n", f179 ? "PASS" : "FAIL");
-    f179 ? passed++ : failed++;
-    bool f180 = e.m153_eu_ai_act_art19_logging_routed;
-    printf("[%s] T180: M153 EU AI Act Art.19 → receipts + JSONL route\n", f180 ? "PASS" : "FAIL");
-    f180 ? passed++ : failed++;
-    bool f181 = e.m154_shadow_ai_ungoverned_models_routed;
-    printf("[%s] T181: M154 Shadow AI → monitor plane + tool gate route\n", f181 ? "PASS" : "FAIL");
-    f181 ? passed++ : failed++;
-    bool f182 = e.m155_finops_runaway_inference_cost_routed;
-    printf("[%s] T182: M155 FinOps runaway → Plane B + five-unit route\n", f182 ? "PASS" : "FAIL");
-    f182 ? passed++ : failed++;
-    bool f183 = e.m156_observability_mttr_silo_routed &&
-                 (e.enterprise_pain_receipt_parent != 0ULL);
-    printf("[%s] T183: M156 MTTR silo → pulse + audit + enterprise receipt parent\n", f183 ? "PASS" : "FAIL");
-    f183 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4951,9 +4775,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v25.0 — ENTERPRISE PAIN LEDGER (OWASP/EU → in-tree σ hooks)\n");
+printf("Creation OS v24.0 — ARXIV SCI-FI ECHO LATCHES (ship + agent + preprint hooks)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (183 checks).\n");
+printf("Use --self-test to run validation suite (162 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -5023,8 +4847,6 @@ printf("v23 AGI affordances: sealed=%d receipt_parent=%016llx (M97–M116 agent-
        (unsigned long long)os.agi_affordances.agi_aff_receipt_parent);
 printf("v24 arXiv sci-fi: receipt_parent=%016llx (M117–M136 https://arxiv.org/abs hooks)\n",
        (unsigned long long)os.arxiv_scifi.scifi_arxiv_receipt_parent);
-printf("v25 enterprise ledger: receipt_parent=%016llx (M137–M156 OWASP/EU pain routes)\n",
-       (unsigned long long)os.enterprise_ledger.enterprise_pain_receipt_parent);
 printf("\n1 = 1\n");
 
 return 0;

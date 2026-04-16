@@ -2,7 +2,7 @@
 /*
 
 - ============================================================================
-- CREATION OS v21.0 -- AGI SOVEREIGN STACK (planes A–C · receipts · parliament)
+- CREATION OS v21.0 -- SHIP MODE (TWENTY PILLARS · instant cognition stack)
 - ============================================================================
 - 
 - Lauri Elias Rainio · Spektre Labs · Helsinki
@@ -103,20 +103,6 @@
 - [M62] Privacy vault seal (raw log export gated)
 - [M63] SME / repulsion sentinel (matrix-hardware path hook)
 - [M64] Ship seal — “it just ships” (production-attested schematic latch)
-- 
-- v21 modules (AGI architecture iteration — schematic / harness; not AGI claims):
-- [M65] Plane A loop — retrieve → bind → act → receipt (cognition cycle toy)
-- [M66] Plane B world-model latency prior (σ-budgeted horizon toy)
-- [M67] Plane C institutional anchor (commitment / audit hash parent)
-- [M68] HV parliament blend σ (multi-agent coherence quorum toy)
-- [M69] Tool-use σ gate (invoke only below cap — no unguarded side effects)
-- [M70] Episodic scratch pad → consolidation flag (sleep-compress metaphor)
-- [M71] Self-reflection σ gain (trace-on-trace delta toy)
-- [M72] Deliberation depth cap (compute ladder vs σ trade-off)
-- [M73] Adversarial red-team cap (bounded σ injection for tests)
-- [M74] Human-in-the-loop veto line (non-delegable interrupt)
-- [M75] Coherence kill-switch (hard stop path tested at boot)
-- [M76] Sovereign stack seal (AGI layer latched with ship mode)
 - 
 - Retained from v2:
 - BSC Core, Hypercube Mind, Oracle, Soul/Crystal Lock,
@@ -3146,65 +3132,10 @@ static bool cos_v20_twenty_pillars_ok(const CosV20TwentyPillars *p)
            p->m62_privacy_vault_sealed && p->m63_sme_repulsion_sentinel && p->m64_ship_seal;
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════
- * SECTION 45h: [M65–M76] v21 AGI SOVEREIGN STACK (next-level architecture)
- * ═══════════════════════════════════════════════════════════════════════════
- * Planes A–C echo README / ANALYSIS map: cognition, world latency, receipts.
- * Parliament + tool gate align with HV bench narrative (not reproduced here).
- * Explicit non-claim: no benchmark AGI, no autonomous internet agent, no IHL.
- * ═══════════════════════════════════════════════════════════════════════════ */
-
-typedef struct {
-    bool     plane_a_loop_closed;
-    bool     plane_b_budget_ok;
-    bool     plane_c_anchor_set;
-    Scalar   parliament_blended_sigma;
-    bool     tool_gate_armed;
-    bool     episodic_flush_ready;
-    Scalar   reflection_gain_sigma;
-    int      deliberation_depth_cap;
-    Scalar   redteam_cap_sigma;
-    bool     human_veto_wired;
-    bool     kill_switch_tested;
-    uint64_t receipt_parent_hash;
-    bool     sovereign_stack_seal;
-} CosV21AgiSovereignStack;
-
-static CosV21AgiSovereignStack cos_v21_agi_stack_boot(void)
-{
-    CosV21AgiSovereignStack s = {0};
-    s.plane_a_loop_closed = true;
-    s.plane_b_budget_ok = true;
-    s.plane_c_anchor_set = true;
-    s.parliament_blended_sigma = 0.11;
-    s.tool_gate_armed = true;
-    s.episodic_flush_ready = true;
-    s.reflection_gain_sigma = 0.04;
-    s.deliberation_depth_cap = 12;
-    s.redteam_cap_sigma = 0.08;
-    s.human_veto_wired = true;
-    s.kill_switch_tested = true;
-    s.receipt_parent_hash = 0xA61u ^ ((uint64_t)0x21B21u << 28);
-    s.sovereign_stack_seal = true;
-    return s;
-}
-
-static bool cos_v21_agi_stack_ok(const CosV21AgiSovereignStack *s)
-{
-    return s->plane_a_loop_closed && s->plane_b_budget_ok && s->plane_c_anchor_set &&
-           (s->parliament_blended_sigma >= 0.0 && s->parliament_blended_sigma < 0.5) &&
-           s->tool_gate_armed && s->episodic_flush_ready &&
-           (s->reflection_gain_sigma >= 0.0 && s->reflection_gain_sigma < 0.2) &&
-           (s->deliberation_depth_cap >= 4 && s->deliberation_depth_cap <= 64) &&
-           (s->redteam_cap_sigma > 0.0 && s->redteam_cap_sigma < 0.25) &&
-           s->human_veto_wired && s->kill_switch_tested &&
-           (s->receipt_parent_hash != 0ULL) && s->sovereign_stack_seal;
-}
-
 
 /* ═══════════════════════════════════════════════════════════════════════════
 
-- SECTION 46: GENESIS (v21 -- SHIP + AGI STACK)
+- SECTION 46: GENESIS (v20 -- SHIP MODE)
 - ═══════════════════════════════════════════════════════════════════════════ */
 
 typedef struct {
@@ -3254,7 +3185,6 @@ CosSDMBridge         sdm;
 CosEBMNativeState    ebm;
 CosKANEdgeLayer      kan;
 CosV20TwentyPillars  pillars;
-CosV21AgiSovereignStack agi_stack;
 bool                 alive;
 uint64_t             boot_time;
 } CreationOS;
@@ -3336,7 +3266,6 @@ os.sdm = cos_sdm_bridge_eval(1000, 10000LL, 180);
 os.ebm = cos_ebm_native_infer(tgt, JEPA_DIM, 0.18, 24);
 os.kan = cos_kan_edge_init();
 os.pillars = cos_v20_twenty_pillars_boot();
-os.agi_stack = cos_v21_agi_stack_boot();
 
 os.alive = true;
 os.boot_time = (uint64_t)time(NULL);
@@ -3353,7 +3282,7 @@ int passed = 0;
 int failed = 0;
 
 printf("╔══════════════════════════════════════════════════╗\n");
-printf("║  CREATION OS v21.0 -- AGI SOVEREIGN STACK          ║\n");
+printf("║  CREATION OS v21.0 -- SHIP MODE (20 pillars)       ║\n");
 printf("║  Self-Test Suite                                 ║\n");
 printf("╚══════════════════════════════════════════════════╝\n\n");
 
@@ -3561,9 +3490,8 @@ printf("╚═══════════════════════
               (os.ebm.iterations_used == os.ebm.iterations_budget) &&
               (os.ebm.sigma_nav <= 1.0) &&
               os.kan.physical_memristor_spline &&
-              cos_v20_twenty_pillars_ok(&os.pillars) &&
-              cos_v21_agi_stack_ok(&os.agi_stack);
-    printf("[%s] T20: Full system genesis (v21 ship + AGI stack)\n", ok ? "PASS" : "FAIL");
+              cos_v20_twenty_pillars_ok(&os.pillars);
+    printf("[%s] T20: Full system genesis (v20 ship)\n", ok ? "PASS" : "FAIL");
     ok ? passed++ : failed++;
 }
 
@@ -3914,7 +3842,7 @@ printf("╚═══════════════════════
     ok ? passed++ : failed++;
 }
 
-/* ── v21: M35–M64 + M65–M76 AGI sovereign stack ── */
+/* ── v20: M35–M44 + M45–M64 ship-mode pillars ── */
 
 /* Test 50: MPS contraction */
 {
@@ -4175,57 +4103,6 @@ printf("╚═══════════════════════
     a86 ? passed++ : failed++;
 }
 
-/* ── v21 (M65–M76 AGI sovereign stack) tests ── */
-
-/* Test 87: AGI stack — integrated sovereign gate */
-{
-    CosV21AgiSovereignStack s = cos_v21_agi_stack_boot();
-    bool ok = cos_v21_agi_stack_ok(&s);
-    printf("[%s] T87: AGI sovereign stack latched (M65–M76)\n", ok ? "PASS" : "FAIL");
-    ok ? passed++ : failed++;
-}
-
-/* Tests 88–99: plane / parliament / safety audit */
-{
-    CosV21AgiSovereignStack s = cos_v21_agi_stack_boot();
-    bool b88 = s.plane_a_loop_closed;
-    printf("[%s] T88: M65 Plane A cognition loop\n", b88 ? "PASS" : "FAIL");
-    b88 ? passed++ : failed++;
-    bool b89 = s.plane_b_budget_ok;
-    printf("[%s] T89: M66 Plane B world-model budget\n", b89 ? "PASS" : "FAIL");
-    b89 ? passed++ : failed++;
-    bool b90 = s.plane_c_anchor_set;
-    printf("[%s] T90: M67 Plane C institutional anchor\n", b90 ? "PASS" : "FAIL");
-    b90 ? passed++ : failed++;
-    bool b91 = (s.parliament_blended_sigma < 0.3);
-    printf("[%s] T91: M68 HV parliament blend σ\n", b91 ? "PASS" : "FAIL");
-    b91 ? passed++ : failed++;
-    bool b92 = s.tool_gate_armed;
-    printf("[%s] T92: M69 tool-use σ gate armed\n", b92 ? "PASS" : "FAIL");
-    b92 ? passed++ : failed++;
-    bool b93 = s.episodic_flush_ready;
-    printf("[%s] T93: M70 episodic → consolidation flag\n", b93 ? "PASS" : "FAIL");
-    b93 ? passed++ : failed++;
-    bool b94 = (s.reflection_gain_sigma < 0.15);
-    printf("[%s] T94: M71 self-reflection σ gain\n", b94 ? "PASS" : "FAIL");
-    b94 ? passed++ : failed++;
-    bool b95 = (s.deliberation_depth_cap >= 8);
-    printf("[%s] T95: M72 deliberation depth cap\n", b95 ? "PASS" : "FAIL");
-    b95 ? passed++ : failed++;
-    bool b96 = (s.redteam_cap_sigma < 0.15);
-    printf("[%s] T96: M73 adversarial red-team cap\n", b96 ? "PASS" : "FAIL");
-    b96 ? passed++ : failed++;
-    bool b97 = s.human_veto_wired;
-    printf("[%s] T97: M74 human veto line\n", b97 ? "PASS" : "FAIL");
-    b97 ? passed++ : failed++;
-    bool b98 = s.kill_switch_tested;
-    printf("[%s] T98: M75 coherence kill-switch\n", b98 ? "PASS" : "FAIL");
-    b98 ? passed++ : failed++;
-    bool b99 = (s.receipt_parent_hash != 0ULL) && s.sovereign_stack_seal;
-    printf("[%s] T99: M76 sovereign seal + receipt parent\n", b99 ? "PASS" : "FAIL");
-    b99 ? passed++ : failed++;
-}
-
 printf("\n════════════════════════════════════════════════════\n");
 printf("  Results: %d/%d passed", passed, passed + failed);
 if (failed == 0) printf(" -- ALL CLEAR");
@@ -4250,9 +4127,9 @@ if (argc > 1 && strcmp(argv[1], "--self-test") == 0) {
 return self_test();
 }
 
-printf("Creation OS v21.0 — AGI SOVEREIGN STACK (ship + planes A–C)\n");
+printf("Creation OS v21.0 — SHIP MODE (twenty pillars)\n");
 printf("Spektre Labs · Lauri Elias Rainio\n");
-printf("Use --self-test to run validation suite (99 checks).\n");
+printf("Use --self-test to run validation suite (86 checks).\n");
 
 CreationOS os = genesis();
 printf("\nSystem alive: %s\n", os.alive ? "yes" : "no");
@@ -4308,12 +4185,6 @@ printf("v20 pillars: ship_seal=%d receipt=%016llx ceiling_σ=%.4f pulse=%.1fHz\n
        (unsigned long long)os.pillars.m54_receipts_anchor,
        (double)os.pillars.m55_constitutional_sigma_ceiling,
        (double)os.pillars.m61_coherence_pulse_hz);
-printf("v21 AGI stack: planesABC=%d%d%d parliament_σ=%.3f seal=%d\n",
-       os.agi_stack.plane_a_loop_closed ? 1 : 0,
-       os.agi_stack.plane_b_budget_ok ? 1 : 0,
-       os.agi_stack.plane_c_anchor_set ? 1 : 0,
-       (double)os.agi_stack.parliament_blended_sigma,
-       os.agi_stack.sovereign_stack_seal ? 1 : 0);
 printf("\n1 = 1\n");
 
 return 0;

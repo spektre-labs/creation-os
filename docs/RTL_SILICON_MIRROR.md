@@ -10,7 +10,10 @@ Synthesizable **combinational and sequential** building blocks that mirror the s
 | `rtl/cos_agency_iron_cover.sv` | **Agency cover** | SymbiYosys `cover` for each `ctrl` encoding (not in default Verilator lint bundle) |
 | `rtl/cos_commit_iron_combo.sv` | **C–I–L** + falsifier bit + **model lane may not own commit** | `commit_allowed` only in EXECUTE with owner + context + ignored |
 | `rtl/cos_boundary_sync.sv` | **Async boundary** / tool-domain signal into kernel clock | Classic 2-flop synchronizer |
-| `rtl/cos_silicon_chip_tb.sv` | Self-checking bench | Verilator `--binary` entry |
+| `rtl/cos_looplm_drum.sv` | **LoopLM** — one tied layer **A** per clock, **σ-port** on mean(h′), stop at threshold or `max_loops` | Mirrors the C `LoopLM` “washing machine” story |
+| `rtl/cos_geodesic_tick.sv` | **σ-geodesic** — one relaxation step toward `sigma_tgt` (shifted decrement) | M17-flavoured, combinational |
+| `rtl/cos_k_eff_bind.sv` | **K_eff = K·(1−σ)** in Q8.8 | `K_eff = (K * (256 − σ_q8)) >> 8` |
+| `rtl/cos_silicon_chip_tb.sv` | Self-checking bench | Verilator `--binary` entry; includes LoopLM + geodesic + K_eff checks |
 
 ## Chisel generator (Scala → Verilog)
 

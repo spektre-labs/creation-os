@@ -1,6 +1,6 @@
 # Living Kernel — `creation_os_v6.c` (v6.0)
 
-**Siblings:** v7 extends this scaffold with M19–M23 “hallucination-shaped” σ toys — **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)** · `make check-v7`. v9 adds M24–M29 silicon/stack schematics — **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)** · `make check-v9`. v10 adds M30–M33 distillation / few-shot / swarm / abstention toys — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`. v11 adds M34 matmul-free LM schematic — **[THE_MATMUL_FREE_MIND_V11.md](THE_MATMUL_FREE_MIND_V11.md)** · `make check-v11`. v12 adds M35–M37 tensor-train / entropy / sequence-head toys — **[THE_TENSOR_MIND_V12.md](THE_TENSOR_MIND_V12.md)** · `make check-v12`.
+**Siblings:** v7 extends this scaffold with M19–M23 “hallucination-shaped” σ toys — **[HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md)** · `make check-v7`. v9 adds M24–M29 silicon/stack schematics — **[PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md)** · `make check-v9`. v10 adds M30–M33 distillation / few-shot / swarm / abstention toys — **[THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)** · `make check-v10`.
 
 **Audience:** integrators, thesis writers, hostile reviewers, and anyone asking *what this second binary is for* and *why it is not interchangeable with `creation_os_v2.c` or with frontier LM tables*.
 
@@ -77,22 +77,6 @@ make check-v6          # build + ./creation_os_v6 --self-test
 
 - **Touching v6:** run `make check-v6` in addition to `make check` when editing `creation_os_v6.c` or the v6 Makefile targets.
 - **Publishing:** `tools/publish_to_creation_os_github.sh` strips `creation_os_v6` binary before rsync so binaries are not pushed to GitHub.
-
----
-
-## Threats to validity (brief)
-
-| Threat | Mitigation in-repo |
-|--------|---------------------|
-| Narrative titles read as empirical claims | **Evidence class** at top; [RESEARCH_AND_THESIS_ARCHITECTURE.md](RESEARCH_AND_THESIS_ARCHITECTURE.md) §0 v6–v12 row |
-| 30× `self_test` vs harness | Closed-form consistency only; **CLAIM_DISCIPLINE** forbidden merge #6 |
-| 1024-bit BSC here vs 4096-bit v2 | Explicit non-claim above; do not merge geometries in one headline |
-
----
-
-## How to cite
-
-**Lab demo (C).** Archive `make check-v6` stdout + **git SHA** + compiler line per [REPRO_BUNDLE_TEMPLATE.md](REPRO_BUNDLE_TEMPLATE.md). Committee read order: [README.md](../README.md#doctoral-and-committee-read-path). Do not substitute this binary for `creation_os_v2.c` invariants or `make bench` rows.
 
 ---
 
