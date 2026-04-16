@@ -32,6 +32,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v37 lab: σ-pipeline SystemVerilog (XNOR bind + per-head popcount + cross-head variance σ-entropy + `sigma_abstain`) + Yosys `synth_xilinx` stats script + SymbiYosys harness | `make synth-v37` / `make formal-sby-v37` / `hdl/v37/synth_and_measure.sh` (SKIPs if `yosys` / `sby` missing) | **M** |
 | v38 lab: Tiny Tapeout–style σ tile (`tt_um_sigma_tile`) Verilator smoke (fast `HV_BITS=128` geometry) | `make check-asic-tile` (SKIPs if `verilator` missing) | **M** |
 | v38 lab: LibreLane/OpenLane-class RTL→GDSII **driver template** (`hdl/asic/config.json` + `hdl/asic/librelane_run.sh`) | `make librelane-v38` (SKIPs if LibreLane + PDK stack not installed) | **M** |
+| v39 lab: σ_hardware scalar + σ_total composition on top of Dirichlet σ (`sigma_full_t`) | `make check-v39` | **M** |
+| v39 lab: digital **ternary_crossbar** toy + harness (column MAC + pseudo-noise counter) | `make check-crossbar-sim` (SKIPs if `verilator` missing) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -43,6 +45,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | Speculative decoding + edge–cloud drafts (EAGLE-class, Mirror-SD, “AI-RAN” narratives, …) | Positioning in `docs/SIGMA_GUIDED_SPEC.md` | **I** |
 | XNOR + popcount ternary / binary FPGA inference line (FINN / Xilinx, LUTNet, XNOR Neural Engine, BRein-style blocks, TerEffic-class ternary GEMM, …) | Survey / citations in vendor + arXiv literature; not a shipped bitstream in this repo | **I** |
 | `hls4ml` (CERN) supports quantized / ternary-ish export paths for FPGA HLS flows | External tooling + papers; not wired into this repo’s build | **I** |
+| Neuromorphic ↔ transformer bridge narratives (Nature collections / surveys; “efficient transformer-like inference” positioning) | External literature; not a measured memristor row in this repo | **I** |
 
 ## Common headline numbers (explicitly not “M” here)
 
@@ -75,6 +78,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “Measured Fmax / timing closure on Artix-7 hardware” | `synth_xilinx` + `stat` are **tool estimates** from Yosys unless accompanied by Vivado timing on a locked part + P&R | **N** |
 | “LibreLane always completes green on a cold laptop” | Needs pinned tool rev + installed PDK + disk; the repo ships a **template** and a **runner script**, not a hermetic repro bundle | **N** |
 | “Verilator `check-asic-tile` proves the 4096-bit tapeout geometry” | The Makefile target builds **`HV_BITS=128`** for fast smoke; full 4096-bit behavior is a separate heavy sim unless you change the flag | **N** |
+| “`ternary_crossbar` is a measured memristor array” | It is a **digital toy model** for column MAC + pseudo noise (`hdl/neuromorphic/crossbar_sim.sv`), not device physics | **N** |
+| “σ_hardware is calibrated to a specific fab device” | `sigma_hardware_estimate()` is a **scalar lab mapping** (`src/sigma/decompose_v39.c`), not a foundry-qualified noise model | **N** |
 
 ## Retired claims (corrections)
 

@@ -88,6 +88,9 @@ hdl/v37/sigma_pipeline/
 # v38 ASIC / Verilator build dir
 hdl/asic/build/
 
+# v39 neuromorphic / Verilator build dir
+hdl/neuromorphic/build/
+
 # Nix / direnv / Earthly / Zig / Rust shim
 .direnv/
 result
