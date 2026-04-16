@@ -144,3 +144,7 @@ polyglot/nim/cos_gate
 
 # Local build artifact (Rust iron gate)
 creation_os_iron_gate
+
+# v49 certification coverage outputs (generated)
+docs/v49/certification/coverage/*.gcov
+docs/v49/certification/coverage/html/

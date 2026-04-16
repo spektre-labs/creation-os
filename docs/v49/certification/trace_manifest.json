@@ -1,0 +1,39 @@
+{
+  "entries": [
+    {
+      "hlr": "HLR-001",
+      "must_contain": "v47_verified_softmax_entropy",
+      "path": "src/v47/sigma_kernel_verified.c"
+    },
+    {
+      "hlr": "HLR-002",
+      "must_contain": "v47_verified_top_margin01",
+      "path": "src/v47/sigma_kernel_verified.c"
+    },
+    {
+      "hlr": "HLR-003",
+      "must_contain": "v47_verified_dirichlet_decompose",
+      "path": "src/v47/sigma_kernel_verified.c"
+    },
+    {
+      "hlr": "HLR-004",
+      "must_contain": "v49_sigma_gate_calibrated_epistemic",
+      "path": "src/v49/sigma_gate.c"
+    },
+    {
+      "hlr": "HLR-005",
+      "must_contain": "v47_verified_max_logit",
+      "path": "src/v47/sigma_kernel_verified.c"
+    },
+    {
+      "hlr": "HLR-006",
+      "must_contain": "\\valid_read",
+      "path": "src/v47/sigma_kernel_verified.c"
+    },
+    {
+      "hlr": "HLR-008",
+      "must_not_contain": "malloc",
+      "path": "src/v47/sigma_kernel_verified.c"
+    }
+  ]
+}

@@ -35,6 +35,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make check-v31` / `check-v33`–`v48`, `check-mcp` | Optional σ / agent / MCP labs — **not** merge-gate |
 | `make verify` | Optional v47 verification stack (Frama-C / extended `sby` / Hypothesis / integration slice; SKIPs OK) |
 | `make red-team` / `make merge-gate-v48` | Optional v48 adversarial harness + heavy gate (`verify` + red-team + `check-v31` + `reviewer`; SKIPs OK) |
+| `make certify` | Optional v49 DO-178C-aligned assurance pack (formal targets + MC/DC driver + audit + trace + red-team; **not** FAA/EASA certification) |
 | `make formal-rtl-lint` | Verilator lint on `rtl/*.sv` |
 | `make stack-ultimate` | Lint + Yosys elab + SAT prove + Verilator sim + Rust iron + Chisel (SKIPs OK) |
 | `make rust-iron-lint` | `cargo fmt --check` + `clippy -D warnings` on iron gate |

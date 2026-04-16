@@ -1,5 +1,15 @@
 # Changelog
 
+## v49 certification-grade assurance pack (2026-04-16)
+
+- **Docs:** `docs/v49/certification/` — DO-178C-*language* plans (PSAC/SDP/SVP/SCMP/SQAP), HLR/LLR/SDD, traceability matrix + `trace_manifest.json`, structural coverage notes, DO-333-style formal methods report, assurance ladder.
+- **Code:** `src/v49/sigma_gate.{c,h}` — fail-closed scalar abstention gate (traceability + MC/DC driver target).
+- **Tests / coverage:** `tests/v49/mcdc_tests.c` + `scripts/v49/run_mcdc.sh` (gcov/lcov best-effort).
+- **Audit:** `scripts/v49/binary_audit.sh` (symbols/strings/strict compile/ASan+UBSan/optional valgrind — lab hygiene, not “Cellebrite certification”).
+- **Trace automation:** `scripts/v49/verify_traceability.py`.
+- **Makefile:** `make certify` / `certify-*` (aggregates formal targets + coverage + audit + `red-team` + trace checks).
+- **Honest scope:** **not** FAA/EASA DAL-A certification; this is an **in-repo assurance artifact pack** aligned to DO-178C *discipline*.
+
 ## v48 σ-armored red-team lab (2026-04-16)
 
 - **Artifact:** `creation_os_v48` — `detect_anomaly` (per-token epistemic statistics + baseline distance), `sandbox_check` (σ-gated privilege stub), `run_all_defenses` (7-layer fail-closed aggregate).

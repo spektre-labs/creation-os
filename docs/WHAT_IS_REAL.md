@@ -54,6 +54,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v47 lab: ZK-σ proof API (`prove_sigma` / `verify_sigma_proof`) | `src/v47/zk_sigma.c` (structural stub; witness packed into `proof[256]`; **not** zero-knowledge) | **N** (cryptographic ZK claim **not** in-repo) |
 | v48 lab: σ-anomaly + σ-gated sandbox + 7-layer fail-closed defense aggregate | `make check-v48` (`creation_os_v48`) | **M** |
 | v48 lab: automated red-team harness (`red-team` / `merge-gate-v48`) | `make red-team` (Garak/DeepTeam **SKIP** by default; σ catalog + pytest always runs when Python present) | **M** |
+| v49 lab: DO-178C-aligned certification artifact pack + `make certify` | `make certify` (Frama-C/`sby` **SKIP** when missing; MC/DC driver + trace script + binary hygiene run) | **M** |
+| v49 lab: FAA/EASA DAL-A “type certificate” for Creation OS | N/A | **N** (no regulator approval claimed) |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
