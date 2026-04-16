@@ -52,6 +52,12 @@ test_bsc
 .DS_Store
 *.o
 
+# Cursor / IDE (local only — use config/claude_desktop_config.json as the committed template)
+.cursor/
+
+# macOS Finder duplicate folders at repo root (whole-tree accidents)
+* 2/
+
 # macOS Finder "duplicate" filenames — never commit (publish script also prunes these).
 * 2.md
 * 2.c

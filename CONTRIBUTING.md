@@ -53,6 +53,16 @@ Do **not** delete or contradict existing **Limitations**, **Measured results** f
 
 See [SECURITY.md](SECURITY.md). Maintainer-oriented notes: [docs/SECURITY_DEVELOPER_NOTES.md](docs/SECURITY_DEVELOPER_NOTES.md).
 
+## Local disk hygiene (macOS)
+
+If Finder created duplicate trees (`README 2.md`, `core 2/`, …), remove them from the repo root with:
+
+```bash
+bash scripts/prune_finder_duplicates.sh
+```
+
+Those paths are **gitignored** and must never be committed.
+
 ## Publishing this tree to GitHub
 
 Maintainers: [docs/MAINTAINERS.md](docs/MAINTAINERS.md) (`make publish-github` after `make merge-gate`).

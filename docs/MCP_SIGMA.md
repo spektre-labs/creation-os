@@ -21,7 +21,7 @@ This document describes the **lab** binary `creation_os_mcp` (JSON-RPC over **ST
 | Client | Example config in this repo |
 |--------|-----------------------------|
 | Claude Desktop | `config/claude_desktop_config.json` |
-| Cursor | `.cursor/mcp.json` |
+| Cursor / other MCP hosts | Copy the `mcpServers` object from `config/claude_desktop_config.json` into your client config (e.g. workspace `.cursor/mcp.json` — **gitignored** here so secrets/paths stay local). |
 
 Adjust `command` to an **absolute path** if your client does not start in the repository root.
 
