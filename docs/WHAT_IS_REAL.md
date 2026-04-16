@@ -8,6 +8,7 @@ This file exists to prevent **accidental tier mixing** when discussing the v29 â
 | mmap-backed GGUF tensor byte views on POSIX | `src/import/gguf_loader.c` + `check-v29` on Linux/macOS | **measured (C)** |
 | Eight scalar sigma signals + abstention gate compile and behave on toy tensors | `src/sigma/channels.c` + `check-v29` | **measured (C)** |
 | XNOR / Hamming-style attention toy runs on tiny tensors | `src/nn/attention_xnor.c` + `check-v29` | **measured (C)** |
+| OpenAI-shaped loopback stub serves `/v1/*` with deterministic bodies | `make check-openai-stub` (`creation_os_openai_stub`) | **measured (C)** |
 | BitNet-shaped forward API exists with deterministic stub logits | `src/nn/bitnet_forward_stub.c` + `check-v29` | **measured (C)** |
 | Full BitNet b1.58 2B4T numerics from Microsoft GGUF in-process | Not shipped in this portable gate; requires external engine / upstream build | **not claimed** |
 | TruthfulQA / MMLU rows from `lm-eval-harness` | `benchmarks/truthfulqa_sigma.sh` is a **SKIP stub** until weights + harness are present | **not claimed** |

@@ -8,6 +8,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [VOCAB_PIPELINE_V27.md](VOCAB_PIPELINE_V27.md) | Integrators, tokenizer / FPGA roadmap readers | v27 shipped vs directive roadmap; mmap COSB + benches + optional Rust/SBY hooks |
 | [hallucination_reduction.md](../benchmarks/hallucination_reduction.md) | Benchmark authors | TruthfulQA / harness evidence note (external; not merge-gate) |
 | [WHAT_IS_REAL.md](WHAT_IS_REAL.md) | v29 readers / agents | Tier-tagged claims for the v29 harness (measured vs not claimed) |
+| [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [REPOS_AND_ROLES.md](REPOS_AND_ROLES.md) | Everyone, agents | **Consortium map:** creation-os vs protocol vs corpus vs Genesis; single push target; where insights land |
 | [CANONICAL_GIT_REPOSITORY.md](CANONICAL_GIT_REPOSITORY.md) | Everyone, agents | Push **only** `spektre-labs/creation-os` for this kernel; forbidden remote mistakes |
 | [RTL_SILICON_MIRROR.md](RTL_SILICON_MIRROR.md) | Integrators, FPGA/ASIC | SystemVerilog + optional **Chisel** (`hw/chisel`); `make formal-rtl-lint`, `make chisel-verilog` |
