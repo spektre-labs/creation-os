@@ -41,7 +41,8 @@ void cos_living_weights_neon_range(float *logits, const uint8_t *reputation, int
  * While running, do not read or mutate the same logits/reputation from other threads. */
 void cos_living_weights_neon_parallel(float *logits, const uint8_t *reputation, int vocab, float scale);
 
-/* Metal path (Apple). Returns false if Metal is unavailable or metallib missing. */
+/* Metal path (Apple). Returns false if Metal is unavailable or metallib missing.
+ * Do not read logits from other threads until the command buffer has completed. */
 bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int vocab, float scale);
 
 /* Best-effort runtime probe (macOS only). */
