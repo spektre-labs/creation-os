@@ -49,6 +49,9 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v46 lab: fast **σ-from-logits** scans + SIMD reductions + adaptive quant policy (`creation_os_v46`) | `make check-v46` | **M** |
 | v46 lab: **SPEED_TABLE** positioning scaffold (BitNet/Qwen/etc. headline cells) | [benchmarks/v46/SPEED_TABLE.md](../benchmarks/v46/SPEED_TABLE.md) (tiers tagged **I/M/N** inside the doc) | **M** |
 | v46 lab: **e2e** BitNet+σ bench matrix (latency/energy/accuracy/honesty JSON) | `make bench-v46-e2e` (exits 0 as **stub**; real runs require bitnet.cpp harness + archived JSON) | **M** |
+| v47 lab: verified-architecture stack (`creation_os_v47`: ACSL σ-kernel + ZK-σ stub + `--sigma-file` JSON driver) | `make check-v47` | **M** |
+| v47 lab: **one-command** verification stack (`verify` / `verify-*` / `trust-report`) | `make verify` (Frama-C / extended `sby` / Hypothesis SKIPs when tools missing) | **M** |
+| v47 lab: ZK-σ proof API (`prove_sigma` / `verify_sigma_proof`) | `src/v47/zk_sigma.c` (structural stub; witness packed into `proof[256]`; **not** zero-knowledge) | **N** (cryptographic ZK claim **not** in-repo) |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## v47 verified-architecture lab (2026-04-16)
+
+- **Artifact:** `creation_os_v47` — ACSL-documented float σ-kernel (`src/v47/sigma_kernel_verified.c`, Frama-C/WP target), ZK-σ **API stub** (`src/v47/zk_sigma.c`, not succinct / not ZK), SymbiYosys **extended-depth** replay (`hdl/v47/sigma_pipeline_extended.sby`), Hypothesis property tests (`tests/v47/property_tests.py`), `make verify` / `trust-report`.
+- **Verify:** `make check-v47`; broader stack: `make verify` (SKIPs when `frama-c` / `sby` / `pytest+hypothesis` absent).
+- **Docs:** [docs/v47/INVARIANT_CHAIN.md](docs/v47/INVARIANT_CHAIN.md); README σ-lab table + stack map; `docs/WHAT_IS_REAL.md`, `docs/SIGMA_FULL_STACK.md`, `docs/DOC_INDEX.md`, `CONTRIBUTING.md`.
+- **Honest scope:** Layer-7 ZK is **P-tier** until a circuit-backed prover exists; Frama-C “M-tier” requires a pinned proof log, not merely annotations.
+
 ## v46 σ-optimized BitNet pipeline lab (2026-04-16)
 
 - **Artifact:** `creation_os_v46` — `v46_fast_sigma_from_logits` (Dirichlet σ + softmax entropy + margin blend), SIMD sum/max (`sigma_simd`), `v46_sigma_adaptive_quant`, latency profile helper.

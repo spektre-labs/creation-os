@@ -32,7 +32,8 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 | `make check-v12` | `creation_os_v12.c` + `--self-test` (52 checks) |
 | `make check-v15` … `make check-v26` | v15 Silicon mind through v26 G500 echo orbit (`--self-test`; exact counts in `make help`) |
 | `make check-v27` … `make check-v29` | Tokenizer scaffold (v27), LM integration shell (v28), collapse harness (v29) — merge-gate includes these |
-| `make check-v31` / `check-v33`–`v46`, `check-mcp` | Optional σ / agent / MCP labs — **not** merge-gate |
+| `make check-v31` / `check-v33`–`v47`, `check-mcp` | Optional σ / agent / MCP labs — **not** merge-gate |
+| `make verify` | Optional v47 verification stack (Frama-C / extended `sby` / Hypothesis / integration slice; SKIPs OK) |
 | `make formal-rtl-lint` | Verilator lint on `rtl/*.sv` |
 | `make stack-ultimate` | Lint + Yosys elab + SAT prove + Verilator sim + Rust iron + Chisel (SKIPs OK) |
 | `make rust-iron-lint` | `cargo fmt --check` + `clippy -D warnings` on iron gate |

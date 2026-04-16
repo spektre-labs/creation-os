@@ -72,6 +72,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v44 | Serving / orchestration | σ-native inference proxy (engine-agnostic gate, OpenAI-shaped API + σ fields, demo per-token σ streaming) |
 | v45 | Meta-cognition / calibration | σ-introspection (calibration gap, doubt reward, internal σ placeholder, paradox scatter harness stub) |
 | v46 | Inference / efficiency | σ-optimized BitNet-facing pipeline (σ-from-logits scans, SIMD reductions, adaptive quant policy, e2e bench stub) |
+| v47 | Verification / hygiene | ACSL σ-kernel surface + extended SymbiYosys replay + ZK-σ API stub + `make verify` / property tests (not merge-gate) |
 
 ## v40 working paper title (only when threshold harness exists)
 
@@ -100,3 +101,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v46 working paper title (only when BitNet+σ harness exists)
 
 **“σ-Optimized BitNet Serving: Near-Zero-Margin σ Telemetry on CPU-Efficient Ternary Inference”**
+
+## v47 note (verification stack; not a product feature)
+
+v47 is a **discipline layer**: contracts + tooling hooks + honest tier tags. Public claims about Frama-C / SymbiYosys / ZK must match `docs/v47/INVARIANT_CHAIN.md` and `docs/WHAT_IS_REAL.md`.
