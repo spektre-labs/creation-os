@@ -81,6 +81,7 @@ SLOTS=(
     "runtime_security_kernel|M|v60|check-v60"
     "defense_in_depth_stack|M|v61|check-v61"
     "reasoning_fabric|M|v62|check-v62"
+    "e2e_encrypted_fabric|M|v63|check-v63"
 )
 
 PASS_LIST=()

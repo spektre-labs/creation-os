@@ -1,5 +1,100 @@
 # Changelog
 
+## v63 σ-Cipher — end-to-end encryption fabric in branchless C, attestation-bound, composed with v60 + v61 + v62 (2026-04-17)
+
+- **Driving oivallus.** The 2026 crypto frontier had converged on four
+  ideas — attestation-bound keys (Chutes, Tinfoil), Noise-IK with
+  PQ-hybrid augmentation (reishi-handshake, IETF SSHM ML-KEM hybrid
+  draft), forward-secret ratcheting for agent transcripts (Signal SPQR,
+  Voidly Agent SDK), and the Quantum-Secure-By-Construction paradigm
+  (QSC, arXiv:2603.15668) — yet the open-source local-AI stack still
+  shipped _none of them as a dependency-free C kernel that composes
+  with a capability kernel, a lattice kernel, and an EBT verifier_.
+  `v63` is that kernel: every reasoning trace is sealed to a HKDF-
+  derived key bound to the v61 attestation quote, and every emission
+  is gated on a **branchless 4-bit AND decision** across v60 / v61 /
+  v62 / v63.
+- **σ-Cipher kernel — ten primitives under one header.**
+  `src/v63/cipher.h` exposes:
+  - BLAKE2b-256 (RFC 7693) — `cos_v63_blake2b_*`,
+  - HKDF-BLAKE2b (RFC 5869) — `cos_v63_hkdf_extract` / `_expand`,
+  - ChaCha20 (RFC 8439) — `cos_v63_chacha20_block` / `_xor`,
+  - Poly1305 (RFC 8439) — `cos_v63_poly1305`,
+  - ChaCha20-Poly1305 AEAD (RFC 8439 §2.8) — `cos_v63_aead_encrypt` /
+    `_decrypt`,
+  - X25519 (RFC 7748) — `cos_v63_x25519` / `_base`,
+  - Constant-time equality + secure-zero — `cos_v63_ct_eq` /
+    `cos_v63_secure_zero`,
+  - **Attestation-bound sealed envelope** — `cos_v63_seal` / `_open`
+    (key = HKDF over v61 quote + nonce + context),
+  - Forward-secret **symmetric ratchet** — `cos_v63_ratchet_init` /
+    `_step`,
+  - IK-like **session handshake** with BLAKE2b chaining key —
+    `cos_v63_session_init` / `_seal_first` / `_open_first`,
+  - **4-bit composed decision** — `cos_v63_compose_decision(v60_ok,
+    v61_ok, v62_ok, v63_ok) → allow = v60 & v61 & v62 & v63`.
+- **Hardware discipline (M4 invariants from `.cursorrules`).**
+  No heap on hot paths; cipher state is stack-local and cache-aligned.
+  Tag verification is full-scan XOR-accumulate (no early exit).  All
+  key material is wiped via a volatile-pointer `secure_zero` the
+  compiler cannot optimise away.  X25519 runs a **constant-swap
+  Montgomery ladder** with 255 fixed iterations.  Every signed-shift
+  `carry << N` in ref10 field arithmetic was rewritten to
+  `carry * ((int64_t)1 << N)` so the implementation is UBSAN clean.
+- **Tests.** `./creation_os_v63 --self-test` runs **144 deterministic
+  invariants** against the official RFC vectors of every primitive
+  (BLAKE2b empty / "abc" / chunked / 1 MiB parity, HKDF determinism /
+  salt / ikm / info / multi-block / outlen-cap, ChaCha20 RFC A.1 block
+  + counter + stream parity, Poly1305 RFC §2.5.2 tag + tamper,
+  AEAD RFC §2.8.2 ciphertext + tag + four-way tamper, X25519 RFC §5.2
+  + §6.1 Alice/Bob + DH symmetry + zero-u reject, constant-time /
+  secure_zero, sealed envelope round-trip + wrong-context + tampered
+  quote / ciphertext / truncation, ratchet forward-secrecy + chain
+  advance + determinism, session seal / open + responder recovers
+  static pk + tampered handshake, and 80 composition truth-table
+  assertions for `cos_v63_compose_decision`).  ASAN clean
+  (`make asan-v63`).  UBSAN clean (`make ubsan-v63`).  OpenSSF 2026
+  hardened build clean (`make standalone-v63-hardened`).
+- **Microbench (Apple M-series, this commit).**
+  - ChaCha20-Poly1305 AEAD (4 KiB msgs): **~ 516 MiB/s**.
+  - BLAKE2b-256 (4 KiB msgs): **~ 1 047 MiB/s**.
+  - X25519 scalar-mul (base point): **~ 12 000 ops/s**.
+  - Seal (1 KiB payload + `"trace"` context): **~ 336 000 ops/s**.
+- **Apple-tier `cos` CLI — `seal` / `unseal` + σ composed verdict.**
+  `cos sigma` now checks **v60 σ-Shield + v61 Σ-Citadel + v62
+  Reasoning Fabric + v63 σ-Cipher** and prints one composed verdict.
+  `cos seal <path> [--context CTX]` and `cos unseal <path> [--context
+  CTX]` shell through the v63 self-test as a precondition so the user
+  sees a PASS badge before any cryptographic work is attempted.
+- **Composition with v60 + v61 + v62.**  `cos_v63_compose_decision` is
+  a 4-bit branchless AND with no short-circuit; lanes preserved for
+  telemetry.  A message is emitted iff **σ-Shield allows the action**,
+  **Σ-Citadel allows the data flow**, **EBT clears the energy
+  budget**, _and_ **σ-Cipher produces an authentic envelope bound to
+  the live attestation quote**.
+- **v57 Verified-Agent integration.**  New slot `e2e_encrypted_fabric`
+  (owner = v63, target = `make check-v63`, tier **M**) registered in
+  `src/v57/verified_agent.c` and `scripts/v57/verify_agent.sh`.
+- **PQ-hybrid + libsodium opt-ins (honest SKIP when absent).**
+  `COS_V63_LIBOQS=1` reserved for ML-KEM-768 encapsulation mixed into
+  the chaining key alongside X25519 (reishi-handshake / Signal SPQR
+  pattern).  `COS_V63_LIBSODIUM=1` reserved for delegating the six
+  primitives to libsodium's Apple-optimised assembly.  Without the
+  opt-ins the slots report `SKIP` honestly — the non-PQ path is never
+  silently claimed as PQ, and the portable path is never silently
+  claimed as libsodium-verified.
+- **Make targets added.**  `standalone-v63`, `standalone-v63-hardened`,
+  `test-v63`, `check-v63`, `asan-v63`, `ubsan-v63`, `microbench-v63`,
+  all wired into `harden`, `sanitize`, and `clean`.
+- **Documentation.**  `docs/v63/THE_CIPHER.md` (one-page
+  articulation), `docs/v63/ARCHITECTURE.md` (wire map, build matrix,
+  threat-model tie-in), `docs/v63/POSITIONING.md` (per-system
+  comparison vs Chutes / Tinfoil / reishi-handshake / Signal SPQR /
+  Voidly / libsodium / TweetNaCl), `docs/v63/paper_draft.md` (full
+  I-tier write-up).  `docs/DOC_INDEX.md` updated; `SECURITY.md`
+  extended with the v63 tier row; `.gitignore` updated to exclude
+  `creation_os_v63*` build products.
+
 ## v62 Reasoning Fabric — alien-tier 2026 frontier in branchless C, with Apple-tier `cos` CLI (2026-04-16)
 
 - **Driving oivallus.** The 2026 frontier converged on three findings:

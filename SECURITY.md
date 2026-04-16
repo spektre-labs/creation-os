@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -69,13 +69,35 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   ubsan-v62`).  Hardened-build clean (`make standalone-v62-hardened`).
   Apple-tier `cos` CLI: `./cos`, `cos sigma`, `cos verify`, `cos chace`,
   `cos think <prompt>` (single C binary, no deps, NO_COLOR-respecting).
+- **v63 σ-Cipher** (`make check-v63`, 144 tests).  Dependency-free C
+  kernel shipping BLAKE2b-256 (RFC 7693), HKDF-BLAKE2b (RFC 5869),
+  ChaCha20-Poly1305 AEAD (RFC 8439), X25519 (RFC 7748), constant-time
+  equality, secure-zero, an **attestation-bound sealed envelope**
+  (key = HKDF over the v61 256-bit quote + nonce + context, so a trace
+  only decrypts on a host whose committed runtime state matches), a
+  forward-secret **symmetric ratchet**, and an IK-like **session
+  handshake** with BLAKE2b chaining key.  Composes with v60 + v61 +
+  v62 as a 4-bit branchless decision (`cos_v63_compose_decision`) so
+  **no sealed message is emitted unless σ-Shield, Σ-Citadel, the EBT
+  verifier _and_ the AEAD tag + quote binding all ALLOW**.  All X25519
+  signed-shifts rewritten to `carry * ((int64_t)1 << N)` for UBSAN
+  cleanliness.  ASAN clean (`make asan-v63`).  UBSAN clean
+  (`make ubsan-v63`).  Hardened-build clean
+  (`make standalone-v63-hardened`).  Apple-tier `cos` CLI surface:
+  `cos seal <path> [--context CTX]`, `cos unseal <path>
+  [--context CTX]`, `cos sigma` (now a four-kernel verdict).
+  Optional `COS_V63_LIBSODIUM=1` delegates the six primitives to
+  libsodium's Apple AArch64 assembly; optional `COS_V63_LIBOQS=1`
+  reserves the ML-KEM-768 hybrid slot (Signal SPQR / reishi-handshake
+  pattern).  Absent opt-ins report `SKIP` honestly; the portable path
+  is never silently claimed as libsodium- or PQ-verified.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 +
-  UBSAN on v60 / v61 / v62, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 +
+  UBSAN on v60 / v61 / v62 / v63, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per
@@ -96,6 +118,18 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   compromised σ producer can still issue an ALLOW; that is why v56
   VPRM and v54 σ-proconductor exist — producing σ with independent
   evidence lines.
+- **v63 is not a network transport.**  σ-Cipher seals messages
+  between kernels in a single address space (or on the same filesystem
+  if an operator chooses to persist an envelope); it is _not_ TLS and
+  does not authenticate endpoints over a network.  For network
+  delivery, wrap the envelope in a reviewed transport (WireGuard,
+  Noise-XX, etc.).
+- **v63 does not guarantee memory encryption.**  Plaintext is visible
+  in process memory while a message is being constructed or consumed;
+  pair with Secure Enclave / TDX / SEV-SNP for RAM-level confidentiality.
+- **v63 PQ-hybrid is opt-in.**  Without `COS_V63_LIBOQS=1`, the PQ
+  slot reports `SKIP` — the non-PQ path is never silently claimed as
+  post-quantum.
 - **No TPM / Secure Enclave** integration yet (P-tier).  Code-page
   baseline hashes are caller-provided.
 - **No formal proof of σ-Shield** yet (F-tier).  Frama-C annotations

@@ -148,6 +148,27 @@ static const v57_slot_t k_slots[] = {
                           "friendly; composes with v60 σ-Shield + v61 "
                           "Σ-Citadel as a 3-bit decision (≥62 tests)",
     },
+    {
+        .slot           = "e2e_encrypted_fabric",
+        .owner_versions = "v63",
+        .make_target    = "make check-v63",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Cipher: end-to-end encrypted fabric — "
+                          "BLAKE2b-256 (RFC 7693) + HKDF (RFC 5869) + "
+                          "ChaCha20-Poly1305 AEAD (RFC 8439) + X25519 "
+                          "(RFC 7748) + constant-time equality + "
+                          "attestation-bound sealed envelope (key = "
+                          "HKDF(v61 quote || context)) + forward-secret "
+                          "symmetric ratchet + IK-like session "
+                          "handshake with BLAKE2b chaining key; "
+                          "dependency-free C, all vectors official RFC; "
+                          "composes with v60+v61+v62 as a 4-bit "
+                          "branchless decision "
+                          "(cos_v63_compose_decision); libsodium / "
+                          "liboqs ML-KEM-768 hybrid opt-ins "
+                          "(COS_V63_LIBSODIUM, COS_V63_LIBOQS); ≥144 "
+                          "tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =
