@@ -3,11 +3,18 @@
 #define CREATION_OS_NATIVE_M4_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Round n up to a positive alignment (e.g. 64 for aligned_alloc). */
+size_t cos_aligned_size_up(size_t n, size_t align);
+
+/* Padded buffer sizes for reputation + logits (C11 aligned_alloc-friendly). */
+void cos_lw_buffer_sizes(int vocab, size_t *reputation_bytes, size_t *logits_bytes);
 
 /* Living weights: popcount(reputation[id]) -> logit bias (inplace). */
 void cos_living_weights_inplace(float *logits, const uint8_t *reputation, int vocab, float scale);

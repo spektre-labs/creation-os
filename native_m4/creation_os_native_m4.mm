@@ -38,9 +38,29 @@ static int float_buffers_exact(const float *a, const float *b, int n)
     return memcmp(a, b, (size_t)n * sizeof(float)) == 0;
 }
 
-static size_t cos_align_up(size_t n, size_t align)
+static int self_test_buffer_helpers(void)
 {
-    return (n + align - 1u) / align * align;
+    size_t r, f;
+    cos_lw_buffer_sizes(0, &r, &f);
+    if (r != 0u || f != 0u) {
+        fprintf(stderr, "FAIL cos_lw_buffer_sizes(0)\n");
+        return 2;
+    }
+    cos_lw_buffer_sizes(1, &r, &f);
+    if (r != 64u || f != 64u) {
+        fprintf(stderr, "FAIL cos_lw_buffer_sizes(1) rep=%zu flt=%zu\n", r, f);
+        return 2;
+    }
+    cos_lw_buffer_sizes(65, &r, &f);
+    if (r != 128u || f != 320u) {
+        fprintf(stderr, "FAIL cos_lw_buffer_sizes(65) rep=%zu flt=%zu\n", r, f);
+        return 2;
+    }
+    if (cos_aligned_size_up(100u, 64u) != 128u) {
+        fprintf(stderr, "FAIL cos_aligned_size_up\n");
+        return 2;
+    }
+    return 0;
 }
 
 static void scalar_range(float *logits, const uint8_t *reputation, int begin, int end, float scale)
@@ -60,8 +80,8 @@ static int self_test_edge_sizes(void)
     static const int sizes[] = {1, 2, 7, 15, 16, 17, 33, 48, 63, 64, 65, 127, 128, 129, 1000, 4096, 65535};
     for (size_t s = 0; s < sizeof(sizes) / sizeof(sizes[0]); s++) {
         int n = sizes[s];
-        const size_t rep_sz = cos_align_up((size_t)n, 64);
-        const size_t flt_sz = cos_align_up((size_t)n * sizeof(float), 64);
+        size_t rep_sz, flt_sz;
+        cos_lw_buffer_sizes(n, &rep_sz, &flt_sz);
         uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
         float *ref = (float *)aligned_alloc(64, flt_sz);
         float *neon = (float *)aligned_alloc(64, flt_sz);
@@ -99,8 +119,8 @@ static int self_test_neon_range_slice(void)
     const int begin = 37;
     const int end = 311;
     const float scale = 0.125f;
-    const size_t rep_sz = cos_align_up((size_t)n, 64);
-    const size_t flt_sz = cos_align_up((size_t)n * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(n, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     float *ref = (float *)aligned_alloc(64, flt_sz);
     float *neon = (float *)aligned_alloc(64, flt_sz);
@@ -136,8 +156,8 @@ static int self_test_neon_parallel_with_tail(void)
 {
     const int vocab = 65536 + 29;
     const float scale = 0.125f;
-    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
-    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     float *base = (float *)aligned_alloc(64, flt_sz);
     float *neon = (float *)aligned_alloc(64, flt_sz);
@@ -189,8 +209,8 @@ static int self_test_neon_parallel_two_chunks(void)
 {
     const int vocab = 65536 * 2 + 41;
     const float scale = 0.125f;
-    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
-    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     float *base = (float *)aligned_alloc(64, flt_sz);
     float *par = (float *)aligned_alloc(64, flt_sz);
@@ -223,7 +243,10 @@ static int self_test_neon_parallel_two_chunks(void)
 
 static int self_test(void)
 {
-    int e = self_test_edge_sizes();
+    int e = self_test_buffer_helpers();
+    if (e != 0)
+        return e;
+    e = self_test_edge_sizes();
     if (e != 0)
         return e;
     e = self_test_neon_range_slice();
@@ -238,8 +261,8 @@ static int self_test(void)
 
     const int vocab = 65536; /* triggers NEON parallel path on Apple AArch64 */
     const float scale = 0.125f;
-    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
-    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     float *base = (float *)aligned_alloc(64, flt_sz);
     float *neon = (float *)aligned_alloc(64, flt_sz);
@@ -308,8 +331,8 @@ static int self_test(void)
 
 static void bench_once(int vocab, int iters, int parallel)
 {
-    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
-    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     float *logits = (float *)aligned_alloc(64, flt_sz);
     if (!rep || !logits) {
@@ -356,6 +379,7 @@ int main(int argc, char **argv)
         printf("\n");
         printf("Optional:\n");
         printf("  CREATION_OS_METALLIB=path/to/creation_os_lw.metallib\n");
+        printf("  CREATION_OS_METAL_DEBUG=1  (stderr if metallib load fails)\n");
         printf("\n");
         printf("Build metallib (Darwin):\n");
         printf("  make metallib-m4\n");
@@ -387,8 +411,8 @@ int main(int argc, char **argv)
 
     /* Demo: run living-weights on a perf queue. */
     const int vocab = 1024;
-    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
-    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     float *logits = (float *)aligned_alloc(64, flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     if (!logits || !rep) {

@@ -10,6 +10,28 @@
 #import <Metal/Metal.h>
 #endif
 
+#if defined(__APPLE__)
+static NSURL *cos_metallib_url(void)
+{
+    const char *env = getenv("CREATION_OS_METALLIB");
+    if (env && env[0])
+        return [NSURL fileURLWithPath:[NSString stringWithUTF8String:env]];
+
+    NSFileManager *fm = [NSFileManager defaultManager];
+    NSArray<NSString *> *candidates = @[
+        @"native_m4/creation_os_lw.metallib",
+        @"./native_m4/creation_os_lw.metallib",
+        @"creation_os_lw.metallib",
+    ];
+    for (NSString *rel in candidates) {
+        NSString *p = [rel stringByStandardizingPath];
+        if ([fm isReadableFileAtPath:p])
+            return [NSURL fileURLWithPath:p];
+    }
+    return [NSURL fileURLWithPath:@"native_m4/creation_os_lw.metallib"];
+}
+#endif
+
 bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int vocab, float scale)
 {
 #if !defined(__APPLE__)
@@ -30,19 +52,16 @@ bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int voca
         NSError *err = nil;
         id<MTLLibrary> lib = nil;
 
-        const char *path = getenv("CREATION_OS_METALLIB");
-        NSURL *url = nil;
-        if (path && path[0]) {
-            url = [NSURL fileURLWithPath:[NSString stringWithUTF8String:path]];
-        } else {
-            /* Default: ./native_m4/creation_os_lw.metallib next to CWD */
-            url = [NSURL fileURLWithPath:@"native_m4/creation_os_lw.metallib"];
-        }
+        NSURL *url = cos_metallib_url();
         const char *fp = [[url path] UTF8String];
         if (access(fp, R_OK) != 0)
             return false;
         lib = [dev newLibraryWithURL:url error:&err];
         if (!lib) {
+            if (getenv("CREATION_OS_METAL_DEBUG") != NULL) {
+                fprintf(stderr, "native-m4: Metal library load failed (%s): %s\n", fp,
+                        err ? [[err localizedDescription] UTF8String] : "unknown");
+            }
             return false;
         }
 
