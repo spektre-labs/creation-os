@@ -13,7 +13,7 @@ All graphics in this tree are **original SVG** (vector, scalable) — **no stock
 | [assets/evidence-ladder.svg](assets/evidence-ladder.svg) | Dark | CLAIM_DISCIPLINE / committee — Arithmetic → Measured → Harness + lab-demo band |
 | [assets/planes-abc.svg](assets/planes-abc.svg) | Light | ANALYSIS / AGI map — Planes A–B–C with flow arrows |
 | [assets/reddit-hook-banner.svg](assets/reddit-hook-banner.svg) | Dark | README **above-the-fold** — drive-by hook + merge-gate / **184** checks @ v26 CTA (lab demo class) |
-| [assets/readme-scan-map.svg](assets/readme-scan-map.svg) | Light | README **Contents** — inverted pyramid / L1–L3 scan map (FIG 09) |
+| [assets/readme-scan-map.svg](assets/readme-scan-map.svg) | **Light + dark** (`prefers-color-scheme` inside SVG) | README **Contents** — inverted pyramid / L1–L3 scan map (FIG 09) |
 | [Monorepo landing hero](../../docs/assets/landing-hero.svg) | Dark | Parent **spektre-protocol** README banner (FIG 01 / archive display) |
 
 ## Figure register (stable IDs)
@@ -44,6 +44,7 @@ Figures use a **quiet engineering grid**, **corner index brackets**, **`FIG nn` 
 - **Light figures** (`#fafafa` / `#f8fafc` backgrounds): print-first, keynote-friendly. **Drop shadow** via `feDropShadow` at low opacity (~0.06–0.08) for card lift — not heavy skeuomorphism.
 - **Dark figures** (`#0f172a`–`#020617` backgrounds): deck contrast on projectors; top **accent hairline** (cyan–indigo gradient) as brand spine.
 - **Accessibility:** every SVG ships `<title>` + `<desc>` and `role="img"` + `aria-labelledby` for screen readers and PDF export.
+- **README on GitHub:** hero and inline figures use `decoding="async"`, `max-width: min(…px, 100%)`, `height: auto`, and light `border-radius` where `style` is honored; clients that strip inline CSS still get `width="96%"` / `width="100%"` fallbacks. **FIG 09** is the primary light/dark adaptive asset on the landing README.
 - **ASCII in `<text>`** when possible (use `/` not exotic punctuation) — avoids replacement glyphs and invalid UTF-8 in some rasterizers. See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) for diagram vs policy.
 
 ## Embedding in Markdown (GitHub)

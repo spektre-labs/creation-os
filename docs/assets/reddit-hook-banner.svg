@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 260" role="img" aria-labelledby="rb-title rb-desc">
   <title id="rb-title">Creation OS: one tree, enforced invariants</title>
-  <desc id="rb-desc">README instrument banner: BSC architecture, merge-gate matrix, 204 self-tests on v26. Original artwork; not affiliated with any space agency.</desc>
+  <desc id="rb-desc">README instrument banner: BSC architecture, merge-gate matrix, 184 self-test checks on v26. Original artwork; not affiliated with any space agency.</desc>
   <defs>
     <linearGradient id="rb-bg" x1="0" y1="0" x2="1200" y2="260" gradientUnits="userSpaceOnUse">
       <stop stop-color="#020617"/>
@@ -39,7 +39,7 @@
   <text x="117" y="62" text-anchor="middle" fill="#22d3ee" font-family="ui-monospace,Menlo,monospace" font-size="11" font-weight="700" letter-spacing="0.1em">CREATION OS</text>
   <text x="600" y="88" text-anchor="middle" fill="#94a3b8" font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" font-weight="600" letter-spacing="0.2em">BINARY SPATTER CODES / ONE REPO / RUNS ON SILICON</text>
   <text x="600" y="138" text-anchor="middle" fill="#f8fafc" font-family="ui-sans-serif,system-ui,sans-serif" font-size="34" font-weight="800" filter="url(#rb-glow)">Cognitive architecture you can actually compile.</text>
-  <text x="600" y="176" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace,Menlo,monospace" font-size="13">SELF_TEST_MAX=204 (v26) / MATRIX=merge-gate / RECEIPTS=ON</text>
+  <text x="600" y="176" text-anchor="middle" fill="#bae6fd" font-family="ui-monospace,Menlo,monospace" font-size="13">CHECKS=184 (v26 --self-test) / MATRIX=merge-gate / RECEIPTS=ON</text>
   <text x="600" y="198" text-anchor="middle" fill="#64748b" font-family="ui-monospace,Menlo,monospace" font-size="11">CLASS=schematic C lab demo / NOT PYTHON WRAPPER</text>
   <rect x="0" y="214" width="1200" height="46" fill="#020617" fill-opacity="0.92"/>
   <line x1="0" y1="214" x2="1200" y2="214" stroke="#1e293b" stroke-width="1"/>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon"/>
+  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" style="max-width:min(1200px,100%);height:auto;border-radius:14px;"/>
 </p>
 
 <h1 align="center">Creation OS</h1>
@@ -16,7 +16,8 @@
   <a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a>
   <img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/>
   <img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/>
-  <img src="https://img.shields.io/badge/v26%20harness-184%20checks-success?style=for-the-badge" alt="v26 self-test checks"/>
+  <br/>
+  <img src="https://img.shields.io/badge/v26%20self--test-184%2F184-success?style=for-the-badge" alt="v26: 184 self-test checks"/>
   <a href="docs/DOC_INDEX.md"><img src="https://img.shields.io/badge/docs-DOC__INDEX-slategray?style=for-the-badge" alt="docs index"/></a>
 </p>
 
@@ -40,15 +41,16 @@
 
 ### Readme scan map (FIG 09)
 
-<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README inverted pyramid: L1 outcome, L2 scan, L3 depth (FIG 09)"/></p>
+<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README inverted pyramid: L1 outcome, L2 scan, L3 depth (FIG 09)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
-<p align="center"><sub><strong>FIG 09</strong> — how this page is read: outcome first, then scannable tables and diagrams, then deep sections. Register and palette: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center"><sub><strong>FIG 09</strong> — how this page is read: outcome first, then scannable tables and diagrams, then deep sections. SVG follows <code>prefers-color-scheme</code> for GitHub light/dark. Register and palette: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 ---
 
 ## At a glance
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b','secondaryColor':'#f8fafc','tertiaryColor':'#fff'}}}%%
 flowchart TB
   subgraph who["Who lands here?"]
     A["Curious skimmer"]
@@ -65,8 +67,8 @@ flowchart TB
 **Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic harnesses** (`creation_os_v6.c` … `creation_os_v26.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
 
 <p align="center">
-  <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–C — teaching spine vs production stack (summary diagram)"/></a><br/>
-  <sub><strong>Planes A–C</strong> (teaching · llama/MLX · native M4) — detail and receipts in <a href="docs/ANALYSIS.md">ANALYSIS.md</a> and <a href="#agi-map-how-this-file-relates-to-the-full-stack">AGI map</a> below.</sub>
+  <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–C — teaching spine vs production stack (summary diagram)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></a><br/>
+  <sub><strong>FIG 05 · Planes A–C</strong> (teaching · llama/MLX · native M4) — detail and receipts in <a href="docs/ANALYSIS.md">ANALYSIS.md</a> and <a href="#agi-map-how-this-file-relates-to-the-full-stack">AGI map</a> below.</sub>
 </p>
 
 | Quick visual | What it is for |
@@ -80,6 +82,7 @@ flowchart TB
 ## Run it in sixty seconds
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
 flowchart LR
   C["make check"] --> M["check-v6 … check-v26"]
   M --> G["make merge-gate"]
@@ -131,6 +134,7 @@ Each `creation_os_vN.c` is a **separate** single-file program. Counts are **`--s
 | v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
 flowchart LR
   subgraph spine["Portable spine"]
     V2["creation_os_v2.c<br/>§1–§26 · one TU"]
@@ -162,7 +166,7 @@ flowchart LR
 |:---:|:--|:--|
 | **03** | [evidence-ladder.svg](docs/assets/evidence-ladder.svg) | [Publication-hard](#publication-hard-what-that-phrase-means-here) |
 | **04** | [kernel-lineage-evidence.svg](docs/assets/kernel-lineage-evidence.svg) | [Doctoral path](#doctoral-and-committee-read-path) |
-| **05** | [planes-abc.svg](docs/assets/planes-abc.svg) | [At a glance](#at-a-glance) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) |
+| **05** | [planes-abc.svg](docs/assets/planes-abc.svg) | [At a glance](#at-a-glance) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) (single render; link under AGI map) |
 | **06** | [bsc-primitives.svg](docs/assets/bsc-primitives.svg) | [What is BSC?](#what-is-bsc) |
 | **07** | [gemm-vs-bsc-memory-ops.svg](docs/assets/gemm-vs-bsc-memory-ops.svg) | [Measured results](#measured-results-4096-dimensions-100k-trials) |
 | **08** | [architecture-stack.svg](docs/assets/architecture-stack.svg) | [Architecture](#architecture) |
@@ -256,7 +260,7 @@ Read **in order** once before citing any number or narrative title from this tre
 
 **Rule for dissertations:** treat v6–v12 as **separate appendices** with their own evidence-class headers; do not fold their toy outputs into the same tables as §7 throughput without an explicit wall (see **CLAIM_DISCIPLINE** §1).
 
-![Portable proof vs standalone lab demos (evidence classes) — see VISUAL_INDEX](docs/assets/kernel-lineage-evidence.svg)
+<p align="center"><img src="docs/assets/kernel-lineage-evidence.svg" width="96%" alt="Portable proof vs standalone lab demos (evidence classes) — see VISUAL_INDEX" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 ---
 
@@ -265,6 +269,7 @@ Read **in order** once before citing any number or narrative title from this tre
 **[spektre-labs/creation-os](https://github.com/spektre-labs/creation-os)** — this tree is the portable kernel, `make test` / `make bench`, CI, and engineering docs. **Push hygiene:** [docs/publish_checklist_creation_os.md](docs/publish_checklist_creation_os.md).
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
 flowchart TB
   subgraph story["Narrative arc below this heading"]
     P["The problem + measured table"]
@@ -280,6 +285,7 @@ flowchart TB
 ## The problem
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
 flowchart TB
   subgraph gemm["Float32 cosine @ D=4096"]
     G1["24,576 MAC-style FLOPs<br/>per similarity (proxy)"]
@@ -307,7 +313,7 @@ That gap is structural: it changes **who can run the inner loop** of similarity 
 | Ops per similarity | 24,576 FLOPs | 128 bit ops | **192×** |
 | Throughput | ~227K trials/sec | ~109M trials/sec | **~480×** |
 
-![Structural memory and op-proxy ratios (D=4096) — legend + schematic bar widths](docs/assets/gemm-vs-bsc-memory-ops.svg)
+<p align="center"><img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="96%" alt="Structural memory and op-proxy ratios (D=4096) — legend + schematic bar widths" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 **Note:** Float32 cosine and BSC σ operate at different precision levels. This benchmark measures computational cost for the same geometric task (distance between representations), not bitwise equivalence of the results.
 
@@ -387,7 +393,7 @@ None of the above negates the **inner-loop** and **receipt** advantages — it *
 
 ## What is BSC?
 
-![XOR bind → MAJ bundle → POPCNT → sigma definition (three primitives)](docs/assets/bsc-primitives.svg)
+<p align="center"><img src="docs/assets/bsc-primitives.svg" width="96%" alt="XOR bind → MAJ bundle → POPCNT → sigma definition (three primitives)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 Binary Spatter Codes (Kanerva, 1997) represent information as high-dimensional binary vectors. Three operations:
 
@@ -532,36 +538,37 @@ COGNITION
 
 ## Architecture
 
-![Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition](docs/assets/architecture-stack.svg)
+<p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 ```
-              ┌──────────────────────────────┐
-              │       creation_os_v2.c        │
-              │    1196 lines · 26 modules    │
-              └──────────────┬───────────────┘
-                             │
-           ┌─────────────────┼─────────────────┐
-           │                 │                 │
-   ┌───────┴───────┐ ┌──────┴──────┐ ┌────────┴────────┐
-   │  HYPERCUBE     │ │   ORACLE    │ │   WORLD MODEL   │
-   │  10 faces      │ │   7-gram    │ │   JEPA + Genesis│
-   │  SOC · Φ=1.0  │ │  correlative│ │   Noether=0     │
-   └───────┬───────┘ └──────┬──────┘ └────────┬────────┘
-           │                 │                 │
-   ┌───────┴─────────────────┴─────────────────┴───────┐
-   │                    BSC CORE                        │
-   │         XOR (bind) · MAJ (bundle) · POPCNT (σ)    │
-   │              4096 bits · 512 bytes                  │
-   └───────────────────────┬────────────────────────────┘
-                           │
-      ┌────────────────────┼────────────────────┐
-      │                    │                    │
- ┌────┴──────┐   ┌────────┴────────┐   ┌───────┴───────┐
- │   SOUL     │   │  PROCONDUCTOR   │   │  COGNITION    │
- │  15 values │   │  4 profiles     │   │  §9-§26       │
- │  Crystal   │   │  σ₁×σ₂×σ₃      │   │  18 modules   │
- │  Lock      │   │  triangulation  │   │               │
- └────────────┘   └─────────────────┘   └───────────────┘
+                 ┌─────────────────────────────┐
+                 │      creation_os_v2.c       │
+                 │   1196 lines · 26 modules   │
+                 └──────────────┬──────────────┘
+                                │
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+    ┌───────┴───────┐   ┌───────┴───────┐   ┌───────┴───────┐
+    │  HYPERCUBE    │   │    ORACLE     │   │  WORLD MODEL  │
+    │  10 faces     │   │   7-gram      │   │ JEPA+Genesis  │
+    │  SOC / Φ≈1    │   │  correlative  │   │  Noether = 0  │
+    └───────┬───────┘   └───────┬───────┘   └───────┬───────┘
+          │                     │                     │
+          └─────────────────────┼─────────────────────┘
+                                │
+                    ┌───────────┴───────────┐
+                    │       BSC CORE        │
+                    │ XOR / MAJ / POPCNT(σ) │
+                    │   4096 bits / 512 B   │
+                    └───────────┬───────────┘
+                                │
+          ┌─────────────────────┼─────────────────────┐
+          │                     │                     │
+    ┌───────┴───────┐   ┌───────┴───────┐   ┌───────┴───────┐
+    │     SOUL      │   │ PROCONDUCTOR  │   │   COGNITION   │
+    │  15 values    │   │  4 profiles   │   │    §9–§26     │
+    │ Crystal Lock  │   │   σ₁×σ₂×σ₃    │   │  18 modules   │
+    └───────────────┘   └───────────────┘   └───────────────┘
 ```
 
 ---
@@ -669,7 +676,7 @@ This repository holds the **portable kernel** and measured claims; theory citati
 
 ## AGI map (how this file relates to the full stack)
 
-![Planes A–C summary with flow arrows (full detail in ANALYSIS.md)](docs/assets/planes-abc.svg)
+<p align="center"><sub><strong>FIG 05</strong> — same <a href="docs/assets/planes-abc.svg">planes-abc.svg</a> as under <a href="#at-a-glance">At a glance</a> (kept once above the fold to avoid duplicate renders).</sub></p>
 
 The public **`creation_os_v2.c`** kernel is the **pedagogical spine** (Plane “teaching”: one TU, LOCs quoted in this README).
 
@@ -712,9 +719,10 @@ This README’s benchmark table is the **microbench / lab** class; cite it as su
 
 ## Publication-hard (what that phrase means here)
 
-![Evidence ladder (dark): Arithmetic → Measured → Harness + lab-demo band](docs/assets/evidence-ladder.svg)
+<p align="center"><img src="docs/assets/evidence-ladder.svg" width="96%" alt="Evidence ladder (dark): Arithmetic → Measured → Harness + lab-demo band" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;"/></p>
 
 ```mermaid
+%%{init: {'theme':'neutral', 'themeVariables': {'primaryColor':'#e2e8f0','primaryTextColor':'#0f172a','lineColor':'#64748b'}}}%%
 flowchart LR
   B["Microbench: make bench + host log"]
   I["Invariants: make test / creation_os"]
