@@ -1,5 +1,27 @@
 # Changelog
 
+## v51 AGI-complete integration scaffold (2026-04-16)
+
+- **Scaffold:** `src/v51/cognitive_loop.{c,h}` — six-phase loop
+  (Perceive → Plan → Execute → Verify → Reflect → Learn). Pure C, deterministic,
+  allocation-free hot path. Planner-facing σ is normalized softmax entropy in [0,1];
+  v34 Dirichlet evidence is rescaled + surfaced as aleatoric/epistemic channels.
+- **Agent:** `src/v51/agent.{c,h}` — σ-gated bounded agent loop with sandbox
+  policy table (fail-closed on unknown tool), σ-deny threshold, and a ring
+  experience buffer (cap 64). No "try anyway" loop — abstains cleanly.
+- **UX spec:** `config/v51_experience.yaml` (chat/expert/serve/benchmark/certify
+  modes — aspirational `creation-os` wrapper CLI documented honestly).
+- **Web UI:** `src/v51/ui/web.html` — single-file static σ-dashboard mock
+  (per-token color, abstention styled as calm gray notice, 8-channel view,
+  System 1/2/Deep-Think indicator). No build step, no third-party deps.
+- **Installer:** `scripts/v51/install.sh` — **safe dry-run** (no network,
+  no `/usr/local/bin` writes, no weight downloads). Explains what a future
+  signed `curl | sh` installer would do.
+- **Architecture:** `docs/v51/ARCHITECTURE.md` — one-picture view of the
+  v33–v50 layer stack, explicit "is / is not" scope section.
+- **Makefile:** `make check-v51` (13/13 self-test); `make standalone-v51`;
+  help + `.PHONY` updated. **Not** part of `merge-gate`.
+
 ## v50 final benchmark rollup harness (2026-04-16)
 
 - **Harness:** `make v50-benchmark` → `benchmarks/v50/run_all.sh` (explicit **STUB** JSON slots for standard eval names until an engine+dataset harness exists).

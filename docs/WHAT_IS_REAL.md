@@ -58,6 +58,11 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v49 lab: FAA/EASA DAL-A “type certificate” for Creation OS | N/A | **N** (no regulator approval claimed) |
 | v50 lab: final benchmark rollup (`FINAL_RESULTS.md` + STUB eval JSON slots) | `make v50-benchmark` | **M** |
 | v50 lab: frontier-comparable accuracy tables filled with real eval JSON | `benchmarks/v50/*.json` (non-stub) | **P** (requires pinned engine + datasets) |
+| v51 lab: integration scaffold (cognitive loop + σ-gated agent + sandbox + ring memory) | `make check-v51` (13/13) | **M** (scaffold; not a live engine) |
+| v51 lab: static web σ-dashboard mock (`src/v51/ui/web.html`) | open in any browser | **M** (static; no live model) |
+| v51 lab: one-line installer `scripts/v51/install.sh` | `bash scripts/v51/install.sh` | **M** (dry-run by design) |
+| v51 lab: signed public `curl \| sh` installer + `creation-os` wrapper CLI | N/A | **P** (requires signed release + wrapper binary) |
+| v51 lab: "AGI-complete" running product (transformer + loop + agent + UI end-to-end) | N/A | **P** (no in-process transformer; engine is external) |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 

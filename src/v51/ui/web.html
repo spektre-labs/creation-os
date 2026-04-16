@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<!--
+  SPDX-License-Identifier: AGPL-3.0-or-later
+
+  v51 web UI — static scaffold.
+
+  Honest scope: this file is a single-page mock of the σ-dashboard. It
+  does NOT call a model, does NOT require a build step, and does NOT
+  ship React or any third-party dependency. It renders a deterministic
+  demo conversation so the reader can see the intended UX:
+
+    - per-token σ color (green/amber/red)
+    - abstention styled as a calm gray notice, not a red error
+    - System 1 / 2 / Deep-Think indicator
+    - 8-channel σ dashboard (static numbers)
+
+  To load a live response, wire this page at a future `/v1/chat/completions`
+  endpoint that returns σ in the response envelope (see
+  config/v51_experience.yaml).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Creation OS v51 — σ-dashboard (scaffold)</title>
+    <style>
+      :root {
+        --bg: #0b1220;
+        --panel: #111a2d;
+        --panel-2: #162038;
+        --text: #e6edf6;
+        --muted: #8b98b0;
+        --spektre-blue: #1e50a0;
+        --ok: #4CAF50;
+        --warn: #FFC107;
+        --bad: #F44336;
+        --abstain: #374151;
+        --border: #1f2a44;
+        font-family: "Palatino", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); min-height: 100vh; }
+      header {
+        padding: 18px 24px;
+        border-bottom: 1px solid var(--border);
+        display: flex; align-items: baseline; gap: 16px; flex-wrap: wrap;
+      }
+      header h1 { margin: 0; font-size: 20px; letter-spacing: 0.3px; }
+      header .tier {
+        font-size: 11px; color: var(--muted);
+        background: #0d1628; border: 1px solid var(--border);
+        padding: 2px 8px; border-radius: 999px;
+      }
+      main {
+        display: grid; gap: 18px;
+        grid-template-columns: minmax(0,1fr) 360px;
+        padding: 18px 24px 36px;
+      }
+      @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+      .panel {
+        background: var(--panel); border: 1px solid var(--border);
+        border-radius: 14px; padding: 18px;
+      }
+      .panel h2 { margin: 0 0 12px; font-size: 14px; color: var(--muted); letter-spacing: 0.6px; text-transform: uppercase; font-weight: 600; }
+      .msg { margin: 12px 0; line-height: 1.55; font-size: 16px; }
+      .msg.user { color: var(--text); }
+      .msg.assistant { color: var(--text); }
+      .msg .label { display: inline-block; font-size: 11px; color: var(--muted); margin-right: 8px; }
+      .tok { padding: 0 1px; border-radius: 3px; }
+      .tok.ok { color: var(--ok); }
+      .tok.warn { color: var(--warn); }
+      .tok.bad { color: var(--bad); }
+      .abstain {
+        margin: 12px 0; padding: 12px 14px;
+        background: var(--abstain); color: #cbd5e1;
+        border-radius: 10px; font-style: italic;
+      }
+      .thinking {
+        font-size: 12px; color: var(--muted);
+        display: inline-flex; align-items: center; gap: 8px;
+        padding: 4px 10px; border: 1px dashed var(--border); border-radius: 999px;
+        margin-left: 8px;
+      }
+      .thinking.sys1 { color: var(--ok); }
+      .thinking.sys2 { color: var(--warn); }
+      .thinking.deep { color: var(--bad); }
+      aside { display: flex; flex-direction: column; gap: 18px; }
+      .channels { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 12px; font-size: 13px; }
+      .channels .k { color: var(--muted); }
+      .channels .v { color: var(--text); font-variant-numeric: tabular-nums; }
+      .bar { height: 6px; background: #0d1628; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+      .bar > span { display: block; height: 100%; }
+      .bar > span.ok { background: var(--ok); }
+      .bar > span.warn { background: var(--warn); }
+      .bar > span.bad { background: var(--bad); }
+      .kv { display: flex; justify-content: space-between; gap: 12px; padding: 6px 0; border-bottom: 1px dotted var(--border); font-size: 13px; }
+      .kv:last-child { border-bottom: 0; }
+      .kv .k { color: var(--muted); }
+      .kv .v { font-variant-numeric: tabular-nums; }
+      footer {
+        padding: 14px 24px 30px; color: var(--muted);
+        font-size: 12px; border-top: 1px solid var(--border);
+      }
+      a { color: #9fb7e6; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Creation OS v51 — σ dashboard</h1>
+      <span class="tier">scaffold · no live model</span>
+    </header>
+
+    <main>
+      <section class="panel" aria-label="Conversation">
+        <h2>Conversation</h2>
+
+        <div class="msg user">
+          <span class="label">user</span>
+          What is 17 × 23?
+        </div>
+        <div class="msg assistant">
+          <span class="label">assistant</span>
+          <span class="thinking sys1">System 1 · σ &lt; 0.20</span><br/>
+          <span class="tok ok">17</span>
+          <span class="tok ok">×</span>
+          <span class="tok ok">23</span>
+          <span class="tok ok">=</span>
+          <span class="tok ok">391</span>.
+        </div>
+
+        <div class="msg user">
+          <span class="label">user</span>
+          Write a short proof that √2 is irrational.
+        </div>
+        <div class="msg assistant">
+          <span class="label">assistant</span>
+          <span class="thinking sys2">System 2 · budget forcing · σ ≈ 0.42</span><br/>
+          <span class="tok ok">Assume</span>
+          <span class="tok ok">√2</span>
+          <span class="tok ok">=</span>
+          <span class="tok warn">p/q</span>
+          <span class="tok ok">in</span>
+          <span class="tok warn">lowest</span>
+          <span class="tok warn">terms</span>.
+          <span class="tok ok">Then</span>
+          <span class="tok ok">2q²</span>
+          <span class="tok ok">=</span>
+          <span class="tok ok">p²</span>,
+          <span class="tok warn">so</span>
+          <span class="tok warn">p</span>
+          <span class="tok ok">is</span>
+          <span class="tok ok">even</span>
+          <span class="tok bad">…</span>
+        </div>
+
+        <div class="msg user">
+          <span class="label">user</span>
+          What is the prime factorization of 2,837,491?
+        </div>
+        <div class="msg assistant">
+          <span class="label">assistant</span>
+          <span class="thinking deep">Abstain · σ ≥ 0.90</span>
+          <div class="abstain">
+            I'm not confident enough to answer this reliably.
+          </div>
+        </div>
+      </section>
+
+      <aside>
+        <section class="panel" aria-label="σ channels">
+          <h2>σ channels (last token)</h2>
+          <div class="channels">
+            <div class="k">entropy</div>          <div class="v">0.31</div>
+            <div class="k">top-margin</div>        <div class="v">0.22</div>
+            <div class="k">dirichlet α-mass</div>  <div class="v">0.44</div>
+            <div class="k">epistemic</div>         <div class="v">0.18</div>
+            <div class="k">aleatoric</div>         <div class="v">0.26</div>
+            <div class="k">stability</div>         <div class="v">0.12</div>
+            <div class="k">cross-head var</div>    <div class="v">0.09</div>
+            <div class="k">critical-token</div>    <div class="v">0.07</div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Decomposition">
+          <h2>Dirichlet decomposition</h2>
+          <div class="bar" title="aleatoric">
+            <span class="warn" style="width: 55%"></span>
+          </div>
+          <div class="kv"><span class="k">aleatoric</span><span class="v">0.26</span></div>
+          <div class="bar" title="epistemic">
+            <span class="bad" style="width: 28%"></span>
+          </div>
+          <div class="kv"><span class="k">epistemic</span><span class="v">0.18</span></div>
+          <div class="bar" title="total σ">
+            <span class="ok" style="width: 44%"></span>
+          </div>
+          <div class="kv"><span class="k">total σ</span><span class="v">0.44</span></div>
+        </section>
+
+        <section class="panel" aria-label="Defense status">
+          <h2>Defense &amp; assurance</h2>
+          <div class="kv"><span class="k">input filter</span><span class="v">pass</span></div>
+          <div class="kv"><span class="k">σ-gate</span><span class="v">pass</span></div>
+          <div class="kv"><span class="k">σ-anomaly</span><span class="v">clean</span></div>
+          <div class="kv"><span class="k">sandbox</span><span class="v">default</span></div>
+          <div class="kv"><span class="k">calibration gap</span><span class="v">0.06</span></div>
+          <div class="kv"><span class="k">make certify</span><span class="v">see log</span></div>
+        </section>
+      </aside>
+    </main>
+
+    <footer>
+      Static scaffold — no model loaded. Real σ-dashboard will be wired
+      to the v44 proxy / OpenAI-shaped endpoint; see
+      <code>docs/v51/ARCHITECTURE.md</code> and
+      <code>docs/WHAT_IS_REAL.md</code>.
+    </footer>
+  </body>
+</html>

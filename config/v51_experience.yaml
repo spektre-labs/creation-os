@@ -1,0 +1,61 @@
+# Creation OS v51 — experience configuration (scaffold).
+#
+# Honest scope: this YAML is a *spec* for the Apple-level UX the project is
+# aiming at. The `command:` fields below are **aspirational** — they will
+# appear once the `creation-os` wrapper CLI is shipped. Today the portable
+# entrypoints live in the Makefile (`make check-*`, `make v50-benchmark`,
+# `make certify`, `make red-team`) and the v51 self-test binary
+# (`./creation_os_v51 --self-test`).
+#
+# Tier: interpretive / spec (I-tier). See docs/WHAT_IS_REAL.md for the
+# mapping between these modes and what is actually measurable today.
+
+version: "v51"
+
+modes:
+  chat:
+    command: "creation-os chat"          # aspirational
+    description: "Interactive conversation with a σ-indicator per token."
+    ui:
+      sigma_bar: true
+      sigma_color_low: "#4CAF50"          # green  — σ < 0.20
+      sigma_color_mid: "#FFC107"          # amber  — 0.20 ≤ σ < 0.60
+      sigma_color_high: "#F44336"         # red    — σ ≥ 0.60
+      abstention_message: >
+        I'm not confident enough to answer this reliably.
+      show_calibration: false
+
+  expert:
+    command: "creation-os expert"         # aspirational
+    description: "Full σ dashboard — 8-channel view, epistemic/aleatoric split."
+    ui:
+      sigma_dashboard: true
+      show_channels: true
+      show_decomposition: true
+      show_calibration_gap: true
+      show_defense_status: true
+
+  serve:
+    command: "creation-os serve"          # aspirational
+    description: "OpenAI-shaped API with σ in the response envelope."
+    port: 8080
+    sigma_in_response: true
+    note: >
+      Today the OpenAI-shaped loopback stub lives at
+      `creation_os_openai_stub` (see docs/LOCAL_OPENAI_STUB.md).
+
+  benchmark:
+    command: "make v50-benchmark"
+    description: "Run the v50 rollup harness (STUB eval slots + assurance logs)."
+
+  certify:
+    command: "make certify"
+    description: "v49 DO-178C-aligned assurance pack (not FAA/EASA certification)."
+
+installer:
+  target_line: "curl -fsSL https://get.creation-os.dev | sh"
+  status: "aspirational"
+  note: >
+    The `scripts/v51/install.sh` in this repo is a *safe dry-run* installer
+    that prints what a real installer would do and exits cleanly. No
+    network calls, no /usr/local/bin writes, no weight downloads.
