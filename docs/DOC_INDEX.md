@@ -17,6 +17,8 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v47/INVARIANT_CHAIN.md](v47/INVARIANT_CHAIN.md) | Verification / claims hygiene readers | v47 lab: invariant chain (M/T/P) + `make verify` stack notes + ZK honesty |
 | [v48/RED_TEAM_REPORT.md](v48/RED_TEAM_REPORT.md) | Security / red-team readers | v48 lab: σ-armored attack surface table + honest limits + harness pointers |
 | [v49/certification/README.md](v49/certification/README.md) | Certification / assurance readers | v49 lab: DO-178C-aligned artifact pack index + `make certify` entrypoint |
+| [v50/FAQ_CRITICS.md](v50/FAQ_CRITICS.md) | Public critique / review readers | v50: pre-baked answers to common dismissal patterns (tier-honest) |
+| [benchmarks/v50/FINAL_RESULTS.md](../benchmarks/v50/FINAL_RESULTS.md) | Benchmark readers | v50 rollup report (regenerate via `make v50-benchmark`) |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |

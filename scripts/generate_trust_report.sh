@@ -18,6 +18,7 @@ echo "| \`make verify\` | Best-effort stack: Frama-C + extended sby + Hypothesis
 echo "| \`make red-team\` | v48 adversarial harness (Garak/DeepTeam SKIPs unless installed + model) |"
 echo "| \`make merge-gate-v48\` | Optional heavy gate: verify + red-team + check-v31 + reviewer |"
 echo "| \`make certify\` | v49 DO-178C-aligned assurance pack (formal targets + MC/DC driver + audit + trace; not FAA/EASA certification) |"
+echo "| \`make v50-benchmark\` | v50 rollup report + STUB eval slots + assurance logs |"
 echo "| \`make merge-gate\` | Portable flagship gate (v2 + v6..v29) |"
 echo "| \`make formal-sby-v37\` | v37 σ-pipeline SymbiYosys (SKIP if \`sby\` missing) |"
 echo

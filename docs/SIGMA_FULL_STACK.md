@@ -75,6 +75,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v47 | Verification / hygiene | ACSL σ-kernel surface + extended SymbiYosys replay + ZK-σ API stub + `make verify` / property tests (not merge-gate) |
 | v48 | Security / red team | σ-pattern anomaly + σ-gated sandbox + defense-in-depth aggregate + `make red-team` harness (Garak/DeepTeam optional) |
 | v49 | Certification / assurance | DO-178C-aligned plans + traceability automation + MC/DC driver + binary hygiene + `make certify` (not regulator certification) |
+| v50 | Benchmarks / public falsifiability | `make v50-benchmark` rollup (`FINAL_RESULTS.md`) + critic FAQ + Reddit draft (engine harness still external) |
 
 ## v40 working paper title (only when threshold harness exists)
 

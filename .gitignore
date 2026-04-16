@@ -148,3 +148,7 @@ creation_os_iron_gate
 # v49 certification coverage outputs (generated)
 docs/v49/certification/coverage/*.gcov
 docs/v49/certification/coverage/html/
+
+# v50 benchmark intermediates (generated)
+benchmarks/v50/*.json
+benchmarks/v50/*.log

@@ -1,5 +1,13 @@
 # Changelog
 
+## v50 final benchmark rollup harness (2026-04-16)
+
+- **Harness:** `make v50-benchmark` → `benchmarks/v50/run_all.sh` (explicit **STUB** JSON slots for standard eval names until an engine+dataset harness exists).
+- **Report:** `benchmarks/v50/FINAL_RESULTS.md` (generated; tables + honest tiering).
+- **Automation:** `benchmarks/v50/generate_final_report.py` aggregates stub JSON + `certify`/`mcdc`/`binary_audit` logs.
+- **Docs:** `docs/v50/FAQ_CRITICS.md`, `docs/v50/REDDIT_ML_POST_DRAFT.md` (do-not-post-until-real-numbers banner).
+- **Honest scope:** Category 1–3 are **not** M-tier measurements yet; Category 4 logs what ran in-repo (`make certify`, coverage, audit).
+
 ## v49 certification-grade assurance pack (2026-04-16)
 
 - **Docs:** `docs/v49/certification/` — DO-178C-*language* plans (PSAC/SDP/SVP/SCMP/SQAP), HLR/LLR/SDD, traceability matrix + `trace_manifest.json`, structural coverage notes, DO-333-style formal methods report, assurance ladder.

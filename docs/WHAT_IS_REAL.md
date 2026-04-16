@@ -56,6 +56,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v48 lab: automated red-team harness (`red-team` / `merge-gate-v48`) | `make red-team` (Garak/DeepTeam **SKIP** by default; σ catalog + pytest always runs when Python present) | **M** |
 | v49 lab: DO-178C-aligned certification artifact pack + `make certify` | `make certify` (Frama-C/`sby` **SKIP** when missing; MC/DC driver + trace script + binary hygiene run) | **M** |
 | v49 lab: FAA/EASA DAL-A “type certificate” for Creation OS | N/A | **N** (no regulator approval claimed) |
+| v50 lab: final benchmark rollup (`FINAL_RESULTS.md` + STUB eval JSON slots) | `make v50-benchmark` | **M** |
+| v50 lab: frontier-comparable accuracy tables filled with real eval JSON | `benchmarks/v50/*.json` (non-stub) | **P** (requires pinned engine + datasets) |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
