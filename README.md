@@ -577,8 +577,9 @@ COGNITION
 - **GGUF:** minimal v3 reader + tensor-data base offset + tiny writer fixture (`src/import/gguf_parser.c`)
 - **mmap I/O:** `cos_gguf_mmap_read_at` for aligned tensor blob reads (`src/import/gguf_mmap.c`, POSIX)
 - **External engine:** `posix_spawnp` stdout capture via `CREATION_OS_BITNET_CPP` (+ optional stdin / extra argv envs; `src/import/bitnet_spawn.c`)
+- **Toy GEMV:** `cos_nn_toy_linear_f32` uses **NEON + four accumulators + prefetch** on AArch64 (`src/nn/transformer_stub.c`)
 - **tokenizer.json:** vocab entry counter for HF-style `model.vocab` maps (`src/import/tokenizer_json.c`, `--tokenizer-stats`)
-- **Sampling:** temperature / top‑k / top‑p (`src/nn/sampler.c`)
+- **Sampling:** temperature / top‑k / top‑p (`src/nn/sampler.c`) — **64B-aligned** scratch buffers; **AArch64 NEON** max-reduction on logits before softmax
 - **Chat framing:** small Llama‑3‑style text template (`src/nn/chat_template.c`)
 - **σ abstention toy:** entropy gate on **toy logits** (not model logits unless you plug a real engine)
 - **HTTP:** loopback **OpenAI-shaped** `POST /v1/chat/completions` + `GET /health` with JSON escaping (`src/server/http_chat.c` + `src/server/json_esc.c`, POSIX)

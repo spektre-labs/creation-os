@@ -5,12 +5,64 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(__aarch64__) && defined(__ARM_NEON)
+#include <arm_neon.h>
+#endif
+
+enum { COS_SAMPLER_ALIGN = 64 };
+
+static void *cos_alloc_aligned64(size_t nbytes)
+{
+    if (nbytes == 0u)
+        return NULL;
+    size_t align = (size_t)COS_SAMPLER_ALIGN;
+    size_t n = (nbytes + align - 1u) / align * align;
+    return aligned_alloc(align, n);
+}
+
+#if defined(__aarch64__) && defined(__ARM_NEON)
+static float vec_max_f32_neon(const float *x, int n)
+{
+    if (n <= 0)
+        return 0.f;
+    if (n < 4) {
+        float m = x[0];
+        for (int i = 1; i < n; i++)
+            if (x[i] > m)
+                m = x[i];
+        return m;
+    }
+    float32x4_t m4 = vld1q_f32(x);
+    int i = 4;
+    for (; i + 16 <= n; i += 16) {
+        __builtin_prefetch(x + i + 64, 0, 3);
+        float32x4_t a0 = vld1q_f32(x + i);
+        float32x4_t a1 = vld1q_f32(x + i + 4);
+        float32x4_t a2 = vld1q_f32(x + i + 8);
+        float32x4_t a3 = vld1q_f32(x + i + 12);
+        float32x4_t mx = vmaxq_f32(vmaxq_f32(a0, a1), vmaxq_f32(a2, a3));
+        m4 = vmaxq_f32(m4, mx);
+    }
+    for (; i + 4 <= n; i += 4)
+        m4 = vmaxq_f32(m4, vld1q_f32(x + i));
+    float m = vmaxvq_f32(m4);
+    for (; i < n; i++)
+        if (x[i] > m)
+            m = x[i];
+    return m;
+}
+#endif
+
 static float softmax_row(const float *logits, int n, float temp, float *probs)
 {
+#if defined(__aarch64__) && defined(__ARM_NEON)
+    float m = vec_max_f32_neon(logits, n);
+#else
     float m = logits[0];
     for (int i = 1; i < n; i++)
         if (logits[i] > m)
             m = logits[i];
+#endif
     double sum = 0.0;
     for (int i = 0; i < n; i++) {
         double z = (double)((logits[i] - m) / (temp > 1e-6f ? temp : 1e-6f));
@@ -39,7 +91,7 @@ float cos_logits_entropy(const float *logits, int n)
 {
     if (!logits || n <= 0)
         return 0.f;
-    float *tmp = (float *)malloc(sizeof(float) * (size_t)n);
+    float *tmp = (float *)cos_alloc_aligned64(sizeof(float) * (size_t)n);
     if (!tmp)
         return 0.f;
     float h = softmax_row(logits, n, 1.f, tmp);
@@ -59,7 +111,7 @@ int cos_sample_logits(const float *logits, int vocab, float temperature, int top
 {
     if (!logits || vocab <= 0 || !out_id)
         return -1;
-    float *p = (float *)malloc(sizeof(float) * (size_t)vocab * 2u);
+    float *p = (float *)cos_alloc_aligned64(sizeof(float) * (size_t)vocab * 2u);
     if (!p)
         return -1;
     float *work = p + vocab;
