@@ -131,12 +131,68 @@ static int self_test_neon_range_slice(void)
     return 0;
 }
 
+/* Vocab above parallel threshold with a non-64 tail (parallel chunks + scalar tail). */
+static int self_test_neon_parallel_with_tail(void)
+{
+    const int vocab = 65536 + 29;
+    const float scale = 0.125f;
+    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
+    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *base = (float *)aligned_alloc(64, flt_sz);
+    float *neon = (float *)aligned_alloc(64, flt_sz);
+    float *par = (float *)aligned_alloc(64, flt_sz);
+    if (!rep || !base || !neon || !par) {
+        fprintf(stderr, "FAIL alloc (parallel+tail n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(neon);
+        free(par);
+        return 2;
+    }
+    for (int i = 0; i < vocab; i++) {
+        rep[i] = (uint8_t)((i * 59U + 3U) & 0xFFU);
+        base[i] = 0.0f;
+        neon[i] = 0.0f;
+        par[i] = 0.0f;
+    }
+    cos_living_weights_inplace(base, rep, vocab, scale);
+    cos_living_weights_neon_range(neon, rep, 0, vocab, scale);
+    if (!float_buffers_exact(base, neon, vocab)) {
+        fprintf(stderr, "FAIL NEON range vs scalar (parallel+tail n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(neon);
+        free(par);
+        return 2;
+    }
+    for (int i = 0; i < vocab; i++)
+        par[i] = 0.0f;
+    cos_living_weights_neon_parallel(par, rep, vocab, scale);
+    if (!float_buffers_exact(base, par, vocab)) {
+        fprintf(stderr, "FAIL NEON parallel vs scalar (parallel+tail n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(neon);
+        free(par);
+        return 2;
+    }
+    free(rep);
+    free(base);
+    free(neon);
+    free(par);
+    return 0;
+}
+
 static int self_test(void)
 {
     int e = self_test_edge_sizes();
     if (e != 0)
         return e;
     e = self_test_neon_range_slice();
+    if (e != 0)
+        return e;
+    e = self_test_neon_parallel_with_tail();
     if (e != 0)
         return e;
 
