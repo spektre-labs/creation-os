@@ -95,6 +95,7 @@ bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int voca
 
         id<MTLCommandBuffer> cb = [q commandBuffer];
         id<MTLComputeCommandEncoder> enc = [cb computeCommandEncoder];
+        [enc setLabel:@"creation_os_living_weights"];
         [enc setComputePipelineState:pso];
         [enc setBuffer:repBuf offset:0 atIndex:0];
         [enc setBuffer:logBuf offset:0 atIndex:1];

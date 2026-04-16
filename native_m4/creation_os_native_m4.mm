@@ -227,10 +227,9 @@ static int self_test_neon_parallel_with_tail(void)
     return 0;
 }
 
-/* Two GCD chunks (65536*2) plus non-64 tail — exercises dispatch_apply with chunks>1. */
-static int self_test_neon_parallel_two_chunks(void)
+/* Shared: scalar inplace vs NEON+GCD parallel (exact float equality). */
+static int self_test_parallel_matches_inplace(int vocab, unsigned mul, unsigned add, const char *tag)
 {
-    const int vocab = 65536 * 2 + 41;
     const float scale = 0.125f;
     size_t rep_sz, flt_sz;
     cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
@@ -238,21 +237,21 @@ static int self_test_neon_parallel_two_chunks(void)
     float *base = (float *)aligned_alloc(64, flt_sz);
     float *par = (float *)aligned_alloc(64, flt_sz);
     if (!rep || !base || !par) {
-        fprintf(stderr, "FAIL alloc (two-chunk parallel n=%d)\n", vocab);
+        fprintf(stderr, "FAIL alloc %s (n=%d)\n", tag, vocab);
         free(rep);
         free(base);
         free(par);
         return 2;
     }
     for (int i = 0; i < vocab; i++) {
-        rep[i] = (uint8_t)((i * 41U + 11U) & 0xFFU);
+        rep[i] = (uint8_t)(((unsigned)i * mul + add) & 0xFFU);
         base[i] = 0.0f;
         par[i] = 0.0f;
     }
     cos_living_weights_inplace(base, rep, vocab, scale);
     cos_living_weights_neon_parallel(par, rep, vocab, scale);
     if (!float_buffers_exact(base, par, vocab)) {
-        fprintf(stderr, "FAIL NEON parallel two-chunk vs scalar (n=%d)\n", vocab);
+        fprintf(stderr, "FAIL %s NEON parallel vs scalar (n=%d)\n", tag, vocab);
         free(rep);
         free(base);
         free(par);
@@ -264,41 +263,22 @@ static int self_test_neon_parallel_two_chunks(void)
     return 0;
 }
 
+/* Two GCD chunks (65536*2) plus non-64 tail — exercises dispatch_apply with chunks>1. */
+static int self_test_neon_parallel_two_chunks(void)
+{
+    return self_test_parallel_matches_inplace(65536 * 2 + 41, 41U, 11U, "two-chunk");
+}
+
 /* Three GCD chunks (65536*3) plus tail — stresses multi-chunk dispatch_apply. */
 static int self_test_neon_parallel_three_chunks(void)
 {
-    const int vocab = 65536 * 3 + 19;
-    const float scale = 0.125f;
-    size_t rep_sz, flt_sz;
-    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
-    float *base = (float *)aligned_alloc(64, flt_sz);
-    float *par = (float *)aligned_alloc(64, flt_sz);
-    if (!rep || !base || !par) {
-        fprintf(stderr, "FAIL alloc (three-chunk parallel n=%d)\n", vocab);
-        free(rep);
-        free(base);
-        free(par);
-        return 2;
-    }
-    for (int i = 0; i < vocab; i++) {
-        rep[i] = (uint8_t)((i * 73U + 5U) & 0xFFU);
-        base[i] = 0.0f;
-        par[i] = 0.0f;
-    }
-    cos_living_weights_inplace(base, rep, vocab, scale);
-    cos_living_weights_neon_parallel(par, rep, vocab, scale);
-    if (!float_buffers_exact(base, par, vocab)) {
-        fprintf(stderr, "FAIL NEON parallel three-chunk vs scalar (n=%d)\n", vocab);
-        free(rep);
-        free(base);
-        free(par);
-        return 2;
-    }
-    free(rep);
-    free(base);
-    free(par);
-    return 0;
+    return self_test_parallel_matches_inplace(65536 * 3 + 19, 73U, 5U, "three-chunk");
+}
+
+/* Four GCD chunks — further stress on chunk scheduling + tail. */
+static int self_test_neon_parallel_four_chunks(void)
+{
+    return self_test_parallel_matches_inplace(65536 * 4 + 31, 97U, 13U, "four-chunk");
 }
 
 static int self_test(void)
@@ -319,6 +299,9 @@ static int self_test(void)
     if (e != 0)
         return e;
     e = self_test_neon_parallel_three_chunks();
+    if (e != 0)
+        return e;
+    e = self_test_neon_parallel_four_chunks();
     if (e != 0)
         return e;
 
@@ -437,10 +420,28 @@ static void bench_once(int vocab, int iters, bench_mode_t mode)
 
 int main(int argc, char **argv)
 {
+    if (argc >= 2 && !strcmp(argv[1], "--version")) {
+        printf("creation_os_native_m4 (native_m4/) — Creation OS lab binary; opt-in, not merge-gate.\n");
+        return 0;
+    }
     if (argc >= 2 && (!strcmp(argv[1], "--self-test") || !strcmp(argv[1], "--selftest")))
         return self_test();
+    if (argc >= 2 && !strcmp(argv[1], "--buffer-sizes")) {
+        int v = 65536;
+        for (int i = 2; i < argc; i++) {
+            if (!strcmp(argv[i], "--vocab") && i + 1 < argc)
+                v = atoi(argv[++i]);
+        }
+        size_t rb, lb;
+        cos_lw_buffer_sizes(v, &rb, &lb);
+        printf("vocab=%d reputation_bytes=%zu logits_bytes=%zu\n", v, rb, lb);
+        return 0;
+    }
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
-        printf("usage: %s [--self-test] [--bench [--vocab N] [--iters K] [--parallel] [--scalar]]\n", argv[0]);
+        printf("usage: %s [--version] [--self-test] [--buffer-sizes [--vocab N]]\n"
+               "         [--bench [--vocab N] [--iters K] [--parallel] [--scalar]]\n",
+               argv[0]);
+        printf("  (default with no args: small NEON demo on interactive GCD queue)\n");
         printf("  --bench requires positive --vocab and --iters (defaults: 65536, 200).\n");
         printf("  --scalar also runs scalar inplace for A/B vs NEON.\n");
         printf("\n");
@@ -452,6 +453,7 @@ int main(int argc, char **argv)
         printf("\n");
         printf("Build metallib (Darwin):\n");
         printf("  make metallib-m4\n");
+        printf("Quick bench (Makefile): make bench-native-m4\n");
         return 0;
     }
     if (argc >= 2 && !strcmp(argv[1], "--bench")) {
