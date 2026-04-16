@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stddef.h>
 #include <string.h>
 #include <time.h>
 
@@ -31,15 +32,123 @@ static int float_buffers_close(const float *a, const float *b, int n, float eps)
     return 1;
 }
 
+/* (popcount(byte) - 4) * scale is exact in float32 for scale=1/8 and pc in 0..8. */
+static int float_buffers_exact(const float *a, const float *b, int n)
+{
+    return memcmp(a, b, (size_t)n * sizeof(float)) == 0;
+}
+
+static size_t cos_align_up(size_t n, size_t align)
+{
+    return (n + align - 1u) / align * align;
+}
+
+static void scalar_range(float *logits, const uint8_t *reputation, int begin, int end, float scale)
+{
+    if (!logits || !reputation || begin < 0 || end <= begin)
+        return;
+    for (int i = begin; i < end; i++) {
+        int pc = __builtin_popcount((unsigned)reputation[i]);
+        logits[i] += ((float)pc - 4.0f) * scale;
+    }
+}
+
+/* Fast checks: tail loops, 64-byte block boundaries, sub-parallel vocab. */
+static int self_test_edge_sizes(void)
+{
+    const float scale = 0.125f;
+    static const int sizes[] = {1, 2, 7, 15, 16, 17, 63, 64, 65, 127, 128, 129, 1000, 4096, 65535};
+    for (size_t s = 0; s < sizeof(sizes) / sizeof(sizes[0]); s++) {
+        int n = sizes[s];
+        const size_t rep_sz = cos_align_up((size_t)n, 64);
+        const size_t flt_sz = cos_align_up((size_t)n * sizeof(float), 64);
+        uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+        float *ref = (float *)aligned_alloc(64, flt_sz);
+        float *neon = (float *)aligned_alloc(64, flt_sz);
+        if (!rep || !ref || !neon) {
+            fprintf(stderr, "FAIL alloc (edge n=%d)\n", n);
+            free(rep);
+            free(ref);
+            free(neon);
+            return 2;
+        }
+        for (int i = 0; i < n; i++) {
+            rep[i] = (uint8_t)((i * 131U + 9U) & 0xFFU);
+            ref[i] = 0.0f;
+            neon[i] = 0.0f;
+        }
+        cos_living_weights_inplace(ref, rep, n, scale);
+        cos_living_weights_neon_range(neon, rep, 0, n, scale);
+        if (!float_buffers_exact(ref, neon, n)) {
+            fprintf(stderr, "FAIL NEON vs scalar (edge n=%d)\n", n);
+            free(rep);
+            free(ref);
+            free(neon);
+            return 2;
+        }
+        free(rep);
+        free(ref);
+        free(neon);
+    }
+    return 0;
+}
+
+static int self_test_neon_range_slice(void)
+{
+    const int n = 512;
+    const int begin = 37;
+    const int end = 311;
+    const float scale = 0.125f;
+    const size_t rep_sz = cos_align_up((size_t)n, 64);
+    const size_t flt_sz = cos_align_up((size_t)n * sizeof(float), 64);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *ref = (float *)aligned_alloc(64, flt_sz);
+    float *neon = (float *)aligned_alloc(64, flt_sz);
+    if (!rep || !ref || !neon) {
+        fprintf(stderr, "FAIL alloc (range slice)\n");
+        free(rep);
+        free(ref);
+        free(neon);
+        return 2;
+    }
+    for (int i = 0; i < n; i++) {
+        rep[i] = (uint8_t)((i * 19U) & 0xFFU);
+        ref[i] = 0.0f;
+        neon[i] = 0.0f;
+    }
+    scalar_range(ref, rep, begin, end, scale);
+    cos_living_weights_neon_range(neon, rep, begin, end, scale);
+    if (!float_buffers_exact(ref, neon, n)) {
+        fprintf(stderr, "FAIL NEON range slice [%d,%d)\n", begin, end);
+        free(rep);
+        free(ref);
+        free(neon);
+        return 2;
+    }
+    free(rep);
+    free(ref);
+    free(neon);
+    return 0;
+}
+
 static int self_test(void)
 {
+    int e = self_test_edge_sizes();
+    if (e != 0)
+        return e;
+    e = self_test_neon_range_slice();
+    if (e != 0)
+        return e;
+
     const int vocab = 65536; /* triggers NEON parallel path on Apple AArch64 */
     const float scale = 0.125f;
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
-    float *base = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
-    float *neon = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
-    float *par = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
-    float *metal = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
+    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *base = (float *)aligned_alloc(64, flt_sz);
+    float *neon = (float *)aligned_alloc(64, flt_sz);
+    float *par = (float *)aligned_alloc(64, flt_sz);
+    float *metal = (float *)aligned_alloc(64, flt_sz);
     if (!rep || !base || !neon || !par || !metal) {
         fprintf(stderr, "FAIL alloc\n");
         return 2;
@@ -58,7 +167,7 @@ static int self_test(void)
     for (int i = 0; i < vocab; i++)
         neon[i] = 0.0f;
     cos_living_weights_neon_range(neon, rep, 0, vocab, scale);
-    if (!float_buffers_close(base, neon, vocab, 1e-4f)) {
+    if (!float_buffers_exact(base, neon, vocab)) {
         fprintf(stderr, "FAIL NEON mismatch vs scalar\n");
         return 2;
     }
@@ -66,7 +175,7 @@ static int self_test(void)
     for (int i = 0; i < vocab; i++)
         par[i] = 0.0f;
     cos_living_weights_neon_parallel(par, rep, vocab, scale);
-    if (!float_buffers_close(base, par, vocab, 1e-4f)) {
+    if (!float_buffers_exact(base, par, vocab)) {
         fprintf(stderr, "FAIL NEON parallel mismatch vs scalar\n");
         return 2;
     }
@@ -103,8 +212,10 @@ static int self_test(void)
 
 static void bench_once(int vocab, int iters, int parallel)
 {
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
-    float *logits = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
+    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *logits = (float *)aligned_alloc(64, flt_sz);
     if (!rep || !logits) {
         fprintf(stderr, "bench: alloc failed\n");
         free(rep);
@@ -143,6 +254,7 @@ int main(int argc, char **argv)
         return self_test();
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
         printf("usage: %s [--self-test] [--bench [--vocab N] [--iters K] [--parallel]]\n", argv[0]);
+        printf("  --bench requires positive --vocab and --iters (defaults: 65536, 200).\n");
         printf("\n");
         printf("Native M4 lab binary (opt-in). Not part of merge-gate.\n");
         printf("\n");
@@ -164,6 +276,10 @@ int main(int argc, char **argv)
                 iters = atoi(argv[++i]);
             else if (!strcmp(argv[i], "--parallel"))
                 parallel = 1;
+        }
+        if (vocab <= 0 || iters <= 0) {
+            fprintf(stderr, "bench: --vocab and --iters must be positive\n");
+            return 2;
         }
         bench_once(vocab, iters, parallel);
         if (parallel == 0 && vocab >= 65536) {
