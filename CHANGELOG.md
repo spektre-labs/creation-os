@@ -1,5 +1,13 @@
 # Changelog
 
+## v48 σ-armored red-team lab (2026-04-16)
+
+- **Artifact:** `creation_os_v48` — `detect_anomaly` (per-token epistemic statistics + baseline distance), `sandbox_check` (σ-gated privilege stub), `run_all_defenses` (7-layer fail-closed aggregate).
+- **Red team:** `make red-team` (Garak/DeepTeam **SKIP** unless installed + REST model), `tests/v48/red_team/sigma_bypass_attacks.py`, `property_attacks.py` (pytest).
+- **Gate:** `make merge-gate-v48` — `verify` + `red-team` + `check-v31` + `reviewer` (optional heavy; SKIPs OK when tools absent).
+- **Docs:** [docs/v48/RED_TEAM_REPORT.md](docs/v48/RED_TEAM_REPORT.md); README σ-lab table + stack map; `docs/WHAT_IS_REAL.md`, `docs/SIGMA_FULL_STACK.md`, `docs/DOC_INDEX.md`, `CONTRIBUTING.md`.
+- **Honest scope:** Garak/DeepTeam are **harness hooks**, not in-repo “90% defense” claims; σ-anomaly heuristics are **T-tier** lab code, not a certified robustness proof.
+
 ## v47 verified-architecture lab (2026-04-16)
 
 - **Artifact:** `creation_os_v47` — ACSL-documented float σ-kernel (`src/v47/sigma_kernel_verified.c`, Frama-C/WP target), ZK-σ **API stub** (`src/v47/zk_sigma.c`, not succinct / not ZK), SymbiYosys **extended-depth** replay (`hdl/v47/sigma_pipeline_extended.sby`), Hypothesis property tests (`tests/v47/property_tests.py`), `make verify` / `trust-report`.

@@ -52,6 +52,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v47 lab: verified-architecture stack (`creation_os_v47`: ACSL σ-kernel + ZK-σ stub + `--sigma-file` JSON driver) | `make check-v47` | **M** |
 | v47 lab: **one-command** verification stack (`verify` / `verify-*` / `trust-report`) | `make verify` (Frama-C / extended `sby` / Hypothesis SKIPs when tools missing) | **M** |
 | v47 lab: ZK-σ proof API (`prove_sigma` / `verify_sigma_proof`) | `src/v47/zk_sigma.c` (structural stub; witness packed into `proof[256]`; **not** zero-knowledge) | **N** (cryptographic ZK claim **not** in-repo) |
+| v48 lab: σ-anomaly + σ-gated sandbox + 7-layer fail-closed defense aggregate | `make check-v48` (`creation_os_v48`) | **M** |
+| v48 lab: automated red-team harness (`red-team` / `merge-gate-v48`) | `make red-team` (Garak/DeepTeam **SKIP** by default; σ catalog + pytest always runs when Python present) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 

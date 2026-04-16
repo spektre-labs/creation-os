@@ -73,6 +73,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v45 | Meta-cognition / calibration | σ-introspection (calibration gap, doubt reward, internal σ placeholder, paradox scatter harness stub) |
 | v46 | Inference / efficiency | σ-optimized BitNet-facing pipeline (σ-from-logits scans, SIMD reductions, adaptive quant policy, e2e bench stub) |
 | v47 | Verification / hygiene | ACSL σ-kernel surface + extended SymbiYosys replay + ZK-σ API stub + `make verify` / property tests (not merge-gate) |
+| v48 | Security / red team | σ-pattern anomaly + σ-gated sandbox + defense-in-depth aggregate + `make red-team` harness (Garak/DeepTeam optional) |
 
 ## v40 working paper title (only when threshold harness exists)
 
