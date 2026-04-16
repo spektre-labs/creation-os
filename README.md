@@ -4,6 +4,36 @@
 
 <h1 align="center">Creation OS</h1>
 
+<p align="center"><sub><strong>Orient first</strong> — what · where · when · why · how</sub></p>
+
+<table align="center" width="100%" style="max-width:1100px;border-collapse:separate;border-spacing:0 10px;">
+  <thead>
+    <tr>
+      <th align="left" width="18%" style="border-bottom:2px solid #94a3b8;padding:6px 10px;">What</th>
+      <th align="left" width="20%" style="border-bottom:2px solid #94a3b8;padding:6px 10px;">Where</th>
+      <th align="left" width="18%" style="border-bottom:2px solid #94a3b8;padding:6px 10px;">When</th>
+      <th align="left" width="22%" style="border-bottom:2px solid #94a3b8;padding:6px 10px;">Why</th>
+      <th align="left" width="22%" style="border-bottom:2px solid #94a3b8;padding:6px 10px;">How</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>).</td>
+      <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Canonical tree: <a href="https://github.com/spektre-labs/creation-os"><code>spektre-labs/creation-os</code></a>. Teaching spine: <a href="creation_os_v2.c"><code>creation_os_v2.c</code></a> + <a href="core/"><code>core/*.h</code></a>. Review map: <a href="docs/WHICH_FILE_TO_READ.md"><code>docs/WHICH_FILE_TO_READ.md</code></a>.</td>
+      <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Before a PR / publish: <code>make merge-gate</code>. When touching a flagship slice: matching <code>make check-vN</code> + <code>./creation_os_vN --self-test</code>.</td>
+      <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Keep evidence classes honest (lab demo vs harness vs product). Read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> + tier tags in <a href="docs/WHAT_IS_REAL.md">WHAT_IS_REAL</a> before screenshotting a headline.</td>
+      <td valign="top" style="padding:10px 12px;border-radius:0 10px 10px 0;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-left:0;">Fastest truth path: clone → <code>make merge-gate</code> → spot-check <code>make check-v26 && ./creation_os_v26 --self-test</code> (expect <code>184/184 PASS</code>). Visual receipts index: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p align="center">
+  <a href="#contents"><img src="https://img.shields.io/badge/read-next-Contents-0f172a?style=for-the-badge&labelColor=334155" alt="Contents"/></a>
+  <a href="#run-it-in-sixty-seconds"><img src="https://img.shields.io/badge/run-merge--gate-1d4ed8?style=for-the-badge&labelColor=1e3a8a" alt="merge gate"/></a>
+  <a href="docs/WHICH_FILE_TO_READ.md"><img src="https://img.shields.io/badge/reviewer-WHICH__FILE-6d28d9?style=for-the-badge&labelColor=4c1d95" alt="which file"/></a>
+  <a href="docs/VISUAL_INDEX.md"><img src="https://img.shields.io/badge/visual-VISUAL__INDEX-0f766e?style=for-the-badge&labelColor=115e59" alt="visual index"/></a>
+</p>
+
 > **Reviewing this repo?** Read **[`docs/WHICH_FILE_TO_READ.md`](docs/WHICH_FILE_TO_READ.md)** first.
 
 <p align="center">
@@ -46,7 +76,7 @@
 | **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
 | **Local OpenAI-shaped stub (tool wiring)** | [LOCAL_OPENAI_STUB.md](docs/LOCAL_OPENAI_STUB.md) · CORS + `OPTIONS` for local-origin browser checks · [`vscode-extension/setup_continue.md`](vscode-extension/setup_continue.md) |
 | **Optional suite lab (honest scope)** | [SUITE_LAB.md](docs/SUITE_LAB.md) · `make standalone-suite-stub` · `./scripts/launch_suite.sh` (stub + static `suite_lab.html`; not merge-gate) |
-| **Native M4 (hardware-first lab)** | `make check-native-m4` (Apple-only opt-in; NEON + GCD now; Metal/SME hooks live in `native_m4/`) |
+| **Native M4 (hardware-first lab)** | `make check-native-m4` · `make bench-native-m4` (Darwin smoke: `--warmup` + `--scalar`) · NEON + GCD + optional Metal/SME hooks in `native_m4/` |
 | **v31 “purge lab” (optional upstream wrapper)** | [v31_README.md](docs/v31_README.md) · `make check-v31` · [WHAT_IS_REAL_v31.md](docs/WHAT_IS_REAL_v31.md) |
 | **“Full suite” expectations vs repo** | [FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
@@ -130,12 +160,14 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 **Optional lab (not the merge gate):** OpenAI-shaped loopback stub with **minimal CORS** so a page on another `127.0.0.1` port can POST `/v1/chat/completions`; plus a tiny **suite lab** CLI (`creation_os_suite_stub`) and static page — see [docs/LOCAL_OPENAI_STUB.md](docs/LOCAL_OPENAI_STUB.md) and [docs/SUITE_LAB.md](docs/SUITE_LAB.md). Quick path: `make standalone-openai-stub && make standalone-suite-stub`, then `./scripts/launch_suite.sh`. This does **not** load weights or replace an IDE; scope boundaries: [docs/FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md).
 
-**Native M4 lab (Apple-only, not the merge gate):** hardware-first helpers meant to collapse abstraction (aligned buffers, **NEON popcount logits shaping**, optional **Metal** dispatch, and **GCD-parallel** NEON for large vocabs). Build/run:
+**Native M4 lab (Apple-only, not the merge gate):** hardware-first helpers (aligned buffers, NEON popcount logits shaping, optional Metal dispatch, GCD-parallel NEON for large vocabs; CLI includes `--warmup`, `--scalar`, `--metal`, `--buffer-sizes`). Build/run:
 
 ```
 make check-native-m4
 ./creation_os_native_m4 --help
-./creation_os_native_m4 --bench --vocab 65536 --iters 200 --parallel
+./creation_os_native_m4 --buffer-sizes --vocab 65537
+./creation_os_native_m4 --bench --vocab 65536 --iters 200 --warmup 5 --scalar
+./creation_os_native_m4 --bench --vocab 65536 --iters 200 --parallel --metal
 ```
 
 Metal and SME are intentionally **opt-in** and guarded: `native_m4/` is where those kernels live, but claims remain tier-tagged per [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) until they have archived receipts.
