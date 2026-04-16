@@ -26,6 +26,9 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v54/ARCHITECTURE.md](v54/ARCHITECTURE.md) | Multi-LLM / routing readers | v54: σ-proconductor scaffold — σ-profile routing, σ-weighted aggregation, disagreement abstain, EWMA learner |
 | [v54/POSITIONING.md](v54/POSITIONING.md) | Reviewers comparing with MoA / RouteLLM / MoMA / Bayesian Orchestration | v54: side-by-side positioning vs 2024–2026 routing literature |
 | [v54/paper_draft.md](v54/paper_draft.md) | Paper readers | v54: position paper "σ-Proconductor: σ as the Missing Routing Signal for Multi-LLM Ensembles" (I-tier) |
+| [v55/ARCHITECTURE.md](v55/ARCHITECTURE.md) | Spec-decode / uncertainty readers | v55: σ₃-speculative scaffold — three-component σ + EARS + EASD with NEON hot path |
+| [v55/POSITIONING.md](v55/POSITIONING.md) | Reviewers comparing with EARS / EASD / Taparia et al. | v55: composition argument — EARS + EASD + σ₃ are complementary |
+| [v55/paper_draft.md](v55/paper_draft.md) | Paper readers | v55: position paper wiring Taparia 2603.24967, Sun 2512.13194, Su 2512.23765 into one C11 policy layer (I-tier) |
 | [creation.md](../creation.md) | Agent operators / contributors | Project **invariants** (not instructions) + σ-profile per task type |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |

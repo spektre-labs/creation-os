@@ -1,5 +1,56 @@
 # Changelog
 
+## v55 σ₃-speculative scaffold (2026-04-16)
+
+- **Three 2026 insights, one C11 policy layer.** σ₃ decomposition
+  (Taparia et al., arXiv:2603.24967, March 2026), EARS adaptive
+  acceptance (Sun et al., arXiv:2512.13194, December 2025), and EASD
+  entropy-aware quality gate (Su et al., arXiv:2512.23765, December
+  2025) composed into a branchless acceptance surface. EARS fixes
+  random rejection (asymmetric uncertainty); EASD fixes random
+  acceptance (symmetric uncertainty + top-K overlap); σ₃ supplies
+  the signal that tells the two apart. See `docs/v55/POSITIONING.md`.
+- **Honest network story.** `src/v55/` opens no sockets, loads no
+  weights, speaks no API (creation.md invariant #3). The scaffold
+  is the policy underneath a future bitnet.cpp / vLLM integration.
+- **σ₃ module:** `src/v55/sigma3.{c,h}` — `v55_sigma3_t` (σ_input,
+  σ_knowledge, σ_decoding, σ_total, raw h_bits, top_k_used).
+  Deterministic proxies on caller-supplied softmax:
+  - σ_input = normalized Gini dispersion over top-K probabilities,
+  - σ_knowledge = 1 − max(P) (same signal EARS exploits),
+  - σ_decoding = H / log₂(N), clamped [0, 1].
+- **EARS acceptance:** `src/v55/ears.{c,h}` — `v55_ears_accept(...)`
+  returns 0/1 via `r < min(max_threshold, P_t/P_d + α · σ_knowledge)`.
+  α = 0 is bit-identical to vanilla spec-decode. Batch helper writes
+  an int mask; no allocations, no branches on the data path.
+- **EASD quality gate:** `src/v55/easd.{c,h}` — `v55_easd_decide(...)`
+  sets `reject` iff all three hold: H_t ≥ τ, H_d ≥ τ, |topK_t ∩ topK_d|/K ≥ ρ.
+  Composes *on top of* EARS; they solve opposite failure modes.
+- **Hardware path (M4-first).** NEON 4-accumulator entropy loop
+  (`vld1q_f32` loads, `vmlaq_f32` accumulators, `__builtin_prefetch`
+  ahead of each 16-lane iteration) with a branchless fast log₂
+  approximation (IEEE-754 exponent extraction + 2nd-order minimax
+  polynomial, ±0.01 bits). Scalar fallback bit-identical on non-ARM
+  for CI reproducibility. Scratch is caller-owned; no `malloc` on
+  the hot path.
+- **29/29 deterministic self-test** (`make check-v55`): σ₃ uniform
+  vs one-hot vs two-peak; σ_total bound; from_logits peaked;
+  EARS α = 0 matches vanilla; EARS relaxes under knowledge gap;
+  EARS clamp; batch matches scalar; EASD confident pass-through;
+  EASD both-uncertain-with-overlap reject; EASD both-uncertain-but-
+  disagreeing pass-through (uncertainty is informative); EASD
+  asymmetric pass-through (EARS regime).
+- **Makefile / build:** `V55_SRCS` + `standalone-v55`, `test-v55`,
+  `check-v55`; `-Isrc/v55` compile flag; added to `.PHONY`, `help`,
+  and `.gitignore`. Not in `merge-gate`; strictly opt-in.
+- **Docs:** `docs/v55/ARCHITECTURE.md`, `docs/v55/POSITIONING.md`,
+  `docs/v55/paper_draft.md`. Cross-doc updates: scope v31–v55 in
+  README / SIGMA_FULL_STACK / CONTRIBUTING / v53 paper; tier row in
+  WHAT_IS_REAL; index row in DOC_INDEX; last-landed in creation.md.
+- **Tier tags:** scaffold (M) for `make check-v55`, interpretive
+  (I) for the paper draft, product (P) for a live bitnet.cpp /
+  vLLM integration reporting real throughput gains — deferred.
+
 ## v54 σ-proconductor scaffold (2026-04-16)
 
 - **Structural claim, not a live ensemble.** σ is the missing

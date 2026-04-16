@@ -66,6 +66,9 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v54 lab: σ-proconductor scaffold (registry + classify + select + aggregate + disagreement analyzer + EWMA learner) | `make check-v54` (14/14) | **M** (scaffold; no network; no embeddings) |
 | v54 lab: paper draft "σ-Proconductor: σ as the Missing Routing Signal for Multi-LLM Ensembles" (`docs/v54/paper_draft.md`) | open in any viewer | **I** (position paper; router benchmark deferred to follow-up) |
 | v54 lab: live Claude / GPT / Gemini / DeepSeek ensemble with real billing + measured σ-profiles | N/A | **P** (requires HTTP client, embedding backend, billing layer, measured profile corpus) |
+| v55 lab: σ₃-speculative scaffold (σ₃ decomposition + EARS acceptance + EASD quality gate; NEON 4-accumulator entropy hot path, branchless fast log₂) | `make check-v55` (29/29) | **M** (scaffold; no network; no engine; deterministic proxies on caller-supplied softmax) |
+| v55 lab: paper draft "σ₃-Speculative: Branchless C11 Wiring of Three-Component Uncertainty, EARS, and EASD" (`docs/v55/paper_draft.md`) | open in any viewer | **I** (position paper; spec-decode throughput harness deferred to follow-up) |
+| v55 lab: bitnet.cpp / vLLM draft/target pair running EARS + EASD with real reported throughput gains | N/A | **P** (requires pinned draft+target models, dataset harness, per-step instrumentation) |
 | v51 lab: static web σ-dashboard mock (`src/v51/ui/web.html`) | open in any browser | **M** (static; no live model) |
 | v51 lab: one-line installer `scripts/v51/install.sh` | `bash scripts/v51/install.sh` | **M** (dry-run by design) |
 | v51 lab: signed public `curl \| sh` installer + `creation-os` wrapper CLI | N/A | **P** (requires signed release + wrapper binary) |

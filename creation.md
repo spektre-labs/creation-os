@@ -40,11 +40,11 @@
 ## Project memory (auto-updated — do not edit by hand)
 
 - Canonical repo: [`spektre-labs/creation-os`](https://github.com/spektre-labs/creation-os)
-- Last landed milestone: **v54** (σ-proconductor scaffold)
+- Last landed milestone: **v55** (σ₃-speculative scaffold — EARS + EASD + σ₃ decomposition)
 - Live merge-gate: `make merge-gate` (`check` + `check-v6` … `check-v29`)
 - Live optional labs: `check-v31`, `check-v33` … `check-v48`, `check-v51`,
-  `check-v53`, `check-v54`, `check-mcp`, `formal-sby-v37`, `verify`, `red-team`,
-  `certify`, `v50-benchmark`
+  `check-v53`, `check-v54`, `check-v55`, `check-mcp`, `formal-sby-v37`, `verify`,
+  `red-team`, `certify`, `v50-benchmark`
 - Evidence: `docs/WHAT_IS_REAL.md`, `docs/CLAIM_DISCIPLINE.md`,
   `docs/COMMON_MISREADINGS.md`
 
@@ -70,11 +70,14 @@
 
 - Architecture: [`docs/v51/ARCHITECTURE.md`](docs/v51/ARCHITECTURE.md),
   [`docs/v53/ARCHITECTURE.md`](docs/v53/ARCHITECTURE.md),
-  [`docs/v54/ARCHITECTURE.md`](docs/v54/ARCHITECTURE.md)
+  [`docs/v54/ARCHITECTURE.md`](docs/v54/ARCHITECTURE.md),
+  [`docs/v55/ARCHITECTURE.md`](docs/v55/ARCHITECTURE.md)
 - Positioning vs Claude Code: [`docs/v53/POSITIONING.md`](docs/v53/POSITIONING.md)
 - Positioning vs MoA / RouteLLM / MoMA / Bayesian Orchestration: [`docs/v54/POSITIONING.md`](docs/v54/POSITIONING.md)
 - Paper draft (σ-proconductor for multi-LLM): [`docs/v54/paper_draft.md`](docs/v54/paper_draft.md)
 - Paper draft (σ-governance vs time-limits):
   [`docs/v53/paper_draft.md`](docs/v53/paper_draft.md)
+- Paper draft (σ₃-speculative: EARS + EASD + σ₃):
+  [`docs/v55/paper_draft.md`](docs/v55/paper_draft.md)
 - Tier tags: [`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)
 - Claim discipline: [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md)

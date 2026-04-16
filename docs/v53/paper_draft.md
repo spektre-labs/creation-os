@@ -64,7 +64,7 @@ uncertainty about the next step.
 
 ## 3. σ as a runtime signal
 
-σ in Creation OS (v33–v54 labs, this repository) is a decomposed
+σ in Creation OS (v33–v55 labs, this repository) is a decomposed
 uncertainty measurement: a normalized-entropy total, a Dirichlet-evidence
 decomposition into aleatoric and epistemic components, and a family
 of auxiliary channels (top-margin, stability, cross-head variance,
