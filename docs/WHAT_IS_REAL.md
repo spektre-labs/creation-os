@@ -30,6 +30,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v35 lab: σ-guided adaptive speculative draft length + dual-verify abstain hook + progressive local/spec/API routing config | `make check-v35` | **M** |
 | v36 lab: MCP JSON-RPC σ server (`creation_os_mcp`) — tools/resources/prompts over STDIO + optional HTTP POST shim | `make check-mcp` | **M** |
 | v37 lab: σ-pipeline SystemVerilog (XNOR bind + per-head popcount + cross-head variance σ-entropy + `sigma_abstain`) + Yosys `synth_xilinx` stats script + SymbiYosys harness | `make synth-v37` / `make formal-sby-v37` / `hdl/v37/synth_and_measure.sh` (SKIPs if `yosys` / `sby` missing) | **M** |
+| v38 lab: Tiny Tapeout–style σ tile (`tt_um_sigma_tile`) Verilator smoke (fast `HV_BITS=128` geometry) | `make check-asic-tile` (SKIPs if `verilator` missing) | **M** |
+| v38 lab: LibreLane/OpenLane-class RTL→GDSII **driver template** (`hdl/asic/config.json` + `hdl/asic/librelane_run.sh`) | `make librelane-v38` (SKIPs if LibreLane + PDK stack not installed) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -55,7 +57,9 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | Claim | Notes | Tier |
 |------|-------|:----:|
 | Full BitNet-class ternary inference on FPGA with σ-gating in the same synthesized datapath as TerEffic-style cores | Requires accelerator integration + closed timing on a chosen board; not claimed as shipped silicon here | **P** |
-| ASIC tapeout (e.g., ChipIgnite / SkyWater 130nm-class) carrying the σ-gate | Foundry + integration projection; no in-repo shuttle artifacts | **P** |
+| σ-tile / σ-pipeline tapeout via **IHP SG13G2 (130 nm)** on a **Tiny Tapeout-class** shuttle (public run calendar varies; mid‑2026 is a planning anchor, not a contract date) | Requires template repo wiring + CI + foundry queue; no in-repo GDSII artifact is claimed by default | **P** |
+| Alternative σ-tile route via **GlobalFoundries GF180MCU** (open PDK) on a shuttle or direct MPW slot | Node choice depends on aggregator + PDK pin‑out; not claimed as locked here | **P** |
+| Direct **IHP** MPW slot (outside Tiny Tapeout) if tile size / macro budgeting demands it | Commercial-ish planning bracket often cited as **USD ~5k–15k** per slot; treat as **P** until a signed quote exists | **P** |
 
 ## Explicit non-claims / stubs
 
@@ -69,6 +73,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | Routed FPGA bitstreams | Optional local smoke only; no CI bitstream artifacts | **N** |
 | “SymbiYosys proved σ-abstention for **full 4096-bit** hypervectors at **16 heads**” | BMC harness in `hdl/v37/` uses **reduced** `HV_BITS` / `N_HEADS` for tractability; default parameters are the architectural target, not the proved geometry unless you rerun SBY with a larger bound | **N** |
 | “Measured Fmax / timing closure on Artix-7 hardware” | `synth_xilinx` + `stat` are **tool estimates** from Yosys unless accompanied by Vivado timing on a locked part + P&R | **N** |
+| “LibreLane always completes green on a cold laptop” | Needs pinned tool rev + installed PDK + disk; the repo ships a **template** and a **runner script**, not a hermetic repro bundle | **N** |
+| “Verilator `check-asic-tile` proves the 4096-bit tapeout geometry” | The Makefile target builds **`HV_BITS=128`** for fast smoke; full 4096-bit behavior is a separate heavy sim unless you change the flag | **N** |
 
 ## Retired claims (corrections)
 
@@ -79,5 +85,6 @@ This section is intentionally plain. If a prior post implied “measured” when
 | “87,000× measured speedup” | Treated as **theoretical / derived** unless accompanied by an archived repro bundle + harness row. | **R** |
 | “5.8 W measured” | Treated as **projected** unless measured instrumentation + archive exists. | **R** |
 | “1,052 cases in the repo” | If referenced, it must be linked as **external archive**; it is not stored here. | **R** |
+| “SkyWater 130 nm tapeout via **Efabless / ChipIgnite**” | **Efabless shut down (2025)**; ChipIgnite-style SkyWater buckets through that channel are not the live default planning story in this repo (see `hdl/asic/TAPEOUT_CHECKLIST.md`). | **R** |
 
 Rule: **do not** present scripts, stubs, or imported papers as in-repo **measured** harness rows without an archived repro bundle (see `docs/REPRO_BUNDLE_TEMPLATE.md`).

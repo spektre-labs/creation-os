@@ -1,0 +1,11 @@
+{
+  "DESIGN_NAME": "tt_um_sigma_tile",
+  "VERILOG_FILES": ["hdl/asic/sigma_tile.sv"],
+  "CLOCK_PORT": "clk",
+  "CLOCK_PERIOD": 10.0,
+  "DIE_AREA": "0 0 160 100",
+  "FP_SIZING": "absolute",
+  "FP_PDN_AUTO_ADJUST": true,
+  "PDK": "ihp-sg13g2",
+  "STD_CELL_LIBRARY": "sg13g2_stdcell"
+}

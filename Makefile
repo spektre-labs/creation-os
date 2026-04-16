@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 synth-v37 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-mcp check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 synth-v37 check-asic-tile librelane-v38 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-mcp check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -131,6 +131,8 @@ help:
 	@echo "  formal-sby-tokenizer — SymbiYosys BMC on GDA27 roundtrip (SKIP if sby missing)"
 	@echo "  formal-sby-v37 — SymbiYosys prove on hdl/v37 σ-pipeline harness (SKIP if sby missing)"
 	@echo "  synth-v37 — Yosys xc7 synth + optional SBY via hdl/v37/synth_and_measure.sh (SKIPs if tools missing)"
+	@echo "  check-asic-tile — Verilator smoke for hdl/asic/sigma_tile.sv (SKIP if verilator missing)"
+	@echo "  librelane-v38 — LibreLane driver script for hdl/asic/config.json (SKIP if librelane missing)"
 	@echo "  oracle     — oracle_speaks, oracle_ultimate"
 	@echo "  physics    — genesis, qhdc"
 	@echo "  core       — compile core/*.c to .build/*.o"
@@ -234,6 +236,21 @@ formal-sby-v37:
 
 synth-v37:
 	@sh hdl/v37/synth_and_measure.sh && echo "synth-v37: OK (see script output for SKIPs)"
+
+check-asic-tile:
+	@if command -v verilator >/dev/null 2>&1; then \
+		rm -rf hdl/asic/build && \
+		verilator --binary -Mdir hdl/asic/build --top-module tt_um_sigma_tile -GHV_BITS=128 \
+			-Wno-WIDTHTRUNC -Wno-WIDTHEXPAND \
+			hdl/asic/sigma_tile.sv hdl/asic/sim/tb_sigma_tile.cpp && \
+		./hdl/asic/build/Vtt_um_sigma_tile && \
+		echo "check-asic-tile: OK"; \
+	else \
+		echo "check-asic-tile: SKIP (apt/brew install verilator)"; \
+	fi
+
+librelane-v38:
+	@sh hdl/asic/librelane_run.sh && echo "librelane-v38: OK (see script output for SKIPs)"
 
 eqy-agency-self:
 	@if command -v eqy >/dev/null 2>&1; then \
