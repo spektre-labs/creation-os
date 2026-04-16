@@ -79,6 +79,12 @@ hw/formal/agency_ctrl_prove/
 hw/formal/agency_ctrl_cover/
 hw/formal/agency_self/
 
+# v37 σ-pipeline (Yosys / SymbiYosys generated)
+hdl/v37/yosys.log
+hdl/v37/formal.log
+hdl/v37/synth_stats.json
+hdl/v37/sigma_pipeline/
+
 # Nix / direnv / Earthly / Zig / Rust shim
 .direnv/
 result

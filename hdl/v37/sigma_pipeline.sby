@@ -1,0 +1,17 @@
+[options]
+mode prove
+depth 30
+
+[engines]
+smtbmc z3
+
+[files]
+sigma_pipeline.sv
+sigma_pipeline_formal.sv
+
+[script]
+read_verilog -sv -DFORMAL /src/sigma_pipeline.sv
+read_verilog -sv /src/sigma_pipeline_formal.sv
+prep -top sigma_pipeline_formal
+flatten
+opt

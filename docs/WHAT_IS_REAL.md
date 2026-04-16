@@ -29,6 +29,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v34 lab: Dirichlet-style epistemic/aleatoric decomposition + Platt JSON hook + extended σ channels (`channels_v34`) + `cos_route_from_logits_v34` | `make check-v34` | **M** |
 | v35 lab: σ-guided adaptive speculative draft length + dual-verify abstain hook + progressive local/spec/API routing config | `make check-v35` | **M** |
 | v36 lab: MCP JSON-RPC σ server (`creation_os_mcp`) — tools/resources/prompts over STDIO + optional HTTP POST shim | `make check-mcp` | **M** |
+| v37 lab: σ-pipeline SystemVerilog (XNOR bind + per-head popcount + cross-head variance σ-entropy + `sigma_abstain`) + Yosys `synth_xilinx` stats script + SymbiYosys harness | `make synth-v37` / `make formal-sby-v37` / `hdl/v37/synth_and_measure.sh` (SKIPs if `yosys` / `sby` missing) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -38,6 +39,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | NVIDIA position paper — small models sufficient for agentic workloads (external) | `arXiv:2506.02153` | **I** |
 | UQ / abstention / calibration themes (ICLR 2026, TACL “Know Your Limits”, `arXiv:2603.06317`, ACM CSUR taxonomies, LogTokU, DiverseAgentEntropy, …) | Positioning map in `docs/SIGMA_VS_FIELD.md` | **I** |
 | Speculative decoding + edge–cloud drafts (EAGLE-class, Mirror-SD, “AI-RAN” narratives, …) | Positioning in `docs/SIGMA_GUIDED_SPEC.md` | **I** |
+| XNOR + popcount ternary / binary FPGA inference line (FINN / Xilinx, LUTNet, XNOR Neural Engine, BRein-style blocks, TerEffic-class ternary GEMM, …) | Survey / citations in vendor + arXiv literature; not a shipped bitstream in this repo | **I** |
+| `hls4ml` (CERN) supports quantized / ternary-ish export paths for FPGA HLS flows | External tooling + papers; not wired into this repo’s build | **I** |
 
 ## Common headline numbers (explicitly not “M” here)
 
@@ -46,6 +49,13 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “**87,000×**” | A **dimension-count / operation-shape** statement (e.g., memory ops / bit-parallelism at fixed \(D\)), not a benchmark row in this repo. | **T** |
 | “**5.8 W**” | A **power projection** or mapping estimate, not an in-repo measured wattmeter reading. | **P** |
 | “**1,052 cases**” | A dataset/analysis count that lives in an **external archive** (e.g., Zenodo record), not in this repository tree. | **E** |
+
+## Projections (explicit “P” surface)
+
+| Claim | Notes | Tier |
+|------|-------|:----:|
+| Full BitNet-class ternary inference on FPGA with σ-gating in the same synthesized datapath as TerEffic-style cores | Requires accelerator integration + closed timing on a chosen board; not claimed as shipped silicon here | **P** |
+| ASIC tapeout (e.g., ChipIgnite / SkyWater 130nm-class) carrying the σ-gate | Foundry + integration projection; no in-repo shuttle artifacts | **P** |
 
 ## Explicit non-claims / stubs
 
@@ -57,6 +67,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | Measured tokens/sec / acceptance curves for σ-guided vs fixed-K speculative decode | `benchmarks/v35/spec_bench.sh` is **synthetic** until BitNet+Qwen (or API) harness + weights exist | **N** |
 | Claude Desktop TruthfulQA/GSM8K A/B: σ-MCP on vs off | `benchmarks/v36/mcp_bench_stub.sh` is a **local JSON-RPC smoke** until a client harness + dataset bundle is archived | **N** |
 | Routed FPGA bitstreams | Optional local smoke only; no CI bitstream artifacts | **N** |
+| “SymbiYosys proved σ-abstention for **full 4096-bit** hypervectors at **16 heads**” | BMC harness in `hdl/v37/` uses **reduced** `HV_BITS` / `N_HEADS` for tractability; default parameters are the architectural target, not the proved geometry unless you rerun SBY with a larger bound | **N** |
+| “Measured Fmax / timing closure on Artix-7 hardware” | `synth_xilinx` + `stat` are **tool estimates** from Yosys unless accompanied by Vivado timing on a locked part + P&R | **N** |
 
 ## Retired claims (corrections)
 
