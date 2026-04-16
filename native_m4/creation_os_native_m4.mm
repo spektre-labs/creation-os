@@ -57,7 +57,7 @@ static void scalar_range(float *logits, const uint8_t *reputation, int begin, in
 static int self_test_edge_sizes(void)
 {
     const float scale = 0.125f;
-    static const int sizes[] = {1, 2, 7, 15, 16, 17, 63, 64, 65, 127, 128, 129, 1000, 4096, 65535};
+    static const int sizes[] = {1, 2, 7, 15, 16, 17, 33, 48, 63, 64, 65, 127, 128, 129, 1000, 4096, 65535};
     for (size_t s = 0; s < sizeof(sizes) / sizeof(sizes[0]); s++) {
         int n = sizes[s];
         const size_t rep_sz = cos_align_up((size_t)n, 64);
@@ -184,6 +184,43 @@ static int self_test_neon_parallel_with_tail(void)
     return 0;
 }
 
+/* Two GCD chunks (65536*2) plus non-64 tail — exercises dispatch_apply with chunks>1. */
+static int self_test_neon_parallel_two_chunks(void)
+{
+    const int vocab = 65536 * 2 + 41;
+    const float scale = 0.125f;
+    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
+    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *base = (float *)aligned_alloc(64, flt_sz);
+    float *par = (float *)aligned_alloc(64, flt_sz);
+    if (!rep || !base || !par) {
+        fprintf(stderr, "FAIL alloc (two-chunk parallel n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(par);
+        return 2;
+    }
+    for (int i = 0; i < vocab; i++) {
+        rep[i] = (uint8_t)((i * 41U + 11U) & 0xFFU);
+        base[i] = 0.0f;
+        par[i] = 0.0f;
+    }
+    cos_living_weights_inplace(base, rep, vocab, scale);
+    cos_living_weights_neon_parallel(par, rep, vocab, scale);
+    if (!float_buffers_exact(base, par, vocab)) {
+        fprintf(stderr, "FAIL NEON parallel two-chunk vs scalar (n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(par);
+        return 2;
+    }
+    free(rep);
+    free(base);
+    free(par);
+    return 0;
+}
+
 static int self_test(void)
 {
     int e = self_test_edge_sizes();
@@ -193,6 +230,9 @@ static int self_test(void)
     if (e != 0)
         return e;
     e = self_test_neon_parallel_with_tail();
+    if (e != 0)
+        return e;
+    e = self_test_neon_parallel_two_chunks();
     if (e != 0)
         return e;
 
@@ -347,8 +387,10 @@ int main(int argc, char **argv)
 
     /* Demo: run living-weights on a perf queue. */
     const int vocab = 1024;
-    float *logits = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
+    const size_t rep_sz = cos_align_up((size_t)vocab, 64);
+    const size_t flt_sz = cos_align_up((size_t)vocab * sizeof(float), 64);
+    float *logits = (float *)aligned_alloc(64, flt_sz);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
     if (!logits || !rep) {
         fprintf(stderr, "alloc failed\n");
         free(logits);
