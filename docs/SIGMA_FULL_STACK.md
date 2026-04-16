@@ -66,7 +66,12 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v38 | ASIC | σ-tile (Tiny Tapeout class) |
 | v39 | Physics (substrate) | σ_hardware (memristor analogue) |
 | v40 | Theory / diagnostics | σ-threshold hypothesis + independence + syndrome decode |
+| v41 | Inference / orchestration | σ-guided test-time compute (budget forcing, adaptive N, toy tree) |
 
 ## v40 working paper title (only when threshold harness exists)
 
 **“The σ-Threshold Theorem: Exponential Hallucination Suppression via Independent Uncertainty Channels as Classical Quantum Error Correction”**
+
+## v41 working paper title (only when test-time scaling harness exists)
+
+**“σ-Guided Test-Time Compute: Adaptive Reasoning Depth via Epistemic Uncertainty Decomposition”**

@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-mcp check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-mcp check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -48,6 +48,7 @@ help:
 	@echo "  standalone-v35 — build creation_os_v35 (v35 lab: σ-guided speculative decode hooks; not merge-gate)"
 	@echo "  standalone-v39 — build creation_os_v39 (v39 lab: σ_hardware + σ_total composition; not merge-gate)"
 	@echo "  standalone-v40 — build creation_os_v40 (v40 lab: σ independence + syndrome decoder; not merge-gate)"
+	@echo "  standalone-v41 — build creation_os_v41 (v41 lab: σ-guided test-time compute scaffold; not merge-gate)"
 	@echo "  standalone-mcp — build creation_os_mcp (v36 lab: MCP JSON-RPC σ server; not merge-gate)"
 	@echo "  cos_lm       — copy creation_os_v28 → cos_lm (CLI alias for LM entrypoint)"
 	@echo "  test       — run tests/test_bsc_core (sigma, Noether, crystal)"
@@ -98,6 +99,8 @@ help:
 	@echo "  check-v39  — standalone-v39 + test-v39 (v39 lab only; not merge-gate)"
 	@echo "  test-v40   — ./creation_os_v40 --self-test (v40 lab only)"
 	@echo "  check-v40  — standalone-v40 + test-v40 (v40 lab only; not merge-gate)"
+	@echo "  test-v41   — ./creation_os_v41 --self-test (v41 lab only)"
+	@echo "  check-v41  — standalone-v41 + test-v41 (v41 lab only; not merge-gate)"
 	@echo "  test-mcp   — ./creation_os_mcp --self-test (MCP σ server lab only)"
 	@echo "  check-mcp  — standalone-mcp + test-mcp (MCP lab only; not merge-gate)"
 	@echo "  standalone-openai-stub — build creation_os_openai_stub (loopback OpenAI-shaped /v1 shim)"
@@ -141,6 +144,7 @@ help:
 	@echo "  librelane-v38 — LibreLane driver script for hdl/asic/config.json (SKIP if librelane missing)"
 	@echo "  check-crossbar-sim — Verilator smoke for hdl/neuromorphic/crossbar_sim.sv (SKIP if verilator missing)"
 	@echo "  bench-v40-threshold — v40 TruthfulQA σ-channel sweep stub (SKIP unless harness wired)"
+	@echo "  bench-v41-scaling — v41 test-time scaling stub (no in-tree GSM8K/AIME harness yet)"
 	@echo "  oracle     — oracle_speaks, oracle_ultimate"
 	@echo "  physics    — genesis, qhdc"
 	@echo "  core       — compile core/*.c to .build/*.o"
@@ -275,6 +279,9 @@ check-crossbar-sim:
 
 bench-v40-threshold:
 	@bash benchmarks/v40/threshold_test.sh && echo "bench-v40-threshold: OK (see script output)"
+
+bench-v41-scaling:
+	@bash benchmarks/v41/test_time_scaling.sh && echo "bench-v41-scaling: OK (see script output)"
 
 eqy-agency-self:
 	@if command -v eqy >/dev/null 2>&1; then \
@@ -443,6 +450,12 @@ V40_SRCS = src/sigma/independence_test.c src/sigma/syndrome_decoder.c
 
 standalone-v40: src/v40/creation_os_v40.c $(V40_SRCS)
 	$(CC) $(CFLAGS) -I. -o creation_os_v40 src/v40/creation_os_v40.c $(V40_SRCS) $(LDFLAGS)
+
+# v41: σ-guided test-time compute — budget forcing + adaptive BoN + reasoning tree (lab; not merge-gate).
+V41_SRCS = src/v41/budget_forcing.c src/v41/best_of_n.c src/v41/self_verify.c src/v41/reasoning_tree.c src/sigma/decompose.c
+
+standalone-v41: src/v41/creation_os_v41.c $(V41_SRCS)
+	$(CC) $(CFLAGS) -I. -o creation_os_v41 src/v41/creation_os_v41.c $(V41_SRCS) $(LDFLAGS)
 
 # v36: MCP-native σ server (JSON-RPC over STDIO + optional HTTP shim).
 MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c
@@ -726,6 +739,12 @@ test-v40: standalone-v40
 check-v40: standalone-v40 test-v40
 	@echo "check-v40: OK (v40 σ independence + syndrome decoder self-test)"
 
+test-v41: standalone-v41
+	./creation_os_v41 --self-test
+
+check-v41: standalone-v41 test-v41
+	@echo "check-v41: OK (v41 σ-guided test-time compute lab self-test)"
+
 test-mcp: standalone-mcp
 	./creation_os_mcp --self-test
 
@@ -736,7 +755,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build
+	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

@@ -36,6 +36,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v39 lab: digital **ternary_crossbar** toy + harness (column MAC + pseudo-noise counter) | `make check-crossbar-sim` (SKIPs if `verilator` missing) | **M** |
 | v40 lab: σ-channel **independence** diagnostics + **σ-syndrome** action decoder (6 actions) | `make check-v40` | **M** |
 | v40 lab: TruthfulQA σ-channel sweep **stub** (threshold theorem harness placeholder) | `make bench-v40-threshold` (exits 0; real eval requires external weights + CLI) | **M** |
+| v41 lab: σ-guided **test-time compute** scaffold (budget forcing + adaptive best-of-N + toy reasoning tree + verify bookkeeping) | `make check-v41` | **M** |
+| v41 lab: GSM8K / MATH / AIME **scaling harness** (“2B + σ beats 70B”) | `make bench-v41-scaling` (exits 0 as **stub**; real curves require external weights + eval CLI + REPRO bundle) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -88,6 +90,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “σ_hardware is calibrated to a specific fab device” | `sigma_hardware_estimate()` is a **scalar lab mapping** (`src/sigma/decompose_v39.c`), not a foundry-qualified noise model | **N** |
 | “`bench-v40-threshold` proves exponential hallucination suppression vs channel count” | The script is a **stub** until `creation_os` (or another evaluator) can run archived TruthfulQA-style harnesses in-tree | **N** |
 | “σ-threshold theorem is proven for LLMs in this repo” | v40 ships **definitions + diagnostics + decoder**; the exponential suppression claim is **hypothesis / P-tier** until measured and archived | **N** |
+| “**2B BitNet + σ-guided test-time compute matches 70B** on GSM8K/AIME in this repo” | v41 ships **policy + toy integration** only; any crossover budget claim is **P-tier** until `benchmarks/v41/budget_*.json` exists with archived harness metadata | **N** |
 
 ## Retired claims (corrections)
 

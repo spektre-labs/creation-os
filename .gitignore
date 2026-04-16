@@ -27,11 +27,16 @@ creation_os_v34
 creation_os_v35
 creation_os_v39
 creation_os_v40
+creation_os_v41
 creation_os_mcp
 
 # v33 harness / local metrics (generated)
 benchmarks/v33/metrics_run/
 metrics/session_*.jsonl
+
+# v41 test-time scaling outputs (generated once a harness exists)
+benchmarks/v41/budget_*.json
+benchmarks/v41/*.png
 
 # Optional upstream checkouts / weights (never commit)
 external/BitNet/
