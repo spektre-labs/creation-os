@@ -7,7 +7,7 @@
 | Piece | Role |
 |------|------|
 | `src/v46/fast_sigma.c` | `v46_fast_sigma_from_logits` — Dirichlet `epistemic` / `aleatoric` via `sigma_decompose_dirichlet_evidence`, softmax entropy + top-margin blend into `total` (lab dashboard scalar) |
-| `src/v46/sigma_simd.c` | NEON (AArch64) or AVX2 (x86) sum/max reductions where available; scalar fallback |
+| `src/v46/sigma_simd.c` | NEON (AArch64) or AVX2 (x86) **sum/max reductions** where available (bandwidth helpers); softmax entropy still uses stable scalar `exp`/`log` loops today |
 | `src/v46/adaptive_quant.c` | `v46_sigma_adaptive_quant` — epistemic→bits/sparsity toy policy |
 | `benchmarks/v46/SPEED_TABLE.md` | Positioning table with explicit **I/M/N** discipline |
 
