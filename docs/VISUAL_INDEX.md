@@ -44,7 +44,7 @@ Figures use a **quiet engineering grid**, **corner index brackets**, **`FIG nn` 
 - **Light figures** (`#fafafa` / `#f8fafc` backgrounds): print-first, keynote-friendly. **Drop shadow** via `feDropShadow` at low opacity (~0.06–0.08) for card lift — not heavy skeuomorphism.
 - **Dark figures** (`#0f172a`–`#020617` backgrounds): deck contrast on projectors; top **accent hairline** (cyan–indigo gradient) as brand spine.
 - **Accessibility:** every SVG ships `<title>` + `<desc>` and `role="img"` + `aria-labelledby` for screen readers and PDF export.
-- **README on GitHub:** hero and inline figures use `decoding="async"`, `max-width: min(…px, 100%)`, `height: auto`, and light `border-radius` where `style` is honored; clients that strip inline CSS still get `width="96%"` / `width="100%"` fallbacks. **FIG 09** is the primary light/dark adaptive asset on the landing README.
+- **README on GitHub:** hero and inline figures use `decoding="async"`, optional `loading="lazy"` below the fold, `max-width: min(…px, 100%)`, `height: auto`, `border-radius`, and a **soft neutral shadow** (`box-shadow: 0 2px 14px rgba(15,23,42,0.09)`) so SVGs read as *cards* on the white canvas; clients that strip inline CSS still get `width="96%"` / `width="100%"` fallbacks. Badges are centered in a **two-row table** for alignment on narrow viewports. **FIG 09** is the primary light/dark adaptive asset on the landing README.
 - **ASCII in `<text>`** when possible (use `/` not exotic punctuation) — avoids replacement glyphs and invalid UTF-8 in some rasterizers. See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) for diagram vs policy.
 
 ## Embedding in Markdown (GitHub)
