@@ -1,4 +1,4 @@
-# σ Full Stack — from paper to physics (Creation OS v39)
+# σ Full Stack — from paper to physics (Creation OS v39–v40)
 
 One equation family, many substrates:
 
@@ -29,6 +29,9 @@ This is **not** a claim that these three numbers are always statistically indepe
 | FPGA | σ_pipeline | Cross-head variance gate | `hdl/v37/sigma_pipeline.sv` |
 | ASIC | σ_tile | Tiny-tile abstention / SPI σ interface | `hdl/asic/sigma_tile.sv` |
 | Physics (toy) | σ_hw column counter | Digital noise stand-in for analog MAC columns | `hdl/neuromorphic/crossbar_sim.sv` |
+| Theory (lab) | σ-threshold hypothesis | “Below threshold + independent channels” story mapped to QEC language | `docs/sigma_threshold_theorem.md` |
+| Diagnostics | σ-channel independence | Pearson correlation matrix + `threshold_regime` flag | `src/sigma/independence_test.c` |
+| Policy (lab) | σ-syndrome decode | Map σ-vector highs to `{emit, abstain, fallback, …}` | `src/sigma/syndrome_decoder.c` |
 
 ## Neuromorphic / memristor substrate note
 
@@ -50,3 +53,20 @@ Rule: **do not** cold-contact from this repo alone; treat as roadmap until FPGA/
 **“σ Across Substrates: A Unified Uncertainty Framework from Logits to Memristors”**
 
 Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / continuation), even though its **instantiation** differs (semantic entropy vs device noise). The invariant story is **K_eff = (1−σ_total)·K**; the measurable part is what you archive per substrate.
+
+## Version ladder (lab milestones)
+
+| Version | Layer | σ shape |
+|---|---|---|
+| v33 | Agent runtime | σ-routed SLM/LLM fallback |
+| v34 | Algorithmic | σ aleatoric / epistemic |
+| v35 | Inference | σ-guided speculative decode |
+| v36 | Ecosystem | σ MCP server |
+| v37 | FPGA | σ-pipeline in RTL |
+| v38 | ASIC | σ-tile (Tiny Tapeout class) |
+| v39 | Physics (substrate) | σ_hardware (memristor analogue) |
+| v40 | Theory / diagnostics | σ-threshold hypothesis + independence + syndrome decode |
+
+## v40 working paper title (only when threshold harness exists)
+
+**“The σ-Threshold Theorem: Exponential Hallucination Suppression via Independent Uncertainty Channels as Classical Quantum Error Correction”**

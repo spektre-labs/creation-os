@@ -34,6 +34,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v38 lab: LibreLane/OpenLane-class RTL→GDSII **driver template** (`hdl/asic/config.json` + `hdl/asic/librelane_run.sh`) | `make librelane-v38` (SKIPs if LibreLane + PDK stack not installed) | **M** |
 | v39 lab: σ_hardware scalar + σ_total composition on top of Dirichlet σ (`sigma_full_t`) | `make check-v39` | **M** |
 | v39 lab: digital **ternary_crossbar** toy + harness (column MAC + pseudo-noise counter) | `make check-crossbar-sim` (SKIPs if `verilator` missing) | **M** |
+| v40 lab: σ-channel **independence** diagnostics + **σ-syndrome** action decoder (6 actions) | `make check-v40` | **M** |
+| v40 lab: TruthfulQA σ-channel sweep **stub** (threshold theorem harness placeholder) | `make bench-v40-threshold` (exits 0; real eval requires external weights + CLI) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -46,6 +48,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | XNOR + popcount ternary / binary FPGA inference line (FINN / Xilinx, LUTNet, XNOR Neural Engine, BRein-style blocks, TerEffic-class ternary GEMM, …) | Survey / citations in vendor + arXiv literature; not a shipped bitstream in this repo | **I** |
 | `hls4ml` (CERN) supports quantized / ternary-ish export paths for FPGA HLS flows | External tooling + papers; not wired into this repo’s build | **I** |
 | Neuromorphic ↔ transformer bridge narratives (Nature collections / surveys; “efficient transformer-like inference” positioning) | External literature; not a measured memristor row in this repo | **I** |
+| Quantum threshold / below-threshold error suppression narratives (e.g., Willow-class demos) + FPGA syndrome decoding (e.g., Riverlane-class tooling) | External physics + engineering literature; used only as **analogy** in `docs/sigma_threshold_theorem.md` | **I** |
+| Learned decoders for stabilizer syndromes (e.g., AlphaQubit-class lines) | External ML-for-decoding literature; “σ-AlphaQubit” is a **hypothesis** until a dataset + training recipe is archived | **I** |
 
 ## Common headline numbers (explicitly not “M” here)
 
@@ -63,6 +67,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | σ-tile / σ-pipeline tapeout via **IHP SG13G2 (130 nm)** on a **Tiny Tapeout-class** shuttle (public run calendar varies; mid‑2026 is a planning anchor, not a contract date) | Requires template repo wiring + CI + foundry queue; no in-repo GDSII artifact is claimed by default | **P** |
 | Alternative σ-tile route via **GlobalFoundries GF180MCU** (open PDK) on a shuttle or direct MPW slot | Node choice depends on aggregator + PDK pin‑out; not claimed as locked here | **P** |
 | Direct **IHP** MPW slot (outside Tiny Tapeout) if tile size / macro budgeting demands it | Commercial-ish planning bracket often cited as **USD ~5k–15k** per slot; treat as **P** until a signed quote exists | **P** |
+| Neuromorphic collaboration lanes (IHP neuromorphic/SiGe lines, Manchester SpiNNaker-2, BrainChip Akida SDK, IMEC memristor programs) | **Contacts / positioning only** until contracts + shared artifacts exist; see `docs/SIGMA_FULL_STACK.md` | **P** |
+| Empirical **n_crit** for “σ-threshold” phase transition (hallucination vs independent channel count) | Requires an archived eval harness + model weights; see `docs/sigma_threshold_theorem.md` + `benchmarks/v40/threshold_test.sh` | **P** |
 
 ## Explicit non-claims / stubs
 
@@ -80,6 +86,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “Verilator `check-asic-tile` proves the 4096-bit tapeout geometry” | The Makefile target builds **`HV_BITS=128`** for fast smoke; full 4096-bit behavior is a separate heavy sim unless you change the flag | **N** |
 | “`ternary_crossbar` is a measured memristor array” | It is a **digital toy model** for column MAC + pseudo noise (`hdl/neuromorphic/crossbar_sim.sv`), not device physics | **N** |
 | “σ_hardware is calibrated to a specific fab device” | `sigma_hardware_estimate()` is a **scalar lab mapping** (`src/sigma/decompose_v39.c`), not a foundry-qualified noise model | **N** |
+| “`bench-v40-threshold` proves exponential hallucination suppression vs channel count” | The script is a **stub** until `creation_os` (or another evaluator) can run archived TruthfulQA-style harnesses in-tree | **N** |
+| “σ-threshold theorem is proven for LLMs in this repo” | v40 ships **definitions + diagnostics + decoder**; the exponential suppression claim is **hypothesis / P-tier** until measured and archived | **N** |
 
 ## Retired claims (corrections)
 
