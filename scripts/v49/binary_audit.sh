@@ -84,4 +84,5 @@ fi
 echo ""
 echo "=== AUDIT COMPLETE (lab) ==="
 echo "Artifacts: $AUDIT"
-echo "NOTE: objdump-based syscall forensics are intentionally omitted here (high false-positive rate)."
+echo "NOTE: objdump-based syscall / networking forensics are intentionally omitted here (high false-positive rate)."
+echo "NOTE: do not infer “zero networking” from this script alone — use OS-level sandboxing + independent review for real deployments."
