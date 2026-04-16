@@ -87,6 +87,7 @@ help:
 	@echo "  standalone-suite-stub — build creation_os_suite_stub (mode metadata CLI; see docs/SUITE_LAB.md)"
 	@echo "  test-suite-stub      — ./creation_os_suite_stub --self-test"
 	@echo "  check-suite-stub     — openai-stub + suite-stub self-tests (optional lab; not merge-gate)"
+	@echo "  reviewer — run critic-facing checks (v26 + v2 self-test + tier tags)"
 	@echo "  merge-gate — portable check + every flagship self-test (v6..v28); same as CI / publish preflight"
 	@echo "  formal-rtl-lint — Verilator --lint-only on rtl/*.sv (SKIP if verilator missing)"
 	@echo "  formal-rtl-sim  — Verilator --binary + run cos_silicon_chip_tb (SKIP if verilator missing)"
@@ -142,6 +143,15 @@ merge-gate:
 	@$(MAKE) check-v28
 	@$(MAKE) check-v29
 	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests)"
+
+# Reviewer gate: what an external critic should be able to verify quickly.
+reviewer:
+	@bash ./fix_critique_points.sh
+	@$(MAKE) check
+	@$(MAKE) check-v26
+	@$(MAKE) standalone
+	@./creation_os --self-test
+	@echo "reviewer: OK"
 
 check-rtl: formal-rtl-lint
 

@@ -9,6 +9,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [hallucination_reduction.md](../benchmarks/hallucination_reduction.md) | Benchmark authors | TruthfulQA / harness evidence note (external; not merge-gate) |
 | [WHAT_IS_REAL.md](WHAT_IS_REAL.md) | v29 readers / agents | Tier-tagged claims for the v29 harness (measured vs not claimed) |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
+| [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |
 | [FULL_LOCAL_SUITE.md](FULL_LOCAL_SUITE.md) | Integrators | What “full suite” scripts often promise vs what this repo ships; safe incremental path |
 | [REPOS_AND_ROLES.md](REPOS_AND_ROLES.md) | Everyone, agents | **Consortium map:** creation-os vs protocol vs corpus vs Genesis; single push target; where insights land |

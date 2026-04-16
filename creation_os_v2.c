@@ -1126,8 +1126,67 @@ static void run_authentication(void)
            hv_sigma(identity, recovered2) < 0.001f ? "[VERIFIED]" : "[FAIL]");
 }
 
-int main(void)
+static void print_help(const char *argv0)
 {
+    printf("usage: %s [--help] [--self-test]\n", argv0 ? argv0 : "creation_os");
+    printf("\n");
+    printf("  --self-test   Run a small deterministic sanity suite and exit.\n");
+    printf("  --help        Print this message.\n");
+    printf("\n");
+    printf("Notes:\n");
+    printf("  - v2 is the single-file bootstrap demo. For merge-gate harnesses, use v26+\n");
+    printf("    (see docs/WHICH_FILE_TO_READ.md).\n");
+}
+
+static int self_test(void)
+{
+    int checks = 0;
+    int fails = 0;
+    _rng_state = 1u;
+    init_embeddings();
+
+    uint64_t a[W], b[W], c[W], m[W];
+    hv_random(a);
+    hv_random(b);
+    for (int i = 0; i < W; i++)
+        c[i] = ~a[i];
+    hv_maj3(m, a, a, b);
+
+    checks++;
+    if (hv_sigma(a, a) != 0.0f) {
+        printf("FAIL: sigma(x,x) expected 0 got %.9f\n", hv_sigma(a, a));
+        fails++;
+    }
+    checks++;
+    if (hv_sigma(a, c) <= 0.9f) {
+        printf("FAIL: sigma(x,~x) expected high got %.6f\n", hv_sigma(a, c));
+        fails++;
+    }
+    checks++;
+    if (hv_sigma(a, m) >= 0.01f) {
+        printf("FAIL: sigma(x,MAJ(x,x,y)) expected near 0 got %.6f\n", hv_sigma(a, m));
+        fails++;
+    }
+
+    if (fails == 0)
+        printf("%d/%d PASS\n", checks - fails, checks);
+    else
+        printf("%d/%d PASS (%d FAIL)\n", checks - fails, checks, fails);
+    return fails ? 1 : 0;
+}
+
+int main(int argc, char **argv)
+{
+    for (int i = 1; i < argc; i++) {
+        if (!strcmp(argv[i], "--help") || !strcmp(argv[i], "-h")) {
+            print_help(argv[0]);
+            return 0;
+        }
+        if (!strcmp(argv[i], "--self-test")) {
+            return self_test() == 0 ? 0 : 2;
+        }
+    }
+
     _rng_state = (uint64_t)time(NULL);
     init_embeddings();
 

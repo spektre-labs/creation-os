@@ -4,6 +4,8 @@
 
 <h1 align="center">Creation OS</h1>
 
+> **Reviewing this repo?** Read **[`docs/WHICH_FILE_TO_READ.md`](docs/WHICH_FILE_TO_READ.md)** first.
+
 <p align="center">
   <strong>Coherence you can compile.</strong><br/>
   <sub>Binary Spatter Codes · σ as a first-class signal · portable C11 · no framework on the teaching kernel</sub><br/>
