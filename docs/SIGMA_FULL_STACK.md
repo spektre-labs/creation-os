@@ -1,4 +1,4 @@
-# σ Full Stack — from paper to physics (Creation OS v39–v40)
+# σ Full Stack — from paper to silicon (Creation OS v33–v54)
 
 One equation family, many substrates:
 
