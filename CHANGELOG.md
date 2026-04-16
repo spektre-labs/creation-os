@@ -1,5 +1,97 @@
 # Changelog
 
+## v57 The Verified Agent — convergence of v33–v56 (2026-04-16)
+
+- **No new σ math.** v57 is the *convergence artifact* of the
+  Creation OS family. Every piece of math it relies on shipped in
+  v33–v56. v57's contribution is the explicit **invariant +
+  composition registry** that names which Creation OS subsystem
+  owns which agent-runtime surface, and tags every claim with one
+  of four explicit tiers (M / F / I / P).
+- **Driving oivallus.** The Q2 2026 open-source agent-framework
+  field offers ad-hoc sandboxing — Docker containers, WASM
+  sandboxes, capability allowlists — and rests on prompt-engineered
+  reasoning loops. Every framework's user-facing claim reduces to
+  *"trust our architecture"*. v57's user-facing claim is the
+  opposite: *"run `make verify-agent`"*.
+- **Tier semantics (no blending).**
+  - **M** — runtime-checked deterministic self-test (`make` target
+    returns 0 iff the check passes)
+  - **F** — formally proven proof artifact (Frama-C / WP / sby /
+    TLA+ / Coq)
+  - **I** — interpreted / documented (no mechanical check yet)
+  - **P** — planned (next concrete step explicit)
+- **Invariant registry (`src/v57/invariants.{c,h}`).** Five
+  invariants chosen to span the surface that ad-hoc agent
+  frameworks typically *trust the architecture* on:
+  `sigma_gated_actions`, `bounded_side_effects`,
+  `no_unbounded_self_modification`, `deterministic_verifier_floor`,
+  `ensemble_disagreement_abstains`. Each invariant carries up to
+  four checks (runtime, formal, documented, planned) and a
+  best-tier query.
+- **Composition registry (`src/v57/verified_agent.{c,h}`).** Nine
+  composition slots: `execution_sandbox` (v48, M),
+  `sigma_kernel_surface` (v47, F), `harness_loop` (v53, M),
+  `multi_llm_routing` (v54, M), `speculative_decode` (v55, M),
+  `constitutional_self_modification` (v56, M),
+  `do178c_assurance_pack` (v49, I), `red_team_suite` (v48 + v49,
+  I), `convergence_self_test` (v57, M). Each slot has exactly one
+  owning `make` target.
+- **Driver (`src/v57/creation_os_v57.c`).** Modes: `--self-test`
+  (49/49 deterministic registry tests — count, uniqueness, tier
+  monotonicity, find-by-id, histogram sums, slot completeness),
+  `--architecture` (composition + invariant table with tier tags),
+  `--positioning` (vs ad-hoc agent sandboxes, with explicit
+  non-claims), `--verify-status` (static tier histogram).
+  No socket, no allocation on a hot path; registry is `static
+  const`.
+- **Live aggregate (`scripts/v57/verify_agent.sh`).** Walks the
+  composition slots, dispatches each owning `make` target, reports
+  per-slot **PASS / SKIP / FAIL**. **SKIP** is emitted when the
+  target ran without error but matched `SKIP\b` in its output
+  (existing Creation OS pattern when external tools — Frama-C, sby,
+  garak, DeepTeam, pytest extras — are not installed). Never
+  silently downgrades a slot. Flags: `--strict` (treat SKIP as
+  FAIL for CI hosts with full tooling), `--json PATH` (machine-
+  readable report), `--quiet` (final summary line only).
+- **Makefile.** New targets: `standalone-v57`, `test-v57`,
+  `check-v57`, **`verify-agent`** (live aggregate). All marked
+  *not* merge-gate. v57 binary added to `.gitignore`.
+- **Documentation (`docs/v57/`).**
+  - `THE_VERIFIED_AGENT.md` — one-page articulation of the
+    artifact, with explicit non-claims list (no FAA / EASA
+    certification, no zero-CVE claim, no frontier-accuracy claim,
+    no specific-product comparison).
+  - `ARCHITECTURE.md` — composition wire map, tier semantics,
+    per-slot responsibilities.
+  - `POSITIONING.md` — vs ad-hoc OSS agent frameworks / hardened
+    OSS frameworks / enterprise SaaS; the only column whose
+    user-facing answer is "verify yourself" is v57.
+  - `paper_draft.md` — position paper.
+- **Local verification (M4, this build).** `make check-v57`
+  → 49/49 PASS. `make verify-agent` (no external proof tooling
+  installed) → 6 PASS, 3 SKIP, 0 FAIL — the SKIPs are honest
+  reports for `verify-c` (Frama-C absent), `certify` (DO-178C
+  pipeline tooling absent), `red-team` (Garak / DeepTeam absent).
+  Never a silent PASS.
+- **Cross-doc.** README, `docs/SIGMA_FULL_STACK.md`,
+  `docs/DOC_INDEX.md`, `docs/WHAT_IS_REAL.md`, `CONTRIBUTING.md`,
+  `creation.md` updated with v57 entries; version ranges bumped
+  from `v31–v56` / `v33–v56` (and earlier `v33–v51`, `v33–v55`)
+  to `v31–v57` / `v33–v57`.
+- **What v57 deliberately does not claim.** Not FAA / EASA
+  certification (v49 artifacts are tier I, not a certificate).
+  Not zero CVEs (small surface, but smallness is not absence).
+  Not frontier-model accuracy (model choice lives in the routing
+  slot). Not a replacement for any specific commercial product
+  (the `--positioning` table uses category names, with CVE / ARR
+  figures cited from the driving oivallus prompt as user-supplied
+  reporting).
+- **Tier tags.** v57 convergence registry: **M** runtime-checked.
+  v57 paper draft: **I**. v57 live aggregate (`make verify-agent`):
+  **M** orchestration with honest **SKIP** reporting for missing
+  tooling.
+
 ## v56 σ-Constitutional scaffold (2026-04-16)
 
 - **Four Q1-2026 insights, one C11 invariant.** Rule-based process

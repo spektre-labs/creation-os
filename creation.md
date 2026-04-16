@@ -40,10 +40,11 @@
 ## Project memory (auto-updated — do not edit by hand)
 
 - Canonical repo: [`spektre-labs/creation-os`](https://github.com/spektre-labs/creation-os)
-- Last landed milestone: **v56** (σ-Constitutional scaffold — VPRM verifier + σ-gated IP-TTT + grokking commutator σ-channel + ANE layout helper)
+- Last landed milestone: **v57** (The Verified Agent — convergence of v33–v56 with `make verify-agent` aggregate driver; tier-honest registry of 5 invariants × 9 composition slots)
 - Live merge-gate: `make merge-gate` (`check` + `check-v6` … `check-v29`)
 - Live optional labs: `check-v31`, `check-v33` … `check-v48`, `check-v51`,
-  `check-v53`, `check-v54`, `check-v55`, `check-v56`, `check-mcp`, `formal-sby-v37`,
+  `check-v53`, `check-v54`, `check-v55`, `check-v56`, `check-v57`,
+  `verify-agent` (live aggregate driver), `check-mcp`, `formal-sby-v37`,
   `verify`, `red-team`, `certify`, `v50-benchmark`
 - Evidence: `docs/WHAT_IS_REAL.md`, `docs/CLAIM_DISCIPLINE.md`,
   `docs/COMMON_MISREADINGS.md`
@@ -72,10 +73,13 @@
   [`docs/v53/ARCHITECTURE.md`](docs/v53/ARCHITECTURE.md),
   [`docs/v54/ARCHITECTURE.md`](docs/v54/ARCHITECTURE.md),
   [`docs/v55/ARCHITECTURE.md`](docs/v55/ARCHITECTURE.md),
-  [`docs/v56/ARCHITECTURE.md`](docs/v56/ARCHITECTURE.md)
+  [`docs/v56/ARCHITECTURE.md`](docs/v56/ARCHITECTURE.md),
+  [`docs/v57/ARCHITECTURE.md`](docs/v57/ARCHITECTURE.md)
+- The Verified Agent (one-page articulation): [`docs/v57/THE_VERIFIED_AGENT.md`](docs/v57/THE_VERIFIED_AGENT.md)
 - Positioning vs Claude Code: [`docs/v53/POSITIONING.md`](docs/v53/POSITIONING.md)
 - Positioning vs MoA / RouteLLM / MoMA / Bayesian Orchestration: [`docs/v54/POSITIONING.md`](docs/v54/POSITIONING.md)
 - Positioning vs VPRM / ThinkPRM / IP-TTT / TTSR / SLT grokking / ANE RE / SME2: [`docs/v56/POSITIONING.md`](docs/v56/POSITIONING.md)
+- Positioning vs ad-hoc agent sandboxes (OSS / hardened / enterprise): [`docs/v57/POSITIONING.md`](docs/v57/POSITIONING.md)
 - Paper draft (σ-proconductor for multi-LLM): [`docs/v54/paper_draft.md`](docs/v54/paper_draft.md)
 - Paper draft (σ-governance vs time-limits):
   [`docs/v53/paper_draft.md`](docs/v53/paper_draft.md)
@@ -83,5 +87,7 @@
   [`docs/v55/paper_draft.md`](docs/v55/paper_draft.md)
 - Paper draft (σ-Constitutional: VPRM + IP-TTT + grokking + ANE layout):
   [`docs/v56/paper_draft.md`](docs/v56/paper_draft.md)
+- Paper draft (Verified Agent: tier-honest convergence):
+  [`docs/v57/paper_draft.md`](docs/v57/paper_draft.md)
 - Tier tags: [`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)
 - Claim discipline: [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md)
