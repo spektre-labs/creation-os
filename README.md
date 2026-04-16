@@ -39,14 +39,14 @@
 | I want to… | Jump to |
 |:--|:--|
 | **Run CI locally / ship a PR** | [Sixty seconds](#run-it-in-sixty-seconds) · [Build](#build) · [Contributing](CONTRIBUTING.md) |
-| **Understand the product story** | [At a glance](#at-a-glance) · [Flagship table](#flagship-programs) · [The problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [LLM stacks vs Creation OS](#llm-vs-creation-os-comparison) |
+| **Understand the product story** | [At a glance](#at-a-glance) · [Flagship table](#flagship-programs) · [LLM architecture (our stack)](#creation-os-llm-architecture-our-stack-and-tiers) · [The problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [LLM stacks vs Creation OS](#llm-vs-creation-os-comparison) |
 | **Not mis-cite a headline** | [Claim discipline](docs/CLAIM_DISCIPLINE.md) · [Common misreadings](docs/COMMON_MISREADINGS.md) · [Doctoral path](#doctoral-and-committee-read-path) |
 | **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
 | **Agents / contributors / security** | [AGENTS.md](AGENTS.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [MAINTAINERS](docs/MAINTAINERS.md) |
 
-**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [v29 collapse harness](#v29-collapse-harness) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
+**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [v29 collapse harness](#v29-collapse-harness) · [LLM architecture](#creation-os-llm-architecture-our-stack-and-tiers) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
 
 <a id="readme-scan-map-fig-09"></a>
 
@@ -158,7 +158,7 @@ flowchart LR
   end
   subgraph lab["Standalone lab programs"]
     V6["v6 … v12<br/>1024-bit demos"]
-    V15["v15 … v28<br/>headers + self-tests"]
+    V15["v15 … v29<br/>headers + self-tests"]
   end
   V2 -.->|same sigma language; different evidence class| V6
   V6 --> V15
@@ -614,6 +614,40 @@ COGNITION
 
 ---
 
+<a id="creation-os-llm-architecture-our-stack-and-tiers"></a>
+
+## Creation OS LLM architecture (our stack and tiers)
+
+This section is the **single map** for “our LLM story” in **this repository**: what is **shipped as C**, what is **wired for external engines**, and what stays **honestly out-of-tree** (weights, `lm-eval` archives, P&R). It is written to pair with the **evidence ladder** ([FIG 03](#publication-hard)) and [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
+### What landed recently (v27 → v29), in one view
+
+| Layer | What it is | Where it lives | Merge gate |
+|:--|:--|:--|:--|
+| **Text boundary + tokenizer scaffold** | Tiered tokenizer story (BPE stand-in, byte codebook / XOR–MAJ bundles, optional COSB mmap table, inference trace JSON) | [`creation_os_v27.c`](creation_os_v27.c) + [`src/tokenizer/`](src/tokenizer/) | `make check-v27` (**70**) |
+| **LM integration shell** | GGUF v3 subset + **tensor-data base** + **mmap reads**; **external engine** stdout capture (`CREATION_OS_BITNET_CPP` + optional stdin/extra argv); **tokenizer.json** vocab counting (`--tokenizer-stats`); **sampling** (temperature / top‑k / top‑p) with **64B-aligned** buffers + **AArch64 NEON** max-reduction; **Llama‑3-ish chat framing**; **loopback HTTP** (`/v1/chat/completions`, `/health`) with **JSON escaping**; **σ toy** on logits; **`make cos_lm`** alias; Docker image builds **v28** without bundling weights | [`creation_os_v28.c`](creation_os_v28.c) + [`src/import/`](src/import/) + [`src/nn/`](src/nn/) + [`src/server/`](src/server/) | `make check-v28` (**29**) |
+| **Collapse harness (LM “hard parts” without lying)** | **mmap GGUF tensor views** (no multi‑GB `malloc` memcpy); **eight σ scalar channels** + abstention gate on **real-shaped logits**; **XNOR / Hamming-style attention toy** for alternative similarity geometry; **BitNet-shaped forward stub** (deterministic logits for plumbing); **threshold JSON**; **benchmark shell stubs** + optional **Yosys** SV smoke | [`creation_os_v29.c`](creation_os_v29.c) + [`src/import/gguf_loader.c`](src/import/gguf_loader.c) + [`src/sigma/channels.c`](src/sigma/channels.c) + [`src/nn/attention_xnor.c`](src/nn/attention_xnor.c) + [`config/sigma_thresholds.json`](config/sigma_thresholds.json) + [`hdl/synthesis/`](hdl/synthesis/) | `make check-v29` (**22**) |
+
+For a **tier-tagged** “what is real vs imported vs not claimed” table, see [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
+
+### How we think about “our LLM” (three planes, one discipline)
+
+- **Plane A — portable spine (this repo’s merge gate):** `creation_os_v2.c` + `core/*.h` teach the **BSC / σ algebra** with **stdlib + libm only**. Standalone programs **v6–v29** are **separate binaries** that extend the same *receipt language* (σ, POPCOUNT/Hamming, abstention patterns) with increasing **integration surface** — still mostly **lab / harness plumbing classes**, not a productized chat server mandate.
+- **Plane B — MLX / Python paths (extended checkout):** described in [docs/ANALYSIS.md](docs/ANALYSIS.md) and the **AGI map** below — these are **not required** to pass `make merge-gate` here, but they are where full transformer forward passes typically live in practice.
+- **Plane C — native M4 / heterogeneous dispatch (extended checkout):** NEON/SME/Metal/CoreML style composition appears in project rules and native trees; **this README’s merge gate** intentionally stays **portable C11** unless a target is explicitly optional.
+
+**Discipline (why this is “its own level” without magic):**
+
+1. **Claims are typed:** internal consistency checks (**lab demo**), integration shells (**integration / collapse harness**), and future **harness rows** are not interchangeable in prose — see [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+2. **σ is structural, not decorative:** v28 adds σ on **logits-shaped toys** and serving boundaries; v29 adds **multi-channel σ readouts** and a real abstention **gate API** on the same numeric types you would feed from a real LM.
+3. **Weights meet memory honestly:** v28/v29 prefer **mmap views** and **small verified fixtures** in the merge gate, instead of pretending CI clones multi‑GB checkpoints.
+4. **Hot paths respect silicon habits where we touch them:** AArch64 NEON for toy GEMV / logit max reduction + aligned scratch in v28; extended “all units at once” composition remains **documented** primarily outside this portable gate ([docs/ANALYSIS.md](docs/ANALYSIS.md), [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md)).
+5. **Alternative attention geometry is first-class as an experiment hook:** the **XNOR/BSC-style** attention path in v29 exists to make “softmax vs POPCOUNT-like similarity” a **testable fork**, not a tweet — optional SV/Yosys smoke is intentionally small and local.
+
+**Non-goals (still true):** this repository does **not** ship a full in-process **BitNet b1.58 2B4T** forward in portable C as the merge-gate default; it **does** ship the **interfaces + receipts** that let you bolt one on without confusing “compiled” with “evaluated on TruthfulQA”.
+
+---
+
 ## Architecture
 
 <p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
@@ -723,6 +757,9 @@ This is a research prototype. Specific limitations:
 9. **The Real Mind v10** adds M30–M33 distillation, few-shot distance, swarm routing, and max-σ abstention schematics ([THE_REAL_MIND_V10.md](docs/THE_REAL_MIND_V10.md)).
 10. **The MatMul-free mind v11** adds M34 — a ternary accumulation + MLGRU **toy** forward path with zero `sigma_matmul` in this file’s definition of “no matmul” ([THE_MATMUL_FREE_MIND_V11.md](docs/THE_MATMUL_FREE_MIND_V11.md)).
 11. **The Tensor mind v12** adds M35–M37 — MPS contraction, entropy readout, and sequence-head **schematics** on classical `double` math only ([THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md)).
+12. **Tokenizer / vocab pipeline v27** ships a **real tokenizer scaffold** (BPE stand-in + byte bundles + optional COSB mmap + inference trace) as **lab demo (C)** — not a shipped multilingual LM tokenizer product ([VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md)).
+13. **LM integration shell v28** ships **GGUF + mmap I/O + sampling + HTTP + JSON escape + external engine hook** as **integration harness (C)** — merge-gate safe without downloading weights ([§ v28](#v28-lm-integration)).
+14. **Collapse harness v29** ships **mmap tensor views + eight σ channels + XNOR attention toy + BitNet forward stub + tier table** as **collapse harness (C)** — explicit about what is still external ([§ v29](#v29-collapse-harness), [WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md)).
 
 ---
 
