@@ -5,6 +5,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [README.md](../README.md) | Everyone | Problem + measured table, bounded LLM comparison, FIG 09 scan map, BSC primer, invariants, build, limitations, theory links, VISUAL_INDEX-aligned figures, Living Kernel v6 |
+| [VOCAB_PIPELINE_V27.md](VOCAB_PIPELINE_V27.md) | Integrators, tokenizer / FPGA roadmap readers | v27 shipped vs directive roadmap; evidence class for tokenizer tier work |
 | [REPOS_AND_ROLES.md](REPOS_AND_ROLES.md) | Everyone, agents | **Consortium map:** creation-os vs protocol vs corpus vs Genesis; single push target; where insights land |
 | [CANONICAL_GIT_REPOSITORY.md](CANONICAL_GIT_REPOSITORY.md) | Everyone, agents | Push **only** `spektre-labs/creation-os` for this kernel; forbidden remote mistakes |
 | [RTL_SILICON_MIRROR.md](RTL_SILICON_MIRROR.md) | Integrators, FPGA/ASIC | SystemVerilog + optional **Chisel** (`hw/chisel`); `make formal-rtl-lint`, `make chisel-verilog` |

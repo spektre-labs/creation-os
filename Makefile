@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 core oracle bench bench-coherence bench-agi-gate physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -39,6 +39,7 @@ help:
 	@echo "  standalone-v24 — build creation_os_v24 (arXiv sci-fi echo latches + self-test)"
 	@echo "  standalone-v25 — build creation_os_v25 (enterprise pain ledger + self-test)"
 	@echo "  standalone-v26 — build creation_os_v26 (Fortune Global 500 echo orbit + self-test)"
+	@echo "  standalone-v27 — build creation_os_v27 (vocab / tokenizer pipeline scaffold + self-test)"
 	@echo "  test       — run tests/test_bsc_core (sigma, Noether, crystal)"
 	@echo "  test-v6    — ./creation_os_v6 --self-test (30 checks; builds v6 first)"
 	@echo "  test-v7    — ./creation_os_v7 --self-test (35 checks; builds v7 first)"
@@ -55,6 +56,7 @@ help:
 	@echo "  test-v24   — ./creation_os_v24 --self-test (162 checks; builds v24 first)"
 	@echo "  test-v25   — ./creation_os_v25 --self-test (183 checks; builds v25 first)"
 	@echo "  test-v26   — ./creation_os_v26 --self-test (184 checks; builds v26 first)"
+	@echo "  test-v27   — ./creation_os_v27 --self-test (64 checks; builds v27 first)"
 	@echo "  check      — standalone + test (use before PR / CI)"
 	@echo "  check-v6   — standalone-v6 + test-v6 (v6 only)"
 	@echo "  check-v7   — standalone-v7 + test-v7 (v7 only)"
@@ -71,7 +73,8 @@ help:
 	@echo "  check-v24  — standalone-v24 + test-v24 (v24 only)"
 	@echo "  check-v25  — standalone-v25 + test-v25 (v25 only)"
 	@echo "  check-v26  — standalone-v26 + test-v26 (v26 only)"
-	@echo "  merge-gate — portable check + every flagship self-test (v6..v26); same as CI / publish preflight"
+	@echo "  check-v27  — standalone-v27 + test-v27 (v27 tokenizer scaffold only)"
+	@echo "  merge-gate — portable check + every flagship self-test (v6..v27); same as CI / publish preflight"
 	@echo "  formal-rtl-lint — Verilator --lint-only on rtl/*.sv (SKIP if verilator missing)"
 	@echo "  formal-rtl-sim  — Verilator --binary + run cos_silicon_chip_tb (SKIP if verilator missing)"
 	@echo "  yosys-elab      — Yosys elaborate_rtl.ys (SKIP if yosys missing)"
@@ -99,7 +102,7 @@ help:
 check: standalone test
 	@echo "check: OK (standalone + test)"
 
-# Portable kernel test + all standalone --self-test matrices (184 checks on v26). CI and publish script use this.
+# Portable kernel test + all standalone --self-test matrices (184 checks on v26; +64 on v27). CI and publish script use this.
 merge-gate:
 	@$(MAKE) check
 	@$(MAKE) check-v6
@@ -117,7 +120,8 @@ merge-gate:
 	@$(MAKE) check-v24
 	@$(MAKE) check-v25
 	@$(MAKE) check-v26
-	@echo "merge-gate: OK (Creation OS portable + v6..v26 self-tests)"
+	@$(MAKE) check-v27
+	@echo "merge-gate: OK (Creation OS portable + v6..v27 self-tests)"
 
 check-rtl: formal-rtl-lint
 
@@ -293,6 +297,10 @@ bench-agi-gate: bench/hv_agi_gate_neon.c core/cos_bsc.h core/cos_neon_hamming.h 
 	$(CC) $(CFLAGS) -o hv_agi_gate_neon bench/hv_agi_gate_neon.c $(LDFLAGS)
 	./hv_agi_gate_neon
 
+bench-tokenizer-v27: benchmarks/tokenizer_throughput.c src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c
+	$(CC) $(CFLAGS) -I. -o tokenizer_throughput benchmarks/tokenizer_throughput.c src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c $(LDFLAGS)
+	./tokenizer_throughput
+
 physics: physics/genesis.c physics/qhdc_core.c
 	$(CC) $(CFLAGS) -o genesis physics/genesis.c $(LDFLAGS)
 	$(CC) $(CFLAGS) -o qhdc physics/qhdc_core.c $(LDFLAGS)
@@ -391,11 +399,17 @@ test-v26: standalone-v26
 check-v26: standalone-v26 test-v26
 	@echo "check-v26: OK (v26 Fortune Global 500 echo orbit)"
 
+test-v27: standalone-v27
+	./creation_os_v27 --self-test
+
+check-v27: standalone-v27 test-v27
+	@echo "check-v27: OK (v27 vocab / tokenizer scaffold)"
+
 all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc
+	rm -rf $(BUILDDIR) .build/vrtl creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 tokenizer_throughput oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh
