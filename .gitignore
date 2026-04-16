@@ -19,6 +19,7 @@ creation_os_v27
 creation_os_v28
 creation_os_v29
 creation_os_openai_stub
+creation_os_suite_stub
 cos_lm
 tokenizer_throughput
 binding_fidelity

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suite lab — OpenAI stub</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 42rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+  code, pre { background: #f4f4f5; padding: 0.15rem 0.35rem; border-radius: 4px; }
+  pre { padding: 1rem; overflow-x: auto; }
+  button { margin-top: 0.5rem; padding: 0.5rem 1rem; cursor: pointer; }
+  #out { margin-top: 1rem; white-space: pre-wrap; word-break: break-word; }
+  .note { color: #555; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+  <h1>Suite lab</h1>
+  <p class="note">Calls <code>http://127.0.0.1:8080/v1/chat/completions</code> on
+    <code>creation_os_openai_stub</code>. The response is deterministic stub text, not a model.</p>
+  <label>Message <input id="msg" type="text" size="48" value="hello from suite_lab"></label><br>
+  <button type="button" id="go">POST chat completion</button>
+  <pre id="out"></pre>
+<script>
+document.getElementById('go').onclick = async function () {
+  const msg = document.getElementById('msg').value || 'hello';
+  const body = {
+    model: 'creation-os-stub',
+    messages: [{ role: 'user', content: msg }],
+    stream: false
+  };
+  const out = document.getElementById('out');
+  out.textContent = '…';
+  try {
+    const r = await fetch('http://127.0.0.1:8080/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const t = await r.text();
+    out.textContent = r.status + ' ' + r.statusText + '\n\n' + t;
+  } catch (e) {
+    out.textContent = String(e) + '\n\nStart stub: make standalone-openai-stub && ./creation_os_openai_stub --port 8080';
+  }
+};
+</script>
+</body>
+</html>

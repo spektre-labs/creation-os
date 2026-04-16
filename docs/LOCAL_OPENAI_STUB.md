@@ -11,6 +11,7 @@ This repository ships a **tiny loopback HTTP server** binary: `creation_os_opena
   - `POST /v1/chat/completions` → parses a simplified Chat Completions JSON body (last `"role":"user"` message) and returns a **deterministic stub** assistant string (`CREATION_OS_OPENAI_STUB:…`).
   - `POST /v1/completions` → reads `"prompt"` / optional `"suffix"` and returns a **stub** FIM-shaped string (`CREATION_OS_OPENAI_STUB_FIM:…`).
 - **Not implemented:** SSE streaming (`"stream":true` returns **501**).
+- **CORS:** responses include `Access-Control-Allow-Origin: *` and `Access-Control-Allow-Headers: Content-Type` so a page served from another local origin (for example `http://127.0.0.1:3000`) can call the stub. `OPTIONS` returns **204** with the same headers.
 
 ## What it does *not* do
 

@@ -26,6 +26,9 @@ int main(void)
 #include <sys/socket.h>
 #include <unistd.h>
 
+/* Minimal CORS for local browser demos hitting 127.0.0.1 from a static file or dev server. */
+#define COS_HDR_CORS "Access-Control-Allow-Origin: *\r\nAccess-Control-Allow-Headers: Content-Type\r\n"
+
 static int g_checks;
 static int g_fails;
 
@@ -128,14 +131,21 @@ static int handle_one(int fd)
     }
     hdr[hp] = '\0';
 
+    if (strncmp(hdr, "OPTIONS", 7) == 0) {
+        const char *resp = "HTTP/1.1 204 No Content\r\n" COS_HDR_CORS "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
+                           "Connection: close\r\n\r\n";
+        (void)write(fd, resp, strlen(resp));
+        return 0;
+    }
+
     if (strncmp(hdr, "GET /health", 11) == 0) {
-        const char *resp = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nok\n";
+        const char *resp = "HTTP/1.1 200 OK\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: close\r\n\r\nok\n";
         (void)write(fd, resp, strlen(resp));
         return 0;
     }
 
     if (strstr(hdr, "GET /v1/models")) {
-        const char *resp = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nConnection: close\r\n\r\n"
+        const char *resp = "HTTP/1.1 200 OK\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: close\r\n\r\n"
                            "{\"object\":\"list\",\"data\":[{\"id\":\"creation-os-stub\",\"object\":\"model\","
                            "\"owned_by\":\"spektre-labs\"}]}\n";
         (void)write(fd, resp, strlen(resp));
@@ -168,7 +178,7 @@ static int handle_one(int fd)
 
     if (strstr(hdr, "POST /v1/chat/completions")) {
         if (strstr(body, "\"stream\":true")) {
-            const char *resp = "HTTP/1.1 501 Not Implemented\r\nContent-Type: text/plain\r\nConnection: "
+            const char *resp = "HTTP/1.1 501 Not Implemented\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: "
                                "close\r\n\r\nSSE streaming is not implemented in this stub.\n";
             free(body);
             (void)write(fd, resp, strlen(resp));
@@ -177,7 +187,7 @@ static int handle_one(int fd)
         char user[4096];
         if (extract_last_user_content(body, user, sizeof(user)) < 0) {
             free(body);
-            const char *resp = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: "
+            const char *resp = "HTTP/1.1 400 Bad Request\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: "
                                "close\r\n\r\nmissing user message\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
@@ -185,14 +195,14 @@ static int handle_one(int fd)
         free(body);
         char ans[8192];
         if (mock_complete(user, ans, sizeof(ans)) != 0) {
-            const char *resp = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: text/plain\r\nConnection: "
+            const char *resp = "HTTP/1.1 500 Internal Server Error\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: "
                                "close\r\n\r\ncompletion failed\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
         }
         char esc[8192];
         if (cos_json_escape_cstr(ans, esc, sizeof(esc)) < 0) {
-            const char *resp = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: application/json\r\nConnection: "
+            const char *resp = "HTTP/1.1 500 Internal Server Error\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: "
                                "close\r\n\r\n{\"error\":\"escape_failed\"}\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
@@ -204,14 +214,14 @@ static int handle_one(int fd)
                           "\"finish_reason\":\"stop\"}]}",
                           esc);
         if (pl < 0 || (size_t)pl >= sizeof(payload)) {
-            const char *resp = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: application/json\r\nConnection: "
+            const char *resp = "HTTP/1.1 500 Internal Server Error\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: "
                                "close\r\n\r\n{\"error\":\"payload_too_large\"}\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
         }
         char resp[18432];
         int rl = snprintf(resp, sizeof resp,
-                          "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nConnection: close\r\nContent-Length: "
+                          "HTTP/1.1 200 OK\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: close\r\nContent-Length: "
                           "%d\r\n\r\n%s",
                           pl, payload);
         if (rl < 0 || (size_t)rl >= sizeof(resp))
@@ -227,7 +237,7 @@ static int handle_one(int fd)
         int su = extract_json_string_after_key(body, "suffix", suffix, sizeof suffix);
         free(body);
         if (pr < 0) {
-            const char *resp = "HTTP/1.1 400 Bad Request\r\nContent-Type: text/plain\r\nConnection: "
+            const char *resp = "HTTP/1.1 400 Bad Request\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: "
                                "close\r\n\r\nmissing prompt\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
@@ -238,7 +248,7 @@ static int handle_one(int fd)
         (void)snprintf(text, sizeof text, "CREATION_OS_OPENAI_STUB_FIM:%s|%s", prompt, suffix);
         char esc[8192];
         if (cos_json_escape_cstr(text, esc, sizeof(esc)) < 0) {
-            const char *resp = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: application/json\r\nConnection: "
+            const char *resp = "HTTP/1.1 500 Internal Server Error\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: "
                                "close\r\n\r\n{\"error\":\"escape_failed\"}\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
@@ -249,14 +259,14 @@ static int handle_one(int fd)
                           "\"choices\":[{\"index\":0,\"text\":\"%s\",\"finish_reason\":\"stop\"}]}",
                           esc);
         if (pl < 0 || (size_t)pl >= sizeof(payload)) {
-            const char *resp = "HTTP/1.1 500 Internal Server Error\r\nContent-Type: application/json\r\nConnection: "
+            const char *resp = "HTTP/1.1 500 Internal Server Error\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: "
                                "close\r\n\r\n{\"error\":\"payload_too_large\"}\n";
             (void)write(fd, resp, strlen(resp));
             return 0;
         }
         char resp[18432];
         int rl = snprintf(resp, sizeof resp,
-                          "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nConnection: close\r\nContent-Length: "
+                          "HTTP/1.1 200 OK\r\n" COS_HDR_CORS "Content-Type: application/json\r\nConnection: close\r\nContent-Length: "
                           "%d\r\n\r\n%s",
                           pl, payload);
         if (rl < 0 || (size_t)rl >= sizeof(resp))
@@ -266,7 +276,7 @@ static int handle_one(int fd)
     }
 
     free(body);
-    const char *resp = "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain\r\nConnection: close\r\n\r\nnot found\n";
+    const char *resp = "HTTP/1.1 404 Not Found\r\n" COS_HDR_CORS "Content-Type: text/plain\r\nConnection: close\r\n\r\nnot found\n";
     (void)write(fd, resp, strlen(resp));
     return 0;
 }
