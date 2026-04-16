@@ -1,0 +1,10 @@
+{
+  "logit_entropy": 0.85,
+  "top_margin": 0.92,
+  "prediction_stability": 0.15,
+  "attention_entropy": 0.8,
+  "kv_coherence": 0.7,
+  "vsa_binding_error": 0.25,
+  "repetition": 0.6,
+  "grammar": 0.3
+}

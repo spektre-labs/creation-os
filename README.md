@@ -12,7 +12,7 @@
 
 <p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
-> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v28`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v29`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward); **`./creation_os_v29 --self-test`** adds a **v29 collapse harness** (**22** checks — mmap GGUF view + σ channels + XNOR toy + BitNet stub; tier tags in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md)). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <table align="center">
   <tbody>
@@ -46,7 +46,7 @@
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
 | **Agents / contributors / security** | [AGENTS.md](AGENTS.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [MAINTAINERS](docs/MAINTAINERS.md) |
 
-**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
+**Long-form anchors (this page):** [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [v29 collapse harness](#v29-collapse-harness) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
 
 <a id="readme-scan-map-fig-09"></a>
 
@@ -75,7 +75,7 @@ flowchart TB
   end
 ```
 
-**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic `check-v6` … `check-v28` self-tests** (`creation_os_v6.c` … `creation_os_v28.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
+**Three sentences, one geometry:** attention-style similarity becomes **σ / Hamming / POPCOUNT** on packed hypervectors — one receipt language from **microbench** (`make bench`) through **native NEON** (`core/cos_neon_*.h`) and **deterministic `check-v6` … `check-v29` self-tests** (`creation_os_v6.c` … `creation_os_v29.c`). The teaching spine stays **one TU**: `creation_os_v2.c` + `core/*.h`, **stdlib + libm only**.
 
 <p align="center">
   <a href="#agi-map-how-this-file-relates-to-the-full-stack" title="Planes A–C — AGI map section"><img src="docs/assets/planes-abc.svg" width="96%" alt="Planes A–C — teaching spine vs production stack (summary diagram)" decoding="async" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></a><br/>
@@ -95,7 +95,7 @@ flowchart TB
 ```mermaid
 %%{init: {'theme':'neutral'}}%%
 flowchart LR
-  C["make check"] --> M["check-v6 … check-v28"]
+  C["make check"] --> M["check-v6 … check-v29"]
   M --> G["make merge-gate"]
 ```
 
@@ -107,9 +107,10 @@ make merge-gate
 make check-v26 && ./creation_os_v26 --self-test   # expect 184/184 PASS
 make check-v27 && ./creation_os_v27 --self-test   # expect 70/70 PASS (tokenizer scaffold)
 make check-v28 && ./creation_os_v28 --self-test   # expect 29/29 PASS (LM integration shell)
+make check-v29 && ./creation_os_v29 --self-test   # expect 22/22 PASS (v29 collapse harness)
 ```
 
-*Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`** and **`check-v28`**; expect **`70/70 PASS`** / **`29/29 PASS`** from **`./creation_os_v27 --self-test`** / **`./creation_os_v28 --self-test`**.
+*Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`**, **`check-v28`**, and **`check-v29`**; expect **`70/70 PASS`** / **`29/29 PASS`** / **`22/22 PASS`** from **`./creation_os_v27 --self-test`** / **`./creation_os_v28 --self-test`** / **`./creation_os_v29 --self-test`**.
 
 **Plain-language orientation:** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · **Misreadings:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md)
 
@@ -126,7 +127,7 @@ cc -O2 -I. -o creation_os creation_os_v2.c -lm
 
 ## Flagship programs
 
-Each `creation_os_vN.c` is a **separate** single-file program (v27 links tokenizer helpers; v28 links import/nn/server helpers). Counts are **`--self-test` checks** for that binary. Use full targets, e.g. `make check-v26`, `make check-v27`, or `make check-v28`.
+Each `creation_os_vN.c` is a **separate** single-file program (v27 links tokenizer helpers; v28 links import/nn/server helpers; v29 links GGUF mmap view + σ + XNOR + BitNet stub). Counts are **`--self-test` checks** for that binary. Use full targets, e.g. `make check-v26`, `make check-v27`, `make check-v28`, or `make check-v29`.
 
 | Ver | File | One-line hook | `make` | Checks |
 |:---:|:--|:--|:--|--:|
@@ -147,6 +148,7 @@ Each `creation_os_vN.c` is a **separate** single-file program (v27 links tokeniz
 | v26 | [`creation_os_v26.c`](creation_os_v26.c) | + M157–M176 Global 500 echo index | `check-v26` | **184** |
 | v27 | [`creation_os_v27.c`](creation_os_v27.c) | + M177–M186 vocab / tokenizer / mmap COSB / inference trace | `check-v27` | **70** |
 | v28 | [`creation_os_v28.c`](creation_os_v28.c) | + M190–M199 GGUF + mmap + spawn + tokenizer probe + sampler + chat + JSON escape + HTTP + σ toys | `check-v28` | **29** |
+| v29 | [`creation_os_v29.c`](creation_os_v29.c) | + mmap GGUF loader + eight σ channels + XNOR attention toy + BitNet forward stub | `check-v29` | **22** |
 
 ```mermaid
 %%{init: {'theme':'neutral'}}%%
@@ -160,10 +162,10 @@ flowchart LR
   end
   V2 -.->|same sigma language; different evidence class| V6
   V6 --> V15
-    V15 --> H["Merge-gate row<br/>184 @ v26 + 70 @ v27 + 29 @ v28"]
+    V15 --> H["Merge-gate row<br/>184 @ v26 + 70 @ v27 + 29 @ v28 + 22 @ v29"]
 ```
 
-**Evidence class:** v6–v27 = **lab demo (C)** unless you add external harness / silicon proof; v28 is an **integration harness (C)** — [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). **Per-version narrative:** [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) + headers inside each `creation_os_v*.c`. **Lineage at a glance:** [kernel-lineage diagram](docs/assets/kernel-lineage-evidence.svg) (also under [Doctoral path](#doctoral-and-committee-read-path)).
+**Evidence class:** v6–v27 = **lab demo (C)** unless you add external harness / silicon proof; v28 is an **integration harness (C)**; v29 is a **collapse harness (C)** with explicit tier tags in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) — [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). **Per-version narrative:** [docs/FEATURES_AND_STANDALONE_BUILDS.md](docs/FEATURES_AND_STANDALONE_BUILDS.md) + headers inside each `creation_os_v*.c`. **Lineage at a glance:** [kernel-lineage diagram](docs/assets/kernel-lineage-evidence.svg) (also under [Doctoral path](#doctoral-and-committee-read-path)).
 
 **Frontier complement:** AArch64 **4096-bit** σ / Hamming / MAJ / XOR in `core/cos_neon_*.h` — bit-parallel similarity; not a substitute for published LM harness rows.
 
@@ -239,6 +241,7 @@ flowchart LR
 | v12 | [THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md) · `make check-v12` |
 | v27 | [VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md) · `make check-v27` · `make bench-tokenizer-v27` · `make bench-v27-all` |
 | v28 | `Dockerfile` · `benchmarks/lm_eval.sh` · `benchmarks/hallucination_reduction.md` · `make check-v28` |
+| v29 | `docs/WHAT_IS_REAL.md` · `config/sigma_thresholds.json` · `hdl/synthesis/xnor_binding_4096.sv` · `make check-v29` |
 | v15–v26 | Headers in `creation_os_v15.c` … `creation_os_v26.c` · `make check-v15` … `make check-v26` |
 | NEON coherence | [NATIVE_COHERENCE_NEON.md](docs/NATIVE_COHERENCE_NEON.md) · `make bench-coherence` |
 | HV parliament | [HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md](docs/HYPERVECTOR_PARLIAMENT_AND_RETRIEVAL.md) · `make bench-agi-gate` |
@@ -593,6 +596,24 @@ COGNITION
 
 ---
 
+<a id="v29-collapse-harness"></a>
+
+## Creation OS v29 (collapse harness)
+
+[`creation_os_v29.c`](creation_os_v29.c) is a **merge-gate-safe** “collapse harness” scaffold: **real C plumbing**, **explicit non-claims** for anything that still requires external weights / harness / P&R.
+
+- **GGUF mmap view:** `gguf_load` / `gguf_free` (`src/import/gguf_loader.c`) — tensor bytes are **views into the mmap** (POSIX); Windows self-test skips the mmap path but keeps the same check count.
+- **σ channels:** eight scalar signals + `sigma_abstain_gate` (`src/sigma/channels.c`)
+- **XNOR attention toy:** `attention_xnor` (`src/nn/attention_xnor.c`)
+- **BitNet forward stub:** deterministic logits for plumbing tests (`src/nn/bitnet_forward_stub.c`)
+- **Thresholds file:** [`config/sigma_thresholds.json`](config/sigma_thresholds.json) (JSON numbers; gate wiring in-tree is still minimal)
+- **Benchmark stubs:** `benchmarks/truthfulqa_sigma.sh`, `benchmarks/attention_ab.sh` (SKIP until harness + weights exist)
+- **FPGA smoke (optional):** `hdl/synthesis/xnor_binding_4096.sv` + `hdl/synthesis/synth_yosys.sh` (Yosys `stat` if installed)
+
+**Truth pass:** [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) · **Verify:** `make check-v29`
+
+---
+
 ## Architecture
 
 <p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Module stack (dark editorial): single file → cognitive row → BSC core → Soul / Proconductor / Cognition" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
@@ -660,6 +681,7 @@ make check-v11     # MatMul-free mind (`creation_os_v11.c`) + `--self-test` (49 
 make check-v12     # Tensor mind (`creation_os_v12.c`) + `--self-test` (52 checks)
 make check-v27     # v27 tokenizer scaffold (`creation_os_v27.c` + `src/tokenizer/*.c`) + `--self-test` (70 checks)
 make check-v28     # v28 LM integration shell (`creation_os_v28.c` + import/nn/server helpers) + `--self-test` (29 checks)
+make check-v29     # v29 collapse harness (`creation_os_v29.c` + mmap GGUF view + σ + XNOR + BitNet stub) + `--self-test` (22 checks)
 make standalone
 ./creation_os
 ```
@@ -684,6 +706,7 @@ This is a research prototype. Specific limitations:
 - **`creation_os_v12.c`** is a **seventh** program: v11 **plus** M35–M37 classical tensor-train / entropy / sequence-head **toys**; 52 checks — not quantum hardware, not TN-LM harness rows — see [docs/THE_TENSOR_MIND_V12.md](docs/THE_TENSOR_MIND_V12.md).
 - **`creation_os_v27.c`** is an **eighth** program: **M177–M186** vocab / tokenizer / mmap COSB / inference-trace **scaffold** with `src/tokenizer/*.c`; 70 checks — **not** a trained multilingual LM tokenizer product, not FPGA timing proof, not “coherent LM” quality — see [docs/VOCAB_PIPELINE_V27.md](docs/VOCAB_PIPELINE_V27.md).
 - **`creation_os_v28.c`** is a **ninth** program: **M190–M199** LM **integration shell** (`src/import`, `src/nn`, `src/server`); 29 checks — **not** an in-process BitNet b1.58 2B4T forward, not `lm-eval` rows by itself, not a weights bundle — see [#v28-lm-integration](#v28-lm-integration).
+- **`creation_os_v29.c`** is a **tenth** program: **v29 collapse harness** (`src/import/gguf_loader.c`, `src/sigma/channels.c`, `src/nn/attention_xnor.c`, `src/nn/bitnet_forward_stub.c`); 22 checks — **not** a downloaded 2B checkpoint, not harness rows by itself — see [#v29-collapse-harness](#v29-collapse-harness).
 
 ---
 
