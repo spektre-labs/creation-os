@@ -16,6 +16,17 @@ size_t cos_aligned_size_up(size_t n, size_t align);
 /* Padded buffer sizes for reputation + logits (C11 aligned_alloc-friendly). */
 void cos_lw_buffer_sizes(int vocab, size_t *reputation_bytes, size_t *logits_bytes);
 
+/* One-shot 64-byte-aligned reputation + logits buffers (logits zeroed). Returns 0 on success. */
+typedef struct cos_lw_owned_buffers {
+    uint8_t *reputation;
+    float *logits;
+    size_t reputation_bytes;
+    size_t logits_bytes;
+} cos_lw_owned_buffers_t;
+
+int cos_lw_buffers_alloc(int vocab, cos_lw_owned_buffers_t *out);
+void cos_lw_buffers_free(cos_lw_owned_buffers_t *b);
+
 /* Living weights: popcount(reputation[id]) -> logit bias (inplace). */
 void cos_living_weights_inplace(float *logits, const uint8_t *reputation, int vocab, float scale);
 

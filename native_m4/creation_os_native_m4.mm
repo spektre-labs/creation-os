@@ -11,6 +11,7 @@
 #include "creation_os_native_m4.h"
 
 #include <dispatch/dispatch.h>
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,6 +60,28 @@ static int self_test_buffer_helpers(void)
     if (cos_aligned_size_up(100u, 64u) != 128u) {
         fprintf(stderr, "FAIL cos_aligned_size_up\n");
         return 2;
+    }
+    if (cos_aligned_size_up(SIZE_MAX, 2u) != 0u) {
+        fprintf(stderr, "FAIL cos_aligned_size_up(SIZE_MAX,2) overflow\n");
+        return 2;
+    }
+    {
+        cos_lw_owned_buffers_t ob;
+        if (cos_lw_buffers_alloc(-1, &ob) == 0) {
+            fprintf(stderr, "FAIL cos_lw_buffers_alloc(-1) should fail\n");
+            cos_lw_buffers_free(&ob);
+            return 2;
+        }
+        if (cos_lw_buffers_alloc(8, &ob) != 0) {
+            fprintf(stderr, "FAIL cos_lw_buffers_alloc(8)\n");
+            return 2;
+        }
+        if (!ob.reputation || !ob.logits || ob.reputation_bytes < 64u || ob.logits_bytes < 64u) {
+            fprintf(stderr, "FAIL cos_lw_buffers_alloc(8) fields\n");
+            cos_lw_buffers_free(&ob);
+            return 2;
+        }
+        cos_lw_buffers_free(&ob);
     }
     return 0;
 }
@@ -241,6 +264,43 @@ static int self_test_neon_parallel_two_chunks(void)
     return 0;
 }
 
+/* Three GCD chunks (65536*3) plus tail — stresses multi-chunk dispatch_apply. */
+static int self_test_neon_parallel_three_chunks(void)
+{
+    const int vocab = 65536 * 3 + 19;
+    const float scale = 0.125f;
+    size_t rep_sz, flt_sz;
+    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
+    float *base = (float *)aligned_alloc(64, flt_sz);
+    float *par = (float *)aligned_alloc(64, flt_sz);
+    if (!rep || !base || !par) {
+        fprintf(stderr, "FAIL alloc (three-chunk parallel n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(par);
+        return 2;
+    }
+    for (int i = 0; i < vocab; i++) {
+        rep[i] = (uint8_t)((i * 73U + 5U) & 0xFFU);
+        base[i] = 0.0f;
+        par[i] = 0.0f;
+    }
+    cos_living_weights_inplace(base, rep, vocab, scale);
+    cos_living_weights_neon_parallel(par, rep, vocab, scale);
+    if (!float_buffers_exact(base, par, vocab)) {
+        fprintf(stderr, "FAIL NEON parallel three-chunk vs scalar (n=%d)\n", vocab);
+        free(rep);
+        free(base);
+        free(par);
+        return 2;
+    }
+    free(rep);
+    free(base);
+    free(par);
+    return 0;
+}
+
 static int self_test(void)
 {
     int e = self_test_buffer_helpers();
@@ -256,6 +316,9 @@ static int self_test(void)
     if (e != 0)
         return e;
     e = self_test_neon_parallel_two_chunks();
+    if (e != 0)
+        return e;
+    e = self_test_neon_parallel_three_chunks();
     if (e != 0)
         return e;
 
@@ -329,42 +392,47 @@ static int self_test(void)
     return 0;
 }
 
-static void bench_once(int vocab, int iters, int parallel)
+typedef enum {
+    BENCH_MODE_NEON_RANGE = 0,
+    BENCH_MODE_NEON_PARALLEL = 1,
+    BENCH_MODE_SCALAR = 2,
+} bench_mode_t;
+
+static void bench_once(int vocab, int iters, bench_mode_t mode)
 {
-    size_t rep_sz, flt_sz;
-    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
-    float *logits = (float *)aligned_alloc(64, flt_sz);
-    if (!rep || !logits) {
+    cos_lw_owned_buffers_t b;
+    if (cos_lw_buffers_alloc(vocab, &b) != 0) {
         fprintf(stderr, "bench: alloc failed\n");
-        free(rep);
-        free(logits);
         return;
     }
-    for (int i = 0; i < vocab; i++) {
+    uint8_t *rep = b.reputation;
+    float *logits = b.logits;
+    for (int i = 0; i < vocab; i++)
         rep[i] = (uint8_t)(i & 0xFF);
-        logits[i] = 0.0f;
-    }
 
     struct timespec t0, t1;
     clock_gettime(CLOCK_MONOTONIC, &t0);
     for (int k = 0; k < iters; k++) {
-        /* reset each iter to keep workload stable */
-        for (int i = 0; i < vocab; i++)
-            logits[i] = 0.0f;
-        if (parallel)
+        memset(logits, 0, b.logits_bytes);
+        switch (mode) {
+        case BENCH_MODE_SCALAR:
+            cos_living_weights_inplace(logits, rep, vocab, 0.125f);
+            break;
+        case BENCH_MODE_NEON_PARALLEL:
             cos_living_weights_neon_parallel(logits, rep, vocab, 0.125f);
-        else
+            break;
+        default:
             cos_living_weights_neon_range(logits, rep, 0, vocab, 0.125f);
+            break;
+        }
     }
     clock_gettime(CLOCK_MONOTONIC, &t1);
     double sec = (double)(t1.tv_sec - t0.tv_sec) + (double)(t1.tv_nsec - t0.tv_nsec) / 1e9;
     double tok_per_s = (double)iters * (double)vocab / sec;
-    fprintf(stderr, "bench: NEON%s vocab=%d iters=%d -> %.3e tokens/s (wall)\n",
-            parallel ? "+GCD" : "", vocab, iters, tok_per_s);
+    const char *tag = (mode == BENCH_MODE_SCALAR) ? "scalar" : (mode == BENCH_MODE_NEON_PARALLEL) ? "NEON+GCD" : "NEON";
+    fprintf(stderr, "bench: %s vocab=%d iters=%d -> %.3e tokens/s (wall)\n", tag, vocab, iters, tok_per_s);
 
-    free(rep);
-    free(logits);
+    cos_lw_buffers_free(&b);
 }
 
 int main(int argc, char **argv)
@@ -372,8 +440,9 @@ int main(int argc, char **argv)
     if (argc >= 2 && (!strcmp(argv[1], "--self-test") || !strcmp(argv[1], "--selftest")))
         return self_test();
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
-        printf("usage: %s [--self-test] [--bench [--vocab N] [--iters K] [--parallel]]\n", argv[0]);
+        printf("usage: %s [--self-test] [--bench [--vocab N] [--iters K] [--parallel] [--scalar]]\n", argv[0]);
         printf("  --bench requires positive --vocab and --iters (defaults: 65536, 200).\n");
+        printf("  --scalar also runs scalar inplace for A/B vs NEON.\n");
         printf("\n");
         printf("Native M4 lab binary (opt-in). Not part of merge-gate.\n");
         printf("\n");
@@ -389,6 +458,7 @@ int main(int argc, char **argv)
         int vocab = 1 << 16;
         int iters = 200;
         int parallel = 0;
+        int scalar_ab = 0;
         for (int i = 2; i < argc; i++) {
             if (!strcmp(argv[i], "--vocab") && i + 1 < argc)
                 vocab = atoi(argv[++i]);
@@ -396,44 +466,42 @@ int main(int argc, char **argv)
                 iters = atoi(argv[++i]);
             else if (!strcmp(argv[i], "--parallel"))
                 parallel = 1;
+            else if (!strcmp(argv[i], "--scalar"))
+                scalar_ab = 1;
         }
         if (vocab <= 0 || iters <= 0) {
             fprintf(stderr, "bench: --vocab and --iters must be positive\n");
             return 2;
         }
-        bench_once(vocab, iters, parallel);
+        if (scalar_ab) {
+            fprintf(stderr, "bench: scalar inplace (baseline)...\n");
+            bench_once(vocab, iters, BENCH_MODE_SCALAR);
+        }
+        bench_once(vocab, iters, parallel ? BENCH_MODE_NEON_PARALLEL : BENCH_MODE_NEON_RANGE);
         if (parallel == 0 && vocab >= 65536) {
-            fprintf(stderr, "bench: also running parallel (--parallel) for large vocab...\n");
-            bench_once(vocab, iters, 1);
+            fprintf(stderr, "bench: also running NEON+GCD (--parallel) for large vocab...\n");
+            bench_once(vocab, iters, BENCH_MODE_NEON_PARALLEL);
         }
         return 0;
     }
 
     /* Demo: run living-weights on a perf queue. */
     const int vocab = 1024;
-    size_t rep_sz, flt_sz;
-    cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
-    float *logits = (float *)aligned_alloc(64, flt_sz);
-    uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
-    if (!logits || !rep) {
+    cos_lw_owned_buffers_t b;
+    if (cos_lw_buffers_alloc(vocab, &b) != 0) {
         fprintf(stderr, "alloc failed\n");
-        free(logits);
-        free(rep);
         return 2;
     }
-    for (int i = 0; i < vocab; i++) {
-        logits[i] = 0.0f;
-        rep[i] = (uint8_t)(i & 0xFF);
-    }
+    for (int i = 0; i < vocab; i++)
+        b.reputation[i] = (uint8_t)(i & 0xFF);
 
     dispatch_queue_t q = dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0);
     dispatch_sync(q, ^{
-      cos_living_weights_neon(logits, rep, vocab, 0.125f);
+      cos_living_weights_neon(b.logits, b.reputation, vocab, 0.125f);
     });
 
-    printf("native-m4: logits[0]=%.3f logits[1]=%.3f (demo)\n", logits[0], logits[1]);
-    free(logits);
-    free(rep);
+    printf("native-m4: logits[0]=%.3f logits[1]=%.3f (demo)\n", b.logits[0], b.logits[1]);
+    cos_lw_buffers_free(&b);
     return 0;
 }
 
