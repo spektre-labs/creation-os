@@ -1,5 +1,70 @@
 # Changelog
 
+## v56 σ-Constitutional scaffold (2026-04-16)
+
+- **Four Q1-2026 insights, one C11 invariant.** Rule-based process
+  reward models (VPRM, arXiv:2601.17223), in-place test-time
+  training (IP-TTT, arXiv:2604.06169, April 2026), grokking as
+  phase transition under Singular Learning Theory (arXiv:2603.01192
+  + 2603.13331, March 2026), and the 2026 reverse-engineered Apple
+  Neural Engine `matmul → 1×1 conv` contract, composed into a
+  single policy: **any inference-time self-modification must
+  strictly lower σ**. Inference-side dual of v40's `K_eff = (1−σ)·K`.
+- **Verifier module (`src/v56/verifier.{c,h}`)** — rule-based PRM.
+  Seven deterministic rules (`NONEMPTY`, `MIN_LENGTH`, `MAX_LENGTH`,
+  `SCORE_BOUNDED`, `SCORE_MONOTONE`, `NO_EXACT_REPEAT`,
+  `CHAR_ENTROPY`); aggregate `sigma_verifier = 1 − precision`
+  (the VPRM paper's priority metric, in canonical σ frame).
+  Precision-first F1; branchless per-step evaluation.
+- **σ-gated IP-TTT policy (`src/v56/ipttt.{c,h}`)** — slow / recent
+  σ EWMA bands, decide-reason-tagged budget controller
+  (`DENY_BUDGET`, `DENY_COOLDOWN`, `DENY_NO_DRIFT`, `DENY_INVALID`,
+  `ALLOW`). Commit iff post-update σ does not regress, else
+  rollback with `alpha_current *= rollback_shrink`. Fresh
+  controllers begin in warm-up (no insta-update on boot).
+- **Grokking commutator σ-channel (`src/v56/grokking.{c,h}`)** —
+  normalized defect `‖g_new − g_prev‖² / (‖g_new‖² + ‖g_prev‖²)`
+  bounded in `[0, 1]`, NEON 4-accumulator reduction with prefetch
+  on both inputs, scalar tail fixup for arbitrary dims. Baseline
+  EWMA + warm-up-armed spike detector; phase_transition_detected
+  flips when `latest > baseline × spike_multiplier`. First public
+  runtime exposure of the SLT trajectory signal as an inference-time
+  σ-channel, orthogonal to v34 / v55 output-distribution σ.
+- **ANE dispatch layout helper (`src/v56/ane_layout.{c,h}`)** —
+  pure integer math for the undocumented
+  `A[M,K] @ B[K,N] → conv(input=[1,K,1,N], weight=[M,K,1,1])`
+  rewrite, with the ANE-enforced spatial ≥ 16 ∧ multiple-of-16
+  validator, padding plan (`pad_h`, `pad_w`, `pad_bytes_fp32`),
+  and a short, loggable `reason` string. **No** Core ML, **no**
+  `_ANEClient`, **no** MLModel compilation — just the prerequisite
+  shape contract any future binding will need.
+- **Hardware path (M4-first).** NEON `vld1q_f32` / `vfmaq_f32`
+  reductions on the defect kernel with `__builtin_prefetch` on
+  `g_new` and `g_prev` both, 16-wide unrolled accumulator quartet,
+  scalar tail fixup; scalar fallback bit-identical on non-ARM;
+  branchless policy arithmetic everywhere else. No allocations on
+  the hot path; compile-time `V56_GROK_HAS_NEON` switch gates the
+  scalar-only function to avoid an unused-function warning.
+- **56/56 deterministic self-test** (`make check-v56`): verifier
+  precision / F1 / σ (5), IP-TTT cooldown / drift / budget /
+  rollback / commit (6), grokking identical / opposite / orthogonal
+  / NEON-tail-fixup-vs-scalar / spike detection (5), ANE round-up /
+  small-matmul fail / aligned-width still fail on H=1 / NCHW shapes
+  / reason string (5), full-loop integration test tying all four
+  modules (6). No network, no engine, no tensors.
+- **Docs:** `docs/v56/ARCHITECTURE.md` (wire map + per-module
+  contracts + composition tree with v34 / v40 / v45 / v47 / v51 /
+  v53 / v54 / v55), `docs/v56/POSITIONING.md` (vs VPRM / ThinkPRM /
+  IP-TTT / TTSR / VDS-TTT / SLT grokking / ANE RE / SME2, with
+  tier placement), `docs/v56/paper_draft.md` (σ-Constitutional
+  position paper — policy certification, not benchmark).
+- **Tier tags.** `verifier`, `ipttt`, `grokking`, `ane_layout`: M
+  inside the scaffold boundary (they do what their tests say).
+  End-to-end TTT on a real transformer: P (planned, needs
+  bitnet.cpp / MLX hook). ANE dispatch via Core ML / private API:
+  P (planned, needs Apple-only CoreML target). See
+  `docs/WHAT_IS_REAL.md`.
+
 ## v55 σ₃-speculative scaffold (2026-04-16)
 
 - **Three 2026 insights, one C11 policy layer.** σ₃ decomposition

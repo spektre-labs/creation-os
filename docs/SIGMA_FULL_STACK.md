@@ -1,4 +1,4 @@
-# σ Full Stack — from paper to silicon (Creation OS v33–v55)
+# σ Full Stack — from paper to silicon (Creation OS v33–v54)
 
 One equation family, many substrates:
 
@@ -79,6 +79,8 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v51 | Integration scaffold / UX spec | `make check-v51` (cognitive loop + σ-gated agent + sandbox) + `config/v51_experience.yaml` + `src/v51/ui/web.html` + `scripts/v51/install.sh` (dry-run) + `docs/v51/ARCHITECTURE.md` |
 | v53 | σ-governed harness scaffold / positioning | `make check-v53` (σ-TAOR loop + σ-dispatch + σ-compression + `creation.md` loader) + `creation.md` at repo root + `docs/v53/ARCHITECTURE.md` + `docs/v53/POSITIONING.md` + `docs/v53/paper_draft.md` |
 | v54 | σ-proconductor scaffold / positioning | `make check-v54` (classify + select + aggregate + disagreement + profile learner; no network) + `docs/v54/ARCHITECTURE.md` + `docs/v54/POSITIONING.md` + `docs/v54/paper_draft.md` |
+| v55 | σ₃-speculative scaffold (σ₃ decomposition + EARS + EASD) | `make check-v55` (29/29; NEON 4-accumulator entropy hot path, branchless fast log₂; wires Taparia 2603.24967, Sun 2512.13194, Su 2512.23765) + `docs/v55/ARCHITECTURE.md` + `docs/v55/POSITIONING.md` + `docs/v55/paper_draft.md` |
+| v56 | σ-Constitutional scaffold (rule-based VPRM verifier + σ-gated IP-TTT budget controller + grokking commutator σ-channel + ANE `matmul→1×1 conv` layout helper) | `make check-v56` (56/56; NEON 4-accumulator defect reduction; branchless policy arithmetic; wires VPRM 2601.17223, IP-TTT 2604.06169, SLT grokking 2603.01192 + 2603.13331, 2026 ANE RE; one invariant — *any inference-time self-modification must strictly lower σ*) + `docs/v56/ARCHITECTURE.md` + `docs/v56/POSITIONING.md` + `docs/v56/paper_draft.md` |
 
 ## v40 working paper title (only when threshold harness exists)
 

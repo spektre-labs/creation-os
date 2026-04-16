@@ -29,6 +29,9 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v55/ARCHITECTURE.md](v55/ARCHITECTURE.md) | Spec-decode / uncertainty readers | v55: σ₃-speculative scaffold — three-component σ + EARS + EASD with NEON hot path |
 | [v55/POSITIONING.md](v55/POSITIONING.md) | Reviewers comparing with EARS / EASD / Taparia et al. | v55: composition argument — EARS + EASD + σ₃ are complementary |
 | [v55/paper_draft.md](v55/paper_draft.md) | Paper readers | v55: position paper wiring Taparia 2603.24967, Sun 2512.13194, Su 2512.23765 into one C11 policy layer (I-tier) |
+| [v56/ARCHITECTURE.md](v56/ARCHITECTURE.md) | Self-modification / hardware readers | v56: σ-Constitutional scaffold — rule-based VPRM verifier + σ-gated IP-TTT budget + grokking commutator σ-channel + ANE `matmul→1×1 conv` layout; one invariant (any self-modification must lower σ) |
+| [v56/POSITIONING.md](v56/POSITIONING.md) | Reviewers comparing with VPRM / ThinkPRM / IP-TTT / TTSR / SLT grokking / ANE RE / SME2 | v56: Q1-2026 frontier map + composition tree + explicit-not-scope (no Core ML, no live TTT) |
+| [v56/paper_draft.md](v56/paper_draft.md) | Paper readers | v56: position paper wiring VPRM 2601.17223, IP-TTT 2604.06169, SLT grokking 2603.01192 + 2603.13331, and 2026 ANE reverse-engineering into one C11 policy layer with 56/56 self-test (I-tier) |
 | [creation.md](../creation.md) | Agent operators / contributors | Project **invariants** (not instructions) + σ-profile per task type |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
