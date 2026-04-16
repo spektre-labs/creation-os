@@ -70,6 +70,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v42 | Learning / orchestration | σ-guided self-play (challenger/solver, σ-shaped reward, replay sampling) |
 | v43 | Learning / orchestration | σ-guided knowledge distillation (uncertainty-weighted KL, anti-transfer term, staged curriculum, multi-teacher σ ensemble, σ calibration) |
 | v44 | Serving / orchestration | σ-native inference proxy (engine-agnostic gate, OpenAI-shaped API + σ fields, demo per-token σ streaming) |
+| v45 | Meta-cognition / calibration | σ-introspection (calibration gap, doubt reward, internal σ placeholder, paradox scatter harness stub) |
 
 ## v40 working paper title (only when threshold harness exists)
 
@@ -90,3 +91,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v44 working paper title (only when proxy + overhead harness exists)
 
 **“σ-Native Inference Proxies: Uncertainty-Gated OpenAI-Shaped Serving Across Engines”**
+
+## v45 working paper title (only when introspection harness exists)
+
+**“σ as Introspection: Calibrated Self-Knowledge in Language Models via Epistemic Uncertainty Decomposition”**

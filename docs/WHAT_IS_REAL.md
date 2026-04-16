@@ -44,6 +44,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v43 lab: KD **quality** harness (TruthfulQA / calibration / toxic transfer vs standard KD) | `make bench-v43-distill` (exits 0 as **stub**; real runs require teacher+student weights + distill driver + eval CLI + REPRO bundle) | **M** |
 | v44 lab: σ-native **inference proxy** (stub engine logits → per-token σ → v40 syndrome actions → OpenAI-shaped loopback HTTP + demo SSE) | `make check-v44` (alias: `make check-proxy`) | **M** |
 | v44 lab: σ-proxy **latency overhead** harness (“<5% overhead vs raw engine”) | `make bench-v44-overhead` (exits 0 as **stub**; real runs require pinned engine + load generator + archived JSON) | **M** |
+| v45 lab: σ-**introspection** (calibration gap + doubt-reward + internal probe stub) | `make check-v45` | **M** |
+| v45 lab: **Gemini paradox / introspection scatter** harness (accuracy vs calibration_gap) | `make bench-v45-paradox` (exits 0 as **stub**; real runs require multi-model eval + archived JSON + plot inputs) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -101,6 +103,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “**σ-weighted KD always beats standard KD** on TruthfulQA / toxic transfer in this repo” | v43 ships **scalar loss contracts** only; any A/B headline is **N** until `benchmarks/v43/distill_*.json` exists with archived harness metadata | **N** |
 | “**σ-proxy adds <5% latency** vs raw vLLM/SGLang in this repo” | v44 ships **loopback HTTP + stub logits** only; any overhead headline is **N** until `benchmarks/v44/*.json` exists with archived harness metadata | **N** |
 | “**Mid-stream retraction is safe** against arbitrary tokenizer + engine streams in this repo” | SSE demo lines are **not** a guaranteed rewind protocol until integrated with a real streaming parser + engine cancellation contract | **N** |
+| “**Public Table 1** introspection scatter (Gemini vs Claude vs BitNet+σ) exists in this repo” | v45 ships **deterministic lab math + stubs** only; any model-point scatter is **N** until `benchmarks/v45/introspection_*.json` is archived with harness metadata | **N** |
+| “**σ_internal from real hidden states** is shipped for vLLM/SGLang/bitnet.cpp in this repo” | `v45_probe_internals_lab` is a **deterministic placeholder** until engine hooks + weights bundle exist | **N** |
 
 ## Retired claims (corrections)
 
