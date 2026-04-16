@@ -469,6 +469,10 @@ int main(int argc, char **argv)
         printf("creation_os_native_m4 (native_m4/) — Creation OS lab binary; opt-in, not merge-gate.\n");
         return 0;
     }
+    if (argc >= 2 && !strcmp(argv[1], "--layers-report")) {
+        cos_runtime_layers_report_print(stdout);
+        return 0;
+    }
     if (argc >= 2 && (!strcmp(argv[1], "--self-test") || !strcmp(argv[1], "--selftest")))
         return self_test();
     if (argc >= 2 && !strcmp(argv[1], "--buffer-sizes")) {
@@ -483,11 +487,12 @@ int main(int argc, char **argv)
         return 0;
     }
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
-        printf("usage: %s [--version] [--self-test] [--buffer-sizes [--vocab N]]\n"
+        printf("usage: %s [--version] [--layers-report] [--self-test] [--buffer-sizes [--vocab N]]\n"
                "         [--bench [--vocab N] [--iters K] [--warmup W] [--parallel] [--scalar] [--metal]]\n",
                argv[0]);
         printf("  (default with no args: small NEON demo on interactive GCD queue)\n");
         printf("  --bench requires positive --vocab and --iters (defaults: 65536, 200).\n");
+        printf("  --layers-report prints kernel/hardware facts (uname, SME probe, buffer sizes, metallib paths).\n");
         printf("  --warmup untimed iterations before the timed block (default 0).\n");
         printf("  --scalar also runs scalar inplace for A/B vs NEON.\n");
         printf("  --metal runs Metal living-weights after NEON (SKIP if no metallib).\n");

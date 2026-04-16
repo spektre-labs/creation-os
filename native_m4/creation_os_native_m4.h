@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,6 +48,9 @@ bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int voca
 
 /* Best-effort runtime probe (macOS only). */
 bool cos_runtime_has_sme(void);
+
+/* Key=value style facts for kernel/hardware lab layer (stderr/stdout). */
+void cos_runtime_layers_report_print(FILE *out);
 
 #ifdef __cplusplus
 }

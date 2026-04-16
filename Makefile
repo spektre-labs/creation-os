@@ -378,6 +378,7 @@ native-m4:
 		$(CC) $(CFLAGS) -c native_m4/cos_living_weights_scalar.c -o $(BUILDDIR)/cos_living_weights_scalar.o && \
 		$(CC) $(CFLAGS) -c native_m4/cos_buffer.c -o $(BUILDDIR)/cos_buffer.o && \
 		$(CC) $(CFLAGS) -c native_m4/cos_runtime_sme.c -o $(BUILDDIR)/cos_runtime_sme.o && \
+		$(CC) $(CFLAGS) -c native_m4/cos_runtime_layers_report.c -o $(BUILDDIR)/cos_runtime_layers_report.o && \
 		clang++ -O2 -Wall -std=c++17 -ObjC++ -fobjc-arc \
 			-c native_m4/creation_os_native_m4.mm -o $(BUILDDIR)/creation_os_native_m4_main.o && \
 		clang++ -O2 -Wall -std=c++17 -ObjC++ -fobjc-arc \
@@ -392,7 +393,8 @@ native-m4:
 			$(BUILDDIR)/cos_living_weights_metal.o \
 			$(BUILDDIR)/cos_living_weights_scalar.o \
 			$(BUILDDIR)/cos_buffer.o \
-			$(BUILDDIR)/cos_runtime_sme.o ; \
+			$(BUILDDIR)/cos_runtime_sme.o \
+			$(BUILDDIR)/cos_runtime_layers_report.o ; \
 		echo "native-m4: OK (creation_os_native_m4)"; \
 	else \
 		echo "native-m4: SKIP (Darwin only)"; \
