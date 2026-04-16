@@ -11,6 +11,8 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |
+| [v31_README.md](v31_README.md) | Integrators | v31 “purge lab”: optional upstream wrapper direction + commands (`make check-v31`) |
+| [WHAT_IS_REAL_v31.md](WHAT_IS_REAL_v31.md) | Reviewers | Tier-tagged contract for v31 lab claims (not default product surface) |
 | [FULL_LOCAL_SUITE.md](FULL_LOCAL_SUITE.md) | Integrators | What “full suite” scripts often promise vs what this repo ships; safe incremental path |
 | [REPOS_AND_ROLES.md](REPOS_AND_ROLES.md) | Everyone, agents | **Consortium map:** creation-os vs protocol vs corpus vs Genesis; single push target; where insights land |
 | [CANONICAL_GIT_REPOSITORY.md](CANONICAL_GIT_REPOSITORY.md) | Everyone, agents | Push **only** `spektre-labs/creation-os` for this kernel; forbidden remote mistakes |
