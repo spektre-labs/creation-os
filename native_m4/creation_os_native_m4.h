@@ -37,7 +37,8 @@ void cos_living_weights_neon(float *logits, const uint8_t *reputation, int vocab
 void cos_living_weights_neon_range(float *logits, const uint8_t *reputation, int begin, int end, float scale);
 
 /* NEON + GCD parallelization for large vocabs (Apple AArch64 NEON only).
- * For vocab < 65536, or non-Apple / no NEON, behaves like cos_living_weights_neon_range. */
+ * For vocab < 65536, or non-Apple / no NEON, behaves like cos_living_weights_neon_range.
+ * While running, do not read or mutate the same logits/reputation from other threads. */
 void cos_living_weights_neon_parallel(float *logits, const uint8_t *reputation, int vocab, float scale);
 
 /* Metal path (Apple). Returns false if Metal is unavailable or metallib missing. */

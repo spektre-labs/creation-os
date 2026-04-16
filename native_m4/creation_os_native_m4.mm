@@ -307,6 +307,7 @@ static int self_test(void)
 
     const int vocab = 65536; /* triggers NEON parallel path on Apple AArch64 */
     const float scale = 0.125f;
+    int self_big_rc = 0;
     size_t rep_sz, flt_sz;
     cos_lw_buffer_sizes(vocab, &rep_sz, &flt_sz);
     uint8_t *rep = (uint8_t *)aligned_alloc(64, rep_sz);
@@ -316,7 +317,8 @@ static int self_test(void)
     float *metal = (float *)aligned_alloc(64, flt_sz);
     if (!rep || !base || !neon || !par || !metal) {
         fprintf(stderr, "FAIL alloc\n");
-        return 2;
+        self_big_rc = 2;
+        goto self_big_cleanup;
     }
 
     for (int i = 0; i < vocab; i++) {
@@ -334,7 +336,8 @@ static int self_test(void)
     cos_living_weights_neon_range(neon, rep, 0, vocab, scale);
     if (!float_buffers_exact(base, neon, vocab)) {
         fprintf(stderr, "FAIL NEON mismatch vs scalar\n");
-        return 2;
+        self_big_rc = 2;
+        goto self_big_cleanup;
     }
 
     for (int i = 0; i < vocab; i++)
@@ -342,7 +345,8 @@ static int self_test(void)
     cos_living_weights_neon_parallel(par, rep, vocab, scale);
     if (!float_buffers_exact(base, par, vocab)) {
         fprintf(stderr, "FAIL NEON parallel mismatch vs scalar\n");
-        return 2;
+        self_big_rc = 2;
+        goto self_big_cleanup;
     }
 
     memcpy(metal, neon, (size_t)vocab * sizeof(float));
@@ -354,25 +358,30 @@ static int self_test(void)
         }
     }
 #endif
-    bool ok_metal = cos_living_weights_metal(metal, rep, vocab, scale);
-    if (ok_metal) {
-        if (!float_buffers_close(base, metal, vocab, 2e-3f)) {
-            fprintf(stderr, "FAIL Metal mismatch vs scalar\n");
-            return 2;
+    {
+        bool ok_metal = cos_living_weights_metal(metal, rep, vocab, scale);
+        if (ok_metal) {
+            if (!float_buffers_close(base, metal, vocab, 2e-3f)) {
+                fprintf(stderr, "FAIL Metal mismatch vs scalar\n");
+                self_big_rc = 2;
+                goto self_big_cleanup;
+            }
+            fprintf(stderr, "native-m4: Metal path: OK\n");
+        } else {
+            fprintf(stderr, "native-m4: Metal path: SKIP (no metallib or Metal unavailable)\n");
         }
-        fprintf(stderr, "native-m4: Metal path: OK\n");
-    } else {
-        fprintf(stderr, "native-m4: Metal path: SKIP (no metallib or Metal unavailable)\n");
     }
 
     fprintf(stderr, "native-m4: SME runtime probe: %s\n", cos_runtime_has_sme() ? "yes" : "no");
     fprintf(stderr, "native-m4: self-test OK\n");
+
+self_big_cleanup:
     free(rep);
     free(base);
     free(neon);
     free(par);
     free(metal);
-    return 0;
+    return self_big_rc;
 }
 
 typedef enum {
