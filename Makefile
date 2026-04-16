@@ -92,7 +92,7 @@ help:
 	@echo "  native-m4            — build creation_os_native_m4 (Apple-only; opt-in; not merge-gate)"
 	@echo "  metallib-m4          — compile native_m4/creation_os_lw.metallib (Apple-only; optional)"
 	@echo "  check-native-m4      — ./creation_os_native_m4 --self-test (SKIP on non-Apple)"
-	@echo "  bench-native-m4      — buffer-sizes smoke + --bench 65536×30 + --scalar (SKIP on non-Apple)"
+	@echo "  bench-native-m4      — buffer-sizes smoke + --bench 65536×30 --warmup 3 --scalar (SKIP on non-Apple)"
 	@echo "  reviewer — run critic-facing checks (v26 + v2 self-test + tier tags)"
 	@echo "  merge-gate — portable check + every flagship self-test (v6..v28); same as CI / publish preflight"
 	@echo "  formal-rtl-lint — Verilator --lint-only on rtl/*.sv (SKIP if verilator missing)"
@@ -416,7 +416,7 @@ check-native-m4: native-m4
 bench-native-m4: native-m4
 	@if [ "$$(uname -s)" = "Darwin" ]; then \
 		./creation_os_native_m4 --buffer-sizes --vocab 65537 >/dev/null; \
-		./creation_os_native_m4 --bench --vocab 65536 --iters 30 --scalar; \
+		./creation_os_native_m4 --bench --vocab 65536 --iters 30 --warmup 3 --scalar; \
 		echo "bench-native-m4: OK"; \
 	else \
 		echo "bench-native-m4: SKIP (Darwin only)"; \

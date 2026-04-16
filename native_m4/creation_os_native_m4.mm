@@ -391,7 +391,32 @@ typedef enum {
     BENCH_MODE_METAL = 3,
 } bench_mode_t;
 
-static void bench_once(int vocab, int iters, bench_mode_t mode)
+/* One timed iteration body. Returns 0, or 2 if Metal path unavailable. */
+static int bench_run_body(bench_mode_t mode, float *logits, uint8_t *rep, int vocab, size_t logits_bytes)
+{
+    memset(logits, 0, logits_bytes);
+    switch (mode) {
+    case BENCH_MODE_SCALAR:
+        cos_living_weights_inplace(logits, rep, vocab, 0.125f);
+        return 0;
+    case BENCH_MODE_NEON_PARALLEL:
+        cos_living_weights_neon_parallel(logits, rep, vocab, 0.125f);
+        return 0;
+    case BENCH_MODE_METAL:
+#if defined(__APPLE__)
+        if (!cos_living_weights_metal(logits, rep, vocab, 0.125f))
+            return 2;
+        return 0;
+#else
+        return 2;
+#endif
+    default:
+        cos_living_weights_neon_range(logits, rep, 0, vocab, 0.125f);
+        return 0;
+    }
+}
+
+static void bench_once(int vocab, int iters, int warmup, bench_mode_t mode)
 {
     cos_lw_owned_buffers_t b;
     if (cos_lw_buffers_alloc(vocab, &b) != 0) {
@@ -403,36 +428,23 @@ static void bench_once(int vocab, int iters, bench_mode_t mode)
     for (int i = 0; i < vocab; i++)
         rep[i] = (uint8_t)(i & 0xFF);
 
-#if defined(__APPLE__)
-    if (mode == BENCH_MODE_METAL) {
-        memset(logits, 0, b.logits_bytes);
-        if (!cos_living_weights_metal(logits, rep, vocab, 0.125f)) {
+    for (int w = 0; w < warmup; w++) {
+        int r = bench_run_body(mode, logits, rep, vocab, b.logits_bytes);
+        if (r != 0) {
             fprintf(stderr, "bench: Metal: SKIP (no device/metallib)\n");
             cos_lw_buffers_free(&b);
             return;
         }
     }
-#endif
 
     struct timespec t0, t1;
     clock_gettime(CLOCK_MONOTONIC, &t0);
     for (int k = 0; k < iters; k++) {
-        memset(logits, 0, b.logits_bytes);
-        switch (mode) {
-        case BENCH_MODE_SCALAR:
-            cos_living_weights_inplace(logits, rep, vocab, 0.125f);
-            break;
-        case BENCH_MODE_NEON_PARALLEL:
-            cos_living_weights_neon_parallel(logits, rep, vocab, 0.125f);
-            break;
-#if defined(__APPLE__)
-        case BENCH_MODE_METAL:
-            cos_living_weights_metal(logits, rep, vocab, 0.125f);
-            break;
-#endif
-        default:
-            cos_living_weights_neon_range(logits, rep, 0, vocab, 0.125f);
-            break;
+        int r = bench_run_body(mode, logits, rep, vocab, b.logits_bytes);
+        if (r != 0) {
+            fprintf(stderr, "bench: Metal: SKIP (no device/metallib)\n");
+            cos_lw_buffers_free(&b);
+            return;
         }
     }
     clock_gettime(CLOCK_MONOTONIC, &t1);
@@ -442,7 +454,11 @@ static void bench_once(int vocab, int iters, bench_mode_t mode)
                      : (mode == BENCH_MODE_NEON_PARALLEL) ? "NEON+GCD"
                      : (mode == BENCH_MODE_METAL) ? "Metal"
                                                   : "NEON";
-    fprintf(stderr, "bench: %s vocab=%d iters=%d -> %.3e tokens/s (wall)\n", tag, vocab, iters, tok_per_s);
+    if (warmup > 0)
+        fprintf(stderr, "bench: %s vocab=%d warmup=%d iters=%d -> %.3e tokens/s (wall)\n", tag, vocab, warmup,
+                iters, tok_per_s);
+    else
+        fprintf(stderr, "bench: %s vocab=%d iters=%d -> %.3e tokens/s (wall)\n", tag, vocab, iters, tok_per_s);
 
     cos_lw_buffers_free(&b);
 }
@@ -468,10 +484,11 @@ int main(int argc, char **argv)
     }
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
         printf("usage: %s [--version] [--self-test] [--buffer-sizes [--vocab N]]\n"
-               "         [--bench [--vocab N] [--iters K] [--parallel] [--scalar] [--metal]]\n",
+               "         [--bench [--vocab N] [--iters K] [--warmup W] [--parallel] [--scalar] [--metal]]\n",
                argv[0]);
         printf("  (default with no args: small NEON demo on interactive GCD queue)\n");
         printf("  --bench requires positive --vocab and --iters (defaults: 65536, 200).\n");
+        printf("  --warmup untimed iterations before the timed block (default 0).\n");
         printf("  --scalar also runs scalar inplace for A/B vs NEON.\n");
         printf("  --metal runs Metal living-weights after NEON (SKIP if no metallib).\n");
         printf("\n");
@@ -492,11 +509,14 @@ int main(int argc, char **argv)
         int parallel = 0;
         int scalar_ab = 0;
         int metal_bench = 0;
+        int warmup = 0;
         for (int i = 2; i < argc; i++) {
             if (!strcmp(argv[i], "--vocab") && i + 1 < argc)
                 vocab = atoi(argv[++i]);
             else if (!strcmp(argv[i], "--iters") && i + 1 < argc)
                 iters = atoi(argv[++i]);
+            else if (!strcmp(argv[i], "--warmup") && i + 1 < argc)
+                warmup = atoi(argv[++i]);
             else if (!strcmp(argv[i], "--parallel"))
                 parallel = 1;
             else if (!strcmp(argv[i], "--scalar"))
@@ -504,23 +524,23 @@ int main(int argc, char **argv)
             else if (!strcmp(argv[i], "--metal"))
                 metal_bench = 1;
         }
-        if (vocab <= 0 || iters <= 0) {
-            fprintf(stderr, "bench: --vocab and --iters must be positive\n");
+        if (vocab <= 0 || iters <= 0 || warmup < 0) {
+            fprintf(stderr, "bench: --vocab and --iters must be positive; --warmup must be >= 0\n");
             return 2;
         }
         if (scalar_ab) {
             fprintf(stderr, "bench: scalar inplace (baseline)...\n");
-            bench_once(vocab, iters, BENCH_MODE_SCALAR);
+            bench_once(vocab, iters, warmup, BENCH_MODE_SCALAR);
         }
-        bench_once(vocab, iters, parallel ? BENCH_MODE_NEON_PARALLEL : BENCH_MODE_NEON_RANGE);
+        bench_once(vocab, iters, warmup, parallel ? BENCH_MODE_NEON_PARALLEL : BENCH_MODE_NEON_RANGE);
         if (parallel == 0 && vocab >= 65536) {
             fprintf(stderr, "bench: also running NEON+GCD (--parallel) for large vocab...\n");
-            bench_once(vocab, iters, BENCH_MODE_NEON_PARALLEL);
+            bench_once(vocab, iters, warmup, BENCH_MODE_NEON_PARALLEL);
         }
 #if defined(__APPLE__)
         if (metal_bench) {
             fprintf(stderr, "bench: Metal (one kernel launch per iter; best-effort)...\n");
-            bench_once(vocab, iters, BENCH_MODE_METAL);
+            bench_once(vocab, iters, warmup, BENCH_MODE_METAL);
         }
 #else
         (void)metal_bench;
