@@ -18,7 +18,7 @@
   </thead>
   <tbody>
     <tr>
-      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>).</td>
+      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>), <strong>σ/agent v33–v40</strong> (router, decompose, spec decode, MCP, FPGA/ASIC RTL, neuromorphic toy, threshold story — tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>).</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Canonical tree: <a href="https://github.com/spektre-labs/creation-os"><code>spektre-labs/creation-os</code></a>. Teaching spine: <a href="creation_os_v2.c"><code>creation_os_v2.c</code></a> + <a href="core/"><code>core/*.h</code></a>. Review map: <a href="docs/WHICH_FILE_TO_READ.md"><code>docs/WHICH_FILE_TO_READ.md</code></a>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Before a PR / publish: <code>make merge-gate</code>. When touching a flagship slice: matching <code>make check-vN</code> + <code>./creation_os_vN --self-test</code>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Keep evidence classes honest (lab demo vs harness vs product). Read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> + tier tags in <a href="docs/WHAT_IS_REAL.md">WHAT_IS_REAL</a> before screenshotting a headline.</td>
@@ -42,11 +42,11 @@
   <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
 </p>
 
-<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
+<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#readme-scan-map-fig-09">Scan map (FIG 09)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31–v40)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
 > **MCP product hook:** `creation_os_mcp` is an **MCP server** that exposes σ measurement + abstention helpers (`measure_sigma`, `should_abstain`, `sigma_report`) to **any MCP-capable client** — see `docs/MCP_SIGMA.md`, `config/claude_desktop_config.json`, and `.cursor/mcp.json`.
 
-> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + `make check-v6` … `make check-v29`). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward); **`./creation_os_v29 --self-test`** adds a **v29 collapse harness** (**22** checks — mmap GGUF view + σ channels + XNOR toy + BitNet stub; tier tags in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md)). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
+> **If you read nothing else:** a **C11 reference kernel** for **BSC** and a **coherence (σ) story** you can **build, run, and falsify**. Maintainer / CI bar is **`make merge-gate`** (`make check` + **`make check-v6` … `make check-v29`** — flagship v6–v29 only). **Optional σ labs (not merge-gate):** `make check-v31` · `check-v33` · `check-v34` · `check-v35` · `check-v39` · `check-v40`; MCP (**v36**, `make check-mcp`); FPGA / formal (**v37**, `make formal-sby-v37` · `make synth-v37`); ASIC tile (**v38**, `make check-asic-tile` · `make librelane-v38`); neuromorphic toy (**v39**, `make check-crossbar-sim`); threshold story (**v40**, `make bench-v40-threshold`). Full layer map: [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md). Flagship **`./creation_os_v26 --self-test`** prints **184/184** internal consistency checks (**lab demo (C)** class — not an `lm-eval` harness row); **`./creation_os_v27 --self-test`** adds the **vocab / tokenizer scaffold** (**70** checks — still **lab demo (C)**); **`./creation_os_v28 --self-test`** adds an **LM integration shell** (**29** checks — **integration harness (C)**, not an in-process BitNet-2B forward); **`./creation_os_v29 --self-test`** adds a **v29 collapse harness** (**22** checks — mmap GGUF view + σ channels + XNOR toy + BitNet stub; tier tags in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md)). This is **not** a chat product, **not** an LM leaderboard dump, and **not** magic — read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) before you screenshot a table.
 
 <table align="center">
   <tbody>
@@ -96,17 +96,20 @@ That prints **uname**, **NEON compile flag presence**, **SME sysctl probe**, **b
 | **Run CI locally / ship a PR** | [Sixty seconds](#run-it-in-sixty-seconds) · [Build](#build) · [Contributing](CONTRIBUTING.md) |
 | **Understand the product story** | [At a glance](#at-a-glance) · [Flagship table](#flagship-programs) · [LLM architecture (our stack)](#creation-os-llm-architecture-our-stack-and-tiers) · [The problem](#the-problem) · [Measured results](#measured-results-4096-dimensions-100k-trials) · [LLM stacks vs Creation OS](#llm-vs-creation-os-comparison) |
 | **Not mis-cite a headline** | [Claim discipline](docs/CLAIM_DISCIPLINE.md) · [Common misreadings](docs/COMMON_MISREADINGS.md) · [Doctoral path](#doctoral-and-committee-read-path) |
-| **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
+| **Silicon / RTL / formal** | [RTL silicon mirror](docs/RTL_SILICON_MIRROR.md) · [Full stack map](docs/FULL_STACK_FORMAL_TO_SILICON.md) · [σ full stack (v33–v40)](docs/SIGMA_FULL_STACK.md) |
+| **σ threshold / QEC analogy (theory)** | [docs/sigma_threshold_theorem.md](docs/sigma_threshold_theorem.md) · `make check-v40` · `make bench-v40-threshold` (stub until harness) |
+| **What is “M” vs “P” here?** | [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) — always read before citing FPGA/ASIC/neuromorphic headlines |
 | **Local OpenAI-shaped stub (tool wiring)** | [LOCAL_OPENAI_STUB.md](docs/LOCAL_OPENAI_STUB.md) · CORS + `OPTIONS` for local-origin browser checks · [`vscode-extension/setup_continue.md`](vscode-extension/setup_continue.md) |
 | **Optional suite lab (honest scope)** | [SUITE_LAB.md](docs/SUITE_LAB.md) · `make standalone-suite-stub` · `./scripts/launch_suite.sh` (stub + static `suite_lab.html`; not merge-gate) |
 | **Native M4 (hardware-first lab)** | `make check-native-m4` · `make bench-native-m4` · `./creation_os_native_m4 --layers-report` · NEON + GCD + optional Metal/SME in `native_m4/` |
 | **v31 “purge lab” (optional upstream wrapper)** | [v31_README.md](docs/v31_README.md) · `make check-v31` · [WHAT_IS_REAL_v31.md](docs/WHAT_IS_REAL_v31.md) |
+| **σ labs v33–v40 (router, MCP, RTL, ASIC, neuro, threshold)** | [σ lab table](#sigma-labs-v31-v40) · [SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [MCP_SIGMA.md](docs/MCP_SIGMA.md) |
 | **“Full suite” expectations vs repo** | [FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
 | **Agents / contributors / security** | [AGENTS.md](AGENTS.md) · [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [MAINTAINERS](docs/MAINTAINERS.md) |
 
-**Long-form anchors (this page):** [Capability layers](#capability-layers) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [v29 collapse harness](#v29-collapse-harness) · [LLM architecture](#creation-os-llm-architecture-our-stack-and-tiers) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
+**Long-form anchors (this page):** [Capability layers](#capability-layers) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Doc hub](#documentation-hub) · [σ labs v31–v40](#sigma-labs-v31-v40) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [BSC](#what-is-bsc) · [Invariants](#verified-invariants) · [26 modules](#26-modules) · [v6](#living-kernel-v6) · [v7](#hallucination-killer-v7) · [v9](#parameters-in-silicon-v9) · [v10](#the-real-mind-v10) · [v11](#the-matmul-free-mind-v11) · [v12](#the-tensor-mind-v12) · [v27 tokenizer](#v27-tokenizer) · [v28 LM integration](#v28-lm-integration) · [v29 collapse harness](#v29-collapse-harness) · [LLM architecture](#creation-os-llm-architecture-our-stack-and-tiers) · [Architecture](#architecture) · [Limitations](#limitations) · [Why this wins](#why-this-wins-where-it-matters-engineering-not-slogans) · [Theory](#theoretical-foundation) · [AGI map](#agi-map-how-this-file-relates-to-the-full-stack) · [Publication-hard](#publication-hard) · [License](#license)
 
 <a id="readme-scan-map-fig-09"></a>
 
@@ -171,6 +174,8 @@ make check-v29 && ./creation_os_v29 --self-test   # expect 22/22 PASS (v29 colla
 ```
 
 *Success looks like:* `184/184 PASS` from `./creation_os_v26 --self-test` after `make check-v26` — anything else is a **merge gate** failure, not a “soft warning”. **`make merge-gate`** also runs **`check-v27`**, **`check-v28`**, and **`check-v29`**; expect **`70/70 PASS`** / **`29/29 PASS`** / **`22/22 PASS`** from **`./creation_os_v27 --self-test`** / **`./creation_os_v28 --self-test`** / **`./creation_os_v29 --self-test`**.
+
+**σ / agent / silicon labs (optional, not `merge-gate`):** after the gate is green, spot-check any lab you touched — see [σ lab table (v31–v40)](#sigma-labs-v31-v40) and [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md) for tier tags.
 
 **Plain-language orientation:** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · **Misreadings:** [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md)
 
@@ -250,6 +255,26 @@ flowchart LR
 
 **Still lost?** [docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md](docs/PARADIGM_SNAPSHOT_FOR_DRIVE_BY_READERS.md) · [docs/COMMON_MISREADINGS.md](docs/COMMON_MISREADINGS.md) · [docs/VISUAL_INDEX.md](docs/VISUAL_INDEX.md)
 
+<a id="sigma-labs-v31-v40"></a>
+
+### σ labs (v31–v40, optional)
+
+These milestones extend the portable spine with **agent routing**, **MCP**, **RTL / ASIC hooks**, a **neuromorphic toy**, and a **σ-threshold / QEC analogy** — all **outside** `make merge-gate`. Tier tags (“M” vs “P”) live in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md); the cross-layer map is [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md).
+
+| Milestone | Focus | Verify (representative) |
+|:--|:--|:--|
+| **v31** | Upstream BitNet “purge lab” (wrapper direction) | `make check-v31` · [docs/v31_README.md](docs/v31_README.md) |
+| **v33** | Agent runtime — σ-routed SLM/LLM fallback (router, schema, registry) | `make check-v33` · `config/routing.json`, `config/tools/*.schema.json` |
+| **v34** | Algorithmic σ — aleatoric / epistemic decomposition | `make check-v34` · `src/sigma/decompose.c` |
+| **v35** | Inference — σ-guided speculative decode hooks | `make check-v35` · `src/v35/spec_decode.c` |
+| **v36** | MCP σ server (`creation_os_mcp`) | `make check-mcp` · [docs/MCP_SIGMA.md](docs/MCP_SIGMA.md) |
+| **v37** | σ FPGA pipeline (SystemVerilog + SymbiYosys / Yosys) | `make formal-sby-v37` · `make synth-v37` · `hdl/v37/` |
+| **v38** | Post-Efabless ASIC tile + LibreLane driver | `make check-asic-tile` · `make librelane-v38` · `hdl/asic/` |
+| **v39** | Memristor / crossbar mapping doc + RTL sim | `make check-v39` · `make check-crossbar-sim` · [docs/neuromorphic/memristor_mapping.md](docs/neuromorphic/memristor_mapping.md) |
+| **v40** | Independence + syndrome decoder + threshold note | `make check-v40` · [docs/sigma_threshold_theorem.md](docs/sigma_threshold_theorem.md) · `make bench-v40-threshold` |
+
+There is **no** `creation_os_v36.c` merge-gate row: **v36** is the **MCP** binary; **v37** / **v38** are primarily **HDL + scripts** (see Makefile `help`).
+
 ---
 
 <a id="documentation-hub"></a>
@@ -301,6 +326,9 @@ flowchart LR
 |:--|:--|
 | RTL mirror (SV, Chisel, Yosys, Rust, formal) | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) |
 | Formalism → silicon | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
+| σ stack map (v33–v40 labs + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) |
+| MCP σ server | [docs/MCP_SIGMA.md](docs/MCP_SIGMA.md) · `make check-mcp` |
+| Neuromorphic / memristor (mapping + sim) | [docs/neuromorphic/memristor_mapping.md](docs/neuromorphic/memristor_mapping.md) · `make check-crossbar-sim` |
 | Git remotes | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
 | Contributing · security · agent rules | [CONTRIBUTING.md](CONTRIBUTING.md) · [SECURITY.md](SECURITY.md) · [AGENTS.md](AGENTS.md) |
 | Maintainers + merge gate | [docs/MAINTAINERS.md](docs/MAINTAINERS.md) |
