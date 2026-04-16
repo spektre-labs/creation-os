@@ -67,6 +67,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v39 | Physics (substrate) | σ_hardware (memristor analogue) |
 | v40 | Theory / diagnostics | σ-threshold hypothesis + independence + syndrome decode |
 | v41 | Inference / orchestration | σ-guided test-time compute (budget forcing, adaptive N, toy tree) |
+| v42 | Learning / orchestration | σ-guided self-play (challenger/solver, σ-shaped reward, replay sampling) |
 
 ## v40 working paper title (only when threshold harness exists)
 
@@ -75,3 +76,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v41 working paper title (only when test-time scaling harness exists)
 
 **“σ-Guided Test-Time Compute: Adaptive Reasoning Depth via Epistemic Uncertainty Decomposition”**
+
+## v42 working paper title (only when self-play + eval harness exists)
+
+**“σ-Guided Self-Play: Uncertainty-Decomposed Reward Signals Enable Data-Free Self-Improvement of Language Models”**

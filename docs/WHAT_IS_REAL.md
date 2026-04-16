@@ -38,6 +38,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v40 lab: TruthfulQA σ-channel sweep **stub** (threshold theorem harness placeholder) | `make bench-v40-threshold` (exits 0; real eval requires external weights + CLI) | **M** |
 | v41 lab: σ-guided **test-time compute** scaffold (budget forcing + adaptive best-of-N + toy reasoning tree + verify bookkeeping) | `make check-v41` | **M** |
 | v41 lab: GSM8K / MATH / AIME **scaling harness** (“2B + σ beats 70B”) | `make bench-v41-scaling` (exits 0 as **stub**; real curves require external weights + eval CLI + REPRO bundle) | **M** |
+| v42 lab: σ-guided **self-play** scaffold (challenger/solver/replay + σ-shaped reward + curriculum hook) | `make check-v42` | **M** |
+| v42 lab: self-play **improvement curve** harness (“data-free self-RL beats GSM8K”) | `make bench-v42-curve` (exits 0 as **stub**; real runs require external weights + self-play driver + eval CLI + REPRO bundle) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -91,6 +93,7 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “`bench-v40-threshold` proves exponential hallucination suppression vs channel count” | The script is a **stub** until `creation_os` (or another evaluator) can run archived TruthfulQA-style harnesses in-tree | **N** |
 | “σ-threshold theorem is proven for LLMs in this repo” | v40 ships **definitions + diagnostics + decoder**; the exponential suppression claim is **hypothesis / P-tier** until measured and archived | **N** |
 | “**2B BitNet + σ-guided test-time compute matches 70B** on GSM8K/AIME in this repo” | v41 ships **policy + toy integration** only; any crossover budget claim is **P-tier** until `benchmarks/v41/budget_*.json` exists with archived harness metadata | **N** |
+| “**σ-only reward replaces all external verifiers** for self-play RL in this repo” | v42 ships **toy consistency + σ decomposition** only; any “no external data ever” claim is **N** until archived self-play + eval harnesses exist | **N** |
 
 ## Retired claims (corrections)
 
