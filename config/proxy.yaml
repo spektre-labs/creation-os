@@ -1,0 +1,31 @@
+# Creation OS v44 — σ-proxy example configuration (documentation + future driver hook).
+#
+# Shipped today: C lab reads policy intent here; full YAML ingestion is not wired in-tree.
+
+engine:
+  type: sglang # or: vllm, bitnet, ollama, llamacpp
+  url: http://localhost:30000
+  logprobs: true # required for Dirichlet-style σ from logits
+
+sigma:
+  channels:
+    - logit_entropy
+    - top_margin
+    - prediction_stability
+    - dirichlet_decompose
+  calibration: config/platt_truthfulqa.json
+  thresholds:
+    abstain: 0.75
+    fallback: 0.85
+    cite: 0.50
+
+fallback:
+  type: api
+  url: https://api.anthropic.com/v1
+  model: claude-sonnet-4-20250514
+  max_budget_per_session: 100
+
+api:
+  port: 8080
+  openai_compatible: true
+  stream_sigma: true

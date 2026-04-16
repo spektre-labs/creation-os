@@ -42,6 +42,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v42 lab: self-play **improvement curve** harness (“data-free self-RL beats GSM8K”) | `make bench-v42-curve` (exits 0 as **stub**; real runs require external weights + self-play driver + eval CLI + REPRO bundle) | **M** |
 | v43 lab: σ-guided **knowledge distillation** math (weighted KL + progressive stages + multi-teacher ensemble + σ calibration loss) | `make check-v43` | **M** |
 | v43 lab: KD **quality** harness (TruthfulQA / calibration / toxic transfer vs standard KD) | `make bench-v43-distill` (exits 0 as **stub**; real runs require teacher+student weights + distill driver + eval CLI + REPRO bundle) | **M** |
+| v44 lab: σ-native **inference proxy** (stub engine logits → per-token σ → v40 syndrome actions → OpenAI-shaped loopback HTTP + demo SSE) | `make check-v44` (alias: `make check-proxy`) | **M** |
+| v44 lab: σ-proxy **latency overhead** harness (“<5% overhead vs raw engine”) | `make bench-v44-overhead` (exits 0 as **stub**; real runs require pinned engine + load generator + archived JSON) | **M** |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -97,6 +99,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | “**2B BitNet + σ-guided test-time compute matches 70B** on GSM8K/AIME in this repo” | v41 ships **policy + toy integration** only; any crossover budget claim is **P-tier** until `benchmarks/v41/budget_*.json` exists with archived harness metadata | **N** |
 | “**σ-only reward replaces all external verifiers** for self-play RL in this repo” | v42 ships **toy consistency + σ decomposition** only; any “no external data ever” claim is **N** until archived self-play + eval harnesses exist | **N** |
 | “**σ-weighted KD always beats standard KD** on TruthfulQA / toxic transfer in this repo” | v43 ships **scalar loss contracts** only; any A/B headline is **N** until `benchmarks/v43/distill_*.json` exists with archived harness metadata | **N** |
+| “**σ-proxy adds <5% latency** vs raw vLLM/SGLang in this repo” | v44 ships **loopback HTTP + stub logits** only; any overhead headline is **N** until `benchmarks/v44/*.json` exists with archived harness metadata | **N** |
+| “**Mid-stream retraction is safe** against arbitrary tokenizer + engine streams in this repo” | SSE demo lines are **not** a guaranteed rewind protocol until integrated with a real streaming parser + engine cancellation contract | **N** |
 
 ## Retired claims (corrections)
 

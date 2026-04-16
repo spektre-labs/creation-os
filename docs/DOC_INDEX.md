@@ -11,6 +11,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v41_test_time_compute.md](v41_test_time_compute.md) | Integrators, test-time scaling readers | v41 lab: σ-guided budget forcing / adaptive N / toy reasoning tree + benchmark stub (`make check-v41`) |
 | [v42_self_play.md](v42_self_play.md) | Integrators, self-play RL readers | v42 lab: σ-guided challenger/solver loop + replay sampling + benchmark stub (`make check-v42`) |
 | [v43_sigma_distill.md](v43_sigma_distill.md) | Integrators, distillation readers | v43 lab: σ-weighted KD + progressive curriculum + multi-teacher ensemble + calibration (`make check-v43`) |
+| [v44_inference_proxy.md](v44_inference_proxy.md) | Integrators, serving readers | v44 lab: σ-proxy (`creation_os_proxy`) + OpenAI-shaped loopback HTTP + demo SSE (`make check-v44`) |
 | [LOCAL_OPENAI_STUB.md](LOCAL_OPENAI_STUB.md) | Integrators wiring local tools | Optional loopback OpenAI-shaped stub (`creation_os_openai_stub`) — protocol smoke, not a product replacement |
 | [WHICH_FILE_TO_READ.md](WHICH_FILE_TO_READ.md) | Reviewers, integrators | “Start here” map: v2 bootstrap vs v26 merge-gate harness; directory map; reviewer checklist |
 | [SUITE_LAB.md](SUITE_LAB.md) | Integrators, browser demos | Optional mode metadata CLI + static page + launch script; honest scope (not merge-gate) |

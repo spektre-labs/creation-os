@@ -68,6 +68,8 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 | v40 | Theory / diagnostics | σ-threshold hypothesis + independence + syndrome decode |
 | v41 | Inference / orchestration | σ-guided test-time compute (budget forcing, adaptive N, toy tree) |
 | v42 | Learning / orchestration | σ-guided self-play (challenger/solver, σ-shaped reward, replay sampling) |
+| v43 | Learning / orchestration | σ-guided knowledge distillation (uncertainty-weighted KL, anti-transfer term, staged curriculum, multi-teacher σ ensemble, σ calibration) |
+| v44 | Serving / orchestration | σ-native inference proxy (engine-agnostic gate, OpenAI-shaped API + σ fields, demo per-token σ streaming) |
 
 ## v40 working paper title (only when threshold harness exists)
 
@@ -84,3 +86,7 @@ Thesis sentence: σ is **substrate-invariant in role** (a gate on coherence / co
 ## v43 working paper title (only when KD + eval harness exists)
 
 **“σ-Guided Knowledge Distillation: Uncertainty-Weighted Targets Reduce Hallucination Transfer in Small Students”**
+
+## v44 working paper title (only when proxy + overhead harness exists)
+
+**“σ-Native Inference Proxies: Uncertainty-Gated OpenAI-Shaped Serving Across Engines”**
