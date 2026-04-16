@@ -5,62 +5,119 @@
  * Scope: local-only demo helpers for Apple Silicon.
  * Non-goals: merge-gate, weight downloads, end-to-end LLM claims.
  */
+#if !defined(_WIN32)
+#define _POSIX_C_SOURCE 200809L
+#endif
 #include "creation_os_native_m4.h"
 
 #include <dispatch/dispatch.h>
-#include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #if defined(__APPLE__)
-#include <sys/sysctl.h>
+#include <unistd.h>
 #endif
 
-void cos_living_weights_inplace(float *logits, const uint8_t *reputation, int vocab, float scale)
+static int float_buffers_close(const float *a, const float *b, int n, float eps)
 {
-    if (!logits || !reputation || vocab <= 0)
-        return;
-    for (int i = 0; i < vocab; i++) {
-        int pc = __builtin_popcount((unsigned)reputation[i]);
-        logits[i] += ((float)pc - 4.0f) * scale;
+    for (int i = 0; i < n; i++) {
+        float d = fabsf(a[i] - b[i]);
+        if (d > eps)
+            return 0;
     }
-}
-
-bool cos_runtime_has_sme(void)
-{
-#if defined(__APPLE__)
-    int v = 0;
-    size_t sz = sizeof(v);
-    if (sysctlbyname("hw.optional.arm.FEAT_SME", &v, &sz, NULL, 0) == 0)
-        return v != 0;
-    return false;
-#else
-    return false;
-#endif
+    return 1;
 }
 
 static int self_test(void)
 {
-    /* Deterministic sanity: popcount mapping. */
-    float logits[8];
-    uint8_t rep[8];
-    for (int i = 0; i < 8; i++) {
-        logits[i] = 0.0f;
-        rep[i] = (uint8_t)(1u << i); /* popcount=1 */
+    const int vocab = 256; /* multiple of 16 for NEON fast path */
+    const float scale = 0.125f;
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
+    float *base = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    float *neon = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    float *metal = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    if (!rep || !base || !neon || !metal) {
+        fprintf(stderr, "FAIL alloc\n");
+        return 2;
     }
-    cos_living_weights_inplace(logits, rep, 8, 0.5f);
-    /* pc=1 => (1-4)*0.5 = -1.5 */
-    for (int i = 0; i < 8; i++) {
-        if (logits[i] > -1.49f || logits[i] < -1.51f) {
-            fprintf(stderr, "FAIL living_weights[%d]=%f expected -1.5\n", i, logits[i]);
+
+    for (int i = 0; i < vocab; i++) {
+        rep[i] = (uint8_t)((i * 37) & 0xFF);
+        base[i] = 0.0f;
+        neon[i] = 0.0f;
+        metal[i] = 0.0f;
+    }
+
+    memcpy(neon, base, (size_t)vocab * sizeof(float));
+    cos_living_weights_inplace(base, rep, vocab, scale);
+    cos_living_weights_neon(neon, rep, vocab, scale);
+    if (!float_buffers_close(base, neon, vocab, 1e-4f)) {
+        fprintf(stderr, "FAIL NEON mismatch vs scalar\n");
+        return 2;
+    }
+
+    memcpy(metal, neon, (size_t)vocab * sizeof(float));
+#if defined(__APPLE__)
+    /* Best-effort: compile metallib only if Xcode Metal toolchain is installed. */
+    if (getenv("CREATION_OS_METALLIB") == NULL && access("native_m4/creation_os_lw.metallib", R_OK) != 0) {
+        if (system("command -v xcrun >/dev/null 2>&1 && xcrun --find metal >/dev/null 2>&1 && ./native_m4/build_metallib.sh >/dev/null 2>&1") != 0) {
+            fprintf(stderr, "native-m4: metallib build: SKIP (Metal toolchain not installed)\n");
+        }
+    }
+#endif
+    bool ok_metal = cos_living_weights_metal(metal, rep, vocab, scale);
+    if (ok_metal) {
+        if (!float_buffers_close(base, metal, vocab, 2e-3f)) {
+            fprintf(stderr, "FAIL Metal mismatch vs scalar\n");
             return 2;
         }
+        fprintf(stderr, "native-m4: Metal path: OK\n");
+    } else {
+        fprintf(stderr, "native-m4: Metal path: SKIP (no metallib or Metal unavailable)\n");
     }
 
     fprintf(stderr, "native-m4: SME runtime probe: %s\n", cos_runtime_has_sme() ? "yes" : "no");
-    fprintf(stderr, "native-m4: 1/1 PASS\n");
+    fprintf(stderr, "native-m4: self-test OK\n");
+    free(rep);
+    free(base);
+    free(neon);
+    free(metal);
     return 0;
+}
+
+static void bench_once(int vocab, int iters)
+{
+    uint8_t *rep = (uint8_t *)aligned_alloc(64, (size_t)vocab);
+    float *logits = (float *)aligned_alloc(64, (size_t)vocab * sizeof(float));
+    if (!rep || !logits) {
+        fprintf(stderr, "bench: alloc failed\n");
+        free(rep);
+        free(logits);
+        return;
+    }
+    for (int i = 0; i < vocab; i++) {
+        rep[i] = (uint8_t)(i & 0xFF);
+        logits[i] = 0.0f;
+    }
+
+    struct timespec t0, t1;
+    clock_gettime(CLOCK_MONOTONIC, &t0);
+    for (int k = 0; k < iters; k++) {
+        /* reset each iter to keep workload stable */
+        for (int i = 0; i < vocab; i++)
+            logits[i] = 0.0f;
+        cos_living_weights_neon(logits, rep, vocab, 0.125f);
+    }
+    clock_gettime(CLOCK_MONOTONIC, &t1);
+    double sec = (double)(t1.tv_sec - t0.tv_sec) + (double)(t1.tv_nsec - t0.tv_nsec) / 1e9;
+    double tok_per_s = (double)iters * (double)vocab / sec;
+    fprintf(stderr, "bench: NEON vocab=%d iters=%d -> %.3e tokens/s (wall)\n", vocab, iters, tok_per_s);
+
+    free(rep);
+    free(logits);
 }
 
 int main(int argc, char **argv)
@@ -68,8 +125,19 @@ int main(int argc, char **argv)
     if (argc >= 2 && (!strcmp(argv[1], "--self-test") || !strcmp(argv[1], "--selftest")))
         return self_test();
     if (argc >= 2 && (!strcmp(argv[1], "--help") || !strcmp(argv[1], "-h"))) {
-        printf("usage: %s [--self-test]\n", argv[0]);
+        printf("usage: %s [--self-test] [--bench]\n", argv[0]);
+        printf("\n");
         printf("Native M4 lab binary (opt-in). Not part of merge-gate.\n");
+        printf("\n");
+        printf("Optional:\n");
+        printf("  CREATION_OS_METALLIB=path/to/creation_os_lw.metallib\n");
+        printf("\n");
+        printf("Build metallib (Darwin):\n");
+        printf("  make metallib-m4\n");
+        return 0;
+    }
+    if (argc >= 2 && !strcmp(argv[1], "--bench")) {
+        bench_once(1 << 16, 200);
         return 0;
     }
 
@@ -90,7 +158,7 @@ int main(int argc, char **argv)
 
     dispatch_queue_t q = dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0);
     dispatch_sync(q, ^{
-      cos_living_weights_inplace(logits, rep, vocab, 0.125f);
+      cos_living_weights_neon(logits, rep, vocab, 0.125f);
     });
 
     printf("native-m4: logits[0]=%.3f logits[1]=%.3f (demo)\n", logits[0], logits[1]);

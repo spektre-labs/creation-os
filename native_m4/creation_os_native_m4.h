@@ -12,6 +12,12 @@ extern "C" {
 /* Living weights: popcount(reputation[id]) -> logit bias (inplace). */
 void cos_living_weights_inplace(float *logits, const uint8_t *reputation, int vocab, float scale);
 
+/* NEON path (AArch64). */
+void cos_living_weights_neon(float *logits, const uint8_t *reputation, int vocab, float scale);
+
+/* Metal path (Apple). Returns false if Metal is unavailable or metallib missing. */
+bool cos_living_weights_metal(float *logits, const uint8_t *reputation, int vocab, float scale);
+
 /* Best-effort runtime probe (macOS only). */
 bool cos_runtime_has_sme(void);
 
