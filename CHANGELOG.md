@@ -1,5 +1,79 @@
 # Changelog
 
+## v59 σ-Budget — σ-decomposed adaptive test-time compute budget controller (2026-04-16)
+
+- **Driving oivallus.** Q2 2026 adaptive-reasoning-budget field (TAB
+  arXiv:2604.05164, CoDE-Stop arXiv:2604.04930, LYNX arXiv:2512.05325,
+  DTSR arXiv:2604.06787, DiffAdapt, Coda arXiv:2603.08659, AdaCtrl
+  arXiv:2505.18822, Risk-Control Budget Forcing) converges on one open
+  problem — **how much compute to spend on the next reasoning step** —
+  and answers with a **scalar** signal (entropy, confidence dynamic,
+  probe scalar, RL policy, reflection-tag counter). **Nobody** uses the
+  v34 σ = (ε, α) decomposition, even though the rest of Creation OS
+  already speaks that dialect (v55 σ₃, v56 σ-Constitutional, v57
+  Verified Agent, v58 σ-Cache). **v59 closes that gap** at the
+  test-time compute budget layer.
+- **Policy.** Per-step readiness
+  `r(t) = β·stability(t) + γ·reflection(t) − α_ε·ε(t) − δ·α(t)`,
+  σ_total = ε + α, α_frac = α / (ε + α). Four-valued decision:
+  **CONTINUE / EARLY_EXIT / EXPAND / ABSTAIN**. Priority cascade:
+  at-cap > abstain > expand > exit-on-ready > continue. ABSTAIN fires
+  only when σ is high **and** α dominates — the decision no
+  scalar-signal method can produce faithfully.
+- **Kernel (`src/v59/sigma_budget.c`).** Branchless hot path: 0/1 lane
+  masks from integer compares combined with `& | ~` in an AND-NOT
+  priority cascade; final tag is a four-way branchless mux. Scratch
+  via `aligned_alloc(64, ⌈n · 20/64⌉·64)`. Prefetch 16 lanes ahead in
+  every history-walking loop. Explicit NEON 4-accumulator SoA
+  readiness reduction (`cos_v59_score_soa_neon`) materialises the
+  `.cursorrules` item 5 pattern (four lanes, three `vfmaq_f32` stages)
+  and is tested against a scalar reference within 1e-4.
+- **Self-test (`creation_os_v59 --self-test`).** **69 / 69**
+  deterministic assertions covering: version / defaults / null safety,
+  score monotonicity (ε↓readiness, α↓readiness), stability reward,
+  reflection lift, batch = scalar, NEON SoA = scalar, translation
+  invariance in `step_idx`, all four decision tags reachable, cap
+  beats abstain, abstain beats expand, abstain beats exit-on-ready,
+  below-min forces continue, determinism, idempotency on stable
+  appended history, summary counts sum to n, summary totals = Σ
+  per-step, summary final = online decision, random stress invariants,
+  aligned-alloc zeroing + 64-byte alignment, end-to-end scenarios
+  (easy → EARLY_EXIT, ambiguous → ABSTAIN, hard-tractable → EXPAND,
+  mixed input → multiple tags).
+- **Microbench (`make microbench-v59`).** Three-point sweep N = 64 /
+  512 / 4096. Measured on an M-class chip: **1.1 – 1.5 × 10⁸
+  decisions / s** — at 100 M dec/s the budget controller is effectively
+  free even at 10⁵-token reasoning traces.
+- **Composition.** v59 registers as the `adaptive_compute_budget`
+  slot in the v57 Verified Agent (`src/v57/verified_agent.c`).
+  `make verify-agent` now reports **8 PASS, 3 SKIP, 0 FAIL** across
+  eleven composition slots (previously 7 / 3 / 0).
+- **Non-claims.** v59 does **not** claim better end-to-end
+  tokens-per-correct than TAB / CoDE-Stop / LYNX / DTSR on GSM8K /
+  MATH / AIME. End-to-end accuracy-under-budget is a **P** tier
+  measurement; v59 ships **policy + kernel + correctness proof**
+  (**M** tier, 69 deterministic self-tests), not a leaderboard row.
+  σ is v34's signal; v59's novelty is its decomposition as the
+  adaptive-compute-budget decision surface. No Frama-C proof yet.
+- **Files.**
+  - `src/v59/sigma_budget.h` — public API + tier semantics + non-claims.
+  - `src/v59/sigma_budget.c` — scalar / NEON scoring + branchless
+    decision + offline summary.
+  - `src/v59/creation_os_v59.c` — driver with 69-test suite +
+    architecture / positioning banners + microbench.
+  - `scripts/v59/microbench.sh` — deterministic three-point sweep.
+  - `docs/v59/THE_SIGMA_BUDGET.md` — headline doc.
+  - `docs/v59/ARCHITECTURE.md` — wire map + tier table.
+  - `docs/v59/POSITIONING.md` — vs TAB / CoDE-Stop / LYNX / DTSR /
+    DiffAdapt / Coda / AdaCtrl / Risk-Control BF.
+  - `docs/v59/paper_draft.md` — full write-up.
+  - `Makefile` — `standalone-v59`, `test-v59`, `check-v59`,
+    `microbench-v59` targets; clean target extended.
+  - `.gitignore` — ignores `creation_os_v59` + asan variants.
+  - `src/v57/verified_agent.c` + `scripts/v57/verify_agent.sh` — add
+    `adaptive_compute_budget` slot.
+  - `README.md` / `CHANGELOG.md` / `docs/DOC_INDEX.md` — cross-linked.
+
 ## v58 σ-Cache — σ-decomposed KV-cache eviction with a branchless NEON kernel (2026-04-16)
 
 - **Driving oivallus.** Q2 2026 KV-cache eviction literature

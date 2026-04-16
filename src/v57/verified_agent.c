@@ -94,6 +94,16 @@ static const v57_slot_t k_slots[] = {
                           "per-token precision tier + branchless NEON "
                           "kernel (deterministic self-test + microbench)",
     },
+    {
+        .slot           = "adaptive_compute_budget",
+        .owner_versions = "v59",
+        .make_target    = "make check-v59",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Budget: σ-decomposed adaptive test-time "
+                          "compute budget controller + four-valued "
+                          "CONTINUE/EARLY_EXIT/EXPAND/ABSTAIN kernel "
+                          "(branchless + NEON 4-accum SoA; ≥60 tests)",
+    },
 };
 
 static const int k_slot_count =
