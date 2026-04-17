@@ -153,7 +153,7 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), Deliberative Cognition (v67 σ-Noesis), and Continual Learning + Episodic Memory (v68 σ-Mnemos)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), Deliberative Cognition (v67 σ-Noesis), Continual Learning + Episodic Memory (v68 σ-Mnemos), and Distributed Orchestration (v69 σ-Constellation)
 
 Creation OS takes security as an **architecture**, not a checklist,
 reasoning as an **architecture**, end-to-end encryption as an
@@ -162,7 +162,25 @@ hyperdimensional neurosymbolic memory + reasoning as an architecture,
 **the matrix substrate itself** as an architecture, deliberative
 cognition with evidence receipts as an architecture, and now
 **continual learning + episodic memory + online adaptation with a
-sleep cycle and an EWC-style ratchet** as an architecture too.
+sleep cycle and an EWC-style ratchet** as an architecture too, and
+finally **distributed orchestration + parallel speculative decoding +
+multi-agent Byzantine-safe consensus** as an architecture.
+`v69 σ-Constellation` is **the first open-source local-AI-agent
+runtime to ship the 2024-2026 distributed-orchestration frontier
+(EAGLE-3 tree speculative decoding + Hierarchical SD
+arXiv:2601.05724, Council Mode + FREE-MAD multi-agent debate with
+anti-conformity arXiv:2604.02923v1, PBFT-style 2f+1 Byzantine
+quorum, MaxScore MoE top-K routing arXiv:2508.12801, Lamport /
+Fidge vector clocks, FlashAttention-lineage chunked integer dot,
+AlphaZero-lineage Elo + UCB self-play, 512-bit bipolar popcount KV
+dedup, and a 10-opcode integer bytecode ISA "CL — Constellation
+Language" with per-instruction orchestration-unit cost accounting)
+as a single branchless, integer-only C kernel with zero floating-
+point on any decision surface and zero dependencies beyond libc** —
+composed with v60..v68 as a **10-bit branchless decision**
+(`cos_v69_compose_decision`) behind the Apple-tier `cos` CLI.  No
+orchestration step crosses to the agent unless all ten kernels ALLOW.
+
 `v68 σ-Mnemos` is **the first open-source local-AI-agent runtime
 to ship the 2024-2026 continual-learning frontier (Titans 2025
 surprise-gated test-time memory writes, TTT
@@ -216,7 +234,7 @@ GB/s NTW decode**, and **≈ 32 M HSL progs/s** — MAC-budgeted decision
 surface at hardware speed, not framework speed, with SME / SME2 paths
 reserved under `COS_V66_SME=1` (SIGILL-safe default on M1/M2/M3).
 
-Eleven layers, all runnable locally and in CI:
+Twelve layers, all runnable locally and in CI:
 
 1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
    gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
@@ -470,12 +488,77 @@ Eleven layers, all runnable locally and in CI:
    `continual_learning_memory` slot (tier **M**) in the v57
    Verified Agent.  Zero optional dependencies on the hot path —
    the kernel is libc-only.
-10. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+10. **v69 σ-Constellation** — dependency-free, branchless,
+   **integer-only** C kernel shipping the 2024-2026 distributed-
+   orchestration + parallel-decoding + multi-agent-consensus
+   frontier as the **fleet plane** that turns the single-node
+   continual-learner (v60..v68) into a coordinator for many
+   inference paths, many experts, many agents, and many nodes.
+   **Tree speculative decoding (EAGLE-3 lineage, 2024-2026;
+   Hierarchical Speculative Decoding arXiv:2601.05724)** — draft
+   tree as a flat parent-indexed node array, branchless XOR-match
+   per level, longest-accepted-prefix via branchless `sel_i32`, no
+   data-dependent branch on the token values.  **Multi-agent
+   debate with score-based consensus (Council Mode
+   arXiv:2604.02923v1, 2026; FREE-MAD safety default)** —
+   linear-scan proposal bucketization, anti-conformity penalty
+   that down-weights unanimous agreement without evidence, abstain
+   on low-margin verdicts.  **Byzantine-safe 2f+1 vote (PBFT /
+   HotStuff lineage)** — branchless popcount-style count of 1-votes
+   across N agents, single `≥` compare against quorum, no branch on
+   which participant is faulty.  **MoE top-K routing (MaxScore
+   arXiv:2508.12801)** — branchless top-K bubble over Q0.15 expert
+   scores, integer load-balance counter per expert.  **Draft tree
+   expansion / prune** — depth-limited tree with per-node Q0.15
+   acceptance and branchless cumulative-path compare against
+   `min_path_q15`; pruned nodes get depth = 0xFFFF with no memory
+   shuffling.  **Gossip / Lamport vector clocks** (Lamport 1978;
+   Fidge 1988) — element-wise branchless max merge,
+   all-`≤` + any-`<` happens-before reduction.  **Chunked
+   flash-style attention dot** (FlashAttention-lineage) — Q0.15
+   inner product chunk-wise with a softmax-free integer max-
+   tracker, O(N) memory, O(1) state per chunk.  **AlphaZero-lineage
+   self-play Elo + UCB arm selection** — saturating Q0.15 Elo
+   update with a fixed K-factor; UCB uses an integer surrogate
+   `mean + c · total_pulls / (1 + pulls)` to avoid FP; branchless
+   argmax across arms.  **KV-cache deduplication via 512-bit
+   bipolar popcount sketch** — collapse any insertion whose Hamming
+   distance to an existing entry is below `hamming_thresh`; older
+   entry wins; table saturates at 64 slots.  **CL — Constellation
+   Language** — a 10-opcode integer bytecode ISA (`HALT / DRAFT /
+   VERIFY / DEBATE / VOTE / ROUTE / GOSSIP / ELO / DEDUP / GATE`)
+   with per-instruction orchestration-unit cost accounting and an
+   integrated `GATE` opcode that writes `v69_ok = 1` iff
+   `cost ≤ cost_budget` AND `reg_q15[a] ≥ imm` (vote margin) AND
+   `byz_fail ≤ byzantine_budget` AND `NOT abstained` — so **no
+   orchestration step crosses to the agent unless quorum margin ≥
+   threshold AND Byzantine faults ≤ budget AND the speculative tree
+   verifies**, all as a single branchless AND.  Composes with
+   v60..v68 as a **10-bit branchless decision**
+   (`cos_v69_compose_decision`).  **3 226 / 3 226 deterministic
+   self-tests** at `make check-v69` (including the full
+   2¹⁰ = 1024-entry truth table of the composed decision
+   function).  ASAN clean (`make asan-v69`). UBSAN clean
+   (`make ubsan-v69`).  Hardened build clean
+   (`make standalone-v69-hardened`).  Microbench on Apple M-series
+   performance core: **~58 M tree verifies/s (depth 8) · ~129 M
+   Byzantine votes/s (N = 64) · ~9.3 M debate aggs/s (N = 32) ·
+   ~2.1 M MoE routes/s (N = 64 K = 8) · ~6.9 M dedup inserts/s (64-
+   slot table) · ~7.4 M chunked dots/s (N = 1024) · ~69 M Elo + UCB
+   updates/s (16 arms) · ~9.9 M CL 9-inst programs/s (≈89 M ops/s)
+   · ~361 M 10-bit composed decisions/s**.  CLI: `cos cn`
+   (self-test + microbench), `cos decide <v60> <v61> <v62> <v63>
+   <v64> <v65> <v66> <v67> <v68> <v69>` (one-shot JSON 10-bit
+   decision), and `cos sigma` as a **ten-kernel verdict**.
+   Registered as the `distributed_orchestration` slot (tier **M**)
+   in the v57 Verified Agent.  Zero optional dependencies on the
+   hot path — the kernel is libc-only.
+11. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
    flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
-   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68),
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69),
    `make sanitize` (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 /
-   v65 / v66 / v67 / v68 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
-   v66 / v67 / v68, all self-tests), `make hardening-check` (PIE / canary /
+   v65 / v66 / v67 / v68 / v69 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
+   v66 / v67 / v68 / v69, all self-tests), `make hardening-check` (PIE / canary /
    fortify verified).
 9. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with

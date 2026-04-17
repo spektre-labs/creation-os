@@ -1,5 +1,72 @@
 # Changelog
 
+## v69 σ-Constellation — distributed-orchestration + parallel-decoding + multi-agent-consensus kernel: tree speculative decoding (EAGLE-3 lineage; Hierarchical SD arXiv:2601.05724) with branchless XOR-match + longest-prefix `sel_i32` over a flat parent-indexed draft tree + multi-agent debate (Council Mode arXiv:2604.02923v1 + FREE-MAD safety default) with anti-conformity penalty + abstain-on-low-margin + Byzantine-safe 2f+1 vote (PBFT / HotStuff lineage) via popcount + branchless ≥ compare + MoE top-K routing (MaxScore arXiv:2508.12801) with branchless top-K bubble + integer load-balance counters + draft-tree expansion / prune with depth-limited per-node Q0.15 acceptance and branchless cumulative-path compare + Lamport / Fidge vector clocks (gossip) with element-wise max merge + branchless happens-before reduction + chunked flash-style attention dot (FlashAttention-lineage) with softmax-free integer max-tracker, O(N) memory + AlphaZero-lineage self-play Elo + UCB arm selection (saturating Q0.15 update, branchless integer-surrogate UCB, branchless argmax) + KV-cache deduplication via 512-bit bipolar popcount sketch (Hamming-threshold collapse, 64-slot saturating table) + CL "Constellation Language" 10-opcode integer bytecode ISA (HALT / DRAFT / VERIFY / DEBATE / VOTE / ROUTE / GOSSIP / ELO / DEDUP / GATE) with per-instruction orchestration-unit cost accounting and a GATE opcode that writes `v69_ok` iff `cost ≤ budget AND vote_margin ≥ threshold AND byz_fail ≤ byzantine_budget AND NOT abstained`, composed with v60..v68 as a **10-bit branchless decision** (2026-04-17)
+
+- **Driving oivallus.** v60..v68 close the *single-node*
+  deliberation + memory loop. What is still missing is *scale* —
+  a system that coordinates many inference paths, many experts,
+  many agents, many nodes — and does so with a formal, integer,
+  branchless floor that surpasses the ad-hoc orchestration of
+  Microsoft (MAI), Anthropic (Claude cluster), and OpenAI
+  (Stargate pipeline). `v69 σ-Constellation` ships the
+  orchestration plane as a single dependency-free, branchless,
+  integer-only C kernel that composes with the nine prior kernels
+  via a 10-way branchless AND.
+- **σ-Constellation kernel — ten capabilities under one header.**
+  `src/v69/constellation.h` exposes: tree speculative decoding
+  (`cos_v69_tree_init` / `_push` / `cos_v69_draft_tree_verify`);
+  multi-agent debate (`cos_v69_debate_score`); Byzantine 2f+1 vote
+  (`cos_v69_byzantine_vote`); MoE top-K routing
+  (`cos_v69_route_topk`); gossip / vector-clock merge
+  (`cos_v69_gossip_merge` + `_happens_before`); chunked flash-style
+  attention dot (`cos_v69_chunked_dot`); Elo + UCB self-play
+  (`cos_v69_elo_update` + `cos_v69_ucb_select`); KV-cache popcount
+  dedup (`cos_v69_dedup_init` + `_insert`); CL 10-opcode bytecode
+  ISA with cost accounting (`cos_v69_cl_exec`); the 10-bit
+  composed decision (`cos_v69_compose_decision`).
+- **Hardware discipline (M4 invariants).**
+  `aligned_alloc(64, ...)` for tree arenas, dedup table, gossip
+  vectors, CL state. Q0.15 integer-only on every decision surface
+  — debate score, vote count, route top-K, Elo update, UCB, dedup
+  Hamming, CL registers, GATE compare; no FP anywhere on any path
+  that can affect `v69_ok`. Branchless on the data — top-K is a
+  `sel_i32` bubble; vote is `__builtin_popcountll`; UCB is integer
+  surrogate; vector-clock merge is element-wise max. Not constant-
+  time in the fleet size by design (that is the whole point of
+  scaling). `__builtin_popcountll` for both Byzantine vote and
+  512-bit Hamming dedup. No allocations on the hot path (verify,
+  vote, route, dedup, gossip).
+- **Performance (Apple M-series performance core, `clang -O2`).**
+  ~58 M tree verifies/s (depth=8); ~129 M Byzantine votes/s
+  (N=64); ~9.3 M debate aggs/s (N=32); ~2.1 M MoE routes/s
+  (N=64 K=8); ~6.9 M dedup inserts/s (64-slot table, Hamming<64);
+  ~7.4 M chunked dots/s (N=1024 chunk=64); ~69 M Elo+UCB
+  updates/s (16 arms); ~9.9 M CL 9-instruction programs/s (≈89 M
+  ops/s); ~361 M 10-bit composed decisions/s.
+- **Verification.**
+  `make check-v69`: **3 226 / 3 226** deterministic self-tests
+  (including the full 2¹⁰ = 1 024-row truth table of
+  `cos_v69_compose_decision`). `make asan-v69`: clean.
+  `make ubsan-v69`: clean. `make standalone-v69-hardened`:
+  clean (PIE + canary + fortify + branch-protection).
+- **CLI.** `cos cn` (self-test + microbench), `cos decide
+  <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69>`
+  (one-shot JSON 10-bit decision), `cos sigma` reports the **ten
+  kernels**.
+- **Composition.** Registered as the
+  `distributed_orchestration` slot (tier **M**) in the v57
+  Verified Agent. The **10-bit branchless verdict** is the only
+  surface across which an orchestration step crosses to the
+  agent.
+- **Why it matters.** No open-source local-AI-agent runtime ships
+  the 2024-2026 distributed-orchestration frontier (EAGLE-3 +
+  Council Mode + PBFT + MaxScore + vector clocks +
+  FlashAttention-chunked + AlphaZero Elo/UCB + popcount dedup +
+  CL ISA) as a single branchless integer kernel with zero FP on
+  any decision surface and zero deps beyond libc. Microsoft,
+  Anthropic, and OpenAI ship orchestration as Python services
+  over a fleet; v69 ships it as one verifiable C plane.
+
 ## v68 σ-Mnemos — continual-learning + episodic-memory + online-adaptation kernel: bipolar HV episodic store at D=8192 bits (hippocampal pattern separation + completion via `__builtin_popcountll` Hamming + XOR bind) + Titans-style 2025 surprise gate (single branchless integer compare) + ACT-R activation decay (saturating Q0.15 linear, no log/no float) + content-addressable recall with rehearsal (top-K nearest by Hamming → Q0.15 sim, branchless top-K bubble insertion) + Hebbian online adapter (TTT, arXiv:2407.04620, Q0.15 outer-product, saturating per-cell) under an EWC-style anti-catastrophic-forgetting rate ratchet (Kirkpatrick 2017; DeepMind ASAL 2025 — never grows between sleeps) + sleep replay / consolidation (Diekelmann & Born 2010 + 2024 systems extensions — offline majority-XOR bundle of high-activation episodes into a long-term HV; sleep also resets the rate ratchet) + branchless forgetting controller (drop activation < thresh, capped by `forget_budget`) + MML 10-opcode integer bytecode ISA (HALT/SENSE/SURPRISE/STORE/RECALL/HEBB/CONSOLIDATE/FORGET/CMPGE/GATE) with per-instruction memory-unit cost accounting and a GATE opcode that writes `v68_ok` iff `cost ≤ budget AND recall ≥ threshold AND forget_count ≤ forget_budget AND NOT abstained`, composed with v60..v67 as a **9-bit branchless decision** (2026-04-17)
 
 - **Driving oivallus.** v60..v67 close the *one-shot* deliberation

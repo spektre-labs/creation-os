@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) + σ-Noesis (v67) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) + σ-Noesis (v67) + σ-Mnemos (v68) + σ-Constellation (v69) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -296,13 +296,78 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   `cos mn`, `cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68`,
   `cos sigma` (now a nine-kernel verdict).  Zero optional
   dependencies on the hot path — the kernel is libc-only.
+- **v69 σ-Constellation** (`make check-v69`, **3 226 tests**,
+  including the full 2¹⁰ = 1 024-row truth table of
+  `cos_v69_compose_decision`).  Dependency-free, branchless,
+  **integer-only** C kernel shipping the 2024-2026 distributed-
+  orchestration + parallel-decoding + multi-agent-consensus
+  frontier as the **fleet plane** that turns the single-node
+  continual-learner (v60..v68) into a coordinator for many
+  inference paths, many experts, many agents, many nodes — and
+  does so with a formal, integer, branchless floor that surpasses
+  the ad-hoc orchestration of Microsoft (MAI), Anthropic (Claude
+  cluster), and OpenAI (Stargate pipeline).  **Tree speculative
+  decoding** (EAGLE-3 lineage; Hierarchical SD
+  arXiv:2601.05724) — flat parent-indexed draft tree, branchless
+  XOR-match per level, longest-accepted-prefix via branchless
+  `sel_i32`.  **Multi-agent debate with score-based consensus**
+  (Council Mode arXiv:2604.02923v1; FREE-MAD safety default) —
+  anti-conformity penalty against unanimous-without-evidence
+  collapse + abstain-on-low-margin default.  **Byzantine-safe
+  2f+1 vote** (PBFT / HotStuff lineage) — `__builtin_popcountll`
+  count of 1-votes + branchless ≥ quorum compare.  **MoE top-K
+  routing** (MaxScore arXiv:2508.12801) — branchless top-K bubble
+  over Q0.15 expert scores + integer load-balance counters.
+  **Draft tree expansion / prune** — depth-limited per-node Q0.15
+  acceptance with branchless cumulative-path compare; pruned
+  nodes get depth = 0xFFFF.  **Gossip / Lamport vector clocks**
+  (Lamport 1978; Fidge 1988) — element-wise branchless max merge
+  + branchless happens-before reduction.  **Chunked flash-style
+  attention dot** (FlashAttention-lineage) — Q0.15 chunk-wise
+  inner product with softmax-free integer max-tracker, O(N)
+  memory.  **AlphaZero-lineage self-play Elo + UCB arm
+  selection** — saturating Q0.15 Elo update with fixed K-factor;
+  integer-surrogate UCB; branchless argmax.  **KV-cache
+  deduplication via 512-bit bipolar popcount sketch** — collapse
+  on Hamming < threshold; older entry wins; 64-slot saturating
+  table.  **CL — Constellation Language** — a **10-opcode integer
+  bytecode ISA** (`HALT / DRAFT / VERIFY / DEBATE / VOTE / ROUTE /
+  GOSSIP / ELO / DEDUP / GATE`) with per-instruction
+  orchestration-unit cost accounting and an integrated GATE
+  opcode that writes `v69_ok = 1` iff `cost ≤ cost_budget` ∧
+  `reg_q15[a] ≥ imm` (vote margin) ∧ `byz_fail_count ≤
+  byzantine_budget` ∧ `NOT abstained` — so **no orchestration
+  step crosses to the agent unless quorum margin ≥ threshold AND
+  Byzantine faults ≤ budget AND the speculative tree verifies**,
+  all as a single branchless AND.  Composes with v60..v68 as a
+  **10-bit branchless decision** (`cos_v69_compose_decision`) so
+  **no orchestration step crosses to the agent unless σ-Shield,
+  Σ-Citadel, the EBT verifier, the AEAD tag + quote binding, the
+  agentic intellect, the hypercortex on-manifold gate,
+  σ-Silicon's MAC-budget + conformal + wire-well-formed gate,
+  σ-Noesis's deliberation-budget + receipt gate, σ-Mnemos's
+  recall-fidelity + forget-budget + rate-ratchet gate, _and_
+  σ-Constellation's quorum + Byzantine + abstain gate all
+  ALLOW**.  Measured on Apple M-series performance core:
+  ≈ 58 M tree verifies/s (depth=8), ≈ 129 M Byzantine votes/s
+  (N=64), ≈ 9.3 M debate aggs/s (N=32), ≈ 2.1 M MoE routes/s
+  (N=64 K=8), ≈ 6.9 M dedup inserts/s (Hamming<64), ≈ 7.4 M
+  chunked dots/s (N=1024), ≈ 69 M Elo+UCB updates/s (16 arms),
+  ≈ 9.9 M CL 9-instruction programs/s (≈ 89 M ops/s),
+  ≈ 361 M 10-bit composed decisions/s.  ASAN clean
+  (`make asan-v69`).  UBSAN clean (`make ubsan-v69`).  Hardened-
+  build clean (`make standalone-v69-hardened`).  Apple-tier `cos`
+  CLI surface: `cos cn`, `cos decide v60 v61 v62 v63 v64 v65 v66
+  v67 v68 v69`, `cos sigma` (now a ten-kernel verdict).  Zero
+  optional dependencies on the hot path — the kernel is
+  libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 +
-  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

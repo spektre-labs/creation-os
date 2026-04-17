@@ -22,7 +22,8 @@
  *     cos si                     # v66 σ-Silicon: GEMV + ternary + NTW + CFC + HSL self-test
  *     cos nx                     # v67 σ-Noesis: BM25 + dense + graph + beam + dual-process + NBL self-test
  *     cos mn                     # v68 σ-Mnemos: bipolar HV + surprise + ACT-R + recall + Hebbian TTT + sleep + MML self-test
- *     cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68 # 9-bit composed decision (JSON)
+ *     cos cn                     # v69 σ-Constellation: tree-spec + debate + Byzantine vote + MoE route + gossip + Elo-UCB + dedup + CL self-test
+ *     cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 # 10-bit composed decision (JSON)
  *     cos version                # one-line version string
  *     cos help                   # this message
  *
@@ -168,7 +169,7 @@ static int run_first_line(const char *cmd, char *buf, size_t bufsz)
 
 static void print_header(void)
 {
-    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex · v66 σ-Silicon · v67 σ-Noesis · v68 σ-Mnemos%s\n",
+    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex · v66 σ-Silicon · v67 σ-Noesis · v68 σ-Mnemos · v69 σ-Constellation%s\n",
            C_BOLD, C_RESET,
            C_GREY, C_RESET);
     printf("  %sthe verified, attested, reasoning-secured, end-to-end-encrypted, hyperdimensional, silicon-tier, deliberative, continually-learning local AI runtime%s\n",
@@ -312,7 +313,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — nine kernels, one verdict");
+    section("Σ stack — ten kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -322,12 +323,13 @@ static int cmd_sigma(void)
     int r7 = run_kernel("v66 σ-Silicon",       "check-v66", "creation_os_v66");
     int r8 = run_kernel("v67 σ-Noesis",        "check-v67", "creation_os_v67");
     int r9 = run_kernel("v68 σ-Mnemos",        "check-v68", "creation_os_v68");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9;
+    int r10= run_kernel("v69 σ-Constellation", "check-v69", "creation_os_v69");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all nine kernels passed)"
+           total == 0 ? "ALLOW (all ten kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -684,9 +686,63 @@ static int cmd_mn(void)
 }
 
 /* --------------------------------------------------------------------
- *  cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68>
+ *  cos cn — σ-Constellation self-test + microbench demo (v69).
  *
- *  One-shot wrapper around cos_v68_compose_decision.  Useful for CI
+ *  Runs the v69 self-test (≥3200 assertions across the 10-bit
+ *  composition truth table, tree speculative decoding, multi-agent
+ *  debate with anti-conformity, Byzantine 2f+1 vote, MoE top-K
+ *  routing, Lamport vector clocks, chunked flash-style dot, Elo+UCB
+ *  self-play, popcount dedup, CL bytecode) and drops into the
+ *  microbench.  Exposes the distributed-orchestration + parallel-
+ *  decoding + multi-agent-consensus substrate that turns a continual-
+ *  learning kernel (v68) into a fleet.
+ * -------------------------------------------------------------------- */
+
+static int cmd_cn(void)
+{
+    print_header();
+    section("σ-Constellation (v69) — tree-spec + debate + Byzantine vote + MoE route + gossip + Elo-UCB + dedup + CL");
+    if (!file_exists("creation_os_v69")) {
+        printf("  %sbuilding creation_os_v69 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v69");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v69'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel",  "%s", "v69 σ-Constellation");
+    kv("subsys",  "%s", "tree-spec-EAGLE3 · debate-Council/FREE-MAD · byzantine-2f+1 · moe-MaxScore · lamport-gossip · flash-chunked-dot · elo-ucb · popcount-dedup · cl");
+    int rc = run_cmd("./creation_os_v69 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v69 σ-Constellation self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Constellation self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v69 --bench | sed 's/^/    /'");
+    printf("\n  %sorchestration substrate: integer Q0.15 on every "
+           "decision surface, EAGLE-3-style speculative tree verified "
+           "with branchless XOR-match + popcount, Council-Mode multi-agent "
+           "debate with FREE-MAD anti-conformity bonus and abstain default, "
+           "PBFT-style 2f+1 Byzantine quorum, MaxScore MoE top-K routing "
+           "with integer load-balance counter, Lamport vector clocks for "
+           "causal ordering, chunked flash-style dot product (softmax-free "
+           "integer max tracker), AlphaZero-lineage Elo with UCB arm "
+           "selection, popcount KV dedup on 512-bit sketches, every CL "
+           "step tracks orchestration-unit cost, GATE writes v69_ok iff "
+           "vote margin ≥ threshold AND Byzantine faults ≤ budget.  "
+           "Composes with v60..v68 as a 10-bit branchless AND.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
+ *  cos decide <v60>..<v69>
+ *
+ *  One-shot wrapper around cos_v69_compose_decision.  Useful for CI
  *  pipelines, policy audit trails, and debugging lane failures in
  *  isolation.  Prints a JSON-ish object; exit status is 0 iff
  *  allow == 1.
@@ -694,25 +750,26 @@ static int cmd_mn(void)
 
 static int cmd_decide(int argc, char **argv)
 {
-    if (argc != 9) {
+    if (argc != 10) {
         fprintf(stderr,
-                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68>\n"
+                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69>\n"
                 "       each argument is 0 or 1.\n");
         return 64;
     }
-    if (!file_exists("creation_os_v68")) {
-        int b = run_cmd("make -s standalone-v68 >/dev/null 2>&1");
+    if (!file_exists("creation_os_v69")) {
+        int b = run_cmd("make -s standalone-v69 >/dev/null 2>&1");
         if (b != 0) {
-            fprintf(stderr, "cos: v68 not built; run 'make standalone-v68'.\n");
+            fprintf(stderr, "cos: v69 not built; run 'make standalone-v69'.\n");
             return b;
         }
     }
-    char cmd[256];
+    char cmd[320];
     snprintf(cmd, sizeof cmd,
-             "./creation_os_v68 --decision %d %d %d %d %d %d %d %d %d",
+             "./creation_os_v69 --decision %d %d %d %d %d %d %d %d %d %d",
              atoi(argv[0]), atoi(argv[1]), atoi(argv[2]),
              atoi(argv[3]), atoi(argv[4]), atoi(argv[5]),
-             atoi(argv[6]), atoi(argv[7]), atoi(argv[8]));
+             atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
+             atoi(argv[9]));
     return run_cmd(cmd);
 }
 
@@ -727,8 +784,8 @@ static int cmd_help(const char *prog)
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
     printf("  %s%-12s%s  the DARPA-CHACE 12-layer gate\n", C_BOLD, "chace",   C_RESET);
-    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos self-tests\n",
-           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
+    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation self-tests\n",
+           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
@@ -745,7 +802,9 @@ static int cmd_help(const char *prog)
            C_BOLD, "nx",     C_RESET);
     printf("  %s%-12s%s  mnemos: bipolar HV + surprise + ACT-R + recall + Hebbian TTT + sleep + MML (v68)\n",
            C_BOLD, "mn",     C_RESET);
-    printf("  %s%-12s%s  9-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 → JSON\n",
+    printf("  %s%-12s%s  constellation: tree-spec + debate + Byzantine vote + MoE route + gossip + Elo-UCB + dedup + CL (v69)\n",
+           C_BOLD, "cn",     C_RESET);
+    printf("  %s%-12s%s  10-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 → JSON\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -763,7 +822,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -785,7 +844,20 @@ static int cmd_version(void)
     int have68 = (file_exists("creation_os_v68") &&
                   run_first_line("./creation_os_v68 --version",
                                  v68, sizeof v68) == 0 && v68[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68) {
+    int have69 = (file_exists("creation_os_v69") &&
+                  run_first_line("./creation_os_v69 --version",
+                                 v69, sizeof v69) == 0 && v69[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69) {
+        printf("cos v69.0 distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68) {
         printf("cos v68.0 continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
         printf("  reasoning   : %s\n", v62);
         printf("  cipher      : %s\n", v63);
@@ -857,6 +929,8 @@ int main(int argc, char **argv)
         strcmp(argv[1], "noesis")  == 0) return cmd_nx();
     if (strcmp(argv[1], "mn")      == 0 ||
         strcmp(argv[1], "mnemos")  == 0) return cmd_mn();
+    if (strcmp(argv[1], "cn")      == 0 ||
+        strcmp(argv[1], "constellation") == 0) return cmd_cn();
     if (strcmp(argv[1], "decide")  == 0) return cmd_decide(argc - 2, argv + 2);
     if (strcmp(argv[1], "version") == 0 || strcmp(argv[1], "--version") == 0)
         return cmd_version();

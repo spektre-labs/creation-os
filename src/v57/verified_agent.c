@@ -374,6 +374,61 @@ static const v57_slot_t k_slots[] = {
                           "(~192 M ops/s); 2669 deterministic "
                           "tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "distributed_orchestration",
+        .owner_versions = "v69",
+        .make_target    = "make check-v69",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Constellation: distributed-orchestration "
+                          "+ parallel-decoding + multi-agent "
+                          "consensus kernel that turns a single-node "
+                          "continual-learner (v60..v68) into a fleet "
+                          "— EAGLE-3-style tree speculative decoding "
+                          "(branchless XOR-match per level + popcount "
+                          "acceptance; longest-prefix selection via "
+                          "branchless sel); Council Mode + FREE-MAD "
+                          "multi-agent debate with anti-conformity "
+                          "bonus and abstain-on-low-margin default "
+                          "(arXiv:2604.02923v1, 2026); PBFT-style "
+                          "2f+1 Byzantine quorum (branchless "
+                          "popcount-style count, single compare "
+                          "against quorum); MaxScore MoE top-K "
+                          "routing (arXiv:2508.12801, branchless "
+                          "bubble, integer load-balance counter); "
+                          "depth-limited draft tree expansion / "
+                          "prune with Q0.15 cumulative path "
+                          "acceptance; Lamport / Fidge vector clocks "
+                          "for causal ordering (branchless max "
+                          "merge); flash-style chunked attention "
+                          "dot product with softmax-free integer "
+                          "max-tracker; AlphaZero-lineage self-play "
+                          "Elo + UCB arm selection (saturating Q0.15 "
+                          "update, branchless argmax); KV-cache "
+                          "deduplication via 512-bit bipolar "
+                          "popcount sketch (Hamming-neighbour "
+                          "collapse); CL — Constellation Language — "
+                          "10-opcode integer bytecode ISA "
+                          "(HALT/DRAFT/VERIFY/DEBATE/VOTE/ROUTE/"
+                          "GOSSIP/ELO/DEDUP/GATE) with per-"
+                          "instruction orchestration-unit cost "
+                          "accounting and a GATE opcode that writes "
+                          "v69_ok iff cost ≤ budget AND vote margin "
+                          "≥ threshold AND Byzantine faults ≤ "
+                          "byzantine budget AND NOT abstained; "
+                          "composes with v60..v68 as a 10-bit "
+                          "branchless AND "
+                          "(cos_v69_compose_decision); ~58 M tree "
+                          "verifies/s depth=8, ~129 M Byzantine "
+                          "votes/s N=64, ~9.3 M debate aggs/s "
+                          "N=32, ~2.1 M MoE routes/s N=64 K=8, "
+                          "~6.9 M dedup inserts/s on 64-slot "
+                          "table, ~7.4 M chunked-dots/s N=1024, "
+                          "~69 M Elo+UCB updates/s 16 arms, "
+                          "~9.9 M CL 9-inst progs/s (~89 M "
+                          "ops/s), ~361 M 10-bit composed "
+                          "decisions/s; 3226 deterministic tests "
+                          "under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =
