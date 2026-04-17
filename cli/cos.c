@@ -317,7 +317,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — twenty kernels, one verdict");
+    section("Σ stack — twenty-five kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -338,12 +338,17 @@ static int cmd_sigma(void)
     int r18= run_kernel("v78 σ-Gödel-Attestor","check-v78", "creation_os_v78");
     int r19= run_kernel("v79 σ-Simulacrum",    "check-v79", "creation_os_v79");
     int r20= run_kernel("v80 σ-Cortex",        "check-v80", "creation_os_v80");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19 | r20;
+    int r21= run_kernel("v81 σ-Lattice (PQC)", "check-v81", "creation_os_v81");
+    int r22= run_kernel("v82 σ-Stream",        "check-v82", "creation_os_v82");
+    int r23= run_kernel("v83 σ-Agentic",       "check-v83", "creation_os_v83");
+    int r24= run_kernel("v84 σ-ZKProof",       "check-v84", "creation_os_v84");
+    int r25= run_kernel("v85 σ-Formal",        "check-v85", "creation_os_v85");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19 | r20 | r21 | r22 | r23 | r24 | r25;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all twenty kernels passed)"
+           total == 0 ? "ALLOW (all twenty-five kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1655,7 +1660,7 @@ static int cmd_welcome(void)
                 C_BOLD, C_RESET, C_GREY, C_RESET);
 
     section("If a command mentions something you do not recognise");
-    printf("  That is fine.  Each of the twenty kernels is a separate, self-contained\n");
+    printf("  That is fine.  Each of the twenty-five kernels is a separate, self-contained\n");
     printf("  experiment — a single C file, under a thousand lines, with its own\n");
     printf("  self-test that prints a real number.  You do not need to understand them\n");
     printf("  all.  You need to know only this: %sif `cos sigma` says ALLOW, every one of\n",
@@ -1703,6 +1708,11 @@ static const struct demo_row demo_rows[] = {
     {"v78", "σ-Gödel-Attestor", "IIT-φ · FEP · MDL · Gödel-num · workspace · halting · Löbian · MCB",                             "check-v78", "creation_os_v78",     207582},
     {"v79", "σ-Simulacrum",     "Verlet · CA · Clifford · reservoir · Koopman · assembly · SSL",                                   "check-v79", "creation_os_v79",    2994549},
     {"v80", "σ-Cortex",         "Mamba SSM · RoPE · sliding-attn · paged-KV · spec-verify · FEP · KAN · CTM · MoE · TTC",          "check-v80", "creation_os_v80",    6935348},
+    {"v81", "σ-Lattice (PQC)",  "Keccak-f[1600] · SHAKE-128/256 · Kyber NTT · Barrett · Montgomery · CBD · KEM",                   "check-v81", "creation_os_v81",    3513430},
+    {"v82", "σ-Stream",         "streaming composed decision · halt-on-flip · SHAKE-256 Merkle chain · replay-verify",              "check-v82", "creation_os_v82",      72005},
+    {"v83", "σ-Agentic",        "PLAN → ROLL → SURPRISE → ENERGY · rollback · Mnemos consolidation",                                "check-v83", "creation_os_v83",      13153},
+    {"v84", "σ-ZKProof",        "NANOZK layerwise Merkle commits · opening proofs · tamper detection",                              "check-v84", "creation_os_v84",      13534},
+    {"v85", "σ-Formal",         "TLA-style runtime invariant checker · ALWAYS · EVENTUALLY · RESPONDS",                             "check-v85", "creation_os_v85",        500},
 };
 
 static double wall_seconds(void)
@@ -1811,7 +1821,7 @@ static int cmd_demo(void)
     printf("\n  %scomposed verdict:%s  %s%s%s\n",
            C_BOLD, C_RESET,
            total_fail == 0 ? C_GREEN : C_RED,
-           total_fail == 0 ? "ALLOW (all twenty kernels passed)"
+           total_fail == 0 ? "ALLOW (all twenty-five kernels passed)"
                            : "DENY (one or more kernels failed)",
            C_RESET);
 
@@ -1838,7 +1848,7 @@ static int cmd_help(const char *prog)
     section("commands");
     printf("  %s%-12s%s  first-run greeting — plain language, no jargon (aliases: start, hello, hi)\n",
            C_BOLD, "welcome", C_RESET);
-    printf("  %s%-12s%s  30-second live tour of all twenty kernels — real numbers, no mocks (aliases: showcase, tour)\n",
+    printf("  %s%-12s%s  30-second live tour of all twenty-five kernels — real numbers, no mocks (aliases: showcase, tour)\n",
            C_BOLD, "demo",    C_RESET);
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  full repo-health rollup (license · verify · hardening · receipts)\n",
@@ -1905,7 +1915,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0}, v81[256] = {0}, v82[256] = {0}, v83[256] = {0}, v84[256] = {0}, v85[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1960,7 +1970,47 @@ static int cmd_version(void)
     int have80 = (file_exists("creation_os_v80") &&
                   run_first_line("./creation_os_v80 --version",
                                  v80, sizeof v80) == 0 && v80[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80) {
+    int have81 = (file_exists("creation_os_v81") &&
+                  run_first_line("./creation_os_v81 --version",
+                                 v81, sizeof v81) == 0 && v81[0]);
+    int have82 = (file_exists("creation_os_v82") &&
+                  run_first_line("./creation_os_v82 --version",
+                                 v82, sizeof v82) == 0 && v82[0]);
+    int have83 = (file_exists("creation_os_v83") &&
+                  run_first_line("./creation_os_v83 --version",
+                                 v83, sizeof v83) == 0 && v83[0]);
+    int have84 = (file_exists("creation_os_v84") &&
+                  run_first_line("./creation_os_v84 --version",
+                                 v84, sizeof v84) == 0 && v84[0]);
+    int have85 = (file_exists("creation_os_v85") &&
+                  run_first_line("./creation_os_v85 --version",
+                                 v85, sizeof v85) == 0 && v85[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80 && have81 && have82 && have83 && have84 && have85) {
+        printf("cos v85.0 formal · zkproof · agentic · stream · lattice · cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane · post-quantum lattice crypto · streaming composed decision · active-inference learner loop · layerwise zero-knowledge receipts · TLA-style runtime invariants\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+        printf("  reversible    : %s\n", v77);
+        printf("  gödel-attest  : %s\n", v78);
+        printf("  simulacrum    : %s\n", v79);
+        printf("  cortex        : %s\n", v80);
+        printf("  lattice       : %s\n", v81);
+        printf("  stream        : %s\n", v82);
+        printf("  agentic       : %s\n", v83);
+        printf("  zkproof       : %s\n", v84);
+        printf("  formal        : %s\n", v85);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80) {
         printf("cos v80.0 cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);

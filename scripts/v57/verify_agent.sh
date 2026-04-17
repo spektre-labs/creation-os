@@ -98,6 +98,11 @@ SLOTS=(
     "godel_frontier|M|v78|check-v78"
     "simulacrum_frontier|M|v79|check-v79"
     "cortex_frontier|M|v80|check-v80"
+    "lattice_pqc|M|v81|check-v81"
+    "stream_chunked|M|v82|check-v82"
+    "agentic_loop|M|v83|check-v83"
+    "zkproof_layerwise|M|v84|check-v84"
+    "formal_runtime|M|v85|check-v85"
     "license_attestation|M|v75|license-check"
 )
 
