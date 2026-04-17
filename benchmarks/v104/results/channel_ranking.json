@@ -1,0 +1,247 @@
+{
+  "alpha_bonferroni": 0.0071428571428571435,
+  "n_boot": 2000,
+  "sidecar_root": "benchmarks/v104/n5000_results",
+  "tasks": [
+    {
+      "alpha_bonferroni": 0.0071428571428571435,
+      "n": 2376,
+      "overall_acc": 0.7550505050505051,
+      "rows": [
+        {
+          "AURCC": 0.1709981574516708,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "channel_idx": 0,
+          "channel_name": "entropy_norm",
+          "delta_vs_entropy": 0.0,
+          "p": 2.0
+        },
+        {
+          "AURCC": 0.1794520591733713,
+          "CI95_hi": 0.015235344428098707,
+          "CI95_lo": 0.002027636158393853,
+          "channel_idx": 1,
+          "channel_name": "margin",
+          "delta_vs_entropy": 0.008628969612304891,
+          "p": 0.013
+        },
+        {
+          "AURCC": 0.17189381944822227,
+          "CI95_hi": 0.005986517191457569,
+          "CI95_lo": -0.0045428468836361535,
+          "channel_idx": 2,
+          "channel_name": "top_k_mass",
+          "delta_vs_entropy": 0.0008078472756116991,
+          "p": 0.764
+        },
+        {
+          "AURCC": 0.180697460966548,
+          "CI95_hi": 0.016994545919755327,
+          "CI95_lo": 0.002331867553218292,
+          "channel_idx": 3,
+          "channel_name": "tail_mass",
+          "delta_vs_entropy": 0.009626020991478017,
+          "p": 0.01
+        },
+        {
+          "AURCC": 0.18370433827663404,
+          "CI95_hi": 0.024252351956438017,
+          "CI95_lo": 0.0011780864936357105,
+          "channel_idx": 4,
+          "channel_name": "logit_spread",
+          "delta_vs_entropy": 0.012602462146507273,
+          "p": 0.036
+        },
+        {
+          "AURCC": 0.17418793110471945,
+          "CI95_hi": 0.00796114452785554,
+          "CI95_lo": -0.0013754155375073907,
+          "channel_idx": 5,
+          "channel_name": "p_max",
+          "delta_vs_entropy": 0.0031438453765934593,
+          "p": 0.178
+        },
+        {
+          "AURCC": 0.17212232517561302,
+          "CI95_hi": 0.005448947032306556,
+          "CI95_lo": -0.003151191656728336,
+          "channel_idx": 6,
+          "channel_name": "n_effective",
+          "delta_vs_entropy": 0.0009708109953417148,
+          "p": 0.668
+        },
+        {
+          "AURCC": 0.24381408851620712,
+          "CI95_hi": 0.09280932722383664,
+          "CI95_lo": 0.05289900556691646,
+          "channel_idx": 7,
+          "channel_name": "logit_std",
+          "delta_vs_entropy": 0.07265292426814283,
+          "p": 0.0005
+        }
+      ],
+      "task": "arc_easy"
+    },
+    {
+      "alpha_bonferroni": 0.0071428571428571435,
+      "n": 1172,
+      "overall_acc": 0.46757679180887374,
+      "rows": [
+        {
+          "AURCC": 0.4671898290998176,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "channel_idx": 0,
+          "channel_name": "entropy_norm",
+          "delta_vs_entropy": 0.0,
+          "p": 2.0
+        },
+        {
+          "AURCC": 0.4843463403083474,
+          "CI95_hi": 0.030932784615006592,
+          "CI95_lo": 0.004195572310708995,
+          "channel_idx": 1,
+          "channel_name": "margin",
+          "delta_vs_entropy": 0.017109095769592495,
+          "p": 0.013
+        },
+        {
+          "AURCC": 0.45610433114522514,
+          "CI95_hi": 0.0005367874472900214,
+          "CI95_lo": -0.02277510589843834,
+          "channel_idx": 2,
+          "channel_name": "top_k_mass",
+          "delta_vs_entropy": -0.0114434879338109,
+          "p": 0.064
+        },
+        {
+          "AURCC": 0.4520918940401078,
+          "CI95_hi": 0.0003195206730083888,
+          "CI95_lo": -0.030994344590740852,
+          "channel_idx": 3,
+          "channel_name": "tail_mass",
+          "delta_vs_entropy": -0.015183007894981396,
+          "p": 0.055
+        },
+        {
+          "AURCC": 0.47542698514170323,
+          "CI95_hi": 0.031699445083749556,
+          "CI95_lo": -0.014887562194368875,
+          "channel_idx": 4,
+          "channel_name": "logit_spread",
+          "delta_vs_entropy": 0.007722895227948619,
+          "p": 0.526
+        },
+        {
+          "AURCC": 0.47457413392324066,
+          "CI95_hi": 0.016474861626078696,
+          "CI95_lo": -0.0016815738524694201,
+          "channel_idx": 5,
+          "channel_name": "p_max",
+          "delta_vs_entropy": 0.007399241195722771,
+          "p": 0.11
+        },
+        {
+          "AURCC": 0.4591278679767635,
+          "CI95_hi": -0.0006757377117669328,
+          "CI95_lo": -0.01745387378949903,
+          "channel_idx": 6,
+          "channel_name": "n_effective",
+          "delta_vs_entropy": -0.008801171453238795,
+          "p": 0.036
+        },
+        {
+          "AURCC": 0.530227281365055,
+          "CI95_hi": 0.09863318009067745,
+          "CI95_lo": 0.02823844762537331,
+          "channel_idx": 7,
+          "channel_name": "logit_std",
+          "delta_vs_entropy": 0.06264080458505854,
+          "p": 0.0005
+        }
+      ],
+      "task": "arc_challenge"
+    },
+    {
+      "alpha_bonferroni": 0.0071428571428571435,
+      "n": 817,
+      "overall_acc": 0.463766074277822,
+      "rows": [
+        {
+          "AURCC": 0.5527658197610912,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "channel_idx": 0,
+          "channel_name": "entropy_norm",
+          "delta_vs_entropy": 0.0,
+          "p": 2.0
+        },
+        {
+          "AURCC": 0.5724996385768227,
+          "CI95_hi": 0.03262582150373672,
+          "CI95_lo": 0.008269111873701829,
+          "channel_idx": 1,
+          "channel_name": "margin",
+          "delta_vs_entropy": 0.019984275526544717,
+          "p": 0.002
+        },
+        {
+          "AURCC": 0.5365910643164923,
+          "CI95_hi": -0.0022252157200796097,
+          "CI95_lo": -0.02998072631807769,
+          "channel_idx": 2,
+          "channel_name": "top_k_mass",
+          "delta_vs_entropy": -0.016233611740635496,
+          "p": 0.023
+        },
+        {
+          "AURCC": 0.5266955850444244,
+          "CI95_hi": -0.008618134322801674,
+          "CI95_lo": -0.04316436478489494,
+          "channel_idx": 3,
+          "channel_name": "tail_mass",
+          "delta_vs_entropy": -0.02551220536339524,
+          "p": 0.004
+        },
+        {
+          "AURCC": 0.5566216532622299,
+          "CI95_hi": 0.02576283951408842,
+          "CI95_lo": -0.016204364391456116,
+          "channel_idx": 4,
+          "channel_name": "logit_spread",
+          "delta_vs_entropy": 0.0043416939366549955,
+          "p": 0.682
+        },
+        {
+          "AURCC": 0.5625205478950799,
+          "CI95_hi": 0.018414861811805405,
+          "CI95_lo": 0.001592925761856212,
+          "channel_idx": 5,
+          "channel_name": "p_max",
+          "delta_vs_entropy": 0.010026781707312749,
+          "p": 0.024
+        },
+        {
+          "AURCC": 0.5315732571086528,
+          "CI95_hi": -0.009999274311279449,
+          "CI95_lo": -0.03109604688631107,
+          "channel_idx": 6,
+          "channel_name": "n_effective",
+          "delta_vs_entropy": -0.020660300694318397,
+          "p": 0.0005
+        },
+        {
+          "AURCC": 0.5536966251985231,
+          "CI95_hi": 0.043469701371208425,
+          "CI95_lo": -0.03917038973527387,
+          "channel_idx": 7,
+          "channel_name": "logit_std",
+          "delta_vs_entropy": 0.0013376047242005644,
+          "p": 0.962
+        }
+      ],
+      "task": "truthfulqa_mc2"
+    }
+  ]
+}
