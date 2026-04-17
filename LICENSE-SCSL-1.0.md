@@ -308,11 +308,13 @@ refusal.
 4.2  Commercial Licenses may be obtained by contacting:
 
   ```
+  Lauri Elias Rainio
   Spektre Labs Oy
   Helsinki, Finland
   Y-tunnus / Business ID: (on request)
   E-mail: spektrelabs@proton.me
   GitHub: spektre-labs
+  ORCID: 0009-0006-0903-8541
   ```
 
   See `COMMERCIAL_LICENSE.md` for the **canonical tier matrix**
