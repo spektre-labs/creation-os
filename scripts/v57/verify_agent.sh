@@ -82,6 +82,7 @@ SLOTS=(
     "defense_in_depth_stack|M|v61|check-v61"
     "reasoning_fabric|M|v62|check-v62"
     "e2e_encrypted_fabric|M|v63|check-v63"
+    "agentic_intellect|M|v64|check-v64"
 )
 
 PASS_LIST=()

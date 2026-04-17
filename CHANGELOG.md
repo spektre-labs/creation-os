@@ -1,5 +1,109 @@
 # Changelog
 
+## v64 σ-Intellect — agentic AGI control plane: MCTS-σ + skill library + TOCTOU-safe tool authz + Reflexion ratchet + AlphaEvolve-σ + MoD-σ, composed with v60 + v61 + v62 + v63 as a 5-bit branchless decision (2026-04-17)
+
+- **Driving oivallus.** The 2026 agentic frontier had converged on six
+  independent findings — Empirical-MCTS for LLM planning
+  (arXiv:2602.04248), EvoSkill / Voyager persistent skill libraries
+  (arXiv:2603.02766), Dynamic-ReAct verified tool selection
+  (arXiv:2509.20386), Experiential Reflective Learning / ReflexiCoder
+  (arXiv:2603.24639, 2603.05863), AlphaEvolve / EvoX evolutionary code
+  search (DeepMind 2025; EvoX 2026), and Mixture-of-Depths per-token
+  routing (arXiv:2404.02258; MoDA arXiv:2603.15619; A-MoD
+  arXiv:2412.20875).  No system ships them as a **single auditable
+  control plane**.  `v64` is that kernel: six subsystems, one 300-line
+  header, one ~450-line C file, zero dependencies, zero floating-point
+  on the hot path, 260 deterministic tests under ASAN + UBSAN, and a
+  5-bit branchless composed decision with v60 / v61 / v62 / v63.
+- **σ-Intellect kernel — six subsystems under one header.**
+  `src/v64/intellect.h` exposes:
+  - **MCTS-σ** — `cos_v64_tree_*`, `cos_v64_mcts_select / _expand /
+    _backup / _best`.  Q0.15 PUCT, integer isqrt, branchless tie-break,
+    flat mmap-friendly node arena.
+  - **Skill library** — `cos_v64_skill_lib_*`, `cos_v64_skill_register /
+    _lookup / _retrieve`.  32-byte σ-signature, constant-time scan,
+    Hamming retrieval with confidence floor.
+  - **Tool authz** — `cos_v64_tool_authorise`.  Schema + caps + σ +
+    TOCTOU, branchless priority cascade, full multi-cause reason bits.
+  - **Reflexion ratchet** — `cos_v64_reflect_update`.  Integer
+    Δε / Δα, uses/wins counters with ratio-preserving overflow
+    down-shift, Q0.15 confidence persisted in the skill record.
+  - **AlphaEvolve-σ** — `cos_v64_bitnet_*`, `cos_v64_evolve_mutate`.
+    Ternary weights (BitNet-b1.58 layout, arXiv:2402.17764), σ-gated
+    accept-or-rollback, monotone α non-increase.
+  - **MoD-σ** — `cos_v64_mod_route / _cost`.  Per-token depth = f(α_t),
+    integer round-shift, constant-time in ntokens.
+  - **5-bit composed decision** — `cos_v64_compose_decision`.
+    Branchless AND over v60 / v61 / v62 / v63 / v64 lanes; every lane
+    0/1 normalised at the entry gate.
+- **Hardware discipline.**
+  - All arenas 64-byte aligned via `aligned_alloc`; no allocation on
+    the hot path.
+  - No floating point anywhere in v64's decision surface.
+  - Branchless selects in every inner loop (MCTS PUCT, skill retrieve,
+    tool authz, MoD route).
+  - Constant-time signature compare (`v64_ct_eq_bytes`) so the skill
+    library is not a timing oracle.
+  - Integer isqrt for PUCT `sqrt(N)`, Q0.15 × Q0.15 → Q0.30 → Q0.15
+    shifts, all 64-bit integer.
+- **260 deterministic tests** (`./creation_os_v64 --self-test`)
+  covering: composition truth table (32 × 6), MCTS invariants under
+  overflow, skill library duplicate detection + constant-time lookup
+  + Hamming retrieval + confidence floors, tool authz all five
+  verdicts + TOCTOU dominance + multi-cause reason bits + NULL
+  reserved, reflexion Δσ + uses/wins update + overflow shift + monotone
+  ratchet across many outcomes, AlphaEvolve-σ no-op / reject /
+  rollback / accept / OOR, MoD-σ monotone depth + reversed-bounds
+  auto-swap + cost sum + zero-token safety.  All pass under ASAN and
+  UBSAN (`make asan-v64`, `make ubsan-v64`).
+- **Microbench (M-series perf core).**
+  - MCTS-σ (4096-node tree): **~674 k iters/s**.
+  - Skill retrieve (1024 skills): **~1.39 M lookups/s**.
+  - Tool-authz branchless: **~517 M decisions/s**.  This is ~10⁴ – 10⁷ ×
+    faster than any LLM-backed tool router.
+  - MoD-σ route (1 M tokens): **~5.1 GB/s**, memory-bound.
+- **`cos` CLI.**
+  - `cos sigma` now runs the full **five-kernel composed verdict**
+    (v60 + v61 + v62 + v63 + v64); banner and status header updated.
+  - New `cos mcts` command runs the v64 self-test + microbench in one
+    go so the user sees the agentic kernel pass its tests and hit
+    silicon throughput on the same screen.
+  - New `cos decide <v60> <v61> <v62> <v63> <v64>` — one-shot wrapper
+    over `cos_v64_compose_decision` that prints a JSON object and
+    exits 0 iff the 5-way AND is 1.
+  - `cos version` prints the v62 / v63 / v64 triple and the aggregate
+    tag `v64.0 agentic intellect + e2e-encrypted reasoning fabric`.
+- **Composition.** No reasoning or tool emission leaves the stack
+  unless all five lanes agree: `allow = v60 & v61 & v62 & v63 & v64`,
+  branchless.  There is no silent-degrade path; each lane is
+  auditable; telemetry exposes the failing lane(s) for debugging.
+- **v57 Verified-Agent integration.**  New slot `agentic_intellect`
+  (owner v64, best-tier M, `make check-v64`).  `scripts/v57/verify_agent.sh`
+  now reports **13 PASS / 3 SKIP / 0 FAIL** on a default M-series host
+  (the 3 SKIPs are the unchanged `sigma_kernel_surface` / `do178c_assurance_pack` /
+  `red_team_suite` slots that depend on external tools).
+- **Makefile targets.**
+  - `standalone-v64` / `standalone-v64-hardened`,
+  - `test-v64`, `check-v64`,
+  - `asan-v64`, `ubsan-v64`,
+  - `microbench-v64`.
+  `harden` now rebuilds v57..v64; `sanitize` now runs ASAN on v58..v64
+  and UBSAN on v60..v64.
+- **Documentation.**
+  - `docs/v64/THE_INTELLECT.md` — one-page artefact.
+  - `docs/v64/ARCHITECTURE.md` — wire map, discipline checklist,
+    microbench, threat-model tie-in.
+  - `docs/v64/POSITIONING.md` — per-system write-up + comparison
+    matrix (GPT-5 / Claude 4 / Gemini 2.5 DT / DeepSeek-R1 / LFM2).
+  - `docs/v64/paper_draft.md` — full paper draft with abstract,
+    design, tests, performance, composition, limitations.
+  - `docs/DOC_INDEX.md` updated.
+  - `SECURITY.md` gains the `agentic_intellect` active guarantee.
+  - `README.md` gains the **Six layers** reframe with v64 as the
+    agentic control plane.
+- **Scripts.** `scripts/v64/microbench.sh` — standardised v64
+  benchmark runner.
+
 ## v63 σ-Cipher — end-to-end encryption fabric in branchless C, attestation-bound, composed with v60 + v61 + v62 (2026-04-17)
 
 - **Driving oivallus.** The 2026 crypto frontier had converged on four

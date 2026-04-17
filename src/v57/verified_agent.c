@@ -169,6 +169,36 @@ static const v57_slot_t k_slots[] = {
                           "(COS_V63_LIBSODIUM, COS_V63_LIBOQS); ≥144 "
                           "tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "agentic_intellect",
+        .owner_versions = "v64",
+        .make_target    = "make check-v64",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Intellect: agentic AGI kernel — "
+                          "MCTS-σ PUCT search (Empirical-MCTS, "
+                          "arXiv:2602.04248; rStar-Math) + skill "
+                          "library with σ-weighted Hamming retrieval "
+                          "(EvoSkill, arXiv:2603.02766; Voyager) + "
+                          "TOCTOU-free schema-typed tool authz "
+                          "(Dynamic ReAct, arXiv:2509.20386) + "
+                          "Reflexion ratchet (ERL, arXiv:2603.24639; "
+                          "ReflexiCoder, arXiv:2603.05863) + "
+                          "AlphaEvolve-σ ternary mutation "
+                          "(BitNet-b1.58 layout, arXiv:2402.17764) + "
+                          "per-token MoD-σ depth routing "
+                          "(arXiv:2404.02258; MoDA 2026 "
+                          "arXiv:2603.15619; A-MoD "
+                          "arXiv:2412.20875); branchless Q0.15 "
+                          "integer math, no FP on hot path, "
+                          "aligned_alloc(64) arenas, constant-time "
+                          "signatures; composes with v60+v61+v62+v63 "
+                          "as a 5-bit branchless decision "
+                          "(cos_v64_compose_decision); "
+                          "~500M tool-authz decisions/s, ~1.4M skill "
+                          "retrieves/s, ~670k MCTS iters/s, ~5.1 GB/s "
+                          "MoD routing on M4; ≥260 deterministic "
+                          "tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =

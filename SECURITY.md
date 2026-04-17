@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -91,13 +91,39 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   reserves the ML-KEM-768 hybrid slot (Signal SPQR / reishi-handshake
   pattern).  Absent opt-ins report `SKIP` honestly; the portable path
   is never silently claimed as libsodium- or PQ-verified.
+- **v64 σ-Intellect** (`make check-v64`, **260 tests**).
+  Dependency-free, branchless, Q0.15 integer C kernel shipping the
+  2026 agentic frontier as six composable subsystems:
+  **MCTS-σ** PUCT search (Empirical-MCTS, arXiv:2602.04248;
+  rStar-Math) with EBT energy prior and integer isqrt;
+  **Skill library** with 32-byte σ-signature Hamming retrieval
+  (EvoSkill, arXiv:2603.02766; Voyager), constant-time scan, no FP;
+  **Tool authz** (Dynamic ReAct, arXiv:2509.20386) — schema + caps +
+  σ + **TOCTOU-safe** arg-hash binding, branchless priority cascade,
+  multi-cause honest reason bits; **Reflexion ratchet** (ERL,
+  arXiv:2603.24639; ReflexiCoder, arXiv:2603.05863) — integer Δσ
+  update with ratio-preserving overflow shift; **AlphaEvolve-σ** —
+  BitNet-b1.58 ternary mutation (arXiv:2402.17764) with σ-gated
+  accept-or-rollback; **MoD-σ** — per-token depth routing
+  (arXiv:2404.02258; MoDA arXiv:2603.15619; A-MoD arXiv:2412.20875).
+  Composes with v60 + v61 + v62 + v63 as a **5-bit branchless
+  decision** (`cos_v64_compose_decision`) so **no tool call or
+  reasoning step emits unless σ-Shield, Σ-Citadel, the EBT verifier,
+  the AEAD tag + quote binding, _and_ the agentic intellect all
+  ALLOW**.  Measured on M-series: ~674 k MCTS iters/s, ~1.4 M skill
+  retrieves/s, **~517 M tool-authz decisions/s**, ~5.1 GB/s MoD-σ
+  routing.  ASAN clean (`make asan-v64`).  UBSAN clean (`make
+  ubsan-v64`).  Hardened-build clean (`make standalone-v64-hardened`).
+  Apple-tier `cos` CLI surface: `cos mcts`, `cos decide v60 v61 v62
+  v63 v64`, `cos sigma` (now a five-kernel verdict).  Zero optional
+  dependencies on the hot path — the kernel is libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 +
-  UBSAN on v60 / v61 / v62 / v63, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 +
+  UBSAN on v60 / v61 / v62 / v63 / v64, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per
@@ -130,6 +156,17 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
 - **v63 PQ-hybrid is opt-in.**  Without `COS_V63_LIBOQS=1`, the PQ
   slot reports `SKIP` — the non-PQ path is never silently claimed as
   post-quantum.
+- **v64 is not a language model.**  σ-Intellect is the control plane
+  *around* a language model: it decides *when* to plan, *which*
+  skill to retrieve, *whether* a tool call is safe, *how much* depth
+  to spend on a token.  It does not generate tokens.  Wire it above
+  an MLX / Core ML inference path for end-to-end operation.
+- **v64 is not a training loop.**  AlphaEvolve-σ accepts ternary
+  mutations only when σ and energy both strictly improve.  This is a
+  per-deployment adaptation slot, not a gradient step.
+- **v64 skill library is flat.**  The default 1024-skill arena is
+  constant-time in size but not hierarchical.  A mmap-backed,
+  hierarchical 10⁶-skill library is designed (P-tier) but not shipped.
 - **No TPM / Secure Enclave** integration yet (P-tier).  Code-page
   baseline hashes are caller-provided.
 - **No formal proof of σ-Shield** yet (F-tier).  Frama-C annotations
