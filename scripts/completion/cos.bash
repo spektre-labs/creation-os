@@ -23,6 +23,8 @@ _cos_completions() {
                gd godel gödel attest meta
                sm sim simulacrum world
                cx cortex reason neo
+               welcome start hello hi onboard
+               demo showcase tour
                license lic scsl decide
                version --version help -h --help"
 

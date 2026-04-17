@@ -12,11 +12,21 @@ set -l cos_subs status doctor health verify chace sigma think seal unseal \
     rv reversible landauer \
     gd godel gödel attest meta \
     sm sim simulacrum world \
+    cx cortex reason neo \
+    welcome start hello hi onboard demo showcase tour \
     license lic scsl decide version help
 
 complete -c cos -f
 
 # No subcommand yet → complete the top level set with rich descriptions.
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "welcome"   -d "first-run greeting — plain language, no jargon"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "start"     -d "alias of welcome"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "hello"     -d "alias of welcome"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "hi"        -d "alias of welcome"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "onboard"   -d "alias of welcome"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "demo"      -d "30-second live tour of all twenty kernels — real numbers, no mocks"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "showcase"  -d "alias of demo"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "tour"      -d "alias of demo"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "status"    -d "status board (default)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "doctor"    -d "full repo-health rollup (license + verify + hardening + receipts)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "health"    -d "alias of doctor"

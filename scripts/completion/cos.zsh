@@ -11,6 +11,14 @@
 _cos() {
     local -a subcmds
     subcmds=(
+        'welcome:first-run greeting — plain language, no jargon'
+        'start:alias of welcome'
+        'hello:alias of welcome'
+        'hi:alias of welcome'
+        'onboard:alias of welcome'
+        'demo:30-second live tour of all twenty kernels — real numbers, no mocks'
+        'showcase:alias of demo'
+        'tour:alias of demo'
         'status:status board (default)'
         'doctor:full repo-health rollup (license + verify + hardening + receipts)'
         'health:alias for doctor'
