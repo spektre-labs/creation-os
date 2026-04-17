@@ -22,6 +22,7 @@ _cos_completions() {
                experience sf surface mobile rv reversible landauer
                gd godel gödel attest meta
                sm sim simulacrum world
+               cx cortex reason neo
                license lic scsl decide
                version --version help -h --help"
 

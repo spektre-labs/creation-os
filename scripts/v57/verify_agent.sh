@@ -97,6 +97,7 @@ SLOTS=(
     "reversible_frontier|M|v77|check-v77"
     "godel_frontier|M|v78|check-v78"
     "simulacrum_frontier|M|v79|check-v79"
+    "cortex_frontier|M|v80|check-v80"
     "license_attestation|M|v75|license-check"
 )
 

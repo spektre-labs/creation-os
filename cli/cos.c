@@ -316,7 +316,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — nineteen kernels, one verdict");
+    section("Σ stack — twenty kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -336,12 +336,13 @@ static int cmd_sigma(void)
     int r17= run_kernel("v77 σ-Reversible",    "check-v77", "creation_os_v77");
     int r18= run_kernel("v78 σ-Gödel-Attestor","check-v78", "creation_os_v78");
     int r19= run_kernel("v79 σ-Simulacrum",    "check-v79", "creation_os_v79");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19;
+    int r20= run_kernel("v80 σ-Cortex",        "check-v80", "creation_os_v80");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19 | r20;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all nineteen kernels passed)"
+           total == 0 ? "ALLOW (all twenty kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1269,6 +1270,87 @@ static int cmd_sm(void)
 }
 
 /* --------------------------------------------------------------------
+ *  cmd_cx — σ-Cortex (v80) front door — hypervector-space neocortical
+ *           reasoning plane
+ *
+ *  Branchless, integer-only, libc-only kernel that collapses ten of
+ *  the most impactful 2023–2025 sequence-model, attention, routing
+ *  and test-time-compute results into one hypervector-space
+ *  neocortex, compiled directly to hardware:
+ *    - Selective SSM (Mamba)        (Gu & Dao 2023 arXiv:2312.00752;
+ *                                    Mamba-2 arXiv:2405.21060)
+ *    - Rotary Position Embedding    (Su 2021 arXiv:2104.09864)
+ *    - Sliding-window / ring attn.  (Beltagy 2020; Mistral 2023;
+ *                                    Liu arXiv:2310.01889)
+ *    - Paged KV cache               (Kwon 2023 vLLM arXiv:2309.06180)
+ *    - Speculative decoding verify  (Leviathan 2023 arXiv:2211.17192)
+ *    - Variational free energy      (Friston 2010 Nat. Rev. Neurosci.)
+ *    - Kolmogorov-Arnold Net edge   (Liu 2024 arXiv:2404.19756)
+ *    - Continuous Thought Machine   (Sakana AI 2025)
+ *    - MoE top-k router             (Shazeer 2017 arXiv:1701.06538;
+ *                                    DeepSeek-MoE 2024 arXiv:2401.06066)
+ *    - TTC 16-op bytecode composing 1..9
+ *  Extends v79's 19-bit composed decision with a lateral 20-th AND
+ *  via cos_v80_compose_decision(v79_ok, v80_ok).
+ * -------------------------------------------------------------------- */
+
+static int cmd_cx(void)
+{
+    print_header();
+    section("σ-Cortex (v80) — hypervector-space neocortical reasoning plane · 10 integer-only primitives · 20-bit composed decision");
+    if (!file_exists("creation_os_v80")) {
+        printf("  %sbuilding creation_os_v80 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v80");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v80'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel", "%s", "v80 σ-Cortex");
+    kv("subsys", "%s", "Mamba SSM · RoPE · sliding-window attention · paged KV · speculative verify · free energy · KAN edge · CTM Kuramoto · MoE top-k · TTC bytecode");
+    int rc = run_cmd("./creation_os_v80 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v80 σ-Cortex self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Cortex self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v80 --bench | sed 's/^/    /'");
+    printf("\n  %scortex plane: the agent does not merely *simulate* — "
+           "it *reasons* in the same 256-bit HV substrate.  A Mamba-style "
+           "selective state-space core (Gu & Dao 2023; Mamba-2 Dao & Gu "
+           "2024) runs the hidden state in linear time with a diagonal "
+           "Q16.16 recurrence; rotary position embeddings (Su 2021) "
+           "rotate query/key pairs through an integer sin/cos LUT; a "
+           "sliding-window attention ring (Beltagy 2020 Longformer; "
+           "Mistral 2023; Liu 2023 Ring Attention) collapses to a "
+           "branchless popcount-argmin over the current 64-token window; "
+           "a paged KV cache (Kwon 2023 vLLM / PagedAttention) commits "
+           "hashes into tagged pages with a CAFEBABE sentinel guarded "
+           "every step; speculative-decode verify (Leviathan 2023) "
+           "accepts the longest agreeing prefix of draft vs target via "
+           "a monotone integer bitmask; a variational free-energy bound "
+           "(Friston 2010) tracks surprise + mean-absolute-deviation "
+           "over a ring history; a Kolmogorov-Arnold Network edge (Liu "
+           "2024; Kolmogorov 1957) runs a 1-D integer cumulative "
+           "spline as its learnable activation; a Continuous Thought "
+           "Machine (Sakana 2025) ticks an 8-oscillator Kuramoto bank "
+           "through a 32-entry sin LUT; a Mixture-of-Experts top-k "
+           "router (Shazeer 2017; DeepSeek-MoE 2024) selects exactly k "
+           "experts branchlessly and asserts popcount(routed) == k; and "
+           "the TTC 16-op bytecode weaves all nine into one reasoning "
+           "program — test-time compute scaling in the o1 / DeepSeek-R1 "
+           "2024–2025 sense.  Extends v79's 19-bit composed decision "
+           "with a lateral 20-th AND via cos_v80_compose_decision("
+           "v79_ok, v80_ok).  1 = 1.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
  *  cmd_license — License Attestation Kernel front door (v75 σ-License)
  * --------------------------------------------------------------------
  *  Subcommands:
@@ -1501,8 +1583,8 @@ static int cmd_doctor(void)
              "SCSL-1.0 pinned · SPDX headers · NOTICE");
     doc_line("license attestation",     rc_scsl == 0    ? DOC_PASS : DOC_WARN,
              "License-Bound Receipt (SCSL §11) verifies");
-    doc_line("verify-agent (v57 → v79)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
-             "19 kernels + ancillary slots");
+    doc_line("verify-agent (v57 → v80)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
+             "20 kernels + ancillary slots");
     doc_line("CHACE-class gate",        rc_chace == 0   ? DOC_PASS : DOC_WARN,
              "12-layer capability-hardening rollup");
     doc_line("hardening-check",         rc_harden == 0  ? DOC_PASS : DOC_WARN,
@@ -1585,9 +1667,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "gd",     C_RESET);
     printf("  %s%-12s%s  σ-Simulacrum: HV-space simulation substrate — Verlet/CA/stabilizer/HD-reservoir/Koopman/assembly/graph/energy/receipt/SSL bytecode (v79; aliases: sim, simulacrum, world)\n",
            C_BOLD, "sm",     C_RESET);
+    printf("  %s%-12s%s  σ-Cortex: HV-space neocortical reasoning plane — Mamba SSM/RoPE/sliding-attn/paged-KV/spec-verify/free-energy/KAN/CTM/MoE top-k/TTC bytecode (v80; aliases: cortex, reason, neo)\n",
+           C_BOLD, "cx",     C_RESET);
     printf("  %s%-12s%s  license attestation: SCSL-1.0 dual-license · License-Bound Receipt · anti-tamper guard (v75; subs: status / self-test / verify / bundle / receipt / guard / print)\n",
            C_BOLD, "license", C_RESET);
-    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 + v78 + v79 ride laterally via cos_v77_compose_decision, cos_v78_compose_decision, cos_v79_compose_decision)\n",
+    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 + v78 + v79 + v80 ride laterally via cos_v77/v78/v79/v80_compose_decision)\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -1605,7 +1689,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1657,7 +1741,30 @@ static int cmd_version(void)
     int have79 = (file_exists("creation_os_v79") &&
                   run_first_line("./creation_os_v79 --version",
                                  v79, sizeof v79) == 0 && v79[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79) {
+    int have80 = (file_exists("creation_os_v80") &&
+                  run_first_line("./creation_os_v80 --version",
+                                 v80, sizeof v80) == 0 && v80[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80) {
+        printf("cos v80.0 cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+        printf("  reversible    : %s\n", v77);
+        printf("  gödel-attest  : %s\n", v78);
+        printf("  simulacrum    : %s\n", v79);
+        printf("  cortex        : %s\n", v80);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79) {
         printf("cos v79.0 simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -1891,6 +1998,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], "sim")        == 0 ||
         strcmp(argv[1], "simulacrum") == 0 ||
         strcmp(argv[1], "world")      == 0) return cmd_sm();
+    if (strcmp(argv[1], "cx")         == 0 ||
+        strcmp(argv[1], "cortex")     == 0 ||
+        strcmp(argv[1], "reason")     == 0 ||
+        strcmp(argv[1], "neo")        == 0) return cmd_cx();
     if (strcmp(argv[1], "license") == 0 ||
         strcmp(argv[1], "lic")     == 0 ||
         strcmp(argv[1], "scsl")    == 0) return cmd_license(argc - 2, argv + 2);
