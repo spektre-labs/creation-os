@@ -103,6 +103,11 @@ SLOTS=(
     "agentic_loop|M|v83|check-v83"
     "zkproof_layerwise|M|v84|check-v84"
     "formal_runtime|M|v85|check-v85"
+    "jepa_world_model|M|v86|check-v86"
+    "sae_mech_interp|M|v87|check-v87"
+    "fhe_homomorphic|M|v88|check-v88"
+    "spiking_loihi3|M|v89|check-v89"
+    "hierarchical_aif|M|v90|check-v90"
     "license_attestation|M|v75|license-check"
 )
 
