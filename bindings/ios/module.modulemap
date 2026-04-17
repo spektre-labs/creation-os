@@ -1,0 +1,9 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+//
+// Swift module map for v76 σ-Surface.  Point Swift Package Manager at
+// this directory (systemTarget) or drop the resulting static library
+// + headers into an Xcode target.
+module SpektreSurface {
+    header "SpektreSurface.h"
+    export *
+}

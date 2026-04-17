@@ -315,7 +315,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — fifteen kernels, one verdict");
+    section("Σ stack — sixteen kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -331,12 +331,13 @@ static int cmd_sigma(void)
     int r13= run_kernel("v72 σ-Chain",         "check-v72", "creation_os_v72");
     int r14= run_kernel("v73 σ-Omnimodal",     "check-v73", "creation_os_v73");
     int r15= run_kernel("v74 σ-Experience",    "check-v74", "creation_os_v74");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15;
+    int r16= run_kernel("v76 σ-Surface",       "check-v76", "creation_os_v76");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all fifteen kernels passed)"
+           total == 0 ? "ALLOW (all sixteen kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -998,6 +999,81 @@ static int cmd_ux(void)
 }
 
 /* --------------------------------------------------------------------
+ *  cos sf / cos surface / cos mobile  →  run v76 σ-Surface self-test
+ *                                         and microbench.
+ *
+ *  The Surface kernel: the single branchless integer substrate that
+ *  carries the composed 16-kernel verdict all the way to a human on
+ *  native iOS (UITouch / UIKit / SwiftUI / VoiceOver), native
+ *  Android (MotionEvent / Jetpack Compose / TalkBack), every
+ *  messenger worth bridging (WhatsApp, Telegram, Signal, iMessage,
+ *  RCS, Matrix, XMPP, Discord, Slack, Line), and every piece of
+ *  world-important legacy software (Word, Excel, Outlook, Teams,
+ *  Photoshop, Illustrator, Lightroom, AutoCAD, SolidWorks, Revit,
+ *  SAP, Oracle ERP, Salesforce, HubSpot, Stripe, Figma, Notion,
+ *  Zoom, Xcode, Android Studio, VSCode, IntelliJ, Git, GitHub,
+ *  PostgreSQL, MongoDB, Redis, AWS, GCP, Azure, Chrome, Safari,
+ *  …) — all without leaving the branchless integer + HV + XOR +
+ *  popcount discipline.
+ * -------------------------------------------------------------------- */
+
+static int cmd_sf(void)
+{
+    print_header();
+    section("σ-Surface (v76) — iOS + Android + WhatsApp/Telegram/Signal/iMessage/RCS/Matrix/XMPP/Discord/Slack/Line + Word/Excel/Outlook/Photoshop/AutoCAD/SAP/Salesforce/Figma/Xcode/Postgres/Stripe/AWS/... + Signal-ratchet + WCAG 2.2 + CRDT + SBL");
+    if (!file_exists("creation_os_v76")) {
+        printf("  %sbuilding creation_os_v76 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v76");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v76'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel",  "%s", "v76 σ-Surface");
+    kv("subsys",  "%s", "touch · gesture · haptic · messenger · e2e-ratchet · a11y · crdt · legacy-app · file-format · SBL");
+    int rc = run_cmd("./creation_os_v76 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v76 σ-Surface self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Surface self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v76 --bench | sed 's/^/    /'");
+    printf("\n  %ssurface plane: iOS (UITouch → 256-bit HV via Spektre.decode) "
+           "+ Android (MotionEvent → HV via SpektreSurface.decode) + 10-"
+           "protocol messenger bridge (WhatsApp, Telegram, Signal, iMessage, "
+           "RCS, Matrix, XMPP, Discord, Slack, Line) with a single "
+           "protocol-id-stamped 256-bit envelope, Signal-protocol X3DH-mix "
+           "+ Double-Ratchet step that rides the v75 FIPS-180-4 SHA-256 "
+           "(no OpenSSL), WCAG 2.2 + Apple HIG + Material 3 accessibility "
+           "bitmask in one branchless AND, LWW-register + 256-bit OR-set "
+           "CRDT merge (commutative, associative, deterministic, branchless), "
+           "a 64-slot legacy-software capability-template HV registry "
+           "(Word / Excel / PowerPoint / Outlook / Teams / Photoshop / "
+           "Illustrator / Lightroom / AutoCAD / SolidWorks / Revit / SAP / "
+           "Oracle ERP / Salesforce / HubSpot / QuickBooks / Stripe / Figma / "
+           "Sketch / Notion / Slack / Zoom / Xcode / Android Studio / VSCode / "
+           "IntelliJ / Git / GitHub / GitLab / PostgreSQL / MySQL / MongoDB / "
+           "Redis / SQLite / Elasticsearch / Kafka / Snowflake / AWS / GCP / "
+           "Azure / Cloudflare / Chrome / Safari / Firefox / Edge) that "
+           "routes any task HV to the nearest legacy system by one popcount-"
+           "Hamming argmin + margin gate, a 64-format file-type registry "
+           "(DOCX / XLSX / PPTX / PDF / DWG / DXF / STEP / STL / PSD / AI / "
+           "SVG / PNG / JPEG / MP4 / WAV / JSON / SQL / CSV / MD / EPUB / "
+           "ZIP / APK / IPA / ELF / MachO / WASM / …) that classifies any "
+           "blob without libmagic, and SBL — the Surface Bytecode Language, "
+           "a 10-opcode integer ISA whose GATE writes v76_ok only when "
+           "every surface-unit check is simultaneously green.  Swift + "
+           "Kotlin façades ship in bindings/ios and bindings/android.  "
+           "Composes with v60..v74 as a 16-bit branchless AND.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
  *  cmd_license — License Attestation Kernel front door (v75 σ-License)
  * --------------------------------------------------------------------
  *  Subcommands:
@@ -1153,27 +1229,28 @@ static int cmd_om(void)
 
 static int cmd_decide(int argc, char **argv)
 {
-    if (argc != 15) {
+    if (argc != 16) {
         fprintf(stderr,
-                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69> <v70> <v71> <v72> <v73> <v74>\n"
+                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69> <v70> <v71> <v72> <v73> <v74> <v76>\n"
                 "       each argument is 0 or 1.\n");
         return 64;
     }
-    if (!file_exists("creation_os_v74")) {
-        int b = run_cmd("make -s standalone-v74 >/dev/null 2>&1");
+    if (!file_exists("creation_os_v76")) {
+        int b = run_cmd("make -s standalone-v76 >/dev/null 2>&1");
         if (b != 0) {
-            fprintf(stderr, "cos: v74 not built; run 'make standalone-v74'.\n");
+            fprintf(stderr, "cos: v76 not built; run 'make standalone-v76'.\n");
             return b;
         }
     }
-    char cmd[512];
+    char cmd[640];
     snprintf(cmd, sizeof cmd,
-             "./creation_os_v74 --decision %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
+             "./creation_os_v76 --decision %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d",
              atoi(argv[0]),  atoi(argv[1]),  atoi(argv[2]),
              atoi(argv[3]),  atoi(argv[4]),  atoi(argv[5]),
              atoi(argv[6]),  atoi(argv[7]),  atoi(argv[8]),
              atoi(argv[9]),  atoi(argv[10]), atoi(argv[11]),
-             atoi(argv[12]), atoi(argv[13]), atoi(argv[14]));
+             atoi(argv[12]), atoi(argv[13]), atoi(argv[14]),
+             atoi(argv[15]));
     return run_cmd(cmd);
 }
 
@@ -1188,8 +1265,8 @@ static int cmd_help(const char *prog)
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
     printf("  %s%-12s%s  the DARPA-CHACE 12-layer gate\n", C_BOLD, "chace",   C_RESET);
-    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale %s Wormhole %s Chain %s Omnimodal %s Experience self-tests\n",
-           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
+    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale %s Wormhole %s Chain %s Omnimodal %s Experience %s Surface self-tests\n",
+           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
@@ -1218,9 +1295,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "om",     C_RESET);
     printf("  %s%-12s%s  experience: Fitts-V2P + adaptive layout + designer-basis + SquireIR + universal-expert mesh + skill compose + Mobile-GS + DLSS/FSR/XeSS + 1-second world + XPL (v74)\n",
            C_BOLD, "ux",     C_RESET);
+    printf("  %s%-12s%s  surface: iOS + Android + WhatsApp/Telegram/Signal/iMessage/RCS/Matrix/XMPP/Discord/Slack/Line + Signal-ratchet + WCAG 2.2 + CRDT + Word/Excel/Photoshop/AutoCAD/SAP/Salesforce/Figma/Xcode/Postgres/Stripe/AWS/... + SBL (v76)\n",
+           C_BOLD, "sf",     C_RESET);
     printf("  %s%-12s%s  license attestation: SCSL-1.0 dual-license · License-Bound Receipt · anti-tamper guard (v75; subs: status / self-test / verify / bundle / receipt / guard / print)\n",
            C_BOLD, "license", C_RESET);
-    printf("  %s%-12s%s  15-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 → JSON\n",
+    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -1238,7 +1317,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1278,7 +1357,26 @@ static int cmd_version(void)
     int have74 = (file_exists("creation_os_v74") &&
                   run_first_line("./creation_os_v74 --version",
                                  v74, sizeof v74) == 0 && v74[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74) {
+    int have76 = (file_exists("creation_os_v76") &&
+                  run_first_line("./creation_os_v76 --version",
+                                 v76, sizeof v76) == 0 && v76[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76) {
+        printf("cos v76.0 surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74) {
         printf("cos v74.0 experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -1425,6 +1523,9 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "ux")      == 0 ||
         strcmp(argv[1], "xp")      == 0 ||
         strcmp(argv[1], "experience") == 0) return cmd_ux();
+    if (strcmp(argv[1], "sf")      == 0 ||
+        strcmp(argv[1], "surface") == 0 ||
+        strcmp(argv[1], "mobile")  == 0) return cmd_sf();
     if (strcmp(argv[1], "license") == 0 ||
         strcmp(argv[1], "lic")     == 0 ||
         strcmp(argv[1], "scsl")    == 0) return cmd_license(argc - 2, argv + 2);
