@@ -1,0 +1,6 @@
+[submodule "third_party/bitnet"]
+	path = third_party/bitnet
+	url = https://github.com/microsoft/BitNet.git
+[submodule "third_party/lm-eval"]
+	path = third_party/lm-eval
+	url = https://github.com/EleutherAI/lm-evaluation-harness.git

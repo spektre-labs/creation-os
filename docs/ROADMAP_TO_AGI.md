@@ -330,6 +330,44 @@
 
 ## 5. Reasoning / models — the actual AGI core
 
+### 5.0 Real LLM forward pass in-process — **M (new in v101)**
+
+- **What.** Prior to v101 every Creation OS kernel ran on surrogates:
+  synthetic logits, hypervectors, branchless integer decision tables, or
+  n-gram corpora. No kernel produced probabilities over a real vocabulary
+  from real weights.
+- **What's in the repo.** `src/v101/` wires microsoft/BitNet
+  (bitnet.cpp — a llama.cpp fork with i2_s / TL1 / TL2 kernels for the
+  BitNet b1.58 ternary format) as a shared-lib backend and exposes three
+  entry points through `creation_os_v101`: σ-math self-test, greedy
+  generate with σ-gated early-stop, and teacher-forced loglikelihood with
+  per-token σ aggregation. Measured on this host: ~44 tok/s eval on
+  Apple M4 Metal, deterministic JSON output, 19/19 σ-math assertions
+  green in both stub and real builds. See
+  [docs/v101/THE_BITNET_BRIDGE.md](v101/THE_BITNET_BRIDGE.md).
+- **Still missing (towards §5.2 / §5.6 below).** Persistent-process
+  inference (so `creation_os_v101 --ll` does not reload weights per
+  call), long-horizon KV-cache reuse across σ-gated agentic loops, and
+  streaming-token emission from the same binary. These are bounded
+  engineering follow-ups, not research gaps.
+
+### 5.0b End-to-end benchmark exposure of σ-stack — **P → M-partial (new in v102)**
+
+- **What.** The v29 / v34 / v40 / v78 σ-channels were all self-tested
+  but never confronted with an external LLM eval suite. Any claim that
+  σ correlates with correctness was therefore unfalsifiable.
+- **What's in the repo.** `benchmarks/v102/` registers a `creation_os`
+  backend for EleutherAI lm-evaluation-harness and runs
+  `arc_easy / truthfulqa_mc2 / gsm8k` in two configurations (baseline
+  BitNet vs σ-gated BitNet). The infrastructure itself is **M**; the
+  RESULTS.md table for this host is **P** until the two-hour benchmark
+  run completes. All four result end-states — better, equal, worse,
+  did-not-run — are enumerated explicitly in
+  [docs/v102/RESULTS.md](v102/RESULTS.md) so the report cannot be
+  silently cherry-picked.
+- **Missing (for full M).** The actual run.  After `make bench-v102`
+  fills the table, the §5.0b tier promotes to **M**.
+
 ### 5.1 Continual learning with sleep consolidation — **M-partial, P-deep**
 
 - v68 σ-Mnemos has ACT-R decay + surprise gate + sleep-consolidation
@@ -721,6 +759,11 @@
 
 If only ten PRs were allowed before the next release, rank:
 
+0. **Run v102 σ-Eval-Harness end-to-end on this host** (~2 h; fills
+   `docs/v102/RESULTS.md` with real numbers; falsifies or confirms that
+   σ-channels correlate with correctness on ArcEasy / TruthfulQA-MC2 /
+   GSM8K; the single highest-leverage move in the repo because every
+   σ-claim in v29..v101 flows through it).
 1. **PQC: ML-KEM-768 + ML-DSA-65 in v63 σ-Cipher** (harvest-now-decrypt-
    later is a dated risk).
 2. **Real seL4 compartmentalisation** of v60..v80 as CAmkES components

@@ -82,6 +82,14 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 | v51 lab: one-line installer `scripts/v51/install.sh` | `bash scripts/v51/install.sh` | **M** (dry-run by design) |
 | v51 lab: signed public `curl \| sh` installer + `creation-os` wrapper CLI | N/A | **P** (requires signed release + wrapper binary) |
 | v51 lab: "AGI-complete" running product (transformer + loop + agent + UI end-to-end) | N/A | **P** (no in-process transformer; engine is external) |
+| v101 σ-BitNet-Bridge: eight σ-channels from one row of float logits, bit-for-bit deterministic, clamped to [0, 1] | `make check-v101` (`v101 σ-BitNet-Bridge: 19 PASS / 0 FAIL`; both stub + real builds produce identical σ values on the same synthetic input) | **M** |
+| v101 σ-BitNet-Bridge: real microsoft/BitNet b1.58 2B-4T forward pass via bitnet.cpp (llama.cpp fork with i2_s / TL1 / TL2 kernels), Apple Silicon Metal backend | `make standalone-v101-real && make bench-v101-smoke` (requires 1.1 GB GGUF at `models/BitNet-b1.58-2B-4T/`; stub mode stays green otherwise) | **M** (first Creation OS kernel to run real LLM inference in-tree) |
+| v101 σ-BitNet-Bridge: greedy generation with σ-gated early-stop + `abstained` bit + eight-channel σ-profile per generation | `./creation_os_v101 --gen --gguf ... --sigma-threshold F` returns `{"text":"...","sigma_profile":[8 floats],"abstained":B}` | **M** |
+| v101 σ-BitNet-Bridge: loglikelihood scoring of `cont` given `ctx` with teacher-forced per-token σ aggregation | `./creation_os_v101 --ll --gguf ... --ctx ... --cont ...` returns `{"loglikelihood":F,"is_greedy":B,"sigma_mean":F}` | **M** |
+| v102 σ-Eval-Harness: registered `creation_os` backend for EleutherAI lm-evaluation-harness; SKIP-aware `check-v102` keeps merge-gate green on any host | `make check-v102` (SKIPs cleanly if lm-eval / bitnet.cpp / GGUF absent; runs `arc_easy --limit 5` smoke otherwise) | **M** |
+| v102 σ-Eval-Harness: BitNet-b1.58-2B-4T smoke on this host: `"The capital of France is"` → `" Paris. ..."` at ~44 tok/s; `ll(" Paris") = −0.056`, `ll(" Helsinki") = −15.05` | Direct run of `./creation_os_v101 --gen` / `--ll` on the bundled weights (see `docs/v102/RESULTS.md`) | **M** |
+| v102 σ-Eval-Harness: full ArcEasy / TruthfulQA-MC2 / GSM8K tables (baseline + σ-gated) filled in on this host | `bash benchmarks/v102/run_eval.sh` → `docs/v102/RESULTS.md` | **P** (infrastructure shipped; run pending — see RESULTS.md current state) |
+| v102 σ-Eval-Harness: σ-gated accuracy strictly greater than vanilla BitNet baseline on any task | N/A (requires filled RESULTS.md delta > 0) | **P** (falsifiable by the run itself; all four end-states are allowed — see RESULTS.md interpretation guide) |
 
 ## Interpretive tier (literature positioning; not measured in-repo)
 
@@ -120,8 +128,8 @@ This file exists to prevent **accidental tier mixing** when discussing Creation 
 
 | Item | Why it is not claimed here | Tier |
 |------|----------------------------|------|
-| Full BitNet b1.58 2B4T numerics from Microsoft GGUF in-process | Not shipped in this portable gate; requires external engine / upstream build | **N** |
-| TruthfulQA / MMLU rows from `lm-eval-harness` | `benchmarks/truthfulqa_sigma.sh` is a **SKIP stub** until weights + harness are present | **N** |
+| ~~Full BitNet b1.58 2B4T numerics from Microsoft GGUF in-process~~ — **resolved by v101** (see `docs/v101/THE_BITNET_BRIDGE.md`) | `make standalone-v101-real && make bench-v101-smoke` | **M** (was N pre-v101) |
+| ~~TruthfulQA / MMLU rows from `lm-eval-harness`~~ — **infrastructure resolved by v102** (see `docs/v102/THE_EVAL_HARNESS.md`); numbers still pending the actual run | `bash benchmarks/v102/run_eval.sh` → `docs/v102/RESULTS.md` | **P** (was N pre-v102; becomes M once `RESULTS.md` table is filled) |
 | TruthfulQA / FreshQA / SelfAware AUROC–ECE tables “for σ_total vs σ_epistemic” | `benchmarks/v34/run_abstention_benchmarks.sh` is a **smoke stub** until datasets + weights + harness are archived in-repo | **N** |
 | Measured tokens/sec / acceptance curves for σ-guided vs fixed-K speculative decode | `benchmarks/v35/spec_bench.sh` is **synthetic** until BitNet+Qwen (or API) harness + weights exist | **N** |
 | Claude Desktop TruthfulQA/GSM8K A/B: σ-MCP on vs off | `benchmarks/v36/mcp_bench_stub.sh` is a **local JSON-RPC smoke** until a client harness + dataset bundle is archived | **N** |
