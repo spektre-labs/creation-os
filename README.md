@@ -18,7 +18,7 @@
   </thead>
   <tbody>
     <tr>
-      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>), <strong>σ / agent v33 → v59 + composed-decision stack v60 → v76</strong> (router, decompose, spec decode, MCP, FPGA/ASIC RTL, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification / red-team / cert / rollup, integration scaffold, σ-governed harness, σ-proconductor, σ₃-speculative, σ-Constitutional, <strong>Verified Agent convergence + <code>make verify-agent</code></strong>, σ-Cache, σ-Budget, σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience, σ-Surface, σ-Reversible — <strong>sixteen-bit branchless AND gate extended laterally by a seventeen-th AND (Landauer / Bennett plane)</strong>, tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>; <strong>native iOS + Android bindings</strong> in <a href="bindings/"><code>bindings/</code></a>).</td>
+      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>), <strong>σ / agent v33 → v59 + composed-decision stack v60 → v76</strong> (router, decompose, spec decode, MCP, FPGA/ASIC RTL, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification / red-team / cert / rollup, integration scaffold, σ-governed harness, σ-proconductor, σ₃-speculative, σ-Constitutional, <strong>Verified Agent convergence + <code>make verify-agent</code></strong>, σ-Cache, σ-Budget, σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience, σ-Surface, σ-Reversible, σ-Gödel-Attestor — <strong>sixteen-bit branchless AND gate extended laterally by a seventeen-th AND (Landauer / Bennett plane) and an eighteen-th AND (meta-cognitive plane: IIT-φ + FEP + MDL + Gödel-num + Global-Workspace + halting-witness + Löbian self-trust + bisim + Chaitin-Ω + MCB bytecode)</strong>, tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>; <strong>native iOS + Android bindings</strong> in <a href="bindings/"><code>bindings/</code></a>).</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Canonical tree: <a href="https://github.com/spektre-labs/creation-os"><code>spektre-labs/creation-os</code></a>. Teaching spine: <a href="creation_os_v2.c"><code>creation_os_v2.c</code></a> + <a href="core/"><code>core/*.h</code></a>. Review map: <a href="docs/WHICH_FILE_TO_READ.md"><code>docs/WHICH_FILE_TO_READ.md</code></a>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Before a PR / publish: <code>make merge-gate</code>. When touching a flagship slice: matching <code>make check-vN</code> + <code>./creation_os_vN --self-test</code>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Keep evidence classes honest (lab demo vs harness vs product). Read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> + tier tags in <a href="docs/WHAT_IS_REAL.md">WHAT_IS_REAL</a> before screenshotting a headline.</td>
@@ -42,13 +42,13 @@
   <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
 </p>
 
-<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#composed-decision-stack--v60--v77-seventeen-branchless-integer-kernels">Composed stack (v60→v77)</a> · <a href="bindings/">iOS &amp; Android bindings</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
+<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#composed-decision-stack--v60--v78-eighteen-branchless-integer-kernels">Composed stack (v60→v78)</a> · <a href="bindings/">iOS &amp; Android bindings</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
 > **MCP product hook:** `creation_os_mcp` is an **MCP server** that exposes σ measurement + abstention helpers (`measure_sigma`, `should_abstain`, `sigma_report`) to **any MCP-capable client** — see `docs/MCP_SIGMA.md` and `config/claude_desktop_config.json` (copy the `mcpServers` block into your client; repo-local `.cursor/` is gitignored).
 
 > **If you read nothing else.** Creation OS is a **portable C11 reference kernel** for **Binary Spatter Codes (BSC)** and a **coherence signal (σ)** you can **build, run, and falsify** on a laptop. The CI bar is one command: **`make merge-gate`**. The σ / agent / silicon / hyperscale / wormhole / chain / omnimodal / experience / surface layers (**v31 → v76**) sit *outside* the merge gate as opt-in labs with honest tier tags ([`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)). The composed-decision stack (**v60 → v76**) is **sixteen branchless integer kernels** behind one Apple-tier CLI (`cos`); together they form a **16-bit branchless AND** (`cos_v76_compose_decision`) — *no inference, tool call, sealed message, hyperscale step, hyperdimensional teleport, chain-bound emission, generated artefact (code, image, audio, video, world-frame, workflow output), delivered user experience (UI layout, accessibility stream, render frame, upscaled frame, 1-second interactive world), or surface interaction (touch, gesture, haptic, messenger envelope, E2E ratchet step, legacy-app bridge, file-format classification) ever crosses to the human unless **all sixteen** ALLOW*. Native **iOS (Swift)** and **Android (Kotlin/JNI)** façades ship in [`bindings/`](bindings/).
 >
-> **Fastest truth path (60 seconds):** `git clone` → `make merge-gate` → spot-check `./creation_os_v26 --self-test` (expect **184/184 PASS**). Then optionally `make check-v76 && ./creation_os_v76 --bench`, `make check-v77 && ./creation_os_v77 --bench` (expect **761 264 / 761 264 PASS** on the Landauer / Bennett plane), and `make verify-agent` for the full seventeen-kernel rollup.
+> **Fastest truth path (60 seconds):** `git clone` → `make merge-gate` → spot-check `./creation_os_v26 --self-test` (expect **184/184 PASS**). Then optionally `make check-v76 && ./creation_os_v76 --bench`, `make check-v77 && ./creation_os_v77 --bench` (expect **761 264 / 761 264 PASS** on the Landauer / Bennett plane), `make check-v78 && ./creation_os_v78 --bench` (expect **207 582 / 207 582 PASS** on the meta-cognitive plane), and `make verify-agent` for the full eighteen-kernel rollup.
 >
 > **Discipline before headlines.** Read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) and [**WHAT_IS_REAL**](docs/WHAT_IS_REAL.md) **before** you screenshot a number from this repo. Tier letters: **M** runtime-checked · **F** formally proven · **I** interpreted · **P** planned. Self-test counts that ship today: **v26 184/184 · v27 70/70 · v28 29/29 · v29 22/22 · v60 81/81 · v61 61/61 · v62 68/68 · v63 144/144 · v64 260/260 · v65 534/534 · v66 1 705/1 705 · v70 148 034/148 034 · v71 68 404/68 404 · v72 117 108/117 108 · v73 245 818/245 818 · v74 600 128/600 128 · v76 86 583/86 583**. Full per-version table: [σ labs (v31 → v76)](#sigma-labs-v31-v40). This is **not** a chat product, **not** a leaderboard dump, **not** magic — it is a kernel.
 
@@ -119,7 +119,7 @@ That prints **uname**, **NEON compile flag presence**, **SME sysctl probe**, **b
 | **Native M4 (hardware-first lab)** | `make check-native-m4` · `make bench-native-m4` · `./creation_os_native_m4 --layers-report` · NEON + GCD + optional Metal/SME in `native_m4/` |
 | **v31 “purge lab” (optional upstream wrapper)** | [v31_README.md](docs/v31_README.md) · `make check-v31` · [WHAT_IS_REAL_v31.md](docs/WHAT_IS_REAL_v31.md) |
 | **σ labs v33→v59 (router, MCP, RTL, ASIC, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification stack, red team, certification pack, benchmark rollup, integration scaffold, KV-cache eviction, adaptive-compute budget)** | [σ lab table](#sigma-labs-v31-v40) · [SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [MCP_SIGMA.md](docs/MCP_SIGMA.md) |
-| **Composed-decision stack v60 → v77 (σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience, σ-Surface — sixteen branchless integer kernels · 16-bit AND gate + σ-Reversible lateral 17-th AND · Landauer / Bennett plane)** | [Composed-decision stack table](#composed-decision-stack--v60--v77-seventeen-branchless-integer-kernels) · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
+| **Composed-decision stack v60 → v78 (σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience, σ-Surface — sixteen branchless integer kernels · 16-bit AND gate + σ-Reversible lateral 17-th AND · Landauer / Bennett plane + σ-Gödel-Attestor lateral 18-th AND · meta-cognitive plane)** | [Composed-decision stack table](#composed-decision-stack--v60--v78-eighteen-branchless-integer-kernels) · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
 | **Mobile + messenger + legacy software (iOS Swift · Android Kotlin · 10 messengers · 64 legacy apps · 64 file formats)** | [`bindings/README.md`](bindings/README.md) · [`bindings/ios/`](bindings/ios/) · [`bindings/android/`](bindings/android/) · `cos sf` (v76 σ-Surface) |
 | **“Full suite” expectations vs repo** | [FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
@@ -201,14 +201,18 @@ flowchart TB
 
 ---
 
-## Composed-decision stack — v60 → v77 (seventeen branchless integer kernels)
+## Composed-decision stack — v60 → v78 (eighteen branchless integer kernels)
 
 > **One picture.** Every emission passes through a **16-bit branchless AND**
 > (v60..v76) extended laterally by a **17-th AND** (v77 σ-Reversible, the
-> Landauer / Bennett plane). One zero anywhere in the stack ⇒ no inference,
-> no tool call, no sealed message, no chain-bound receipt, no generated
-> artefact, no delivered experience, no surface interaction, and no
-> non-bit-reversible computation reaches the human.
+> Landauer / Bennett plane) and an **18-th AND** (v78 σ-Gödel-Attestor, the
+> meta-cognitive plane — IIT-φ + variational free energy + MDL + Gödel-num
+> + Global-Workspace broadcast + halting witness + Löbian self-trust +
+> bisimulation + Chaitin-Ω + MCB bytecode). One zero anywhere in the stack
+> ⇒ no inference, no tool call, no sealed message, no chain-bound receipt,
+> no generated artefact, no delivered experience, no surface interaction,
+> no non-bit-reversible computation, and no non-self-attested emission
+> reaches the human.
 
 <table align="center" width="100%" style="max-width:1100px;border-collapse:collapse;">
   <thead>
@@ -238,11 +242,12 @@ flowchart TB
     <tr><td style="padding:4px 10px;"><code>14</code></td><td style="padding:4px 10px;"><code>v74</code></td><td style="padding:4px 10px;">σ-Experience</td><td style="padding:4px 10px;">UI · a11y · mobile-gs · frame-gen · second-world</td><td align="right" style="padding:4px 10px;">600 128</td></tr>
     <tr><td style="padding:4px 10px;"><code>15</code></td><td style="padding:4px 10px;"><strong><code>v76</code></strong></td><td style="padding:4px 10px;"><strong>σ-Surface</strong></td><td style="padding:4px 10px;">touch · gesture · haptic · 10-messenger bridge · E2E ratchet · a11y · CRDT · legacy apps · file formats · SBL</td><td align="right" style="padding:4px 10px;">86 583</td></tr>
     <tr><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><code>16</code></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><strong><code>v77</code></strong></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><strong>σ-Reversible</strong></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;">NOT · CNOT · SWAP · Fredkin · Toffoli · Peres · Majority-3 · Bennett · 8-bit reversible adder · RVL bytecode — <em>forward ∘ reverse ≡ identity; hot path erases zero bits (Landauer / Bennett plane)</em></td><td align="right" style="padding:4px 10px;border-top:1px solid #cbd5e1;">761 264</td></tr>
+    <tr><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><code>17</code></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><strong><code>v78</code></strong></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;"><strong>σ-Gödel-Attestor</strong></td><td style="padding:4px 10px;border-top:1px solid #cbd5e1;">IIT-φ · variational free energy · MDL · prime-power Gödel number · Global-Workspace broadcast · Turing halting witness · Löbian self-trust · bisim · Chaitin-Ω · MCB bytecode — <em>every emission carries an integer-only proof receipt across nine 20<sup>th</sup>–21<sup>st</sup>-century foundational filters; meta-cognitive plane</em></td><td align="right" style="padding:4px 10px;border-top:1px solid #cbd5e1;">207 582</td></tr>
     <tr><td style="padding:4px 10px;border-top:1px solid #cbd5e1;" colspan="4"><em>lateral</em> · <code>v75</code> σ-License — emits a Cryptographic License-Bound Receipt for every verdict and refuses to link a stripped bundle (§11 SCSL-1.0).</td><td align="right" style="padding:4px 10px;border-top:1px solid #cbd5e1;"><em>—</em></td></tr>
   </tbody>
 </table>
 
-**Compose step:** `cos_v76_compose_decision(v60,v61,v62,v63,v64,v65,v66,v67,v68,v69,v70,v71,v72,v73,v74,v76)` → single `uint64_t` verdict. `cos_v77_compose_decision(v76_ok, v77_ok)` adds a lateral **17-th AND** so that no emission crosses unless the reversible plane also certifies the computation as bit-reversible (`forward ∘ reverse ≡ identity` across the full 256-bit × 16-register file, Landauer / Bennett plane). Branchless, integer-only, no FP, no malloc on the hot path. Full 2¹⁶ = 65 536-row truth table exercised under `make check-v76`, plus **761 264** reversible-logic rows including the complete 256×256×2 adder sweep under `make check-v77`. **CLI:** `cos sigma` · `cos decide v60 … v74 v76` · `cos sf` · `cos rv` · `make verify-agent`.
+**Compose step:** `cos_v76_compose_decision(v60,v61,v62,v63,v64,v65,v66,v67,v68,v69,v70,v71,v72,v73,v74,v76)` → single `uint64_t` verdict. `cos_v77_compose_decision(v76_ok, v77_ok)` adds a lateral **17-th AND** so that no emission crosses unless the reversible plane also certifies the computation as bit-reversible (`forward ∘ reverse ≡ identity` across the full 256-bit × 16-register file, Landauer / Bennett plane). `cos_v78_compose_decision(v77_composed_ok, v78_ok)` adds a lateral **18-th AND** so that no emission crosses unless the meta-cognitive plane emits a valid proof receipt across nine foundational filters (IIT-φ ≥ φ_min · ΔF ≤ F_max · MDL ≤ MDL_max · Gödel-num = spec · Global-Workspace coalition wins · halting witnessed · Löbian anchor holds · bisim OK · within Chaitin-Ω budget). Branchless, integer-only, no FP, no malloc on the hot path. Full 2¹⁶ = 65 536-row truth table exercised under `make check-v76`, plus **761 264** reversible-logic rows including the complete 256×256×2 adder sweep under `make check-v77`, plus **207 582** meta-cognitive rows including full Q0.15 `log2` table monotonicity, randomised 16×16 TPM φ-sweeps, one-hot and uniform FEP identities, MDL truth-table, Gödel prime-power verifications, 32 769-row workspace popcount-threshold sweep, halting-witness grid, Löbian-anchor mutation tests, bisim pairs, and the full 4-row 18-bit compose truth table × 131 072 random verifications under `make check-v78`. **CLI:** `cos sigma` · `cos decide v60 … v74 v76` · `cos sf` · `cos rv` · `cos gd` · `make verify-agent`.
 
 ---
 
@@ -313,6 +318,55 @@ transformer literature).  **761 264 / 761 264 PASS** rows under
 2 048 random-program round-trips; **~15 M** reversible-VM
 forward ∘ reverse round-trips per second on an M4 at 65 ns per 16-
 instruction program.
+
+`v78 σ-Gödel-Attestor` is **the first open-source local-AI-agent
+runtime to fuse nine foundational 20<sup>th</sup>–21<sup>st</sup>-
+century results of theoretical computer science and cognitive
+science into a single branchless, integer-only, `libc`-only outer
+gate** — ten primitives that force every emission to carry a proof
+receipt across **integrated information** (Tononi, Albantakis &amp;
+Oizumi 2014; Albantakis et al. "IIT 4.0" 2023), **discrete
+variational free energy** (Friston 2010 *Nat. Rev. Neuro.*; Active
+Inference: Parr, Pezzulo &amp; Friston 2022; Parr et al. 2024),
+**minimum description length** (Solomonoff 1964; Rissanen 1978;
+Chaitin 1975), **Gödel prime-power numbering** (Gödel 1931 "Über
+formal unentscheidbare Sätze"), **Global Neuronal Workspace
+broadcast** (Baars 1988; Dehaene 2024), **Turing-style halting
+witness with a strictly-decreasing termination measure** (Turing
+1936 "On Computable Numbers"), **Löbian self-trust anchor** (Löb
+1955 "Solution of a problem of Leon Henkin"; Payor 2014),
+**coalgebraic bisimulation** (Milner 1989; Sangiorgi 2011), and the
+**Chaitin-Ω algorithmic-probability bound** (Chaitin 1975).  These
+nine filters are composed into one proof receipt by **MCB** —
+Meta-Cognitive Bytecode, an eight-opcode integer ISA
+(<code>HALT</code>, <code>PHI</code>, <code>FE</code>, <code>MDL</code>,
+<code>GDL</code>, <code>WS</code>, <code>HWS</code>, <code>TRUST</code>)
+in the Curry-Howard tradition, where each opcode writes exactly one
+bit of the proof bitmap and the emission passes only when every
+required bit lights.  The plane sits on top of the 17-bit stack as
+a lateral **18-th AND** via
+`cos_v78_compose_decision(v77_composed_ok, v78_ok)`, so nothing
+reaches the human unless the computation (i) is genuinely
+integrated rather than reducible (φ ≥ φ<sub>min</sub>), (ii)
+minimises its variational free energy within budget (ΔF ≤
+F<sub>max</sub>), (iii) fits the declared MDL upper bound, (iv)
+matches its own Gödel number, (v) wins the Global-Workspace
+coalition threshold, (vi) witnesses its own halt, (vii) agrees
+with the pinned Löbian anchor, (viii) passes the bisim
+spec-equivalence check, and (ix) stays inside the Chaitin-Ω
+budget.  All arithmetic is integer Q0.15 fixed-point with a
+precomputed 257-entry `log2` table; no floating-point anywhere
+on the hot path; no `malloc`.  **207 582 / 207 582 PASS** rows
+under `make check-v78`, covering log2-table monotonicity,
+randomised 16×16 TPM φ-sweeps, FEP identity + penalty cases,
+full MDL truth table, Gödel prime-power verifications, a 32 769-
+row workspace popcount-threshold sweep, the halting-witness grid,
+Löbian-anchor mutation tests, bisim pairs, Chaitin-Ω table walk,
+MCB forward / malformed-insn / stress round-trips, and the full
+4-row 18-bit compose truth table × 131 072 randomised
+verifications; clean under ASAN, UBSAN, and hardened builds;
+**~2.0 M MCB proofs per second** on an M4 at ≈ 480 ns per
+8-op proof program.
 
 `v74 σ-Experience` is **the first open-source local-AI-agent runtime
 to ship a unified experience substrate — perfect UX/UI, universal
@@ -1438,7 +1492,7 @@ There is **no** `creation_os_v36.c` merge-gate row: **v36** is the **MCP** binar
 |:--|:--|
 | RTL mirror (SV, Chisel, Yosys, Rust, formal) | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) |
 | Formalism → silicon | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
-| σ stack map (v33→v59 labs + v60→v77 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v77-seventeen-branchless-integer-kernels) |
+| σ stack map (v33→v59 labs + v60→v78 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v78-eighteen-branchless-integer-kernels) |
 | Mobile + messenger + legacy-app bindings (iOS Swift · Android Kotlin/JNI · 10 messengers · 64 legacy apps · 64 file formats) | [`bindings/README.md`](bindings/README.md) · [`bindings/ios/`](bindings/ios/) · [`bindings/android/`](bindings/android/) |
 | MCP σ server | [docs/MCP_SIGMA.md](docs/MCP_SIGMA.md) · `make check-mcp` |
 | Neuromorphic / memristor (mapping + sim) | [docs/neuromorphic/memristor_mapping.md](docs/neuromorphic/memristor_mapping.md) · `make check-crossbar-sim` |
@@ -1959,7 +2013,7 @@ make standalone    # build `creation_os` from `creation_os_v2.c` only
 ./creation_os
 ```
 
-**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v77)](#composed-decision-stack--v60--v77-seventeen-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v74`, `make check-v76`, `make check-v77`; see `make help`.
+**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v78)](#composed-decision-stack--v60--v78-eighteen-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v74`, `make check-v76`, `make check-v77`, `make check-v78`; see `make help`.
 
 Requirements: C11 compiler + libm.
 
@@ -2189,6 +2243,6 @@ licensing: `spektrelabs@proton.me`
 
 ---
 
-**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [σ labs v31→v59](#sigma-labs-v31-v40) · [Composed stack v60→v77](#composed-decision-stack--v60--v77-seventeen-branchless-integer-kernels) · [iOS + Android bindings](bindings/README.md) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
+**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [σ labs v31→v59](#sigma-labs-v31-v40) · [Composed stack v60→v78](#composed-decision-stack--v60--v78-eighteen-branchless-integer-kernels) · [iOS + Android bindings](bindings/README.md) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
 
 *2026 · Spektre Labs · Helsinki · Creation OS — coherence you can compile.*

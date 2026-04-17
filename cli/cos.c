@@ -316,7 +316,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — seventeen kernels, one verdict");
+    section("Σ stack — eighteen kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -334,12 +334,13 @@ static int cmd_sigma(void)
     int r15= run_kernel("v74 σ-Experience",    "check-v74", "creation_os_v74");
     int r16= run_kernel("v76 σ-Surface",       "check-v76", "creation_os_v76");
     int r17= run_kernel("v77 σ-Reversible",    "check-v77", "creation_os_v77");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17;
+    int r18= run_kernel("v78 σ-Gödel-Attestor","check-v78", "creation_os_v78");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all seventeen kernels passed)"
+           total == 0 ? "ALLOW (all eighteen kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1130,6 +1131,71 @@ static int cmd_rv(void)
 }
 
 /* --------------------------------------------------------------------
+ *  cmd_gd — σ-Gödel-Attestor (v78) front door — meta-cognitive plane
+ *
+ *  The self-attesting kernel.  Every emission must carry a proof
+ *  receipt across ten branchless, integer-only filters:
+ *    - IIT-φ integrated information         (Tononi / IIT 4.0)
+ *    - discrete variational free energy     (Friston / Active Inf.)
+ *    - MDL upper bound                      (Solomonoff / Rissanen)
+ *    - prime-power Gödel numbering          (Gödel 1931)
+ *    - Global-Workspace broadcast gate      (Baars / Dehaene)
+ *    - Turing halting witness               (Turing 1936)
+ *    - Löbian self-trust anchor             (Löb 1955 / Payor)
+ *    - bisimulation check                   (Milner / Sangiorgi)
+ *    - Chaitin Ω bound                      (Chaitin 1975)
+ *    - MCB 8-op bytecode that composes them (Curry-Howard)
+ *  Extends v77's 17-bit composed decision with a lateral 18-th AND
+ *  via cos_v78_compose_decision(v77_ok, v78_ok).
+ * -------------------------------------------------------------------- */
+
+static int cmd_gd(void)
+{
+    print_header();
+    section("σ-Gödel-Attestor (v78) — meta-cognitive plane · 10 integer-only primitives · 18-bit composed decision");
+    if (!file_exists("creation_os_v78")) {
+        printf("  %sbuilding creation_os_v78 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v78");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v78'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel", "%s", "v78 σ-Gödel-Attestor");
+    kv("subsys", "%s", "IIT-φ · FEP · MDL · Gödel-num · Global-Workspace · Halting-witness · Löbian self-trust · Bisim · Chaitin-Ω · MCB bytecode");
+    int rc = run_cmd("./creation_os_v78 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v78 σ-Gödel-Attestor self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Gödel-Attestor self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v78 --bench | sed 's/^/    /'");
+    printf("\n  %smeta-cognitive plane: no emission crosses to the "
+           "human unless the computation simultaneously (a) carries "
+           "integrated information above φ_min (Tononi / IIT 4.0), "
+           "(b) minimises variational free energy within budget "
+           "(Friston / Active Inference), (c) fits the declared MDL "
+           "upper bound (Solomonoff / Rissanen / Chaitin), (d) matches "
+           "its own Gödel number (Gödel 1931), (e) wins the Global "
+           "Workspace coalition threshold (Baars / Dehaene), (f) "
+           "witnesses its own halt via a strictly-decreasing "
+           "termination measure (Turing 1936), (g) trusts its own "
+           "proof system through a Löbian anchor (Löb 1955 / Payor), "
+           "(h) passes the bisimulation spec-equivalence check "
+           "(Milner / Sangiorgi), and (i) stays inside the Chaitin-Ω "
+           "budget (Chaitin 1975).  The MCB bytecode weaves these "
+           "into one proof receipt (Curry-Howard).  Extends v77's "
+           "17-bit composed decision with a lateral 18-th AND via "
+           "cos_v78_compose_decision(v77_ok, v78_ok).  1 = 1.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
  *  cmd_license — License Attestation Kernel front door (v75 σ-License)
  * --------------------------------------------------------------------
  *  Subcommands:
@@ -1362,8 +1428,8 @@ static int cmd_doctor(void)
              "SCSL-1.0 pinned · SPDX headers · NOTICE");
     doc_line("license attestation",     rc_scsl == 0    ? DOC_PASS : DOC_WARN,
              "License-Bound Receipt (SCSL §11) verifies");
-    doc_line("verify-agent (v57 → v77)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
-             "17 kernels + ancillary slots");
+    doc_line("verify-agent (v57 → v78)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
+             "18 kernels + ancillary slots");
     doc_line("CHACE-class gate",        rc_chace == 0   ? DOC_PASS : DOC_WARN,
              "12-layer capability-hardening rollup");
     doc_line("hardening-check",         rc_harden == 0  ? DOC_PASS : DOC_WARN,
@@ -1442,9 +1508,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "sf",     C_RESET);
     printf("  %s%-12s%s  reversible: Landauer / Bennett plane — NOT/CNOT/SWAP/Fredkin/Toffoli/Peres/Majority-3/Bennett/8-bit reversible adder/RVL bytecode; forward ∘ reverse ≡ identity (v77)\n",
            C_BOLD, "rv",     C_RESET);
+    printf("  %s%-12s%s  σ-Gödel-Attestor: meta-cognitive plane — IIT-φ/FEP/MDL/Gödel-num/Global-Workspace/halting-witness/Löbian self-trust/bisim/Chaitin-Ω/MCB bytecode (v78; aliases: godel, attest, meta)\n",
+           C_BOLD, "gd",     C_RESET);
     printf("  %s%-12s%s  license attestation: SCSL-1.0 dual-license · License-Bound Receipt · anti-tamper guard (v75; subs: status / self-test / verify / bundle / receipt / guard / print)\n",
            C_BOLD, "license", C_RESET);
-    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 rides laterally via cos_v77_compose_decision)\n",
+    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 + v78 ride laterally via cos_v77_compose_decision and cos_v78_compose_decision)\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -1462,7 +1530,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1508,7 +1576,28 @@ static int cmd_version(void)
     int have77 = (file_exists("creation_os_v77") &&
                   run_first_line("./creation_os_v77 --version",
                                  v77, sizeof v77) == 0 && v77[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77) {
+    int have78 = (file_exists("creation_os_v78") &&
+                  run_first_line("./creation_os_v78 --version",
+                                 v78, sizeof v78) == 0 && v78[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78) {
+        printf("cos v78.0 gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+        printf("  reversible    : %s\n", v77);
+        printf("  gödel-attest  : %s\n", v78);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77) {
         printf("cos v77.0 reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -1696,6 +1785,11 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "rv")         == 0 ||
         strcmp(argv[1], "reversible") == 0 ||
         strcmp(argv[1], "landauer")   == 0) return cmd_rv();
+    if (strcmp(argv[1], "gd")         == 0 ||
+        strcmp(argv[1], "godel")      == 0 ||
+        strcmp(argv[1], "gödel")      == 0 ||
+        strcmp(argv[1], "attest")     == 0 ||
+        strcmp(argv[1], "meta")       == 0) return cmd_gd();
     if (strcmp(argv[1], "license") == 0 ||
         strcmp(argv[1], "lic")     == 0 ||
         strcmp(argv[1], "scsl")    == 0) return cmd_license(argc - 2, argv + 2);

@@ -20,6 +20,7 @@ _cos_completions() {
                mcts hv si nx noesis mn mnemos cn constellation hs
                hyperscale wh wormhole ch chain om omni omnimodal ux xp
                experience sf surface mobile rv reversible landauer
+               gd godel gödel attest meta
                license lic scsl decide
                version --version help -h --help"
 
