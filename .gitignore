@@ -145,6 +145,14 @@ creation_os_v78_san
 creation_os_v78_asan.dSYM/
 creation_os_v78_ubsan.dSYM/
 creation_os_v78_san.dSYM/
+creation_os_v79
+creation_os_v79_hardened
+creation_os_v79_asan
+creation_os_v79_ubsan
+creation_os_v79_san
+creation_os_v79_asan.dSYM/
+creation_os_v79_ubsan.dSYM/
+creation_os_v79_san.dSYM/
 license_attest
 license_attest_hardened
 license_attest.dSYM/

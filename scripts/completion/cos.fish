@@ -11,6 +11,7 @@ set -l cos_subs status doctor health verify chace sigma think seal unseal \
     wh wormhole ch chain om omnimodal ux experience sf surface mobile \
     rv reversible landauer \
     gd godel gödel attest meta \
+    sm sim simulacrum world \
     license lic scsl decide version help
 
 complete -c cos -f
@@ -55,6 +56,10 @@ complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "godel"     -d
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "gödel"     -d "UTF-8 form of godel (v78)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "attest"    -d "alias of gd (v78)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "meta"      -d "alias of gd (v78)"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "sm"        -d "σ-Simulacrum — hypervector-space simulation substrate (v79)"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "sim"       -d "alias of sm (v79)"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "simulacrum" -d "long form of sm (v79)"
+complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "world"     -d "alias of sm (v79)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "license"   -d "SCSL-1.0 licence kernel front door (v75)"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "lic"       -d "alias of license"
 complete -c cos -n "not __fish_seen_subcommand_from $cos_subs" -a "scsl"      -d "alias of license"

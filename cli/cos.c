@@ -316,7 +316,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — eighteen kernels, one verdict");
+    section("Σ stack — nineteen kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -335,12 +335,13 @@ static int cmd_sigma(void)
     int r16= run_kernel("v76 σ-Surface",       "check-v76", "creation_os_v76");
     int r17= run_kernel("v77 σ-Reversible",    "check-v77", "creation_os_v77");
     int r18= run_kernel("v78 σ-Gödel-Attestor","check-v78", "creation_os_v78");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18;
+    int r19= run_kernel("v79 σ-Simulacrum",    "check-v79", "creation_os_v79");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all eighteen kernels passed)"
+           total == 0 ? "ALLOW (all nineteen kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1196,6 +1197,78 @@ static int cmd_gd(void)
 }
 
 /* --------------------------------------------------------------------
+ *  cmd_sm — σ-Simulacrum (v79) front door — hypervector-space
+ *           simulation substrate
+ *
+ *  Branchless, integer-only, libc-only kernel that lets the agent
+ *  instantiate, step, measure and verify entire worlds inside the
+ *  256-bit HV space.  Ten primitives, each grounded in a real paper:
+ *    - Symplectic leapfrog Verlet       (Verlet 1967; Hairer 2006)
+ *    - Wolfram 1D cellular automaton    (Wolfram 1983; Cook 2004)
+ *    - Aaronson-Gottesman stabilizer    (arXiv:quant-ph/0406196)
+ *    - HD reservoir step                (Frady arXiv:2003.04030)
+ *    - Koopman embedding                (Koopman 1931; Brunton 2016)
+ *    - Cronin assembly index            (Sharma et al. Nature 2023)
+ *    - Kauffman Boolean network step    (Kauffman 1969)
+ *    - Integer shadow-Hamiltonian energy
+ *    - Merkle-style trajectory receipt
+ *    - SSL 8-op bytecode composing 1..9
+ *  Extends v78's 18-bit composed decision with a lateral 19-th AND
+ *  via cos_v79_compose_decision(v78_ok, v79_ok).
+ * -------------------------------------------------------------------- */
+
+static int cmd_sm(void)
+{
+    print_header();
+    section("σ-Simulacrum (v79) — hypervector-space simulation substrate · 10 integer-only primitives · 19-bit composed decision");
+    if (!file_exists("creation_os_v79")) {
+        printf("  %sbuilding creation_os_v79 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v79");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v79'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel", "%s", "v79 σ-Simulacrum");
+    kv("subsys", "%s", "Verlet · 1D CA · Aaronson-Gottesman stabilizer · HD reservoir · Koopman embed · Cronin assembly · Kauffman graph · energy · receipt · SSL bytecode");
+    int rc = run_cmd("./creation_os_v79 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v79 σ-Simulacrum self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Simulacrum self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v79 --bench | sed 's/^/    /'");
+    printf("\n  %ssimulacrum plane: the agent does not merely *answer* — "
+           "it runs the world inside the HV substrate before speaking. "
+           "Particle physics steps through a symplectic leapfrog Verlet "
+           "whose shadow Hamiltonian is conserved modulo Q16.16 rounding; "
+           "Wolfram cellular automata (including rule 110, universal per "
+           "Cook 2004) evolve the 256-bit lattice in one branchless "
+           "LUT-driven pass; Aaronson-Gottesman stabiliser tableaux "
+           "simulate Clifford quantum circuits in polynomial time, "
+           "preserving the symplectic row-commutativity invariant at "
+           "every step (arXiv:quant-ph/0406196); a 256-bit hyperdimen"
+           "sional reservoir (Jaeger 2001; Frady et al. arXiv:2003.04030) "
+           "couples inputs with rotate-XOR-bundle dynamics; Koopman "
+           "embeddings (Koopman 1931; Brunton 2016) lift nonlinear state "
+           "to a GF(2)-linear observable; Cronin-style assembly indices "
+           "(Sharma et al. Nature 2023) bound informational complexity; "
+           "a Kauffman Boolean network (Kauffman 1969) threshold-fires "
+           "across up to 64 nodes; every step folds into a Merkle-style "
+           "commutative receipt compatible with v72 σ-Chain; and the "
+           "SSL 8-op bytecode weaves all of the above into one verifiable "
+           "step program.  Extends v78's 18-bit composed decision with a "
+           "lateral 19-th AND via cos_v79_compose_decision(v78_ok, "
+           "v79_ok).  1 = 1.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
  *  cmd_license — License Attestation Kernel front door (v75 σ-License)
  * --------------------------------------------------------------------
  *  Subcommands:
@@ -1428,8 +1501,8 @@ static int cmd_doctor(void)
              "SCSL-1.0 pinned · SPDX headers · NOTICE");
     doc_line("license attestation",     rc_scsl == 0    ? DOC_PASS : DOC_WARN,
              "License-Bound Receipt (SCSL §11) verifies");
-    doc_line("verify-agent (v57 → v78)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
-             "18 kernels + ancillary slots");
+    doc_line("verify-agent (v57 → v79)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
+             "19 kernels + ancillary slots");
     doc_line("CHACE-class gate",        rc_chace == 0   ? DOC_PASS : DOC_WARN,
              "12-layer capability-hardening rollup");
     doc_line("hardening-check",         rc_harden == 0  ? DOC_PASS : DOC_WARN,
@@ -1510,9 +1583,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "rv",     C_RESET);
     printf("  %s%-12s%s  σ-Gödel-Attestor: meta-cognitive plane — IIT-φ/FEP/MDL/Gödel-num/Global-Workspace/halting-witness/Löbian self-trust/bisim/Chaitin-Ω/MCB bytecode (v78; aliases: godel, attest, meta)\n",
            C_BOLD, "gd",     C_RESET);
+    printf("  %s%-12s%s  σ-Simulacrum: HV-space simulation substrate — Verlet/CA/stabilizer/HD-reservoir/Koopman/assembly/graph/energy/receipt/SSL bytecode (v79; aliases: sim, simulacrum, world)\n",
+           C_BOLD, "sm",     C_RESET);
     printf("  %s%-12s%s  license attestation: SCSL-1.0 dual-license · License-Bound Receipt · anti-tamper guard (v75; subs: status / self-test / verify / bundle / receipt / guard / print)\n",
            C_BOLD, "license", C_RESET);
-    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 + v78 ride laterally via cos_v77_compose_decision and cos_v78_compose_decision)\n",
+    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 + v78 + v79 ride laterally via cos_v77_compose_decision, cos_v78_compose_decision, cos_v79_compose_decision)\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -1530,7 +1605,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1579,7 +1654,29 @@ static int cmd_version(void)
     int have78 = (file_exists("creation_os_v78") &&
                   run_first_line("./creation_os_v78 --version",
                                  v78, sizeof v78) == 0 && v78[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78) {
+    int have79 = (file_exists("creation_os_v79") &&
+                  run_first_line("./creation_os_v79 --version",
+                                 v79, sizeof v79) == 0 && v79[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79) {
+        printf("cos v79.0 simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+        printf("  reversible    : %s\n", v77);
+        printf("  gödel-attest  : %s\n", v78);
+        printf("  simulacrum    : %s\n", v79);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78) {
         printf("cos v78.0 gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -1790,6 +1887,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], "gödel")      == 0 ||
         strcmp(argv[1], "attest")     == 0 ||
         strcmp(argv[1], "meta")       == 0) return cmd_gd();
+    if (strcmp(argv[1], "sm")         == 0 ||
+        strcmp(argv[1], "sim")        == 0 ||
+        strcmp(argv[1], "simulacrum") == 0 ||
+        strcmp(argv[1], "world")      == 0) return cmd_sm();
     if (strcmp(argv[1], "license") == 0 ||
         strcmp(argv[1], "lic")     == 0 ||
         strcmp(argv[1], "scsl")    == 0) return cmd_license(argc - 2, argv + 2);
