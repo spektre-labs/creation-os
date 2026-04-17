@@ -430,11 +430,12 @@ docs/v49/certification/coverage/html/
 benchmarks/v50/*.json
 benchmarks/v50/*.log
 
-# v101/v102 — local state that should never be committed
+# v101/v102/v103 — local state that should never be committed
 .venv-bitnet/
 models/BitNet-b1.58-2B-4T/
 models/BitNet-b1.58-2B-4T-tokenizer/
 benchmarks/v102/results/
+benchmarks/v103/results/
 creation_os_v101
 creation_os_v101_hardened
 creation_os_v101_asan

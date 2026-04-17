@@ -320,7 +320,8 @@ merge-gate:
 	@$(MAKE) check-v29
 	@$(MAKE) check-v101
 	@$(MAKE) check-v102
-	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102 bridge/eval scaffold)"
+	@$(MAKE) check-v103
+	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103 bridge/eval/τ-sweep)"
 
 # Reviewer gate: what an external critic should be able to verify quickly.
 reviewer:
@@ -2363,6 +2364,18 @@ check-v102:
 
 bench-v102:
 	@bash benchmarks/v102/run_eval.sh
+
+# v103 σ-τ-sweep.  Pure post-hoc analysis on top of a single σ-logging run
+# (benchmarks/v103/run_sigma_log.sh).  `check-v103` is a lightweight smoke
+# that (a) imports the v103 backend module to confirm it registers, and
+# (b) if a previous σ sidecar is present, runs the RC-metric analysis on
+# the cached sidecar + lm-eval output without any further forward passes.
+check-v103:
+	@bash benchmarks/v103/check_v103.sh
+
+bench-v103:
+	@bash benchmarks/v103/run_sigma_log.sh
+	@.venv-bitnet/bin/python benchmarks/v103/compute_rc_metrics.py
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
