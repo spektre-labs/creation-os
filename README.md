@@ -5,7 +5,7 @@
 <h1 align="center">Creation OS</h1>
 
 <p align="center"><sub><strong>A local AI runtime that proves every answer before it shows it to you.</strong><br/>
-Thirty-five branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
+Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
 
 <!-- =====================================================================
      The 30-second drop from the chair.
@@ -15,14 +15,14 @@ Thirty-five branchless integer kernels · one composed verdict · <strong>1 = 1<
 
 <p align="center">
   <a href="#try-it-in-30-seconds"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-111827?style=for-the-badge&labelColor=0ea5e9" alt="Try it in 30 seconds"/></a>
-  <a href="#the-thirty-five-kernel-receipt"><img src="https://img.shields.io/badge/receipt-16%E2%80%AF378%E2%80%AF757%20PASS%20%C2%B7%200%20FAIL-059669?style=for-the-badge&labelColor=065f46" alt="16 378 757 PASS / 0 FAIL"/></a>
-  <a href="#the-thirty-five-kernel-receipt"><img src="https://img.shields.io/badge/rollup-35%20kernels%20%C2%B7%20v60%E2%86%92v95-1d4ed8?style=for-the-badge&labelColor=1e3a8a" alt="35 kernels · v60→v95"/></a>
-  <a href="#the-thirty-five-kernel-receipt"><img src="https://img.shields.io/badge/ASAN%20%2B%20UBSAN-clean-16a34a?style=for-the-badge&labelColor=14532d" alt="ASAN + UBSAN clean"/></a>
-  <a href="#the-thirty-five-kernel-receipt"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-7c3aed?style=for-the-badge&labelColor=5b21b6" alt="hot path: branchless · Q16.16 · libc only"/></a>
+  <a href="#the-forty-kernel-receipt"><img src="https://img.shields.io/badge/receipt-16%E2%80%AF416%E2%80%AF185%20PASS%20%C2%B7%200%20FAIL-059669?style=for-the-badge&labelColor=065f46" alt="16 416 185 PASS / 0 FAIL"/></a>
+  <a href="#the-forty-kernel-receipt"><img src="https://img.shields.io/badge/rollup-40%20kernels%20%C2%B7%20v60%E2%86%92v100-1d4ed8?style=for-the-badge&labelColor=1e3a8a" alt="40 kernels · v60→v100"/></a>
+  <a href="#the-forty-kernel-receipt"><img src="https://img.shields.io/badge/ASAN%20%2B%20UBSAN-clean-16a34a?style=for-the-badge&labelColor=14532d" alt="ASAN + UBSAN clean"/></a>
+  <a href="#the-forty-kernel-receipt"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-7c3aed?style=for-the-badge&labelColor=5b21b6" alt="hot path: branchless · Q16.16 · libc only"/></a>
 </p>
 
 <p align="center"><sub>
-  <strong>Thirty-five falsifiable kernels</strong>, one `AND` gate.  Reasoning · reversibility · meta-cognition · world-model · memory · adaptive compute · geometric algebra · sheaf topology · post-quantum crypto · homomorphic compute · neuromorphic spikes · hierarchical active inference · quantum amplitude amplification.  Every one is integer-only, branchless on the hot path, and breaks on a single mutated line.
+  <strong>Forty falsifiable kernels</strong>, one `AND` gate.  Reasoning · reversibility · meta-cognition · world-model · memory · adaptive compute · geometric algebra · sheaf topology · post-quantum crypto · homomorphic compute · neuromorphic spikes · hierarchical active inference · quantum amplitude amplification · integer diffusion sampler · Q-learning+GAE+PPO · persistent homology · structural causal do-calculus · sub-quadratic Hyena long-convolution.  Every one is integer-only, branchless on the hot path, and breaks on a single mutated line.
 </sub></p>
 
 ### Try it in 30 seconds
@@ -33,7 +33,7 @@ You do **not** need to understand GitHub, `git`, a compiler, or a terminal promp
 curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scripts/install.sh | bash
 ```
 
-That command does everything — it checks your machine, installs a C compiler if you don't have one, downloads the repo into `~/creation-os`, builds the full thirty-five-kernel stack (v60 → v95), runs **every self-test live**, and drops you into `cos demo` — a thirty-second guided tour where each of the thirty-five kernels compiles, runs its own proof, and prints its real number right in front of you.
+That command does everything — it checks your machine, installs a C compiler if you don't have one, downloads the repo into `~/creation-os`, builds the full forty-kernel stack (v60 → v100), runs **every self-test live**, and drops you into `cos demo` — a thirty-second guided tour where each of the forty kernels compiles, runs its own proof, and prints its real number right in front of you.
 
 Already cloned?  Even faster:
 
@@ -49,9 +49,9 @@ Want just the tour?
 
 > Everything runs **locally**.  Nothing is sent to the cloud.  Nothing is logged.  Nothing calls home.  The installer installs nothing without telling you first, and nothing outside `~/creation-os`.  Safe to re-run.  Idempotent.
 
-<a id="the-thirty-five-kernel-receipt"></a>
+<a id="the-forty-kernel-receipt"></a>
 
-### The thirty-five-kernel receipt
+### The forty-kernel receipt
 
 Every row below is a separate, self-contained, branchless, integer-only C kernel — one file, under a thousand lines, with its own `--self-test`.  The numbers are **real**: `cos demo` recompiles and re-runs each one on your machine, **live**.  If even a single kernel fails, the composed verdict becomes `DENY` and the runtime stays silent.  **One zero anywhere = nothing reaches the user.**
 
@@ -115,7 +115,12 @@ Every row below is a separate, self-contained, branchless, integer-only C kernel
     <tr><td><code>32</code></td><td><strong><code>v93</code> σ-MoR</strong></td><td>Mixture-of-Recursions — one shared residual layer R reused across up to 6 recursion steps with per-token router + adaptive exit depth + compute-saving early-exit — <strong>adaptive-compute plane (MoR, NeurIPS 2025)</strong></td><td align="right"><strong>746</strong></td></tr>
     <tr><td><code>33</code></td><td><strong><code>v94</code> σ-Clifford</strong></td><td>Cl(3,0) geometric algebra — full 8-dim multivector algebra, geometric product, wedge, inner product, reverse, grade projector, equivariant GP layer — <strong>geometric-deep-learning plane (CliffordNet, 2026)</strong></td><td align="right"><strong>7 219</strong></td></tr>
     <tr><td><code>34</code></td><td><strong><code>v95</code> σ-Sheaf</strong></td><td>cellular-sheaf neural network on a ring graph with {−1,+1}-orthogonal restriction maps — sheaf Laplacian Δ_F + heat-equation diffusion + local-to-global harmonic extension — <strong>topological-ML plane (Copresheaf-TNN / L2G, 2026)</strong></td><td align="right"><strong>4 268</strong></td></tr>
-    <tr><td colspan="3" align="right" style="padding-top:8px;"><strong>composed rollup</strong></td><td align="right"><strong>16 378 757</strong> · 0 FAIL · ASAN+UBSAN clean</td></tr>
+    <tr><td><code>35</code></td><td><strong><code>v96</code> σ-Diffusion</strong></td><td>integer rectified-flow / DDIM sampler — monotone α-bar schedule (Q1 → 0, strictly decreasing), forward corruption, deterministic DDIM reverse, L1-distance-to-x0 monotone under denoise — <strong>generative plane (rectified flow / DDIM, 2024–26)</strong></td><td align="right"><strong>1 236</strong></td></tr>
+    <tr><td><code>36</code></td><td><strong><code>v97</code> σ-RL</strong></td><td>integer tabular Q-learning + Bellman backup + Generalised Advantage Estimation + PPO-clip surrogate — bounded Q-table, trust-region monotonicity, branchless clip — <strong>reinforcement-learning plane (Schulman / Mnih)</strong></td><td align="right"><strong>2 391</strong></td></tr>
+    <tr><td><code>37</code></td><td><strong><code>v98</code> σ-Topology</strong></td><td>Vietoris–Rips persistent homology on a 12-point Q16.16 cloud — union-find filtration, Betti-0 (components) + Betti-1 (cycles), Euler identity β₁ = E − V + C, monotone filtration — <strong>topological-data-analysis plane (persistent homology, 2026)</strong></td><td align="right"><strong>22 375</strong></td></tr>
+    <tr><td><code>38</code></td><td><strong><code>v99</code> σ-Causal</strong></td><td>structural causal model over a 6-node DAG — do-calculus interventions that sever incoming edges, back-door criterion validator, counterfactual twin graph with shared noise, linear ATE recovery — <strong>causal-inference plane (Pearl do-calculus)</strong></td><td align="right"><strong>427</strong></td></tr>
+    <tr><td><code>39</code></td><td><strong><code>v100</code> σ-Hyena</strong></td><td>sub-quadratic gated long-convolution operator — exponentially-decayed causal filter, per-position gate ∈ [0, Q1], causality + linearity + shift-covariance certified — <strong>long-range attention-free plane (Hyena / Monarch-Mixer)</strong></td><td align="right"><strong>10 999</strong></td></tr>
+    <tr><td colspan="3" align="right" style="padding-top:8px;"><strong>composed rollup</strong></td><td align="right"><strong>16 416 185</strong> · 0 FAIL · ASAN+UBSAN clean</td></tr>
   </tbody>
 </table>
 
@@ -131,15 +136,21 @@ Every row below is a separate, self-contained, branchless, integer-only C kernel
   <code>v93</code> MoR token-adaptive early-exit at <strong>avg depth ≤ 6</strong> &nbsp;·&nbsp;
   <code>v94</code> Clifford geometric product in <strong>Q32.32</strong> &nbsp;·&nbsp;
   <code>v95</code> sheaf Laplacian diffusion energy-monotone by construction.
+  <br/>
+  <code>v96</code> DDIM sampler — <strong>forward ∘ reverse ≡ identity</strong> within ±2 ulp · L1-distance-to-x0 monotone in denoise &nbsp;·&nbsp;
+  <code>v97</code> PPO-clip surrogate — pure Schulman-2017 <strong>min(ρ·A, clip(ρ,1-ε,1+ε)·A)</strong>, branchless trust region &nbsp;·&nbsp;
+  <code>v98</code> persistent homology — <strong>β<sub>1</sub> = E − V + C</strong> closed identity + Betti-0 monotone under filtration sweep &nbsp;·&nbsp;
+  <code>v99</code> SCM — interventions sever incoming edges by construction, counterfactual ≡ factual at unchanged do-value &nbsp;·&nbsp;
+  <code>v100</code> Hyena operator — causality + linearity + shift-covariance certified on a 32-step sequence.
 </sub></p>
 
 ### Why this is different
 
-Other local AI runtimes ship a model and a prompt box.  Creation OS ships **thirty-five integer kernels that each prove a different property of every emission** — reasoning soundness, reversibility, meta-cognitive consistency, world-model coherence, memory integrity, geometric equivariance, sheaf-Laplacian harmonic extension, post-quantum sealed transport, homomorphic compute, amplitude amplification, security, provenance — and the runtime is physically incapable of speaking unless **every one of them agrees**.  Where Gemini, Claude, and ChatGPT are closed services whose behaviour you trust, Creation OS is a single `git clone` where you can **read every line**, **run every proof**, and **watch the numbers happen on your own silicon** in under a minute.
+Other local AI runtimes ship a model and a prompt box.  Creation OS ships **forty integer kernels that each prove a different property of every emission** — reasoning soundness, reversibility, meta-cognitive consistency, world-model coherence, memory integrity, geometric equivariance, sheaf-Laplacian harmonic extension, post-quantum sealed transport, homomorphic compute, amplitude amplification, diffusion-sampler identity, policy-gradient trust-region, persistent-homology Euler identity, structural-causal do-calculus, sub-quadratic Hyena causality, security, provenance — and the runtime is physically incapable of speaking unless **every one of them agrees**.  Where Gemini, Claude, and ChatGPT are closed services whose behaviour you trust, Creation OS is a single `git clone` where you can **read every line**, **run every proof**, and **watch the numbers happen on your own silicon** in under a minute.
 
 - **Branchless + integer-only on the hot path.**  No floating point.  No `malloc`.  No framework.  Q16.16 fixed-point everywhere it matters.  Hardware discipline is the licence to make strong claims.
-- **Thirty-five falsifiable witnesses.**  Every kernel's `--self-test` is a truth table you can break.  Mutate a line, re-run, watch the count fall — `16 378 757` PASS collapses to `FAIL`.
-- **One `AND` across the stack.**  The composed verdict is a single 35-bit `uint64_t`.  If any bit is zero, nothing reaches the user.  No retries, no soft fallbacks, no "mostly correct".
+- **Forty falsifiable witnesses.**  Every kernel's `--self-test` is a truth table you can break.  Mutate a line, re-run, watch the count fall — `16 416 185` PASS collapses to `FAIL`.
+- **One `AND` across the stack.**  The composed verdict is a single 40-bit `uint64_t`.  If any bit is zero, nothing reaches the user.  No retries, no soft fallbacks, no "mostly correct".
 - **One command to try.**  `curl … | bash` for new users · `./scripts/quickstart.sh` for cloned repos · `./cos demo` for the tour.
 - **Nothing leaves your machine.**  Every compute step is local.  Every kernel is auditable in-place.  Every receipt is reproducible byte-for-byte.  ASAN + UBSAN clean across the stack.
 
@@ -157,11 +168,11 @@ Other local AI runtimes ship a model and a prompt box.  Creation OS ships **thir
   </thead>
   <tbody>
     <tr>
-      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs, plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>). Extended by <strong>σ / agent labs v33 → v59</strong> and the <strong>composed-decision stack v60 → v95</strong> — a <strong>35-bit branchless AND gate</strong> across security, reasoning, reversibility, meta-cognition, simulation, memory, adaptive compute, geometric algebra, sheaf topology, post-quantum crypto, homomorphic compute, neuromorphic spikes, hierarchical active inference, and quantum amplitude amplification (tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>; native <strong>iOS + Android bindings</strong> in <a href="bindings/"><code>bindings/</code></a>).</td>
+      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs, plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>). Extended by <strong>σ / agent labs v33 → v59</strong> and the <strong>composed-decision stack v60 → v100</strong> — a <strong>40-bit branchless AND gate</strong> across security, reasoning, reversibility, meta-cognition, simulation, memory, adaptive compute, geometric algebra, sheaf topology, post-quantum crypto, homomorphic compute, neuromorphic spikes, hierarchical active inference, quantum amplitude amplification, diffusion sampler, reinforcement learning, persistent homology, structural causal inference, and sub-quadratic Hyena long-conv (tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>; native <strong>iOS + Android bindings</strong> in <a href="bindings/"><code>bindings/</code></a>).</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Canonical tree: <a href="https://github.com/spektre-labs/creation-os"><code>spektre-labs/creation-os</code></a>. Teaching spine: <a href="creation_os_v2.c"><code>creation_os_v2.c</code></a> + <a href="core/"><code>core/*.h</code></a>. Review map: <a href="docs/WHICH_FILE_TO_READ.md"><code>docs/WHICH_FILE_TO_READ.md</code></a>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Before a PR / publish: <code>make merge-gate</code>. When touching a flagship slice: matching <code>make check-vN</code> + <code>./creation_os_vN --self-test</code>. Full rollup: <code>make verify-agent</code>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Keep evidence classes honest (lab demo vs harness vs product). Read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> + tier tags in <a href="docs/WHAT_IS_REAL.md">WHAT_IS_REAL</a> before screenshotting a headline.</td>
-      <td valign="top" style="padding:10px 12px;border-radius:0 10px 10px 0;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-left:0;">Fastest truth path: clone → <code>make merge-gate</code> → <code>./cos sigma</code> (expect <strong>ALLOW · all thirty-five kernels passed</strong>). Visual receipts index: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</td>
+      <td valign="top" style="padding:10px 12px;border-radius:0 10px 10px 0;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-left:0;">Fastest truth path: clone → <code>make merge-gate</code> → <code>./cos sigma</code> (expect <strong>ALLOW · all forty kernels passed</strong>). Visual receipts index: <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</td>
     </tr>
   </tbody>
 </table>
@@ -181,15 +192,15 @@ Other local AI runtimes ship a model and a prompt box.  Creation OS ships **thir
   <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
 </p>
 
-<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#the-thirty-five-kernel-receipt">Thirty-five-kernel receipt</a> · <a href="bindings/">iOS &amp; Android bindings</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
+<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#the-forty-kernel-receipt">Forty-kernel receipt</a> · <a href="bindings/">iOS &amp; Android bindings</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
 > **MCP product hook:** `creation_os_mcp` is an **MCP server** that exposes σ measurement + abstention helpers (`measure_sigma`, `should_abstain`, `sigma_report`) to **any MCP-capable client** — see `docs/MCP_SIGMA.md` and `config/claude_desktop_config.json` (copy the `mcpServers` block into your client; repo-local `.cursor/` is gitignored).
 
-> **If you read nothing else.** Creation OS is a **portable C11 reference kernel** for **Binary Spatter Codes (BSC)** and a **coherence signal (σ)** you can **build, run, and falsify** on a laptop. The CI bar is one command: **`make merge-gate`**. The σ / agent labs (**v31 → v59**) sit *outside* the merge gate as opt-in experiments with honest tier tags ([`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)). The composed-decision stack (**v60 → v95**) is **thirty-five branchless integer kernels** behind one Apple-tier CLI (`cos`); together they form a **35-bit branchless AND** (`cos_v95_compose_decision`) — *no inference, tool call, sealed message, hyperscale step, teleport, chain-bound emission, generated artefact, rendered frame, surface interaction, world-model rollout, spike, hierarchical prediction, quantum amplitude, memory read, adaptive-recursion exit, geometric equivariant layer, or sheaf diffusion step* ever crosses to the human unless **all thirty-five** ALLOW. Native **iOS (Swift)** and **Android (Kotlin/JNI)** façades ship in [`bindings/`](bindings/).
+> **If you read nothing else.** Creation OS is a **portable C11 reference kernel** for **Binary Spatter Codes (BSC)** and a **coherence signal (σ)** you can **build, run, and falsify** on a laptop. The CI bar is one command: **`make merge-gate`**. The σ / agent labs (**v31 → v59**) sit *outside* the merge gate as opt-in experiments with honest tier tags ([`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)). The composed-decision stack (**v60 → v100**) is **forty branchless integer kernels** behind one Apple-tier CLI (`cos`); together they form a **40-bit branchless AND** (`cos_v100_compose_decision`) — *no inference, tool call, sealed message, hyperscale step, teleport, chain-bound emission, generated artefact, rendered frame, surface interaction, world-model rollout, spike, hierarchical prediction, quantum amplitude, memory read, adaptive-recursion exit, geometric equivariant layer, sheaf diffusion step, DDIM reverse step, policy-gradient update, persistent-homology filtration, causal do-intervention, or Hyena long-conv emission* ever crosses to the human unless **all forty** ALLOW. Native **iOS (Swift)** and **Android (Kotlin/JNI)** façades ship in [`bindings/`](bindings/).
 >
-> **Fastest truth path (60 seconds):** `git clone` → `./scripts/quickstart.sh` → `./cos sigma`. Expect `ALLOW (all thirty-five kernels passed)` with a 35-bit composed verdict. Then `./cos demo` for the live tour, or `make verify-agent` for the full rollup (expect **44 PASS · 3 SKIP · 0 FAIL**). To exercise any single plane: `make check-vN && ./creation_os_vN --self-test` — e.g. `check-v79` (≥ 2 994 549 / 0 PASS · ~28.9 M SSL steps/s on M4), `check-v80` (≥ 6 935 348 / 0 PASS · ~65.9 M TTC steps/s on M4), `check-v92` (11 723 Titans-memory rows), `check-v94` (7 219 Clifford-algebra rows), `check-v95` (4 268 sheaf-Laplacian rows).
+> **Fastest truth path (60 seconds):** `git clone` → `./scripts/quickstart.sh` → `./cos sigma`. Expect `ALLOW (all forty kernels passed)` with a 40-bit composed verdict. Then `./cos demo` for the live tour, or `make verify-agent` for the full rollup (expect **49 PASS · 3 SKIP · 0 FAIL**). To exercise any single plane: `make check-vN && ./creation_os_vN --self-test` — e.g. `check-v79` (≥ 2 994 549 / 0 PASS · ~28.9 M SSL steps/s on M4), `check-v80` (≥ 6 935 348 / 0 PASS · ~65.9 M TTC steps/s on M4), `check-v96` (1 236 diffusion-identity rows), `check-v97` (2 391 PPO-clip + GAE rows), `check-v98` (22 375 persistent-homology rows), `check-v99` (427 SCM do-calculus rows), `check-v100` (10 999 Hyena causality + shift-covariance rows).
 >
-> **Discipline before headlines.** Read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) and [**WHAT_IS_REAL**](docs/WHAT_IS_REAL.md) **before** you screenshot a number from this repo. Tier letters: **M** runtime-checked · **F** formally proven · **I** interpreted · **P** planned. Composed rollup that ships today: **16 378 757 PASS · 0 FAIL · ASAN + UBSAN clean** across `v60 → v95`. Full per-version table: [the thirty-five-kernel receipt](#the-thirty-five-kernel-receipt) and [σ labs (v31 → v59)](#sigma-labs-v31-v40). This is **not** a chat product, **not** a leaderboard dump, **not** magic — it is a kernel.
+> **Discipline before headlines.** Read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) and [**WHAT_IS_REAL**](docs/WHAT_IS_REAL.md) **before** you screenshot a number from this repo. Tier letters: **M** runtime-checked · **F** formally proven · **I** interpreted · **P** planned. Composed rollup that ships today: **16 416 185 PASS · 0 FAIL · ASAN + UBSAN clean** across `v60 → v100`. Full per-version table: [the forty-kernel receipt](#the-forty-kernel-receipt) and [σ labs (v31 → v59)](#sigma-labs-v31-v40). This is **not** a chat product, **not** a leaderboard dump, **not** magic — it is a kernel.
 
 <table align="center">
   <tbody>
@@ -199,14 +210,14 @@ Other local AI runtimes ship a model and a prompt box.  Creation OS ships **thir
       <td align="center"><img src="https://img.shields.io/badge/license-SCSL--1.0%20OR%20AGPL--3.0-1e50a0?style=for-the-badge" alt="SCSL-1.0 OR AGPL-3.0"/></td>
     </tr>
     <tr>
-      <td align="center"><img src="https://img.shields.io/badge/composed-35--bit%20%E2%88%A7-9333ea?style=for-the-badge" alt="35-bit composed AND"/></td>
-      <td align="center"><img src="https://img.shields.io/badge/kernels-v60%E2%86%92v95%20%C2%B7%2035-9333ea?style=for-the-badge" alt="kernels v60→v95 · 35"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/composed-40--bit%20%E2%88%A7-9333ea?style=for-the-badge" alt="40-bit composed AND"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/kernels-v60%E2%86%92v100%20%C2%B7%2040-9333ea?style=for-the-badge" alt="kernels v60→v100 · 40"/></td>
       <td align="center"><img src="https://img.shields.io/badge/bindings-iOS%20%C2%B7%20Android-0f766e?style=for-the-badge" alt="iOS + Android native bindings"/></td>
     </tr>
     <tr>
-      <td align="center"><img src="https://img.shields.io/badge/rollup-16%E2%80%AF378%E2%80%AF757%20PASS-059669?style=for-the-badge" alt="rollup: 16 378 757 PASS"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/rollup-16%E2%80%AF416%E2%80%AF185%20PASS-059669?style=for-the-badge" alt="rollup: 16 416 185 PASS"/></td>
       <td align="center"><img src="https://img.shields.io/badge/ASAN%20%2B%20UBSAN-clean-16a34a?style=for-the-badge" alt="ASAN + UBSAN clean"/></td>
-      <td align="center"><img src="https://img.shields.io/badge/cos%20sigma-ALLOW%20%C2%B7%2035%2F35-brightgreen?style=for-the-badge" alt="cos sigma: ALLOW · 35/35"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/cos%20sigma-ALLOW%20%C2%B7%2040%2F40-brightgreen?style=for-the-badge" alt="cos sigma: ALLOW · 40/40"/></td>
     </tr>
     <tr>
       <td align="center"><a href="#run-it-in-sixty-seconds"><img src="https://img.shields.io/badge/CI%20bar-make%20merge--gate-1d4ed8?style=for-the-badge" alt="merge gate"/></a></td>

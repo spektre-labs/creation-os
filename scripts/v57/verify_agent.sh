@@ -113,6 +113,11 @@ SLOTS=(
     "mor_adaptive|M|v93|check-v93"
     "clifford_algebra|M|v94|check-v94"
     "sheaf_laplacian|M|v95|check-v95"
+    "rectified_flow_diffusion|M|v96|check-v96"
+    "rl_q_gae_ppo|M|v97|check-v97"
+    "persistent_homology|M|v98|check-v98"
+    "structural_causal|M|v99|check-v99"
+    "hyena_long_conv|M|v100|check-v100"
     "license_attestation|M|v75|license-check"
 )
 

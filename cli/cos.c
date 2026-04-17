@@ -317,7 +317,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — thirty-five kernels, one verdict");
+    section("Σ stack — forty kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -353,12 +353,17 @@ static int cmd_sigma(void)
     int r33= run_kernel("v93 σ-MoR",           "check-v93", "creation_os_v93");
     int r34= run_kernel("v94 σ-Clifford",      "check-v94", "creation_os_v94");
     int r35= run_kernel("v95 σ-Sheaf",         "check-v95", "creation_os_v95");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19 | r20 | r21 | r22 | r23 | r24 | r25 | r26 | r27 | r28 | r29 | r30 | r31 | r32 | r33 | r34 | r35;
+    int r36= run_kernel("v96 σ-Diffusion",     "check-v96", "creation_os_v96");
+    int r37= run_kernel("v97 σ-RL",            "check-v97", "creation_os_v97");
+    int r38= run_kernel("v98 σ-Topology",      "check-v98", "creation_os_v98");
+    int r39= run_kernel("v99 σ-Causal",        "check-v99", "creation_os_v99");
+    int r40= run_kernel("v100 σ-Hyena",        "check-v100","creation_os_v100");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17 | r18 | r19 | r20 | r21 | r22 | r23 | r24 | r25 | r26 | r27 | r28 | r29 | r30 | r31 | r32 | r33 | r34 | r35 | r36 | r37 | r38 | r39 | r40;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all thirty-five kernels passed)"
+           total == 0 ? "ALLOW (all forty kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1670,7 +1675,7 @@ static int cmd_welcome(void)
                 C_BOLD, C_RESET, C_GREY, C_RESET);
 
     section("If a command mentions something you do not recognise");
-    printf("  That is fine.  Each of the thirty-five kernels is a separate, self-contained\n");
+    printf("  That is fine.  Each of the forty kernels is a separate, self-contained\n");
     printf("  experiment — a single C file, under a thousand lines, with its own\n");
     printf("  self-test that prints a real number.  You do not need to understand them\n");
     printf("  all.  You need to know only this: %sif `cos sigma` says ALLOW, every one of\n",
@@ -1733,6 +1738,11 @@ static const struct demo_row demo_rows[] = {
     {"v93", "σ-MoR",            "Mixture-of-Recursions · shared-layer stack · token-level adaptive depth routing",                   "check-v93", "creation_os_v93",        746},
     {"v94", "σ-Clifford",       "Cl(3,0) geometric algebra · geometric product · wedge · reverse · equivariant layer",               "check-v94", "creation_os_v94",       7219},
     {"v95", "σ-Sheaf",          "cellular-sheaf NN · sheaf Laplacian · heat-equation diffusion · local-to-global",                    "check-v95", "creation_os_v95",       4268},
+    {"v96", "σ-Diffusion",      "integer rectified-flow / DDIM sampler · monotone schedule · energy-decay denoise",                   "check-v96", "creation_os_v96",       1236},
+    {"v97", "σ-RL",             "tabular Q-learning · GAE advantage · PPO-clip surrogate · branchless trust region",                   "check-v97", "creation_os_v97",       2391},
+    {"v98", "σ-Topology",       "Vietoris–Rips · persistent homology · Betti-0/1 · Euler identity · union-find",                       "check-v98", "creation_os_v98",      22375},
+    {"v99", "σ-Causal",         "SCM · do-calculus · back-door adjustment · counterfactual twin graph · ATE",                           "check-v99", "creation_os_v99",        427},
+    {"v100","σ-Hyena",          "sub-quadratic gated long convolution · decaying filter · causality · shift-covariance",                "check-v100","creation_os_v100",    10999},
 };
 
 static double wall_seconds(void)
@@ -1841,7 +1851,7 @@ static int cmd_demo(void)
     printf("\n  %scomposed verdict:%s  %s%s%s\n",
            C_BOLD, C_RESET,
            total_fail == 0 ? C_GREEN : C_RED,
-           total_fail == 0 ? "ALLOW (all thirty-five kernels passed)"
+           total_fail == 0 ? "ALLOW (all forty kernels passed)"
                            : "DENY (one or more kernels failed)",
            C_RESET);
 
@@ -1868,7 +1878,7 @@ static int cmd_help(const char *prog)
     section("commands");
     printf("  %s%-12s%s  first-run greeting — plain language, no jargon (aliases: start, hello, hi)\n",
            C_BOLD, "welcome", C_RESET);
-    printf("  %s%-12s%s  30-second live tour of all thirty-five kernels — real numbers, no mocks (aliases: showcase, tour)\n",
+    printf("  %s%-12s%s  30-second live tour of all forty kernels — real numbers, no mocks (aliases: showcase, tour)\n",
            C_BOLD, "demo",    C_RESET);
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  full repo-health rollup (license · verify · hardening · receipts)\n",
@@ -1935,7 +1945,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0}, v81[256] = {0}, v82[256] = {0}, v83[256] = {0}, v84[256] = {0}, v85[256] = {0}, v86[256] = {0}, v87[256] = {0}, v88[256] = {0}, v89[256] = {0}, v90[256] = {0}, v91[256] = {0}, v92[256] = {0}, v93[256] = {0}, v94[256] = {0}, v95[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0}, v81[256] = {0}, v82[256] = {0}, v83[256] = {0}, v84[256] = {0}, v85[256] = {0}, v86[256] = {0}, v87[256] = {0}, v88[256] = {0}, v89[256] = {0}, v90[256] = {0}, v91[256] = {0}, v92[256] = {0}, v93[256] = {0}, v94[256] = {0}, v95[256] = {0}, v96[256] = {0}, v97[256] = {0}, v98[256] = {0}, v99[256] = {0}, v100[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -2035,8 +2045,23 @@ static int cmd_version(void)
     int have95 = (file_exists("creation_os_v95") &&
                   run_first_line("./creation_os_v95 --version",
                                  v95, sizeof v95) == 0 && v95[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80 && have81 && have82 && have83 && have84 && have85 && have86 && have87 && have88 && have89 && have90 && have91 && have92 && have93 && have94 && have95) {
-        printf("cos v95.0 sheaf · clifford · mor · titans · quantum · hierarchical · spiking · fhe · sae · jepa · formal · zkproof · agentic · stream · lattice · cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane · post-quantum lattice crypto · streaming composed decision · active-inference learner loop · layerwise zero-knowledge receipts · TLA-style runtime invariants · latent predictive world model · mechanistic-interpretability SAE · Ring-LWE homomorphic compute · Loihi-3 graded-spike neuromorphic · hierarchical active inference · 4-qubit integer quantum simulator + Grover · neural long-term memory (Titans) · Mixture-of-Recursions adaptive depth · Cl(3,0) geometric algebra · sheaf-Laplacian heat diffusion\n");
+    int have96 = (file_exists("creation_os_v96") &&
+                  run_first_line("./creation_os_v96 --version",
+                                 v96, sizeof v96) == 0 && v96[0]);
+    int have97 = (file_exists("creation_os_v97") &&
+                  run_first_line("./creation_os_v97 --version",
+                                 v97, sizeof v97) == 0 && v97[0]);
+    int have98 = (file_exists("creation_os_v98") &&
+                  run_first_line("./creation_os_v98 --version",
+                                 v98, sizeof v98) == 0 && v98[0]);
+    int have99 = (file_exists("creation_os_v99") &&
+                  run_first_line("./creation_os_v99 --version",
+                                 v99, sizeof v99) == 0 && v99[0]);
+    int have100 = (file_exists("creation_os_v100") &&
+                   run_first_line("./creation_os_v100 --version",
+                                  v100, sizeof v100) == 0 && v100[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80 && have81 && have82 && have83 && have84 && have85 && have86 && have87 && have88 && have89 && have90 && have91 && have92 && have93 && have94 && have95 && have96 && have97 && have98 && have99 && have100) {
+        printf("cos v100.0 hyena · causal · topology · rl · diffusion · sheaf · clifford · mor · titans · quantum · hierarchical · spiking · fhe · sae · jepa · formal · zkproof · agentic · stream · lattice · cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane · post-quantum lattice crypto · streaming composed decision · active-inference learner loop · layerwise zero-knowledge receipts · TLA-style runtime invariants · latent predictive world model · mechanistic-interpretability SAE · Ring-LWE homomorphic compute · Loihi-3 graded-spike neuromorphic · hierarchical active inference · 4-qubit integer quantum simulator + Grover · neural long-term memory (Titans) · Mixture-of-Recursions adaptive depth · Cl(3,0) geometric algebra · sheaf-Laplacian heat diffusion · integer rectified-flow / DDIM · Q-learning+GAE+PPO-clip · Vietoris–Rips persistent homology · structural causal model + do-calculus · sub-quadratic gated long convolution (Hyena)\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
         printf("  intellect     : %s\n", v64);
@@ -2070,6 +2095,11 @@ static int cmd_version(void)
         printf("  mor           : %s\n", v93);
         printf("  clifford      : %s\n", v94);
         printf("  sheaf         : %s\n", v95);
+        printf("  diffusion     : %s\n", v96);
+        printf("  rl            : %s\n", v97);
+        printf("  topology      : %s\n", v98);
+        printf("  causal        : %s\n", v99);
+        printf("  hyena         : %s\n", v100);
     } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77 && have78 && have79 && have80 && have81 && have82 && have83 && have84 && have85) {
         printf("cos v85.0 formal · zkproof · agentic · stream · lattice · cortex · simulacrum · gödel-attestor · reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane · meta-cognitive plane · hypervector-space simulation substrate · hypervector-space neocortical reasoning plane · post-quantum lattice crypto · streaming composed decision · active-inference learner loop · layerwise zero-knowledge receipts · TLA-style runtime invariants\n");
         printf("  reasoning     : %s\n", v62);
