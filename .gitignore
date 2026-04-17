@@ -69,6 +69,12 @@ creation_os_v65_asan
 creation_os_v65_ubsan
 creation_os_v65_asan.dSYM/
 creation_os_v65_ubsan.dSYM/
+creation_os_v66
+creation_os_v66_hardened
+creation_os_v66_asan
+creation_os_v66_ubsan
+creation_os_v66_asan.dSYM/
+creation_os_v66_ubsan.dSYM/
 cos
 creation_os_v57_hardened
 creation_os_v58_hardened

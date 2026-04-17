@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 test-v62 test-v63 test-v64 test-v65 check-v62 check-v63 check-v64 check-v65 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 test-v62 test-v63 test-v64 test-v65 test-v66 check-v62 check-v63 check-v64 check-v65 check-v66 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -155,6 +155,12 @@ help:
 	@echo "  standalone-v64 — build creation_os_v64 (v64 σ-Intellect: MCTS-σ + skill library + tool-authz + reflexion ratchet + AlphaEvolve-σ + MoD-σ; 5-bit composed decision)"
 	@echo "  check-v64  — standalone-v64 + test-v64 (v64 σ-Intellect; ≥150 deterministic tests)"
 	@echo "  microbench-v64 — MCTS / skill retrieve / tool-authz / MoD throughput on M4 (./creation_os_v64 --bench)"
+	@echo "  standalone-v65 — build creation_os_v65 (v65 σ-Hypercortex: bipolar HDC + VSA bind/bundle/permute + cleanup + role-filler + analogy + sequence + HVL bytecode; 6-bit composed decision)"
+	@echo "  check-v65  — standalone-v65 + test-v65 (v65 σ-Hypercortex; 534 deterministic tests)"
+	@echo "  microbench-v65 — Hamming / bind / cleanup / HVL throughput on M-series (./creation_os_v65 --bench)"
+	@echo "  standalone-v66 — build creation_os_v66 (v66 σ-Silicon: feature-detect + INT8 GEMV + ternary GEMV + NativeTernary wire + CFC conformal gate + HSL bytecode; 7-bit composed decision)"
+	@echo "  check-v66  — standalone-v66 + test-v66 (v66 σ-Silicon; ≥1700 deterministic tests)"
+	@echo "  microbench-v66 — INT8 GEMV / ternary GEMV / NTW decode / HSL throughput on M-series (./creation_os_v66 --bench)"
 	@echo "  cos        — build the unified Apple-tier CLI front door (cli/cos.c, single binary, no deps)"
 	@echo "  check-cos  — build cos and print its version line"
 	@echo "  attest     — emit ATTESTATION.json (v61 quote) + optional cosign sign-blob (scripts/security/attest.sh)"
@@ -830,7 +836,7 @@ standalone-v59-hardened: src/v59/creation_os_v59.c $(V59_SRCS)
 standalone-v60-hardened: src/v60/creation_os_v60.c $(V60_SRCS)
 	$(CC) $(HARDEN_CFLAGS) -Isrc/v60 -o creation_os_v60_hardened src/v60/creation_os_v60.c $(V60_SRCS) $(HARDEN_LDFLAGS)
 
-harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened
+harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened
 	@echo "harden: OK (v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 rebuilt with OpenSSF 2026 flags + M4 branch-protection)"
 
 # --- Sanitizer matrix (AddressSanitizer + UndefinedBehaviorSanitizer)
@@ -862,7 +868,7 @@ ubsan-v61: src/v61/creation_os_v61.c $(V61_SRCS)
 	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) $(V61_EXTRA_CFLAGS) -Isrc/v61 -o creation_os_v61_ubsan src/v61/creation_os_v61.c $(V61_SRCS) -lm $(V61_EXTRA_LDFLAGS)
 	./creation_os_v61_ubsan --self-test
 
-sanitize: asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65
+sanitize: asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66
 	@echo "sanitize: OK (ASAN v58/v59/v60/v61/v62/v63/v64/v65 + UBSAN v60/v61/v62/v63/v64/v65 all pass self-test under sanitizer)"
 
 # --- Hardening runtime check + SBOM + secret-scan dispatcher -------
@@ -1057,6 +1063,59 @@ check-v65: standalone-v65 test-v65
 
 microbench-v65: standalone-v65
 	./creation_os_v65 --bench
+
+# --- v66 σ-Silicon: matrix substrate -----------------------------
+#
+# Branchless, integer-only C kernel shipping the 2026 silicon-tier
+# frontier (MpGEMM arXiv:2512.21473, Hello SME arXiv:2409.18779,
+# NativeTernary arXiv:2604.03336, BitNet b1.58 NEON arXiv:2410.16144,
+# CFC arXiv:2603.27403) as the matrix substrate that turns v60-v65
+# thought into actual MAC ops on actual matrix hardware.
+#
+# Capabilities:
+#  - CPU feature detection (NEON / dotprod / i8mm / bf16 / SVE / SME /
+#    SME2) via sysctl on Darwin, cached after first call.
+#  - INT8 GEMV: 4-accumulator NEON inner loop with 64-byte prefetch,
+#    bit-identical scalar fallback on non-AArch64.  Saturated Q0.15
+#    output, no FP on the hot path.
+#  - Ternary GEMV (BitNet b1.58, packed 2-bits-per-weight): branchless
+#    table-lookup unpacker, constant time per row.
+#  - NativeTernary wire decoder: 2.0 bpw, defensive 11-code -> 0.
+#  - Conformal abstention gate (CFC): per-group Q0.15 threshold table
+#    with streaming quantile update and ratio-preserving overflow shift.
+#  - HSL bytecode: 8-opcode integer ISA over the matrix primitives
+#    with per-instruction MAC-cost accounting and a GATE opcode that
+#    writes v66_ok directly into the composed decision.
+#
+# Composes with v60 + v61 + v62 + v63 + v64 + v65 via
+# cos_v66_compose_decision as a 7-bit branchless AND.  Default build
+# does NOT emit any SME instruction (avoids SIGILL on M1/M2/M3 hosts);
+# COS_V66_SME=1 will reserve the SME path once a streaming-mode shim
+# lands.
+V66_SRCS = src/v66/silicon.c
+
+standalone-v66: src/v66/creation_os_v66.c $(V66_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v66 -o creation_os_v66 src/v66/creation_os_v66.c $(V66_SRCS) $(LDFLAGS)
+
+standalone-v66-hardened: src/v66/creation_os_v66.c $(V66_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v66 -o creation_os_v66_hardened src/v66/creation_os_v66.c $(V66_SRCS) $(HARDEN_LDFLAGS)
+
+asan-v66: src/v66/creation_os_v66.c $(V66_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v66 -o creation_os_v66_asan src/v66/creation_os_v66.c $(V66_SRCS) -lm
+	./creation_os_v66_asan --self-test
+
+ubsan-v66: src/v66/creation_os_v66.c $(V66_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v66 -o creation_os_v66_ubsan src/v66/creation_os_v66.c $(V66_SRCS) -lm
+	./creation_os_v66_ubsan --self-test
+
+test-v66: standalone-v66
+	./creation_os_v66 --self-test
+
+check-v66: standalone-v66 test-v66
+	@echo "check-v66: OK (v66 σ-Silicon: int8-gemv + ternary-gemv + ntw + cfc-conformal + hsl, 7-bit composed)"
+
+microbench-v66: standalone-v66
+	./creation_os_v66 --bench
 
 # --- cos: Apple-tier unified CLI front door ----------------------
 #
@@ -1533,7 +1592,7 @@ all: standalone oracle bench physics test
 	@echo "All targets built successfully."
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v61 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v61_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v61_asan creation_os_v61_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM creation_os_v61_asan.dSYM creation_os_v61_ubsan.dSYM creation_os_v62 creation_os_v62_hardened creation_os_v62_asan creation_os_v62_ubsan creation_os_v62_asan.dSYM creation_os_v62_ubsan.dSYM creation_os_v63 creation_os_v63_hardened creation_os_v63_asan creation_os_v63_ubsan creation_os_v63_asan.dSYM creation_os_v63_ubsan.dSYM creation_os_v64 creation_os_v64_hardened creation_os_v64_asan creation_os_v64_ubsan creation_os_v64_asan.dSYM creation_os_v64_ubsan.dSYM creation_os_v65 creation_os_v65_hardened creation_os_v65_asan creation_os_v65_ubsan creation_os_v65_asan.dSYM creation_os_v65_ubsan.dSYM cos SBOM.json ATTESTATION.json ATTESTATION.sig PROVENANCE.json .build/wasm .build/ebpf .build/nix-v61 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
+	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v61 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v61_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v61_asan creation_os_v61_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM creation_os_v61_asan.dSYM creation_os_v61_ubsan.dSYM creation_os_v62 creation_os_v62_hardened creation_os_v62_asan creation_os_v62_ubsan creation_os_v62_asan.dSYM creation_os_v62_ubsan.dSYM creation_os_v63 creation_os_v63_hardened creation_os_v63_asan creation_os_v63_ubsan creation_os_v63_asan.dSYM creation_os_v63_ubsan.dSYM creation_os_v64 creation_os_v64_hardened creation_os_v64_asan creation_os_v64_ubsan creation_os_v64_asan.dSYM creation_os_v64_ubsan.dSYM creation_os_v65 creation_os_v65_hardened creation_os_v65_asan creation_os_v65_ubsan creation_os_v65_asan.dSYM creation_os_v65_ubsan.dSYM creation_os_v66 creation_os_v66_hardened creation_os_v66_asan creation_os_v66_ubsan creation_os_v66_asan.dSYM creation_os_v66_ubsan.dSYM cos SBOM.json ATTESTATION.json ATTESTATION.sig PROVENANCE.json .build/wasm .build/ebpf .build/nix-v61 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

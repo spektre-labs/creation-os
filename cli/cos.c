@@ -13,13 +13,14 @@
  *     cos status                 # explicit status
  *     cos verify                 # the verified-agent report (v57)
  *     cos chace                  # the DARPA-CHACE security gate
- *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex
+ *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
  *     cos think <prompt>         # demo: latent-CoT + EBT + HRM
  *     cos seal <file> [ctx]      # v63 σ-Cipher: attestation-bound E2E seal
  *     cos unseal <file> [ctx]    # v63 σ-Cipher: verify + open sealed envelope
  *     cos mcts                   # v64 σ-Intellect: MCTS-σ / skill / tool-authz self-test
  *     cos hv                     # v65 σ-Hypercortex: HDC + VSA + cleanup + HVL self-test
- *     cos decide v60 v61 v62 v63 v64 v65   # 6-bit composed decision (JSON)
+ *     cos si                     # v66 σ-Silicon: GEMV + ternary + NTW + CFC + HSL self-test
+ *     cos decide v60 v61 v62 v63 v64 v65 v66   # 7-bit composed decision (JSON)
  *     cos version                # one-line version string
  *     cos help                   # this message
  *
@@ -165,10 +166,10 @@ static int run_first_line(const char *cmd, char *buf, size_t bufsz)
 
 static void print_header(void)
 {
-    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex%s\n",
+    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex · v66 σ-Silicon%s\n",
            C_BOLD, C_RESET,
            C_GREY, C_RESET);
-    printf("  %sthe verified, attested, reasoning-secured, end-to-end-encrypted, hyperdimensional local AI runtime%s\n",
+    printf("  %sthe verified, attested, reasoning-secured, end-to-end-encrypted, hyperdimensional, silicon-tier local AI runtime%s\n",
            C_GREY, C_RESET);
 }
 
@@ -309,19 +310,20 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — six kernels, one verdict");
+    section("Σ stack — seven kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
     int r4 = run_kernel("v63 σ-Cipher (E2E)",  "check-v63", "creation_os_v63");
     int r5 = run_kernel("v64 σ-Intellect",     "check-v64", "creation_os_v64");
     int r6 = run_kernel("v65 σ-Hypercortex",   "check-v65", "creation_os_v65");
-    int total = r1 | r2 | r3 | r4 | r5 | r6;
+    int r7 = run_kernel("v66 σ-Silicon",       "check-v66", "creation_os_v66");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all six kernels passed)"
+           total == 0 ? "ALLOW (all seven kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -541,33 +543,77 @@ static int cmd_hv(void)
 }
 
 /* --------------------------------------------------------------------
- *  cos decide <v60> <v61> <v62> <v63> <v64> <v65>
+ *  cos si — σ-Silicon self-test + microbench demo (v66).
  *
- *  One-shot wrapper around cos_v65_compose_decision.  Useful for CI
+ *  Runs the v66 self-test (≥1700 assertions across composition,
+ *  feature detect, INT8/ternary GEMV, NativeTernary wire round-trip,
+ *  CFC conformal gate, HSL bytecode) and drops into the microbench.
+ *  Exposes the matrix substrate that turns v60..v65 thought into MAC
+ *  ops on the silicon: NEON dotprod + i8mm + (where present) SME.
+ * -------------------------------------------------------------------- */
+
+static int cmd_si(void)
+{
+    print_header();
+    section("σ-Silicon (v66) — INT8 GEMV + ternary GEMV + NTW + CFC + HSL");
+    if (!file_exists("creation_os_v66")) {
+        printf("  %sbuilding creation_os_v66 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v66");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v66'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel",  "%s", "v66 σ-Silicon");
+    kv("subsys",  "%s", "feat-detect · int8-gemv · ternary-gemv · ntw · cfc · hsl");
+    (void)run_cmd("./creation_os_v66 --features | sed 's/^/    cpu features: /'");
+    int rc = run_cmd("./creation_os_v66 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v66 σ-Silicon self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Silicon self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v66 --bench | sed 's/^/    /'");
+    printf("\n  %smatrix substrate: integer-only Q0.15 outputs, NEON dotprod / i8mm "
+           "(SME path reserved at COS_V66_SME=1), composes with v60..v65 as a "
+           "7-bit branchless AND.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
+ *  cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66>
+ *
+ *  One-shot wrapper around cos_v66_compose_decision.  Useful for CI
  *  pipelines, policy audit trails, and debugging lane failures in
  *  isolation.  Prints a JSON object; exit status is 0 iff allow == 1.
  * -------------------------------------------------------------------- */
 
 static int cmd_decide(int argc, char **argv)
 {
-    if (argc != 6) {
+    if (argc != 7) {
         fprintf(stderr,
-                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65>\n"
+                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66>\n"
                 "       each argument is 0 or 1.\n");
         return 64;
     }
-    if (!file_exists("creation_os_v65")) {
-        int b = run_cmd("make -s standalone-v65 >/dev/null 2>&1");
+    if (!file_exists("creation_os_v66")) {
+        int b = run_cmd("make -s standalone-v66 >/dev/null 2>&1");
         if (b != 0) {
-            fprintf(stderr, "cos: v65 not built; run 'make standalone-v65'.\n");
+            fprintf(stderr, "cos: v66 not built; run 'make standalone-v66'.\n");
             return b;
         }
     }
     char cmd[256];
     snprintf(cmd, sizeof cmd,
-             "./creation_os_v65 --decision %d %d %d %d %d %d",
+             "./creation_os_v66 --decision %d %d %d %d %d %d %d",
              atoi(argv[0]), atoi(argv[1]), atoi(argv[2]),
-             atoi(argv[3]), atoi(argv[4]), atoi(argv[5]));
+             atoi(argv[3]), atoi(argv[4]), atoi(argv[5]),
+             atoi(argv[6]));
     return run_cmd(cmd);
 }
 
@@ -582,8 +628,8 @@ static int cmd_help(const char *prog)
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
     printf("  %s%-12s%s  the DARPA-CHACE 12-layer gate\n", C_BOLD, "chace",   C_RESET);
-    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex self-tests\n",
-           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
+    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon self-tests\n",
+           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
@@ -594,7 +640,9 @@ static int cmd_help(const char *prog)
            C_BOLD, "mcts",   C_RESET);
     printf("  %s%-12s%s  hypercortex: HDC + VSA + cleanup + HVL bytecode (v65)\n",
            C_BOLD, "hv",     C_RESET);
-    printf("  %s%-12s%s  6-bit composed decision: v60 v61 v62 v63 v64 v65 → JSON\n",
+    printf("  %s%-12s%s  silicon: INT8/ternary GEMV + NTW + CFC + HSL bytecode (v66)\n",
+           C_BOLD, "si",     C_RESET);
+    printf("  %s%-12s%s  7-bit composed decision: v60 v61 v62 v63 v64 v65 v66 → JSON\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -612,7 +660,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -625,7 +673,17 @@ static int cmd_version(void)
     int have65 = (file_exists("creation_os_v65") &&
                   run_first_line("./creation_os_v65 --version",
                                  v65, sizeof v65) == 0 && v65[0]);
-    if (have62 && have63 && have64 && have65) {
+    int have66 = (file_exists("creation_os_v66") &&
+                  run_first_line("./creation_os_v66 --version",
+                                 v66, sizeof v66) == 0 && v66[0]);
+    if (have62 && have63 && have64 && have65 && have66) {
+        printf("cos v66.0 silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
+        printf("  reasoning   : %s\n", v62);
+        printf("  cipher      : %s\n", v63);
+        printf("  intellect   : %s\n", v64);
+        printf("  hypercortex : %s\n", v65);
+        printf("  silicon     : %s\n", v66);
+    } else if (have62 && have63 && have64 && have65) {
         printf("cos v65.0 hyperdimensional neurosymbolic + agentic + e2e-encrypted reasoning fabric\n");
         printf("  reasoning   : %s\n", v62);
         printf("  cipher      : %s\n", v63);
@@ -668,6 +726,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "unseal")  == 0) return cmd_seal_unseal(0, argc - 2, argv + 2);
     if (strcmp(argv[1], "mcts")    == 0) return cmd_mcts();
     if (strcmp(argv[1], "hv")      == 0) return cmd_hv();
+    if (strcmp(argv[1], "si")      == 0) return cmd_si();
     if (strcmp(argv[1], "decide")  == 0) return cmd_decide(argc - 2, argv + 2);
     if (strcmp(argv[1], "version") == 0 || strcmp(argv[1], "--version") == 0)
         return cmd_version();

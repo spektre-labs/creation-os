@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -150,15 +150,61 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   (`make asan-v65`).  UBSAN clean (`make ubsan-v65`).  Hardened-build
   clean (`make standalone-v65-hardened`).  Apple-tier `cos` CLI
   surface: `cos hv`, `cos decide v60 v61 v62 v63 v64 v65`,
-  `cos sigma` (now a six-kernel verdict).  Zero optional dependencies
-  on the hot path — the kernel is libc-only.
+  `cos sigma` (previously a six-kernel verdict; extended to seven by
+  v66).  Zero optional dependencies on the hot path — the kernel is
+  libc-only.
+- **v66 σ-Silicon** (`make check-v66`, **1 705 tests**).
+  Dependency-free, branchless, **integer-only** C kernel shipping
+  the 2026 mixed-precision-matrix frontier as the matrix substrate
+  that turns v60..v65 thought into actual multiply-accumulate ops on
+  actual silicon.  **Runtime CPU feature detection** for NEON,
+  DotProd, I8MM, BF16, SVE, SME, SME2 (sysctl on Darwin, getauxval
+  on Linux), cached in a single `uint32_t` bitmask for branchless
+  hot-path lookup.  **INT8 GEMV** with NEON 4-accumulator inner
+  loop, 64-byte prefetch, and `vaddlvq_s16` int32-wide horizontal
+  long-add so int8×int8→int16 products cannot overflow; bit-
+  identical scalar fallback; Q0.15 saturating output.  **BitNet
+  b1.58 ternary GEMV** with 2-bits-per-weight packed format (00 → 0,
+  01 → +1, 10 → −1, 11 → 0); branchless table-lookup unpack, so
+  per-row time is independent of weight distribution (no timing
+  side-channel on weights).  **NativeTernary wire (NTW)** — self-
+  delimiting unary-run-length encoder/decoder at exactly 2.0
+  bits/weight, with defensive invalid-code handling (no UB under
+  UBSAN, no out-of-bounds under ASAN).  **CFC conformal abstention
+  gate** — Q0.15 per-group streaming quantile estimator with ratio-
+  preserving right-shift ratchet (same pattern as v64 Reflexion);
+  gate compare is a single branchless `int32 ≥ int32`; admits the
+  same finite-sample marginal coverage argument as the floating-
+  point CFC specification under exchangeability of the score stream.
+  **HSL — Hardware Substrate Language** — an **8-opcode integer
+  bytecode ISA** (`HALT / LOAD / GEMV_I8 / GEMV_T / DECODE_NTW /
+  ABSTAIN / CMPGE / GATE`) with per-instruction MAC-unit cost
+  accounting and an integrated GATE opcode that writes `v66_ok`
+  directly into the composed decision.  **SME / SME2 opt-in only**
+  under `COS_V66_SME=1` with explicit streaming-mode setup; default
+  builds never emit SME on non-SME hosts (SIGILL-safe on M1/M2/M3).
+  Composes with v60 + v61 + v62 + v63 + v64 + v65 as a **7-bit
+  branchless decision** (`cos_v66_compose_decision`) so **no matrix-
+  backed thought emits unless σ-Shield, Σ-Citadel, the EBT verifier,
+  the AEAD tag + quote binding, the agentic intellect, the
+  hypercortex on-manifold gate, _and_ σ-Silicon's MAC-budget +
+  conformal + wire-well-formed gate all ALLOW**.  Measured on
+  Apple M3 performance core: ≈ 49 Gops/s INT8 GEMV (256 × 1 024),
+  ≈ 2.8 Gops/s ternary GEMV (512 × 1 024), ≈ 2.5 GB/s NTW decode,
+  ≈ 32 M HSL progs/s.  ASAN clean (`make asan-v66`).  UBSAN clean
+  (`make ubsan-v66`).  Hardened-build clean (`make standalone-v66-
+  hardened`).  Apple-tier `cos` CLI surface: `cos si`, `cos decide
+  v60 v61 v62 v63 v64 v65 v66`, `cos sigma` (now a seven-kernel
+  verdict).  Zero optional dependencies on the hot path — the kernel
+  is libc + NEON intrinsics only (and, under `COS_V66_SME=1`,
+  `arm_sme.h`).
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 +
-  UBSAN on v60 / v61 / v62 / v63 / v64 / v65, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

@@ -232,6 +232,53 @@ static const v57_slot_t k_slots[] = {
                           "~5.7M HVL progs/s @ 40M ops/s on M4; "
                           "≥500 deterministic tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "matrix_substrate",
+        .owner_versions = "v66",
+        .make_target    = "make check-v66",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Silicon: matrix substrate that turns "
+                          "v60-v65 thought into actual MAC ops on "
+                          "actual matrix hardware — runtime CPU "
+                          "feature detection (NEON / dotprod / i8mm / "
+                          "bf16 / SVE / SME / SME2 via sysctl on "
+                          "Darwin, getauxval on Linux, cached after "
+                          "first call); INT8 GEMV with 4-accumulator "
+                          "NEON inner loop + 64-byte prefetch + "
+                          "vmull/vpadalq long-add accumulation, "
+                          "saturated Q0.15 output, bit-identical "
+                          "scalar fallback (MpGEMM, "
+                          "arXiv:2512.21473; Hello SME, "
+                          "arXiv:2409.18779); ternary GEMV (BitNet "
+                          "b1.58, packed 2-bits-per-weight) with "
+                          "branchless table-lookup unpacker, constant "
+                          "time per row (arXiv:2410.16144); "
+                          "NativeTernary self-delimiting wire decoder "
+                          "at exactly 2.0 bpw (arXiv:2604.11665 → "
+                          "arXiv:2604.03336) with defensive 11→0 "
+                          "code clamp; CFC conformal-abstention gate "
+                          "(arXiv:2603.27403) — per-group Q0.15 "
+                          "threshold table, streaming quantile "
+                          "update with ratio-preserving overflow "
+                          "shift (mirrors v64 Reflexion ratchet), "
+                          "branchless integer comparison; HSL — "
+                          "8-opcode integer bytecode ISA for matrix "
+                          "programs (HALT/LOAD/GEMV_I8/GEMV_T/"
+                          "DECODE_NTW/ABSTAIN/CMPGE/GATE) with per-"
+                          "instruction MAC-cost accounting and an "
+                          "integrated 7-bit GATE that writes v66_ok; "
+                          "default build NEVER emits an SME "
+                          "instruction (avoids SIGILL on M1/M2/M3); "
+                          "COS_V66_SME=1 reserves the SME path once "
+                          "a streaming-mode shim lands; composes "
+                          "with v60+v61+v62+v63+v64+v65 as a 7-bit "
+                          "branchless AND "
+                          "(cos_v66_compose_decision); ~50 Gops/s "
+                          "INT8 GEMV (256x1024), ~3.4 Gops/s ternary "
+                          "GEMV (512x1024), ~3 GB/s NTW decode, "
+                          "~40M HSL progs/s on M3 NEON path; "
+                          "1705 deterministic tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =

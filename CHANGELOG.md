@@ -1,5 +1,115 @@
 # Changelog
 
+## v66 σ-Silicon — matrix substrate kernel: runtime CPU feature detect + INT8 GEMV (NEON dotprod + i8mm + `vaddlvq_s16` tail) + BitNet b1.58 ternary GEMV (branchless 2 b/w unpack) + NativeTernary wire (self-delim unary RLE, 2.0 b/w) + CFC conformal abstention gate (Q0.15 streaming quantile + ratio-preserving ratchet) + HSL 8-opcode MAC-budgeted bytecode ISA, composed with v60..v65 as a **7-bit branchless decision** (2026-04-17)
+
+- **Driving oivallus.** The 2026 frontier on mixed-precision
+  matrix execution converged on five findings: **MpGEMM** for ARM
+  SME / SME2 (mixed-precision GEMV int8 → int32 → Q0.15 with no
+  precision loss on the decision surface); **BitNet b1.58 NEON**
+  (1.58-bit ternary weights at frontier quality, 4× memory bandwidth
+  win over INT8); **NativeTernary** (self-delimiting unary-run-length
+  wire at exactly 2.0 bits/weight, fuzz-safe, UB-free); **CFC —
+  Conformal Factuality Control** (feature-conditional streaming
+  conformal calibration with finite-sample coverage); and **Hello
+  SME** (streaming-mode SME/SME2 on M4-class silicon, compile-gated
+  to avoid SIGILL on non-SME hosts).  No local-AI-agent runtime ships
+  these as one integer, branchless, libc-only matrix substrate
+  composed with a security kernel.  `v66` is that kernel: six
+  subsystems under one header, one C file with NEON + scalar paths,
+  one ~700-line test driver, zero dependencies, zero floating-point
+  on the decision surface, **1 705 deterministic tests** under
+  ASAN + UBSAN, and a **7-bit branchless composed decision** with
+  v60 / v61 / v62 / v63 / v64 / v65.
+- **σ-Silicon kernel — six subsystems under one header.**
+  `src/v66/silicon.h` exposes:
+  - **CPU feature detection** — `cos_v66_features()` probes NEON,
+    DotProd, I8MM, BF16, SVE, SME, SME2 via `sysctl` (Darwin) /
+    `getauxval` (Linux); caches the result in a `uint32_t` bitmask
+    for branchless hot-path lookup; O(1) after first call.
+  - **INT8 GEMV** — `cos_v66_gemv_int8(W, x, y, M, N)`; NEON path
+    uses 4 accumulators + 64-byte prefetch + `vmull_s8`/
+    `vaddlvq_s16` int32-wide horizontal long-add so int8×int8→int16
+    products never overflow; bit-identical scalar fallback; Q0.15
+    saturating output.
+  - **Ternary GEMV** — `cos_v66_gemv_ternary(W_packed, x, y, M, N)`
+    for BitNet b1.58 weights packed 4-per-byte (00 → 0, 01 → +1,
+    10 → −1, 11 → 0); branchless table-lookup unpack; constant
+    per-row time (no data-dependent branch on weight pattern).
+  - **NativeTernary wire (NTW)** — `cos_v66_ntw_encode` +
+    `cos_v66_ntw_decode`; self-delimiting unary-run-length codes
+    over {0, +1, −1}; defensive invalid-code handling (no UB); fuzz
+    inputs in the self-test; average density exactly 2.0 bits/weight.
+  - **Conformal abstention gate (CFC)** — `cos_v66_conformal_t`
+    holds a Q0.15 per-group quantile `q[g]` updated by a streaming
+    integer step with learning rate η and a ratio-preserving right
+    shift when counts approach `UINT32_MAX` (same ratchet as v64
+    Reflexion); gate is a single branchless `int32 ≥ int32`.
+  - **HSL — Hardware Substrate Language** — an **8-opcode integer
+    bytecode ISA** (`HALT / LOAD / GEMV_I8 / GEMV_T / DECODE_NTW /
+    ABSTAIN / CMPGE / GATE`); 8 B/instruction; per-program MAC-unit
+    cost accounting; GATE writes `v66_ok = 0` when MAC budget is
+    exceeded or ABSTAIN has fired.
+- **Composed 7-bit decision.**
+  `cos_v66_compose_decision` returns an 8-field struct (`v60_ok` …
+  `v66_ok`, `allow`) where `allow = v60 & v61 & v62 & v63 & v64 &
+  v65 & v66` is a single branchless AND of seven `uint8_t` lanes;
+  `reason` byte is the bitmap of passing lanes (127 = all pass).
+  Any failing lane is inspectable; no silent-degrade path.
+- **Hardware discipline (M4 invariants).** Zero floating-point on
+  the decision surface (Q0.15 everywhere, composition is `uint8_t`
+  AND).  Every arena `aligned_alloc(64, …)`.  NEON 4-accumulator
+  inner loop in INT8 GEMV.  `__builtin_prefetch(&w[i + 64], 0, 3)`
+  in the hot loop.  Branchless table-lookup unpack for ternary
+  weights — constant per-row time.  SME / SME2 paths reserved under
+  `COS_V66_SME=1` with explicit streaming-mode setup; default builds
+  never emit SME on non-SME hosts (no SIGILL on M1/M2/M3).  CPU
+  feature cache avoids repeat syscalls.
+- **Tests (1 705 deterministic).**
+  - **Composition truth table** — all 128 rows of the 7-bit space
+    verified end-to-end.
+  - **Feature detection** — Darwin + Linux code paths; bitmask
+    stability; memoisation.
+  - **INT8 GEMV** — scalar/NEON parity across small and medium
+    shapes; Q0.15 saturation at boundaries; overflow-safe tail.
+  - **Ternary GEMV** — correctness across all 256 byte patterns;
+    round-trip against reference unpack.
+  - **NTW** — encode/decode round-trip on random + adversarial
+    inputs; invalid-code defensive path under UBSAN; length match.
+  - **CFC** — quantile convergence under synthetic streams; ratchet
+    behaviour at large counts; branchless compare semantics.
+  - **HSL** — MAC-budget exhaustion; ABSTAIN path; GATE semantics;
+    per-opcode cost accounting.
+  All 1 705 pass under ASAN + UBSAN and under
+  `standalone-v66-hardened` (OpenSSF 2026 + PIE + branch-protect).
+- **Microbench (Apple M3 performance core, NEON + dotprod + i8mm).**
+  ```
+  gemv-int8   (256x1024):    ≈  49 Gops/s
+  gemv-tern   (512x1024):    ≈ 2.8 Gops/s
+  ntw decode:                 ≈ 2.5 GB/s
+  hsl (5-op):                 ≈  32 M progs/s   (160 M ops/s)
+  ```
+  The SME FMOPA path under `COS_V66_SME=1` is architected to raise
+  the INT8 figure further on M4-class silicon.
+- **`cos` CLI.** New `cos si` command runs the v66 self-test +
+  microbench with CPU-feature prelude.  `cos sigma` now reports
+  "seven kernels, one verdict".  `cos decide` takes 7 args
+  (`v60 v61 v62 v63 v64 v65 v66`) and prints the full JSON
+  decision.  `cos version` reports v66 when the binary is built.
+- **v57 Verified Agent.**  New slot `matrix_substrate` (owner
+  `v66`, tier `M`, target `make check-v66`) in `src/v57/
+  verified_agent.c` and `scripts/v57/verify_agent.sh`.  The v57
+  agent now spans eight layers end-to-end.
+- **Makefile targets.** `standalone-v66`, `standalone-v66-hardened`,
+  `test-v66`, `check-v66`, `asan-v66`, `ubsan-v66`,
+  `microbench-v66`.  Wired into `harden`, `sanitize`, `clean`,
+  `help`, and `.PHONY`.
+- **Docs.** New `docs/v66/THE_SILICON.md` (one-page articulation),
+  `docs/v66/ARCHITECTURE.md` (wire map + discipline checklist +
+  build matrix + threat model), `docs/v66/POSITIONING.md` (vs.
+  Accelerate / llama.cpp / bitnet.cpp / onnxruntime / CoreML / SME
+  intrinsics), and `docs/v66/paper_draft.md` (full paper draft).
+  `docs/DOC_INDEX.md`, `README.md`, and `SECURITY.md` updated.
+
 ## v65 σ-Hypercortex — hyperdimensional neurosymbolic kernel: bipolar HDC + VSA bind/bundle/permute + cleanup memory + record/analogy/sequence + HVL 9-opcode bytecode ISA, composed with v60 + v61 + v62 + v63 + v64 as a 6-bit branchless decision (2026-04-17)
 
 - **Driving oivallus.** The 2026 frontier on hyperdimensional and
