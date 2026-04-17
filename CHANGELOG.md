@@ -1,5 +1,134 @@
 # Changelog
 
+## v65 σ-Hypercortex — hyperdimensional neurosymbolic kernel: bipolar HDC + VSA bind/bundle/permute + cleanup memory + record/analogy/sequence + HVL 9-opcode bytecode ISA, composed with v60 + v61 + v62 + v63 + v64 as a 6-bit branchless decision (2026-04-17)
+
+- **Driving oivallus.** The 2026 frontier on hyperdimensional and
+  vector-symbolic computation converged on eight independent findings:
+  OpenMem 2026 (persistent neuro-symbolic memory for LLM agents),
+  VaCoAl (arXiv:2604.11665 — deterministic HD reasoning with
+  Galois-field algebra; 57-generation multi-hop over 470 k Wikidata
+  edges), Attention-as-Binding AAAI 2026 (transformer self-attention ≡
+  VSA unbind + superposition), VSA for ARC-AGI (arXiv:2511.08747 —
+  94.5 % Sort-of-ARC), Holographic Invariant Storage
+  (arXiv:2603.13558 — closed-form recovery-fidelity contracts for
+  bipolar VSA), PRISM (zero-parameter VSA reasoning), Hyperdimensional
+  Probe (arXiv:2509.25045 — HDC decoding of LLM representations), and
+  LifeHD (arXiv:2403.04759 — on-device lifelong learning, 34.3×
+  energy vs. NN baselines).  No local-AI-agent runtime ships an
+  integer, popcount-native, libc-only HDC/VSA substrate composed with
+  a security kernel.  `v65` is that kernel: seven capabilities, one
+  ~370-line header, one ~400-line C file, a ~500-line test driver,
+  zero dependencies, zero floating-point on the hot path, **534
+  deterministic tests** under ASAN + UBSAN, and a **6-bit branchless
+  composed decision** with v60 / v61 / v62 / v63 / v64.
+- **σ-Hypercortex kernel — seven capabilities under one header.**
+  `src/v65/hypercortex.h` exposes:
+  - **Bipolar hypervectors** at `D = 16 384 bits` = 2 048 B =
+    exactly 32 × 64-byte M4 cache lines.  Bit-packed; bit = 1 → +1,
+    bit = 0 → −1.
+  - **Primitive operations** — `cos_v65_hv_bind` (XOR, self-inverse),
+    `cos_v65_hv_bundle_majority` (integer tally + deterministic
+    tie-breaker HV), `cos_v65_hv_permute` (cyclic bit rotation),
+    `cos_v65_hv_hamming` (popcount-native), and
+    `cos_v65_hv_similarity_q15` = `(D − 2·H) · (32768/D)` in Q0.15 —
+    all integer, no FP.
+  - **Cleanup memory** — `cos_v65_cleanup_t` with `_new / _free /
+    _insert / _query`; constant-time linear sweep with branchless
+    argmin update; sweep runtime is `O(cap)` regardless of match
+    index (timing-channel-safe).
+  - **Record / role-filler** — `cos_v65_record_build` +
+    `cos_v65_record_unbind`; closed-form round-trip via XOR
+    involution.
+  - **Analogy** — `cos_v65_analogy` — A:B::C:? solved in one XOR
+    pass + cleanup; zero gradient steps.
+  - **Sequence memory** — `cos_v65_sequence_build` +
+    `cos_v65_sequence_at` with position-permutation.
+  - **HVL — HyperVector Language** — a **9-opcode integer bytecode
+    ISA** for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM /
+    LOOKUP / SIM / CMPGE / GATE`) with 8 B/instruction, per-program
+    cost accounting in popcount-word units, and an integrated GATE
+    opcode that writes `v65_ok` directly into the composed 6-bit
+    decision.
+- **Composed 6-bit decision.**
+  `cos_v65_compose_decision` returns a 7-field struct (`v60_ok`,
+  `v61_ok`, `v62_ok`, `v63_ok`, `v64_ok`, `v65_ok`, `allow`) where
+  `allow = v60 & v61 & v62 & v63 & v64 & v65` is a single branchless
+  AND of six `uint8_t` lanes.  Any failing lane is inspectable for
+  telemetry; no silent-degrade path.
+- **Hardware discipline (M4 invariants).** `D = 16 384` chosen so
+  one HV is exactly 32 × 64-byte cache lines.  Hamming unrolled × 4
+  accumulators so the wide decode stays full.  `__builtin_popcountll`
+  lowers to AArch64 `cnt` + horizontal add.  All arenas
+  `aligned_alloc(64, …)`; allocation happens only at `_new` — never
+  on the hot path.  Ternary-select lowers to `csel` on AArch64 —
+  branchless inner loops.  Zero floating-point anywhere in the
+  library.
+- **Tests (534 deterministic).**
+  - **Composition truth table** — 64 rows × 7 assertions = 448
+    lines: every row of the 6-bit space is verified end-to-end.
+  - **Primitives** — orthogonality variance of random HVs around
+    `D/2 ± 512`, bind self-inverse / commutative / associative,
+    permute round-trip over `k ∈ {−333, −222, …, +333}`, permute
+    preserving Hamming under joint shift, zero/copy round-trip.
+  - **Bundle + cleanup** — 5-source majority bundle closer to each
+    member than to an unrelated HV; exact-match sim = +32768;
+    noisy-recall with 512 flipped bits still resolves to the
+    correct label; tiny-arena overflow correctly rejected.
+  - **Record / role-filler** — 3-pair name/city/year round-trip
+    through cleanup memory; closed-form analogy identity
+    `((A ⊗ B ⊗ C) ⊗ C ⊗ B) = A`; direct-analogy helper.
+  - **Sequence** — 4-item sequence at `base_shift = 11`; decode at
+    each position correctly recovers the labeled filler.
+  - **HVL** — 9-instruction end-to-end program
+    (`LOAD × 2 → BIND × 2 → SIM → CMPGE → GATE → LOOKUP → HALT`)
+    produces `sim = +32768`, `flag = 1`, `v65_ok = 1`, `label = 10`;
+    over-budget execution returns `-2` with `v65_ok = 0`; malformed
+    opcode and out-of-range register both return `-1`.
+- **Microbench (M-series performance core, `-O2 -march=native`).**
+  - `hamming`: ~**10.1 M ops/s** ≈ **41 GB/s** (popcount-bound).
+  - `bind` (XOR): ~**31.2 M ops/s** ≈ **192 GB/s**
+    (unified-memory-bandwidth bound).
+  - cleanup (1 024 prototypes): ~**10.5 M proto·comparisons/s**.
+  - HVL (7-op program): ~**5.7 M programs/s** ≈ **40 M ops/s**.
+- **`cos` CLI.**
+  - `cos sigma` — now a six-kernel composed verdict (`ALLOW` iff
+    v60 + v61 + v62 + v63 + v64 + v65 all pass).
+  - `cos hv` — builds `creation_os_v65` if absent, runs self-test
+    + microbench demo.
+  - `cos decide v60 v61 v62 v63 v64 v65` — one-shot JSON
+    `{"allow":…,"reason":…,"v60_ok":…,...}` wrapping
+    `cos_v65_compose_decision`.
+  - `cos version` — now shows `v62` / `v63` / `v64` / `v65`
+    quadruple.
+- **Integrations.**
+  - `Makefile`: `V65_SRCS = src/v65/hypercortex.c`; new targets
+    `standalone-v65`, `standalone-v65-hardened`, `test-v65`,
+    `check-v65`, `asan-v65`, `ubsan-v65`, `microbench-v65`.
+    `.PHONY`, `help`, `harden`, `sanitize`, `clean` all extended.
+  - `scripts/v57/verify_agent.sh`: added
+    `hyperdimensional_cortex|M|v65|check-v65` slot → verify-agent
+    reports **14 PASS / 3 SKIP / 0 FAIL**.
+  - `src/v57/verified_agent.c`: added `hyperdimensional_cortex`
+    entry (owner `v65`, tier M, full summary).
+  - `scripts/v65/microbench.sh`: standardised v65 bench runner.
+- **Documentation.**
+  - `docs/v65/THE_HYPERCORTEX.md` — one-page articulation.
+  - `docs/v65/ARCHITECTURE.md` — wire map + discipline checklist +
+    threat-model tie-in.
+  - `docs/v65/POSITIONING.md` — vs. TorchHD / OpenMem / VaCoAl /
+    Pinecone / ChromaDB / LangChain memory.
+  - `docs/v65/paper_draft.md` — full paper draft.
+  - `docs/DOC_INDEX.md`, `SECURITY.md`, `README.md`, `.gitignore`
+    updated.
+- **Verification.** `make check-v65` (534/534), `make asan-v65`
+  (534/534), `make ubsan-v65` (534/534), `make standalone-v65-hardened`
+  (OpenSSF 2026 + PIE + branch-protect), `make verify-agent`
+  (14 PASS / 3 SKIP / 0 FAIL), `./cos sigma` ALLOW (all six kernels
+  passed).
+- **1 = 1.**  No reasoning leaves the stack unless every kernel —
+  capability (v60), lattice (v61), energy (v62), cipher (v63),
+  agent (v64), and **cortex (v65)** — agrees.
+
 ## v64 σ-Intellect — agentic AGI control plane: MCTS-σ + skill library + TOCTOU-safe tool authz + Reflexion ratchet + AlphaEvolve-σ + MoD-σ, composed with v60 + v61 + v62 + v63 as a 5-bit branchless decision (2026-04-17)
 
 - **Driving oivallus.** The 2026 agentic frontier had converged on six

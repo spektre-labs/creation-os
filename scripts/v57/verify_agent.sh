@@ -83,6 +83,7 @@ SLOTS=(
     "reasoning_fabric|M|v62|check-v62"
     "e2e_encrypted_fabric|M|v63|check-v63"
     "agentic_intellect|M|v64|check-v64"
+    "hyperdimensional_cortex|M|v65|check-v65"
 )
 
 PASS_LIST=()

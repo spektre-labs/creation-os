@@ -153,28 +153,31 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), and Agentic Intellect (v64 σ-Intellect)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), and Hyperdimensional Cortex (v65 σ-Hypercortex)
 
 Creation OS takes security as an **architecture**, not a checklist,
 reasoning as an **architecture**, end-to-end encryption as an
-**architecture**, and now **agentic intelligence** as an architecture
-too.  `v64 σ-Intellect` is **the first open-source local-AI-agent
-runtime to ship every 2026 agentic-frontier primitive (MCTS-σ PUCT
-search + σ-weighted persistent skill library + schema + caps + σ +
-TOCTOU tool authz + Reflexion ratchet + AlphaEvolve-σ ternary
-mutation + per-token Mixture-of-Depths-σ routing) as a single
-branchless Q0.15 integer C kernel with zero floating-point on the
-hot path** — composed with `v60` σ-Shield, `v61` Σ-Citadel, `v62`
-Reasoning Fabric, and `v63` σ-Cipher as a **5-bit branchless
-decision** behind the Apple-tier `cos` CLI.  No reasoning step, tool
-call, or emission leaves the stack unless all five kernels ALLOW.
-On an M-series performance core the control plane runs the 32-byte
-signature skill library at ~1.4 M retrievals/s, the PUCT MCTS tree
-at ~674 k iters/s, and the branchless tool authorisation path at
-**~517 M decisions/s** — four to seven orders of magnitude faster
-than any LLM-backed tool router.
+**architecture**, agentic intelligence as an **architecture**, and now
+**hyperdimensional neurosymbolic memory + reasoning** as an architecture
+too.  `v65 σ-Hypercortex` is **the first open-source local-AI-agent
+runtime to ship the 2026 hyperdimensional / vector-symbolic frontier
+(bipolar HVs at D=16 384 bits = 32 M4 cache lines + bind/bundle/permute
++ constant-time cleanup memory + role-filler records + analogy +
+position-permuted sequence memory + a 9-opcode integer bytecode ISA
+"HVL" with per-program cost accounting) as a single popcount-native,
+branchless, Q0.15-integer C kernel with zero floating-point on the hot
+path and zero dependencies beyond libc** — composed with `v60`
+σ-Shield, `v61` Σ-Citadel, `v62` Reasoning Fabric, `v63` σ-Cipher, and
+`v64` σ-Intellect as a **6-bit branchless decision** behind the
+Apple-tier `cos` CLI.  No thought emits unless all six kernels ALLOW.
+On an M-series performance core the substrate runs at silicon-tier
+bandwidth: bind (XOR) at **~192 GB/s** (within 2× of unified-memory
+peak), Hamming distance at **~41 GB/s**, cleanup memory at ~10.5 M
+prototype·comparisons/s, and HVL programs at **~5.7 M progs/s ·
+40 M ops/s** — neurosymbolic reasoning at the speed of the matrix
+hardware itself, not the speed of a Python stack.
 
-Seven layers, all runnable locally and in CI:
+Eight layers, all runnable locally and in CI:
 
 1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
    gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
@@ -248,16 +251,52 @@ Seven layers, all runnable locally and in CI:
    **MCTS-σ ~ 674 k iters/s · skill retrieve ~ 1.4 M ops/s · tool-
    authz ~ 517 M decisions/s · MoD-σ ~ 5.1 GB/s**.  CLI: `cos mcts`
    (self-test + microbench), `cos decide <v60> <v61> <v62> <v63>
-   <v64>` (one-shot JSON decision), and `cos sigma` as a **five-
+   <v64> <v65>` (one-shot JSON decision), and `cos sigma` as a **six-
    kernel verdict**.  Zero optional dependencies on the hot path —
    the kernel is libc-only.
-6. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+6. **v65 σ-Hypercortex** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2026 hyperdimensional / vector-symbolic
+   frontier as a popcount-native neurosymbolic substrate.  **Bipolar
+   hypervectors** at `D = 16 384 bits` (= 2 048 B = exactly 32 × 64-byte
+   M4 cache lines).  **VSA primitives**: bind (XOR, self-inverse),
+   threshold-majority bundle, cyclic permute, Q0.15 similarity
+   `(D − 2·H)·(32768/D)`.  **Cleanup memory** — constant-time linear
+   sweep with branchless argmin update; runtime is `O(cap)` regardless
+   of match index, so timing-channel leakage is bounded by arena size,
+   not by secret state (Holographic Invariant Storage,
+   arXiv:2603.13558).  **Record / role-filler** with closed-form unbind
+   via XOR involution.  **Analogy** — `A:B :: C:?` solved as
+   `A ⊗ B ⊗ C` followed by cleanup, in zero gradient steps.
+   **Sequence memory** — position-permuted bundle with `perm^{-p}`
+   decode.  **HVL — HyperVector Language** — a 9-opcode integer
+   bytecode ISA for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM
+   / LOOKUP / SIM / CMPGE / GATE`) with per-program cost accounting in
+   popcount-word units; the GATE opcode writes `v65_ok` directly into
+   the composed decision and refuses on over-budget.  Sources:
+   OpenMem 2026, VaCoAl arXiv:2604.11665, Attention-as-Binding
+   AAAI 2026, VSA-ARC arXiv:2511.08747, HIS arXiv:2603.13558,
+   Hyperdimensional Probe arXiv:2509.25045, HDFLIM, ConformalHDC,
+   LifeHD arXiv:2403.04759.  Composes with v60 + v61 + v62 + v63 + v64
+   as a **6-bit branchless decision** (`cos_v65_compose_decision`) — no
+   thought emits unless σ-Shield, Σ-Citadel, the EBT verifier, the
+   AEAD tag + quote binding, the agentic intellect, *and* the
+   hypercortex on-manifold + cost-budget gate all ALLOW.  **534 / 534
+   deterministic self-tests** at `make check-v65`.  ASAN clean
+   (`make asan-v65`).  UBSAN clean (`make ubsan-v65`).  Hardened build
+   clean (`make standalone-v65-hardened`).  Microbench on M-series
+   performance core: **~10.1 M Hamming/s @ 41 GB/s · ~31.2 M bind/s
+   @ 192 GB/s · ~10.5 M proto·cmps/s cleanup · ~5.7 M HVL progs/s @
+   40 M ops/s**.  CLI: `cos hv` (self-test + microbench), `cos decide
+   <v60> <v61> <v62> <v63> <v64> <v65>` (one-shot JSON decision), and
+   `cos sigma` as a **six-kernel verdict**.  Zero optional dependencies
+   on the hot path — the kernel is libc-only.
+7. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
    flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
-   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64), `make sanitize`
-   (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 + UBSAN on
-   v60 / v61 / v62 / v63 / v64, all self-tests), `make hardening-check`
-   (PIE / canary / fortify verified).
-7. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65), `make sanitize`
+   (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 + UBSAN on
+   v60 / v61 / v62 / v63 / v64 / v65, all self-tests),
+   `make hardening-check` (PIE / canary / fortify verified).
+8. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with
    `.gitleaks.toml` allowlist + grep-only fallback + hardcoded-URL
    sanity), `make reproducible-build` (double-build SHA-256 compare),
@@ -401,9 +440,10 @@ flowchart LR
 | **v62** | **Reasoning Fabric** — *the alien-tier 2026 frontier in one branchless C kernel.*  Six modules under one ABI (`src/v62/fabric.h`): **Coconut latent CoT** (arXiv:2412.06769) + **EBT verifier** (arXiv:2507.02092 / ICLR 2026) + **HRM H/L loop** (arXiv:2506.21734) + **Native Sparse Attention** (arXiv:2502.11089) + **DeepSeek-V3 Multi-Token Predictor** (arXiv:2412.19437) + **ARKV adaptive KV manager** (arXiv:2603.08727).  Hardware discipline (M4 invariants from `.cursorrules`): every buffer `aligned_alloc(64, ...)`, NEON 4-way + prefetch in every hot loop, branchless inner loops, mmap-friendly KV layout (64-B row stride).  Composes with v60 σ-Shield + v61 Σ-Citadel as a 3-bit branchless decision (`cos_v62_compose_decision`); **no reasoning step emits unless all three lanes ALLOW**.  Microbench on M4: **NSA attend ~ 8 200 calls/s (n=1024, d=64) · EBT minimize ~ 3.7 M calls/s (d=256, k=16)**.  Apple-tier CLI front door (`cli/cos.c`, ~500 lines, single C binary, zero deps, `NO_COLOR`-respecting): `./cos`, `cos status`, `cos verify`, `cos chace`, `cos sigma`, `cos think <prompt>`.  Registered as the `reasoning_fabric` slot (tier **M**) in the v57 Verified Agent | `check-v62` · `microbench-v62` · `asan-v62` · `ubsan-v62` · `cos` | **68/68** | first OSS local AI runtime to land all six 2026 reasoning advances in one C ABI — [docs/v62/THE_FABRIC.md](docs/v62/THE_FABRIC.md) · [docs/v62/ARCHITECTURE.md](docs/v62/ARCHITECTURE.md) · [docs/v62/POSITIONING.md](docs/v62/POSITIONING.md) · [paper](docs/v62/paper_draft.md) |
 | **v63** | **σ-Cipher** — *the 2026 end-to-end encryption frontier distilled into dependency-free branchless C.*  Ten primitives under one header (`src/v63/cipher.h`): **BLAKE2b-256** (RFC 7693), **HKDF-BLAKE2b** (RFC 5869), **ChaCha20** (RFC 8439), **Poly1305** (RFC 8439), **ChaCha20-Poly1305 AEAD** (RFC 8439 §2.8), **X25519** (RFC 7748, constant-swap Montgomery ladder, ref10 10-limb field arithmetic, all signed-shifts rewritten `carry * ((int64_t)1 << N)` for UBSAN cleanliness), constant-time equality + optimiser-resistant secure-zero, **attestation-bound sealed envelope** (key = HKDF(v61 256-bit quote ‖ nonce ‖ context) — a trace only decrypts on a host whose committed runtime matches the one that sealed), forward-secret **symmetric ratchet**, and an IK-like **session handshake** with BLAKE2b chaining key.  Optional `COS_V63_LIBSODIUM=1` delegates primitives to libsodium's AArch64 assembly; optional `COS_V63_LIBOQS=1` reserves the ML-KEM-768 hybrid slot (Signal SPQR / reishi-handshake pattern).  Absent opt-ins report **SKIP** honestly; the portable / non-PQ path is never silently claimed as libsodium- or PQ-verified.  Composes with v60 + v61 + v62 as a **4-bit branchless decision** (`cos_v63_compose_decision`): **no sealed message emits unless σ-Shield, Σ-Citadel, the EBT verifier _and_ the AEAD tag + quote binding all ALLOW**.  Microbench on M-series laptop: **AEAD ~ 516 MiB/s · BLAKE2b-256 ~ 1 047 MiB/s · X25519 ~ 12 000 ops/s · seal ~ 336 000 ops/s**.  CLI: `cos seal <path> [--context CTX]`, `cos unseal <path> [--context CTX]`, and `cos sigma` as a four-kernel verdict.  Registered as the `e2e_encrypted_fabric` slot (tier **M**) in the v57 Verified Agent | `check-v63` · `microbench-v63` · `asan-v63` · `ubsan-v63` · `cos seal` · `cos unseal` | **144/144** | first OSS local-AI-agent runtime to ship every 2026 encryption-frontier primitive as one dependency-free C kernel, attestation-bound, composed with the capability + lattice + EBT kernels — [docs/v63/THE_CIPHER.md](docs/v63/THE_CIPHER.md) · [docs/v63/ARCHITECTURE.md](docs/v63/ARCHITECTURE.md) · [docs/v63/POSITIONING.md](docs/v63/POSITIONING.md) · [paper](docs/v63/paper_draft.md) |
 | **v64** | **σ-Intellect** — *the 2026 agentic frontier distilled into branchless Q0.15 integer C with zero floating-point on the hot path.*  Six subsystems under one header (`src/v64/intellect.h`): **MCTS-σ** PUCT search (Empirical-MCTS, arXiv:2602.04248; rStar-Math; Nemotron-MCTS) with integer isqrt + Q0.15 × Q0.15 → Q0.15 UCB and mmap-friendly flat-array node arena; **Skill library** (EvoSkill, arXiv:2603.02766; Voyager) with 32-byte σ-signature Hamming retrieval, constant-time scan (no timing oracle); **Tool authz** (Dynamic ReAct, arXiv:2509.20386; SmolAgents) — schema + caps + σ + **TOCTOU-safe** `arg_hash_at_entry ↔ at_use` binding, branchless priority cascade, multi-cause honest `reason_bits`, TOCTOU dominates every other lane; **Reflexion ratchet** (ERL, arXiv:2603.24639; ReflexiCoder, arXiv:2603.05863) — integer Δε / Δα update, uses/wins overflow ratio-preserving shift, Q0.15 confidence persisted per skill; **AlphaEvolve-σ** — BitNet-b1.58 ternary layout (arXiv:2402.17764) packed 2-bits-per-weight, σ-gated accept-or-rollback mutation, monotone α non-increase; **MoD-σ** — per-token depth routing via integer round-shift (arXiv:2404.02258; MoDA arXiv:2603.15619; A-MoD arXiv:2412.20875).  Composes with v60 + v61 + v62 + v63 as a **5-bit branchless decision** (`cos_v64_compose_decision`): **no tool call or reasoning emission leaves the stack unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote binding _and_ the agentic-intellect kernel all ALLOW**.  Microbench on M-series perf core: **MCTS-σ ~ 674 k iters/s · skill retrieve ~ 1.4 M ops/s · tool-authz ~ 517 M decisions/s · MoD-σ ~ 5.1 GB/s** — the tool-authz figure is ~10⁴ – 10⁷ × faster than any LLM-backed tool router, answering the "beat LLMs on their home turf" benchmark directly.  CLI: `cos mcts` (self-test + microbench), `cos decide <v60> <v61> <v62> <v63> <v64>` (one-shot JSON 5-bit decision), and `cos sigma` as a five-kernel verdict.  Registered as the `agentic_intellect` slot (tier **M**) in the v57 Verified Agent.  Zero optional dependencies on the hot path — the kernel is libc-only | `check-v64` · `microbench-v64` · `asan-v64` · `ubsan-v64` · `cos mcts` · `cos decide` | **260/260** | first OSS local-AI-agent runtime to ship every 2026 agentic-frontier primitive as one branchless integer C kernel with a 5-bit composed decision — [docs/v64/THE_INTELLECT.md](docs/v64/THE_INTELLECT.md) · [docs/v64/ARCHITECTURE.md](docs/v64/ARCHITECTURE.md) · [docs/v64/POSITIONING.md](docs/v64/POSITIONING.md) · [paper](docs/v64/paper_draft.md) |
+| **v65** | **σ-Hypercortex** — *the 2026 hyperdimensional / vector-symbolic frontier distilled into popcount-native, branchless, integer-only C with zero floating-point on the hot path and zero dependencies beyond libc.*  Seven capabilities under one header (`src/v65/hypercortex.h`): **Bipolar hypervectors** at `D = 16 384 bits` (= 2 048 B = exactly 32 × 64-byte M4 cache lines), bit-packed (set bit → +1, clear → −1); **VSA primitives** — bind (XOR, self-inverse), threshold-majority bundle with deterministic tie-breaker HV, cyclic permute, Q0.15 similarity `(D − 2·H)·(32768/D)`; **Cleanup memory** — constant-time linear sweep with branchless argmin update (Holographic Invariant Storage, arXiv:2603.13558) — runtime is `O(cap)` regardless of match index, so timing-channel leakage is bounded by arena size, not by secret state; **Record / role-filler** — `record = ⊕_i (role_i ⊗ filler_i)`, closed-form unbind via XOR involution; **Analogy** — `A:B :: C:?` solved as `A ⊗ B ⊗ C` followed by cleanup, in zero gradient steps; **Sequence memory** — `seq = ⊕_i perm^i(item_i)`, decode at position `p` via `perm^{-p}` + cleanup; **HVL — HyperVector Language** — a 9-opcode integer bytecode ISA for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM / LOOKUP / SIM / CMPGE / GATE`) with per-program cost accounting in popcount-word units, and an integrated `GATE` opcode that writes `v65_ok` directly into the composed decision and refuses on over-budget.  Sources: OpenMem 2026, VaCoAl arXiv:2604.11665, Attention-as-Binding AAAI 2026, VSA-ARC arXiv:2511.08747, HIS arXiv:2603.13558, Hyperdimensional Probe arXiv:2509.25045, HDFLIM, ConformalHDC, LifeHD arXiv:2403.04759.  Composes with v60 + v61 + v62 + v63 + v64 as a **6-bit branchless decision** (`cos_v65_compose_decision`): **no thought emits unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote binding, the agentic intellect _and_ the hypercortex on-manifold + cost-budget gate all ALLOW**.  Microbench on M-series performance core: **~10.1 M Hamming/s @ 41 GB/s · ~31.2 M bind/s @ 192 GB/s** (within 2× of unified-memory peak) · **~10.5 M proto·comparisons/s cleanup · ~5.7 M HVL programs/s @ 40 M ops/s** — neurosymbolic reasoning at silicon-tier bandwidth, not Python-stack speed.  CLI: `cos hv` (self-test + microbench), `cos decide <v60> <v61> <v62> <v63> <v64> <v65>` (one-shot JSON 6-bit decision), and `cos sigma` as a **six-kernel verdict**.  Registered as the `hyperdimensional_cortex` slot (tier **M**) in the v57 Verified Agent.  Zero optional dependencies on the hot path — the kernel is libc-only | `check-v65` · `microbench-v65` · `asan-v65` · `ubsan-v65` · `cos hv` · `cos decide` | **534/534** | first OSS local-AI-agent runtime to ship the 2026 HDC/VSA frontier as one popcount-native integer C kernel with a 9-opcode bytecode ISA and a 6-bit composed decision — [docs/v65/THE_HYPERCORTEX.md](docs/v65/THE_HYPERCORTEX.md) · [docs/v65/ARCHITECTURE.md](docs/v65/ARCHITECTURE.md) · [docs/v65/POSITIONING.md](docs/v65/POSITIONING.md) · [paper](docs/v65/paper_draft.md) |
 | **v61** | **Σ-Citadel** — composed defence-in-depth stack.  **First open-source AI-agent runtime to ship the full DARPA-CHACE advanced-security menu** as one `make chace` aggregator that PASSes on present layers and **SKIPs missing ones honestly** (never silently downgrading).  Kernel: branchless Bell-LaPadula + Biba + MLS-compartment lattice (`READ`/`WRITE`/`EXEC` with op-masked lanes), 8 × 8 × 16-bit labels, **6.1 × 10⁸ decisions/s on M4**; deterministic 256-bit attestation quote over `(code || caps || σ-state || lattice || nonce)` with constant-time 256-bit equality; `COS_V61_LIBSODIUM=1` swaps the XOR-fold for BLAKE2b-256 via libsodium `crypto_generichash`; `cos_v61_compose` gives a 4-valued `ALLOW` / `DENY_V60` / `DENY_LATTICE` / `DENY_BOTH` composed with v60 σ-Shield.  Ships seL4 CAmkES component contract (`sel4/sigma_shield.camkes`), Wasmtime WASM sandbox harness + example tool, eBPF LSM policy (`ebpf/sigma_shield.bpf.c`), Darwin sandbox-exec profile (`sandbox/darwin.sb`), OpenBSD pledge/unveil stub, Nix reproducible build (`nix/v61.nix`), distroless Dockerfile (`Dockerfile.distroless`), Sigstore cosign sign hook, SLSA v1.0 predicate emitter.  Registered as the `defense_in_depth_stack` slot (tier **M**) in the v57 Verified Agent | `check-v61` · `microbench-v61` · `attest` · `chace` · `slsa` · `distroless` | **61/61** | one command (`make chace`) for the full CHACE menu — [docs/v61/THE_CITADEL.md](docs/v61/THE_CITADEL.md) · [docs/v61/ARCHITECTURE.md](docs/v61/ARCHITECTURE.md) · [docs/v61/POSITIONING.md](docs/v61/POSITIONING.md) · [paper](docs/v61/paper_draft.md) |
 
-The first five are **integration scaffolds (C)** — policy + plumbing, not live engines. Caller brings the transformer, tool runtime, or multi-model client. **v57 is a convergence artifact** — it composes those five (plus v47 / v48 / v49) into one queryable table with one verification command. **v58 adds the KV-cache eviction layer**, **v59 adds the adaptive-compute-budget controller**, **v60 adds the runtime security kernel** (σ-Shield — first capability kernel with σ-decomposed intent gate), **v61 adds the composed defence-in-depth stack** (Σ-Citadel — BLP + Biba + MLS lattice + attestation + the full DARPA-CHACE menu via `make chace`), **v62 adds the Reasoning Fabric** (Coconut + EBT + HRM + NSA + MTP + ARKV in one branchless C kernel, composed with v60 + v61 as a 3-bit decision behind the Apple-tier `cos` CLI), **v63 adds the σ-Cipher** (BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + attestation-bound sealed envelopes + forward-secret ratchet + IK-like handshake with an optional ML-KEM-768 hybrid slot — every sealed message is bound to the live v61 attestation quote and gated on a 4-bit branchless decision across v60 / v61 / v62 / v63, exposed through `cos seal` / `cos unseal`), and **v64 adds the σ-Intellect** (MCTS-σ + persistent skill library + TOCTOU-safe tool authz + Reflexion ratchet + AlphaEvolve-σ ternary mutation + per-token MoD-σ routing in one Q0.15 integer C kernel with no floating point on the hot path — every emission gated on a 5-bit branchless decision across v60 / v61 / v62 / v63 / v64, and the tool-authorisation path runs at ~10⁴ – 10⁷ × the throughput of any LLM-backed tool router, exposed through `cos mcts` and `cos decide`). Full tier tags: [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
+The first five are **integration scaffolds (C)** — policy + plumbing, not live engines. Caller brings the transformer, tool runtime, or multi-model client. **v57 is a convergence artifact** — it composes those five (plus v47 / v48 / v49) into one queryable table with one verification command. **v58 adds the KV-cache eviction layer**, **v59 adds the adaptive-compute-budget controller**, **v60 adds the runtime security kernel** (σ-Shield — first capability kernel with σ-decomposed intent gate), **v61 adds the composed defence-in-depth stack** (Σ-Citadel — BLP + Biba + MLS lattice + attestation + the full DARPA-CHACE menu via `make chace`), **v62 adds the Reasoning Fabric** (Coconut + EBT + HRM + NSA + MTP + ARKV in one branchless C kernel, composed with v60 + v61 as a 3-bit decision behind the Apple-tier `cos` CLI), **v63 adds the σ-Cipher** (BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + attestation-bound sealed envelopes + forward-secret ratchet + IK-like handshake with an optional ML-KEM-768 hybrid slot — every sealed message is bound to the live v61 attestation quote and gated on a 4-bit branchless decision across v60 / v61 / v62 / v63, exposed through `cos seal` / `cos unseal`), **v64 adds the σ-Intellect** (MCTS-σ + persistent skill library + TOCTOU-safe tool authz + Reflexion ratchet + AlphaEvolve-σ ternary mutation + per-token MoD-σ routing in one Q0.15 integer C kernel with no floating point on the hot path — every emission gated on a 5-bit branchless decision across v60 / v61 / v62 / v63 / v64, and the tool-authorisation path runs at ~10⁴ – 10⁷ × the throughput of any LLM-backed tool router, exposed through `cos mcts` and `cos decide`), and **v65 adds the σ-Hypercortex** (bipolar HDC at D = 16 384 bits = 32 M4 cache lines + bind/bundle/permute + constant-time cleanup memory + role-filler records + analogy + position-permuted sequence memory + a 9-opcode integer bytecode ISA "HVL" with per-program cost accounting in one popcount-native, branchless, integer-only C kernel — every thought gated on a 6-bit branchless decision across v60 / v61 / v62 / v63 / v64 / v65, with bind running at ~192 GB/s, within 2× of unified-memory peak, exposed through `cos hv` and `cos decide`). Full tier tags: [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
 
 These milestones extend the portable spine with **agent routing**, **MCP**, **RTL / ASIC hooks**, a **neuromorphic toy**, a **σ-threshold / QEC analogy**, **σ-guided test-time compute scaffolding**, **σ-guided self-play scaffolding**, **σ-guided knowledge distillation (loss contracts + curriculum + ensemble + calibration)**, a **σ-native inference proxy** (`creation_os_proxy`: OpenAI-shaped loopback HTTP + per-token σ demo streaming), **σ-introspection** (`creation_os_v45`: calibration gap + doubt reward + internal-probe stub), a **σ-optimized BitNet-facing pipeline** (`creation_os_v46`: fast σ-from-logits + SIMD reductions + adaptive quant policy + `benchmarks/v46/SPEED_TABLE.md`), a **verification / claims-hygiene lab** (`creation_os_v47` + `make verify`: ACSL contracts, extended SymbiYosys depth, Hypothesis properties, ZK-σ API stub), a **σ-armored red-team lab** (`creation_os_v48`: σ-pattern anomaly + σ-gated sandbox + fail-closed defense stack + `make red-team` / `make merge-gate-v48`), a **certification-grade assurance pack** (`make certify`: DO-178C-aligned documentation + MC/DC driver + binary hygiene + trace automation — **not** FAA/EASA certification), and a **v50 benchmark rollup harness** (`make v50-benchmark`: `benchmarks/v50/FINAL_RESULTS.md` + critic FAQ + Reddit draft — Category 1–3 eval JSON slots are **explicit STUBs** until a pinned engine+dataset harness exists) — all **outside** `make merge-gate`. Tier tags (“M” vs “P”) live in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md); the cross-layer map is [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md).
 

@@ -199,6 +199,39 @@ static const v57_slot_t k_slots[] = {
                           "MoD routing on M4; ≥260 deterministic "
                           "tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "hyperdimensional_cortex",
+        .owner_versions = "v65",
+        .make_target    = "make check-v65",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Hypercortex: hyperdimensional "
+                          "neurosymbolic kernel — bipolar hypervectors "
+                          "at D=16384 bits (2048 B, 32 M4 cache lines) "
+                          "with VSA bind (XOR, self-inverse), "
+                          "threshold-majority bundle, cyclic permute, "
+                          "Q0.15 similarity = (D − 2·Hamming)·(32768/D); "
+                          "constant-time cleanup memory (Holographic "
+                          "Invariant Storage, arXiv:2603.13558); "
+                          "role-filler records + analogy + "
+                          "position-permuted sequence memory "
+                          "(OpenMem 2026; VaCoAl, arXiv:2604.11665; "
+                          "VSA-ARC, arXiv:2511.08747; "
+                          "Attention-as-Binding AAAI 2026; "
+                          "Hyperdimensional Probe arXiv:2509.25045); "
+                          "HVL — 9-opcode integer bytecode ISA for "
+                          "VSA programs with per-program cost budget "
+                          "and integrated 6-bit gate (LOAD/BIND/BUNDLE/"
+                          "PERM/LOOKUP/SIM/CMPGE/GATE/HALT); popcount-"
+                          "native (NEON `cnt` + horizontal add), "
+                          "aligned_alloc(64) arenas, zero FP on hot "
+                          "path; composes with v60+v61+v62+v63+v64 as "
+                          "a 6-bit branchless AND "
+                          "(cos_v65_compose_decision); "
+                          "~10M hamming/s @ 41 GB/s, ~31M bind/s @ "
+                          "192 GB/s, ~10M proto·cmps/s cleanup, "
+                          "~5.7M HVL progs/s @ 40M ops/s on M4; "
+                          "≥500 deterministic tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =

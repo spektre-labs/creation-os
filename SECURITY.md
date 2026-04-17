@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -115,15 +115,50 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   routing.  ASAN clean (`make asan-v64`).  UBSAN clean (`make
   ubsan-v64`).  Hardened-build clean (`make standalone-v64-hardened`).
   Apple-tier `cos` CLI surface: `cos mcts`, `cos decide v60 v61 v62
-  v63 v64`, `cos sigma` (now a five-kernel verdict).  Zero optional
+  v63 v64 v65`, `cos sigma` (now a six-kernel verdict).  Zero optional
   dependencies on the hot path — the kernel is libc-only.
+- **v65 σ-Hypercortex** (`make check-v65`, **534 tests**).
+  Dependency-free, branchless, **integer-only** C kernel shipping the
+  2026 hyperdimensional / vector-symbolic frontier as a popcount-native
+  neurosymbolic substrate.  **Bipolar hypervectors** at `D = 16 384 bits`
+  (= 2 048 B = exactly 32 × 64-byte M4 cache lines).  **VSA primitives**:
+  bind (XOR, self-inverse), threshold-majority bundle, cyclic permute,
+  Q0.15 similarity = `(D − 2·H) · (32768/D)` — zero floating-point on
+  the hot path.  **Cleanup memory** — constant-time linear sweep with
+  branchless argmin update; runtime is `O(cap)` regardless of match
+  index, so timing-channel leakage is bounded by arena size, not by
+  secret state (Holographic Invariant Storage, arXiv:2603.13558).
+  **Record / role-filler** (closed-form unbind via XOR involution),
+  **analogy** (`A:B::C:?` solved as `A ⊗ B ⊗ C` + cleanup, zero
+  gradient steps), and **sequence memory** (position-permuted bundle).
+  **HVL — HyperVector Language** — a **9-opcode integer bytecode ISA**
+  for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM / LOOKUP / SIM
+  / CMPGE / GATE`) with per-program cost accounting in popcount-word
+  units; the GATE opcode writes `v65_ok` directly into the composed
+  decision and refuses on over-budget.  Sources: OpenMem 2026,
+  VaCoAl arXiv:2604.11665, Attention-as-Binding AAAI 2026, VSA-ARC
+  arXiv:2511.08747, HIS arXiv:2603.13558, Hyperdimensional Probe
+  arXiv:2509.25045, HDFLIM, ConformalHDC, LifeHD arXiv:2403.04759.
+  Composes with v60 + v61 + v62 + v63 + v64 as a **6-bit branchless
+  decision** (`cos_v65_compose_decision`) so **no thought emits unless
+  σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote
+  binding, the agentic intellect, _and_ the hypercortex on-manifold +
+  cost-budget gate all ALLOW**.  Measured on M-series performance
+  core: ~10.1 M Hamming/s @ **41 GB/s**, ~31.2 M bind/s @ **192 GB/s**
+  (within 2× of unified-memory peak), ~10.5 M proto·comparisons/s
+  cleanup, ~5.7 M HVL programs/s @ ~40 M ops/s.  ASAN clean
+  (`make asan-v65`).  UBSAN clean (`make ubsan-v65`).  Hardened-build
+  clean (`make standalone-v65-hardened`).  Apple-tier `cos` CLI
+  surface: `cos hv`, `cos decide v60 v61 v62 v63 v64 v65`,
+  `cos sigma` (now a six-kernel verdict).  Zero optional dependencies
+  on the hot path — the kernel is libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 +
-  UBSAN on v60 / v61 / v62 / v63 / v64, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per
@@ -167,6 +202,27 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
 - **v64 skill library is flat.**  The default 1024-skill arena is
   constant-time in size but not hierarchical.  A mmap-backed,
   hierarchical 10⁶-skill library is designed (P-tier) but not shipped.
+- **v65 is not a language model.**  σ-Hypercortex is a *substrate*:
+  bind, bundle, permute, cleanup, gate.  It does not generate tokens
+  and has no learned parameters.  Compose it under or beside an LLM —
+  Attention-as-Binding (AAAI 2026) shows the substrate is already
+  there inside the transformer; v65 exposes it explicitly so it can
+  be audited and gated.
+- **v65 is not a vector database.**  Cleanup memory is fixed-D
+  bipolar HVs swept in constant time.  It is not float-embedding
+  ANN, not a similarity-search service, and does not replace
+  Pinecone / Weaviate / Chroma / Milvus on their own turf.
+- **v65 capacity ceiling.**  HIS (arXiv:2603.13558) bounds reliable
+  superposition at `~D / log(|cleanup|)` pairs.  Beyond ~2 000
+  superposed vectors the bundle's recovery floor is violated; the
+  caller is responsible for partitioning into multiple records.
+- **v65 cross-modal adapters are I-tier.**  Frozen-LLM and
+  frozen-vision embedding → HV pipelines (Hyperdimensional Probe,
+  HDFLIM lines) are documented and exercised on synthetic input
+  only; the live adapter is not in v65 proper.
+- **SRAM/CAM acceleration is P-tier.**  VaCoAl's hardware target
+  (arXiv:2604.11665) is a planned compile-only path; v65 ships only
+  the C / NEON popcount path on host hardware.
 - **No TPM / Secure Enclave** integration yet (P-tier).  Code-page
   baseline hashes are caller-provided.
 - **No formal proof of σ-Shield** yet (F-tier).  Frama-C annotations
