@@ -316,7 +316,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — sixteen kernels, one verdict");
+    section("Σ stack — seventeen kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -333,12 +333,13 @@ static int cmd_sigma(void)
     int r14= run_kernel("v73 σ-Omnimodal",     "check-v73", "creation_os_v73");
     int r15= run_kernel("v74 σ-Experience",    "check-v74", "creation_os_v74");
     int r16= run_kernel("v76 σ-Surface",       "check-v76", "creation_os_v76");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16;
+    int r17= run_kernel("v77 σ-Reversible",    "check-v77", "creation_os_v77");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11 | r12 | r13 | r14 | r15 | r16 | r17;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all sixteen kernels passed)"
+           total == 0 ? "ALLOW (all seventeen kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -1075,6 +1076,60 @@ static int cmd_sf(void)
 }
 
 /* --------------------------------------------------------------------
+ *  cmd_rv — σ-Reversible (v77) front door — Landauer / Bennett plane
+ *
+ *  The reversible-logic kernel.  Every primitive is bit-reversible:
+ *  forward ∘ reverse is strict identity, so the hot path erases zero
+ *  bits and — in principle — pays the Landauer floor k_B·T·ln 2 of
+ *  zero energy per step.  Extends v76's 16-bit composed decision
+ *  with a lateral 17-th AND via cos_v77_compose_decision(v76_ok,
+ *  v77_ok).  References: Landauer 1961, Bennett 1973, Toffoli 1980,
+ *  Fredkin 1982, Feynman 1985, Margolus 1990, arXiv:2402.02720,
+ *  NeurIPS 2023-25 reversible-transformer literature.
+ * -------------------------------------------------------------------- */
+
+static int cmd_rv(void)
+{
+    print_header();
+    section("σ-Reversible (v77) — Landauer / Bennett plane · 10 bit-reversible primitives · 17-bit composed decision");
+    if (!file_exists("creation_os_v77")) {
+        printf("  %sbuilding creation_os_v77 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v77");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v77'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel", "%s", "v77 σ-Reversible");
+    kv("subsys", "%s", "NOT · CNOT · SWAP · Fredkin · Toffoli · Peres · Majority-3 · Bennett · 8-bit reversible adder · RVL bytecode");
+    int rc = run_cmd("./creation_os_v77 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v77 σ-Reversible self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Reversible self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v77 --bench | sed 's/^/    /'");
+    printf("\n  %sreversible plane: ten bit-reversible primitives "
+           "(NOT, Feynman CNOT, SWAP, Fredkin CSWAP, Toffoli CCNOT, "
+           "Peres, self-inverse Majority-3, Bennett forward/reverse "
+           "driver, reversible 8-bit adder via Peres chain, and RVL "
+           "— an eight-opcode reversible bytecode ISA where every "
+           "instruction has an exact inverse).  The hot path erases "
+           "zero bits: forward ∘ reverse is strict identity across "
+           "the entire 256-bit × 16-register file.  In principle the "
+           "Landauer floor k_B·T·ln 2 of energy per erased bit is "
+           "therefore untouched.  Extends v76's 16-bit composed "
+           "decision with a lateral 17-th AND via "
+           "cos_v77_compose_decision(v76_ok, v77_ok).  1 = 1.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
  *  cmd_license — License Attestation Kernel front door (v75 σ-License)
  * --------------------------------------------------------------------
  *  Subcommands:
@@ -1307,8 +1362,8 @@ static int cmd_doctor(void)
              "SCSL-1.0 pinned · SPDX headers · NOTICE");
     doc_line("license attestation",     rc_scsl == 0    ? DOC_PASS : DOC_WARN,
              "License-Bound Receipt (SCSL §11) verifies");
-    doc_line("verify-agent (v57 → v76)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
-             "16 kernels + ancillary slots");
+    doc_line("verify-agent (v57 → v77)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
+             "17 kernels + ancillary slots");
     doc_line("CHACE-class gate",        rc_chace == 0   ? DOC_PASS : DOC_WARN,
              "12-layer capability-hardening rollup");
     doc_line("hardening-check",         rc_harden == 0  ? DOC_PASS : DOC_WARN,
@@ -1385,9 +1440,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "ux",     C_RESET);
     printf("  %s%-12s%s  surface: iOS + Android + WhatsApp/Telegram/Signal/iMessage/RCS/Matrix/XMPP/Discord/Slack/Line + Signal-ratchet + WCAG 2.2 + CRDT + Word/Excel/Photoshop/AutoCAD/SAP/Salesforce/Figma/Xcode/Postgres/Stripe/AWS/... + SBL (v76)\n",
            C_BOLD, "sf",     C_RESET);
+    printf("  %s%-12s%s  reversible: Landauer / Bennett plane — NOT/CNOT/SWAP/Fredkin/Toffoli/Peres/Majority-3/Bennett/8-bit reversible adder/RVL bytecode; forward ∘ reverse ≡ identity (v77)\n",
+           C_BOLD, "rv",     C_RESET);
     printf("  %s%-12s%s  license attestation: SCSL-1.0 dual-license · License-Bound Receipt · anti-tamper guard (v75; subs: status / self-test / verify / bundle / receipt / guard / print)\n",
            C_BOLD, "license", C_RESET);
-    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON\n",
+    printf("  %s%-12s%s  16-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 v72 v73 v74 v76 → JSON (v77 rides laterally via cos_v77_compose_decision)\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -1405,7 +1462,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -1448,7 +1505,27 @@ static int cmd_version(void)
     int have76 = (file_exists("creation_os_v76") &&
                   run_first_line("./creation_os_v76 --version",
                                  v76, sizeof v76) == 0 && v76[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76) {
+    int have77 = (file_exists("creation_os_v77") &&
+                  run_first_line("./creation_os_v77 --version",
+                                 v77, sizeof v77) == 0 && v77[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76 && have77) {
+        printf("cos v77.0 reversible · surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric · Landauer / Bennett plane\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+        printf("  wormhole      : %s\n", v71);
+        printf("  chain         : %s\n", v72);
+        printf("  omnimodal     : %s\n", v73);
+        printf("  experience    : %s\n", v74);
+        printf("  surface       : %s\n", v76);
+        printf("  reversible    : %s\n", v77);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70 && have71 && have72 && have73 && have74 && have76) {
         printf("cos v76.0 surface · experience · omnimodal creator · chain wormhole hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -1616,6 +1693,9 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "sf")      == 0 ||
         strcmp(argv[1], "surface") == 0 ||
         strcmp(argv[1], "mobile")  == 0) return cmd_sf();
+    if (strcmp(argv[1], "rv")         == 0 ||
+        strcmp(argv[1], "reversible") == 0 ||
+        strcmp(argv[1], "landauer")   == 0) return cmd_rv();
     if (strcmp(argv[1], "license") == 0 ||
         strcmp(argv[1], "lic")     == 0 ||
         strcmp(argv[1], "scsl")    == 0) return cmd_license(argc - 2, argv + 2);

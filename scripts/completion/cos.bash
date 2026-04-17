@@ -19,7 +19,8 @@ _cos_completions() {
     local top="status doctor health verify chace sigma think seal unseal
                mcts hv si nx noesis mn mnemos cn constellation hs
                hyperscale wh wormhole ch chain om omni omnimodal ux xp
-               experience sf surface mobile license lic scsl decide
+               experience sf surface mobile rv reversible landauer
+               license lic scsl decide
                version --version help -h --help"
 
     if [[ ${cword} -eq 1 ]]; then

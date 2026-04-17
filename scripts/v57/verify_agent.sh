@@ -94,6 +94,7 @@ SLOTS=(
     "omnimodal_creator|M|v73|check-v73"
     "experience_frontier|M|v74|check-v74"
     "surface_frontier|M|v76|check-v76"
+    "reversible_frontier|M|v77|check-v77"
     "license_attestation|M|v75|license-check"
 )
 
