@@ -153,13 +153,30 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), and Matrix Substrate (v66 σ-Silicon)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), and Deliberative Cognition (v67 σ-Noesis)
 
 Creation OS takes security as an **architecture**, not a checklist,
 reasoning as an **architecture**, end-to-end encryption as an
 **architecture**, agentic intelligence as an **architecture**,
 hyperdimensional neurosymbolic memory + reasoning as an architecture,
-and now **the matrix substrate itself** as an architecture too.
+**the matrix substrate itself** as an architecture, and now
+**deliberative cognition with evidence receipts** as an architecture
+too.  `v67 σ-Noesis` is **the first open-source local-AI-agent runtime
+to ship the 2024-2026 deliberative-reasoning frontier (AlphaProof /
+AlphaGeometry 2 tactic cascade, o1/o3-style fixed-width beam with
+Q0.15 verifier, Graph-of-Thoughts / Tree-of-Thoughts CSR walker +
+visited bitset, hybrid sparse-dense-graph retrieval with BM25 +
+256-bit Hamming signatures, Kahneman / Soar / ACT-R / LIDA
+dual-process gate as a single branchless compare, metacognitive
+confidence as `top1 − mean_rest` in Q0.15, AlphaFold-3-style
+per-step evidence receipts, and a 9-opcode integer bytecode ISA
+("NBL") with per-instruction reasoning-unit cost accounting) as a
+single branchless, integer-only C kernel with zero floating-point on
+any decision surface and zero dependencies beyond libc** — composed
+with v60..v66 as an **8-bit branchless decision**
+(`cos_v67_compose_decision`) behind the Apple-tier `cos` CLI.  No
+deliberation crosses to the agent unless all eight kernels ALLOW.
+
 `v66 σ-Silicon` is **the first open-source local-AI-agent runtime to
 ship the 2026 mixed-precision-matrix frontier (runtime CPU feature
 detection for NEON/DotProd/I8MM/BF16/SVE/SME/SME2 + INT8 GEMV with NEON
@@ -180,7 +197,7 @@ GB/s NTW decode**, and **≈ 32 M HSL progs/s** — MAC-budgeted decision
 surface at hardware speed, not framework speed, with SME / SME2 paths
 reserved under `COS_V66_SME=1` (SIGILL-safe default on M1/M2/M3).
 
-Nine layers, all runnable locally and in CI:
+Ten layers, all runnable locally and in CI:
 
 1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
    gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
@@ -332,17 +349,61 @@ Nine layers, all runnable locally and in CI:
    (256 × 1 024) · ≈ 2.8 Gops/s ternary GEMV (512 × 1 024) · ≈ 2.5
    GB/s NTW decode · ≈ 32 M HSL progs/s**.  CLI: `cos si` (self-test
    + microbench with CPU-feature prelude), `cos decide <v60> <v61>
-   <v62> <v63> <v64> <v65> <v66>` (one-shot JSON decision), and
-   `cos sigma` as a **seven-kernel verdict**.  Zero optional
-   dependencies on the hot path — the kernel is libc + NEON
-   intrinsics only.
-8. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+   <v62> <v63> <v64> <v65> <v66>` (one-shot JSON decision; now 8-bit
+   with v67), and `cos sigma` as a **seven-kernel verdict** (now
+   eight with v67).  Zero optional dependencies on the hot path —
+   the kernel is libc + NEON intrinsics only.
+8. **v67 σ-Noesis** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2024-2026 deliberative-reasoning +
+   knowledge-retrieval frontier as the cognitive substrate that turns
+   v60..v66 control + matrix plane into structured cognition with
+   receipts.  **BM25 sparse retrieval** with integer Q0.15 IDF
+   surrogate (`log2((N − df + 1) / (df + 1))` via `__builtin_clz`),
+   CSR posting lists, and branchless top-K.  **Dense 256-bit
+   signature retrieval** via four `__builtin_popcountll` calls mapped
+   to Q0.15 similarity `(256 − 2·H)·128` (mirrors v65 HDC algebra at
+   reduced dimension).  **Bounded graph walker** (CSR + 8192-bit
+   visited bitset, saturating Q0.15 weight accumulation).  **Hybrid
+   rescore** (Q0.15 weights normalised to 32 768).  **Fixed-width
+   deliberation beam** (`COS_V67_BEAM_W = 8`) with Q0.15 step-scores
+   and caller-supplied `expand` + `verify` callbacks — o1/o3-style
+   test-time compute.  **Dual-process gate** (Kahneman / Soar / ACT-R
+   / LIDA synthesis 2026): System-1 fast-path vs System-2
+   deliberation picked by a *single* branchless compare on the top-1
+   margin.  **Metacognitive confidence** = `top1 − mean_rest` clamped
+   to Q0.15 — monotone in absolute gap, no FP.  **Tactic library**
+   (AlphaProof-style bounded cascade with precondition mask and
+   witness score, branchless argmax).  **NBL — Noetic Bytecode
+   Language** — a 9-opcode integer ISA (`HALT / RECALL / EXPAND /
+   RANK / DELIBERATE / VERIFY / CONFIDE / CMPGE / GATE`) with per-
+   instruction reasoning-unit cost accounting and an integrated
+   `GATE` opcode that writes `v67_ok = 1` iff `cost ≤ budget` AND
+   `reg_q15[a] ≥ imm` AND `evidence_count ≥ 1` AND `NOT abstained`
+   — so no NBL program produces `v67_ok = 1` without writing at
+   least one evidence receipt (AlphaFold-3-grade trace discipline in
+   ~10 lines of C).  Composes with v60 + v61 + v62 + v63 + v64 +
+   v65 + v66 as an **8-bit branchless decision**
+   (`cos_v67_compose_decision`) — no deliberation crosses to the
+   agent unless *every* lane allows.  **2 593 / 2 593 deterministic
+   self-tests** at `make check-v67`.  ASAN clean (`make asan-v67`).
+   UBSAN clean (`make ubsan-v67`).  Hardened build clean
+   (`make standalone-v67-hardened`).  Microbench on Apple M-series
+   performance core: **~54 M dense Hamming cmps/s · ~800 k beam
+   steps/s · ~64 M NBL programs/s (≈ 320 M ops/s) · ~9 k BM25
+   queries/s on D = 1 024, T = 16**.  CLI: `cos nx` (self-test +
+   microbench), `cos decide <v60> <v61> <v62> <v63> <v64> <v65>
+   <v66> <v67>` (one-shot JSON 8-bit decision), and `cos sigma` as
+   an **eight-kernel verdict**.  Registered as the
+   `deliberative_cognition` slot (tier **M**) in the v57 Verified
+   Agent.  Zero optional dependencies on the hot path — the kernel
+   is libc-only.
+9. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
    flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
-   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66),
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67),
    `make sanitize` (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 /
-   v65 / v66 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66, all
-   self-tests), `make hardening-check` (PIE / canary / fortify
-   verified).
+   v65 / v66 / v67 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66
+   / v67, all self-tests), `make hardening-check` (PIE / canary /
+   fortify verified).
 9. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with
    `.gitleaks.toml` allowlist + grep-only fallback + hardcoded-URL

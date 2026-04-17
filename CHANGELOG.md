@@ -1,5 +1,104 @@
 # Changelog
 
+## v67 σ-Noesis — deliberative reasoning + knowledge retrieval kernel: BM25 sparse (integer Q0.15 IDF surrogate) + 256-bit dense-signature retrieval (popcount-native Hamming) + bounded graph walker (CSR + 8192-bit visited bitset) + hybrid rescore (Q0.15 normalised weights) + fixed-width deliberation beam (o1/o3-style) + dual-process gate (Kahneman / Soar / ACT-R / LIDA — single branchless compare) + metacognitive confidence (`top1 − mean_rest` in Q0.15) + AlphaProof-style tactic cascade (branchless argmax) + NBL 9-opcode integer bytecode ISA with per-instruction reasoning-unit cost accounting and AlphaFold-3-style enforced evidence receipts, composed with v60..v66 as an **8-bit branchless decision** (2026-04-17)
+
+- **Driving oivallus.** v60..v66 close the security, reasoning-energy,
+  attestation, agentic, neurosymbolic, and matrix-substrate loops.
+  What remained missing was the *cognitive* loop — the 2024-2026
+  DeepMind / Anthropic / OpenAI frontier on deliberative reasoning
+  (AlphaProof, AlphaGeometry 2, o1/o3), hybrid knowledge retrieval
+  (BM25 + dense + graph per ColBERT / SPLADE / BGE 2026), dual-process
+  cognition (Kahneman System-1/2, Soar, ACT-R, LIDA 2026 synthesis),
+  metacognitive calibration (Mercier & Sperber + CFC), mechanistic
+  feature circuits (Anthropic SAE / Towards Monosemanticity), and
+  evidence-receipt trace discipline (AlphaFold 3).  All of these have
+  been implemented many times in FP Python stacks with hundreds of
+  thousands of lines of abstraction; none have been implemented as a
+  silicon-tier, branchless, integer-only, libc-only C kernel that
+  composes with a formally-gated security stack.  `v67` is that
+  kernel: nine capabilities under one header, ~880 lines of C, zero
+  dependencies, zero floating-point on any decision surface, **2 593
+  deterministic tests** under ASAN + UBSAN, and an **8-bit branchless
+  composed decision** with v60..v66.
+- **σ-Noesis kernel — nine capabilities under one header.**
+  `src/v67/noesis.h` exposes:
+  - **BM25 sparse retrieval** — `cos_v67_bm25_search` over CSR
+    postings + parallel `tf` + `doc_len`; integer Q0.15 IDF surrogate
+    `cos_v67_bm25_idf_q15` derived from `__builtin_clz`; length
+    normalisation expressed as Q0.15 shift; branchless top-K insertion.
+  - **256-bit dense signatures** — `cos_v67_sig_t = { uint64_t w[4] }`;
+    Hamming via four `__builtin_popcountll`; similarity
+    `(256 − 2·H) · 128` saturated to Q0.15.
+  - **Bounded graph walker** — `cos_v67_graph_walk`; CSR + inlined
+    8192-bit visited bitset; saturating Q0.15 weight accumulation;
+    strict `budget ≤ COS_V67_MAX_WALK` cap.
+  - **Hybrid rescore** — `cos_v67_hybrid_score_q15`; BM25 + dense +
+    graph fused with Q0.15 weights normalised to 32 768.
+  - **Deliberation beam** — fixed-width beam (`COS_V67_BEAM_W = 8`);
+    one step calls caller-supplied `expand` + `verify`; scores are
+    `parent + child ⋅ verify` in saturating Q0.15; insertion into
+    fresh Top-K of size `w`.
+  - **Dual-process gate** — `cos_v67_dual_gate`; System-1 vs System-2
+    picked by a *single* branchless compare on the top-1 margin.
+  - **Metacognitive confidence** — `cos_v67_confidence_q15`;
+    `top1 − mean_rest` clamped to Q0.15; monotone in absolute gap.
+  - **Tactic cascade** — `cos_v67_tactic_pick`; bounded tactic library
+    with precondition mask + witness score; branchless argmax over
+    tactics whose mask is satisfied.
+  - **NBL — Noetic Bytecode Language** — a 9-opcode integer ISA
+    (`HALT / RECALL / EXPAND / RANK / DELIBERATE / VERIFY / CONFIDE /
+    CMPGE / GATE`) with per-instruction reasoning-unit cost accounting
+    (HALT = 1, RECALL = 8, EXPAND = 4, RANK = 2, DELIBERATE = 16,
+    VERIFY = 4, CONFIDE = 2, CMPGE = 1, GATE = 1).  `GATE` writes
+    `v67_ok = 1` iff `cost ≤ budget` ∧ `reg_q15[a] ≥ imm` ∧
+    `evidence_count ≥ 1` ∧ `NOT abstained` — AlphaFold-3-grade
+    evidence discipline in ~10 lines of C.
+- **Composed decision — 8-bit branchless AND.**
+  `cos_v67_compose_decision(v60_ok, …, v67_ok)` returns
+  `allow = v60 & v61 & v62 & v63 & v64 & v65 & v66 & v67` as a single
+  AArch64 AND chain.  Truth table: 256 rows × 9 assertions = 2 304
+  of the 2 593 self-tests.
+- **Hardware discipline** — every arena `aligned_alloc(64, …)`; no FP
+  on any decision surface; branchless inner loops on top-K insertion,
+  tactic cascade, dual gate, hybrid rescore, Q0.15 sat-add/mul;
+  `__builtin_popcountll` for dense Hamming and visited bitset; no
+  dependencies beyond libc.
+- **Tests.** `./creation_os_v67 --self-test` reports `2593 pass,
+  0 fail` under:
+  - ASAN + UBSAN (`make asan-v67 ubsan-v67`)
+  - Hardened build (`make standalone-v67-hardened`, PIE, stack-
+    protector-strong, `-D_FORTIFY_SOURCE=2`, RELRO, immediate binding).
+- **Microbench** (Apple M-series perf core, 2026-04):
+  - Top-K (64 inserts into k = 16): **~920 k iters/s**
+  - BM25 (D = 1 024, T = 16, 3-term): **~9 k queries/s**
+  - Dense Hamming (N = 4 096): **~54 M cmps/s**
+  - Beam (w = 8, 3 steps): **~800 k iters/s**
+  - NBL (5-op program): **~64 M progs/s ≈ 320 M ops/s**
+- **`cos` CLI.**
+  - `cos nx` — v67 σ-Noesis self-test + microbench.
+  - `cos sigma` — now reports **eight kernels, one verdict**.
+  - `cos decide v60 v61 v62 v63 v64 v65 v66 v67` — 8-bit composed
+    decision as JSON; exit 0 iff `allow == 1`.
+  - `cos version` — now prints `cos v67.0 deliberative silicon-tier
+    hyperdimensional + agentic + e2e-encrypted reasoning fabric`.
+- **v57 Verified Agent.** `deliberative_cognition` slot owned by v67
+  at tier **M** (runtime-checked via `make check-v67`).
+- **Makefile.** `standalone-v67`, `standalone-v67-hardened`,
+  `test-v67`, `check-v67`, `microbench-v67`, `asan-v67`, `ubsan-v67`;
+  wired into `harden`, `sanitize`, `clean`, and `help`.
+- **Docs** ([docs/v67/THE_NOESIS.md](docs/v67/THE_NOESIS.md),
+  [docs/v67/ARCHITECTURE.md](docs/v67/ARCHITECTURE.md),
+  [docs/v67/POSITIONING.md](docs/v67/POSITIONING.md),
+  [docs/v67/paper_draft.md](docs/v67/paper_draft.md)) +
+  [scripts/v67/microbench.sh](scripts/v67/microbench.sh).
+- **Sources.** AlphaProof / AlphaGeometry 2 (DeepMind 2024), o1 / o3
+  deliberative reasoning (OpenAI 2024-2025 + arXiv:2411.14405),
+  Graph-of-Thoughts (arXiv:2308.09687), Tree-of-Thoughts
+  (arXiv:2305.10601), ColBERT / SPLADE / BGE hybrid retrieval
+  (2020-2026), Soar / ACT-R / LIDA cognitive architectures, Anthropic
+  SAE / Towards Monosemanticity (2023-2026), AlphaFold 3 (DeepMind
+  2024), CFC Conformal Factuality Control (arXiv:2603.27403).
+
 ## v66 σ-Silicon — matrix substrate kernel: runtime CPU feature detect + INT8 GEMV (NEON dotprod + i8mm + `vaddlvq_s16` tail) + BitNet b1.58 ternary GEMV (branchless 2 b/w unpack) + NativeTernary wire (self-delim unary RLE, 2.0 b/w) + CFC conformal abstention gate (Q0.15 streaming quantile + ratio-preserving ratchet) + HSL 8-opcode MAC-budgeted bytecode ISA, composed with v60..v65 as a **7-bit branchless decision** (2026-04-17)
 
 - **Driving oivallus.** The 2026 frontier on mixed-precision

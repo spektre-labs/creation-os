@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) + σ-Noesis (v67) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -198,13 +198,55 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   verdict).  Zero optional dependencies on the hot path — the kernel
   is libc + NEON intrinsics only (and, under `COS_V66_SME=1`,
   `arm_sme.h`).
+- **v67 σ-Noesis** (`make check-v67`, **2 593 tests**).
+  Dependency-free, branchless, **integer-only** C kernel shipping
+  the 2024-2026 deliberative-reasoning + knowledge-retrieval frontier
+  as the cognitive substrate that turns v60..v66 control + matrix
+  plane into structured cognition with receipts.  **BM25 sparse
+  retrieval** with integer Q0.15 IDF surrogate derived from
+  `__builtin_clz`, CSR posting lists, and branchless top-K.  **Dense
+  256-bit signature retrieval** via four `__builtin_popcountll` calls
+  (native `cnt + addv` on AArch64) mapped to Q0.15 similarity
+  `(256 − 2·H) · 128`.  **Bounded graph walker** with CSR + inlined
+  8192-bit visited bitset (single load + mask membership, no
+  data-dependent branch on node distribution).  **Hybrid rescore**
+  with Q0.15 weights normalised to 32 768.  **Fixed-width deliberation
+  beam** (COS_V67_BEAM_W = 8) with caller-supplied `expand` +
+  `verify` callbacks and Q0.15 step-scores.  **Dual-process gate**
+  (Kahneman / Soar / ACT-R / LIDA 2026 synthesis): System-1
+  fast-path vs System-2 deliberation picked by a *single* branchless
+  compare on the top-1 margin.  **Metacognitive confidence** =
+  `top1 − mean_rest` clamped to Q0.15; monotone in absolute gap.
+  **Tactic library** (AlphaProof-style) with branchless argmax over
+  precondition-satisfied witness scores.  **NBL — Noetic Bytecode
+  Language** — a **9-opcode integer bytecode ISA** (`HALT / RECALL /
+  EXPAND / RANK / DELIBERATE / VERIFY / CONFIDE / CMPGE / GATE`)
+  with per-instruction reasoning-unit cost accounting; GATE writes
+  `v67_ok = 1` iff `cost ≤ budget` ∧ `reg_q15[a] ≥ imm` ∧
+  `evidence_count ≥ 1` ∧ `NOT abstained` — so *no* program produces
+  `v67_ok = 1` without writing at least one evidence receipt
+  (AlphaFold-3-grade trace discipline in ~10 lines of C).  Composes
+  with v60..v66 as an **8-bit branchless decision**
+  (`cos_v67_compose_decision`) so **no deliberation crosses to the
+  agent unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag
+  + quote binding, the agentic intellect, the hypercortex on-manifold
+  gate, σ-Silicon's MAC-budget / conformal / wire-well-formed gate,
+  _and_ σ-Noesis's cost-budget + threshold + evidence-count gate all
+  ALLOW**.  Measured on Apple M-series performance core: ~54 M dense
+  Hamming cmps/s, ~800 k beam steps/s, ~64 M NBL programs/s
+  (~320 M ops/s), ~9 k BM25 queries/s on D = 1 024, T = 16.  ASAN
+  clean (`make asan-v67`).  UBSAN clean (`make ubsan-v67`).
+  Hardened-build clean (`make standalone-v67-hardened`).  Apple-tier
+  `cos` CLI surface: `cos nx`, `cos decide v60 v61 v62 v63 v64 v65
+  v66 v67`, `cos sigma` (now an eight-kernel verdict).  Zero optional
+  dependencies on the hot path — the kernel is libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 +
-  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

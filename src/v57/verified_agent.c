@@ -279,6 +279,50 @@ static const v57_slot_t k_slots[] = {
                           "~40M HSL progs/s on M3 NEON path; "
                           "1705 deterministic tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "deliberative_cognition",
+        .owner_versions = "v67",
+        .make_target    = "make check-v67",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Noesis: deliberative reasoning engine + "
+                          "AGI knowledge-retrieval kernel that turns "
+                          "v60..v66 control + matrix plane into "
+                          "structured cognition with receipts — BM25 "
+                          "sparse retrieval (integer Q0.15 IDF "
+                          "surrogate, CSR postings + tf parallel "
+                          "array, top-K via branchless insertion); "
+                          "256-bit dense-signature retrieval (Hamming, "
+                          "popcount-native, mirrors v65 HDC algebra); "
+                          "bounded graph walker (CSR + visited bitset "
+                          "with __builtin_popcountll, saturating Q0.15 "
+                          "weight accumulation); hybrid rescore (Q0.15 "
+                          "weights normalised to 32768); fixed-width "
+                          "deliberation beam with Q0.15 verifier "
+                          "(AlphaProof / o1-o3 deliberative reasoning, "
+                          "Graph-of-Thoughts arXiv:2308.09687, "
+                          "Tree-of-Thoughts arXiv:2305.10601); "
+                          "dual-process gate (System-1 vs System-2 "
+                          "via single branchless margin compare; "
+                          "Soar/ACT-R/LIDA synthesis 2026); "
+                          "metacognitive confidence (top1 − mean_rest "
+                          "in Q0.15, monotonic in absolute gap); "
+                          "tactic library (branchless priority cascade "
+                          "over witness score); NBL — 9-opcode integer "
+                          "bytecode ISA (HALT/RECALL/EXPAND/RANK/"
+                          "DELIBERATE/VERIFY/CONFIDE/CMPGE/GATE) with "
+                          "per-instruction reasoning-unit cost "
+                          "accounting and a GATE opcode that writes "
+                          "v67_ok iff cost ≤ budget AND score ≥ "
+                          "threshold AND evidence_count ≥ 1 AND NOT "
+                          "abstained (AlphaFold 3-style evidence "
+                          "receipts per step); composes with "
+                          "v60+v61+v62+v63+v64+v65+v66 as an 8-bit "
+                          "branchless AND (cos_v67_compose_decision); "
+                          "~54M dense Hamming cmps/s, ~800k beam "
+                          "steps/s, ~64M NBL progs/s (320M ops/s), "
+                          "~9k BM25 queries/s on D=1024 T=16; 2593 "
+                          "deterministic tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =
