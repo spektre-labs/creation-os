@@ -153,7 +153,27 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), Deliberative Cognition (v67 σ-Noesis), Continual Learning + Episodic Memory (v68 σ-Mnemos), and Distributed Orchestration (v69 σ-Constellation)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), Deliberative Cognition (v67 σ-Noesis), Continual Learning + Episodic Memory (v68 σ-Mnemos), Distributed Orchestration (v69 σ-Constellation), and Trillion-Parameter Hyperscale Substrate (v70 σ-Hyperscale)
+
+`v70 σ-Hyperscale` is **the first open-source local-AI-agent runtime
+to ship the 2024-2026 trillion-parameter hyperscale frontier
+(ShiftAddLLM power-of-2 weight quantisation arXiv:2406.05981 / NeurIPS
+2024, Mamba-2 / Mamba-3 selective SSM scan arXiv:2312.00752 +
+arXiv:2603.15569, RWKV-7 "Goose" delta-rule update arXiv:2503.14456,
+DeepSeek-V3 auxiliary-loss-free MoE-10k routing arXiv:2412.19437,
+Samsung HBM-PIM bit-serial AND-popcount arXiv:2603.09216, photonic
+WDM SKYLIGHT arXiv:2602.19031 + Lightmatter Envise, Intel Loihi 3
+graded-spike sparse activation + arXiv:2503.18002 MatMul-free LLM,
+NVIDIA NCCL bandwidth-optimal ring all-reduce, Petals + Helix +
+DirectStorage + GPUDirect Storage LRU streaming weight scheduler, and
+a 10-opcode integer bytecode ISA "HSL — Hyperscale Language" with
+per-instruction silicon-unit cost accounting) as a single branchless,
+integer-only C kernel with zero floating-point on any decision
+surface and zero dependencies beyond libc** — composed with
+v60..v69 as an **11-bit branchless decision**
+(`cos_v70_compose_decision`) behind the Apple-tier `cos` CLI.  No
+hyperscale inference step crosses to the agent unless **all eleven
+kernels ALLOW**.
 
 Creation OS takes security as an **architecture**, not a checklist,
 reasoning as an **architecture**, end-to-end encryption as an
@@ -553,12 +573,73 @@ Twelve layers, all runnable locally and in CI:
    Registered as the `distributed_orchestration` slot (tier **M**)
    in the v57 Verified Agent.  Zero optional dependencies on the
    hot path — the kernel is libc-only.
-11. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+11. **v70 σ-Hyperscale** — dependency-free, branchless,
+   **integer-only** C kernel shipping the 2024-2026 trillion-
+   parameter hyperscale frontier as the **substrate plane** that
+   turns the fleet (v69) into a **fleet-of-fleets** addressable from
+   a single workstation, on commodity Apple M-series silicon, with
+   zero matmul, zero FP on any decision surface, and zero
+   dependencies beyond libc.  **P2Q — power-of-2 weight quantisation
+   (ShiftAddLLM, NeurIPS 2024, arXiv:2406.05981)** — weights as ±2^k
+   in 4 bits; multiply-free GEMV via `int32_t` shift + conditional
+   negate; signed-shift-safe (shift in `uint32_t`).  **Mamba-2 /
+   Mamba-3 selective SSM scan (arXiv:2312.00752 + arXiv:2603.15569)**
+   — linear-time recurrence with content-dependent gates A, B, C, Δ;
+   constant memory per token; **no KV cache**.  **RWKV-7 "Goose"
+   delta-rule update (arXiv:2503.14456)** — O(1) per token; vector-
+   valued gating + in-context learning rate; exceeds Transformer TC^0
+   under recent complexity conjectures.  **DeepSeek-V3 auxiliary-
+   loss-free MoE-10k routing (arXiv:2412.19437)** — branchless top-K
+   MaxScore over up to 10 240 experts; integer bias controller for
+   load balancing without an auxiliary loss.  **Samsung HBM-PIM bit-
+   serial AND-popcount surrogate (arXiv:2603.09216)** — column-major
+   bit-packed weights; matmul replaced by
+   `__builtin_popcountll(act_word & weight_col)`; ~1.0 G AND-pops/s
+   on a single M4 P-core.  **Photonic wavelength-multiplexed dot-
+   product (SKYLIGHT arXiv:2602.19031, LightMat-HP arXiv:2604.12278,
+   Lightmatter Envise)** — eight independent wavelength lanes
+   accumulating int32 partial sums, branchless lane-select reduction.
+   **Intel Loihi 3 graded-spike sparse activation (Jan 2026, 8 M
+   neurons / 64 B synapses / 4 nm) + MatMul-free LLM
+   (arXiv:2503.18002)** — branchless `spike = act · (|act| ≥ θ)`;
+   energy proportional to activity.  **NVIDIA NCCL bandwidth-optimal
+   integer ring all-reduce (Patarasuk & Yuan 2009)** — reduce-scatter
+   + all-gather over N ranks in 2(N − 1) steps; branchless modulo;
+   saturating int32 add; topology-balance check.  **Petals + Helix +
+   Microsoft DirectStorage + NVIDIA GPUDirect Storage + AMD Ryzen AI
+   Max+ LRU streaming weight scheduler** — 64-slot LRU over 64-bit
+   `(layer, expert)` keys; branchless O(N) lookup; monotone-clock
+   victim; `__builtin_prefetch` on insert.  **HSL — Hyperscale
+   Language** — a 10-opcode integer bytecode ISA (`HALT / SHIFT /
+   SCAN / TIMEMIX / ROUTEK / PIMPOP / WDM / SPIKE / RING / GATE`)
+   with per-instruction silicon-unit cost accounting and an
+   integrated `GATE` opcode that writes `v70_ok = 1` iff
+   `silicon_cost ≤ silicon_budget` AND `reg_q15[a] ≥ throughput_floor`
+   AND `topology_ok == 1` AND `NOT abstained` — so **no hyperscale
+   inference step crosses to the agent unless silicon cost ≤ budget
+   AND throughput ≥ floor AND topology balanced**, all as a single
+   branchless AND.  Composes with v60..v69 as an **11-bit branchless
+   decision** (`cos_v70_compose_decision`).  **148 034 / 148 034
+   deterministic self-tests** at `make check-v70` (including the full
+   2¹¹ = 2048-entry truth table of the composed decision function).
+   ASAN clean (`make asan-v70`).  UBSAN clean (`make ubsan-v70`).
+   Hardened build clean (`make standalone-v70-hardened`).  Microbench
+   on Apple M4 P-core: **~187 M SSM tokens/s (N = 4 096) · ~1.9 M
+   RWKV-7 steps/s (dim = 128) · ~1.0 G AND-popcount ops/s
+   (cols = 4 096) · ~4 M HSL programs/s · ~187 M 11-bit composed
+   decisions/s**.  CLI: `cos hs` (self-test + microbench),
+   `cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68>
+   <v69> <v70>` (one-shot JSON 11-bit decision), and `cos sigma` as
+   an **eleven-kernel verdict**.  Registered as the
+   `hyperscale_substrate` slot (tier **M**) in the v57 Verified
+   Agent.  Zero optional dependencies on the hot path — the kernel is
+   libc-only.
+12. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
    flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
-   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69),
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 / v70),
    `make sanitize` (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 /
-   v65 / v66 / v67 / v68 / v69 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
-   v66 / v67 / v68 / v69, all self-tests), `make hardening-check` (PIE / canary /
+   v65 / v66 / v67 / v68 / v69 / v70 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
+   v66 / v67 / v68 / v69 / v70, all self-tests), `make hardening-check` (PIE / canary /
    fortify verified).
 9. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with

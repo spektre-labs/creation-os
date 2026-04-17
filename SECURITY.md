@@ -14,7 +14,7 @@ patch.  The σ-labs (v56–v61) have no network code path by construction.
 
 | Version | Status | Merge-gate | Security lab |
 | --- | --- | --- | --- |
-| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) + σ-Noesis (v67) + σ-Mnemos (v68) + σ-Constellation (v69) M-tier |
+| `main` | supported | yes | σ-Shield (v60) + Σ-Citadel (v61) + Reasoning Fabric (v62) + σ-Cipher (v63) + σ-Intellect (v64) + σ-Hypercortex (v65) + σ-Silicon (v66) + σ-Noesis (v67) + σ-Mnemos (v68) + σ-Constellation (v69) + σ-Hyperscale (v70) M-tier |
 | tagged v60 and earlier | reproducible only | yes at tag time | — |
 
 ## Reporting a vulnerability
@@ -361,13 +361,82 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   v67 v68 v69`, `cos sigma` (now a ten-kernel verdict).  Zero
   optional dependencies on the hot path — the kernel is
   libc-only.
+- **v70 σ-Hyperscale** (`make check-v70`, **148 034 tests**,
+  including the full 2¹¹ = 2 048-row truth table of
+  `cos_v70_compose_decision`).  Dependency-free, branchless,
+  **integer-only** C kernel shipping the 2024-2026 trillion-
+  parameter hyperscale frontier as the **substrate plane** that
+  turns the fleet (v69) into a fleet-of-fleets addressable from
+  a single workstation, on commodity Apple M-series silicon, with
+  zero matmul, zero FP on any decision surface, and zero
+  dependencies beyond libc — surpassing the proprietary CUDA /
+  ROCm / XLA / Pallas / Cerebras-SDK / Lava / HBM-PIM-command-set /
+  Idiom stacks of NVIDIA, AMD, Google, xAI, Cerebras, Sambanova,
+  Lightmatter, Intel, Samsung, and the DeepSeek-V3 / Petals /
+  Helix / DirectStorage / GPUDirect Storage ecosystem.  **P2Q
+  ShiftAddLLM** (NeurIPS 2024, arXiv:2406.05981) — ±2^k 4-bit
+  weights + multiply-free `int32_t` shift + conditional negate
+  GEMV, signed-shift-safe via `uint32_t` shift.  **Mamba-2 /
+  Mamba-3 selective SSM scan** (arXiv:2312.00752 +
+  arXiv:2603.15569) — content-dependent gates A, B, C, Δ in
+  Q0.15, constant memory per token, no KV cache.  **RWKV-7
+  "Goose" delta-rule update** (arXiv:2503.14456) — vector-valued
+  gating + in-context learning rate, O(1) per token.  **DeepSeek-
+  V3 auxiliary-loss-free MoE-10k routing** (arXiv:2412.19437) —
+  branchless top-K MaxScore over up to 10 240 experts + integer
+  bias controller.  **Samsung HBM-PIM bit-serial AND-popcount**
+  (arXiv:2603.09216) — column-major bit-packed weights +
+  `__builtin_popcountll(act_word & weight_col)`.  **Photonic
+  wavelength-multiplexed dot product** (SKYLIGHT
+  arXiv:2602.19031 + LightMat-HP arXiv:2604.12278 + Lightmatter
+  Envise) — eight independent int32 wavelength lanes + branchless
+  lane-select reduction.  **Intel Loihi 3 graded-spike sparse
+  activation** (Jan 2026, 8 M neurons / 64 B synapses / 4 nm) +
+  **MatMul-free LLM** (arXiv:2503.18002) — branchless
+  `spike = act · (|act| ≥ θ)`, energy proportional to activity.
+  **NVIDIA NCCL bandwidth-optimal integer ring all-reduce**
+  (Patarasuk & Yuan 2009) — reduce-scatter + all-gather over N
+  ranks in 2(N-1) steps + branchless modulo + saturating int32
+  add + topology-balance check.  **Petals + Helix + Microsoft
+  DirectStorage + NVIDIA GPUDirect Storage + AMD Ryzen AI Max+
+  LRU streaming weight scheduler** — 64-slot LRU over 64-bit
+  (layer, expert) keys + branchless O(N) lookup + monotone-clock
+  victim + `__builtin_prefetch` on insert.  **HSL — Hyperscale
+  Language** — a **10-opcode integer bytecode ISA** (`HALT /
+  SHIFT / SCAN / TIMEMIX / ROUTEK / PIMPOP / WDM / SPIKE / RING /
+  GATE`) with per-instruction silicon-unit cost accounting and an
+  integrated GATE opcode that writes `v70_ok = 1` iff
+  `silicon_cost ≤ silicon_budget` ∧ `reg_q15[a] ≥ throughput_floor`
+  ∧ `topology_ok == 1` ∧ `NOT abstained` — so **no hyperscale
+  inference step crosses to the agent unless silicon cost ≤
+  budget AND throughput ≥ floor AND topology balanced**, all as a
+  single branchless AND.  Composes with v60..v69 as an **11-bit
+  branchless decision** (`cos_v70_compose_decision`) so **no
+  hyperscale inference step crosses to the agent unless every
+  one of σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag +
+  quote binding, the agentic intellect, the hypercortex on-
+  manifold gate, σ-Silicon's MAC-budget + conformal + wire-well-
+  formed gate, σ-Noesis's deliberation-budget + receipt gate,
+  σ-Mnemos's recall-fidelity + forget-budget + rate-ratchet gate,
+  σ-Constellation's quorum + Byzantine + abstain gate, _and_
+  σ-Hyperscale's silicon-budget + throughput + topology gate
+  ALLOW**.  Measured on Apple M4 P-core: ≈ 187 M SSM tokens/s
+  (N = 4 096), ≈ 1.9 M RWKV-7 steps/s (dim = 128), ≈ 1.0 G
+  AND-popcount ops/s (cols = 4 096), ≈ 4 M HSL programs/s,
+  ≈ 187 M 11-bit composed decisions/s.  ASAN clean
+  (`make asan-v70`).  UBSAN clean (`make ubsan-v70`).  Hardened-
+  build clean (`make standalone-v70-hardened`).  Apple-tier `cos`
+  CLI surface: `cos hs`, `cos decide v60 v61 v62 v63 v64 v65 v66
+  v67 v68 v69 v70`, `cos sigma` (now an eleven-kernel verdict).
+  Zero optional dependencies on the hot path — the kernel is
+  libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 +
-  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 / v70 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 / v70, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

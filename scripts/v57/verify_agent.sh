@@ -88,6 +88,7 @@ SLOTS=(
     "deliberative_cognition|M|v67|check-v67"
     "continual_learning_memory|M|v68|check-v68"
     "distributed_orchestration|M|v69|check-v69"
+    "hyperscale_substrate|M|v70|check-v70"
 )
 
 PASS_LIST=()

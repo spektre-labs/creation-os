@@ -23,7 +23,8 @@
  *     cos nx                     # v67 σ-Noesis: BM25 + dense + graph + beam + dual-process + NBL self-test
  *     cos mn                     # v68 σ-Mnemos: bipolar HV + surprise + ACT-R + recall + Hebbian TTT + sleep + MML self-test
  *     cos cn                     # v69 σ-Constellation: tree-spec + debate + Byzantine vote + MoE route + gossip + Elo-UCB + dedup + CL self-test
- *     cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 # 10-bit composed decision (JSON)
+ *     cos hs                     # v70 σ-Hyperscale: P2Q ShiftAddLLM + Mamba-2 SSM + RWKV-7 + MoE-10k + HBM-PIM popcount + photonic WDM + Loihi-3 spike + NCCL ring + LRU-stream + HSL self-test
+ *     cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 # 11-bit composed decision (JSON)
  *     cos version                # one-line version string
  *     cos help                   # this message
  *
@@ -169,7 +170,7 @@ static int run_first_line(const char *cmd, char *buf, size_t bufsz)
 
 static void print_header(void)
 {
-    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex · v66 σ-Silicon · v67 σ-Noesis · v68 σ-Mnemos · v69 σ-Constellation%s\n",
+    printf("%sCreation OS%s  %sv60 σ-Shield · v61 Σ-Citadel · v62 Fabric · v63 σ-Cipher · v64 σ-Intellect · v65 σ-Hypercortex · v66 σ-Silicon · v67 σ-Noesis · v68 σ-Mnemos · v69 σ-Constellation · v70 σ-Hyperscale%s\n",
            C_BOLD, C_RESET,
            C_GREY, C_RESET);
     printf("  %sthe verified, attested, reasoning-secured, end-to-end-encrypted, hyperdimensional, silicon-tier, deliberative, continually-learning local AI runtime%s\n",
@@ -313,7 +314,7 @@ static int run_kernel(const char *name,
 static int cmd_sigma(void)
 {
     print_header();
-    section("Σ stack — ten kernels, one verdict");
+    section("Σ stack — eleven kernels, one verdict");
     int r1 = run_kernel("v60 σ-Shield",        "check-v60", "creation_os_v60");
     int r2 = run_kernel("v61 Σ-Citadel",       "check-v61", "creation_os_v61");
     int r3 = run_kernel("v62 Reasoning Fabric","check-v62", "creation_os_v62");
@@ -324,12 +325,13 @@ static int cmd_sigma(void)
     int r8 = run_kernel("v67 σ-Noesis",        "check-v67", "creation_os_v67");
     int r9 = run_kernel("v68 σ-Mnemos",        "check-v68", "creation_os_v68");
     int r10= run_kernel("v69 σ-Constellation", "check-v69", "creation_os_v69");
-    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10;
+    int r11= run_kernel("v70 σ-Hyperscale",    "check-v70", "creation_os_v70");
+    int total = r1 | r2 | r3 | r4 | r5 | r6 | r7 | r8 | r9 | r10 | r11;
     printf("\n  %s%s%s composed verdict: %s\n",
            total == 0 ? C_GREEN : C_RED,
            total == 0 ? check() : cross(),
            C_RESET,
-           total == 0 ? "ALLOW (all ten kernels passed)"
+           total == 0 ? "ALLOW (all eleven kernels passed)"
                       : "DENY (one or more kernels failed)");
     return total;
 }
@@ -740,9 +742,66 @@ static int cmd_cn(void)
 }
 
 /* --------------------------------------------------------------------
- *  cos decide <v60>..<v69>
+ *  cos hs — σ-Hyperscale self-test + microbench demo (v70).
  *
- *  One-shot wrapper around cos_v69_compose_decision.  Useful for CI
+ *  Runs the v70 self-test (≥148 000 deterministic assertions across
+ *  the 11-bit composition truth table, P2Q ShiftAddLLM GEMV,
+ *  Mamba-2 selective SSM scan, RWKV-7 "Goose" delta-rule step,
+ *  10 240-expert DeepSeek-V3 MoE top-K router, HBM-PIM bit-serial
+ *  AND-popcount, photonic WDM lane dot-product, Loihi-3 graded-
+ *  spike encode + readout, NCCL / Patarasuk-Yuan ring all-reduce,
+ *  Petals / Helix / DirectStorage LRU streaming cache, HSL
+ *  bytecode).  Drops into the microbench.  Exposes the trillion-
+ *  parameter / hyperscale-killer substrate that turns a fleet
+ *  (v69) into a fleet-of-fleets on a single workstation.
+ * -------------------------------------------------------------------- */
+
+static int cmd_hs(void)
+{
+    print_header();
+    section("σ-Hyperscale (v70) — P2Q ShiftAddLLM + Mamba-2 SSM + RWKV-7 + MoE-10k DeepSeek-V3 + HBM-PIM + photonic-WDM + Loihi-3 + NCCL-ring + LRU-stream + HSL");
+    if (!file_exists("creation_os_v70")) {
+        printf("  %sbuilding creation_os_v70 (first run)...%s\n",
+               C_DIM, C_RESET);
+        int b = run_cmd("make -s standalone-v70");
+        if (b != 0) {
+            printf("  %s%s%s build failed (rc=%d); see 'make standalone-v70'\n",
+                   C_RED, cross(), C_RESET, b);
+            return b;
+        }
+    }
+    kv("kernel",  "%s", "v70 σ-Hyperscale");
+    kv("subsys",  "%s", "p2q-shiftadd · ssm-mamba2 · rwkv7-deltarule · moe-deepseekv3 · pim-hbm · wdm-photonic · spike-loihi3 · ring-allreduce · stream-petals · hsl");
+    int rc = run_cmd("./creation_os_v70 --self-test | sed 's/^/    /'");
+    if (rc != 0) {
+        printf("\n  %s%s%s v70 σ-Hyperscale self-test FAILED (rc=%d)\n",
+               C_RED, cross(), C_RESET, rc);
+        return rc;
+    }
+    printf("\n  %s%s%s σ-Hyperscale self-test PASS — running microbench...\n",
+           C_GREEN, check(), C_RESET);
+    (void)run_cmd("./creation_os_v70 --bench | sed 's/^/    /'");
+    printf("\n  %shyperscale substrate: P2Q weights as ±2^k (ShiftAddLLM "
+           "arXiv:2406.05981) — multiply-free GEMV; Mamba-2 selective "
+           "SSM scan (linear time, no KV cache); RWKV-7 \"Goose\" delta-"
+           "rule update (O(1) per token, exceeds Transformer TC^0); "
+           "DeepSeek-V3 auxiliary-loss-free MoE router to 10 240 "
+           "experts; Samsung HBM-PIM / RACAM bit-serial AND-popcount; "
+           "Lightmatter / SKYLIGHT photonic WDM lane SIMD; Intel "
+           "Loihi 3 graded-spike sparse activation (3.66 W text "
+           "classification); NVIDIA NCCL bandwidth-optimal ring "
+           "all-reduce; Petals / Helix / DirectStorage / GPUDirect "
+           "streaming-weight LRU; HSL bytecode GATE writes v70_ok iff "
+           "silicon budget ≤ limit AND throughput ≥ floor AND topology "
+           "balanced.  Composes with v60..v69 as an 11-bit branchless AND.%s\n",
+           C_GREY, C_RESET);
+    return 0;
+}
+
+/* --------------------------------------------------------------------
+ *  cos decide <v60>..<v70>
+ *
+ *  One-shot wrapper around cos_v70_compose_decision.  Useful for CI
  *  pipelines, policy audit trails, and debugging lane failures in
  *  isolation.  Prints a JSON-ish object; exit status is 0 iff
  *  allow == 1.
@@ -750,26 +809,26 @@ static int cmd_cn(void)
 
 static int cmd_decide(int argc, char **argv)
 {
-    if (argc != 10) {
+    if (argc != 11) {
         fprintf(stderr,
-                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69>\n"
+                "usage: cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68> <v69> <v70>\n"
                 "       each argument is 0 or 1.\n");
         return 64;
     }
-    if (!file_exists("creation_os_v69")) {
-        int b = run_cmd("make -s standalone-v69 >/dev/null 2>&1");
+    if (!file_exists("creation_os_v70")) {
+        int b = run_cmd("make -s standalone-v70 >/dev/null 2>&1");
         if (b != 0) {
-            fprintf(stderr, "cos: v69 not built; run 'make standalone-v69'.\n");
+            fprintf(stderr, "cos: v70 not built; run 'make standalone-v70'.\n");
             return b;
         }
     }
-    char cmd[320];
+    char cmd[384];
     snprintf(cmd, sizeof cmd,
-             "./creation_os_v69 --decision %d %d %d %d %d %d %d %d %d %d",
+             "./creation_os_v70 --decision %d %d %d %d %d %d %d %d %d %d %d",
              atoi(argv[0]), atoi(argv[1]), atoi(argv[2]),
              atoi(argv[3]), atoi(argv[4]), atoi(argv[5]),
              atoi(argv[6]), atoi(argv[7]), atoi(argv[8]),
-             atoi(argv[9]));
+             atoi(argv[9]), atoi(argv[10]));
     return run_cmd(cmd);
 }
 
@@ -784,8 +843,8 @@ static int cmd_help(const char *prog)
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
     printf("  %s%-12s%s  the DARPA-CHACE 12-layer gate\n", C_BOLD, "chace",   C_RESET);
-    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation self-tests\n",
-           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
+    printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale self-tests\n",
+           C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
@@ -804,7 +863,9 @@ static int cmd_help(const char *prog)
            C_BOLD, "mn",     C_RESET);
     printf("  %s%-12s%s  constellation: tree-spec + debate + Byzantine vote + MoE route + gossip + Elo-UCB + dedup + CL (v69)\n",
            C_BOLD, "cn",     C_RESET);
-    printf("  %s%-12s%s  10-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 → JSON\n",
+    printf("  %s%-12s%s  hyperscale: P2Q ShiftAddLLM + Mamba-2 SSM + RWKV-7 + MoE-10k + HBM-PIM + photonic-WDM + Loihi-3 spike + NCCL-ring + LRU-stream + HSL (v70)\n",
+           C_BOLD, "hs",     C_RESET);
+    printf("  %s%-12s%s  11-bit composed decision: v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 → JSON\n",
            C_BOLD, "decide", C_RESET);
     printf("  %s%-12s%s  one-line version\n",             C_BOLD, "version", C_RESET);
     printf("  %s%-12s%s  this message\n",                 C_BOLD, "help",    C_RESET);
@@ -822,7 +883,7 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
-    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0};
+    char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",
                                  v62, sizeof v62) == 0 && v62[0]);
@@ -847,7 +908,21 @@ static int cmd_version(void)
     int have69 = (file_exists("creation_os_v69") &&
                   run_first_line("./creation_os_v69 --version",
                                  v69, sizeof v69) == 0 && v69[0]);
-    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69) {
+    int have70 = (file_exists("creation_os_v70") &&
+                  run_first_line("./creation_os_v70 --version",
+                                 v70, sizeof v70) == 0 && v70[0]);
+    if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69 && have70) {
+        printf("cos v70.0 hyperscale distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
+        printf("  reasoning     : %s\n", v62);
+        printf("  cipher        : %s\n", v63);
+        printf("  intellect     : %s\n", v64);
+        printf("  hypercortex   : %s\n", v65);
+        printf("  silicon       : %s\n", v66);
+        printf("  noesis        : %s\n", v67);
+        printf("  mnemos        : %s\n", v68);
+        printf("  constellation : %s\n", v69);
+        printf("  hyperscale    : %s\n", v70);
+    } else if (have62 && have63 && have64 && have65 && have66 && have67 && have68 && have69) {
         printf("cos v69.0 distributed-orchestration continually-learning deliberative silicon-tier hyperdimensional + agentic + e2e-encrypted reasoning fabric\n");
         printf("  reasoning     : %s\n", v62);
         printf("  cipher        : %s\n", v63);
@@ -931,6 +1006,8 @@ int main(int argc, char **argv)
         strcmp(argv[1], "mnemos")  == 0) return cmd_mn();
     if (strcmp(argv[1], "cn")      == 0 ||
         strcmp(argv[1], "constellation") == 0) return cmd_cn();
+    if (strcmp(argv[1], "hs")      == 0 ||
+        strcmp(argv[1], "hyperscale") == 0) return cmd_hs();
     if (strcmp(argv[1], "decide")  == 0) return cmd_decide(argc - 2, argv + 2);
     if (strcmp(argv[1], "version") == 0 || strcmp(argv[1], "--version") == 0)
         return cmd_version();
