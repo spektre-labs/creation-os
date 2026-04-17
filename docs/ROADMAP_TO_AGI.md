@@ -768,10 +768,30 @@ If only ten PRs were allowed before the next release, rank:
 0. ~~**Run v102 σ-Eval-Harness end-to-end on this host**~~ — **done
    2026-04-17** (arc_easy / arc_challenge / truthfulqa_mc2 at n=500 all
    within 1σ of Microsoft's published BitNet numbers; σ neutral at
-   τ=0.0; [docs/v102/RESULTS.md](v102/RESULTS.md)).  Follow-up #0b:
-   **σ abstain sweep over τ ∈ {0.3, 0.5, 0.7}** with abstain% column,
-   to produce the first falsifiable selective-prediction curve for the
-   v29/v78/v101 σ-stack.
+   τ=0.0; [docs/v102/RESULTS.md](v102/RESULTS.md)).
+0b. ~~**v103 σ-τ-Sweep infrastructure**~~ — **landed 2026-04-17**
+    (post-hoc AURCC / AUACC / Coverage@target analyser on top of a single
+    σ-logged eval pass; six gating signals compared head-to-head including
+    an entropy-only baseline and a random floor; see
+    [docs/v103/THE_TAU_SWEEP.md](v103/THE_TAU_SWEEP.md) and
+    [docs/v103/SELECTIVE_PREDICTION.md](v103/SELECTIVE_PREDICTION.md)).
+0c. ~~**v103 σ-τ-Sweep full-curve numbers on this host**~~ — **done
+    2026-04-17** (7 591 ll-calls × 6 gating signals × 3 tasks; bootstrap
+    CI95 on every AURCC; [docs/v103/RESULTS.md](v103/RESULTS.md)).
+    **Measured outcome: pre-registered Outcome 2 (σ_mean ≅ entropy).**
+    All three ΔAURCC(σ_mean − entropy) within bootstrap CI.  Unregistered
+    secondary finding: σ_max_token (worst per-token σ) beats entropy on
+    arc_challenge (Δ = −0.020) and truthfulqa_mc2 (Δ = −0.044),
+    suggestive but sub-CI at n=500.
+0d. **v103 follow-up — confirm / refute σ_max_token advantage at
+    n = 5 000 per task** (~15 h wall).  If the σ_max_token − entropy
+    gap survives the tighter CI, v103's secondary finding promotes
+    from **P** to **M** and the σ-stack regains a measurable raison
+    d'être as a *per-token-peak* confidence signal (not an averaged
+    one).  If it collapses, the σ-stack is confirmed as "mostly
+    entropy" on BitNet at this scale, and the roadmap shifts toward
+    deficiency #7 (RLHF / DPO) and an instruction-tuned 1.58-bit base
+    for a fair re-test of the entropy-alone-insufficiency claim.
 1. **PQC: ML-KEM-768 + ML-DSA-65 in v63 σ-Cipher** (harvest-now-decrypt-
    later is a dated risk).
 2. **Real seL4 compartmentalisation** of v60..v80 as CAmkES components

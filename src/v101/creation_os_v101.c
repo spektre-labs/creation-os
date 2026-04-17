@@ -203,18 +203,30 @@ static int stdin_loop(cos_v101_bridge_t *b)
                 printf("{\"error\":\"json decode\"}\n"); fflush(stdout); continue;
             }
             double ll = 0.0; int is_greedy = 0;
-            int n_ctx_t = 0, n_cont_t = 0; float sigma_mean = 0.f;
-            int r = cos_v101_bridge_loglikelihood(b, ctx, cont,
-                                                  &ll, &is_greedy,
-                                                  &n_ctx_t, &n_cont_t, &sigma_mean);
+            int n_ctx_t = 0, n_cont_t = 0;
+            float sigma_mean = 0.f;
+            float sigma_profile[COS_V101_SIGMA_CHANNELS] = {0};
+            float sigma_max_token = 0.f;
+            int r = cos_v101_bridge_loglikelihood_ex(b, ctx, cont,
+                                                     &ll, &is_greedy,
+                                                     &n_ctx_t, &n_cont_t,
+                                                     &sigma_mean,
+                                                     sigma_profile,
+                                                     &sigma_max_token);
             if (r != COS_V101_OK) {
                 printf("{\"error\":\"ll rc=%d\"}\n", r);
             } else {
                 printf("{\"loglikelihood\":%.8f,\"is_greedy\":%s,"
                        "\"n_ctx_tokens\":%d,\"n_cont_tokens\":%d,"
-                       "\"sigma_mean\":%.6f}\n",
+                       "\"sigma_mean\":%.6f,\"sigma_max_token\":%.6f,"
+                       "\"sigma_profile\":[%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f]}\n",
                        ll, is_greedy ? "true" : "false",
-                       n_ctx_t, n_cont_t, (double)sigma_mean);
+                       n_ctx_t, n_cont_t,
+                       (double)sigma_mean, (double)sigma_max_token,
+                       (double)sigma_profile[0], (double)sigma_profile[1],
+                       (double)sigma_profile[2], (double)sigma_profile[3],
+                       (double)sigma_profile[4], (double)sigma_profile[5],
+                       (double)sigma_profile[6], (double)sigma_profile[7]);
             }
             fflush(stdout);
         } else if (strcmp(op, "gen") == 0) {

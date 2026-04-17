@@ -120,6 +120,22 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
                                   int *n_ctx_tokens, int *n_cont_tokens,
                                   float *out_sigma_mean);
 
+/* Extended loglikelihood that also returns, in addition to sigma_mean:
+ *   - the per-channel mean of each of the eight σ-channels across the
+ *     continuation tokens (length COS_V101_SIGMA_CHANNELS; may be NULL)
+ *   - the maximum per-token σ observed across the continuation (may be NULL);
+ *     useful as an alternative abstain signal (mean vs. max).
+ * All existing `*_loglikelihood()` semantics are preserved.  In stub mode
+ * returns COS_V101_ERR_NO_MODEL.
+ */
+int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
+                                     const char *ctx, const char *cont,
+                                     double *ll, int *is_greedy,
+                                     int *n_ctx_tokens, int *n_cont_tokens,
+                                     float *out_sigma_mean,
+                                     float *out_sigma_profile, /* [8] */
+                                     float *out_sigma_max_token);
+
 /* Greedy generation.  Decodes ctx, then emits up to max_tokens tokens,
  * stopping as soon as any string in `until[]` (if `n_until > 0`) appears at
  * the end of the growing decoded string, or when an EOG token is sampled.

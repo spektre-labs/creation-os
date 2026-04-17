@@ -45,6 +45,13 @@ if [ "$PY_VERSION_OK" != "1" ]; then
     exit 0
 fi
 
+# Python 3.12's site.py may skip .pth files under macOS-provenance'd
+# folders ("Skipping hidden .pth file").  Fall back to adding the editable
+# lm-eval source directly to PYTHONPATH so import works regardless.
+LMEVAL_SRC="$PWD/third_party/lm-eval"
+if [ -f "$LMEVAL_SRC/lm_eval/__init__.py" ]; then
+    export PYTHONPATH="$LMEVAL_SRC:${PYTHONPATH:-}"
+fi
 if ! .venv-bitnet/bin/python -c 'import lm_eval' >/dev/null 2>&1; then
     echo "check-v102: SKIP (lm_eval not importable in .venv-bitnet — run: .venv-bitnet/bin/pip install -e third_party/lm-eval)"
     exit 0
@@ -82,7 +89,7 @@ if [ $SMOKE_OK -ne 1 ]; then
 fi
 
 # (2) Registered backend must import.
-PYTHONPATH="$PWD/benchmarks/v102:${PYTHONPATH:-}" .venv-bitnet/bin/python - <<'PY'
+PYTHONPATH="$PWD/benchmarks/v102:$PWD/third_party/lm-eval:${PYTHONPATH:-}" .venv-bitnet/bin/python - <<'PY'
 from lm_eval.api.registry import get_model
 from benchmarks.v102 import creation_os_backend  # noqa: F401
 cls = get_model("creation_os")

@@ -178,11 +178,13 @@ static int decode_tokens(struct llama_context *ctx,
 /* Loglikelihood: score log P(cont_tokens | ctx_tokens)                    */
 /* ---------------------------------------------------------------------- */
 
-int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
-                                  const char *ctx_text, const char *cont_text,
-                                  double *ll_out, int *is_greedy_out,
-                                  int *n_ctx_tokens_out, int *n_cont_tokens_out,
-                                  float *out_sigma_mean)
+int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
+                                     const char *ctx_text, const char *cont_text,
+                                     double *ll_out, int *is_greedy_out,
+                                     int *n_ctx_tokens_out, int *n_cont_tokens_out,
+                                     float *out_sigma_mean,
+                                     float *out_sigma_profile,  /* [8] */
+                                     float *out_sigma_max_token)
 {
     if (!b || !ctx_text || !cont_text) return COS_V101_ERR_INVAL;
 
@@ -237,6 +239,8 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
     double  ll_sum        = 0.0;
     int     all_greedy    = 1;
     double  sigma_sum     = 0.0;
+    double  sigma_prof_sum[COS_V101_SIGMA_CHANNELS] = {0};
+    float   sigma_max_tok = 0.0f;
     int     n_vocab       = b->n_vocab;
 
     /* For each cont token, read the logits at the current tail,
@@ -265,6 +269,15 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
         cos_v101_sigma_t s;
         if (cos_v101_sigma_from_logits(logits, n_vocab, &s) == 0) {
             sigma_sum += (double)s.sigma;
+            sigma_prof_sum[0] += (double)s.entropy_norm;
+            sigma_prof_sum[1] += (double)s.margin;
+            sigma_prof_sum[2] += (double)s.top_k_mass;
+            sigma_prof_sum[3] += (double)s.tail_mass;
+            sigma_prof_sum[4] += (double)s.logit_spread;
+            sigma_prof_sum[5] += (double)s.p_max;
+            sigma_prof_sum[6] += (double)s.n_effective;
+            sigma_prof_sum[7] += (double)s.logit_std;
+            if (s.sigma > sigma_max_tok) sigma_max_tok = s.sigma;
         }
 
         /* Consume this cont token to advance KV cache and produce the
@@ -279,12 +292,33 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
         }
     }
 
-    if (ll_out)           *ll_out = ll_sum;
-    if (is_greedy_out)    *is_greedy_out = all_greedy;
-    if (out_sigma_mean)   *out_sigma_mean = (float)(sigma_sum / (double)(n_cont_t > 0 ? n_cont_t : 1));
+    double denom = (double)(n_cont_t > 0 ? n_cont_t : 1);
+    if (ll_out)             *ll_out = ll_sum;
+    if (is_greedy_out)      *is_greedy_out = all_greedy;
+    if (out_sigma_mean)     *out_sigma_mean = (float)(sigma_sum / denom);
+    if (out_sigma_profile) {
+        for (int c = 0; c < COS_V101_SIGMA_CHANNELS; c++) {
+            out_sigma_profile[c] = (float)(sigma_prof_sum[c] / denom);
+        }
+    }
+    if (out_sigma_max_token) *out_sigma_max_token = sigma_max_tok;
 
     free(toks);
     return COS_V101_OK;
+}
+
+int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
+                                  const char *ctx_text, const char *cont_text,
+                                  double *ll_out, int *is_greedy_out,
+                                  int *n_ctx_tokens_out, int *n_cont_tokens_out,
+                                  float *out_sigma_mean)
+{
+    return cos_v101_bridge_loglikelihood_ex(b, ctx_text, cont_text,
+                                            ll_out, is_greedy_out,
+                                            n_ctx_tokens_out, n_cont_tokens_out,
+                                            out_sigma_mean,
+                                            /*out_sigma_profile=*/NULL,
+                                            /*out_sigma_max_token=*/NULL);
 }
 
 /* ---------------------------------------------------------------------- */
