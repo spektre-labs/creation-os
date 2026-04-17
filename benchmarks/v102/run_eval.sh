@@ -90,7 +90,7 @@ fi
 
 if [ $SKIP_SIGMA -eq 0 ]; then
     echo "== σ-gated: BitNet via creation_os_v101 --ll / --gen ==============================="
-    python -m lm_eval \
+    python benchmarks/v102/run_lm_eval.py \
         --model creation_os \
         --model_args "bridge=$PWD/creation_os_v101,gguf=$PWD/$GGUF" \
         --tasks "$TASKS" \

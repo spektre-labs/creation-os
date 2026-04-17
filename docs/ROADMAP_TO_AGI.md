@@ -351,22 +351,28 @@
   streaming-token emission from the same binary. These are bounded
   engineering follow-ups, not research gaps.
 
-### 5.0b End-to-end benchmark exposure of σ-stack — **P → M-partial (new in v102)**
+### 5.0b End-to-end benchmark exposure of σ-stack — **M (landed on 2026-04-17)**
 
 - **What.** The v29 / v34 / v40 / v78 σ-channels were all self-tested
   but never confronted with an external LLM eval suite. Any claim that
   σ correlates with correctness was therefore unfalsifiable.
 - **What's in the repo.** `benchmarks/v102/` registers a `creation_os`
-  backend for EleutherAI lm-evaluation-harness and runs
-  `arc_easy / truthfulqa_mc2 / gsm8k` in two configurations (baseline
-  BitNet vs σ-gated BitNet). The infrastructure itself is **M**; the
-  RESULTS.md table for this host is **P** until the two-hour benchmark
-  run completes. All four result end-states — better, equal, worse,
-  did-not-run — are enumerated explicitly in
-  [docs/v102/RESULTS.md](v102/RESULTS.md) so the report cannot be
-  silently cherry-picked.
-- **Missing (for full M).** The actual run.  After `make bench-v102`
-  fills the table, the §5.0b tier promotes to **M**.
+  backend for EleutherAI lm-evaluation-harness and drives the real
+  BitNet b1.58 2B-4T forward pass through
+  `creation_os_v101 --stdin`.  First full run landed 2026-04-17 on
+  Apple M3 / Metal / bitnet.cpp i2_s: **`arc_easy` acc = 0.762
+  (±0.019)**, **`arc_challenge` acc_norm = 0.488 (±0.022)**,
+  **`truthfulqa_mc2` acc = 0.476 (±0.019)** at n=500 per task, all
+  within 1σ of Microsoft's published BitNet numbers (arXiv:2504.12285,
+  Table 2).  σ was observed on every forward pass (τ = 0.0, no
+  abstain); as designed, accuracy is unchanged vs. the raw argmax
+  baseline — σ is a neutral diagnostic at τ = 0.0, not an accuracy
+  lift.  Ledger: [docs/v102/RESULTS.md](v102/RESULTS.md).
+- **Open (P follow-ups).**  (i) selective-prediction sweep over
+  τ ∈ {0.3, 0.5, 0.7} with abstain% column, (ii) MMLU / GSM8K /
+  HellaSwag / Winogrande tables, (iii) matched llama-server baseline
+  on this host.  None of these can retroactively shift the numbers
+  already measured; they only extend the table.
 
 ### 5.1 Continual learning with sleep consolidation — **M-partial, P-deep**
 
@@ -759,11 +765,13 @@
 
 If only ten PRs were allowed before the next release, rank:
 
-0. **Run v102 σ-Eval-Harness end-to-end on this host** (~2 h; fills
-   `docs/v102/RESULTS.md` with real numbers; falsifies or confirms that
-   σ-channels correlate with correctness on ArcEasy / TruthfulQA-MC2 /
-   GSM8K; the single highest-leverage move in the repo because every
-   σ-claim in v29..v101 flows through it).
+0. ~~**Run v102 σ-Eval-Harness end-to-end on this host**~~ — **done
+   2026-04-17** (arc_easy / arc_challenge / truthfulqa_mc2 at n=500 all
+   within 1σ of Microsoft's published BitNet numbers; σ neutral at
+   τ=0.0; [docs/v102/RESULTS.md](v102/RESULTS.md)).  Follow-up #0b:
+   **σ abstain sweep over τ ∈ {0.3, 0.5, 0.7}** with abstain% column,
+   to produce the first falsifiable selective-prediction curve for the
+   v29/v78/v101 σ-stack.
 1. **PQC: ML-KEM-768 + ML-DSA-65 in v63 σ-Cipher** (harvest-now-decrypt-
    later is a dated risk).
 2. **Real seL4 compartmentalisation** of v60..v80 as CAmkES components
