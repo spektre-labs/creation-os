@@ -89,6 +89,11 @@ SLOTS=(
     "continual_learning_memory|M|v68|check-v68"
     "distributed_orchestration|M|v69|check-v69"
     "hyperscale_substrate|M|v70|check-v70"
+    "wormhole_teleport|M|v71|check-v71"
+    "chain_quorum|M|v72|check-v72"
+    "omnimodal_creator|M|v73|check-v73"
+    "experience_frontier|M|v74|check-v74"
+    "license_attestation|M|v75|license-check"
 )
 
 PASS_LIST=()

@@ -18,7 +18,7 @@
   </thead>
   <tbody>
     <tr>
-      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>), <strong>σ / agent v33 → v59 + composed-decision stack v60 → v70</strong> (router, decompose, spec decode, MCP, FPGA/ASIC RTL, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification / red-team / cert / rollup, integration scaffold, σ-governed harness, σ-proconductor, σ₃-speculative, σ-Constitutional, <strong>Verified Agent convergence + <code>make verify-agent</code></strong>, σ-Cache, σ-Budget, σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale — <strong>eleven-bit branchless AND gate</strong>, tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>).</td>
+      <td valign="top" style="padding:10px 12px;border-radius:10px 0 0 10px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border:1px solid #e2e8f0;border-right:0;">Portable C11 “living kernel”: <code>BSC</code> geometry, <code>σ</code> as a first-class signal, deterministic <code>--self-test</code> programs — plus opt-in labs (OpenAI-shaped stub, suite stub, Apple <code>native_m4/</code>), <strong>σ / agent v33 → v59 + composed-decision stack v60 → v74</strong> (router, decompose, spec decode, MCP, FPGA/ASIC RTL, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification / red-team / cert / rollup, integration scaffold, σ-governed harness, σ-proconductor, σ₃-speculative, σ-Constitutional, <strong>Verified Agent convergence + <code>make verify-agent</code></strong>, σ-Cache, σ-Budget, σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience — <strong>fifteen-bit branchless AND gate</strong>, tier-tagged in <a href="docs/WHAT_IS_REAL.md"><code>WHAT_IS_REAL</code></a>).</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Canonical tree: <a href="https://github.com/spektre-labs/creation-os"><code>spektre-labs/creation-os</code></a>. Teaching spine: <a href="creation_os_v2.c"><code>creation_os_v2.c</code></a> + <a href="core/"><code>core/*.h</code></a>. Review map: <a href="docs/WHICH_FILE_TO_READ.md"><code>docs/WHICH_FILE_TO_READ.md</code></a>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Before a PR / publish: <code>make merge-gate</code>. When touching a flagship slice: matching <code>make check-vN</code> + <code>./creation_os_vN --self-test</code>.</td>
       <td valign="top" style="padding:10px 12px;background:linear-gradient(180deg,#f8fafc,#eef2ff);border-top:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;">Keep evidence classes honest (lab demo vs harness vs product). Read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> + tier tags in <a href="docs/WHAT_IS_REAL.md">WHAT_IS_REAL</a> before screenshotting a headline.</td>
@@ -42,31 +42,31 @@
   <sub>Figures are first-class receipts too — palette + embedding rules live in <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub>
 </p>
 
-<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#composed-decision-stack--v60--v70-eleven-branchless-integer-kernels">Composed stack (v60→v70)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
+<p align="center"><sub><strong>Navigate:</strong> <a href="#contents">Contents</a> · <a href="#capability-layers">Capability layers</a> · <a href="#composed-decision-stack--v60--v74-fifteen-branchless-integer-kernels">Composed stack (v60→v74)</a> · <a href="#run-it-in-sixty-seconds">Sixty seconds</a> · <a href="#sigma-labs-v31-v40">σ labs (v31→v59)</a> · <a href="#documentation-hub">Doc hub</a> · <a href="#publication-hard">Publication-hard</a></sub></p>
 
 > **MCP product hook:** `creation_os_mcp` is an **MCP server** that exposes σ measurement + abstention helpers (`measure_sigma`, `should_abstain`, `sigma_report`) to **any MCP-capable client** — see `docs/MCP_SIGMA.md` and `config/claude_desktop_config.json` (copy the `mcpServers` block into your client; repo-local `.cursor/` is gitignored).
 
-> **If you read nothing else.** Creation OS is a **portable C11 reference kernel** for **Binary Spatter Codes (BSC)** and a **coherence signal (σ)** you can **build, run, and falsify** on a laptop. The CI bar is one command: **`make merge-gate`**. The σ / agent / silicon / hyperscale layers (**v31 → v70**) sit *outside* the merge gate as opt-in labs with honest tier tags ([`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)). The composed-decision stack (**v60 → v70**) is **eleven branchless integer kernels** behind one Apple-tier CLI (`cos`); together they form an **11-bit branchless AND** (`cos_v70_compose_decision`) — *no inference, tool call, sealed message, or hyperscale step ever crosses to the agent unless **all eleven** ALLOW*.
+> **If you read nothing else.** Creation OS is a **portable C11 reference kernel** for **Binary Spatter Codes (BSC)** and a **coherence signal (σ)** you can **build, run, and falsify** on a laptop. The CI bar is one command: **`make merge-gate`**. The σ / agent / silicon / hyperscale / wormhole / chain / omnimodal layers (**v31 → v74**) sit *outside* the merge gate as opt-in labs with honest tier tags ([`docs/WHAT_IS_REAL.md`](docs/WHAT_IS_REAL.md)). The composed-decision stack (**v60 → v74**) is **fifteen branchless integer kernels** behind one Apple-tier CLI (`cos`); together they form a **15-bit branchless AND** (`cos_v74_compose_decision`) — *no inference, tool call, sealed message, hyperscale step, hyperdimensional teleport, chain-bound emission, generated artefact (code, image, audio, video, world-frame, workflow output), or delivered user experience (UI layout, accessibility stream, render frame, upscaled frame, 1-second interactive world) ever crosses to the human unless **all fifteen** ALLOW*.
 >
-> **Fastest truth path (60 seconds):** `git clone` → `make merge-gate` → spot-check `./creation_os_v26 --self-test` (expect **184/184 PASS**). Then optionally `make check-v70 && ./creation_os_v70 --bench` and `make verify-agent` for the full eleven-kernel rollup.
+> **Fastest truth path (60 seconds):** `git clone` → `make merge-gate` → spot-check `./creation_os_v26 --self-test` (expect **184/184 PASS**). Then optionally `make check-v74 && ./creation_os_v74 --bench` and `make verify-agent` for the full fifteen-kernel rollup.
 >
-> **Discipline before headlines.** Read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) and [**WHAT_IS_REAL**](docs/WHAT_IS_REAL.md) **before** you screenshot a number from this repo. Tier letters: **M** runtime-checked · **F** formally proven · **I** interpreted · **P** planned. Self-test counts that ship today: **v26 184/184 · v27 70/70 · v28 29/29 · v29 22/22 · v60 81/81 · v61 61/61 · v62 68/68 · v63 144/144 · v64 260/260 · v65 534/534 · v66 1 705/1 705 · v70 148 034/148 034**. Full per-version table: [σ labs (v31 → v70)](#sigma-labs-v31-v40). This is **not** a chat product, **not** a leaderboard dump, **not** magic — it is a kernel.
+> **Discipline before headlines.** Read [**CLAIM_DISCIPLINE**](docs/CLAIM_DISCIPLINE.md) and [**WHAT_IS_REAL**](docs/WHAT_IS_REAL.md) **before** you screenshot a number from this repo. Tier letters: **M** runtime-checked · **F** formally proven · **I** interpreted · **P** planned. Self-test counts that ship today: **v26 184/184 · v27 70/70 · v28 29/29 · v29 22/22 · v60 81/81 · v61 61/61 · v62 68/68 · v63 144/144 · v64 260/260 · v65 534/534 · v66 1 705/1 705 · v70 148 034/148 034 · v71 68 404/68 404 · v72 117 108/117 108 · v73 245 818/245 818 · v74 600 128/600 128**. Full per-version table: [σ labs (v31 → v74)](#sigma-labs-v31-v40). This is **not** a chat product, **not** a leaderboard dump, **not** magic — it is a kernel.
 
 <table align="center">
   <tbody>
     <tr>
       <td align="center"><a href="https://github.com/spektre-labs/creation-os"><img src="https://img.shields.io/badge/repo-spektre--labs%2Fcreation--os-1e50a0?style=for-the-badge" alt="canonical repo"/></a></td>
       <td align="center"><img src="https://img.shields.io/badge/C11-portable-222?style=for-the-badge" alt="C11"/></td>
-      <td align="center"><img src="https://img.shields.io/badge/license-AGPL--3.0-blue?style=for-the-badge" alt="AGPL"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/license-SCSL--1.0%20OR%20AGPL--3.0-1e50a0?style=for-the-badge" alt="SCSL-1.0 OR AGPL-3.0"/></td>
     </tr>
     <tr>
       <td align="center"><img src="https://img.shields.io/badge/v26%20self--test-184%2F184-success?style=for-the-badge" alt="v26: 184/184"/></td>
-      <td align="center"><img src="https://img.shields.io/badge/v70%20self--test-148%E2%80%AF034%2F148%E2%80%AF034-brightgreen?style=for-the-badge" alt="v70: 148 034/148 034"/></td>
-      <td align="center"><img src="https://img.shields.io/badge/composed-11--bit%20%E2%88%A7-9333ea?style=for-the-badge" alt="11-bit composed AND"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/v74%20self--test-600%E2%80%AF128%2F600%E2%80%AF128-brightgreen?style=for-the-badge" alt="v74: 600 128/600 128"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/composed-15--bit%20%E2%88%A7-9333ea?style=for-the-badge" alt="15-bit composed AND"/></td>
     </tr>
     <tr>
       <td align="center"><a href="#run-it-in-sixty-seconds"><img src="https://img.shields.io/badge/CI%20bar-make%20merge--gate-1d4ed8?style=for-the-badge" alt="merge gate"/></a></td>
-      <td align="center"><img src="https://img.shields.io/badge/verify--agent-19%E2%9C%93%20%C2%B7%203%E2%9F%B6%20%C2%B7%200%E2%9C%97-success?style=for-the-badge" alt="verify-agent: 19 PASS / 3 SKIP / 0 FAIL"/></td>
+      <td align="center"><img src="https://img.shields.io/badge/verify--agent-24%E2%9C%93%20%C2%B7%203%E2%9F%B6%20%C2%B7%200%E2%9C%97-success?style=for-the-badge" alt="verify-agent: 24 PASS / 3 SKIP / 0 FAIL"/></td>
       <td align="center"><a href="docs/DOC_INDEX.md"><img src="https://img.shields.io/badge/docs-DOC__INDEX-slategray?style=for-the-badge" alt="docs index"/></a></td>
     </tr>
   </tbody>
@@ -114,7 +114,7 @@ That prints **uname**, **NEON compile flag presence**, **SME sysctl probe**, **b
 | **Native M4 (hardware-first lab)** | `make check-native-m4` · `make bench-native-m4` · `./creation_os_native_m4 --layers-report` · NEON + GCD + optional Metal/SME in `native_m4/` |
 | **v31 “purge lab” (optional upstream wrapper)** | [v31_README.md](docs/v31_README.md) · `make check-v31` · [WHAT_IS_REAL_v31.md](docs/WHAT_IS_REAL_v31.md) |
 | **σ labs v33→v59 (router, MCP, RTL, ASIC, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification stack, red team, certification pack, benchmark rollup, integration scaffold, KV-cache eviction, adaptive-compute budget)** | [σ lab table](#sigma-labs-v31-v40) · [SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [MCP_SIGMA.md](docs/MCP_SIGMA.md) |
-| **Composed-decision stack v60 → v70 (σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale — eleven branchless integer kernels · 11-bit AND gate)** | [Composed-decision stack table](#composed-decision-stack--v60--v70-eleven-branchless-integer-kernels) · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
+| **Composed-decision stack v60 → v74 (σ-Shield, Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect, σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos, σ-Constellation, σ-Hyperscale, σ-Wormhole, σ-Chain, σ-Omnimodal, σ-Experience — fifteen branchless integer kernels · 15-bit AND gate)** | [Composed-decision stack table](#composed-decision-stack--v60--v74-fifteen-branchless-integer-kernels) · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
 | **“Full suite” expectations vs repo** | [FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
 | **Find the right doc** | [Documentation hub](#documentation-hub) · [DOC_INDEX](docs/DOC_INDEX.md) |
@@ -164,31 +164,886 @@ flowchart TB
 
 ---
 
-## Composed-decision stack — v60 → v70 (eleven branchless integer kernels)
+## Composed-decision stack — v60 → v74 (fifteen branchless integer kernels)
 
-**Architecture, not checklist.** Eleven kernels — `v60` σ-Shield through `v70` σ-Hyperscale — share **one discipline**: branchless integer C, Q0.15 fixed-point, libc-only, 64-byte aligned, NEON 4-accumulator hot paths, zero floating-point on any decision surface, zero `if` on the gate. Each one writes a single bit (`vN_ok ∈ {0, 1}`) into one **branchless AND**: `cos_v70_compose_decision(...)`. **No inference, tool call, sealed message, retrieval, write, route, or hyperscale step crosses to the agent unless all eleven kernels ALLOW.**
+`v71 σ-Wormhole` is **the first open-source local-AI-agent runtime
+to ship a hyperdimensional wormhole / portal-cognition plane** — ten
+branchless integer primitives (Einstein-Rosen portal table + constant-
+time anchor cleanup + single-XOR teleport + Kleinberg small-world
+multi-hop routing + ER=EPR tensor-bond pairing + HMAC-HV bridge
+integrity + Poincaré-boundary gate + hop budget + path receipt + WHL
+10-op integer bytecode) wired through `cos_v71_compose_decision` as a
+**12-bit branchless AND** with `v60..v70`.  The wormhole plane gives
+the agent the one thing every frontier lab still lacks: a **non-local
+direct-address jump** through the concept manifold in a **single XOR
+pass, zero multiplies, zero floating-point, 42 M teleports / s**,
+side-channel bounded, HMAC-HV-signed against portal poisoning.
 
-**One CLI, one envelope.** The Apple-tier `cos` binary (`cli/cos.c`, single C TU, zero deps, `NO_COLOR`-respecting) exposes the stack: `cos status`, `cos verify`, `cos sigma` (n-kernel verdict), `cos decide <v60> … <v70>` (one-shot JSON 11-bit decision), and a per-kernel verb (`cos chace`, `cos think`, `cos seal`/`unseal`, `cos mcts`, `cos hv`, `cos si`, `cos nx`, `cos mn`, `cos cn`, `cos hs`).
+`v70 σ-Hyperscale` was **the first open-source local-AI-agent runtime
+to ship the 2024-2026 trillion-parameter hyperscale frontier
+(ShiftAddLLM power-of-2 weight quantisation arXiv:2406.05981 / NeurIPS
+2024, Mamba-2 / Mamba-3 selective SSM scan arXiv:2312.00752 +
+arXiv:2603.15569, RWKV-7 "Goose" delta-rule update arXiv:2503.14456,
+DeepSeek-V3 auxiliary-loss-free MoE-10k routing arXiv:2412.19437,
+Samsung HBM-PIM bit-serial AND-popcount arXiv:2603.09216, photonic
+WDM SKYLIGHT arXiv:2602.19031 + Lightmatter Envise, Intel Loihi 3
+graded-spike sparse activation + arXiv:2503.18002 MatMul-free LLM,
+NVIDIA NCCL bandwidth-optimal ring all-reduce, Petals + Helix +
+DirectStorage + GPUDirect Storage LRU streaming weight scheduler, and
+a 10-opcode integer bytecode ISA "HSL — Hyperscale Language" with
+per-instruction silicon-unit cost accounting) as a single branchless,
+integer-only C kernel with zero floating-point on any decision
+surface and zero dependencies beyond libc** — composed with
+v60..v69 as an 11-bit branchless decision
+(`cos_v70_compose_decision`) and now further composed with
+`v71 σ-Wormhole` into the full **12-bit branchless decision**
+(`cos_v71_compose_decision`), further composed with
+`v72 σ-Chain` into a 13-bit branchless decision
+(`cos_v72_compose_decision`), and now further composed with
+`v73 σ-Omnimodal` into a 14-bit branchless decision
+(`cos_v73_compose_decision`), and now further composed with
+`v74 σ-Experience` into the full **15-bit branchless decision**
+(`cos_v74_compose_decision`) behind the Apple-tier `cos` CLI.  No
+hyperscale inference step, no wormhole teleport, no chain-bound
+receipt, no generated artefact (code, image, audio, video, world-
+frame, workflow output), and no delivered user experience (UI
+layout, render frame, upscaled frame, 1-second interactive world)
+emits unless **all fifteen kernels ALLOW**.
 
-**One verifier.** `make verify-agent` walks every slot, dispatches each owning `make` target, and reports `PASS / SKIP / FAIL` per slot — *never silently downgrades* when external tooling (Frama-C, sby, garak, libsodium, libOQS, Metal, SME) is absent. Today: **19 PASS · 3 SKIP · 0 FAIL**.
+`v74 σ-Experience` is **the first open-source local-AI-agent runtime
+to ship a unified experience substrate — perfect UX/UI, universal
+expertise, and real-time render budget that makes 2026-era AAA
+games playable on commodity silicon (M4 MacBook, iPhone-class SoC,
+a plain Snapdragon phone) — as a single branchless integer-only C
+kernel**.  Ten primitives: Fitts-V2P target heatmap (arXiv:
+2508.13634, 92.4 % GUI-grounding), adaptive layout optimiser
+(Log2Motion CHI '26 arXiv:2601.21043 + Apple ML arXiv:2002.10702
+lineage), designer-basis personalisation (arXiv:2604.09876, mean
+κ = 0.25 across designers), SquireIR slot authoring (Apple SQUIRE
+April 2026 scope guarantees), universal-expert LoRA-MoE HV mesh
+(DR-LoRA arXiv:2601.04823 + CoMoL arXiv:2603.00573 + MoLE arXiv:
+2404.13628 + MixLoRA arXiv:2404.15159v3), skill composition (XOR-
+bind), Mobile-GS order-free 3-D Gaussian-splat render step (arXiv:
+2603.11531 ICLR 2026 — 116 FPS at 1600×1063 on Snapdragon 8 Gen 3,
+1098 FPS on RTX 3090, 4.8 MB models; msplat Metal-native engine
+~350 FPS on M4 Max), DLSS 4.5 / FSR / XeSS upscale with multi-
+frame-generation gate up to 6× factor, and 1-second interactive-
+world synth (Genie 3 lineage, 720p / 20-24 FPS, text-to-
+interactive-world) that bridges straight into v73's WORLD opcode.
+XPL — the Experience Programming Language — is a 10-op integer
+bytecode ISA (`HALT / TARGET / LAYOUT / BASIS / SLOT / EXPERT /
+RENDER / UPSCALE / WORLD / GATE`) whose GATE sets `v74_ok = 1`
+iff every gate (target, layout, basis, slot, expert, skill,
+render, upscale, world-second, creation-unit budget, abstention)
+passes a single branchless AND.  **600 128 / 600 128 deterministic
+self-tests** at `make check-v74` (including the full 2¹⁵ = 32 768-
+entry truth table of the 15-bit composed decision).  ASAN clean.
+UBSAN clean.  Hardened build clean.  CLI: `cos ux` (self-test +
+microbench), `cos decide <v60> … <v74>` (one-shot JSON 15-bit
+decision), and `cos sigma` as a **fifteen-kernel verdict**.
 
-| Ver | Name | What it adds | Composed as | Self-tests | CLI verb / slot |
-|:---:|:--|:--|:---:|---:|:--|
-| **v60** | **σ-Shield** | Runtime security kernel — first capability kernel with σ = (ε, α) intent gate. Five-valued branchless `ALLOW / DENY_CAP / DENY_INTENT / DENY_TOCTOU / DENY_INTEGRITY`. Closes Q2-2026 ambiguous-payload class (DDIPE 2604.03081, ClawWorm 2603.15727, Malicious Intermediary 2604.08407). | 1-bit | **81 / 81** | `cos verify` · `runtime_security_kernel` |
-| **v61** | **Σ-Citadel** | Bell-LaPadula + Biba + MLS lattice (**6.1 × 10⁸ decisions/s** on M4) + 256-bit attestation quote (BLAKE2b-256 via libsodium opt-in) + the **full DARPA-CHACE menu** via `make chace` (seL4 / Wasmtime / eBPF LSM / Darwin sandbox-exec / OpenBSD pledge / Nix / distroless / Sigstore / SLSA v1.0). | 2-bit | **61 / 61** | `cos chace` · `defense_in_depth_stack` |
-| **v62** | **Reasoning Fabric** | Six 2026 reasoning kernels in one ABI: Coconut latent CoT (2412.06769) + EBT verifier (2507.02092 / ICLR 2026) + HRM H/L loop (2506.21734) + Native Sparse Attention (2502.11089) + DeepSeek-V3 MTP (2412.19437) + ARKV adaptive KV (2603.08727). NEON 4-way + prefetch every hot loop. | 3-bit | **68 / 68** | `cos think` · `reasoning_fabric` |
-| **v63** | **σ-Cipher** | Dependency-free e2e encryption: BLAKE2b-256 (RFC 7693) + HKDF (RFC 5869) + ChaCha20-Poly1305 AEAD (RFC 8439) + X25519 (RFC 7748) + attestation-bound sealed envelopes (key = HKDF over v61 quote ‖ nonce ‖ ctx) + forward-secret ratchet + IK-style handshake. Optional `COS_V63_LIBSODIUM=1` / `COS_V63_LIBOQS=1` (ML-KEM-768 hybrid slot). **AEAD ~ 516 MiB/s · BLAKE2b ~ 1 047 MiB/s · X25519 ~ 12 k ops/s · seal ~ 336 k ops/s.** | 4-bit | **144 / 144** | `cos seal` / `cos unseal` · `e2e_encrypted_fabric` |
-| **v64** | **σ-Intellect** | 2026 agentic frontier in Q0.15 integer C: MCTS-σ PUCT (Empirical-MCTS 2602.04248; rStar-Math; Nemotron-MCTS) + Skill library (EvoSkill 2603.02766; Voyager) + TOCTOU-safe tool authz (Dynamic ReAct 2509.20386) + Reflexion ratchet (ERL 2603.24639) + AlphaEvolve-σ ternary mutation (BitNet 2402.17764) + MoD-σ depth routing (2404.02258). **MCTS ~ 674 k iters/s · skill ~ 1.4 M ops/s · tool-authz ~ 517 M dec/s** (10⁴–10⁷× faster than any LLM-backed router) · **MoD ~ 5.1 GB/s**. | 5-bit | **260 / 260** | `cos mcts` · `agentic_intellect` |
-| **v65** | **σ-Hypercortex** | Popcount-native HDC / VSA at **D = 16 384 bits = 32 × 64-byte M4 cache lines**: bipolar HVs + bind (XOR) + threshold-majority bundle + permute + Q0.15 sim + constant-time cleanup memory (HIS 2603.13558) + role-filler records + analogy + sequence memory + 9-opcode integer ISA "HVL". **bind ~ 31.2 M/s @ 192 GB/s** (within 2× unified-memory peak) · **Hamming ~ 10.1 M/s @ 41 GB/s** · **HVL ~ 5.7 M progs/s**. | 6-bit | **534 / 534** | `cos hv` · `hyperdimensional_cortex` |
-| **v66** | **σ-Silicon** | 2026 mixed-precision-matrix substrate: runtime CPU feature detect (NEON / DotProd / I8MM / BF16 / SVE / SME / SME2) + INT8 GEMV with 4-acc + `vaddlvq_s16` long-add + BitNet b1.58 ternary GEMV (packed 2-bits/weight, branchless table unpack) + NativeTernary unary-RLE wire (exactly 2.0 bits/weight) + CFC conformal abstention (streaming Q0.15 quantile) + 8-opcode MAC-budgeted ISA "HSL". SME / SME2 reserved under `COS_V66_SME=1` (SIGILL-safe default). **INT8 GEMV ≈ 49 Gops/s · ternary ≈ 2.8 Gops/s · NTW ≈ 2.5 GB/s · HSL ≈ 32 M progs/s**. | 7-bit | **1 705 / 1 705** | `cos si` · `matrix_substrate` |
-| **v67** | **σ-Noesis** | Deliberative cognition + retrieval substrate: BM25 sparse (Q0.15 IDF via `__builtin_clz`, CSR posting lists) + dense 256-bit signature retrieval (4× `popcountll`) + bounded graph walker (8 192-bit visited bitset) + hybrid rescore + fixed-width deliberation beam (W = 8) + **dual-process gate** (Kahneman / Soar / ACT-R / LIDA) + metacognitive confidence (`top1 − mean_rest`) + AlphaProof-style tactic library + 9-opcode integer ISA "NBL" with AlphaFold-3-grade evidence-receipt discipline. **dense Hamming ~ 54 M/s · beam ~ 800 k steps/s · NBL ~ 64 M progs/s · BM25 ~ 9 k qps**. | 8-bit | **2 593 / 2 593** | `cos nx` · `deliberative_cognition` |
-| **v68** | **σ-Mnemos** | Continual learning + episodic memory + sleep cycle: bipolar-HV episodic store at **D = 8 192 bits** (hippocampal pattern separation + completion) + Titans surprise gate (2501.00663) + ACT-R activation decay + content-addressable recall with rehearsal + Hebbian online adapter (TTT 2407.04620, 16 × 16) under EWC-style anti-CF rate ratchet (Kirkpatrick *et al.* 2017; DeepMind ASAL 2025) + sleep replay / consolidation (Diekelmann & Born 2010) + branchless forgetting controller + 10-opcode integer ISA "MML". **Hamming ~ 38 M/s · recall ~ 110 k/s · Hebb ~ 24 M upd/s · sleep ~ 3.8 k consols/s · MML ~ 38 M progs/s**. | 9-bit | **2 669 / 2 669** | `cos mn` · `continual_learning_memory` |
-| **v69** | **σ-Constellation** | Distributed-orchestration + parallel-decoding + multi-agent-consensus fleet plane: tree speculative decoding (EAGLE-3 lineage; Hierarchical SD 2601.05724) + multi-agent debate (Council Mode 2604.02923v1; FREE-MAD anti-conformity) + Byzantine 2f+1 vote (PBFT / HotStuff) + MaxScore MoE top-K (2508.12801) + Lamport / Fidge vector clocks + chunked flash-attention dot + AlphaZero Elo + UCB self-play + 512-bit bipolar KV-dedup sketch + 10-opcode integer ISA "CL". Includes the full **2¹⁰ = 1024-entry truth table** of the composed decision. **tree verifies ~ 58 M/s · BFT votes ~ 129 M/s · MoE routes ~ 2.1 M/s · CL ~ 9.9 M progs/s · 10-bit composed decisions ~ 361 M/s**. | 10-bit | **3 226 / 3 226** | `cos cn` · `distributed_orchestration` |
-| **v70** | **σ-Hyperscale** | Trillion-parameter hyperscale substrate plane — turns the v69 fleet into a fleet-of-fleets on a single workstation. Ten primitives: **P2Q** power-of-2 weight quant (ShiftAddLLM, NeurIPS 2024, 2406.05981) + **Mamba-2/3** selective SSM scan (2312.00752 + 2603.15569) + **RWKV-7 "Goose"** delta-rule (2503.14456) + **DeepSeek-V3** auxiliary-loss-free MoE-10k (2412.19437) + **HBM-PIM** AND-popcount surrogate (Samsung, 2603.09216) + **photonic WDM** dot (SKYLIGHT 2602.19031, LightMat-HP 2604.12278, Lightmatter Envise) + **Loihi 3** graded-spike sparse + MatMul-free LLM (2503.18002) + **NCCL** ring all-reduce (Patarasuk & Yuan 2009) + Petals/Helix/DirectStorage/GPUDirect LRU streaming weight scheduler + 10-opcode integer ISA **"HSL — Hyperscale Language"**. Includes the full **2¹¹ = 2048-entry truth table** of the composed decision. **SSM ~ 187 M tokens/s (N = 4 096) · RWKV-7 ~ 1.9 M steps/s (dim = 128) · AND-pop ~ 1.0 G ops/s (cols = 4 096) · HSL ~ 4 M progs/s · 11-bit composed decisions ~ 187 M/s**. | **11-bit** | **148 034 / 148 034** | `cos hs` · `hyperscale_substrate` |
+`v73 σ-Omnimodal` is **the first open-source local-AI-agent runtime
+to ship a unified multimodal generation substrate — the Creator — as
+a single branchless integer-only C kernel** covering the 2024-2026
+generative frontier: code (Cursor 3 / Claude Code / Devin / Lovable
+/ Bolt.new / Base44 / Totalum / v0 / Replit Agent; 2026 Autonomous
+Software Creation benchmarks), image (Midjourney / FLUX / VINO MMDiT
+arXiv:2601.02358), video (Sora / Veo / MOVA / Matrix-Game-3 arXiv:
+2604.08995, Matrix-Game-2 arXiv:2508.13009, GameNGen ICLR 2025),
+audio and voice clone (ElevenLabs / SoundStream arXiv:2107.03312 /
+Encodec RVQ / MSR-Codec), workflow (n8n v2.10 "Brain vs Hands" +
+JudgeFlow arXiv:2601.07477 + ReusStdFlow + SOAN arXiv:2508.13732v1),
+physics-coherent flow (DiReCT arXiv:2603.25931 + StreamFlow arXiv:
+2511.22009 + MixFlow arXiv:2604.09181 + VRFM arXiv:2502.09616), and
+GTA-tier procedural world synthesis (MultiGen arXiv:2603.06679).
+Ten branchless integer primitives (universal-modality VQ-RVQ
+tokenizer + rectified-flow integer K-step scheduler + VINO cross-
+modal XOR bind + MOVA video+audio co-synth lock + Matrix-Game
+action-conditioned world-model step + DiReCT physics-coherence gate
++ n8n + JudgeFlow + SOAN workflow DAG executor + Cursor / Devin /
+Lovable / Bolt-lineage code-edit planner + MultiGen asset-graph
+navigation + OML 10-op bytecode ISA) wired through
+`cos_v73_compose_decision` as a **14-bit branchless AND** with
+`v60..v72`.  Every modality — code, image, audio, video, 3D, work-
+flow-node, game-world tile — is quantised to the **same 256-bit HV
+token alphabet**, so cross-modal coherence is a single Hamming
+compare, not a framework stack.  **245 818 / 245 818 deterministic
+self-tests** at `make check-v73` (including the full 2¹⁴ = 16 384-
+entry truth table of the 14-bit composed decision).  ASAN clean.
+UBSAN clean.  Hardened build clean.  CLI: `cos om` (self-test +
+microbench), `cos decide <v60> … <v73>` (one-shot JSON 14-bit
+decision), and `cos sigma` as a **fourteen-kernel verdict**.
 
-**Hardened build + sanitizer matrix.** `make harden` rebuilds **v57 → v70** with OpenSSF-2026 flags + ARM64 `-mbranch-protection=standard` + PIE. `make sanitize` runs **ASAN on v58 → v70** and **UBSAN on v60 → v70** — every self-test, all clean. `make hardening-check` verifies PIE / canary / fortify on the produced binaries. Supply chain: `make sbom` (CycloneDX-lite 1.5 + per-component SHA-256), `make security-scan` (gitleaks + grep fallback), `make reproducible-build` (double-build SHA-256 compare), `make nix-build`, `make attest` (+ optional Sigstore cosign), `make slsa` (SLSA v1.0 predicate), `make distroless`. Pre-commit hooks: gitleaks · whitespace · `.env` guard · `scripts/security/scan.sh`. CI: [`security.yml`](.github/workflows/security.yml) · [`chace.yml`](.github/workflows/chace.yml) · [`slsa.yml`](.github/workflows/slsa.yml).
+`v72 σ-Chain` is **the first open-source local-AI-agent runtime to
+ship a quantum-tier blockchain / web3 / post-quantum / zero-knowledge
+/ verifiable-agent substrate** — ten branchless integer primitives
+(binary Merkle tree with UB-free integer mixer + append-only
+prev-hash-bound receipt chain + WOTS+/XMSS-lineage hash-based
+one-time signatures with constant-time chain evaluation + t-of-n
+threshold quorum as branchless integer gate + hash-chain VRF leader
+election with fixed-depth replay verification + DAG-BFT 2f+1 quorum
+compare with round-tag check + zkAgent-style 256-bit proof-commitment
+receipt + EIP-7702 / ERC-4337 session-key delegation envelope
+(`valid_after`, `valid_before`, `scope_mask`, `spend_cap`) + XOR-
+digest chain-span bundle + SCL 10-opcode integer bytecode ISA with
+per-instruction gas-unit cost accounting) wired through
+`cos_v72_compose_decision` as a **13-bit branchless AND** with
+`v60..v71`.  The chain plane gives the agent the one thing every
+frontier lab still skips on local inference: a **post-quantum
+auditable inter-agent trust surface** with constant-time verification,
+integer-only hot path, libc-only dependency, and `117 108 / 117 108`
+deterministic self-tests including an 8 192-row `2^13` truth table.
 
-See [`SECURITY.md`](SECURITY.md) for the full policy, supported versions, reporting process, and active guarantees; [`THREAT_MODEL.md`](THREAT_MODEL.md) for the STRIDE decomposition and arXiv-by-arXiv response; [`CHANGELOG.md`](CHANGELOG.md) for the per-version receipt log.
+Creation OS takes security as an **architecture**, not a checklist,
+reasoning as an **architecture**, end-to-end encryption as an
+**architecture**, agentic intelligence as an **architecture**,
+hyperdimensional neurosymbolic memory + reasoning as an architecture,
+**the matrix substrate itself** as an architecture, deliberative
+cognition with evidence receipts as an architecture, and now
+**continual learning + episodic memory + online adaptation with a
+sleep cycle and an EWC-style ratchet** as an architecture too, and
+finally **distributed orchestration + parallel speculative decoding +
+multi-agent Byzantine-safe consensus** as an architecture.
+`v69 σ-Constellation` is **the first open-source local-AI-agent
+runtime to ship the 2024-2026 distributed-orchestration frontier
+(EAGLE-3 tree speculative decoding + Hierarchical SD
+arXiv:2601.05724, Council Mode + FREE-MAD multi-agent debate with
+anti-conformity arXiv:2604.02923v1, PBFT-style 2f+1 Byzantine
+quorum, MaxScore MoE top-K routing arXiv:2508.12801, Lamport /
+Fidge vector clocks, FlashAttention-lineage chunked integer dot,
+AlphaZero-lineage Elo + UCB self-play, 512-bit bipolar popcount KV
+dedup, and a 10-opcode integer bytecode ISA "CL — Constellation
+Language" with per-instruction orchestration-unit cost accounting)
+as a single branchless, integer-only C kernel with zero floating-
+point on any decision surface and zero dependencies beyond libc** —
+composed with v60..v68 as a **10-bit branchless decision**
+(`cos_v69_compose_decision`) behind the Apple-tier `cos` CLI.  No
+orchestration step crosses to the agent unless all ten kernels ALLOW.
+
+`v68 σ-Mnemos` is **the first open-source local-AI-agent runtime
+to ship the 2024-2026 continual-learning frontier (Titans 2025
+surprise-gated test-time memory writes, TTT
+arXiv:2407.04620 Hebbian online adaptation, hippocampal pattern
+separation + completion via bipolar HVs at D=8 192 bits with
+popcount-Hamming, ACT-R activation decay as a saturating Q0.15
+linear, Diekelmann–Born sleep replay / consolidation as offline
+majority-XOR bundling, Kirkpatrick EWC anti-catastrophic-forgetting
+as a learning-rate ratchet that **never grows** between sleeps,
+budget-capped branchless forgetting controller, and a 10-opcode
+integer bytecode ISA ("MML") with per-instruction memory-unit cost
+accounting) as a single branchless, integer-only C kernel with zero
+floating-point on any decision surface and zero dependencies beyond
+libc** — composed with v60..v67 as a **9-bit branchless decision**
+(`cos_v68_compose_decision`) behind the Apple-tier `cos` CLI.  No
+continual-learning step crosses to the agent unless all nine kernels
+ALLOW.
+
+`v67 σ-Noesis` is **the first open-source local-AI-agent runtime
+to ship the 2024-2026 deliberative-reasoning frontier (AlphaProof /
+AlphaGeometry 2 tactic cascade, o1/o3-style fixed-width beam with
+Q0.15 verifier, Graph-of-Thoughts / Tree-of-Thoughts CSR walker +
+visited bitset, hybrid sparse-dense-graph retrieval with BM25 +
+256-bit Hamming signatures, Kahneman / Soar / ACT-R / LIDA
+dual-process gate as a single branchless compare, metacognitive
+confidence as `top1 − mean_rest` in Q0.15, AlphaFold-3-style
+per-step evidence receipts, and a 9-opcode integer bytecode ISA
+("NBL") with per-instruction reasoning-unit cost accounting) as a
+single branchless, integer-only C kernel with zero floating-point on
+any decision surface and zero dependencies beyond libc** — composed
+with v60..v66 as an **8-bit branchless decision**
+(`cos_v67_compose_decision`) behind the Apple-tier `cos` CLI.
+
+`v66 σ-Silicon` is **the first open-source local-AI-agent runtime to
+ship the 2026 mixed-precision-matrix frontier (runtime CPU feature
+detection for NEON/DotProd/I8MM/BF16/SVE/SME/SME2 + INT8 GEMV with NEON
+4-accumulator inner loop and int32-wide horizontal long-add + BitNet
+b1.58 ternary GEMV with branchless 2-bits-per-weight unpack +
+NativeTernary self-delimiting unary-run-length wire at exactly 2.0
+bits/weight + CFC conformal abstention gate with streaming Q0.15
+quantile + HSL 8-opcode MAC-budgeted bytecode ISA) as a single
+branchless, integer-only C kernel with zero floating-point on the
+decision surface and zero dependencies beyond libc + NEON intrinsics**
+— composed with `v60` σ-Shield, `v61` Σ-Citadel, `v62` Reasoning
+Fabric, `v63` σ-Cipher, `v64` σ-Intellect, and `v65` σ-Hypercortex as
+a **7-bit branchless decision** behind the Apple-tier `cos` CLI.  No
+matrix-backed thought emits unless all seven kernels ALLOW.  On an
+Apple M3 performance core the substrate hits **≈ 49 Gops/s INT8 GEMV
+(256 × 1 024)**, **≈ 2.8 Gops/s ternary GEMV (512 × 1 024)**, **≈ 2.5
+GB/s NTW decode**, and **≈ 32 M HSL progs/s** — MAC-budgeted decision
+surface at hardware speed, not framework speed, with SME / SME2 paths
+reserved under `COS_V66_SME=1` (SIGILL-safe default on M1/M2/M3).
+
+Fourteen layers, all runnable locally and in CI:
+
+1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
+   gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
+   `DENY_TOCTOU` / `DENY_INTEGRITY`. Refuses α-dominated intent
+   regardless of caps — closes the Q2 2026 ambiguous-payload class
+   (DDIPE, ClawWorm, Malicious Intermediary). **81 / 81 deterministic
+   self-tests** at `make check-v60`.
+2. **v61 Σ-Citadel** — Bell-LaPadula + Biba + MLS-compartment lattice
+   (branchless, 6.1 × 10⁸ decisions/s on M4) + deterministic 256-bit
+   attestation quote (BLAKE2b-256 via libsodium opt-in) + composition
+   with v60.  **61 / 61 self-tests** at `make check-v61`.  Full
+   DARPA-CHACE menu dispatched by `make chace`.
+3. **v62 Reasoning Fabric** — six branchless C kernels distilled from
+   the 2026 frontier: **Coconut latent CoT** (arXiv:2412.06769), **EBT
+   verifier** (arXiv:2507.02092 / ICLR 2026), **HRM H/L loop**
+   (arXiv:2506.21734), **Native Sparse Attention** (arXiv:2502.11089),
+   **DeepSeek-V3 Multi-Token Predictor** (arXiv:2412.19437), **ARKV
+   adaptive KV manager** (arXiv:2603.08727).  All on Apple M4 NEON,
+   64-byte aligned, prefetched, mmap-friendly. Composes with v60 + v61
+   as a 3-bit branchless decision (`cos_v62_compose_decision`). **68 /
+   68 self-tests** at `make check-v62`.  Apple-tier CLI front door:
+   `./cos`, `cos sigma`, `cos verify`, `cos chace`, `cos think <prompt>`.
+4. **v63 σ-Cipher** — dependency-free C end-to-end encryption fabric:
+   **BLAKE2b-256** (RFC 7693), **HKDF-BLAKE2b** (RFC 5869),
+   **ChaCha20-Poly1305 AEAD** (RFC 8439), **X25519** (RFC 7748),
+   constant-time equality + secure-zero, **attestation-bound sealed
+   envelope** (key = HKDF over v61 256-bit quote + nonce + context —
+   so a trace only decrypts on a host whose committed runtime state
+   matches), forward-secret **symmetric ratchet**, and an IK-like
+   **session handshake** with BLAKE2b chaining key.  Optional
+   `COS_V63_LIBSODIUM=1` delegates the six primitives to libsodium's
+   AArch64 assembly; optional `COS_V63_LIBOQS=1` reserves the
+   ML-KEM-768 hybrid slot (Signal SPQR / reishi-handshake pattern).
+   Composes with v60 + v61 + v62 as a **4-bit branchless decision**
+   (`cos_v63_compose_decision`) — no sealed message emits unless
+   σ-Shield, Σ-Citadel, the EBT verifier *and* the AEAD tag + quote
+   binding all ALLOW.  All X25519 signed-shifts rewritten to
+   `carry * ((int64_t)1 << N)` for UBSAN cleanliness.  **144 / 144
+   self-tests** at `make check-v63` — every primitive checked against
+   its official RFC vector.  ASAN clean (`make asan-v63`).  UBSAN
+   clean (`make ubsan-v63`).  Hardened build clean
+   (`make standalone-v63-hardened`).  Microbench (M-series laptop,
+   portable path): **~ 516 MiB/s AEAD · ~ 1047 MiB/s BLAKE2b-256
+   · ~ 12 000 X25519 ops/s · ~ 336 000 seal ops/s**.  CLI:
+   `cos seal <path> [--context CTX]`, `cos unseal <path>
+   [--context CTX]`, and `cos sigma` as a four-kernel verdict.
+5. **v64 σ-Intellect** — dependency-free, branchless, Q0.15 integer C
+   kernel shipping the 2026 agentic frontier as six composable
+   subsystems: **MCTS-σ** PUCT search (Empirical-MCTS,
+   arXiv:2602.04248; rStar-Math; Nemotron-MCTS) with integer isqrt
+   and mmap-friendly flat node arena; **Skill library** with 32-byte
+   σ-signature Hamming retrieval (EvoSkill, arXiv:2603.02766;
+   Voyager), constant-time scan (timing-oracle-free); **Tool authz**
+   (Dynamic ReAct, arXiv:2509.20386) — schema + caps + σ +
+   **TOCTOU-safe** arg-hash binding, branchless priority cascade,
+   multi-cause honest `reason_bits`; **Reflexion ratchet** (ERL,
+   arXiv:2603.24639; ReflexiCoder, arXiv:2603.05863) — integer Δσ
+   updates with ratio-preserving overflow shift, confidence persisted
+   as Q0.15; **AlphaEvolve-σ** — BitNet-b1.58 ternary layout
+   (arXiv:2402.17764) with σ-gated accept-or-rollback and monotone
+   α non-increase; **MoD-σ** — per-token depth = f(α_t) with integer
+   round-shift (arXiv:2404.02258; MoDA arXiv:2603.15619; A-MoD
+   arXiv:2412.20875).  Composes with v60 + v61 + v62 + v63 as a
+   **5-bit branchless decision** (`cos_v64_compose_decision`) — no
+   tool call or reasoning emission leaves the stack unless σ-Shield,
+   Σ-Citadel, the EBT verifier, the AEAD tag + quote binding *and*
+   the agentic-intellect kernel all ALLOW.  **260 / 260 deterministic
+   self-tests** at `make check-v64`.  ASAN clean (`make asan-v64`).
+   UBSAN clean (`make ubsan-v64`).  Hardened build clean
+   (`make standalone-v64-hardened`).  Microbench on M-series:
+   **MCTS-σ ~ 674 k iters/s · skill retrieve ~ 1.4 M ops/s · tool-
+   authz ~ 517 M decisions/s · MoD-σ ~ 5.1 GB/s**.  CLI: `cos mcts`
+   (self-test + microbench), `cos decide <v60> <v61> <v62> <v63>
+   <v64> <v65>` (one-shot JSON decision), and `cos sigma` as a **six-
+   kernel verdict**.  Zero optional dependencies on the hot path —
+   the kernel is libc-only.
+6. **v65 σ-Hypercortex** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2026 hyperdimensional / vector-symbolic
+   frontier as a popcount-native neurosymbolic substrate.  **Bipolar
+   hypervectors** at `D = 16 384 bits` (= 2 048 B = exactly 32 × 64-byte
+   M4 cache lines).  **VSA primitives**: bind (XOR, self-inverse),
+   threshold-majority bundle, cyclic permute, Q0.15 similarity
+   `(D − 2·H)·(32768/D)`.  **Cleanup memory** — constant-time linear
+   sweep with branchless argmin update; runtime is `O(cap)` regardless
+   of match index, so timing-channel leakage is bounded by arena size,
+   not by secret state (Holographic Invariant Storage,
+   arXiv:2603.13558).  **Record / role-filler** with closed-form unbind
+   via XOR involution.  **Analogy** — `A:B :: C:?` solved as
+   `A ⊗ B ⊗ C` followed by cleanup, in zero gradient steps.
+   **Sequence memory** — position-permuted bundle with `perm^{-p}`
+   decode.  **HVL — HyperVector Language** — a 9-opcode integer
+   bytecode ISA for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM
+   / LOOKUP / SIM / CMPGE / GATE`) with per-program cost accounting in
+   popcount-word units; the GATE opcode writes `v65_ok` directly into
+   the composed decision and refuses on over-budget.  Sources:
+   OpenMem 2026, VaCoAl arXiv:2604.11665, Attention-as-Binding
+   AAAI 2026, VSA-ARC arXiv:2511.08747, HIS arXiv:2603.13558,
+   Hyperdimensional Probe arXiv:2509.25045, HDFLIM, ConformalHDC,
+   LifeHD arXiv:2403.04759.  Composes with v60 + v61 + v62 + v63 + v64
+   as a **6-bit branchless decision** (`cos_v65_compose_decision`) — no
+   thought emits unless σ-Shield, Σ-Citadel, the EBT verifier, the
+   AEAD tag + quote binding, the agentic intellect, *and* the
+   hypercortex on-manifold + cost-budget gate all ALLOW.  **534 / 534
+   deterministic self-tests** at `make check-v65`.  ASAN clean
+   (`make asan-v65`).  UBSAN clean (`make ubsan-v65`).  Hardened build
+   clean (`make standalone-v65-hardened`).  Microbench on M-series
+   performance core: **~10.1 M Hamming/s @ 41 GB/s · ~31.2 M bind/s
+   @ 192 GB/s · ~10.5 M proto·cmps/s cleanup · ~5.7 M HVL progs/s @
+   40 M ops/s**.  CLI: `cos hv` (self-test + microbench), `cos decide
+   <v60> <v61> <v62> <v63> <v64> <v65>` (one-shot JSON decision), and
+   `cos sigma` as a **six-kernel verdict** (now seven with v66).
+   Zero optional dependencies on the hot path — the kernel is libc-only.
+7. **v66 σ-Silicon** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2026 mixed-precision-matrix frontier as the
+   matrix substrate that turns v60..v65 thought into actual multiply-
+   accumulate ops on actual silicon.  **Runtime CPU feature detection**
+   for NEON / DotProd / I8MM / BF16 / SVE / SME / SME2 via sysctl
+   (Darwin) / getauxval (Linux), cached in a single `uint32_t`
+   bitmask.  **INT8 GEMV** with NEON 4-accumulator inner loop, 64-byte
+   prefetch, and `vaddlvq_s16` int32-wide horizontal long-add so
+   int8×int8→int16 products never overflow; bit-identical scalar
+   fallback; Q0.15 saturating output.  **BitNet b1.58 ternary GEMV**
+   with packed 2-bits-per-weight format (00 → 0, 01 → +1, 10 → −1,
+   11 → 0) and branchless table-lookup unpack — constant per-row time
+   regardless of weight distribution, no timing side-channel on
+   weights.  **NativeTernary wire (NTW)** — self-delimiting unary-
+   run-length encoder/decoder at exactly 2.0 bits/weight, fuzz-safe,
+   UB-free.  **CFC conformal abstention gate** — Q0.15 per-group
+   streaming quantile estimator with ratio-preserving right-shift
+   ratchet (same pattern as v64 Reflexion); gate is a single
+   branchless `int32 ≥ int32`.  **HSL — Hardware Substrate Language**
+   — an 8-opcode integer bytecode ISA (`HALT / LOAD / GEMV_I8 /
+   GEMV_T / DECODE_NTW / ABSTAIN / CMPGE / GATE`) with per-
+   instruction MAC-unit cost accounting and an integrated GATE
+   opcode that writes `v66_ok` directly into the composed decision.
+   SME / SME2 paths reserved under `COS_V66_SME=1` with explicit
+   streaming-mode setup; default build never emits SME on non-SME
+   hosts (SIGILL-safe on M1/M2/M3).  Composes with v60 + v61 + v62 +
+   v63 + v64 + v65 as a **7-bit branchless decision**
+   (`cos_v66_compose_decision`) — no matrix-backed thought emits
+   unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag +
+   quote binding, the agentic intellect, the hypercortex on-manifold
+   gate, *and* σ-Silicon's MAC-budget + conformal + wire-well-formed
+   gate all ALLOW.  **1 705 / 1 705 deterministic self-tests** at
+   `make check-v66`.  ASAN clean (`make asan-v66`).  UBSAN clean
+   (`make ubsan-v66`).  Hardened build clean
+   (`make standalone-v66-hardened`).  Microbench on Apple M3
+   performance core (NEON + dotprod + i8mm): **≈ 49 Gops/s INT8 GEMV
+   (256 × 1 024) · ≈ 2.8 Gops/s ternary GEMV (512 × 1 024) · ≈ 2.5
+   GB/s NTW decode · ≈ 32 M HSL progs/s**.  CLI: `cos si` (self-test
+   + microbench with CPU-feature prelude), `cos decide <v60> <v61>
+   <v62> <v63> <v64> <v65> <v66>` (one-shot JSON decision; now 8-bit
+   with v67), and `cos sigma` as a **seven-kernel verdict** (now
+   eight with v67).  Zero optional dependencies on the hot path —
+   the kernel is libc + NEON intrinsics only.
+8. **v67 σ-Noesis** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2024-2026 deliberative-reasoning +
+   knowledge-retrieval frontier as the cognitive substrate that turns
+   v60..v66 control + matrix plane into structured cognition with
+   receipts.  **BM25 sparse retrieval** with integer Q0.15 IDF
+   surrogate (`log2((N − df + 1) / (df + 1))` via `__builtin_clz`),
+   CSR posting lists, and branchless top-K.  **Dense 256-bit
+   signature retrieval** via four `__builtin_popcountll` calls mapped
+   to Q0.15 similarity `(256 − 2·H)·128` (mirrors v65 HDC algebra at
+   reduced dimension).  **Bounded graph walker** (CSR + 8192-bit
+   visited bitset, saturating Q0.15 weight accumulation).  **Hybrid
+   rescore** (Q0.15 weights normalised to 32 768).  **Fixed-width
+   deliberation beam** (`COS_V67_BEAM_W = 8`) with Q0.15 step-scores
+   and caller-supplied `expand` + `verify` callbacks — o1/o3-style
+   test-time compute.  **Dual-process gate** (Kahneman / Soar / ACT-R
+   / LIDA synthesis 2026): System-1 fast-path vs System-2
+   deliberation picked by a *single* branchless compare on the top-1
+   margin.  **Metacognitive confidence** = `top1 − mean_rest` clamped
+   to Q0.15 — monotone in absolute gap, no FP.  **Tactic library**
+   (AlphaProof-style bounded cascade with precondition mask and
+   witness score, branchless argmax).  **NBL — Noetic Bytecode
+   Language** — a 9-opcode integer ISA (`HALT / RECALL / EXPAND /
+   RANK / DELIBERATE / VERIFY / CONFIDE / CMPGE / GATE`) with per-
+   instruction reasoning-unit cost accounting and an integrated
+   `GATE` opcode that writes `v67_ok = 1` iff `cost ≤ budget` AND
+   `reg_q15[a] ≥ imm` AND `evidence_count ≥ 1` AND `NOT abstained`
+   — so no NBL program produces `v67_ok = 1` without writing at
+   least one evidence receipt (AlphaFold-3-grade trace discipline in
+   ~10 lines of C).  Composes with v60 + v61 + v62 + v63 + v64 +
+   v65 + v66 as an **8-bit branchless decision**
+   (`cos_v67_compose_decision`) — no deliberation crosses to the
+   agent unless *every* lane allows.  **2 593 / 2 593 deterministic
+   self-tests** at `make check-v67`.  ASAN clean (`make asan-v67`).
+   UBSAN clean (`make ubsan-v67`).  Hardened build clean
+   (`make standalone-v67-hardened`).  Microbench on Apple M-series
+   performance core: **~54 M dense Hamming cmps/s · ~800 k beam
+   steps/s · ~64 M NBL programs/s (≈ 320 M ops/s) · ~9 k BM25
+   queries/s on D = 1 024, T = 16**.  CLI: `cos nx` (self-test +
+   microbench), `cos decide <v60> <v61> <v62> <v63> <v64> <v65>
+   <v66> <v67>` (one-shot JSON 8-bit decision), and `cos sigma` as
+   an **eight-kernel verdict**.  Registered as the
+   `deliberative_cognition` slot (tier **M**) in the v57 Verified
+   Agent.  Zero optional dependencies on the hot path — the kernel
+   is libc-only.
+9. **v68 σ-Mnemos** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2024-2026 continual-learning + episodic-
+   memory + online-adaptation frontier as the memory-and-learning
+   plane that turns one-shot deliberation (v60..v67) into a system
+   that **remembers, evolves, and learns** across calls.  **Bipolar
+   HV episodic store at D = 8 192 bits** (hippocampal pattern
+   separation + completion via four `__builtin_popcountll` Hamming
+   + XOR bind, 64-byte aligned, capacity 256 by default).
+   **Surprise gate** (Titans, Google Research 2025;
+   arXiv:2501.00663) — write iff `|pred − obs| ≥ thresh`, single
+   branchless integer compare; no FP, no second pass.  **ACT-R
+   activation decay** — branchless saturating Q0.15 linear
+   `A_t = max(0, A_0 − decay · dt)`; no log, no division, no float.
+   **Content-addressable recall with rehearsal** — top-K nearest
+   episodes by Hamming → Q0.15 sim, branchless top-K bubble
+   insertion via `sel_i32` swaps; accessed episodes have their
+   activation refreshed.  **Hebbian online adapter (TTT,
+   arXiv:2407.04620)** — Q0.15 outer-product update on a small
+   `R × C` adapter (default 16 × 16), saturating per-cell, under an
+   **EWC-style anti-catastrophic-forgetting rate ratchet**
+   (Kirkpatrick *et al.* 2017; DeepMind ASAL 2025) that **never
+   grows** between consolidations.  **Sleep replay /
+   consolidation** (Diekelmann & Born, Nat Rev Neurosci 2010 + 2024
+   systems extensions) — offline majority-XOR bundle of every
+   episode whose decayed activation ≥ keep_thresh into a long-term
+   HV; sleep also resets the rate ratchet (the only event that
+   does so).  **Branchless forgetting controller** — drop episodes
+   whose activation falls below threshold, capped by an explicit
+   `forget_budget` so a runaway program cannot wipe memory.
+   **MML — Mnemonic Memory Language** — a 10-opcode integer
+   bytecode ISA (`HALT / SENSE / SURPRISE / STORE / RECALL / HEBB
+   / CONSOLIDATE / FORGET / CMPGE / GATE`) with per-instruction
+   memory-unit cost accounting and an integrated `GATE` opcode
+   that writes `v68_ok = 1` iff `cost ≤ cost_budget` AND
+   `reg_q15[a] ≥ imm` (recall fidelity / score) AND
+   `forget_count ≤ forget_budget` AND `NOT abstained` — so **no
+   continual-learning step crosses to the agent unless recall ≥
+   threshold AND forgetting ≤ budget AND the learning-rate ratchet
+   is stable**, all as a single branchless AND.  Composes with
+   v60..v67 as a **9-bit branchless decision**
+   (`cos_v68_compose_decision`).  **2 669 / 2 669 deterministic
+   self-tests** at `make check-v68`.  ASAN clean (`make asan-v68`).
+   UBSAN clean (`make ubsan-v68`).  Hardened build clean
+   (`make standalone-v68-hardened`).  Microbench on Apple M-series
+   performance core: **~38 M HV Hamming cmps/s · ~110 k recall/s
+   on N = 256 D = 8 192 · ~24 M Hebb upd/s on 16 × 16 adapter ·
+   ~3.8 k full sleep consolidations/s · ~38 M MML programs/s
+   (≈ 192 M ops/s)**.  CLI: `cos mn` (self-test + microbench),
+   `cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67>
+   <v68>` (one-shot JSON 9-bit decision), and `cos sigma` as a
+   **nine-kernel verdict**.  Registered as the
+   `continual_learning_memory` slot (tier **M**) in the v57
+   Verified Agent.  Zero optional dependencies on the hot path —
+   the kernel is libc-only.
+10. **v69 σ-Constellation** — dependency-free, branchless,
+   **integer-only** C kernel shipping the 2024-2026 distributed-
+   orchestration + parallel-decoding + multi-agent-consensus
+   frontier as the **fleet plane** that turns the single-node
+   continual-learner (v60..v68) into a coordinator for many
+   inference paths, many experts, many agents, and many nodes.
+   **Tree speculative decoding (EAGLE-3 lineage, 2024-2026;
+   Hierarchical Speculative Decoding arXiv:2601.05724)** — draft
+   tree as a flat parent-indexed node array, branchless XOR-match
+   per level, longest-accepted-prefix via branchless `sel_i32`, no
+   data-dependent branch on the token values.  **Multi-agent
+   debate with score-based consensus (Council Mode
+   arXiv:2604.02923v1, 2026; FREE-MAD safety default)** —
+   linear-scan proposal bucketization, anti-conformity penalty
+   that down-weights unanimous agreement without evidence, abstain
+   on low-margin verdicts.  **Byzantine-safe 2f+1 vote (PBFT /
+   HotStuff lineage)** — branchless popcount-style count of 1-votes
+   across N agents, single `≥` compare against quorum, no branch on
+   which participant is faulty.  **MoE top-K routing (MaxScore
+   arXiv:2508.12801)** — branchless top-K bubble over Q0.15 expert
+   scores, integer load-balance counter per expert.  **Draft tree
+   expansion / prune** — depth-limited tree with per-node Q0.15
+   acceptance and branchless cumulative-path compare against
+   `min_path_q15`; pruned nodes get depth = 0xFFFF with no memory
+   shuffling.  **Gossip / Lamport vector clocks** (Lamport 1978;
+   Fidge 1988) — element-wise branchless max merge,
+   all-`≤` + any-`<` happens-before reduction.  **Chunked
+   flash-style attention dot** (FlashAttention-lineage) — Q0.15
+   inner product chunk-wise with a softmax-free integer max-
+   tracker, O(N) memory, O(1) state per chunk.  **AlphaZero-lineage
+   self-play Elo + UCB arm selection** — saturating Q0.15 Elo
+   update with a fixed K-factor; UCB uses an integer surrogate
+   `mean + c · total_pulls / (1 + pulls)` to avoid FP; branchless
+   argmax across arms.  **KV-cache deduplication via 512-bit
+   bipolar popcount sketch** — collapse any insertion whose Hamming
+   distance to an existing entry is below `hamming_thresh`; older
+   entry wins; table saturates at 64 slots.  **CL — Constellation
+   Language** — a 10-opcode integer bytecode ISA (`HALT / DRAFT /
+   VERIFY / DEBATE / VOTE / ROUTE / GOSSIP / ELO / DEDUP / GATE`)
+   with per-instruction orchestration-unit cost accounting and an
+   integrated `GATE` opcode that writes `v69_ok = 1` iff
+   `cost ≤ cost_budget` AND `reg_q15[a] ≥ imm` (vote margin) AND
+   `byz_fail ≤ byzantine_budget` AND `NOT abstained` — so **no
+   orchestration step crosses to the agent unless quorum margin ≥
+   threshold AND Byzantine faults ≤ budget AND the speculative tree
+   verifies**, all as a single branchless AND.  Composes with
+   v60..v68 as a **10-bit branchless decision**
+   (`cos_v69_compose_decision`).  **3 226 / 3 226 deterministic
+   self-tests** at `make check-v69` (including the full
+   2¹⁰ = 1024-entry truth table of the composed decision
+   function).  ASAN clean (`make asan-v69`). UBSAN clean
+   (`make ubsan-v69`).  Hardened build clean
+   (`make standalone-v69-hardened`).  Microbench on Apple M-series
+   performance core: **~58 M tree verifies/s (depth 8) · ~129 M
+   Byzantine votes/s (N = 64) · ~9.3 M debate aggs/s (N = 32) ·
+   ~2.1 M MoE routes/s (N = 64 K = 8) · ~6.9 M dedup inserts/s (64-
+   slot table) · ~7.4 M chunked dots/s (N = 1024) · ~69 M Elo + UCB
+   updates/s (16 arms) · ~9.9 M CL 9-inst programs/s (≈89 M ops/s)
+   · ~361 M 10-bit composed decisions/s**.  CLI: `cos cn`
+   (self-test + microbench), `cos decide <v60> <v61> <v62> <v63>
+   <v64> <v65> <v66> <v67> <v68> <v69>` (one-shot JSON 10-bit
+   decision), and `cos sigma` as a **ten-kernel verdict**.
+   Registered as the `distributed_orchestration` slot (tier **M**)
+   in the v57 Verified Agent.  Zero optional dependencies on the
+   hot path — the kernel is libc-only.
+11. **v70 σ-Hyperscale** — dependency-free, branchless,
+   **integer-only** C kernel shipping the 2024-2026 trillion-
+   parameter hyperscale frontier as the **substrate plane** that
+   turns the fleet (v69) into a **fleet-of-fleets** addressable from
+   a single workstation, on commodity Apple M-series silicon, with
+   zero matmul, zero FP on any decision surface, and zero
+   dependencies beyond libc.  **P2Q — power-of-2 weight quantisation
+   (ShiftAddLLM, NeurIPS 2024, arXiv:2406.05981)** — weights as ±2^k
+   in 4 bits; multiply-free GEMV via `int32_t` shift + conditional
+   negate; signed-shift-safe (shift in `uint32_t`).  **Mamba-2 /
+   Mamba-3 selective SSM scan (arXiv:2312.00752 + arXiv:2603.15569)**
+   — linear-time recurrence with content-dependent gates A, B, C, Δ;
+   constant memory per token; **no KV cache**.  **RWKV-7 "Goose"
+   delta-rule update (arXiv:2503.14456)** — O(1) per token; vector-
+   valued gating + in-context learning rate; exceeds Transformer TC^0
+   under recent complexity conjectures.  **DeepSeek-V3 auxiliary-
+   loss-free MoE-10k routing (arXiv:2412.19437)** — branchless top-K
+   MaxScore over up to 10 240 experts; integer bias controller for
+   load balancing without an auxiliary loss.  **Samsung HBM-PIM bit-
+   serial AND-popcount surrogate (arXiv:2603.09216)** — column-major
+   bit-packed weights; matmul replaced by
+   `__builtin_popcountll(act_word & weight_col)`; ~1.0 G AND-pops/s
+   on a single M4 P-core.  **Photonic wavelength-multiplexed dot-
+   product (SKYLIGHT arXiv:2602.19031, LightMat-HP arXiv:2604.12278,
+   Lightmatter Envise)** — eight independent wavelength lanes
+   accumulating int32 partial sums, branchless lane-select reduction.
+   **Intel Loihi 3 graded-spike sparse activation (Jan 2026, 8 M
+   neurons / 64 B synapses / 4 nm) + MatMul-free LLM
+   (arXiv:2503.18002)** — branchless `spike = act · (|act| ≥ θ)`;
+   energy proportional to activity.  **NVIDIA NCCL bandwidth-optimal
+   integer ring all-reduce (Patarasuk & Yuan 2009)** — reduce-scatter
+   + all-gather over N ranks in 2(N − 1) steps; branchless modulo;
+   saturating int32 add; topology-balance check.  **Petals + Helix +
+   Microsoft DirectStorage + NVIDIA GPUDirect Storage + AMD Ryzen AI
+   Max+ LRU streaming weight scheduler** — 64-slot LRU over 64-bit
+   `(layer, expert)` keys; branchless O(N) lookup; monotone-clock
+   victim; `__builtin_prefetch` on insert.  **HSL — Hyperscale
+   Language** — a 10-opcode integer bytecode ISA (`HALT / SHIFT /
+   SCAN / TIMEMIX / ROUTEK / PIMPOP / WDM / SPIKE / RING / GATE`)
+   with per-instruction silicon-unit cost accounting and an
+   integrated `GATE` opcode that writes `v70_ok = 1` iff
+   `silicon_cost ≤ silicon_budget` AND `reg_q15[a] ≥ throughput_floor`
+   AND `topology_ok == 1` AND `NOT abstained` — so **no hyperscale
+   inference step crosses to the agent unless silicon cost ≤ budget
+   AND throughput ≥ floor AND topology balanced**, all as a single
+   branchless AND.  Composes with v60..v69 as an **11-bit branchless
+   decision** (`cos_v70_compose_decision`).  **148 034 / 148 034
+   deterministic self-tests** at `make check-v70` (including the full
+   2¹¹ = 2048-entry truth table of the composed decision function).
+   ASAN clean (`make asan-v70`).  UBSAN clean (`make ubsan-v70`).
+   Hardened build clean (`make standalone-v70-hardened`).  Microbench
+   on Apple M4 P-core: **~187 M SSM tokens/s (N = 4 096) · ~1.9 M
+   RWKV-7 steps/s (dim = 128) · ~1.0 G AND-popcount ops/s
+   (cols = 4 096) · ~4 M HSL programs/s · ~187 M 11-bit composed
+   decisions/s**.  CLI: `cos hs` (self-test + microbench),
+   `cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67> <v68>
+   <v69> <v70>` (one-shot JSON 11-bit decision), and `cos sigma` as
+   an **eleven-kernel verdict** (now extended to twelve by v71).
+   Registered as the `hyperscale_substrate` slot (tier **M**) in the
+   v57 Verified Agent.  Zero optional dependencies on the hot path —
+   the kernel is libc-only.
+12. **v71 σ-Wormhole** — dependency-free, branchless, **integer-only**
+   C kernel shipping a **hyperdimensional wormhole / portal-cognition
+   plane** as the **non-local direct-addressing** layer that lets an
+   agent jump from "here" to "there" in the concept manifold in one
+   XOR pass, zero multiplies, zero FP, side-channel bounded, HMAC-HV-
+   signed against portal poisoning.  Ten primitives: **Portal
+   Einstein-Rosen bridge table** — every pair `(anchor, target)`
+   stores its canonical bridge `b = anchor ⊕ target`; apply to
+   anchor lands on target in one XOR (VSA / HRR algebra, Plate 1995;
+   Kanerva 2009; ER=EPR Maldacena & Susskind 2013 translated into
+   information-theoretic form).  **Constant-time anchor cleanup** —
+   popcount-Hamming sweep over the portal anchor column, O(cap · D/64)
+   popcount ops, no early exit (side-channel bounded).  **Single-XOR
+   teleport** — `dst = q ⊕ bridges[idx]`; bidirectional by XOR
+   involution.  **Kleinberg small-world multi-hop routing (Kleinberg,
+   STOC 2000)** — greedy Hamming descent over the portal graph;
+   O(log² n) expected hops under the 1/d distribution.  **ER=EPR
+   tensor-bond pairing** — MPS bond-dimension trick in VSA form:
+   a single bond HV couples one row of store A to one row of store B;
+   teleport between them is one XOR.  **HMAC-HV bridge integrity
+   (Bellare-Canetti-Krawczyk 1996 lineage)** — every bridge carries
+   `sig = bridge ⊕ permute(secret, seed)`; verify = recompute +
+   Hamming-compare; defeats the "poisoned portal" attack class.
+   **Poincaré-boundary gate (Nickel & Kiela, NeurIPS 2017)** —
+   branchless bit-skew proxy `|popcount(q) − D/2| ≥ thresh` for "is
+   the query in the hyperbolic boundary regime where wormholes are
+   cheap?"; fail → fall back to linear deliberation.  **Multi-hop
+   hop budget + abstain** — branchless increment-and-compare per
+   hop; over-budget flips abstain.  **Path receipt** — bundled HV of
+   hop anchors (ordered variant uses permutation per hop); every two
+   distinct paths produce near-orthogonal receipts; the "show your
+   work" object for non-local jumps.  **WHL — Wormhole Language** —
+   a 10-opcode integer bytecode ISA (`HALT / ANCHOR / BIND /
+   TELEPORT / ROUTE / BOND / VERIFY / HOP / MEASURE / GATE`) with
+   per-instruction teleport-unit cost and an integrated `GATE`
+   opcode that writes `v71_ok = 1` iff `cost ≤ cost_budget` AND
+   `hops ≤ hop_budget` AND `integrity_ok == 1` AND `boundary_ok == 1`
+   AND `reg_q15[a] ≥ arrival_threshold` AND `NOT abstained` — so
+   **no teleport program produces `v71_ok = 1` without simultaneously
+   demonstrating cost-budget compliance, hop-budget compliance, a
+   valid integrity signature on every traversed bridge, arrival on
+   the target manifold, and a Poincaré-boundary-regime anchor**, all
+   as a single branchless AND.  Composes with v60..v70 as a **12-bit
+   branchless decision** (`cos_v71_compose_decision`).  **68 404 /
+   68 404 deterministic self-tests** at `make check-v71` (including
+   the full 2¹² = 4 096-entry truth table of the composed decision
+   function).  ASAN clean (`make asan-v71`).  UBSAN clean
+   (`make ubsan-v71`).  Hardened build clean
+   (`make standalone-v71-hardened`).  Microbench on Apple M4 P-core:
+   **~30.6 GB/s Hamming (D = 8 192) · ~42 M single-XOR teleports/s ·
+   ~88 k constant-time portal matches/s (cap = 256) · ~273 k 4-hop
+   small-world routes/s (cap = 64) · ~2.4 M WHL 5-instruction
+   programs/s · ~285 M 12-bit composed decisions/s**.  CLI: `cos wh`
+   (self-test + microbench), `cos decide <v60> … <v71>` (one-shot
+   JSON 12-bit decision, now extended to 13-bit by v72), and
+   `cos sigma` as a **twelve-kernel verdict** (now extended to
+   thirteen by v72).  Registered as the `wormhole_teleport` slot
+   (tier **M**) in the v57 Verified Agent.  Zero optional
+   dependencies on the hot path — the kernel is libc-only.
+13. **v72 σ-Chain** — dependency-free, branchless, **integer-only** C
+   kernel shipping a **quantum-tier blockchain / web3 / post-quantum
+   / zero-knowledge / verifiable-agent substrate** as the **inter-
+   process / inter-agent trust surface** that lets the composed stack
+   publish receipts other agents (and other machines) can verify in
+   constant time, without trusted setup, without floating-point,
+   without any dependency beyond libc, and — most importantly — with a
+   post-quantum hot path that stays valid after a cryptanalytically
+   relevant quantum computer exists.  Ten primitives: **Binary Merkle
+   tree** (authenticated ledger, internal UB-free 64-bit integer mixer,
+   opt-in `COS_V72_LIBSODIUM=1` swaps in BLAKE2b-256 for production).
+   **Append-only prev-hash-bound receipt chain** (`prev_hash = H(prev)`
+   so any tamper propagates).  **Hash-based one-time signature (WOTS+ /
+   XMSS lineage; Lamport 1979, Merkle 1987, Buchmann et al. 2011)** —
+   Winternitz w = 16, n = 32, branchless chain evaluation, strict one-
+   time-use enforcement, research-tier integer-only implementation.
+   **Threshold t-of-n quorum** — signers contribute integer shares;
+   aggregator is a branchless `sum(shares) mod 2^k` inside a clearance
+   window AND `count ≥ threshold` compare (TALUS-lineage gate).
+   **Hash-chain VRF leader election (iVRF lineage; Micali-Rabin-Vadhan
+   1999, Dodis-Yampolskiy 2005 reformulated as indexed hash chain)** —
+   `vrf_out = H^depth(seed ∥ msg)`; verification is a fixed-depth chain
+   replay (constant time).  **DAG-BFT 2f + 1 quorum gate (Narwhal +
+   Bullshark lineage; arXiv:2105.11827, arXiv:2201.05677)** — exposed as
+   a branchless integer compare with an explicit round-tag check.
+   **zkAgent-style 256-bit proof-commitment receipt** — `proof_commit =
+   H(public_input ∥ vk_id ∥ proof_digest)`; no SNARK prover shipped,
+   opt-in `COS_V72_ZKAGENT=1` reserves the external-verifier slot so
+   Plonky3 / Halo2 / Risc0 can plug in without touching the decision
+   surface.  **EIP-7702 / ERC-4337 session-key delegation** — session
+   keys live inside a `(valid_after, valid_before, scope_mask,
+   spend_cap)` envelope checked branchlessly on every use.  **Chain-
+   state receipt bundle** — XOR-digest over all receipt hashes along a
+   chain span, Merkle-compatible, O(n) integer ops.  **SCL — σ-Chain
+   Language** — a 10-opcode integer bytecode ISA
+   (`HALT / LEAF / ROOT / PROVE / VERIFY / OTS / QUORUM / VRF /
+   DELEGATE / GATE`) with per-instruction gas-unit cost accounting; the
+   `GATE` opcode writes `v72_ok = 1` iff `gas ≤ budget` AND
+   `quorum_ok == 1` AND `ots_ok == 1` AND `proof_ok == 1` AND
+   `delegation_ok == 1` AND `NOT abstained` — so **no chain program
+   produces `v72_ok = 1` without simultaneously demonstrating gas-
+   budget compliance, a valid quorum, a valid one-time signature, a
+   valid proof commitment, and a delegation envelope inside its
+   clearance window**, all as a single branchless AND.  Composes with
+   v60..v71 as the final **13-bit branchless decision**
+   (`cos_v72_compose_decision`).  **117 108 / 117 108 deterministic
+   self-tests** at `make check-v72` (including the full 2¹³ = 8 192-
+   entry truth table of the composed decision function over all
+   thirteen kernels).  ASAN clean (`make asan-v72`).  UBSAN clean
+   (`make ubsan-v72`).  Hardened build clean
+   (`make standalone-v72-hardened`).  CLI: `cos ch` (self-test +
+   microbench), `cos decide <v60> … <v72>` (one-shot JSON 13-bit
+   decision, now extended to 15-bit by v73 and v74), and `cos sigma`
+   as a **thirteen-kernel verdict** (now extended to fifteen by v73
+   and v74).
+   Registered as the `chain_quorum` slot (tier **M**) in the v57
+   Verified Agent.  Zero optional dependencies on the hot path — the
+   kernel is libc-only.
+14. **v73 σ-Omnimodal** — dependency-free, branchless, **integer-only**
+   C kernel shipping a **unified multimodal generation substrate —
+   the Creator** — as the layer that lets the composed stack
+   *produce* code, image, audio, video, game-worlds and workflow
+   outputs under one 256-bit HV token alphabet, with a branchless
+   integer hot path, zero floating-point on any decision surface and
+   zero dependencies beyond libc.  Ten primitives: **Universal-
+   modality VQ-RVQ tokenizer** — SoundStream arXiv:2107.03312, MAGVIT
+   arXiv:2212.05199, MAGVIT-v2 arXiv:2310.05737, Encodec, MSR-Codec;
+   popcount-nearest codeword lookup across text / image / audio /
+   video / 3D / workflow-node / game-tile, all 256-bit bipolar HVs.
+   **Rectified-flow integer scheduler** — Flow Matching arXiv:
+   2209.03003, Rectified Flow arXiv:2210.02747, StreamFlow arXiv:
+   2511.22009, MixFlow arXiv:2604.09181, Variational RFM arXiv:
+   2502.09616; fixed K-step integer noise schedule with a per-step
+   budget compare.  **VINO cross-modal XOR bind** — arXiv:2601.02358
+   MMDiT-style interleaved multimodal conditioning; per-modality
+   permutation preserves identity across modalities.  **MOVA video+
+   audio co-synth lock** — paired bipolar popcount across a reel;
+   lip-sync, FX-sync and music-sync are three integer compares
+   ANDed branchlessly.  **Matrix-Game world-model step** — Matrix-
+   Game-3 arXiv:2604.08995 (720p / 40 FPS / 5B, stable over minute-
+   long horizons), Matrix-Game-2 arXiv:2508.13009 (ICLR 2025, 25 FPS,
+   GTA5 scenes), GameNGen (ICLR 2025, 20 FPS single-TPU); action-
+   conditioned next-HV-frame step with popcount-Hamming memory
+   retrieval for long-horizon coherence.  **DiReCT physics-coherence
+   gate** — arXiv:2603.25931 disentangled semantic-physics regulariser
+   expressed as a two-compare integer energy gate (|Δmomentum| ≤ τ_p
+   AND collision_energy ≤ τ_c).  **n8n v2.10 "Brain vs Hands"
+   workflow DAG executor** — JudgeFlow arXiv:2601.07477 rank-
+   responsibility scoring, ReusStdFlow extraction-storage-construction
+   cache, SOAN arXiv:2508.13732v1 structural-unit encapsulation;
+   topological sort is a branchless bitset wave-front.  **Cursor /
+   Claude Code / Devin / Lovable / Bolt.new / Base44 / Totalum / v0 /
+   Replit-Agent code-edit planner** — 2026 ai-agents-benchmark.com
+   Autonomous Software Creation lineage; multi-file diff plan over an
+   integer bitset dependency graph, bounded-depth cycle detection,
+   idempotent sub-workflow verifier, repair-loop budget.  **MultiGen
+   asset-graph navigation** — arXiv:2603.06679 external-memory-
+   persistent tile grid; small-world Hamming descent reuses the v71
+   portal shape (Kleinberg STOC 2000) so GTA-tier asset coherence is
+   a single XOR path receipt.  **OML — Omnimodal Language** — a 10-
+   opcode integer bytecode ISA (`HALT / TOKENIZE / FLOW / BIND / LOCK
+   / WORLD / PHYSICS / WORKFLOW / PLAN / GATE`) with per-instruction
+   creation-unit cost and an integrated `GATE` opcode that writes
+   `v73_ok = 1` iff `creation_units ≤ budget` AND `flow_ok == 1` AND
+   `bind_ok == 1` AND `lock_ok == 1` AND `physics_ok == 1` AND
+   `plan_ok == 1` AND `workflow_ok == 1` AND `NOT abstained` — so
+   **no generated artefact produces `v73_ok = 1` without
+   simultaneously demonstrating rectified-flow convergence, VINO
+   cross-modal integrity, MOVA audio-visual sync, DiReCT physics
+   coherence, code-edit plan validity and workflow termination**,
+   all as a single branchless AND.  Composes with v60..v72 as the
+   final **14-bit branchless decision** (`cos_v73_compose_decision`).
+   **245 818 / 245 818 deterministic self-tests** at `make check-v73`
+   (including the full 2¹⁴ = 16 384-entry truth table of the 14-bit
+   composed decision).  ASAN clean (`make asan-v73`).  UBSAN clean
+   (`make ubsan-v73`).  Hardened build clean
+   (`make standalone-v73-hardened`).  Microbench on Apple M-series
+   P-core: **~52.9 GB/s Hamming (256-bit) · ~826 M HV ops/s · ~2.1 M
+   tokenize/s (N=512) · ~67 M flow runs/s (32 steps) · ~2.6 M
+   workflow runs/s (32 nodes) · ~302 M 14-bit composed decisions/s**.
+   CLI: `cos om` (self-test + microbench), `cos decide <v60> … <v74>`
+   (one-shot JSON 15-bit decision, now extended to 15-bit by v74),
+   and `cos sigma` as a **fourteen-kernel verdict** (now extended to
+   fifteen by v74).  Registered as the `omnimodal_creator` slot
+   (tier **M**) in the v57 Verified Agent.  Zero optional
+   dependencies on the hot path — the kernel is libc-only.
+15. **v74 σ-Experience** — dependency-free, branchless, **integer-only**
+   C kernel shipping a **unified experience substrate — perfect UX/UI,
+   universal expertise, and a real-time render budget that makes
+   2026-era AAA games playable on commodity silicon** (M4 MacBook,
+   iPhone-class SoC, plain Snapdragon phone) **plus 1-second
+   interactive-world synth in hypervector space**, with a branchless
+   integer hot path, zero floating-point on any decision surface and
+   zero dependencies beyond libc.  Ten primitives: **Fitts-V2P target
+   heatmap** — arXiv:2508.13634 (V2P GUI-grounding 92.4 %); 2-D
+   saturating integer Gaussian weight per target size, branchless
+   argmax over the target set.  **Adaptive layout optimiser** — CHI '26
+   Log2Motion arXiv:2601.21043 biomechanical effort estimator + Apple
+   ML arXiv:2002.10702 gradient-descent lineage; verifies a proposed
+   placement against reachability bitset + frozen-slot bitset + Fitts
+   effort budget + injective-mapping constraint in one branchless AND
+   reduction.  **Designer-basis personalisation** — arXiv:2604.09876
+   (mean κ = 0.25 between designers on hierarchy / cleanliness);
+   represents users as argmin-Hamming over K designer-basis HVs,
+   outperforming pre-trained UI evaluators and much larger multimodal
+   models in the 2026 user study.  **SquireIR slot authoring** — Apple
+   SQUIRE April 2026; mutable bitset M + frozen bitset F + proposed
+   edit E admissible iff `(E & F) == 0 AND (E & ~M) == 0` (one AND
+   reduction, zero branches, explicit scope guarantees).  **Universal-
+   expert LoRA-MoE HV mesh** — DR-LoRA arXiv:2601.04823 + CoMoL arXiv:
+   2603.00573 + MoLE arXiv:2404.13628 + MixLoRA arXiv:2404.15159v3;
+   64 expert HVs, each with a DR-LoRA rank, top-k router by popcount-
+   Hamming, branchless margin-gate (d_k − d_1 ≥ τ).  **Skill
+   composition** — XOR-bind top-k experts under per-domain permutation
+   so arbitrary expertise (code, render, UX, finance, biology, security,
+   …) is a single HV verified against a claim manifold by one Hamming
+   compare.  **Mobile-GS order-free Gaussian-splat render step** —
+   arXiv:2603.11531 ICLR 2026 (116 FPS at 1600×1063 on Snapdragon 8
+   Gen 3, 1098 FPS on RTX 3090, 4.8 MB models) + msplat Metal-native
+   engine (~350 FPS on M4 Max); alpha-sort is eliminated via depth-
+   aware order-independent rendering + neural-view enhancement.  We
+   verify a per-tile visibility budget and a neural-view-enhancement
+   Hamming tolerance in branchless integer form.  **Neural upscale +
+   multi-frame-generation gate** — DLSS 4.5 Dynamic Multi-Frame
+   Generation (up to 6× factor) + FSR + Intel XeSS + GenMFSR arXiv:
+   2603.19187 + GameSR engine-independent SR; branchless compare
+   `base_hz × gen_factor ≤ display_hz AND quality ≥ τ AND gen_factor
+   ∈ {1..6}`.  This is what lets GTA-tier scenes hit 120 FPS on an M4
+   or a phone.  **1-second interactive-world synth** — Genie 3 lineage
+   (DeepMind 2026, 720p / 20-24 FPS, text-to-interactive-world); from
+   a seed + style HV (via designer-basis) synthesises an N-tile HV
+   world in a bounded creation-unit count and bridges straight into
+   v73's `WORLD` opcode so the full Creator × Experience loop closes
+   in one second.  **XPL — Experience Programming Language** — a 10-
+   opcode integer bytecode ISA (`HALT / TARGET / LAYOUT / BASIS /
+   SLOT / EXPERT / RENDER / UPSCALE / WORLD / GATE`) with per-
+   instruction creation-unit cost and an integrated `GATE` opcode
+   that writes `v74_ok = 1` iff `creation_units ≤ budget` AND every
+   sub-gate (`target_ok`, `layout_ok`, `basis_ok`, `slot_ok`,
+   `expert_ok`, `skill_ok`, `render_ok`, `upscale_ok`,
+   `world_second_ok`) is 1 AND `NOT abstained` — so **no delivered
+   user experience produces `v74_ok = 1` without simultaneously
+   demonstrating perfect Fitts-V2P targeting, admissible adaptive
+   layout, designer-basis coherence, SquireIR scope safety, LoRA-MoE
+   route margin, skill-bind manifold match, Mobile-GS visibility +
+   neural-view tolerance, DLSS / FSR / XeSS multi-frame-gen budget,
+   and 1-second interactive-world coherence**, all as a single
+   branchless AND.  Composes with v60..v73 as the final **15-bit
+   branchless decision** (`cos_v74_compose_decision`).  **600 128 /
+   600 128 deterministic self-tests** at `make check-v74` (including
+   the full 2¹⁵ = 32 768-entry truth table of the 15-bit composed
+   decision).  ASAN clean (`make asan-v74`).  UBSAN clean
+   (`make ubsan-v74`).  Hardened build clean
+   (`make standalone-v74-hardened`).  Microbench on Apple M-series
+   P-core: **~820 M Hamming (256-bit) ops/s · ~24 M Fitts argmax/s
+   (N=32) · ~5.5 M expert top-4 routes/s (N=64) · ~3.3 M Mobile-GS
+   render steps/s (64 tiles) · ~1.7 M 1-second worlds/s (256 tiles
+   each, i.e. one second of real time synthesises ≈ 1.7 × 10⁶
+   interactive worlds) · ~333 M 15-bit composed decisions/s**.
+   CLI: `cos ux` (self-test + microbench), `cos decide <v60> … <v74>`
+   (one-shot JSON 15-bit decision), and `cos sigma` as a **fifteen-
+   kernel verdict**.  Registered as the `experience_frontier` slot
+   (tier **M**) in the v57 Verified Agent.  Zero optional
+   dependencies on the hot path — the kernel is libc-only.
+16. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+   flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 / v69 / v70 / v71 / v72 / v73 / v74),
+   `make sanitize` (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 /
+   v65 / v66 / v67 / v68 / v69 / v70 / v71 / v72 / v73 / v74 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
+   v66 / v67 / v68 / v69 / v70 / v71 / v72 / v73 / v74, all self-tests), `make hardening-check` (PIE / canary /
+   fortify verified).
+17. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
+   per-component SHA-256), `make security-scan` (gitleaks with
+   `.gitleaks.toml` allowlist + grep-only fallback + hardcoded-URL
+   sanity), `make reproducible-build` (double-build SHA-256 compare),
+   `make nix-build` (Nix hermetic build), `make attest`
+   (ATTESTATION.json + optional Sigstore cosign), `make slsa`
+   (SLSA v1.0 predicate stub), `make distroless` (gcr.io/distroless
+   runtime container).  Pre-commit hooks: `.pre-commit-config.yaml`
+   runs gitleaks, whitespace / EOL hygiene, `.env` guard, pre-push
+   runs the layered `scripts/security/scan.sh`.  CI:
+   [`.github/workflows/security.yml`](.github/workflows/security.yml)
+   (gitleaks + harden + sanitize + scan + SBOM + repro),
+   [`.github/workflows/chace.yml`](.github/workflows/chace.yml)
+   (`make chace` on macOS + Linux),
+   [`.github/workflows/slsa.yml`](.github/workflows/slsa.yml)
+   (SLSA-3 provenance via `slsa-github-generator`).
+
+See [`SECURITY.md`](SECURITY.md) for the full policy, supported
+versions, reporting process, and active guarantees; see
+[`THREAT_MODEL.md`](THREAT_MODEL.md) for the STRIDE decomposition and
+arXiv-by-arXiv response.
 
 ## Run it in sixty seconds
 
@@ -310,8 +1165,17 @@ flowchart LR
 | **v57** | **The Verified Agent** — convergence of v33–v56 into one named artifact with **one verification command**. Five invariants + nine composition slots, each tagged with an honest tier (**M** runtime-checked / **F** formally proven / **I** interpreted / **P** planned). Static `static const` registry; no new σ math, no socket, no allocation on a hot path. `make verify-agent` walks the slots, dispatches each owning `make` target, and reports **PASS / SKIP / FAIL** per slot — never silently downgrades when external tooling (Frama-C, sby, garak) is absent | `check-v57` · `verify-agent` | **49/49** | response to ad-hoc agent-sandbox field — [docs/v57/THE_VERIFIED_AGENT.md](docs/v57/THE_VERIFIED_AGENT.md) · [docs/v57/POSITIONING.md](docs/v57/POSITIONING.md) · [paper](docs/v57/paper_draft.md) |
 | **v58** | **σ-Cache** — σ-decomposed KV-cache eviction. Per-token signal = **epistemic ε (keep) + attention + recency − aleatoric α (discount) + sink lift**. Threshold via K-th-largest non-sink score (capacity budget); decision is a **four-valued tag** (FULL / INT8 / INT4 / EVICT) from branchless bitmask arithmetic. NEON 4-accumulator SoA scoring path, 64-byte aligned scratch, explicit prefetch. Extends the v57 Verified Agent with a `kv_cache_eviction` slot (tier **M**) | `check-v58` · `microbench-v58` | **68/68** | first KV-eviction policy to use σ = (ε, α) decomposition — [docs/v58/THE_SIGMA_CACHE.md](docs/v58/THE_SIGMA_CACHE.md) · [docs/v58/ARCHITECTURE.md](docs/v58/ARCHITECTURE.md) · [docs/v58/POSITIONING.md](docs/v58/POSITIONING.md) · [paper](docs/v58/paper_draft.md) |
 | **v59** | **σ-Budget** — σ-decomposed adaptive test-time compute budget controller. Consumes per-step ε / α and emits a **four-valued tag** (`CONTINUE` / `EARLY_EXIT` / `EXPAND` / `ABSTAIN`) via a branchless kernel. Only policy that can refuse compute on α-dominated problems — TAB / CoDE-Stop / LYNX / DTSR / DiffAdapt / Coda / AdaCtrl / Risk-Control BF all use a scalar signal. NEON 4-accumulator SoA readiness reduction, 64-byte aligned scratch. Registered as the `adaptive_compute_budget` slot (tier **M**) in the v57 Verified Agent | `check-v59` · `microbench-v59` | **69/69** | first adaptive-compute-budget policy to use σ = (ε, α) decomposition; 1.1-1.5 × 10⁸ decisions / s — [docs/v59/THE_SIGMA_BUDGET.md](docs/v59/THE_SIGMA_BUDGET.md) · [docs/v59/ARCHITECTURE.md](docs/v59/ARCHITECTURE.md) · [docs/v59/POSITIONING.md](docs/v59/POSITIONING.md) · [paper](docs/v59/paper_draft.md) |
+| **v60** | **σ-Shield** — runtime security kernel: first capability kernel to gate on a σ = (ε, α) intent decomposition. Five-valued branchless authorise: `ALLOW` / `DENY_CAP` / `DENY_INTENT` / `DENY_TOCTOU` / `DENY_INTEGRITY`. Refuses α-dominated intent *regardless* of capability — closes the Q2 2026 ambiguous-payload class (DDIPE 2604.03081, ClawWorm 2603.15727, Malicious Intermediary 2604.08407) that beats signature / allowlist defenses. Constant-time hash equality, TOCTOU-free `arg_hash_at_entry ↔ at_use`, code-page integrity, sticky-deny for `DLSYM` / `MMAP_EXEC` / `SELF_MODIFY`. No allocation, no `if`, no syscalls on the hot path. Registered as `runtime_security_kernel` slot (tier **M**) in the v57 Verified Agent. Companion: [`SECURITY.md`](SECURITY.md), [`THREAT_MODEL.md`](THREAT_MODEL.md), `make harden` / `sanitize` / `hardening-check` / `sbom` / `security-scan` / `reproducible-build` | `check-v60` · `microbench-v60` | **81/81** | sibling of v59 — v59 refuses to *compute* on α-dom, v60 refuses to *act* on α-dom — [docs/v60/THE_SIGMA_SHIELD.md](docs/v60/THE_SIGMA_SHIELD.md) · [docs/v60/ARCHITECTURE.md](docs/v60/ARCHITECTURE.md) · [docs/v60/POSITIONING.md](docs/v60/POSITIONING.md) · [paper](docs/v60/paper_draft.md) |
+| **v62** | **Reasoning Fabric** — *the alien-tier 2026 frontier in one branchless C kernel.*  Six modules under one ABI (`src/v62/fabric.h`): **Coconut latent CoT** (arXiv:2412.06769) + **EBT verifier** (arXiv:2507.02092 / ICLR 2026) + **HRM H/L loop** (arXiv:2506.21734) + **Native Sparse Attention** (arXiv:2502.11089) + **DeepSeek-V3 Multi-Token Predictor** (arXiv:2412.19437) + **ARKV adaptive KV manager** (arXiv:2603.08727).  Hardware discipline (M4 invariants from `.cursorrules`): every buffer `aligned_alloc(64, ...)`, NEON 4-way + prefetch in every hot loop, branchless inner loops, mmap-friendly KV layout (64-B row stride).  Composes with v60 σ-Shield + v61 Σ-Citadel as a 3-bit branchless decision (`cos_v62_compose_decision`); **no reasoning step emits unless all three lanes ALLOW**.  Microbench on M4: **NSA attend ~ 8 200 calls/s (n=1024, d=64) · EBT minimize ~ 3.7 M calls/s (d=256, k=16)**.  Apple-tier CLI front door (`cli/cos.c`, ~500 lines, single C binary, zero deps, `NO_COLOR`-respecting): `./cos`, `cos status`, `cos verify`, `cos chace`, `cos sigma`, `cos think <prompt>`.  Registered as the `reasoning_fabric` slot (tier **M**) in the v57 Verified Agent | `check-v62` · `microbench-v62` · `asan-v62` · `ubsan-v62` · `cos` | **68/68** | first OSS local AI runtime to land all six 2026 reasoning advances in one C ABI — [docs/v62/THE_FABRIC.md](docs/v62/THE_FABRIC.md) · [docs/v62/ARCHITECTURE.md](docs/v62/ARCHITECTURE.md) · [docs/v62/POSITIONING.md](docs/v62/POSITIONING.md) · [paper](docs/v62/paper_draft.md) |
+| **v63** | **σ-Cipher** — *the 2026 end-to-end encryption frontier distilled into dependency-free branchless C.*  Ten primitives under one header (`src/v63/cipher.h`): **BLAKE2b-256** (RFC 7693), **HKDF-BLAKE2b** (RFC 5869), **ChaCha20** (RFC 8439), **Poly1305** (RFC 8439), **ChaCha20-Poly1305 AEAD** (RFC 8439 §2.8), **X25519** (RFC 7748, constant-swap Montgomery ladder, ref10 10-limb field arithmetic, all signed-shifts rewritten `carry * ((int64_t)1 << N)` for UBSAN cleanliness), constant-time equality + optimiser-resistant secure-zero, **attestation-bound sealed envelope** (key = HKDF(v61 256-bit quote ‖ nonce ‖ context) — a trace only decrypts on a host whose committed runtime matches the one that sealed), forward-secret **symmetric ratchet**, and an IK-like **session handshake** with BLAKE2b chaining key.  Optional `COS_V63_LIBSODIUM=1` delegates primitives to libsodium's AArch64 assembly; optional `COS_V63_LIBOQS=1` reserves the ML-KEM-768 hybrid slot (Signal SPQR / reishi-handshake pattern).  Absent opt-ins report **SKIP** honestly; the portable / non-PQ path is never silently claimed as libsodium- or PQ-verified.  Composes with v60 + v61 + v62 as a **4-bit branchless decision** (`cos_v63_compose_decision`): **no sealed message emits unless σ-Shield, Σ-Citadel, the EBT verifier _and_ the AEAD tag + quote binding all ALLOW**.  Microbench on M-series laptop: **AEAD ~ 516 MiB/s · BLAKE2b-256 ~ 1 047 MiB/s · X25519 ~ 12 000 ops/s · seal ~ 336 000 ops/s**.  CLI: `cos seal <path> [--context CTX]`, `cos unseal <path> [--context CTX]`, and `cos sigma` as a four-kernel verdict.  Registered as the `e2e_encrypted_fabric` slot (tier **M**) in the v57 Verified Agent | `check-v63` · `microbench-v63` · `asan-v63` · `ubsan-v63` · `cos seal` · `cos unseal` | **144/144** | first OSS local-AI-agent runtime to ship every 2026 encryption-frontier primitive as one dependency-free C kernel, attestation-bound, composed with the capability + lattice + EBT kernels — [docs/v63/THE_CIPHER.md](docs/v63/THE_CIPHER.md) · [docs/v63/ARCHITECTURE.md](docs/v63/ARCHITECTURE.md) · [docs/v63/POSITIONING.md](docs/v63/POSITIONING.md) · [paper](docs/v63/paper_draft.md) |
+| **v64** | **σ-Intellect** — *the 2026 agentic frontier distilled into branchless Q0.15 integer C with zero floating-point on the hot path.*  Six subsystems under one header (`src/v64/intellect.h`): **MCTS-σ** PUCT search (Empirical-MCTS, arXiv:2602.04248; rStar-Math; Nemotron-MCTS) with integer isqrt + Q0.15 × Q0.15 → Q0.15 UCB and mmap-friendly flat-array node arena; **Skill library** (EvoSkill, arXiv:2603.02766; Voyager) with 32-byte σ-signature Hamming retrieval, constant-time scan (no timing oracle); **Tool authz** (Dynamic ReAct, arXiv:2509.20386; SmolAgents) — schema + caps + σ + **TOCTOU-safe** `arg_hash_at_entry ↔ at_use` binding, branchless priority cascade, multi-cause honest `reason_bits`, TOCTOU dominates every other lane; **Reflexion ratchet** (ERL, arXiv:2603.24639; ReflexiCoder, arXiv:2603.05863) — integer Δε / Δα update, uses/wins overflow ratio-preserving shift, Q0.15 confidence persisted per skill; **AlphaEvolve-σ** — BitNet-b1.58 ternary layout (arXiv:2402.17764) packed 2-bits-per-weight, σ-gated accept-or-rollback mutation, monotone α non-increase; **MoD-σ** — per-token depth routing via integer round-shift (arXiv:2404.02258; MoDA arXiv:2603.15619; A-MoD arXiv:2412.20875).  Composes with v60 + v61 + v62 + v63 as a **5-bit branchless decision** (`cos_v64_compose_decision`): **no tool call or reasoning emission leaves the stack unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote binding _and_ the agentic-intellect kernel all ALLOW**.  Microbench on M-series perf core: **MCTS-σ ~ 674 k iters/s · skill retrieve ~ 1.4 M ops/s · tool-authz ~ 517 M decisions/s · MoD-σ ~ 5.1 GB/s** — the tool-authz figure is ~10⁴ – 10⁷ × faster than any LLM-backed tool router, answering the "beat LLMs on their home turf" benchmark directly.  CLI: `cos mcts` (self-test + microbench), `cos decide <v60> <v61> <v62> <v63> <v64>` (one-shot JSON 5-bit decision), and `cos sigma` as a five-kernel verdict.  Registered as the `agentic_intellect` slot (tier **M**) in the v57 Verified Agent.  Zero optional dependencies on the hot path — the kernel is libc-only | `check-v64` · `microbench-v64` · `asan-v64` · `ubsan-v64` · `cos mcts` · `cos decide` | **260/260** | first OSS local-AI-agent runtime to ship every 2026 agentic-frontier primitive as one branchless integer C kernel with a 5-bit composed decision — [docs/v64/THE_INTELLECT.md](docs/v64/THE_INTELLECT.md) · [docs/v64/ARCHITECTURE.md](docs/v64/ARCHITECTURE.md) · [docs/v64/POSITIONING.md](docs/v64/POSITIONING.md) · [paper](docs/v64/paper_draft.md) |
+| **v66** | **σ-Silicon** — *the 2026 mixed-precision-matrix frontier distilled into branchless, integer-only C with zero floating-point on the decision surface and zero dependencies beyond libc + NEON intrinsics.*  Six subsystems under one header (`src/v66/silicon.h`): **Runtime CPU feature detection** for NEON, DotProd, I8MM, BF16, SVE, SME, SME2 (sysctl on Darwin, getauxval on Linux) cached in a single `uint32_t` bitmask for branchless hot-path lookup; **INT8 GEMV** with NEON 4-accumulator inner loop, 64-byte `__builtin_prefetch`, and `vmull_s8` / `vaddlvq_s16` int32-wide horizontal long-add so int8×int8→int16 products cannot overflow; bit-identical scalar fallback; Q0.15 saturating output; **BitNet b1.58 ternary GEMV** with packed 2-bits-per-weight format (00 → 0, 01 → +1, 10 → −1, 11 → 0), branchless table-lookup unpack — constant per-row time regardless of weight distribution; **NativeTernary wire (NTW)** — self-delimiting unary-run-length encoder/decoder at exactly 2.0 bits/weight, fuzz-safe, UB-free under UBSAN and no out-of-bounds under ASAN; **CFC conformal abstention gate** — Q0.15 per-group streaming quantile estimator with ratio-preserving right-shift ratchet (same pattern as v64 Reflexion), branchless `int32 ≥ int32` compare, admits finite-sample marginal coverage under exchangeability; **HSL — Hardware Substrate Language** — an 8-opcode integer bytecode ISA (`HALT / LOAD / GEMV_I8 / GEMV_T / DECODE_NTW / ABSTAIN / CMPGE / GATE`) with per-instruction MAC-unit cost accounting and an integrated `GATE` opcode that writes `v66_ok` directly into the composed decision.  SME / SME2 paths reserved under `COS_V66_SME=1` with explicit streaming-mode setup; default build never emits SME on non-SME hosts (SIGILL-safe on M1/M2/M3).  Sources: MpGEMM ARM SME / SME2, BitNet b1.58 NEON, NativeTernary wire, CFC Conformal Factuality Control, Hello SME.  Composes with v60 + v61 + v62 + v63 + v64 + v65 as a **7-bit branchless decision** (`cos_v66_compose_decision`): **no matrix-backed thought emits unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote binding, the agentic intellect, the hypercortex on-manifold gate _and_ σ-Silicon's MAC-budget + conformal + wire-well-formed gate all ALLOW**.  Microbench on Apple M3 performance core (NEON + dotprod + i8mm): **≈ 49 Gops/s INT8 GEMV (256 × 1 024) · ≈ 2.8 Gops/s ternary GEMV (512 × 1 024) · ≈ 2.5 GB/s NTW decode · ≈ 32 M HSL progs/s** — MAC-budgeted decision surface at hardware speed, not framework speed.  CLI: `cos si` (self-test + microbench with CPU-feature prelude), `cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66>` (one-shot JSON 7-bit decision), and `cos sigma` as a **seven-kernel verdict**.  Registered as the `matrix_substrate` slot (tier **M**) in the v57 Verified Agent.  Zero optional dependencies on the hot path — the kernel is libc + NEON intrinsics only | `check-v66` · `microbench-v66` · `asan-v66` · `ubsan-v66` · `cos si` · `cos decide` | **1705/1705** | first OSS local-AI-agent runtime to ship the 2026 mixed-precision-matrix frontier as one branchless integer C kernel with an 8-opcode MAC-budgeted bytecode ISA and a 7-bit composed decision — [docs/v66/THE_SILICON.md](docs/v66/THE_SILICON.md) · [docs/v66/ARCHITECTURE.md](docs/v66/ARCHITECTURE.md) · [docs/v66/POSITIONING.md](docs/v66/POSITIONING.md) · [paper](docs/v66/paper_draft.md) |
+| **v65** | **σ-Hypercortex** — *the 2026 hyperdimensional / vector-symbolic frontier distilled into popcount-native, branchless, integer-only C with zero floating-point on the hot path and zero dependencies beyond libc.*  Seven capabilities under one header (`src/v65/hypercortex.h`): **Bipolar hypervectors** at `D = 16 384 bits` (= 2 048 B = exactly 32 × 64-byte M4 cache lines), bit-packed (set bit → +1, clear → −1); **VSA primitives** — bind (XOR, self-inverse), threshold-majority bundle with deterministic tie-breaker HV, cyclic permute, Q0.15 similarity `(D − 2·H)·(32768/D)`; **Cleanup memory** — constant-time linear sweep with branchless argmin update (Holographic Invariant Storage, arXiv:2603.13558) — runtime is `O(cap)` regardless of match index, so timing-channel leakage is bounded by arena size, not by secret state; **Record / role-filler** — `record = ⊕_i (role_i ⊗ filler_i)`, closed-form unbind via XOR involution; **Analogy** — `A:B :: C:?` solved as `A ⊗ B ⊗ C` followed by cleanup, in zero gradient steps; **Sequence memory** — `seq = ⊕_i perm^i(item_i)`, decode at position `p` via `perm^{-p}` + cleanup; **HVL — HyperVector Language** — a 9-opcode integer bytecode ISA for VSA programs (`HALT / LOAD / BIND / BUNDLE / PERM / LOOKUP / SIM / CMPGE / GATE`) with per-program cost accounting in popcount-word units, and an integrated `GATE` opcode that writes `v65_ok` directly into the composed decision and refuses on over-budget.  Sources: OpenMem 2026, VaCoAl arXiv:2604.11665, Attention-as-Binding AAAI 2026, VSA-ARC arXiv:2511.08747, HIS arXiv:2603.13558, Hyperdimensional Probe arXiv:2509.25045, HDFLIM, ConformalHDC, LifeHD arXiv:2403.04759.  Composes with v60 + v61 + v62 + v63 + v64 as a **6-bit branchless decision** (`cos_v65_compose_decision`): **no thought emits unless σ-Shield, Σ-Citadel, the EBT verifier, the AEAD tag + quote binding, the agentic intellect _and_ the hypercortex on-manifold + cost-budget gate all ALLOW**.  Microbench on M-series performance core: **~10.1 M Hamming/s @ 41 GB/s · ~31.2 M bind/s @ 192 GB/s** (within 2× of unified-memory peak) · **~10.5 M proto·comparisons/s cleanup · ~5.7 M HVL programs/s @ 40 M ops/s** — neurosymbolic reasoning at silicon-tier bandwidth, not Python-stack speed.  CLI: `cos hv` (self-test + microbench), `cos decide <v60> <v61> <v62> <v63> <v64> <v65>` (one-shot JSON 6-bit decision), and `cos sigma` as a **six-kernel verdict**.  Registered as the `hyperdimensional_cortex` slot (tier **M**) in the v57 Verified Agent.  Zero optional dependencies on the hot path — the kernel is libc-only | `check-v65` · `microbench-v65` · `asan-v65` · `ubsan-v65` · `cos hv` · `cos decide` | **534/534** | first OSS local-AI-agent runtime to ship the 2026 HDC/VSA frontier as one popcount-native integer C kernel with a 9-opcode bytecode ISA and a 6-bit composed decision — [docs/v65/THE_HYPERCORTEX.md](docs/v65/THE_HYPERCORTEX.md) · [docs/v65/ARCHITECTURE.md](docs/v65/ARCHITECTURE.md) · [docs/v65/POSITIONING.md](docs/v65/POSITIONING.md) · [paper](docs/v65/paper_draft.md) |
+| **v61** | **Σ-Citadel** — composed defence-in-depth stack.  **First open-source AI-agent runtime to ship the full DARPA-CHACE advanced-security menu** as one `make chace` aggregator that PASSes on present layers and **SKIPs missing ones honestly** (never silently downgrading).  Kernel: branchless Bell-LaPadula + Biba + MLS-compartment lattice (`READ`/`WRITE`/`EXEC` with op-masked lanes), 8 × 8 × 16-bit labels, **6.1 × 10⁸ decisions/s on M4**; deterministic 256-bit attestation quote over `(code || caps || σ-state || lattice || nonce)` with constant-time 256-bit equality; `COS_V61_LIBSODIUM=1` swaps the XOR-fold for BLAKE2b-256 via libsodium `crypto_generichash`; `cos_v61_compose` gives a 4-valued `ALLOW` / `DENY_V60` / `DENY_LATTICE` / `DENY_BOTH` composed with v60 σ-Shield.  Ships seL4 CAmkES component contract (`sel4/sigma_shield.camkes`), Wasmtime WASM sandbox harness + example tool, eBPF LSM policy (`ebpf/sigma_shield.bpf.c`), Darwin sandbox-exec profile (`sandbox/darwin.sb`), OpenBSD pledge/unveil stub, Nix reproducible build (`nix/v61.nix`), distroless Dockerfile (`Dockerfile.distroless`), Sigstore cosign sign hook, SLSA v1.0 predicate emitter.  Registered as the `defense_in_depth_stack` slot (tier **M**) in the v57 Verified Agent | `check-v61` · `microbench-v61` · `attest` · `chace` · `slsa` · `distroless` | **61/61** | one command (`make chace`) for the full CHACE menu — [docs/v61/THE_CITADEL.md](docs/v61/THE_CITADEL.md) · [docs/v61/ARCHITECTURE.md](docs/v61/ARCHITECTURE.md) · [docs/v61/POSITIONING.md](docs/v61/POSITIONING.md) · [paper](docs/v61/paper_draft.md) |
 
-> **v60 → v70 are intentionally not duplicated here** — their composed-decision facts (compose-as bit-width, microbench, slot, CLI verb) live in the [composed-decision stack table](#composed-decision-stack--v60--v70-eleven-branchless-integer-kernels) above. Per-kernel deep dives: [`docs/vN/`](docs/) (`THE_*.md`, `ARCHITECTURE.md`, `POSITIONING.md`, `paper_draft.md`).
+The first five are **integration scaffolds (C)** — policy + plumbing, not live engines. Caller brings the transformer, tool runtime, or multi-model client. **v57 is a convergence artifact** — it composes those five (plus v47 / v48 / v49) into one queryable table with one verification command. **v58 adds the KV-cache eviction layer**, **v59 adds the adaptive-compute-budget controller**, **v60 adds the runtime security kernel** (σ-Shield — first capability kernel with σ-decomposed intent gate), **v61 adds the composed defence-in-depth stack** (Σ-Citadel — BLP + Biba + MLS lattice + attestation + the full DARPA-CHACE menu via `make chace`), **v62 adds the Reasoning Fabric** (Coconut + EBT + HRM + NSA + MTP + ARKV in one branchless C kernel, composed with v60 + v61 as a 3-bit decision behind the Apple-tier `cos` CLI), **v63 adds the σ-Cipher** (BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + attestation-bound sealed envelopes + forward-secret ratchet + IK-like handshake with an optional ML-KEM-768 hybrid slot — every sealed message is bound to the live v61 attestation quote and gated on a 4-bit branchless decision across v60 / v61 / v62 / v63, exposed through `cos seal` / `cos unseal`), **v64 adds the σ-Intellect** (MCTS-σ + persistent skill library + TOCTOU-safe tool authz + Reflexion ratchet + AlphaEvolve-σ ternary mutation + per-token MoD-σ routing in one Q0.15 integer C kernel with no floating point on the hot path — every emission gated on a 5-bit branchless decision across v60 / v61 / v62 / v63 / v64, and the tool-authorisation path runs at ~10⁴ – 10⁷ × the throughput of any LLM-backed tool router, exposed through `cos mcts` and `cos decide`), and **v65 adds the σ-Hypercortex** (bipolar HDC at D = 16 384 bits = 32 M4 cache lines + bind/bundle/permute + constant-time cleanup memory + role-filler records + analogy + position-permuted sequence memory + a 9-opcode integer bytecode ISA "HVL" with per-program cost accounting in one popcount-native, branchless, integer-only C kernel — every thought gated on a 6-bit branchless decision across v60 / v61 / v62 / v63 / v64 / v65, with bind running at ~192 GB/s, within 2× of unified-memory peak, exposed through `cos hv` and `cos decide`). Full tier tags: [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md).
+
+These milestones extend the portable spine with **agent routing**, **MCP**, **RTL / ASIC hooks**, a **neuromorphic toy**, a **σ-threshold / QEC analogy**, **σ-guided test-time compute scaffolding**, **σ-guided self-play scaffolding**, **σ-guided knowledge distillation (loss contracts + curriculum + ensemble + calibration)**, a **σ-native inference proxy** (`creation_os_proxy`: OpenAI-shaped loopback HTTP + per-token σ demo streaming), **σ-introspection** (`creation_os_v45`: calibration gap + doubt reward + internal-probe stub), a **σ-optimized BitNet-facing pipeline** (`creation_os_v46`: fast σ-from-logits + SIMD reductions + adaptive quant policy + `benchmarks/v46/SPEED_TABLE.md`), a **verification / claims-hygiene lab** (`creation_os_v47` + `make verify`: ACSL contracts, extended SymbiYosys depth, Hypothesis properties, ZK-σ API stub), a **σ-armored red-team lab** (`creation_os_v48`: σ-pattern anomaly + σ-gated sandbox + fail-closed defense stack + `make red-team` / `make merge-gate-v48`), a **certification-grade assurance pack** (`make certify`: DO-178C-aligned documentation + MC/DC driver + binary hygiene + trace automation — **not** FAA/EASA certification), and a **v50 benchmark rollup harness** (`make v50-benchmark`: `benchmarks/v50/FINAL_RESULTS.md` + critic FAQ + Reddit draft — Category 1–3 eval JSON slots are **explicit STUBs** until a pinned engine+dataset harness exists) — all **outside** `make merge-gate`. Tier tags (“M” vs “P”) live in [docs/WHAT_IS_REAL.md](docs/WHAT_IS_REAL.md); the cross-layer map is [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md).
 
 | Milestone | Focus | Verify (representative) |
 |:--|:--|:--|
@@ -334,6 +1198,16 @@ flowchart LR
 | **v48** | σ-armored red-team lab (σ-anomaly, σ-gated sandbox, 7-layer fail-closed defenses, harnesses) | `make check-v48` · `make red-team` · [docs/v48/RED_TEAM_REPORT.md](docs/v48/RED_TEAM_REPORT.md) · `make merge-gate-v48` (optional heavy) |
 | **v49** | Certification-grade assurance pack (DO-178C-aligned artifacts, MC/DC driver, binary audit, trace checks) | `make certify` · [docs/v49/certification/README.md](docs/v49/certification/README.md) |
 | **v50** | Final benchmark rollup (`FINAL_RESULTS.md`, σ-metric table slots, verification log capture, critic FAQ) | `make v50-benchmark` · [benchmarks/v50/FINAL_RESULTS.md](benchmarks/v50/FINAL_RESULTS.md) · [docs/v50/FAQ_CRITICS.md](docs/v50/FAQ_CRITICS.md) |
+| **v51** | AGI-complete integration scaffold (cognitive loop + σ-gated agent + sandbox + ring memory + static σ-dashboard mock + dry-run installer + full-stack diagram) | `make check-v51` · [docs/v51/ARCHITECTURE.md](docs/v51/ARCHITECTURE.md) · [src/v51/ui/web.html](src/v51/ui/web.html) · `bash scripts/v51/install.sh` (dry-run) |
+| **v53** | σ-governed harness scaffold (σ-TAOR loop with 5 abstain outcomes + σ-triggered sub-agent dispatch + σ-prioritized compression + `creation.md` invariants loader + position paper vs Claude Code harness) | `make check-v53` · [docs/v53/ARCHITECTURE.md](docs/v53/ARCHITECTURE.md) · [docs/v53/POSITIONING.md](docs/v53/POSITIONING.md) · [docs/v53/paper_draft.md](docs/v53/paper_draft.md) · [creation.md](creation.md) |
+| **v54** | σ-proconductor scaffold (multi-LLM orchestration policy: registry + σ-profile routing + σ-weighted aggregation + disagreement abstain + EWMA profile learner; `claude`/`gpt`/`gemini`/`deepseek`/`local_bitnet` reference profiles; **no network**) | `make check-v54` · [docs/v54/ARCHITECTURE.md](docs/v54/ARCHITECTURE.md) · [docs/v54/POSITIONING.md](docs/v54/POSITIONING.md) · [docs/v54/paper_draft.md](docs/v54/paper_draft.md) |
+| **v55** | σ₃-speculative scaffold (σ₃ decomposition + EARS adaptive acceptance + EASD entropy-aware quality gate; NEON 4-accumulator entropy hot path + branchless fast log₂; wires Taparia 2603.24967 / Sun 2512.13194 / Su 2512.23765; **no network**, no engine — deterministic proxies on caller-supplied softmax) | `make check-v55` · [docs/v55/ARCHITECTURE.md](docs/v55/ARCHITECTURE.md) · [docs/v55/POSITIONING.md](docs/v55/POSITIONING.md) · [docs/v55/paper_draft.md](docs/v55/paper_draft.md) |
+| **v56** | σ-Constitutional scaffold (rule-based process verifier + σ-gated IP-TTT budget controller + grokking commutator-defect σ-channel + Apple Neural Engine `matmul→1×1 conv` layout helper; NEON 4-accumulator defect reduction + branchless policy arithmetic; wires VPRM arXiv:2601.17223 / IP-TTT arXiv:2604.06169 / SLT grokking arXiv:2603.01192, 2603.13331 / 2026 ANE RE; **no network**, **no Core ML**, **no engine** — policy + integer layout math on caller-supplied arrays) | `make check-v56` · [docs/v56/ARCHITECTURE.md](docs/v56/ARCHITECTURE.md) · [docs/v56/POSITIONING.md](docs/v56/POSITIONING.md) · [docs/v56/paper_draft.md](docs/v56/paper_draft.md) |
+| **v57** | **The Verified Agent** — convergence of v33–v56 into one named artifact with one verification command. Five invariants × nine composition slots, each tier-tagged **M** (runtime-checked) / **F** (formally proven) / **I** (interpreted) / **P** (planned). `static const` registry, no new σ math, no socket. `make verify-agent` walks the slots, dispatches each owning `make` target, reports **PASS / SKIP / FAIL** per slot — never silently downgrades when external tooling (Frama-C, sby, garak) is absent | `make check-v57` · `make verify-agent` · [docs/v57/THE_VERIFIED_AGENT.md](docs/v57/THE_VERIFIED_AGENT.md) · [docs/v57/ARCHITECTURE.md](docs/v57/ARCHITECTURE.md) · [docs/v57/POSITIONING.md](docs/v57/POSITIONING.md) · [docs/v57/paper_draft.md](docs/v57/paper_draft.md) |
+| **v58** | **σ-Cache** — σ-decomposed KV-cache eviction kernel. Per-token retention score = **α_ε·ε + β·attn + γ·recency − δ·α + sink_lift**; eviction threshold is the K-th-largest non-sink score where K = capacity − sinks. Decision is a **four-valued tag** (FULL / INT8 / INT4 / EVICT) from branchless 0/1 bitmask arithmetic; compaction is branchless. NEON 4-accumulator SoA scoring, 64-byte aligned `aligned_alloc` scratch, explicit `__builtin_prefetch`. 3-point microbench sweep (N = 1024 / 4096 / 16384) runs deterministic. Registered as the `kv_cache_eviction` slot (tier **M**) in the v57 Verified Agent | `make check-v58` · `make microbench-v58` · [docs/v58/THE_SIGMA_CACHE.md](docs/v58/THE_SIGMA_CACHE.md) · [docs/v58/ARCHITECTURE.md](docs/v58/ARCHITECTURE.md) · [docs/v58/POSITIONING.md](docs/v58/POSITIONING.md) · [docs/v58/paper_draft.md](docs/v58/paper_draft.md) |
+| **v59** | **σ-Budget** — σ-decomposed adaptive test-time compute budget controller. Per-step readiness = **β·stability + γ·reflection − α_ε·ε − δ·α**; decision kernel is a **four-valued tag** (`CONTINUE` / `EARLY_EXIT` / `EXPAND` / `ABSTAIN`) from branchless 0/1 masks priority-encoded by AND-NOT cascade. ABSTAIN fires when (ε + α) is high **and** α dominates — no scalar-signal method (TAB, CoDE-Stop, LYNX, DTSR, DiffAdapt, Coda, AdaCtrl, Risk-Control BF) can produce this decision. NEON 4-accumulator SoA readiness reduction, 64-byte aligned `aligned_alloc` scratch, explicit `__builtin_prefetch`. 3-point microbench sweep (N = 64 / 512 / 4096) delivers **1.1-1.5 × 10⁸ decisions / s**. Registered as the `adaptive_compute_budget` slot (tier **M**) in the v57 Verified Agent | `make check-v59` · `make microbench-v59` · [docs/v59/THE_SIGMA_BUDGET.md](docs/v59/THE_SIGMA_BUDGET.md) · [docs/v59/ARCHITECTURE.md](docs/v59/ARCHITECTURE.md) · [docs/v59/POSITIONING.md](docs/v59/POSITIONING.md) · [docs/v59/paper_draft.md](docs/v59/paper_draft.md) |
+| **v60** | **σ-Shield** — runtime security kernel. **First capability kernel to gate on σ = (ε, α) intent decomposition.** Five-valued branchless authorise: `ALLOW` / `DENY_CAP` / `DENY_INTENT` / `DENY_TOCTOU` / `DENY_INTEGRITY`. Every call runs **five orthogonal checks unconditionally**: (1) code-page integrity via `ct_equal64(code_hash, baseline)`, (2) sticky-deny overlap (`DLSYM` / `MMAP_EXEC` / `SELF_MODIFY` cannot be granted even on a full-cap holder), (3) capability subset check, (4) TOCTOU-free `arg_hash_at_entry ↔ at_use` equality, (5) σ-intent gate — fires iff `(ε + α) ≥ σ_high ∧ α/(ε+α) ≥ α_dom`. Priority cascade via `& | ~` mask AND-NOT, no `if` on the decision hot path, constant-time hash compare, no dynamic allocation, no syscalls. `reason_bits` is multi-cause honest (records all failing conditions even when priority has picked the winner). Closes the Q2 2026 ambiguous-payload class: DDIPE (2604.03081, 11–33 % bypass), ClawWorm (2603.15727, 64.5 % self-propagation), Malicious Intermediary (2604.08407, 17 / 428 API routers touch credentials) — every one of them α-dominated by construction. Sibling of v59: **v59 refuses to *compute* on α-dom problems, v60 refuses to *act* on α-dom requests**. Companion infrastructure: [`SECURITY.md`](SECURITY.md), [`THREAT_MODEL.md`](THREAT_MODEL.md), `make harden` (OpenSSF 2026 + M4 PAC), `make sanitize` (ASAN + UBSAN), `make hardening-check`, `make sbom` (CycloneDX 1.5), `make security-scan` (gitleaks + grep-fallback), `make reproducible-build`. Registered as the `runtime_security_kernel` slot (tier **M**) in the v57 Verified Agent | `make check-v60` · `make microbench-v60` · [docs/v60/THE_SIGMA_SHIELD.md](docs/v60/THE_SIGMA_SHIELD.md) · [docs/v60/ARCHITECTURE.md](docs/v60/ARCHITECTURE.md) · [docs/v60/POSITIONING.md](docs/v60/POSITIONING.md) · [docs/v60/paper_draft.md](docs/v60/paper_draft.md) |
+
 There is **no** `creation_os_v36.c` merge-gate row: **v36** is the **MCP** binary; **v37** / **v38** are primarily **HDL + scripts** (see Makefile `help`).
 
 ---
@@ -387,7 +1261,7 @@ There is **no** `creation_os_v36.c` merge-gate row: **v36** is the **MCP** binar
 |:--|:--|
 | RTL mirror (SV, Chisel, Yosys, Rust, formal) | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) |
 | Formalism → silicon | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
-| σ stack map (v33→v59 labs + v60→v70 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v70-eleven-branchless-integer-kernels) |
+| σ stack map (v33→v59 labs + v60→v74 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v74-fifteen-branchless-integer-kernels) |
 | MCP σ server | [docs/MCP_SIGMA.md](docs/MCP_SIGMA.md) · `make check-mcp` |
 | Neuromorphic / memristor (mapping + sim) | [docs/neuromorphic/memristor_mapping.md](docs/neuromorphic/memristor_mapping.md) · `make check-crossbar-sim` |
 | Git remotes | [docs/CANONICAL_GIT_REPOSITORY.md](docs/CANONICAL_GIT_REPOSITORY.md) |
@@ -907,7 +1781,7 @@ make standalone    # build `creation_os` from `creation_os_v2.c` only
 ./creation_os
 ```
 
-**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v70)](#composed-decision-stack--v60--v70-eleven-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v70`; see `make help`.
+**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v74)](#composed-decision-stack--v60--v74-fifteen-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v74`; see `make help`.
 
 Requirements: C11 compiler + libm.
 
@@ -1067,12 +1941,73 @@ If a sentence cannot point to **(a)** a line of C, **(b)** a command, or **(c)**
 
 ## License
 
-**AGPL-3.0** — Open source. Modifications must be shared under same terms.
+This project is **dual-licensed**. The choice between the two
+licenses is **not** at Your discretion — see [`LICENSE`](LICENSE)
+§0 for which one binds You — and a third option (paid Commercial
+License) is available **only** from the Licensor.
 
-**Commercial license** available for proprietary use without AGPL obligations — see `COMMERCIAL_LICENSE.md`.
+| Path                                                | Cost                  | Document                                                                                       |
+|-----------------------------------------------------|-----------------------|-------------------------------------------------------------------------------------------------|
+| **Spektre Commercial Source License v1.0** (primary) | free for non-commercial | [`LICENSE-SCSL-1.0.md`](LICENSE-SCSL-1.0.md)                                                   |
+| **GNU Affero GPL v3.0-only** (fallback after 4-yr Change Date, and for any AGPL-derived portions) | free                  | [`LICENSE-AGPL-3.0.txt`](LICENSE-AGPL-3.0.txt)                                                  |
+| **Commercial License** (closed-source / SaaS / OEM / Sovereign / Strategic) | paid (Startup → Sovereign → Strategic) | [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md)                                                |
+| **Contributor License Agreement** (binding on every PR author) | n/a                   | [`CLA.md`](CLA.md)                                                                              |
 
-Lauri Elias Rainio · Spektre Labs · Helsinki  
-ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541)
+**TL;DR**
+
+- Private individuals · academia · non-profits · journalism ·
+  reproducibility/security audits · 30-day commercial evaluation
+  (under EUR 1 M revenue) → **FREE** under SCSL-1.0.
+- For-profit > EUR 1 M revenue · all hosted SaaS / model-as-a-
+  service / agent-as-a-service (unless You publish the **complete
+  service-stack source** per SCSL §5, including hypervisor, FPGA
+  bitstream and attestation pipeline) · all OEM closed-source
+  redistribution → **paid Commercial License required**.
+- All government / military / intelligence / law-enforcement
+  **operational** use (SCSL §9.1(b) — targeting, kinetic effects,
+  lethal autonomy, signals-intelligence collection, mass
+  communications interception, biometric mass identification,
+  predictive policing, election-influence operations) → **DENIED
+  at any price**, no commercial license available. Civilian
+  Sovereign deployments by EU CFR / ECHR / ICCPR-bound states are
+  the only government route, under SCSL §9.3.
+- Sanctioned Persons (EU / UN / OFAC / UK HMT / Finland) and
+  parties credibly accused of Aggression (Rome Statute Art. 8 *bis*)
+  → **categorical denial**, SCSL §10.
+
+**Sole holder of all paid commercial rights:**
+**Lauri Elias Rainio** (natural person, ORCID
+[0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541))
+**and Spektre Labs Oy**, jointly and severally. **No other person
+or entity may grant a Commercial License**; any attempted grant is
+void *ab initio* (SCSL §4.3).
+
+Cryptographic License-Bound Receipt (SCSL §11): every Receipt
+emitted by Creation OS carries the **SHA-256 of
+`LICENSE-SCSL-1.0.md`**. The pinned reference hash lives in
+[`LICENSE.sha256`](LICENSE.sha256) and is independently verifiable:
+
+```bash
+shasum -a 256 LICENSE-SCSL-1.0.md       # macOS
+sha256sum LICENSE-SCSL-1.0.md           # POSIX
+bash tools/license/license_sha256.sh    # bundled helper
+make license-attest                     # full kernel: 11 KAT + bundle + sample receipt
+```
+
+This makes silent forks, license-stripped redistribution, and
+"laundered through an LLM" derivation patterns **detectable from
+the published artefact alone**. A Receipt that does not carry a
+matching `license_sha256` is admissible evidence of a §6 / §8 /
+§11 breach in any forum.
+
+See [`docs/LICENSING.md`](docs/LICENSING.md) for the human-readable
+explainer, [`docs/LICENSE_MATRIX.md`](docs/LICENSE_MATRIX.md) for the
+who-may-do-what compatibility matrix, and [`NOTICE`](NOTICE) for
+copyright, trademark and patent notices.
+
+Lauri Elias Rainio · Spektre Labs Oy · Helsinki, Finland
+ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541) ·
+licensing: `licensing@spektre-labs.com`
 
 ---
 

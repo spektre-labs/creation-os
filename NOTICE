@@ -1,0 +1,102 @@
+================================================================================
+                        Creation OS  ·  NOTICE
+================================================================================
+
+Copyright (c) 2024–2026  Lauri Elias Rainio  and  Spektre Labs Oy.
+All rights reserved.
+
+This product includes software developed by Lauri Elias Rainio and
+Spektre Labs Oy (https://github.com/spektre-labs/creation-os-kernel).
+
+================================================================================
+LICENSE
+================================================================================
+
+This software is dual-licensed under:
+
+    (1) Spektre Commercial Source License, Version 1.0 (SCSL-1.0) [PRIMARY]
+        — see ./LICENSE-SCSL-1.0.md
+    (2) GNU Affero General Public License, Version 3.0-only          [FALLBACK]
+        — see ./LICENSE-AGPL-3.0.txt
+
+A separate, paid Commercial License (waiving §§ 4, 5 of SCSL-1.0) is
+available solely from the Licensor; see ./COMMERCIAL_LICENSE.md.
+
+The right to grant any Commercial License rests SOLELY AND EXCLUSIVELY
+with Lauri Elias Rainio (natural person, ORCID 0009-0006-0903-8541) and
+Spektre Labs Oy (Finnish private limited company), jointly and severally.
+
+================================================================================
+TRADEMARKS
+================================================================================
+
+The following are trademarks (registered and unregistered) of Spektre Labs Oy:
+
+    "Spektre"                        "Spektre Labs"
+    "Creation OS"                    "σ kernel"
+    "Lauri Elias Rainio"             "σ-Omnimodal"
+    "σ-Experience"                   "σ-Wormhole"
+    "σ-Chain"                        "σ-Hyperscale"
+    "σ-Constellation"                "σ-Mnemos"
+    "σ-Noesis"                       "σ-Silicon"
+    "σ-Hypercortex"                  "σ-Intellect"
+    "σ-Cipher"                       "Σ-Citadel"
+    "σ-Shield"                       (and the σ-mark itself)
+
+Use beyond factual attribution required by SCSL-1.0 §6 requires a
+separate written trademark license from Spektre Labs Oy.
+
+================================================================================
+PATENTS
+================================================================================
+
+The Licensor has not, as of the Effective Date of LICENSE-SCSL-1.0.md
+(2026-04-16), filed any utility patents covering the Software, and
+defensively prefers a publication-as-prior-art posture.
+
+Notwithstanding the foregoing, SCSL-1.0 §2.2 grants You a patent license
+under the Licensor's "Necessary Claims" (W3C Patent Policy §1) solely
+for the Software as actually distributed by the Licensor; SCSL-1.0 §14
+imposes a patent-retaliation termination on any patent litigation
+brought against the Software.
+
+================================================================================
+THIRD-PARTY COMPONENTS
+================================================================================
+
+The hot-path of the Creation OS kernels (every C file under  ./src/v6X/,
+./src/v7X/, ./cli/cos.c, and the standalone  creation_os*  drivers) is
+**libc-only**.  No third-party runtime dependencies are linked on the hot
+path.
+
+Optional, off-hot-path components used in build, test, and CI tooling
+are listed in  ./SBOM.json  (CycloneDX v1.5).  Any third-party material
+incorporated into the source tree carries its own SPDX-License-
+Identifier header and is reproduced under terms compatible with this
+dual-license model.
+
+================================================================================
+CRYPTOGRAPHIC LICENSE-BOUND RECEIPT
+================================================================================
+
+Per SCSL-1.0 §11, every Receipt emitted by the Software MUST carry the
+SHA-256 of LICENSE-SCSL-1.0.md.  The pinned reference hash is in
+./LICENSE.sha256 and is independently verifiable with:
+
+    sha256sum  LICENSE-SCSL-1.0.md           # POSIX
+    shasum -a 256  LICENSE-SCSL-1.0.md       # macOS
+    bash tools/license/license_sha256.sh     # bundled helper
+
+================================================================================
+CONTACT
+================================================================================
+
+    Licensing       licensing@spektre-labs.com
+    Security        security@spektre-labs.com   ( / SECURITY.md )
+    Maintainer      Lauri Elias Rainio · Spektre Labs Oy · Helsinki, Finland
+    Source          https://github.com/spektre-labs/creation-os-kernel
+    ORCID           0009-0006-0903-8541
+
+================================================================================
+                                — End of NOTICE —
+================================================================================

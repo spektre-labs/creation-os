@@ -9,7 +9,7 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    ```bash
    make merge-gate
    ```
-   This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v57)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
+   This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v54)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
 ## Build targets
@@ -49,8 +49,45 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
 ## C code
 
 - **Standard:** C11 (`-std=c11`).
-- **License:** New files under this tree should carry SPDX `AGPL-3.0-or-later` and the project’s copyright notice (match headers in `creation_os_v2.c` / `tests/`).
+- **License header (every new source file):** carry the canonical
+  dual-license SPDX header for `LicenseRef-SCSL-1.0 OR AGPL-3.0-only`.
+  `tools/license/apply_headers.sh` injects it idempotently; CI runs
+  `tools/license/check_headers.sh` in `make license-check` and the
+  `license_attestation` slot of `make verify-agent`. Existing files
+  that still carry the legacy `AGPL-3.0-or-later` header remain
+  valid (the AGPL-3.0 fallback path of the dual-license dispatcher
+  in `LICENSE` covers them) but new files MUST carry the dual
+  header.
 - **Style:** Match surrounding files; avoid bulk reformat of unrelated lines.
+
+## Licensing — required reading
+
+This project is **dual-licensed** under the **Spektre Commercial
+Source License v1.0** (SCSL-1.0, primary) and the **GNU Affero
+General Public License v3.0** (AGPL-3.0-only, fallback). All
+**commercial rights** rest **exclusively** with **Lauri Elias
+Rainio** and **Spektre Labs Oy** (jointly and severally).
+
+Read **before** opening a PR:
+
+- [`LICENSE`](LICENSE) — top-level dispatcher
+- [`LICENSE-SCSL-1.0.md`](LICENSE-SCSL-1.0.md) — binding master
+- [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md) — paid-tier matrix
+- [`CLA.md`](CLA.md) — **Contributor License Agreement (binding on every PR author)**
+- [`docs/LICENSING.md`](docs/LICENSING.md) — human-readable explainer
+- [`docs/LICENSE_MATRIX.md`](docs/LICENSE_MATRIX.md) — who-may-do-what
+
+By opening a pull request against the canonical Creation OS source
+of truth (`https://github.com/spektre-labs/creation-os-kernel`),
+**you accept the Spektre Labs CLA v1.0** (`CLA.md`). Without an
+on-file CLA your contribution will not be merged.
+
+Required local checks before PR:
+
+```bash
+make license-check     # SPDX headers + LICENSE.sha256 + bundle integrity
+make license-attest    # 11 KAT (FIPS-180-4 + receipt) + sample receipt
+```
 
 ## README policy
 

@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v71 standalone-v72 standalone-v73 standalone-v74 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 microbench-v71 microbench-v72 microbench-v73 microbench-v74 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 test-v71 test-v72 test-v73 test-v74 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 check-v71 check-v72 check-v73 check-v74 license_attest license-pin license-check license-apply license-attest license-attest-hardened core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -173,6 +173,24 @@ help:
 	@echo "  standalone-v70 — build creation_os_v70 (v70 σ-Hyperscale: P2Q ShiftAddLLM + Mamba-2 SSM + RWKV-7 delta-rule + 10 240-expert DeepSeek-V3 MoE + HBM-PIM AND-popcount + photonic WDM dot + Loihi-3 graded spike + NCCL ring all-reduce + Petals/Helix/DirectStorage LRU + HSL 10-op bytecode; 11-bit composed decision)"
 	@echo "  check-v70  — standalone-v70 + test-v70 (v70 σ-Hyperscale; deterministic self-test + 11-bit truth table 2048 rows)"
 	@echo "  microbench-v70 — p2q / ssm / rwkv / moe / pim / wdm / spike / ring / lru / hsl throughput (./creation_os_v70 --bench)"
+	@echo "  standalone-v71 — build creation_os_v71 (v71 σ-Wormhole: portal Einstein-Rosen bridge table + constant-time anchor cleanup + single-XOR teleport + Kleinberg small-world multi-hop routing + ER=EPR tensor-bond pairing + HMAC-HV bridge integrity + Poincaré-boundary gate + hop budget + path receipt + WHL 10-op bytecode; 12-bit composed decision)"
+	@echo "  check-v71  — standalone-v71 + test-v71 (v71 σ-Wormhole; deterministic self-test + 12-bit truth table 4096 rows)"
+	@echo "  microbench-v71 — hamming / teleport / match / route / WHL / 12-bit compose throughput (./creation_os_v71 --bench)"
+	@echo "  standalone-v72 — build creation_os_v72 (v72 σ-Chain: binary Merkle authenticated ledger + append-only receipt chain + WOTS+ one-time signature + threshold t-of-n quorum + hash-chain VRF + DAG-BFT quorum gate + ZK proof-receipt + EIP-7702 session delegation + chain-receipt bundle + SCL 10-op bytecode; 13-bit composed decision)"
+	@echo "  check-v72  — standalone-v72 + test-v72 (v72 σ-Chain; deterministic self-test + 13-bit truth table 8192 rows)"
+	@echo "  microbench-v72 — hash / merkle / wots+ / delegation / 13-bit compose throughput (./creation_os_v72 --bench)"
+	@echo "  standalone-v73 — build creation_os_v73 (v73 σ-Omnimodal Creator: universal-modality tokenizer + rectified-flow integer scheduler + VINO cross-modal XOR bind + MOVA video+audio co-synth lock + Matrix-Game world-model step + DiReCT physics gate + n8n workflow DAG executor + Cursor/Lovable/Devin-style code-edit planner + MultiGen asset navigation + OML 10-op bytecode; 14-bit composed decision)"
+	@echo "  check-v73  — standalone-v73 + test-v73 (v73 σ-Omnimodal Creator; deterministic self-test + 14-bit truth table 16384 rows)"
+	@echo "  microbench-v73 — hamming / tokenize / flow / 14-bit compose / workflow throughput (./creation_os_v73 --bench)"
+	@echo "  standalone-v74 — build creation_os_v74 (v74 σ-Experience: Fitts-V2P target heatmap + adaptive layout + designer-basis personalisation + SquireIR slot authoring + universal-expert LoRA-MoE mesh + skill composition + Mobile-GS order-free Gaussian-splat render + DLSS 4.5 / FSR / XeSS upscale & multi-frame-gen + 1-second interactive-world synth + XPL 10-op bytecode; 15-bit composed decision)"
+	@echo "  check-v74  — standalone-v74 + test-v74 (v74 σ-Experience; deterministic self-test + 15-bit truth table 32768 rows)"
+	@echo "  microbench-v74 — hamming / fitts / expert-topk / render / world-second / 15-bit compose throughput (./creation_os_v74 --bench)"
+	@echo "  license_attest — build the License Attestation Kernel (v75 σ-License: SHA-256 of LICENSE-SCSL-1.0.md baked into every Receipt; SCSL-1.0 §11)"
+	@echo "  license-pin    — recompute SHA-256 of LICENSE-SCSL-1.0.md → LICENSE.sha256"
+	@echo "  license-check  — verify SPDX headers across src/cli/tools tree + LICENSE.sha256 + bundle integrity"
+	@echo "  license-apply  — idempotently inject SCSL-1.0/AGPL-3.0 SPDX header into every source file"
+	@echo "  license-attest — self-test (FIPS-180-4 KAT), verify license + bundle, emit a sample License-Bound Receipt"
+	@echo "  license-attest-hardened — hardened build of license_attest + self-test"
 	@echo "  cos        — build the unified Apple-tier CLI front door (cli/cos.c, single binary, no deps)"
 	@echo "  check-cos  — build cos and print its version line"
 	@echo "  attest     — emit ATTESTATION.json (v61 quote) + optional cosign sign-blob (scripts/security/attest.sh)"
@@ -848,7 +866,7 @@ standalone-v59-hardened: src/v59/creation_os_v59.c $(V59_SRCS)
 standalone-v60-hardened: src/v60/creation_os_v60.c $(V60_SRCS)
 	$(CC) $(HARDEN_CFLAGS) -Isrc/v60 -o creation_os_v60_hardened src/v60/creation_os_v60.c $(V60_SRCS) $(HARDEN_LDFLAGS)
 
-harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened
+harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened license-attest-hardened
 	@echo "harden: OK (v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 rebuilt with OpenSSF 2026 flags + M4 branch-protection)"
 
 # --- Sanitizer matrix (AddressSanitizer + UndefinedBehaviorSanitizer)
@@ -880,7 +898,7 @@ ubsan-v61: src/v61/creation_os_v61.c $(V61_SRCS)
 	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) $(V61_EXTRA_CFLAGS) -Isrc/v61 -o creation_os_v61_ubsan src/v61/creation_os_v61.c $(V61_SRCS) -lm $(V61_EXTRA_LDFLAGS)
 	./creation_os_v61_ubsan --self-test
 
-sanitize: asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70
+sanitize: asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74
 	@echo "sanitize: OK (ASAN v58/v59/v60/v61/v62/v63/v64/v65 + UBSAN v60/v61/v62/v63/v64/v65 all pass self-test under sanitizer)"
 
 # --- Hardening runtime check + SBOM + secret-scan dispatcher -------
@@ -1288,6 +1306,198 @@ check-v70: standalone-v70 test-v70
 
 microbench-v70: standalone-v70
 	./creation_os_v70 --bench
+
+# --- v71: σ-Wormhole ---------------------------------------------
+# Hyperdimensional wormhole / portal-cognition / direct-addressing
+# substrate.  Ten branchless integer primitives (Einstein-Rosen
+# bridge table + constant-time anchor cleanup + single-XOR teleport
+# + Kleinberg small-world multi-hop routing + ER=EPR tensor-bond
+# pairing + HMAC-HV bridge integrity + Poincaré-boundary gate + hop
+# budget + path receipt + WHL 10-op bytecode).  Composes with
+# v60..v70 via cos_v71_compose_decision as a 12-bit branchless AND.
+V71_SRCS = src/v71/wormhole.c
+
+standalone-v71: src/v71/creation_os_v71.c $(V71_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v71 -o creation_os_v71 src/v71/creation_os_v71.c $(V71_SRCS) $(LDFLAGS)
+
+standalone-v71-hardened: src/v71/creation_os_v71.c $(V71_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v71 -o creation_os_v71_hardened src/v71/creation_os_v71.c $(V71_SRCS) $(HARDEN_LDFLAGS)
+
+asan-v71: src/v71/creation_os_v71.c $(V71_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v71 -o creation_os_v71_asan src/v71/creation_os_v71.c $(V71_SRCS) -lm
+	./creation_os_v71_asan --self-test
+
+ubsan-v71: src/v71/creation_os_v71.c $(V71_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v71 -o creation_os_v71_ubsan src/v71/creation_os_v71.c $(V71_SRCS) -lm
+	./creation_os_v71_ubsan --self-test
+
+test-v71: standalone-v71
+	./creation_os_v71 --self-test
+
+check-v71: standalone-v71 test-v71
+	@echo "check-v71: OK (v71 σ-Wormhole: portal-ER-bridge + anchor-cleanup + teleport + kleinberg-route + er-epr-bond + hmac-hv-integrity + poincare-boundary + hop-budget + path-receipt + whl, 12-bit composed)"
+
+microbench-v71: standalone-v71
+	./creation_os_v71 --bench
+
+# --- v72: σ-Chain -----------------------------------------------
+# Blockchain / web3 / post-quantum / zero-knowledge / verifiable-
+# agent substrate plane.  Ten branchless integer primitives
+# (Merkle ledger + append-only receipts + WOTS+ one-time signature
+# + threshold t-of-n quorum + hash-chain VRF + DAG-BFT quorum gate
+# + ZK proof-receipt + EIP-7702 session delegation + chain-receipt
+# bundle + SCL 10-op bytecode).  Composes with v60..v71 via
+# cos_v72_compose_decision as a 13-bit branchless AND.
+V72_SRCS = src/v72/chain.c
+
+standalone-v72: src/v72/creation_os_v72.c $(V72_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v72 -o creation_os_v72 src/v72/creation_os_v72.c $(V72_SRCS) $(LDFLAGS)
+
+standalone-v72-hardened: src/v72/creation_os_v72.c $(V72_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v72 -o creation_os_v72_hardened src/v72/creation_os_v72.c $(V72_SRCS) $(HARDEN_LDFLAGS)
+
+asan-v72: src/v72/creation_os_v72.c $(V72_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v72 -o creation_os_v72_asan src/v72/creation_os_v72.c $(V72_SRCS) -lm
+	./creation_os_v72_asan --self-test
+
+ubsan-v72: src/v72/creation_os_v72.c $(V72_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v72 -o creation_os_v72_ubsan src/v72/creation_os_v72.c $(V72_SRCS) -lm
+	./creation_os_v72_ubsan --self-test
+
+test-v72: standalone-v72
+	./creation_os_v72 --self-test
+
+check-v72: standalone-v72 test-v72
+	@echo "check-v72: OK (v72 σ-Chain: merkle-ledger + append-only-receipts + wots-plus + threshold-quorum + hash-chain-vrf + dag-bft-quorum + zk-proof-receipt + eip7702-delegation + chain-bundle + scl, 13-bit composed)"
+
+microbench-v72: standalone-v72
+	./creation_os_v72 --bench
+
+# --- v73: σ-Omnimodal (the Creator) ------------------------------
+# Unified multimodal generation substrate: code (Cursor / Lovable /
+# Devin / Bolt lineage), image (Midjourney / FLUX / VINO MMDiT),
+# video (Sora / Veo / MOVA / Matrix-Game-3), audio / voice clone
+# (ElevenLabs / SoundStream / Encodec / MSR-Codec), workflow (n8n
+# v2.10 "Brain vs Hands" + JudgeFlow + SOAN), physics-coherent flow
+# (DiReCT + StreamFlow + MixFlow), and GTA-tier procedural world
+# synthesis (MultiGen + Matrix-Game).  Ten branchless integer
+# primitives (universal-modality tokenizer + rectified-flow integer
+# scheduler + VINO cross-modal bind + MOVA AV lock + Matrix-Game
+# world step + DiReCT physics gate + workflow DAG executor +
+# Cursor-style code-edit planner + MultiGen asset navigation +
+# OML 10-op bytecode).  Composes with v60..v72 via
+# cos_v73_compose_decision as a 14-bit branchless AND.
+V73_SRCS = src/v73/omnimodal.c
+
+standalone-v73: src/v73/creation_os_v73.c $(V73_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v73 -o creation_os_v73 src/v73/creation_os_v73.c $(V73_SRCS) $(LDFLAGS)
+
+standalone-v73-hardened: src/v73/creation_os_v73.c $(V73_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v73 -o creation_os_v73_hardened src/v73/creation_os_v73.c $(V73_SRCS) $(HARDEN_LDFLAGS)
+
+asan-v73: src/v73/creation_os_v73.c $(V73_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v73 -o creation_os_v73_asan src/v73/creation_os_v73.c $(V73_SRCS) -lm
+	./creation_os_v73_asan --self-test
+
+ubsan-v73: src/v73/creation_os_v73.c $(V73_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v73 -o creation_os_v73_ubsan src/v73/creation_os_v73.c $(V73_SRCS) -lm
+	./creation_os_v73_ubsan --self-test
+
+test-v73: standalone-v73
+	./creation_os_v73 --self-test
+
+check-v73: standalone-v73 test-v73
+	@echo "check-v73: OK (v73 σ-Omnimodal: universal-tokenizer + rectified-flow + VINO-bind + MOVA-lock + Matrix-Game-world + DiReCT-physics + n8n-workflow + Cursor-plan + MultiGen-asset + OML, 14-bit composed)"
+
+microbench-v73: standalone-v73
+	./creation_os_v73 --bench
+
+# --- v74: σ-Experience (the Experience kernel) ------------------
+# Perfect UX/UI + universal expertise + real-time render budget
+# that makes 2026-era AAA games playable on commodity silicon (M4
+# MacBook, iPhone-class SoC, plain Snapdragon phone) + 1-second
+# interactive-world synth via hypervector space.  Ten branchless
+# integer primitives (Fitts-V2P target heatmap + adaptive layout +
+# designer-basis personalisation + SquireIR slot authoring +
+# universal-expert LoRA-MoE mesh + skill composition + Mobile-GS
+# order-free Gaussian-splat render step + DLSS 4.5 / FSR / XeSS
+# upscale + multi-frame-gen gate + 1-second interactive-world
+# synth + XPL 10-op bytecode).  References: arXiv:2603.11531
+# (Mobile-GS ICLR 2026, 116 FPS Snapdragon 8 Gen 3), msplat Metal
+# engine ~350 FPS M4 Max, DLSS 4.5 Dynamic Multi-Frame Generation
+# 6× factor, arXiv:2508.13634 (V2P Fitts heatmap), Apple SQUIRE
+# April 2026, arXiv:2604.09876 (designer-basis personalisation),
+# arXiv:2601.04823 (DR-LoRA), arXiv:2603.00573 (CoMoL), Genie 3
+# DeepMind 2026 (720p / 20-24 FPS text-to-interactive-world).
+# Composes with v60..v73 via cos_v74_compose_decision as a 15-bit
+# branchless AND.
+V74_SRCS = src/v74/experience.c
+
+standalone-v74: src/v74/creation_os_v74.c $(V74_SRCS)
+	$(CC) $(CFLAGS) -Isrc/v74 -o creation_os_v74 src/v74/creation_os_v74.c $(V74_SRCS) $(LDFLAGS)
+
+standalone-v74-hardened: src/v74/creation_os_v74.c $(V74_SRCS)
+	$(CC) $(HARDEN_CFLAGS) -Isrc/v74 -o creation_os_v74_hardened src/v74/creation_os_v74.c $(V74_SRCS) $(HARDEN_LDFLAGS)
+
+asan-v74: src/v74/creation_os_v74.c $(V74_SRCS)
+	$(CC) $(SAN_CFLAGS) $(ASAN_FLAGS) -Isrc/v74 -o creation_os_v74_asan src/v74/creation_os_v74.c $(V74_SRCS) -lm
+	./creation_os_v74_asan --self-test
+
+ubsan-v74: src/v74/creation_os_v74.c $(V74_SRCS)
+	$(CC) $(SAN_CFLAGS) $(UBSAN_FLAGS) -Isrc/v74 -o creation_os_v74_ubsan src/v74/creation_os_v74.c $(V74_SRCS) -lm
+	./creation_os_v74_ubsan --self-test
+
+test-v74: standalone-v74
+	./creation_os_v74 --self-test
+
+check-v74: standalone-v74 test-v74
+	@echo "check-v74: OK (v74 σ-Experience: fitts-v2p + adaptive-layout + designer-basis + squire-slot + universal-expert-mesh + skill-compose + mobile-gs-render + dlss-framegen + second-world + XPL, 15-bit composed)"
+
+microbench-v74: standalone-v74
+	./creation_os_v74 --bench
+
+# --- License Attestation Kernel (SCSL-1.0 §11) -------------------
+#
+# Tiny, dependency-free, integer-only C kernel that:
+#   (a) implements SHA-256 (FIPS-180-4) without OpenSSL,
+#   (b) computes the canonical hash of LICENSE-SCSL-1.0.md,
+#   (c) emits a License-Bound Receipt envelope used by every
+#       v60..v74 verdict and by the cos CLI,
+#   (d) self-checks the in-tree license against LICENSE.sha256
+#       and refuses to run on tamper (exit 87).
+#
+# This is the v75 σ-License kernel — the cryptographic-evidence
+# spine of the Spektre Commercial Source License v1.0.
+LICENSE_KERNEL_SRCS = src/license_kernel/license_attest.c
+LICENSE_KERNEL_INC  = -Isrc/license_kernel
+
+license_attest: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
+	$(CC) -O2 -Wall -Wextra -std=c11 $(LICENSE_KERNEL_INC) -o license_attest src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
+
+license-pin:
+	@bash tools/license/license_sha256.sh --pin
+
+license-check: license_attest
+	@bash tools/license/check_headers.sh
+	@./license_attest --bundle
+	@echo "license-check: OK (LICENSE-SCSL-1.0.md pinned at sha256=$$(awk '{print $$1}' LICENSE.sha256), bundle intact, headers verified)"
+
+license-apply:
+	@bash tools/license/apply_headers.sh
+
+license-attest: license_attest
+	@./license_attest --self-test
+	@./license_attest --verify
+	@./license_attest --bundle
+	@./license_attest --receipt v75-license SCSL-1.0-OK 0000000000000000000000000000000000000000 ff > /tmp/spektre-receipt.json
+	@echo "license-attest: OK (receipt at /tmp/spektre-receipt.json)"
+	@cat /tmp/spektre-receipt.json
+	@echo
+	@echo "  Verify with:  shasum -a 256 LICENSE-SCSL-1.0.md"
+
+license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
+	$(CC) $(HARDEN_CFLAGS) $(LICENSE_KERNEL_INC) -o license_attest_hardened src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS) $(HARDEN_LDFLAGS)
+	./license_attest_hardened --self-test
 
 # --- cos: Apple-tier unified CLI front door ----------------------
 #
