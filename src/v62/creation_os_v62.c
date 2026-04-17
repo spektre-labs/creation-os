@@ -458,7 +458,7 @@ static void test_adversarial(void)
     int rc = cos_v62_mtp_draft(&l1, 1, &bh1, 1, &dr1, &cf1);
     TEST_OK("mtp_draft_vocab1_ok", rc == 0 && dr1 == 0);
 
-    /* 58: NSA with N=1                                                */
+    /* 58: NSAttn with N=1                                                */
     float Q1 = 1.f, K1 = 1.f, V1 = 0.7f, gate[3] = { 0.5f, 0.3f, 0.2f }, o = 0.f;
     int rcn = cos_v62_nsa_attend(&Q1, &K1, &V1, 1, 1, 1, 1, 1, gate, &o);
     TEST_OK("nsa_n1_ok", rcn == 0);
@@ -491,7 +491,7 @@ static void test_adversarial(void)
 }
 
 /* ====================================================================
- *  Microbench: NSA + EBT throughput on M4
+ *  Microbench: NSAttn + EBT throughput on M4
  * ==================================================================== */
 
 static double v62_now_ms(void)
@@ -532,7 +532,7 @@ static void run_bench(void)
     double ebt_per_s = (double)IT_E * 1e3 / dt_ebt;
 
     printf("v62 microbench:\n");
-    printf("  NSA  attend (n=%d, d=%d):   %8.0f calls/s   (%.2f ms/call)\n",
+    printf("  NSAttn  attend (n=%d, d=%d):   %8.0f calls/s   (%.2f ms/call)\n",
            N, D, nsa_per_s, dt_nsa / ITERS);
     printf("  EBT  minimize (d=%d, k=16):  %8.0f calls/s   (%.2f ms/call)\n",
            ED, ebt_per_s, dt_ebt / IT_E);

@@ -110,7 +110,7 @@ valid range and no "ALLOW with reason_bits ≠ 0".
 ## 8. v61 Σ-Citadel extension
 
 v61 composes two new primitives on top of v60 and threads them
-through the whole DARPA-CHACE menu:
+through the whole CHACE-class capability-hardening menu:
 
 ### 8.1 Lattice (BLP + Biba + MLS compartments)
 
@@ -139,7 +139,7 @@ every input field and constant-time equality); quote-as-MAC is
 
 ### 8.3 Defence-in-depth composition (`make chace`)
 
-`make chace` runs the full DARPA-CHACE menu on the host and reports
+`make chace` runs the full CHACE-class capability-hardening menu on the host and reports
 PASS / honest-SKIP / FAIL per layer.  Missing tools SKIP; they never
 silently PASS.  Matrix on macOS M4 typical run: 10 PASS, 5 SKIP,
 0 FAIL (seL4, eBPF, WASI-SDK, docker, cosign SKIP on a vanilla

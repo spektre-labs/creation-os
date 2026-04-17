@@ -1,7 +1,7 @@
 # Creation OS v61 — Σ-Citadel
 
 > The first open-source AI-agent runtime to ship the full
-> **DARPA-CHACE advanced-security menu** as one `make chace` gate.
+> **CHACE-class advanced-security menu** as one `make chace` gate.
 
 ## What v61 is
 
@@ -50,7 +50,7 @@ still admits legitimate work.
 ```
 make check-v61          # ≥60 lattice + attestation self-tests
 make microbench-v61     # 6 × 10⁸ lattice decisions/s on M4
-make chace              # every layer of the DARPA-CHACE menu, SKIPping honestly
+make chace              # every layer of the CHACE-class capability-hardening menu, SKIPping honestly
 make attest             # emit ATTESTATION.json (quote over code/caps/σ/lattice/nonce)
 make slsa > PROVENANCE.json
 make distroless         # build gcr.io/distroless/cc-debian12 runtime
@@ -76,7 +76,7 @@ never silently downgrading a missing tool to PASS.
 
 * `docs/v61/ARCHITECTURE.md` — per-surface wiring, tier map, measured
   perf, threat-model tie-ins.
-* `docs/v61/POSITIONING.md` — v61 vs DARPA CHACE, IronClaw, seL4-only,
+* `docs/v61/POSITIONING.md` — v61 vs CHACE-class capability-hardening, IronClaw, seL4-only,
   Fuchsia, Claude Code.
 * `docs/v61/paper_draft.md` — problem, design, proofs, numbers,
   limitations.

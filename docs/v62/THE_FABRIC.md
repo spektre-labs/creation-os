@@ -15,7 +15,7 @@ Six modules, one ABI, every loop branchless, every buffer 64-byte aligned:
 | 1 | **Latent CoT**      | Coconut, arXiv:2412.06769 + ICLR 2026 superpos.   | Reasoning lives in continuous space; no detokenize ↔ retokenize round trip. |
 | 2 | **EBT Verifier**    | Energy-Based Transformers, arXiv:2507.02092 (ICLR 2026) | Predict by minimizing E(input, candidate); the verifier *is* the model. |
 | 3 | **HRM Loop**        | Hierarchical Reasoning Model, arXiv:2506.21734    | Slow H-loop + fast L-loop; outer refinement dominates (ARC Prize 2026). |
-| 4 | **NSA Attend**      | Native Sparse Attention, arXiv:2502.11089 + FSA 2026 | 3-branch attention: compress + select + slide; matches dense at 64 k. |
+| 4 | **NSAttn**      | Native Sparse Attention, arXiv:2502.11089 + FSA 2026 | 3-branch attention: compress + select + slide; matches dense at 64 k. |
 | 5 | **MTP Drafter**     | DeepSeek-V3 MTP, arXiv:2412.19437 + LK-tunes 2026 | Speculative draft with full causal chain; verify in one branchless pass. |
 | 6 | **ARKV KV Manager** | ARKV, arXiv:2603.08727 + SAGE-KV 2025             | Per-token state ∈ {ORIG, QUANT, EVICT}; 4× memory at ≥97 % accuracy.    |
 
@@ -25,7 +25,7 @@ Six modules, one ABI, every loop branchless, every buffer 64-byte aligned:
   are designed to feed straight from a memory-mapped GGUF/BitNet block file
   with 64-B row stride, but the model itself stays in your existing inference
   stack (MLX, llama.cpp, bitnet.cpp).
-* **Not a re-implementation of attention.** NSA is the published
+* **Not a re-implementation of attention.** NSAttn is the published
   hierarchical design; we ship the *integration glue* + the branchless
   fusion under one ABI, not a from-scratch transformer.
 * **Not a TUI app.** The Apple-tier surface lives in `cli/cos.c` and is a
@@ -43,7 +43,7 @@ The 2026 frontier converged on a single observation:
 * **Decoding has moved off-token-by-token.** DeepSeek MTP, Mercury
   diffusion, XGrammar-2 + DCCD all push K-step parallel emission with
   *verified* acceptance instead of one-token-at-a-time autoregression.
-* **Attention has moved off-dense.** NSA, FSA 2026, SAGE-KV, ARKV, Mamba-2
+* **Attention has moved off-dense.** NSAttn, FSA 2026, SAGE-KV, ARKV, Mamba-2
   SSD all share the same insight: dense full-context is wasteful and the
   sparse design pays for itself at every length above ~4 k.
 
@@ -57,7 +57,7 @@ emits*.
 
 ```bash
 make check-v62        # build + 68-test self-test
-make microbench-v62   # NSA + EBT throughput on this host
+make microbench-v62   # NSAttn + EBT throughput on this host
 make asan-v62         # AddressSanitizer pass
 make ubsan-v62        # UndefinedBehaviorSanitizer pass
 
@@ -87,7 +87,7 @@ short-circuit; the AND is one branchless byte.
 | Latent-CoT step + loop        | M    | 11 deterministic tests; ASAN+UBSAN clean.                          |
 | EBT energy + minimize         | M    | 7 tests; monotone-non-increasing under analytic gradient.          |
 | HRM H/L loop                  | M    | 5 tests; finite under zero init; dim-mismatch detected.            |
-| NSA attend (3-branch)         | M    | 7 tests; finite under N=1, topk=N, window=N edge cases.            |
+| NSAttn attend (3-branch)         | M    | 7 tests; finite under N=1, topk=N, window=N edge cases.            |
 | MTP draft + verify            | M    | 7 tests; branchless verify; causal chain advances strictly.        |
 | ARKV update                   | M    | 5 tests; cap_orig respected under attention spike.                 |
 | 3-bit composition             | M    | 8 truth-table cases + lane preservation.                           |
@@ -99,7 +99,7 @@ short-circuit; the AND is one branchless byte.
 
 * **No magic.** v62 is kernels, not a 70 B-param model. The kernels are the
   *frontier shape* in C, ready for a real inference engine to bind to.
-* **No GPU dispatch yet.** ARKV + NSA are CPU/NEON today; the Metal/ANE
+* **No GPU dispatch yet.** ARKV + NSAttnttn are CPU/NEON today; the Metal/ANE
   paths are P-tier and gated behind future work.
 * **No safety guarantees beyond the kernel.** σ-Shield + Σ-Citadel still
   own action and data-flow safety. v62 only adds the *reasoning-quality*

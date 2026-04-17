@@ -258,11 +258,11 @@ int cos_v62_hrm_run(cos_v62_thought_t        *H,
                     uint32_t                 *out_l_iters);
 
 /* ====================================================================
- *  4.  Native Sparse Attention  (NSA-class)
+ *  4.  Native Sparse Attention
  *      three branches: compress + select + slide.  arXiv:2502.11089.
  * ==================================================================== */
 
-/*  Compute the NSA gate weights and a fused attention output.
+/*  Compute the NSAttn gate weights and a fused attention output.
  *
  *  We expose the three-branch design as a single call:
  *      out = w_c * Compress(K, V)  +  w_s * Select_topK(K, V)

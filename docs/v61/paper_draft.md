@@ -151,7 +151,7 @@ FAIL; SKIPs never inflate PASS counts.
 ## 6. Positioning
 
 To our knowledge no open-source AI-agent runtime before Σ-Citadel
-ships every layer of the DARPA-CHACE advanced-security menu as one
+ships every layer of the CHACE-class advanced-security menu as one
 runnable gate.  seL4-only runtimes prove isolation but leave policy
 to userspace.  Wasmtime-only sandboxes prevent syscall abuse but
 have no clearance or integrity notion.  IronClaw (NEAR AI) handles

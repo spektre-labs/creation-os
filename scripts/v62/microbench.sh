@@ -4,7 +4,7 @@
 # Creation OS v62 — Reasoning Fabric microbench harness.
 #
 # Builds creation_os_v62 (idempotent) and runs its bench harness for
-# NSA attention + EBT minimization throughput on this host.
+# NSAttn attention + EBT minimization throughput on this host.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 make -s standalone-v62

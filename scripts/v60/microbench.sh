@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
 # Source:        https://github.com/spektre-labs/creation-os-kernel
-# Commercial:    licensing@spektre-labs.com
+# Commercial:    spektrelabs@proton.me
 # License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
 # Creation OS v60 — σ-Shield microbench dispatcher.
 #

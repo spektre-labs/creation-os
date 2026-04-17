@@ -7,7 +7,7 @@
 | **Coconut** (arXiv:2412.06769)            | Continuous latent CoT — *training method* + paper                                | Branchless C kernel; M4 NEON path; composition with security gate.         |
 | **EBT** (arXiv:2507.02092, ICLR 2026)     | Energy-Based Transformer — *training method* + ICLR paper                        | Standalone energy verifier kernel callable from any inference stack.       |
 | **HRM** (arXiv:2506.21734, sapientinc)    | Hierarchical Reasoning Model — 27 M-param model + research code                  | Pure C, NEON, branchless H/L loop reusable on top of any base model.       |
-| **NSA** (arXiv:2502.11089, DeepSeek)      | Native Sparse Attention — Triton kernels for A100 / H100                         | Apple-silicon-aligned C path; no CUDA dependency.                          |
+| **NSAttn** (Native Sparse Attention, arXiv:2502.11089, DeepSeek)      | Native Sparse Attention — Triton kernels for A100 / H100                         | Apple-silicon-aligned C path; no CUDA dependency.                          |
 | **DeepSeek-V3 MTP**                       | Multi-Token Prediction — *training* objective + draft heads                      | Branchless C draft + verify pair under one ABI.                            |
 | **ARKV** (arXiv:2603.08727)               | Adaptive KV management — paper + reference code                                  | Branchless 3-state classifier you can drop into a CPU runtime.             |
 | **Claude Code / Codex CLI / Cursor CLI**  | Beautiful proprietary CLIs over remote frontier models                           | Single-binary, no-deps, runs on `cos` against *local* kernels.             |
@@ -16,7 +16,7 @@
 ## What v62 + cos ship that nobody else does
 
 > The **first open-source local AI runtime to land the 2026 reasoning
-> frontier (Coconut + EBT + HRM + NSA + MTP + ARKV) as one branchless
+> frontier (Coconut + EBT + HRM + NSAttn + MTP + ARKV) as one branchless
 > C kernel**, composed with a runtime security kernel (v60 σ-Shield) and
 > a formal-lattice attestation kernel (v61 Σ-Citadel), behind a single
 > Apple-tier CLI front door (`cos`).
@@ -52,7 +52,7 @@ Concretely:
 | Multi-Token Predictor draft + verify            |     ⨯       |    ⨯       |   ⨯   |  partial  |   ⨯    |               ✓ (v62)               |
 | Adaptive ORIG/QUANT/EVICT KV manager            |     ⨯       |    ⨯       |   ⨯   |     ⨯     |   ⨯    |               ✓ (v62)               |
 | Composed σ-Shield + Σ-Citadel + EBT decision    |     ⨯       |    ⨯       |   ⨯   |     ⨯     |   ⨯    |               ✓                     |
-| DARPA-CHACE 12-layer security gate              |     ⨯       |    ⨯       |   ⨯   |     ⨯     |   ⨯    |               ✓ (`make chace`)      |
+| CHACE-class 12-layer security gate              |     ⨯       |    ⨯       |   ⨯   |     ⨯     |   ⨯    |               ✓ (`make chace`)      |
 | SLSA-3 keyless OIDC provenance                  |     ⨯       |    ⨯       |   ⨯   |     ⨯     |   ⨯    |               ✓                     |
 
 ## Honest non-claims (so the σ-check is clean)

@@ -40,7 +40,7 @@
  *     pledge / unveil    OpenBSD process     sandbox/openbsd_pledge.c
  *     CHERI hw caps      hardware caps       (CHERI-BSD target; doc-only)
  *
- *   DARPA CHACE designs a defence-in-depth composition of the same
+ *   CHACE-class capability-hardening designs a defence-in-depth composition of the same
  *   menu.  v61 is the first open-source AI-agent runtime to ship
  *   every layer with a rehearsal target (`make chace`) that PASSes
  *   on what is present and SKIPs honestly on what the host lacks —

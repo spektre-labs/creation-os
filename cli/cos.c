@@ -12,7 +12,7 @@
  *     cos                        # status board (default)
  *     cos status                 # explicit status
  *     cos verify                 # the verified-agent report (v57)
- *     cos chace                  # the DARPA-CHACE security gate
+ *     cos chace                  # the CHACE-class security gate
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
  *     cos think <prompt>         # demo: latent-CoT + EBT + HRM
  *     cos seal <file> [ctx]      # v63 σ-Cipher: attestation-bound E2E seal
@@ -186,7 +186,7 @@ static void status_security(void)
                 C_BOLD, C_RESET);
     bullet_line("%sv61 Σ-Citadel%s   BLP + Biba + 16-bit MLS + 256-bit attestation + v60 compose",
                 C_BOLD, C_RESET);
-    bullet_line("%sv62 Fabric%s      latent-CoT %s EBT %s HRM %s NSA %s MTP %s ARKV (all branchless)",
+    bullet_line("%sv62 Fabric%s      latent-CoT %s EBT %s HRM %s NSAttn %s MTP %s ARKV (all branchless)",
                 C_BOLD, C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
 
     printf("\n");
@@ -227,7 +227,7 @@ static void status_quickstart(void)
 {
     section("quickstart");
     bullet_line("cos verify     %sthe Verified-Agent report (v57 aggregate)%s", C_GREY, C_RESET);
-    bullet_line("cos chace      %sthe DARPA-CHACE 12-layer security gate%s",   C_GREY, C_RESET);
+    bullet_line("cos chace      %sthe CHACE-class 12-layer security gate%s",   C_GREY, C_RESET);
     bullet_line("cos sigma      %srun all three kernels: σ-Shield, Σ-Citadel, Fabric%s",
                 C_GREY, C_RESET);
     bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
@@ -270,7 +270,7 @@ static int cmd_verify(void)
 static int cmd_chace(void)
 {
     print_header();
-    section("DARPA-CHACE composed defence-in-depth");
+    section("CHACE-class composed defence-in-depth");
     int rc = run_cmd("make -s chace");
     if (rc == 0) {
         printf("\n  %s%s%s chace gate passed\n", C_GREEN, check(), C_RESET);
@@ -450,7 +450,7 @@ static int cmd_think(int argc, char **argv)
     }
 
     /* Stage 1 — run the 68 self-tests so the user sees the kernel works. */
-    bullet_line("%sstage 1%s  kernel self-test (latent-CoT %s EBT %s HRM %s NSA %s MTP %s ARKV)",
+    bullet_line("%sstage 1%s  kernel self-test (latent-CoT %s EBT %s HRM %s NSAttn %s MTP %s ARKV)",
                 C_BOLD, C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
     int rc = run_cmd("./creation_os_v62 --self-test | sed 's/^/    /'");
     if (rc != 0) return rc;
@@ -1128,7 +1128,7 @@ static int cmd_license(int argc, char **argv)
                C_AMBER, C_RESET);
         printf("    %sDENY %s  intelligence · military operational · mass surveillance · sanctioned · aggression\n",
                C_RED, C_RESET);
-        printf("\n  %slicensing@spektre-labs.com  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
+        printf("\n  %sspektrelabs@proton.me  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
                C_DIM, C_RESET);
         return 0;
     }
@@ -1264,7 +1264,7 @@ static int cmd_help(const char *prog)
     section("commands");
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
-    printf("  %s%-12s%s  the DARPA-CHACE 12-layer gate\n", C_BOLD, "chace",   C_RESET);
+    printf("  %s%-12s%s  the CHACE-class 12-layer gate\n", C_BOLD, "chace",   C_RESET);
     printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale %s Wormhole %s Chain %s Omnimodal %s Experience %s Surface self-tests\n",
            C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",

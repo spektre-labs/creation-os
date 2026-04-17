@@ -146,9 +146,9 @@ help:
 	@echo "  standalone-v61 — build creation_os_v61 (v61 Σ-Citadel: Bell-LaPadula + Biba lattice + MLS compartments + attestation quote; compose-with-v60; libsodium opt-in via COS_V61_LIBSODIUM=1)"
 	@echo "  check-v61  — standalone-v61 + test-v61 (v61 Σ-Citadel lattice + attestation; ≥60 invariant tests)"
 	@echo "  microbench-v61 — batch lattice_check timing (scripts/v61/microbench.sh)"
-	@echo "  standalone-v62 — build creation_os_v62 (v62 Reasoning Fabric: latent-CoT + EBT verifier + HRM loop + NSA attend + MTP draft + ARKV KV; alien-tier 2026 frontier on M4)"
+	@echo "  standalone-v62 — build creation_os_v62 (v62 Reasoning Fabric: latent-CoT + EBT verifier + HRM loop + NSAttn attend + MTP draft + ARKV KV; alien-tier 2026 frontier on M4)"
 	@echo "  check-v62  — standalone-v62 + test-v62 (v62 Reasoning Fabric; ≥62 invariant tests)"
-	@echo "  microbench-v62 — NSA + EBT throughput on M4 (./creation_os_v62 --bench)"
+	@echo "  microbench-v62 — NSAttn + EBT throughput on M4 (./creation_os_v62 --bench)"
 	@echo "  standalone-v63 — build creation_os_v63 (v63 σ-Cipher: end-to-end encrypted fabric — BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + sealed envelope + ratchet + session; RFC 7693/8439/7748 vectors)"
 	@echo "  check-v63  — standalone-v63 + test-v63 (v63 σ-Cipher; ≥70 invariant tests against official RFC vectors)"
 	@echo "  microbench-v63 — AEAD + BLAKE2b + X25519 + seal throughput on M4 (./creation_os_v63 --bench)"
@@ -813,7 +813,7 @@ standalone-v60: src/v60/creation_os_v60.c $(V60_SRCS)
 
 # v61: Σ-Citadel — formal-lattice capability kernel (Bell-LaPadula +
 # Biba) + attestation chain.  First open-source AI-agent runtime to
-# ship the full DARPA-CHACE "advanced security" menu: seL4 CAmkES
+# ship the full CHACE-class capability-hardening "advanced security" menu: seL4 CAmkES
 # component contract + Wasmtime WASM sandbox harness + eBPF LSM policy
 # example + Darwin sandbox-exec profile + OpenBSD pledge stub + Nix
 # reproducible recipe + distroless Dockerfile + Sigstore cosign +
@@ -947,7 +947,7 @@ microbench-v61: standalone-v61
 #   1. Latent CoT  (Coconut, arXiv:2412.06769; superposition theory 2026)
 #   2. EBT verifier (Gladstone et al., arXiv:2507.02092, ICLR 2026)
 #   3. HRM loop    (Sapient, arXiv:2506.21734)
-#   4. NSA attend  (DeepSeek, arXiv:2502.11089; FSA 2026)
+#   4. NSAttn attend  (DeepSeek, arXiv:2502.11089; FSA 2026)
 #   5. MTP draft   (DeepSeek-V3, arXiv:2412.19437; LK-tunes 2026)
 #   6. ARKV KV     (arXiv:2603.08727; SAGE-KV 2025)
 #
@@ -974,7 +974,7 @@ test-v62: standalone-v62
 	./creation_os_v62 --self-test
 
 check-v62: standalone-v62 test-v62
-	@echo "check-v62: OK (v62 Reasoning Fabric: latent-CoT + EBT + HRM + NSA + MTP + ARKV)"
+	@echo "check-v62: OK (v62 Reasoning Fabric: latent-CoT + EBT + HRM + NSAttn + MTP + ARKV)"
 
 microbench-v62: standalone-v62
 	./creation_os_v62 --bench

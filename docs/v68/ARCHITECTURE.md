@@ -6,7 +6,7 @@
         ┌──────────────────────────────────────────────────┐
         │                v60 σ-Shield                      │  capability bitmask, σ-gate
         │                v61 Σ-Citadel                     │  BLP + Biba + 256-bit attestation
-        │                v62 Reasoning Fabric              │  latent-CoT + EBT + HRM + NSA
+        │                v62 Reasoning Fabric              │  latent-CoT + EBT + HRM + NSAttn
         │                v63 σ-Cipher                      │  AEAD + quote binding (E2E)
         │                v64 σ-Intellect                   │  MCTS-σ + skill + tool authz
         │                v65 σ-Hypercortex                 │  HDC/VSA D=16384 + cleanup + HVL

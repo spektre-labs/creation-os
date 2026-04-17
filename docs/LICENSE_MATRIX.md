@@ -59,7 +59,7 @@ reached its own Change Date).
 | Public domain (CC0, Unlicense)  | ✅ Compatible                                                              |
 
 When in doubt, **ask before importing**:
-`licensing@spektre-labs.com`.
+`spektrelabs@proton.me`.
 
 ## Spektre Labs Marks at a glance
 

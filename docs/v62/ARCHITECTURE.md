@@ -13,7 +13,7 @@
                                 │                                                    │
                 ┌───────────────▼─────────────────┐              ┌───────────────────▼────────────────┐
                 │       v57 verify-agent          │              │              make chace            │
-                │  (composition slot aggregator)  │              │   (DARPA-CHACE 12-layer gate)      │
+                │  (composition slot aggregator)  │              │   (CHACE-class 12-layer gate)      │
                 └───────────────┬─────────────────┘              └───────────────────┬────────────────┘
                                 │                                                    │
             ┌───────────────────┼─────────────────────┐                              │
@@ -35,7 +35,7 @@
            │                    │            │  │ HRM H/L loop  │  │                 │
            │                    │            │  └───────────────┘  │                 │
            │                    │            │  ┌───────────────┐  │                 │
-           │                    │            │  │ NSA attend    │  │                 │
+           │                    │            │  │ NSAttn attend    │  │                 │
            │                    │            │  │ (3-branch)    │  │                 │
            │                    │            │  └───────────────┘  │                 │
            │                    │            │  ┌───────────────┐  │                 │
@@ -64,7 +64,7 @@ anything.
 
 | Rule                          | v62 implementation                                                    |
 |-------------------------------|-----------------------------------------------------------------------|
-| **mmap, never fread**         | KV blocks land at 64-B row stride so NSA can read direct from mmap.   |
+| **mmap, never fread**         | KV blocks land at 64-B row stride so NSAttn can read direct from mmap.   |
 | **64-byte aligned alloc**     | `v62_alloc64()` rounds size up and uses `aligned_alloc(64, ...)`.     |
 | **Prefetch +64 B ahead**      | `v62_dot` and `v62_axpy` prefetch in every 16-element NEON unroll.    |
 | **Branchless hot path**       | `v62_argmax` uses bitmask select; composition uses 3-bit AND.         |
@@ -75,7 +75,7 @@ anything.
 
 ```
 v62 microbench (n=1024, d=64):
-  NSA  attend          ~ 8 200 calls/s  (~ 0.12 ms / call)
+  NSAttn  attend          ~ 8 200 calls/s  (~ 0.12 ms / call)
   EBT  minimize (k=16) ~ 3 700 000 calls/s
   Latent-CoT step (d=64)        microsecond-class (in-loop only)
   ARKV update (n=32)            sub-microsecond

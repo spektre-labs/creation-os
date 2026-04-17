@@ -30,12 +30,12 @@ redraw the agent runtime:
 2. *Decoding has moved off-token-by-token.* DeepSeek MTP [4], Mercury
    diffusion [5], XGrammar-2 + DCCD [6] all push K-step parallel
    emission with verified acceptance.
-3. *Attention has moved off-dense.* NSA [7], FSA 2026, ARKV [8] and
+3. *Attention has moved off-dense.* NSAttn [7], FSA 2026, ARKV [8] and
    SAGE-KV all share the insight that dense full-context is wasteful
    above ~4 k tokens.
 
 Yet the open-source local-AI stack still ships these as *training
-recipes* (Coconut, EBT) or as *GPU-only research kernels* (NSA on
+recipes* (Coconut, EBT) or as *GPU-only research kernels* (NSAttn on
 A100 / H100 Triton). Nothing ships them as one composable C ABI on
 Apple silicon, and nothing composes them with a runtime security
 kernel. v62 closes that gap.
@@ -84,7 +84,7 @@ The AND is one byte, no short-circuit, no branches.
 ## 3. Correctness
 
 * **68 deterministic self-tests** (`./creation_os_v62 --self-test`)
-  covering Latent CoT (11), EBT (7), HRM (5), NSA (7), MTP (7),
+  covering Latent CoT (11), EBT (7), HRM (5), NSAttn (7), MTP (7),
   ARKV (5), Composition (10), Adversarial (9), and edge cases.
 * **AddressSanitizer** clean (`make asan-v62`).
 * **UndefinedBehaviorSanitizer** clean (`make ubsan-v62`).
@@ -96,7 +96,7 @@ Microbench on Apple M-series (single core, NEON, no SME):
 
 | Kernel              | Throughput (calls / s) | Latency (median) |
 |---------------------|-----------------------:|-----------------:|
-| NSA attend (n=1024, d=64) |          ~ 8 200 |        ~ 0.12 ms |
+| NSAttn attend (n=1024, d=64) |          ~ 8 200 |        ~ 0.12 ms |
 | EBT minimize (d=256, k=16) |       ~ 3 700 000 |        ~ 0.27 µs |
 | Latent-CoT step (d=64) |          microsecond-class |          —      |
 | Composition decision   |               single-cycle | sub-nanosecond  |
@@ -108,7 +108,7 @@ EBT verification is cheap enough to run after every reasoning step.
 `cos sigma` runs `check-v60` + `check-v61` + `check-v62` and reports a
 single composed verdict. `make verify-agent` aggregates v62 with the
 twelve other Verified-Agent slots. `make chace` drives the full
-DARPA-CHACE 12-layer security gate. All three never silently downgrade.
+CHACE-class 12-layer security gate. All three never silently downgrade.
 
 ## 6. Positioning
 
@@ -127,7 +127,7 @@ DARPA-CHACE 12-layer security gate. All three never silently downgrade.
   llama.cpp, bitnet.cpp. The kernels are designed for direct binding.
 * SME (Apple M4 matrix engine) is *compile-only* today, gated by
   `COS_V62_SME=1`. Default build is NEON and never SIGILLs.
-* GPU dispatch (Metal / ANE) for ARKV and NSA is **planned** (P-tier)
+* GPU dispatch (Metal / ANE) for ARKV and NSAttnttn is **planned** (P-tier)
   and not yet shipped.
 * `cos think` is a *demo* surface, not a chat UI; chat lives in the
   model layer. v62 + `cos` are the security, attestation and reasoning
@@ -139,7 +139,7 @@ DARPA-CHACE 12-layer security gate. All three never silently downgrade.
 git clone https://github.com/spektre-labs/creation-os
 make check-v62          # 68/68 pass on M4
 make verify-agent       # 11/14 PASS, 3 SKIP, 0 FAIL on M4
-make chace              # 12-layer DARPA-CHACE gate, honest SKIPs
+make chace              # 12-layer CHACE-class capability-hardening gate, honest SKIPs
 ./cos                   # the Apple-tier status board
 ```
 

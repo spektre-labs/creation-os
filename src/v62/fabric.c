@@ -343,7 +343,7 @@ int cos_v62_hrm_run(cos_v62_thought_t      *H,
 }
 
 /* ====================================================================
- *  4.  Native Sparse Attention (NSA-class)
+ *  4.  Native Sparse Attention
  * ==================================================================== */
 
 static void v62_branch_compress(const float *Q,
@@ -622,5 +622,5 @@ int cos_v62_compose_decision(uint8_t              v60_ok,
 
 const char *cos_v62_version(void)
 {
-    return "v62.0 reasoning-fabric (latent-CoT + EBT + HRM + NSA + MTP + ARKV)";
+    return "v62.0 reasoning-fabric (latent-CoT + EBT + HRM + NSAttn + MTP + ARKV)";
 }

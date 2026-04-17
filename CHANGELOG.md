@@ -771,7 +771,7 @@
 - **Driving oivallus.** The 2026 frontier converged on three findings:
   reasoning has moved off-text (Coconut, EBT, HRM), decoding has moved
   off-token-by-token (DeepSeek-V3 MTP, Mercury, XGrammar-2 + DCCD), and
-  attention has moved off-dense (NSA, FSA 2026, ARKV, SAGE-KV, Mamba-2
+  attention has moved off-dense (NSAttn, FSA 2026, ARKV, SAGE-KV, Mamba-2
   SSD).  Yet the open-source local-AI stack still shipped these as
   *training recipes* or *GPU-only research kernels*.  Nothing shipped
   them as **one composable C ABI on Apple silicon, composed with a
@@ -797,12 +797,12 @@
   compile-only (`COS_V62_SME=1`) and never SIGILLs by default.
 - **Tests.** `./creation_os_v62 --self-test` runs **68 deterministic
   invariants** covering Latent CoT (11), EBT verifier (7), HRM (5),
-  NSA (7), MTP (7), ARKV (5), Composition (10), Adversarial (9), and
+  NSAttn (7), MTP (7), ARKV (5), Composition (10), Adversarial (9), and
   edge cases.  ASAN clean (`make asan-v62`).  UBSAN clean
   (`make ubsan-v62`).  OpenSSF 2026 hardened build clean
   (`make standalone-v62-hardened`).
 - **Microbench (Apple M-series, this commit).**
-  - NSA attend (n=1024, d=64): **~ 8 200 calls/s · ~ 0.12 ms / call**.
+  - NSAttn attend (n=1024, d=64): **~ 8 200 calls/s · ~ 0.12 ms / call**.
   - EBT minimize (d=256, k=16): **~ 3 700 000 calls/s · ~ 0.27 µs / call**.
   - Composition decision: **single-cycle byte AND** (sub-nanosecond).
 - **Apple-tier `cos` CLI.**  `cli/cos.c` is **~500 lines of C, no
@@ -830,7 +830,7 @@
 - **Docs (`docs/v62/`).**
   - `THE_FABRIC.md` — one-page overview + tier table + non-claims.
   - `ARCHITECTURE.md` — wire map, hardware discipline, microbench, threat-model tie-in.
-  - `POSITIONING.md` — vs Coconut / EBT / HRM / NSA / MTP / ARKV / Claude Code / Cursor CLI / Aider / llama.cpp / MLX-LM.
+  - `POSITIONING.md` — vs Coconut / EBT / HRM / NSAttnttn / MTP / ARKV / Claude Code / Cursor CLI / Aider / llama.cpp / MLX-LM.
   - `paper_draft.md` — paper-style writeup with arXiv references.
 - **README.md / SECURITY.md / CHANGELOG.md / .gitignore /
   docs/DOC_INDEX.md** updated to register v62 and `cos`.
@@ -841,7 +841,7 @@
   - `cos think` is a *demo* surface, not a chat UI.
   - SME (Apple M4 matrix engine) is *compile-only* today, gated by
     `COS_V62_SME=1`.  Default build is NEON and never SIGILLs.
-  - GPU dispatch (Metal / ANE) for ARKV and NSA is *planned* (P-tier).
+  - GPU dispatch (Metal / ANE) for ARKV and NSAttnttn is *planned* (P-tier).
 - **Files added (12).**
   - `src/v62/fabric.h`, `src/v62/fabric.c`, `src/v62/creation_os_v62.c`.
   - `cli/cos.c`.
@@ -852,13 +852,13 @@
     THREAT_MODEL.md, docs/DOC_INDEX.md, src/v57/verified_agent.c,
     scripts/v57/verify_agent.sh.
 
-## v61 Σ-Citadel — composed defence-in-depth (DARPA-CHACE menu) (2026-04-17)
+## v61 Σ-Citadel — composed defence-in-depth (CHACE-class capability-hardening menu) (2026-04-17)
 
 - **Driving oivallus.** The 2026 advanced-security menu for AI agents
   is **composed**, not chosen: seL4 microkernel + Wasmtime userland
   sandbox + eBPF LSM + MLS lattice + hardware attestation + Sigstore
   signing + SLSA-3 provenance + reproducible build + distroless
-  runtime.  DARPA's CHACE programme studies that composition; no
+  runtime.  the CHACE-class capability-hardening programme (published research) studies that composition; no
   open-source AI-agent runtime had shipped all of it as one runnable
   gate.  `v61` is that gate.  It adds two new M-tier primitives
   (BLP + Biba + MLS lattice kernel, and a deterministic 256-bit
@@ -907,7 +907,7 @@
 - **Microbench**: `make microbench-v61` → 6.1 × 10⁸ lattice
   decisions/s on Apple M4 across n ∈ {1024, 16384, 262144} (three-
   decade batch sweep; L1-resident).
-- **DARPA-CHACE composition (`make chace`).**  One aggregator that
+- **CHACE-class composition (`make chace`).**  One aggregator that
   runs every layer of the 2026 advanced-security menu locally and
   in CI and reports **PASS / honest SKIP / FAIL** per layer:
   1. `check-v60` σ-Shield (81/81)

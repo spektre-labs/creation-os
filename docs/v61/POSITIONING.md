@@ -1,8 +1,8 @@
 # Creation OS v61 — positioning
 
-## Against DARPA CHACE
+## Against CHACE-class capability-hardening
 
-DARPA's **Cyber Hunting at Computer-Human-Aware Endpoints** (CHACE)
+**CHACE-class capability-hardening** (Cyber Hunting at Computer-Human-Aware Endpoints — published research programme)
 programme is the closest analogue to v61's scope.  CHACE solicits
 **composed** defence for AI-agent runtimes: microkernel + userland
 sandbox + kernel-policy + MLS lattice + hardware attestation +

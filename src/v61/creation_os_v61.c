@@ -725,7 +725,7 @@ static void print_positioning(void)
 "  v61 does NOT replace any layer; it **composes** each with a\n"
 "  rehearsal target (`make chace`) that PASSes on present layers\n"
 "  and SKIPs honestly on missing ones.  First open-source AI agent\n"
-"  runtime to ship the full DARPA-CHACE menu as a runnable gate.\n\n");
+"  runtime to ship the full CHACE-class capability-hardening menu as a runnable gate.\n\n");
 }
 
 int main(int argc, char **argv)

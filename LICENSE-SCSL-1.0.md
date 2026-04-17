@@ -171,23 +171,22 @@ limited to JSON, CBOR, or σ-binary records) that asserts a claim
 about the Software's behavior, including verdicts of any kernel in
 the `v60..v74` composed-decision stack (and any successor stack).
 
-1.13  **"State Actor"** means any government, government agency,
-intelligence service, signals-intelligence service, military
-organization, paramilitary organization, federal contractor whose
-primary deliverable is intelligence collection or kinetic targeting,
-or any organization acting under the legal authority or operational
-control of any of the foregoing — including, by way of non-limiting
-example, the United States Central Intelligence Agency (CIA), the
-United States National Security Agency (NSA), the Federal Bureau of
-Investigation (FBI), the People's Republic of China Ministry of
-State Security (MSS), the Russian Federal Security Service (FSB)
-and Foreign Intelligence Service (SVR), the Israeli Mossad and
-Unit 8200, the United Kingdom Government Communications Headquarters
-(GCHQ) and Secret Intelligence Service (MI6), the German
-Bundesnachrichtendienst (BND), the French Direction Générale de la
-Sécurité Extérieure (DGSE), and any successor, predecessor,
-sub-organization, contractor, sub-contractor, joint venture, or
-front organization of any of the foregoing.
+1.13  **"State Actor"** means any government or government agency
+of any jurisdiction, any civilian intelligence service, any
+signals-intelligence or communications-intercept service, any
+military or paramilitary organization, any customs, border, or
+migration-enforcement service operating in a national-security
+capacity, any federal or national contractor whose primary
+deliverable is intelligence collection, surveillance, or kinetic
+targeting, and any organization acting under the legal authority
+or operational control of any of the foregoing — together with any
+successor, predecessor, sub-organization, contractor, sub-contractor,
+joint venture, or front organization of any of the foregoing. This
+definition is **jurisdiction-agnostic**, applies uniformly to every
+state, and is **not** intended to single out any particular
+government or agency; it reaches any entity meeting the functional
+criteria above regardless of where in the world it is domiciled
+or chartered.
 
 1.14  **"Aggression"** means the crime of aggression as defined by
 **Article 8 *bis*** of the Rome Statute of the International
@@ -309,13 +308,11 @@ refusal.
 4.2  Commercial Licenses may be obtained by contacting:
 
   ```
-  Lauri Elias Rainio
   Spektre Labs Oy
   Helsinki, Finland
   Y-tunnus / Business ID: (on request)
-  E-mail: licensing@spektre-labs.com
+  E-mail: spektrelabs@proton.me
   GitHub: spektre-labs
-  ORCID: 0009-0006-0903-8541
   ```
 
   See `COMMERCIAL_LICENSE.md` for the **canonical tier matrix**
@@ -385,7 +382,7 @@ carry, at the top of the file:
 /*  SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  *  SPDX-Copyright-Identifier: 2024–2026 Lauri Elias Rainio · Spektre Labs Oy
  *  Source: https://github.com/spektre-labs/creation-os-kernel
- *  Commercial: licensing@spektre-labs.com
+ *  Commercial: spektrelabs@proton.me
  *  License documents: LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
  */
 ```

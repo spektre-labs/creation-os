@@ -3,7 +3,7 @@
 #
 # Creation OS v61 — CHACE aggregator.
 #
-# DARPA's CHACE programme studies *composed* defence in depth for AI
+# the CHACE-class capability-hardening programme (published research) studies *composed* defence in depth for AI
 # agent runtimes: microkernel isolation + userland sandbox + kernel
 # policy + lattice + attestation + reproducible build + signed
 # provenance.  This script runs each available layer locally and
