@@ -108,6 +108,11 @@ SLOTS=(
     "fhe_homomorphic|M|v88|check-v88"
     "spiking_loihi3|M|v89|check-v89"
     "hierarchical_aif|M|v90|check-v90"
+    "quantum_grover|M|v91|check-v91"
+    "titans_memory|M|v92|check-v92"
+    "mor_adaptive|M|v93|check-v93"
+    "clifford_algebra|M|v94|check-v94"
+    "sheaf_laplacian|M|v95|check-v95"
     "license_attestation|M|v75|license-check"
 )
 
