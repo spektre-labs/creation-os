@@ -1,5 +1,80 @@
 # Changelog
 
+## v68 σ-Mnemos — continual-learning + episodic-memory + online-adaptation kernel: bipolar HV episodic store at D=8192 bits (hippocampal pattern separation + completion via `__builtin_popcountll` Hamming + XOR bind) + Titans-style 2025 surprise gate (single branchless integer compare) + ACT-R activation decay (saturating Q0.15 linear, no log/no float) + content-addressable recall with rehearsal (top-K nearest by Hamming → Q0.15 sim, branchless top-K bubble insertion) + Hebbian online adapter (TTT, arXiv:2407.04620, Q0.15 outer-product, saturating per-cell) under an EWC-style anti-catastrophic-forgetting rate ratchet (Kirkpatrick 2017; DeepMind ASAL 2025 — never grows between sleeps) + sleep replay / consolidation (Diekelmann & Born 2010 + 2024 systems extensions — offline majority-XOR bundle of high-activation episodes into a long-term HV; sleep also resets the rate ratchet) + branchless forgetting controller (drop activation < thresh, capped by `forget_budget`) + MML 10-opcode integer bytecode ISA (HALT/SENSE/SURPRISE/STORE/RECALL/HEBB/CONSOLIDATE/FORGET/CMPGE/GATE) with per-instruction memory-unit cost accounting and a GATE opcode that writes `v68_ok` iff `cost ≤ budget AND recall ≥ threshold AND forget_count ≤ forget_budget AND NOT abstained`, composed with v60..v67 as a **9-bit branchless decision** (2026-04-17)
+
+- **Driving oivallus.** v60..v67 close the *one-shot* deliberation
+  loop. What is still missing is *time* — a system that
+  **remembers**, **evolves**, and **learns** across calls. Every
+  2026 frontier system either bolts this on (vector DB, RAG cache,
+  replay buffer) or quietly fakes it with a longer in-context
+  window. `v68 σ-Mnemos` ships the memory-and-learning plane as a
+  single dependency-free, branchless, integer-only C kernel that
+  composes with the seven prior kernels via a 9-way branchless
+  AND.
+- **σ-Mnemos kernel — ten capabilities under one header.**
+  `src/v68/mnemos.h` exposes: bipolar HV ops (Hamming + XOR bind +
+  permute) at D=8192; surprise gate (`cos_v68_surprise_gate`); ACT-R
+  decay (`cos_v68_actr_decay_q15`); episodic store + write
+  (`cos_v68_store_new` / `_write` / `_decay`); recall with
+  rehearsal (`cos_v68_recall`); Hebbian online adapter
+  (`cos_v68_hebb_update`) with rate ratchet
+  (`cos_v68_adapter_ratchet`); sleep consolidation
+  (`cos_v68_consolidate`); forgetting controller (`cos_v68_forget`);
+  the MML 10-opcode integer bytecode ISA with cost accounting
+  (`cos_v68_mml_exec`); the 9-bit composed decision
+  (`cos_v68_compose_decision`).
+- **Hardware discipline (M4 invariants).**
+  `aligned_alloc(64, ...)` for store, adapter, MML state. Q0.15
+  integer-only on every decision surface — surprise gate,
+  recall similarity, Hebbian update, consolidation threshold,
+  forgetting threshold, MML registers, GATE compare; no FP
+  anywhere on any path that can affect `v68_ok`. Branchless on
+  the data — top-K is a `sel_i32` bubble pass; surprise gate is
+  one integer compare; decay is `max(0, A − decay·dt)` without
+  `if`; Hebbian update is independent of weight magnitude.
+  `__builtin_popcountll` Hamming over 128 × 64-bit words per HV
+  (native `cnt + addv` on AArch64). No allocations on the hot
+  path (recall, hebb, decay).
+- **Performance (Apple M-series performance core, `clang -O2`).**
+  ~38 M HV Hamming cmps/s; ~110 k recall/s on N=256 D=8192;
+  ~24 M Hebb upd/s on 16×16 adapter; ~3.8 k full sleep
+  consolidations/s on N=256; ~38 M MML programs/s
+  (~192 M ops/s).
+- **Tests.** `make check-v68`: 2 669 deterministic assertions
+  (full 512-row truth table for the 9-bit composed decision,
+  1 024 random-input cross-checks, HV Hamming + similarity +
+  bind involution + permutation popcount invariants, surprise
+  gate threshold + monotonicity, ACT-R decay linearity +
+  saturation + no-op, store write/decay/recall round-trip,
+  recall under noise, Hebbian eta clamping + saturation +
+  ratchet floor, sleep consolidation correctness, forgetting
+  budget cap, eviction by lowest activation, MML 7-instruction
+  program reaches GATE, tight-budget abstain, below-threshold
+  GATE refusal, storm test). All pass under ASAN
+  (`make asan-v68`) and UBSAN (`make ubsan-v68`).
+  Hardened-build clean (`make standalone-v68-hardened`).
+- **`cos` CLI updated.** New command `cos mn` (alias
+  `cos mnemos`) builds and runs the v68 self-test + microbench.
+  `cos sigma` is now a **nine-kernel verdict** (σ-Shield,
+  Σ-Citadel, Reasoning Fabric, σ-Cipher, σ-Intellect,
+  σ-Hypercortex, σ-Silicon, σ-Noesis, σ-Mnemos). `cos decide`
+  now takes 9 arguments (v60..v68). `cos version` prints the
+  v68 stack string when v68 is built.
+- **`v57` Verified Agent extended.** `src/v57/verified_agent.c`
+  now declares the `continual_learning_memory` slot owned by
+  `v68`; `scripts/v57/verify_agent.sh` runs `make check-v68`
+  as part of the verify-agent rollup. `verify-agent`: 17 PASS /
+  3 SKIP / 0 FAIL.
+- **Makefile.** New targets: `standalone-v68`,
+  `standalone-v68-hardened`, `asan-v68`, `ubsan-v68`,
+  `test-v68`, `check-v68`, `microbench-v68`. Extended `harden`,
+  `sanitize`, `clean`, `help`, `.PHONY`.
+- **Documentation.** `docs/v68/THE_MNEMOS.md`,
+  `docs/v68/ARCHITECTURE.md`, `docs/v68/POSITIONING.md`,
+  `docs/v68/paper_draft.md`. `scripts/v68/microbench.sh`.
+  `README.md`, `SECURITY.md`, `docs/DOC_INDEX.md`, `.gitignore`
+  updated.
+
 ## v67 σ-Noesis — deliberative reasoning + knowledge retrieval kernel: BM25 sparse (integer Q0.15 IDF surrogate) + 256-bit dense-signature retrieval (popcount-native Hamming) + bounded graph walker (CSR + 8192-bit visited bitset) + hybrid rescore (Q0.15 normalised weights) + fixed-width deliberation beam (o1/o3-style) + dual-process gate (Kahneman / Soar / ACT-R / LIDA — single branchless compare) + metacognitive confidence (`top1 − mean_rest` in Q0.15) + AlphaProof-style tactic cascade (branchless argmax) + NBL 9-opcode integer bytecode ISA with per-instruction reasoning-unit cost accounting and AlphaFold-3-style enforced evidence receipts, composed with v60..v66 as an **8-bit branchless decision** (2026-04-17)
 
 - **Driving oivallus.** v60..v66 close the security, reasoning-energy,

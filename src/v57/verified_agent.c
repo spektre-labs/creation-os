@@ -323,6 +323,57 @@ static const v57_slot_t k_slots[] = {
                           "~9k BM25 queries/s on D=1024 T=16; 2593 "
                           "deterministic tests under ASAN+UBSAN",
     },
+    {
+        .slot           = "continual_learning_memory",
+        .owner_versions = "v68",
+        .make_target    = "make check-v68",
+        .best_tier      = V57_TIER_M,
+        .summary        = "σ-Mnemos: continual-learning + episodic-"
+                          "memory + online-adaptation kernel that "
+                          "turns one-shot deliberation (v60..v67) "
+                          "into a system that remembers, evolves, "
+                          "and learns across calls — bipolar HV "
+                          "episodic store at D=8192 bits "
+                          "(hippocampal pattern separation + "
+                          "completion via __builtin_popcountll "
+                          "Hamming + XOR bind); Titans-style 2025 "
+                          "surprise gate (write iff |pred − obs| ≥ "
+                          "thresh, single branchless compare); "
+                          "ACT-R activation decay (saturating Q0.15 "
+                          "linear, no log/no float); content-"
+                          "addressable recall with rehearsal "
+                          "(top-K nearest by Hamming → Q0.15 sim, "
+                          "branchless top-K); Hebbian online "
+                          "adapter (Q0.15 outer-product, "
+                          "saturating per-cell, TTT-style "
+                          "arXiv:2407.04620) under an EWC-style "
+                          "anti-catastrophic-forgetting rate "
+                          "ratchet (never grows between sleeps); "
+                          "sleep replay / consolidation (offline "
+                          "majority-XOR bundle of high-activation "
+                          "episodes into a long-term HV; "
+                          "Diekelmann & Born 2010 + 2024 systems "
+                          "extensions); branchless forgetting "
+                          "controller (drop activation < thresh "
+                          "under a forget budget); MML — Mnemonic "
+                          "Memory Language — 10-opcode integer "
+                          "bytecode ISA (HALT/SENSE/SURPRISE/STORE/"
+                          "RECALL/HEBB/CONSOLIDATE/FORGET/CMPGE/"
+                          "GATE) with per-instruction memory-unit "
+                          "cost accounting and a GATE opcode that "
+                          "writes v68_ok iff cost ≤ budget AND "
+                          "recall ≥ threshold AND forget_count ≤ "
+                          "forget_budget AND NOT abstained; "
+                          "composes with v60..v67 as a 9-bit "
+                          "branchless AND "
+                          "(cos_v68_compose_decision); ~38 M HV "
+                          "Hamming cmps/s, ~110 k recall/s on "
+                          "N=256 D=8192, ~24 M Hebb upd/s on 16x16 "
+                          "adapter, ~3.8 k full sleep "
+                          "consolidations/s, ~38 M MML progs/s "
+                          "(~192 M ops/s); 2669 deterministic "
+                          "tests under ASAN+UBSAN",
+    },
 };
 
 static const int k_slot_count =

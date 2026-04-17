@@ -240,13 +240,69 @@ No bug-bounty program, no coordinated-disclosure SLA beyond that
   `cos` CLI surface: `cos nx`, `cos decide v60 v61 v62 v63 v64 v65
   v66 v67`, `cos sigma` (now an eight-kernel verdict).  Zero optional
   dependencies on the hot path — the kernel is libc-only.
+- **v68 σ-Mnemos** (`make check-v68`, **2 669 tests**).
+  Dependency-free, branchless, **integer-only** C kernel shipping
+  the 2024-2026 continual-learning + episodic-memory + online-
+  adaptation frontier as the memory-and-learning plane that turns
+  one-shot deliberation (v60..v67) into a system that **remembers,
+  evolves, and learns** across calls.  **Bipolar HV episodic store
+  at D = 8 192 bits** (hippocampal pattern separation + completion
+  via four `__builtin_popcountll` Hamming + XOR bind, 64-byte
+  aligned, capacity 256 by default).  **Surprise gate** (Titans,
+  Google Research 2025; arXiv:2501.00663) — write iff `|pred − obs|
+  ≥ thresh`, single branchless integer compare; no FP, no second
+  pass.  **ACT-R activation decay** — branchless saturating Q0.15
+  linear `A_t = max(0, A_0 − decay · dt)`; no log, no division, no
+  float.  **Content-addressable recall with rehearsal** — top-K
+  nearest episodes by Hamming → Q0.15 sim, branchless top-K bubble
+  insertion via `sel_i32` swaps; accessed episodes have their
+  activation refreshed.  **Hebbian online adapter (TTT,
+  arXiv:2407.04620)** — Q0.15 outer-product update on a small
+  `R × C` adapter (default 16 × 16), saturating per-cell, under an
+  **EWC-style anti-catastrophic-forgetting rate ratchet**
+  (Kirkpatrick *et al.* 2017; DeepMind ASAL 2025) that **never
+  grows** between consolidations.  **Sleep replay /
+  consolidation** (Diekelmann & Born, Nat Rev Neurosci 2010 + 2024
+  systems extensions) — offline majority-XOR bundle of every
+  episode whose decayed activation ≥ keep_thresh into a long-term
+  HV; sleep also resets the adapter rate ratchet (the only event
+  that does so).  **Branchless forgetting controller** — drop
+  episodes whose activation falls below threshold, capped by an
+  explicit `forget_budget` so a runaway program cannot wipe
+  memory.  **MML — Mnemonic Memory Language** — a **10-opcode
+  integer bytecode ISA** (`HALT / SENSE / SURPRISE / STORE /
+  RECALL / HEBB / CONSOLIDATE / FORGET / CMPGE / GATE`) with
+  per-instruction memory-unit cost accounting and an integrated
+  GATE opcode that writes `v68_ok = 1` iff `cost ≤ cost_budget`
+  ∧ `reg_q15[a] ≥ imm` (recall fidelity / score) ∧
+  `forget_count ≤ forget_budget` ∧ `NOT abstained` — so **no
+  continual-learning step crosses to the agent unless recall ≥
+  threshold AND forgetting ≤ budget AND the learning-rate ratchet
+  is stable**, all as a single branchless AND.  Composes with
+  v60..v67 as a **9-bit branchless decision**
+  (`cos_v68_compose_decision`) so **no continual adaptation
+  crosses to the agent unless σ-Shield, Σ-Citadel, the EBT
+  verifier, the AEAD tag + quote binding, the agentic intellect,
+  the hypercortex on-manifold gate, σ-Silicon's MAC-budget +
+  conformal + wire-well-formed gate, σ-Noesis's deliberation-budget
+  + receipt gate, _and_ σ-Mnemos's recall-fidelity + forget-budget
+  + rate-ratchet gate all ALLOW**.  Measured on Apple M-series
+  performance core: ≈ 38 M HV Hamming cmps/s, ≈ 110 k recall/s on
+  N = 256 D = 8 192, ≈ 24 M Hebb upd/s on 16 × 16 adapter, ≈ 3.8 k
+  full sleep consolidations/s, ≈ 38 M MML progs/s
+  (≈ 192 M ops/s).  ASAN clean (`make asan-v68`).  UBSAN clean
+  (`make ubsan-v68`).  Hardened-build clean (`make
+  standalone-v68-hardened`).  Apple-tier `cos` CLI surface:
+  `cos mn`, `cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68`,
+  `cos sigma` (now a nine-kernel verdict).  Zero optional
+  dependencies on the hot path — the kernel is libc-only.
 - **v47 Frama-C architecture** (F-tier, where active).
 - **v48 red-team harness** (M-tier; 0/342 bypasses at last run).
 - **v49 DO-178C DAL-A artefacts** (I-tier; generated on demand).
 - **Hardened build profile** (`make harden`): OpenSSF 2026 hardening
   flags + `-mbranch-protection=standard` + PIE.
-- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 +
-  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67, all passing their own self-tests under sanitizer.
+- **Sanitizer matrix** (`make sanitize`): ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68 +
+  UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68, all passing their own self-tests under sanitizer.
 - **Layered secret scan** (`make security-scan`): gitleaks when
   installed, grep-only fallback always; allowlist in `.gitleaks.toml`.
 - **SBOM** (`make sbom` → `SBOM.json`): CycloneDX-lite 1.5 per

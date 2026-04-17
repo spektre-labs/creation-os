@@ -86,6 +86,7 @@ SLOTS=(
     "hyperdimensional_cortex|M|v65|check-v65"
     "matrix_substrate|M|v66|check-v66"
     "deliberative_cognition|M|v67|check-v67"
+    "continual_learning_memory|M|v68|check-v68"
 )
 
 PASS_LIST=()

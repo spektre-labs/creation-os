@@ -153,15 +153,35 @@ flowchart TB
 
 ---
 
-## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), and Deliberative Cognition (v67 σ-Noesis)
+## Security (v60 σ-Shield + v61 Σ-Citadel + DARPA-CHACE composition), Reasoning (v62 Fabric), End-to-End Encryption (v63 σ-Cipher), Agentic Intellect (v64 σ-Intellect), Hyperdimensional Cortex (v65 σ-Hypercortex), Matrix Substrate (v66 σ-Silicon), Deliberative Cognition (v67 σ-Noesis), and Continual Learning + Episodic Memory (v68 σ-Mnemos)
 
 Creation OS takes security as an **architecture**, not a checklist,
 reasoning as an **architecture**, end-to-end encryption as an
 **architecture**, agentic intelligence as an **architecture**,
 hyperdimensional neurosymbolic memory + reasoning as an architecture,
-**the matrix substrate itself** as an architecture, and now
-**deliberative cognition with evidence receipts** as an architecture
-too.  `v67 σ-Noesis` is **the first open-source local-AI-agent runtime
+**the matrix substrate itself** as an architecture, deliberative
+cognition with evidence receipts as an architecture, and now
+**continual learning + episodic memory + online adaptation with a
+sleep cycle and an EWC-style ratchet** as an architecture too.
+`v68 σ-Mnemos` is **the first open-source local-AI-agent runtime
+to ship the 2024-2026 continual-learning frontier (Titans 2025
+surprise-gated test-time memory writes, TTT
+arXiv:2407.04620 Hebbian online adaptation, hippocampal pattern
+separation + completion via bipolar HVs at D=8 192 bits with
+popcount-Hamming, ACT-R activation decay as a saturating Q0.15
+linear, Diekelmann–Born sleep replay / consolidation as offline
+majority-XOR bundling, Kirkpatrick EWC anti-catastrophic-forgetting
+as a learning-rate ratchet that **never grows** between sleeps,
+budget-capped branchless forgetting controller, and a 10-opcode
+integer bytecode ISA ("MML") with per-instruction memory-unit cost
+accounting) as a single branchless, integer-only C kernel with zero
+floating-point on any decision surface and zero dependencies beyond
+libc** — composed with v60..v67 as a **9-bit branchless decision**
+(`cos_v68_compose_decision`) behind the Apple-tier `cos` CLI.  No
+continual-learning step crosses to the agent unless all nine kernels
+ALLOW.
+
+`v67 σ-Noesis` is **the first open-source local-AI-agent runtime
 to ship the 2024-2026 deliberative-reasoning frontier (AlphaProof /
 AlphaGeometry 2 tactic cascade, o1/o3-style fixed-width beam with
 Q0.15 verifier, Graph-of-Thoughts / Tree-of-Thoughts CSR walker +
@@ -174,8 +194,7 @@ per-step evidence receipts, and a 9-opcode integer bytecode ISA
 single branchless, integer-only C kernel with zero floating-point on
 any decision surface and zero dependencies beyond libc** — composed
 with v60..v66 as an **8-bit branchless decision**
-(`cos_v67_compose_decision`) behind the Apple-tier `cos` CLI.  No
-deliberation crosses to the agent unless all eight kernels ALLOW.
+(`cos_v67_compose_decision`) behind the Apple-tier `cos` CLI.
 
 `v66 σ-Silicon` is **the first open-source local-AI-agent runtime to
 ship the 2026 mixed-precision-matrix frontier (runtime CPU feature
@@ -197,7 +216,7 @@ GB/s NTW decode**, and **≈ 32 M HSL progs/s** — MAC-budgeted decision
 surface at hardware speed, not framework speed, with SME / SME2 paths
 reserved under `COS_V66_SME=1` (SIGILL-safe default on M1/M2/M3).
 
-Ten layers, all runnable locally and in CI:
+Eleven layers, all runnable locally and in CI:
 
 1. **v60 σ-Shield** — first capability kernel with σ-decomposed intent
    gate. Five-valued branchless `ALLOW` / `DENY_CAP` / `DENY_INTENT` /
@@ -397,12 +416,66 @@ Ten layers, all runnable locally and in CI:
    `deliberative_cognition` slot (tier **M**) in the v57 Verified
    Agent.  Zero optional dependencies on the hot path — the kernel
    is libc-only.
-9. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
+9. **v68 σ-Mnemos** — dependency-free, branchless, **integer-only**
+   C kernel shipping the 2024-2026 continual-learning + episodic-
+   memory + online-adaptation frontier as the memory-and-learning
+   plane that turns one-shot deliberation (v60..v67) into a system
+   that **remembers, evolves, and learns** across calls.  **Bipolar
+   HV episodic store at D = 8 192 bits** (hippocampal pattern
+   separation + completion via four `__builtin_popcountll` Hamming
+   + XOR bind, 64-byte aligned, capacity 256 by default).
+   **Surprise gate** (Titans, Google Research 2025;
+   arXiv:2501.00663) — write iff `|pred − obs| ≥ thresh`, single
+   branchless integer compare; no FP, no second pass.  **ACT-R
+   activation decay** — branchless saturating Q0.15 linear
+   `A_t = max(0, A_0 − decay · dt)`; no log, no division, no float.
+   **Content-addressable recall with rehearsal** — top-K nearest
+   episodes by Hamming → Q0.15 sim, branchless top-K bubble
+   insertion via `sel_i32` swaps; accessed episodes have their
+   activation refreshed.  **Hebbian online adapter (TTT,
+   arXiv:2407.04620)** — Q0.15 outer-product update on a small
+   `R × C` adapter (default 16 × 16), saturating per-cell, under an
+   **EWC-style anti-catastrophic-forgetting rate ratchet**
+   (Kirkpatrick *et al.* 2017; DeepMind ASAL 2025) that **never
+   grows** between consolidations.  **Sleep replay /
+   consolidation** (Diekelmann & Born, Nat Rev Neurosci 2010 + 2024
+   systems extensions) — offline majority-XOR bundle of every
+   episode whose decayed activation ≥ keep_thresh into a long-term
+   HV; sleep also resets the rate ratchet (the only event that
+   does so).  **Branchless forgetting controller** — drop episodes
+   whose activation falls below threshold, capped by an explicit
+   `forget_budget` so a runaway program cannot wipe memory.
+   **MML — Mnemonic Memory Language** — a 10-opcode integer
+   bytecode ISA (`HALT / SENSE / SURPRISE / STORE / RECALL / HEBB
+   / CONSOLIDATE / FORGET / CMPGE / GATE`) with per-instruction
+   memory-unit cost accounting and an integrated `GATE` opcode
+   that writes `v68_ok = 1` iff `cost ≤ cost_budget` AND
+   `reg_q15[a] ≥ imm` (recall fidelity / score) AND
+   `forget_count ≤ forget_budget` AND `NOT abstained` — so **no
+   continual-learning step crosses to the agent unless recall ≥
+   threshold AND forgetting ≤ budget AND the learning-rate ratchet
+   is stable**, all as a single branchless AND.  Composes with
+   v60..v67 as a **9-bit branchless decision**
+   (`cos_v68_compose_decision`).  **2 669 / 2 669 deterministic
+   self-tests** at `make check-v68`.  ASAN clean (`make asan-v68`).
+   UBSAN clean (`make ubsan-v68`).  Hardened build clean
+   (`make standalone-v68-hardened`).  Microbench on Apple M-series
+   performance core: **~38 M HV Hamming cmps/s · ~110 k recall/s
+   on N = 256 D = 8 192 · ~24 M Hebb upd/s on 16 × 16 adapter ·
+   ~3.8 k full sleep consolidations/s · ~38 M MML programs/s
+   (≈ 192 M ops/s)**.  CLI: `cos mn` (self-test + microbench),
+   `cos decide <v60> <v61> <v62> <v63> <v64> <v65> <v66> <v67>
+   <v68>` (one-shot JSON 9-bit decision), and `cos sigma` as a
+   **nine-kernel verdict**.  Registered as the
+   `continual_learning_memory` slot (tier **M**) in the v57
+   Verified Agent.  Zero optional dependencies on the hot path —
+   the kernel is libc-only.
+10. **Hardened build + sanitizer matrix** — `make harden` (OpenSSF 2026
    flags + ARM64 `-mbranch-protection=standard` + PIE, rebuilds
-   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67),
+   v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 / v66 / v67 / v68),
    `make sanitize` (ASAN on v58 / v59 / v60 / v61 / v62 / v63 / v64 /
-   v65 / v66 / v67 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 / v66
-   / v67, all self-tests), `make hardening-check` (PIE / canary /
+   v65 / v66 / v67 / v68 + UBSAN on v60 / v61 / v62 / v63 / v64 / v65 /
+   v66 / v67 / v68, all self-tests), `make hardening-check` (PIE / canary /
    fortify verified).
 9. **Supply chain + local-dev** — `make sbom` (CycloneDX-lite 1.5 JSON
    per-component SHA-256), `make security-scan` (gitleaks with
