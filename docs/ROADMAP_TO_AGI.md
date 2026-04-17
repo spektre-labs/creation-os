@@ -783,15 +783,39 @@ If only ten PRs were allowed before the next release, rank:
     secondary finding: σ_max_token (worst per-token σ) beats entropy on
     arc_challenge (Δ = −0.020) and truthfulqa_mc2 (Δ = −0.044),
     suggestive but sub-CI at n=500.
-0d. **v103 follow-up — confirm / refute σ_max_token advantage at
-    n = 5 000 per task** (~15 h wall).  If the σ_max_token − entropy
-    gap survives the tighter CI, v103's secondary finding promotes
-    from **P** to **M** and the σ-stack regains a measurable raison
-    d'être as a *per-token-peak* confidence signal (not an averaged
-    one).  If it collapses, the σ-stack is confirmed as "mostly
-    entropy" on BitNet at this scale, and the roadmap shifts toward
-    deficiency #7 (RLHF / DPO) and an instruction-tuned 1.58-bit base
-    for a fair re-test of the entropy-alone-insufficiency claim.
+0d. ~~**v103 follow-up — confirm / refute σ_max_token advantage at
+    n = 5 000 per task**~~ — **done 2026-04-18** (run at `--limit 5000`
+    resolves to full validation/test splits: truthfulqa_mc2 n = 817,
+    arc_challenge n = 1 172, arc_easy n = 2 376 → 4 365 docs / 20 070
+    ll-calls / 2 h 37 min wall on Apple M3).  σ_max_token − entropy
+    gap **survives**: paired-bootstrap ΔAURCC = −0.0447, CI [−0.071,
+    −0.019], p = 0.0005 Bonferroni-significant on truthfulqa_mc2
+    (v103 secondary **promoted P → M**; `docs/v103/` secondary entry
+    updated).  Gap does **not** survive on arc_challenge
+    (Δ = −0.010, p = 0.35, CI covers 0); arc_easy has no headroom
+    (acc = 0.76).  v104 operator-search ran in the same pass:
+    [docs/v104/RESULTS.md](v104/RESULTS.md) +
+    [docs/v104/OPERATOR_SEARCH.md](v104/OPERATOR_SEARCH.md).
+0e. ~~**v104 σ-operator search**~~ — **done 2026-04-18**.
+    Pre-registered H1 (σ_max_token > entropy, truthfulqa_mc2) ✓
+    confirmed Bonferroni-significant across 10 candidates.  H2 (some
+    single σ channel beats entropy) ✓ confirmed: `n_effective`
+    (p = 0.0005) and `tail_mass` (p = 0.004) Bonferroni-beat entropy
+    on truthfulqa; `logit_std` Bonferroni-**hurts** on both
+    arc_easy and arc_challenge (p = 0.0005) — the mean σ aggregator
+    currently amplifies an anti-signal.  H3 (entropy-σ hybrid has
+    interior optimum, Bonferroni-significant) ✗ not confirmed.
+    **Unregistered secondary:** `sigma_product` beats entropy
+    Bonferroni-significantly on **both** hard tasks simultaneously
+    (truthfulqa_mc2 p = 0.003, arc_challenge p = 0.004) → tier P
+    pending independent re-test at a second scale.
+0f. **v105 representation surgery (next)** — swap the `σ_mean > τ`
+    abstention gate for **either** `σ_product > τ` (default; cross-
+    task robust) **or** `σ_max_token > τ` (hard-task tuned; known
+    H1-confirmed winner on truthfulqa_mc2).  Rethink v29: drop
+    `logit_std` from the default profile **or** learn per-channel
+    weights via a calibration objective on a held-out split.  No
+    RLHF here (that is deficiency #7 and still follows v105).
 1. **PQC: ML-KEM-768 + ML-DSA-65 in v63 σ-Cipher** (harvest-now-decrypt-
    later is a dated risk).
 2. **Real seL4 compartmentalisation** of v60..v80 as CAmkES components

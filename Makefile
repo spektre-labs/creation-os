@@ -321,7 +321,8 @@ merge-gate:
 	@$(MAKE) check-v101
 	@$(MAKE) check-v102
 	@$(MAKE) check-v103
-	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103 bridge/eval/τ-sweep)"
+	@$(MAKE) check-v104
+	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103/v104 bridge/eval/τ-sweep/operator-search)"
 
 # Reviewer gate: what an external critic should be able to verify quickly.
 reviewer:
@@ -2376,6 +2377,23 @@ check-v103:
 bench-v103:
 	@bash benchmarks/v103/run_sigma_log.sh
 	@.venv-bitnet/bin/python benchmarks/v103/compute_rc_metrics.py
+
+# v104 σ-operator search.  Post-hoc analysers on top of v103's sidecar JSONL.
+# `check-v104` runs the operator-registry smoke + synthetic oracle/random
+# sanity; no model weights needed, never blocks merge-gate.
+# `bench-v104` runs the full n=5000 σ-log pass, then operator search +
+# channel analysis + α-sweep.  Cost ≈ 5-6 h wall on Apple M3 / Metal.
+check-v104:
+	@bash benchmarks/v104/check_v104.sh
+
+bench-v104:
+	@bash benchmarks/v104/run_n5000_sigma_log.sh
+	@.venv-bitnet/bin/python benchmarks/v104/compute_operator_rcc.py \
+	    --results benchmarks/v104/n5000_results
+	@.venv-bitnet/bin/python benchmarks/v104/channel_analysis.py \
+	    --results benchmarks/v104/n5000_results
+	@.venv-bitnet/bin/python benchmarks/v104/hybrid_sweep.py \
+	    --results benchmarks/v104/n5000_results --second sigma_max_token
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
