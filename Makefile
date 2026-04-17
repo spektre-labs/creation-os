@@ -8,7 +8,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v71 standalone-v72 standalone-v73 standalone-v74 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened standalone-v76 standalone-v76-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74 asan-v76 ubsan-v76 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 microbench-v71 microbench-v72 microbench-v73 microbench-v74 microbench-v76 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 test-v71 test-v72 test-v73 test-v74 test-v76 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 check-v71 check-v72 check-v73 check-v74 check-v76 license_attest license-pin license-check license-apply license-attest license-attest-hardened core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate doctor completion-install standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v71 standalone-v72 standalone-v73 standalone-v74 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened standalone-v76 standalone-v76-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74 asan-v76 ubsan-v76 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 microbench-v71 microbench-v72 microbench-v73 microbench-v74 microbench-v76 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 test-v71 test-v72 test-v73 test-v74 test-v76 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 check-v71 check-v72 check-v73 check-v74 check-v76 license_attest license-pin license-check license-apply license-attest license-attest-hardened core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -22,6 +22,8 @@ infra:
 help:
 	@echo "Creation OS — make targets"
 	@echo "  help       — this list"
+	@echo "  doctor     — one-command repo-health rollup (license + verify + hardening + receipts)"
+	@echo "  completion-install — install cos(1) tab-completion for your shell (bash/zsh/fish)"
 	@echo "  infra      — optional Nix / Earthly / Just / Rust / Zig / Cue (see infra/README.md)"
 	@echo "  standalone — build creation_os from creation_os_v2.c"
 	@echo "  standalone-v6 — build creation_os_v6 (Living Kernel + self-test)"
@@ -146,9 +148,9 @@ help:
 	@echo "  standalone-v61 — build creation_os_v61 (v61 Σ-Citadel: Bell-LaPadula + Biba lattice + MLS compartments + attestation quote; compose-with-v60; libsodium opt-in via COS_V61_LIBSODIUM=1)"
 	@echo "  check-v61  — standalone-v61 + test-v61 (v61 Σ-Citadel lattice + attestation; ≥60 invariant tests)"
 	@echo "  microbench-v61 — batch lattice_check timing (scripts/v61/microbench.sh)"
-	@echo "  standalone-v62 — build creation_os_v62 (v62 Reasoning Fabric: latent-CoT + EBT verifier + HRM loop + NSAttn attend + MTP draft + ARKV KV; alien-tier 2026 frontier on M4)"
+	@echo "  standalone-v62 — build creation_os_v62 (v62 Reasoning Fabric: latent-CoT + EBT verifier + HRM loop + NSA attend + MTP draft + ARKV KV; alien-tier 2026 frontier on M4)"
 	@echo "  check-v62  — standalone-v62 + test-v62 (v62 Reasoning Fabric; ≥62 invariant tests)"
-	@echo "  microbench-v62 — NSAttn + EBT throughput on M4 (./creation_os_v62 --bench)"
+	@echo "  microbench-v62 — NSA + EBT throughput on M4 (./creation_os_v62 --bench)"
 	@echo "  standalone-v63 — build creation_os_v63 (v63 σ-Cipher: end-to-end encrypted fabric — BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + sealed envelope + ratchet + session; RFC 7693/8439/7748 vectors)"
 	@echo "  check-v63  — standalone-v63 + test-v63 (v63 σ-Cipher; ≥70 invariant tests against official RFC vectors)"
 	@echo "  microbench-v63 — AEAD + BLAKE2b + X25519 + seal throughput on M4 (./creation_os_v63 --bench)"
@@ -813,7 +815,7 @@ standalone-v60: src/v60/creation_os_v60.c $(V60_SRCS)
 
 # v61: Σ-Citadel — formal-lattice capability kernel (Bell-LaPadula +
 # Biba) + attestation chain.  First open-source AI-agent runtime to
-# ship the full CHACE-class capability-hardening "advanced security" menu: seL4 CAmkES
+# ship the full DARPA-CHACE "advanced security" menu: seL4 CAmkES
 # component contract + Wasmtime WASM sandbox harness + eBPF LSM policy
 # example + Darwin sandbox-exec profile + OpenBSD pledge stub + Nix
 # reproducible recipe + distroless Dockerfile + Sigstore cosign +
@@ -947,7 +949,7 @@ microbench-v61: standalone-v61
 #   1. Latent CoT  (Coconut, arXiv:2412.06769; superposition theory 2026)
 #   2. EBT verifier (Gladstone et al., arXiv:2507.02092, ICLR 2026)
 #   3. HRM loop    (Sapient, arXiv:2506.21734)
-#   4. NSAttn attend  (DeepSeek, arXiv:2502.11089; FSA 2026)
+#   4. NSA attend  (DeepSeek, arXiv:2502.11089; FSA 2026)
 #   5. MTP draft   (DeepSeek-V3, arXiv:2412.19437; LK-tunes 2026)
 #   6. ARKV KV     (arXiv:2603.08727; SAGE-KV 2025)
 #
@@ -974,7 +976,7 @@ test-v62: standalone-v62
 	./creation_os_v62 --self-test
 
 check-v62: standalone-v62 test-v62
-	@echo "check-v62: OK (v62 Reasoning Fabric: latent-CoT + EBT + HRM + NSAttn + MTP + ARKV)"
+	@echo "check-v62: OK (v62 Reasoning Fabric: latent-CoT + EBT + HRM + NSA + MTP + ARKV)"
 
 microbench-v62: standalone-v62
 	./creation_os_v62 --bench
@@ -2016,6 +2018,55 @@ microbench-v58: standalone-v58
 # 2 on SKIP under --strict.
 verify-agent: standalone-v57
 	@bash scripts/v57/verify_agent.sh
+
+# ----------------------------------------------------------------------
+# doctor — one-command repo health rollup (Apple-tier DX).
+#
+# Wraps `cos doctor`: license-check + verify-agent + hardening-check +
+# CHACE aggregator + License-Bound Receipt sample.  Prints a single
+# sectioned summary with PASS/WARN/FAIL per lane.  Non-zero exit iff a
+# blocking lane (license, verify-agent) fails.
+# ----------------------------------------------------------------------
+doctor: cos
+	@./cos doctor
+
+# ----------------------------------------------------------------------
+# completion-install — drop shell completion into the right place for
+# the caller's shell (bash / zsh / fish).  Respects $SHELL.  Never
+# overwrites an existing file without `FORCE=1`.
+# ----------------------------------------------------------------------
+completion-install:
+	@set -e; \
+	shell_name="$${SHELL##*/}"; \
+	case "$$shell_name" in \
+	  bash) src="scripts/completion/cos.bash"; \
+	        dst="$$HOME/.local/share/bash-completion/completions/cos"; \
+	        mkdir -p "$$(dirname $$dst)"; \
+	        ;; \
+	  zsh)  src="scripts/completion/cos.zsh"; \
+	        dst="$$HOME/.zsh/completions/_cos"; \
+	        mkdir -p "$$(dirname $$dst)"; \
+	        ;; \
+	  fish) src="scripts/completion/cos.fish"; \
+	        dst="$$HOME/.config/fish/completions/cos.fish"; \
+	        mkdir -p "$$(dirname $$dst)"; \
+	        ;; \
+	  *)    echo "completion-install: unsupported shell '$$shell_name'"; \
+	        echo "  manual install: source scripts/completion/cos.bash|zsh"; \
+	        echo "                  or cp scripts/completion/cos.fish ~/.config/fish/completions/"; \
+	        exit 0 ;; \
+	esac; \
+	if [ -e "$$dst" ] && [ "$$FORCE" != "1" ]; then \
+	  echo "completion-install: $$dst already exists (re-run with FORCE=1 to overwrite)"; \
+	  exit 0; \
+	fi; \
+	cp -f "$$src" "$$dst"; \
+	echo "completion-install: installed $$shell_name completion → $$dst"; \
+	case "$$shell_name" in \
+	  bash) echo "  next: add to ~/.bashrc:  source \"$$dst\"" ;; \
+	  zsh)  echo "  next: add to ~/.zshrc:   fpath=($$HOME/.zsh/completions \$$fpath); autoload -U compinit && compinit" ;; \
+	  fish) echo "  next: restart fish or run:  source \"$$dst\"" ;; \
+	esac
 
 test-mcp: standalone-mcp
 	./creation_os_mcp --self-test

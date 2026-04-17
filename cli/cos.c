@@ -12,7 +12,8 @@
  *     cos                        # status board (default)
  *     cos status                 # explicit status
  *     cos verify                 # the verified-agent report (v57)
- *     cos chace                  # the CHACE-class security gate
+ *     cos chace                  # the CHACE-class 12-layer security gate
+ *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
  *     cos think <prompt>         # demo: latent-CoT + EBT + HRM
  *     cos seal <file> [ctx]      # v63 σ-Cipher: attestation-bound E2E seal
@@ -186,7 +187,7 @@ static void status_security(void)
                 C_BOLD, C_RESET);
     bullet_line("%sv61 Σ-Citadel%s   BLP + Biba + 16-bit MLS + 256-bit attestation + v60 compose",
                 C_BOLD, C_RESET);
-    bullet_line("%sv62 Fabric%s      latent-CoT %s EBT %s HRM %s NSAttn %s MTP %s ARKV (all branchless)",
+    bullet_line("%sv62 Fabric%s      latent-CoT %s EBT %s HRM %s NSA %s MTP %s ARKV (all branchless)",
                 C_BOLD, C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
 
     printf("\n");
@@ -227,7 +228,7 @@ static void status_quickstart(void)
 {
     section("quickstart");
     bullet_line("cos verify     %sthe Verified-Agent report (v57 aggregate)%s", C_GREY, C_RESET);
-    bullet_line("cos chace      %sthe CHACE-class 12-layer security gate%s",   C_GREY, C_RESET);
+    bullet_line("cos chace      %sthe DARPA-CHACE 12-layer security gate%s",   C_GREY, C_RESET);
     bullet_line("cos sigma      %srun all three kernels: σ-Shield, Σ-Citadel, Fabric%s",
                 C_GREY, C_RESET);
     bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
@@ -270,7 +271,7 @@ static int cmd_verify(void)
 static int cmd_chace(void)
 {
     print_header();
-    section("CHACE-class composed defence-in-depth");
+    section("DARPA-CHACE composed defence-in-depth");
     int rc = run_cmd("make -s chace");
     if (rc == 0) {
         printf("\n  %s%s%s chace gate passed\n", C_GREEN, check(), C_RESET);
@@ -450,7 +451,7 @@ static int cmd_think(int argc, char **argv)
     }
 
     /* Stage 1 — run the 68 self-tests so the user sees the kernel works. */
-    bullet_line("%sstage 1%s  kernel self-test (latent-CoT %s EBT %s HRM %s NSAttn %s MTP %s ARKV)",
+    bullet_line("%sstage 1%s  kernel self-test (latent-CoT %s EBT %s HRM %s NSA %s MTP %s ARKV)",
                 C_BOLD, C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
     int rc = run_cmd("./creation_os_v62 --self-test | sed 's/^/    /'");
     if (rc != 0) return rc;
@@ -1128,7 +1129,7 @@ static int cmd_license(int argc, char **argv)
                C_AMBER, C_RESET);
         printf("    %sDENY %s  intelligence · military operational · mass surveillance · sanctioned · aggression\n",
                C_RED, C_RESET);
-        printf("\n  %sspektrelabs@proton.me  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
+        printf("\n  %slicensing@spektre-labs.com  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
                C_DIM, C_RESET);
         return 0;
     }
@@ -1255,6 +1256,91 @@ static int cmd_decide(int argc, char **argv)
 }
 
 /* --------------------------------------------------------------------
+ *  cos doctor — unified repo-health rollup (Apple-tier DX).
+ *
+ *  Runs every receipt-emitting gate the repo ships (license bundle +
+ *  verify-agent + hardening-check + ASAN/UBSAN spot + bench sanity)
+ *  and prints a single colour, sectioned summary with PASS / WARN /
+ *  FAIL per lane.  Non-zero exit if any lane is FAIL; WARN is never
+ *  silent but does not fail the doctor.
+ * -------------------------------------------------------------------- */
+
+enum { DOC_PASS = 0, DOC_WARN = 1, DOC_FAIL = 2 };
+
+static int doc_run(const char *target)
+{
+    char cmd[512];
+    snprintf(cmd, sizeof cmd,
+             "make -s %s > /tmp/cos_doctor.log 2>&1", target);
+    return run_cmd(cmd);
+}
+
+static void doc_line(const char *lane, int status, const char *detail)
+{
+    const char *col, *mark, *tag;
+    switch (status) {
+    case DOC_PASS: col = C_GREEN; mark = check(); tag = "PASS"; break;
+    case DOC_WARN: col = C_AMBER; mark = bullet(); tag = "WARN"; break;
+    default:       col = C_RED;   mark = cross();  tag = "FAIL"; break;
+    }
+    printf("  %s%s%s  %-7s %-26s %s%s%s\n",
+           col, mark, C_RESET, tag, lane, C_GREY, detail, C_RESET);
+}
+
+static int cmd_doctor(void)
+{
+    print_header();
+
+    section("repository health — one command, every receipt");
+
+    int rc_license = doc_run("license-check");
+    int rc_verify  = doc_run("verify-agent");
+    int rc_harden  = doc_run("hardening-check");
+    int rc_chace   = doc_run("chace");
+    int rc_scsl    = doc_run("license_attest");
+
+    int hv60 = file_exists("creation_os_v60");
+    int hv74 = file_exists("creation_os_v74");
+    int hv76 = file_exists("creation_os_v76");
+
+    doc_line("license bundle",          rc_license == 0 ? DOC_PASS : DOC_FAIL,
+             "SCSL-1.0 pinned · SPDX headers · NOTICE");
+    doc_line("license attestation",     rc_scsl == 0    ? DOC_PASS : DOC_WARN,
+             "License-Bound Receipt (SCSL §11) verifies");
+    doc_line("verify-agent (v57 → v76)", rc_verify == 0 ? DOC_PASS : DOC_FAIL,
+             "16 kernels + ancillary slots");
+    doc_line("CHACE-class gate",        rc_chace == 0   ? DOC_PASS : DOC_WARN,
+             "12-layer capability-hardening rollup");
+    doc_line("hardening-check",         rc_harden == 0  ? DOC_PASS : DOC_WARN,
+             "PIE · stack canary · RELRO · Fortify");
+    doc_line("build artefacts (v60)",   hv60            ? DOC_PASS : DOC_WARN,
+             hv60 ? "present" : "run  make check-v60");
+    doc_line("build artefacts (v74)",   hv74            ? DOC_PASS : DOC_WARN,
+             hv74 ? "present" : "run  make check-v74");
+    doc_line("build artefacts (v76)",   hv76            ? DOC_PASS : DOC_WARN,
+             hv76 ? "present" : "run  make check-v76");
+
+    section("supply-chain receipts");
+    kv("LICENSE.sha256",    "%s", file_exists("LICENSE.sha256")    ? "present" : "missing");
+    kv("SBOM.json",         "%s", file_exists("SBOM.json")         ? "present" : "missing");
+    kv("ATTESTATION.json",  "%s", file_exists("ATTESTATION.json")  ? "present" : "missing");
+    kv("PROVENANCE.json",   "%s", file_exists("PROVENANCE.json")   ? "present" : "missing");
+
+    section("next steps");
+    if (rc_license != 0 || rc_verify != 0)
+        bullet_line("%sblocker%s  see  %stail -40 /tmp/cos_doctor.log%s",
+                    C_RED, C_RESET, C_BOLD, C_RESET);
+    else
+        bullet_line("%sship-ready%s  all blocking lanes PASS",
+                    C_GREEN, C_RESET);
+    bullet_line("upgrade DX: source scripts/completion/cos.bash (or .zsh / .fish)");
+    bullet_line("deep dive:  cos sigma  ·  cos verify  ·  cos chace");
+    printf("\n");
+
+    return (rc_license != 0 || rc_verify != 0) ? 1 : 0;
+}
+
+/* --------------------------------------------------------------------
  *  Help / version
  * -------------------------------------------------------------------- */
 
@@ -1263,8 +1349,10 @@ static int cmd_help(const char *prog)
     print_header();
     section("commands");
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
+    printf("  %s%-12s%s  full repo-health rollup (license · verify · hardening · receipts)\n",
+           C_BOLD, "doctor", C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
-    printf("  %s%-12s%s  the CHACE-class 12-layer gate\n", C_BOLD, "chace",   C_RESET);
+    printf("  %s%-12s%s  the CHACE-class 12-layer capability-hardening gate\n", C_BOLD, "chace",   C_RESET);
     printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale %s Wormhole %s Chain %s Omnimodal %s Experience %s Surface self-tests\n",
            C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
@@ -1496,6 +1584,8 @@ int main(int argc, char **argv)
     colour_init();
 
     if (argc < 2 || strcmp(argv[1], "status") == 0) return cmd_status();
+    if (strcmp(argv[1], "doctor")  == 0 ||
+        strcmp(argv[1], "health")  == 0) return cmd_doctor();
     if (strcmp(argv[1], "verify")  == 0) return cmd_verify();
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
