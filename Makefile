@@ -3957,6 +3957,31 @@ check-v176-simulator-dream-train: creation_os_v176_simulator
 check-v176: check-v176-simulator-dream-train
 	@echo "check-v176: OK (σ-simulator kernel)"
 
+# --- v177 σ-Compress (σ-aware pruning + mixed precision + merging) ------
+# Closed-form compression of a synthetic 16×64 BitNet-like
+# stack.  Three σ-aware passes: (1) prune neurons whose
+# σ_impact < prune_tau (0.05) — they contribute nothing to
+# calibration; (2) assign mixed precision per layer by
+# σ_layer (INT8 if ≤ 0.15; INT4 if ≤ 0.40; INT2 otherwise);
+# (3) merge adjacent layers sharing a σ-profile (|Δσ| ≤
+# merge_tau = 0.03) at the same precision.  Exit invariant:
+# σ_calibration drift ≤ drift_budget_pct = 5 %, with a
+# material (≥ 30 %) parameter drop.  v177.1 emits a real
+# models/v177/bitnet_1b_sigma_pruned.gguf.
+V177_INC  = -Isrc/v177
+V177_SRCS = src/v177/compress.c
+
+creation_os_v177_compress: $(V177_SRCS) src/v177/main.c
+	$(CC) $(CFLAGS) $(V177_INC) -o $@ \
+	    $(V177_SRCS) src/v177/main.c $(LDFLAGS)
+
+check-v177-compress-sigma-prune: creation_os_v177_compress
+	@bash benchmarks/v177/check_v177_compress_sigma_prune.sh
+	@echo "check-v177-compress-sigma-prune: OK (prune + mixed prec + merge)"
+
+check-v177: check-v177-compress-sigma-prune
+	@echo "check-v177: OK (σ-compress kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
