@@ -3712,6 +3712,36 @@ check-v167-governance-policy-apply: creation_os_v167_governance
 check-v167: check-v167-governance-policy-apply
 	@echo "check-v167: OK (σ-governance-api kernel)"
 
+# --- v168 σ-Marketplace (registry + reputation σ) -----------------------
+# Skill / kernel / plugin marketplace.  Baked registry of 6
+# artifacts across all three kinds, each carrying a
+# deterministic FNV-sha (8 bytes hex), tests_passed/total,
+# user_reports_total/negative, and benchmark_delta_pct.
+# σ_reputation = clamp(0.6·fail_rate + 0.3·neg_rate +
+# 0.1·bench_penalty, 0, 1).  σ-gated install refuses any
+# artifact with σ_reputation > 0.50 unless `--force` overrides;
+# the override is logged as status=forced.  Publish appends a
+# new artifact and recomputes σ.  A .cos-skill fixture
+# validator asserts the required file set is present.
+# v168.1 swaps the baked store for a real HTTPS registry and
+# computes real SHA-256 over a packed tarball.
+V168_INC  = -Isrc/v168
+V168_SRCS = src/v168/marketplace.c
+
+creation_os_v168_marketplace: $(V168_SRCS) src/v168/main.c
+	$(CC) $(CFLAGS) $(V168_INC) -o $@ \
+	    $(V168_SRCS) src/v168/main.c $(LDFLAGS)
+
+check-v168-marketplace-publish-install: creation_os_v168_marketplace
+	@bash benchmarks/v168/check_v168_marketplace_publish_install.sh
+	@echo "check-v168-marketplace-publish-install: OK (registry + reputation + σ-gated install)"
+
+check-v168: check-v168-marketplace-publish-install
+	@echo "check-v168: OK (σ-marketplace kernel)"
+
+check-v164-v168: check-v164 check-v165 check-v166 check-v167 check-v168
+	@echo "check-v164-v168: OK (plugin + edge + stream + governance + marketplace)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
