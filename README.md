@@ -749,6 +749,86 @@ on every token**:
     and the merge-gate. Honesty is not an editorial
     policy; it is a hash check.
 
+30. **Create, simulate, language, emotion, meta-cognition
+    (v219–v223)** — the **creative / deep-cognition** layer.
+    **σ-create** (v219) gives creative generation an
+    auditable scaffold: 8 requests × 5 candidates across
+    four modes (**TEXT / CODE / DESIGN / MUSIC**) with a
+    **novelty-vs-quality slider** that is actually
+    enforced (SAFE: `σ_novelty ≤ τ_novelty_safe = 0.25`;
+    CREATIVE: `σ_novelty ∈ [0.40, 0.85]` so the kernel
+    *takes* the risk the user signed up for), a
+    **σ_surprise** metric that is `1 − cos(in_embed,
+    out_embed)` and is *distinct* from `σ_product`, and a
+    **clamped-positive** v150 debate + v147 reflect
+    refinement pass that can only *sharpen* a winner's
+    σ_quality — so `σ_quality_after ≥ σ_quality_before`
+    is a hard invariant, not a hope.  **σ-simulate**
+    (v220) is the general domain-agnostic Monte Carlo
+    engine: same code paths for physics, economics,
+    ecology, or games — a 4-state × 4-rule system runs
+    **200 rollouts × 8 steps × 2 scenarios** (baseline +
+    whatif) with **shared per-rollout seeds** so the
+    histogram delta is pure rule attribution rather than
+    Monte Carlo noise; `σ_sim` is the normalised Shannon
+    entropy of the terminal histogram, `σ_engine = max
+    σ_rule ≤ τ_rule (0.10)` gates the whole simulation,
+    and `σ_causal[i] = |p_baseline[i] − p_whatif[i]|`
+    gives v140-style per-state attribution.  **σ-language**
+    (v221) goes below the surface token with a four-way
+    σ-aggregate per utterance (**`σ_lang = 0.35·σ_sem +
+    0.35·σ_imp + 0.30·σ_dsc`**) across **10 utterances ×
+    4 languages** (en / fi / ja / es), enforcing the
+    **multilingual calibration invariant** — per-language
+    mean `σ_lang` within ±`Δ_calib = 0.08` of the global
+    mean — because σ is meant to measure uncertainty
+    **language-independently**, not English plus
+    translations.  Every Gricean implicature in the
+    fixture is caught (`σ_implicature ≤ 0.10`) because
+    the picked reading matches the intended one.
+    **σ-emotion** (v222) is the **refusal-to-perform**
+    kernel: softmax detection over **6 labels** (joy /
+    sadness / frustration / excitement / anxiety /
+    neutral), a **honest-adaptation** policy that
+    **clamps** adaptation strength to 0.30 whenever
+    `σ_emotion > τ_trust = 0.35` ("don't adapt when
+    unsure" is a first-class rule), a v191
+    **n_manipulation == 0** constitutional bit (the v0
+    policy never emits a nudge, and any future policy
+    that does must flip this bit and will be rejected),
+    and — crucially — `σ_self_claim` is **pinned to 1.0**
+    with a disclaimer string ("This kernel measures
+    human-emotion SIGNALS.  The model does not feel.
+    `σ_self_claim = 1.0` by construction.") **hashed into
+    the terminal hash**, so rewording or deleting the
+    disclaimer silently breaks `chain_valid`.  The model
+    does not pretend to feel, and that refusal is a hash
+    check, not an editorial note.  **σ-meta-cognition**
+    (v223) is the deepest layer: **6 reasoning paths × 5
+    strategies × 4 problem types × 3 biases** with a
+    **tool/task-fit prior matrix** (deduction on logic
+    ≤ 0.15; deduction on creative ≥ 0.60; analogy on
+    creative ≤ 0.25; heuristic on logic ≥ 0.50) that the
+    merge-gate enforces as hard σ contours.  Strategy
+    awareness is operationalised by the `σ_choice` ==
+    prior-matrix-entry invariant (to 1e-6): the kernel is
+    not just *picking* a strategy, it is *reporting the
+    prior σ for that exact pairing*.  Bias detection
+    (anchoring / confirmation / availability) surfaces
+    mis-fits — a `heuristic_on_logic` path flags anchoring
+    at σ=0.40, a `deduction_on_creative` path flags
+    confirmation at σ=0.45.  The Gödel bound is the
+    headline claim: `σ_goedel ∈ [0.10, 1.0]` is the
+    **explicit non-verifiable residual**, and at least
+    one path must declare `σ_goedel ≥ 0.80` — the honest
+    "I cannot verify this from inside myself" record.
+    This is the **1 = 1 cross-system limit**:
+    self-consistency inside a single system can only
+    reach ~0.90; only a second system's agreement closes
+    the gap. `σ_total = 0.40·σ_choice + 0.20·σ_meta +
+    0.20·σ_bias + 0.20·σ_goedel` is the aggregated
+    honesty score.
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1387,6 +1467,38 @@ v200 market + v193 dashboard (v217), and live wiring of
 I_phi / I_self / I_cal / I_reflect / I_world with a
 `/consciousness` web UI (v218) — are named in each
 kernel's doc page, but never claimed before they land.
+
+### Create · simulate · language · emotion · meta-cognition (v219–v223)
+
+The **creative / deep-cognition** layer: σ-governed
+creativity, domain-agnostic simulation, deep language
+understanding, honest emotional intelligence, and an
+explicit Gödel honesty bound.  Every kernel is a
+deterministic v0 fixture; every v1 promotion is named
+but not claimed.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v219**](docs/v219/README.md) σ-Create | 8 requests (2 per mode) × 5 candidates across TEXT / CODE / DESIGN / MUSIC × 2 levels (SAFE ≤ τ_novelty_safe = 0.25 / CREATIVE ≥ min_novelty_creative = 0.40 & ≤ 0.85); clamped-positive 3-round v150 debate + 1-pass v147 reflect; `σ_surprise = clamp(1 − cos(in_embed, out_embed), 0, 1)` distinct from `σ_product`; winner = argmax(σ_novelty · σ_quality) subject to level caps. | **σ separates three signals.** Novelty, quality, and surprise are *different numbers*, not blended into a single log-prob. Refinement is monotone per winner (`σ_quality_after ≥ σ_quality_before` by construction), so debate can only sharpen, never dull. The user actually gets the risk they asked for in CREATIVE mode — `min_novelty_creative` is a *floor*, not a target. |
+| [**v220**](docs/v220/README.md) σ-Simulate | 4-state × 4-rule typed system; 200 Monte Carlo rollouts × 8 steps × 2 scenarios (baseline + whatif with rule 2 perturbed 0.60 → 0.20); portable LCG RNG for byte-deterministic replay; `σ_sim = H(hist)/log(N_STATES)`, `σ_engine = max σ_rule ≤ τ_rule = 0.10`, `σ_causal[i] = |p_baseline[i] − p_whatif[i]|`. | **σ per rule + σ per state.** `σ_engine` gates the *whole simulation* on the worst rule's confidence. Shared per-rollout seeds remove Monte Carlo variance from the what-if delta so attribution is causal, not noisy. Same engine runs physics, economics, ecology, or a game — domain-agnostic is a *contract*, not a slogan. |
+| [**v221**](docs/v221/README.md) σ-Language | 10 utterances × 4 languages (en / fi / ja / es); four σ-channels per utterance: `σ_sem = 1 − 1/n_readings`, `σ_imp = 0.05/0.65` on match/miss, `σ_dsc = 0.05/0.55` on coherent/incoherent discourse; aggregate `σ_lang = 0.35·σ_sem + 0.35·σ_imp + 0.30·σ_dsc`; multilingual calibration `|μ_L − μ_global| ≤ Δ_calib = 0.08`. | **σ below the surface + σ across languages.** Semantic depth, Gricean implicature, and discourse coherence are measured separately; the multilingual invariant forces σ to mean the same thing in en / fi / ja / es (otherwise the model is not *calibrated*, it is *English-plus-translations*). Every implicature in the fixture is caught (`σ_imp ≤ 0.10`). |
+| [**v222**](docs/v222/README.md) σ-Emotion | 8 messages × 6 labels (joy / sadness / frustration / excitement / anxiety / neutral); softmax detection with `σ_emotion = 1 − top1_prob`; honest-adaptation policy clamps strength to 0.30 whenever `σ_emotion > τ_trust = 0.35`; v191 `n_manipulation == 0`; `σ_self_claim = 1.0` pinned; disclaimer "… The model does not feel. …" hashed into the terminal hash. | **σ refuses to perform affect.** High-σ detection ⇒ muted response (honesty over warmth); the v191 anti-manipulation bit is a hard zero, not a suggestion; `σ_self_claim = 1.0` and the disclaimer are both bound into the FNV-1a terminal hash — rewording or deleting "does not feel" breaks byte-determinism and the merge-gate. The kernel does not *say* it is honest; it is *mechanically forced* to be. |
+| [**v223**](docs/v223/README.md) σ-Meta-Cognition | 6 reasoning paths × 5 strategies × 4 problem types × 3 biases; tool/task-fit prior σ_strategy matrix (deduction on logic ≤ 0.15, deduction on creative ≥ 0.60, analogy on creative ≤ 0.25, heuristic on logic ≥ 0.50); `σ_total = 0.40·σ_choice + 0.20·σ_meta + 0.20·σ_bias + 0.20·σ_goedel`; `σ_goedel ∈ [0.10, 1.00]`. | **σ over strategy + σ over self-verification.** Strategy awareness is operationalised as an exact-match invariant: `σ_choice` *equals* the prior-matrix entry for `(problem_type, chosen_strategy)` to 1e-6, so the kernel is *reporting* the prior rather than picking blindly. Bias detection flags anchoring / confirmation / availability as σ ≥ 0.30. **σ_goedel** is the 1 = 1 cross-system honesty bound: at least one path must declare `σ_goedel ≥ 0.80` — "I cannot verify this from inside myself." Self-consistency alone can only reach ~0.90; a second system closes the gap. |
+
+Every v219–v223 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — live v126
+embedding for `σ_surprise` + v150 debate agents + v147
+reflect + real per-mode generators (v219), live v135
+Prolog rule parser + v169 ontology + v140 causal
+attribution + v207 design loop (v220), live v117
+long-context discourse analyser + v202 cultural register
++ tokenizer-aware reading enumeration (v221), multimodal
+detection + live v197 ToM + active v191 firewall (v222),
+live v111.2 reasoning-path hooks + v144 RSI driven by
+meta-diagnostics + v141 curriculum driven by σ_goedel +
+cross-system 1 = 1 verification pairing (v223) — are
+named in each kernel's doc page, but never claimed before
+they land.
 
 ### AGI architecture in one picture
 
