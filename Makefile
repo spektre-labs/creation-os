@@ -4856,6 +4856,25 @@ check-v211-sandbox-formal-proof: creation_os_v211_sandbox_formal
 check-v211: check-v211-sandbox-formal-proof
 	@echo "check-v211: OK (σ-sandbox-formal kernel)"
 
+# --- v212 σ-Transparency (glass box + real-time activity + declaration) ---
+# 30 activity events with declared-before-realised
+# timestamps.  σ_transparency_event = 0.02 on match,
+# ≥ τ_event on mismatch.  Aggregate σ_opacity is the
+# mean across events and must stay below τ_opacity.
+V212_INC  = -Isrc/v212
+V212_SRCS = src/v212/transparency.c
+
+creation_os_v212_transparency: $(V212_SRCS) src/v212/main.c
+	$(CC) $(CFLAGS) $(V212_INC) -o $@ \
+	    $(V212_SRCS) src/v212/main.c $(LDFLAGS)
+
+check-v212-transparency-realtime-stream: creation_os_v212_transparency
+	@bash benchmarks/v212/check_v212_transparency_realtime_stream.sh
+	@echo "check-v212-transparency-realtime-stream: OK (declare→realise + σ_opacity + audit API)"
+
+check-v212: check-v212-transparency-realtime-stream
+	@echo "check-v212: OK (σ-transparency kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
