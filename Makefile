@@ -335,7 +335,8 @@ merge-gate:
 	@$(MAKE) check-v124-v126
 	@$(MAKE) check-v129
 	@$(MAKE) check-v130
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec)"
+	@$(MAKE) check-v131
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec + v131 σ-temporal)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2876,6 +2877,24 @@ check-v130-codec-roundtrip: creation_os_v130_codec
 
 check-v130: check-v130-codec-roundtrip
 	@echo "check-v130: OK (σ-codec kernel)"
+
+# --- v131 σ-Temporal (timeline + σ-trend + decay + spikes) ---
+# Pure-C timeline + OLS trend + σ-weighted exponential decay +
+# spike detection + deadline-σ prediction.  v131.0 is in-memory;
+# v131.1 binds this to v115 SQLite for cross-session timelines.
+V131_INC          = -Isrc/v131
+V131_TEMPORAL_SRCS = src/v131/temporal.c
+
+creation_os_v131_temporal: $(V131_TEMPORAL_SRCS) src/v131/main.c
+	$(CC) $(CFLAGS) $(V131_INC) -o $@ \
+	    $(V131_TEMPORAL_SRCS) src/v131/main.c $(LDFLAGS)
+
+check-v131-temporal-recall: creation_os_v131_temporal
+	@bash benchmarks/v131/check_v131_temporal_recall.sh
+	@echo "check-v131-temporal-recall: OK (window + trend + decay + spike + deadline)"
+
+check-v131: check-v131-temporal-recall
+	@echo "check-v131: OK (σ-temporal kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
