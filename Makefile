@@ -4460,6 +4460,33 @@ check-v194-horizon-degradation-detect: creation_os_v194_horizon
 check-v194: check-v194-horizon-degradation-detect
 	@echo "check-v194: OK (σ-horizon kernel)"
 
+# --- v195 σ-Recover (error classification + per-class fix) ---
+# Five error classes (HALLUCINATION, CAPABILITY_GAP,
+# PLANNING_ERROR, TOOL_FAILURE, CONTEXT_LOSS) each map to a
+# canonical recovery operator set: v180+v125 for hallucination,
+# v141+v145 for capability gap, v121 replan, v159 heal+retry,
+# v194 checkpoint.  Every incident logs a hash-chained record
+# of (error, recovery).  The v0 demonstrator runs two passes
+# over the same fixture so the v174 flywheel contract is
+# exercisable: pass-1 consumes strictly fewer ops than pass-0.
+# Calibration feedback: per-domain ECE strictly drops wherever
+# a hallucination appeared, because v187 is rebinned on the
+# signal.  Merge-gate: 5/5 classes, canonical partitioning,
+# strict learning gain, strict ECE drop on every domain.
+V195_INC  = -Isrc/v195
+V195_SRCS = src/v195/recover.c
+
+creation_os_v195_recover: $(V195_SRCS) src/v195/main.c
+	$(CC) $(CFLAGS) $(V195_INC) -o $@ \
+	    $(V195_SRCS) src/v195/main.c $(LDFLAGS)
+
+check-v195-recover-error-classify: creation_os_v195_recover
+	@bash benchmarks/v195/check_v195_recover_error_classify.sh
+	@echo "check-v195-recover-error-classify: OK (5 classes + canonical + ECE drop + learning)"
+
+check-v195: check-v195-recover-error-classify
+	@echo "check-v195: OK (σ-recover kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
