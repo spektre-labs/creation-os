@@ -4044,6 +4044,33 @@ check-v179-sae-feature-correlation: creation_os_v179_interpret
 check-v179: check-v179-sae-feature-correlation
 	@echo "check-v179: OK (σ-interpret kernel)"
 
+# --- v180 σ-Steer (activation steering + firmware removal + persona) ----
+# 48-sample / 64-dim fixture with three persisted unit-norm
+# direction vectors: truthful (pulls hidden state away from
+# hallucination), no_firmware (suppresses disclaimer /
+# self-minimization features), expert (v132 persona level ladder).
+# The σ-gate fires only when σ_before ≥ τ_high_sigma, so low-σ
+# samples are left ≈ untouched.  Truthful steering drops mean σ
+# on the high-σ bucket by ≥ 10 % relative; no_firmware cuts the
+# firmware-token rate by ≥ 25 %; the expert ladder produces
+# monotonically-increasing expert-lexicon scores across the three
+# persona levels.  v180.1 wires real activation hooks through the
+# v101 specialist bridge and persists SAE-derived direction
+# vectors to `models/v180/steer_*.bin`.
+V180_INC  = -Isrc/v180
+V180_SRCS = src/v180/steer.c
+
+creation_os_v180_steer: $(V180_SRCS) src/v180/main.c
+	$(CC) $(CFLAGS) $(V180_INC) -o $@ \
+	    $(V180_SRCS) src/v180/main.c $(LDFLAGS)
+
+check-v180-steer-truthful-sigma-drop: creation_os_v180_steer
+	@bash benchmarks/v180/check_v180_steer_truthful_sigma_drop.sh
+	@echo "check-v180-steer-truthful-sigma-drop: OK (truthful + firmware + expert)"
+
+check-v180: check-v180-steer-truthful-sigma-drop
+	@echo "check-v180: OK (σ-steer kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
