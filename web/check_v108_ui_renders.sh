@@ -61,6 +61,11 @@ grep -q '/v1/models'           <<<"$B" && pass "fetches /v1/models"            |
 grep -qi 'sigma_product\|σ_product\|sp-sigma' <<<"$B" && pass "σ_product summary present" || fail "σ_product summary missing"
 grep -qi 'abstain' <<<"$B" && pass "abstain indicator present"                             || fail "abstain indicator missing"
 
+# 4b. v114 σ-swarm panel surfaces (renderSwarm + winner + resonance)
+grep -q 'renderSwarm'          <<<"$B" && pass "v114 swarm renderer present"   || fail "v114 swarm renderer missing"
+grep -q 'creation_os.*swarm'   <<<"$B" && pass "v114 swarm block consumed"     || fail "v114 swarm consumer missing"
+grep -qi 'resonance'           <<<"$B" && pass "v114 resonance signal present" || fail "v114 resonance signal missing"
+
 # 5. Live server stage (optional)
 BIN="${COS_V106_SERVER_BIN:-./creation_os_server}"
 if [ -x "$BIN" ] && command -v curl >/dev/null 2>&1; then

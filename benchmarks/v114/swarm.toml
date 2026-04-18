@@ -1,0 +1,17 @@
+# Example swarm config used by v114 merge-gate smoke tests.
+# None of these GGUF paths need to exist for the stub runner to
+# exercise the arbitration layer — they're just identity tags.
+
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[swarm]
+specialists = [
+  { name = "reasoning", gguf = "bitnet-2b.gguf", role = "math, logic, reasoning" },
+  { name = "code",      gguf = "qwen-7b.gguf",   role = "programming, python, code" },
+  { name = "general",   gguf = "llama-8b.gguf",  role = "knowledge, chat, general" }
+]
+routing = "sigma_product_min"
+consensus_threshold = 2
+consensus_epsilon = 0.15
