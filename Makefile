@@ -4958,6 +4958,25 @@ check-v216-quorum-gradual-consensus: creation_os_v216_quorum
 check-v216: check-v216-quorum-gradual-consensus
 	@echo "check-v216: OK (σ-quorum kernel)"
 
+# --- v217 σ-Ecosystem (trophic levels + resource flow + symbiosis) ---
+# 4 trophic levels (producer/consumer/decomposer/predator),
+# 5 symbiotic pairs (mutual/compete/commensal), σ_ecosystem
+# = 0.4·dominance + 0.4·balance + 0.2·symbiosis,
+# K_eff = 1 − σ_ecosystem.
+V217_INC  = -Isrc/v217
+V217_SRCS = src/v217/ecosystem.c
+
+creation_os_v217_ecosystem: $(V217_SRCS) src/v217/main.c
+	$(CC) $(CFLAGS) $(V217_INC) -o $@ \
+	    $(V217_SRCS) src/v217/main.c $(LDFLAGS)
+
+check-v217-ecosystem-trophic-balance: creation_os_v217_ecosystem
+	@bash benchmarks/v217/check_v217_ecosystem_trophic_balance.sh
+	@echo "check-v217-ecosystem-trophic-balance: OK (no dominance + healthy K_eff)"
+
+check-v217: check-v217-ecosystem-trophic-balance
+	@echo "check-v217: OK (σ-ecosystem kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
