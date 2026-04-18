@@ -4920,6 +4920,25 @@ check-v214-swarm-evolve-speciation: creation_os_v214_swarm_evolve
 check-v214: check-v214-swarm-evolve-speciation
 	@echo "check-v214: OK (σ-swarm-evolve kernel)"
 
+# --- v215 σ-Stigmergy (shared environment + σ-pheromone) ---
+# 6 trails (4 true, 2 false) × 20 steps.  Closed-form
+# decay Σ_k (1-σ_k)·e^{-λ·(t_final-t_k)} normalised; τ_trail
+# gates survival, ≥ 3 distinct reinforcer nodes gates
+# trail formation.
+V215_INC  = -Isrc/v215
+V215_SRCS = src/v215/stigmergy.c
+
+creation_os_v215_stigmergy: $(V215_SRCS) src/v215/main.c
+	$(CC) $(CFLAGS) $(V215_INC) -o $@ \
+	    $(V215_SRCS) src/v215/main.c $(LDFLAGS)
+
+check-v215-stigmergy-trail-form: creation_os_v215_stigmergy
+	@bash benchmarks/v215/check_v215_stigmergy_trail_form.sh
+	@echo "check-v215-stigmergy-trail-form: OK (pheromone decay + trail formation)"
+
+check-v215: check-v215-stigmergy-trail-form
+	@echo "check-v215: OK (σ-stigmergy kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
