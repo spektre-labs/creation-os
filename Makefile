@@ -3774,6 +3774,30 @@ check-v169-ontology-rdf-extract: creation_os_v169_ontology
 check-v169: check-v169-ontology-rdf-extract
 	@echo "check-v169: OK (σ-ontology kernel)"
 
+# --- v170 σ-Transfer (cross-domain transfer + negative-transfer rollback) ---
+# Eight baked domains (math, physics, chemistry, biology, code,
+# logic, history, poetry) in a deterministic 4-D embedding
+# space.  v170 picks the nearest source with σ_source ≤ τ_src
+# whose gap to σ_target is ≥ δ, applies a closed-form
+# σ-delta (improvement shrinks exponentially with distance;
+# penalty if distance > d_max), rolls back via v124 when σ
+# rises, and ensembles the k=2 nearest strong neighbours for
+# zero-shot adaptation to unseen domains.  v170.1 swaps the
+# closed-form model for real LoRA-adapter composition.
+V170_INC  = -Isrc/v170
+V170_SRCS = src/v170/transfer.c
+
+creation_os_v170_transfer: $(V170_SRCS) src/v170/main.c
+	$(CC) $(CFLAGS) $(V170_INC) -o $@ \
+	    $(V170_SRCS) src/v170/main.c $(LDFLAGS)
+
+check-v170-transfer-cross-domain: creation_os_v170_transfer
+	@bash benchmarks/v170/check_v170_transfer_cross_domain.sh
+	@echo "check-v170-transfer-cross-domain: OK (decide + apply + rollback + zero-shot)"
+
+check-v170: check-v170-transfer-cross-domain
+	@echo "check-v170: OK (σ-transfer kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
