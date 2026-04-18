@@ -3610,6 +3610,31 @@ check-v163: check-v163-evolve-pareto-converge
 check-v159-v163: check-v159 check-v160 check-v161 check-v162 check-v163
 	@echo "check-v159-v163: OK (heal + telemetry + adversarial-train + compose + evolve)"
 
+# --- v164 σ-Plugin (C ABI + sandbox + registry + official plugins) ------
+# Deterministic plugin host.  Ships 4 officially-baked plugins
+# (web-search, calculator, file-reader, git), each with a manifest
+# that declares required capabilities (NETWORK / FILE_READ /
+# FILE_WRITE / SUBPROCESS) and σ_impact.  The sandbox enforces
+# manifest-vs-grant cap masking (missing cap → refused, σ = 1.0),
+# a hard timeout_ms ceiling, and a permanent refusal of the
+# MODEL_WEIGHTS cap.  The registry tracks σ_reputation as a
+# ring-buffered geomean of the last 16 σ_plugin observations.
+# v164.1 swaps the baked dispatcher for real dlopen + fork +
+# seccomp-bpf and wires `cos plugin install github.com/...`.
+V164_INC  = -Isrc/v164
+V164_SRCS = src/v164/plugin.c
+
+creation_os_v164_plugin: $(V164_SRCS) src/v164/main.c
+	$(CC) $(CFLAGS) $(V164_INC) -o $@ \
+	    $(V164_SRCS) src/v164/main.c $(LDFLAGS)
+
+check-v164-plugin-load-unload: creation_os_v164_plugin
+	@bash benchmarks/v164/check_v164_plugin_load_unload.sh
+	@echo "check-v164-plugin-load-unload: OK (ABI + sandbox + registry + hot-swap)"
+
+check-v164: check-v164-plugin-load-unload
+	@echo "check-v164: OK (σ-plugin kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
