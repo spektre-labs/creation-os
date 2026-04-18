@@ -5189,6 +5189,27 @@ check-v227-entropy-decomposition: creation_os_v227_entropy
 check-v227: check-v227-entropy-decomposition
 	@echo "check-v227: OK (σ-entropy kernel)"
 
+# --- v228 σ-Unified (field equation + conservation + phase transitions) ---
+# dσ/dt = −α·K_eff + β·noise + γ·interaction, 100 steps.
+# Noether conservation K_eff · τ = C enforced by τ(t) :=
+# C/K_eff(t).  Phase transition at K_crit = 0.5.
+V228_INC  = -Isrc/v228
+V228_SRCS = src/v228/unified.c
+
+creation_os_v228_unified: $(V228_SRCS) src/v228/main.c
+	$(CC) $(CFLAGS) $(V228_INC) -o $@ \
+	    $(V228_SRCS) src/v228/main.c $(LDFLAGS)
+
+check-v228-unified-field-conservation: creation_os_v228_unified
+	@bash benchmarks/v228/check_v228_unified_field_conservation.sh
+	@echo "check-v228-unified-field-conservation: OK (field eq + conservation + phase)"
+
+check-v228: check-v228-unified-field-conservation
+	@echo "check-v228: OK (σ-unified kernel)"
+
+check-v224-v228: check-v224 check-v225 check-v226 check-v227 check-v228
+	@echo "check-v224-v228: OK (tensor + fractal + attention + entropy + unified)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
