@@ -22,6 +22,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 
 static inline double clamp01(double x)
@@ -29,6 +30,71 @@ static inline double clamp01(double x)
     if (x < 0.0) return 0.0;
     if (x > 1.0) return 1.0;
     return x;
+}
+
+/* --- default σ-aggregator (v105) -------------------------------------- */
+
+/* Process-wide default.  The initial value is resolved lazily from the
+ * COS_V101_AGG env var on the first call to `cos_v101_get_default_aggregator`
+ * or `cos_v101_sigma_from_logits`.  We store a sentinel `-1` to indicate
+ * "uninitialised" so the env-var override only runs once.  Use of plain
+ * `int` (instead of the enum typedef) is deliberate — we want a value
+ * outside the enum range as the sentinel.
+ */
+static int s_default_agg = -1;  /* -1 = not yet resolved */
+
+static int resolve_default_aggregator_env(void)
+{
+    const char *e = getenv("COS_V101_AGG");
+    if (!e || !*e) return (int)COS_V101_AGG_PRODUCT;  /* v105 default */
+    /* Case-insensitive compare on short strings. */
+    if ((e[0] == 'm' || e[0] == 'M') &&
+        (e[1] == 'e' || e[1] == 'E') &&
+        (e[2] == 'a' || e[2] == 'A') &&
+        (e[3] == 'n' || e[3] == 'N') &&
+        e[4] == '\0') {
+        return (int)COS_V101_AGG_MEAN;
+    }
+    if ((e[0] == 'p' || e[0] == 'P') &&
+        (e[1] == 'r' || e[1] == 'R') &&
+        (e[2] == 'o' || e[2] == 'O') &&
+        (e[3] == 'd' || e[3] == 'D') &&
+        (e[4] == 'u' || e[4] == 'U') &&
+        (e[5] == 'c' || e[5] == 'C') &&
+        (e[6] == 't' || e[6] == 'T') &&
+        e[7] == '\0') {
+        return (int)COS_V101_AGG_PRODUCT;
+    }
+    /* Unrecognised → v105 default. */
+    return (int)COS_V101_AGG_PRODUCT;
+}
+
+cos_v101_sigma_agg_t cos_v101_get_default_aggregator(void)
+{
+    int cur = s_default_agg;
+    if (cur == -1) {
+        cur = resolve_default_aggregator_env();
+        s_default_agg = cur;
+    }
+    return (cos_v101_sigma_agg_t)cur;
+}
+
+cos_v101_sigma_agg_t cos_v101_set_default_aggregator(cos_v101_sigma_agg_t agg)
+{
+    cos_v101_sigma_agg_t prev = cos_v101_get_default_aggregator();
+    if (agg == COS_V101_AGG_MEAN || agg == COS_V101_AGG_PRODUCT) {
+        s_default_agg = (int)agg;
+    }
+    return prev;
+}
+
+const char *cos_v101_aggregator_name(cos_v101_sigma_agg_t agg)
+{
+    switch (agg) {
+    case COS_V101_AGG_MEAN:    return "mean";
+    case COS_V101_AGG_PRODUCT: return "product";
+    default:                   return "unknown";
+    }
 }
 
 /* Partial top-k: return the indices / values of the top-k logits (by value)
@@ -132,7 +198,8 @@ int cos_v101_sigma_from_logits(const float *logits, int n_vocab, cos_v101_sigma_
     out->n_effective  = (float)clamp01(exp(H) / (double)n_vocab);
     out->logit_std    = (float)clamp01(1.0 - tanh(std_l / 4.0));
 
-    double sigma =
+    /* Arithmetic mean of the 8 channels (pre-v105 default). */
+    double sigma_sum =
         (double)out->entropy_norm +
         (double)out->margin +
         (double)out->top_k_mass +
@@ -141,7 +208,43 @@ int cos_v101_sigma_from_logits(const float *logits, int n_vocab, cos_v101_sigma_
         (double)out->p_max +
         (double)out->n_effective +
         (double)out->logit_std;
-    out->sigma = (float)(sigma / (double)COS_V101_SIGMA_CHANNELS);
+    double arith_mean = sigma_sum / (double)COS_V101_SIGMA_CHANNELS;
+
+    /* Geometric mean of the 8 channels (v105 default).  We floor each
+     * channel at `EPS` before taking the log so a perfectly-confident
+     * channel (x == 0) cannot collapse the whole product to zero.  EPS
+     * matches `benchmarks/v104/operators.py::op_sigma_product`, which is
+     * where this aggregator was validated as the cross-task winner. */
+    const double EPS = 1e-6;
+    double channels[COS_V101_SIGMA_CHANNELS] = {
+        (double)out->entropy_norm,
+        (double)out->margin,
+        (double)out->top_k_mass,
+        (double)out->tail_mass,
+        (double)out->logit_spread,
+        (double)out->p_max,
+        (double)out->n_effective,
+        (double)out->logit_std,
+    };
+    double log_sum = 0.0;
+    for (int i = 0; i < COS_V101_SIGMA_CHANNELS; i++) {
+        double v = channels[i];
+        if (v < EPS) v = EPS;
+        log_sum += log(v);
+    }
+    double geom_mean = exp(log_sum / (double)COS_V101_SIGMA_CHANNELS);
+
+    out->sigma_arith_mean = (float)clamp01(arith_mean);
+    out->sigma_product    = (float)clamp01(geom_mean);
+
+    /* The public `sigma` field is whichever the current default aggregator
+     * picks.  All existing consumers (abstention gate, max-per-token, CLI
+     * JSON output, v103 sidecar) continue to read `s.sigma` and
+     * transparently switch aggregator when the default is reconfigured. */
+    cos_v101_sigma_agg_t agg = cos_v101_get_default_aggregator();
+    out->sigma = (agg == COS_V101_AGG_MEAN)
+                     ? out->sigma_arith_mean
+                     : out->sigma_product;
 
     (void)min_l;  /* kept in case future channel wants it */
     return 0;

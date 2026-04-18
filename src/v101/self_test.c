@@ -58,13 +58,18 @@ int cos_v101_self_test(void)
     }
     cos_v101_sigma_t s;
 
-    /* 1. Uniform logits → entropy_norm ≈ 1, margin ≈ 1, σ near upper range. */
+    /* 1. Uniform logits → entropy_norm ≈ 1, margin ≈ 1, σ near upper range.
+     * Both aggregators (arithmetic mean and geometric mean / product) are
+     * close to 1 when every channel is close to 1, so we check both fields
+     * directly and then check the default `sigma` alias. */
     fill_uniform(logits, n_vocab);
     check("uniform: sigma ok", cos_v101_sigma_from_logits(logits, n_vocab, &s) == 0);
     check("uniform: entropy_norm ≈ 1", s.entropy_norm > 0.99f);
     check("uniform: margin ≈ 1",       s.margin       > 0.99f);
     check("uniform: p_max ≈ 1",        s.p_max        > 0.99f);
-    check("uniform: sigma ≥ 0.7",      s.sigma        >= 0.7f);
+    check("uniform: sigma_arith_mean ≥ 0.7", s.sigma_arith_mean >= 0.7f);
+    check("uniform: sigma_product    ≥ 0.7", s.sigma_product    >= 0.7f);
+    check("uniform: default sigma   ≥ 0.7",  s.sigma            >= 0.7f);
     check("uniform: all channels in [0,1]",
           s.entropy_norm >= 0.f && s.entropy_norm <= 1.f &&
           s.margin       >= 0.f && s.margin       <= 1.f &&
@@ -75,13 +80,18 @@ int cos_v101_self_test(void)
           s.n_effective  >= 0.f && s.n_effective  <= 1.f &&
           s.logit_std    >= 0.f && s.logit_std    <= 1.f);
 
-    /* 2. Single sharp peak → all channels near 0. */
+    /* 2. Single sharp peak → all channels near 0.  Product is < mean here
+     * (the geometric mean is dragged down by the zero-floor channels). */
     fill_peaked(logits, n_vocab, 42, 50.f);
     check("peaked: sigma ok",          cos_v101_sigma_from_logits(logits, n_vocab, &s) == 0);
     check("peaked: entropy_norm ≈ 0",  s.entropy_norm < 0.01f);
     check("peaked: margin ≈ 0",        s.margin       < 0.01f);
     check("peaked: p_max ≈ 0",         s.p_max        < 0.01f);
-    check("peaked: sigma < 0.4",       s.sigma        < 0.4f);
+    check("peaked: sigma_arith_mean < 0.4", s.sigma_arith_mean < 0.4f);
+    check("peaked: sigma_product    < 0.4", s.sigma_product    < 0.4f);
+    check("peaked: default sigma   < 0.4",  s.sigma            < 0.4f);
+    check("peaked: sigma_product ≤ sigma_arith_mean",
+          s.sigma_product <= s.sigma_arith_mean + 1e-6f);
 
     /* 3. Two equal peaks → margin ≈ 1 (top1 == top2), entropy finite. */
     fill_two_peaks(logits, n_vocab, 1, 2, 50.f);
@@ -105,13 +115,62 @@ int cos_v101_self_test(void)
 
     /* 6. Monotonic: raising the top logit without changing the rest
      *    should (weakly) decrease the σ (model becomes more confident).
-     */
+     *    Both aggregators must satisfy this. */
     fill_uniform(logits, n_vocab);
     logits[0] = 1.f;
     cos_v101_sigma_from_logits(logits, n_vocab, &s1);
     logits[0] = 10.f;
     cos_v101_sigma_from_logits(logits, n_vocab, &s2);
-    check("σ monotone decreasing in peak sharpness", s2.sigma <= s1.sigma);
+    check("σ (default) monotone in peak sharpness", s2.sigma <= s1.sigma);
+    check("σ_arith_mean monotone in peak sharpness",
+          s2.sigma_arith_mean <= s1.sigma_arith_mean);
+    check("σ_product monotone in peak sharpness",
+          s2.sigma_product    <= s1.sigma_product);
+
+    /* 7a. v105 regression: sigma_product must equal the geometric mean of
+     *     the eight channels with the same 1e-6 epsilon floor used by
+     *     `benchmarks/v104/operators.py::op_sigma_product`.  This is the
+     *     direct regression tying the C path to the Python path the v104
+     *     operator search was validated on. */
+    fill_peaked(logits, n_vocab, 42, 50.f);
+    cos_v101_sigma_from_logits(logits, n_vocab, &s1);
+    {
+        const double EPS = 1e-6;
+        const float ch[COS_V101_SIGMA_CHANNELS] = {
+            s1.entropy_norm, s1.margin, s1.top_k_mass, s1.tail_mass,
+            s1.logit_spread, s1.p_max, s1.n_effective, s1.logit_std,
+        };
+        double acc = 0.0;
+        for (int i = 0; i < COS_V101_SIGMA_CHANNELS; i++) {
+            double v = (double)ch[i];
+            if (v < EPS) v = EPS;
+            acc += log(v);
+        }
+        double expected = exp(acc / (double)COS_V101_SIGMA_CHANNELS);
+        double got      = (double)s1.sigma_product;
+        /* 1e-4 tolerance absorbs the double→float round-trip per channel. */
+        check("v105 regression: sigma_product == geom_mean(channels)",
+              fabs(expected - got) < 1e-4);
+    }
+
+    /* 7b. v105: aggregator selector round-trips.  Default is PRODUCT;
+     *    switching to MEAN and back restores the default and changes the
+     *    value of the `sigma` field appropriately. */
+    cos_v101_sigma_agg_t prev = cos_v101_get_default_aggregator();
+    check("v105: default aggregator is PRODUCT", prev == COS_V101_AGG_PRODUCT);
+    cos_v101_sigma_from_logits(logits, n_vocab, &s1);  /* logits[0] = 10 */
+    cos_v101_set_default_aggregator(COS_V101_AGG_MEAN);
+    cos_v101_sigma_from_logits(logits, n_vocab, &s2);
+    check("v105: MEAN mode → sigma == sigma_arith_mean",
+          s2.sigma == s2.sigma_arith_mean);
+    cos_v101_set_default_aggregator(COS_V101_AGG_PRODUCT);
+    cos_v101_sigma_from_logits(logits, n_vocab, &s2);
+    check("v105: PRODUCT mode → sigma == sigma_product",
+          s2.sigma == s2.sigma_product);
+    check("v105: aggregator names are 'mean' and 'product'",
+          strcmp(cos_v101_aggregator_name(COS_V101_AGG_MEAN),    "mean")    == 0 &&
+          strcmp(cos_v101_aggregator_name(COS_V101_AGG_PRODUCT), "product") == 0);
+    cos_v101_set_default_aggregator(prev);
 
     free(logits);
     printf("v101 σ-BitNet-Bridge: %d PASS / %d FAIL\n", g_pass, g_fail);
