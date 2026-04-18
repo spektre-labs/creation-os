@@ -358,7 +358,12 @@ merge-gate:
 	@$(MAKE) check-v151
 	@$(MAKE) check-v152
 	@$(MAKE) check-v153
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity)"
+	@$(MAKE) check-v154
+	@$(MAKE) check-v155
+	@$(MAKE) check-v156
+	@$(MAKE) check-v157
+	@$(MAKE) check-v158
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3393,6 +3398,80 @@ check-v153: check-v153-identity-assertions
 
 check-v149-v153: check-v149 check-v150 check-v151 check-v152 check-v153
 	@echo "check-v149-v153: OK (embodied + swarm + code-agent + distill + identity)"
+
+# --- v154 σ-Showcase (end-to-end demo pipelines) ---------------
+# Deterministic cross-kernel pipeline orchestrator: three headline
+# scenarios (research-assistant, self-improving-coder, collaborative-
+# research) each chain a fixed N-stage sequence with per-stage σ,
+# a geomean σ_product, and a σ_abstain gate.  v154.0 synthesizes
+# stage σ values; v154.1 wires live kernel calls (v118/v152/v135/
+# v111/v150/v140/v153/v115 for research; v151/v113/v147/v119/v124/
+# v145 for coder; v128/v129/v150/v130 for collab).
+V154_INC  = -Isrc/v154
+V154_SRCS = src/v154/showcase.c
+
+creation_os_v154_showcase: $(V154_SRCS) src/v154/main.c
+	$(CC) $(CFLAGS) $(V154_INC) -o $@ \
+	    $(V154_SRCS) src/v154/main.c $(LDFLAGS)
+
+check-v154-demo-pipelines: creation_os_v154_showcase
+	@bash benchmarks/v154/check_v154_demo_pipelines.sh
+	@echo "check-v154-demo-pipelines: OK (research + coder + collab)"
+
+check-v154: check-v154-demo-pipelines
+	@echo "check-v154: OK (σ-showcase kernel)"
+
+# --- v155 σ-Publish (packaging manifests — PyPI/Homebrew/Docker/HF/npm) --
+# Every publish surface (pyproject.toml, Homebrew formula, release
+# Dockerfile, Hugging Face model cards, npm launcher) is validated
+# offline by a stdlib-only Python script.  v155.1 runs the real
+# `twine upload`, `brew audit`, `docker push`, and `hf upload`.
+check-v155-packaging-manifests:
+	@python3 scripts/v155_publish_check.py
+	@echo "check-v155-packaging-manifests: OK (pypi + brew + docker + hf + npm)"
+
+check-v155: check-v155-packaging-manifests
+	@echo "check-v155: OK (σ-publish kernel)"
+
+# --- v156 σ-Paper (unified Creation OS paper renders + sections) --
+# The single unifying paper at docs/papers/creation_os_v1.md.
+# A stdlib Python validator enforces the 11-section structure and
+# a minimum word-count floor so the paper cannot silently regress
+# into a stub.  v156.1 uploads to arxiv + Zenodo and archives the
+# DOI back into CITATION.cff.
+check-v156-paper-renders:
+	@python3 scripts/v156_paper_check.py
+	@echo "check-v156-paper-renders: OK (11 sections + floor)"
+
+check-v156: check-v156-paper-renders
+	@echo "check-v156: OK (σ-paper doc)"
+
+# --- v157 σ-Community (CONTRIBUTING + governance + issue templates) --
+# Community/contribution infrastructure lives in a set of markdown
+# files whose *presence* and *required sections* are validated by a
+# shell linter (no network, no external tools beyond coreutils).
+check-v157-contributing-lint:
+	@bash scripts/v157_contributing_lint.sh
+	@echo "check-v157-contributing-lint: OK (CONTRIBUTING + GOVERNANCE + issues + good-first-issues)"
+
+check-v157: check-v157-contributing-lint
+	@echo "check-v157: OK (σ-community infrastructure)"
+
+# --- v158 σ-v1.0 (release checklist — tag + changelog + binaries) --
+# v1.0.0 release checklist lives in docs/RELEASE_v1_0.md and is
+# validated by a deterministic shell gate that checks every required
+# item is enumerated.  The actual release (git tag, gh release,
+# binary builds, SHA256 attestations) lands in v158.1 with a human
+# maintainer at the helm.
+check-v158-release-checklist:
+	@bash scripts/v158_release_checklist.sh
+	@echo "check-v158-release-checklist: OK (tag + changelog + binaries + checksums)"
+
+check-v158: check-v158-release-checklist
+	@echo "check-v158: OK (σ-v1.0 release gate)"
+
+check-v154-v158: check-v154 check-v155 check-v156 check-v157 check-v158
+	@echo "check-v154-v158: OK (showcase + publish + paper + community + v1.0-release)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
