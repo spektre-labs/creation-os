@@ -4748,6 +4748,27 @@ check-v206-theorem-lean-verify: creation_os_v206_theorem
 check-v206: check-v206-theorem-lean-verify
 	@echo "check-v206: OK (σ-theorem kernel)"
 
+# --- v207 σ-Design (space + constraints + Pareto + receipt) ---
+# 12 design candidates over (performance, complexity,
+# cost) with hard constraints from v199 law, v191
+# constitutional, v200 market.  Infeasible candidates are
+# excluded from the Pareto front; front members must not
+# be dominated by any feasible candidate.  Receipt chain
+# (requirements → design → rationale) hashed.
+V207_INC  = -Isrc/v207
+V207_SRCS = src/v207/design.c
+
+creation_os_v207_design: $(V207_SRCS) src/v207/main.c
+	$(CC) $(CFLAGS) $(V207_INC) -o $@ \
+	    $(V207_SRCS) src/v207/main.c $(LDFLAGS)
+
+check-v207-design-pareto-front: creation_os_v207_design
+	@bash benchmarks/v207/check_v207_design_pareto_front.sh
+	@echo "check-v207-design-pareto-front: OK (Pareto front + constraints)"
+
+check-v207: check-v207-design-pareto-front
+	@echo "check-v207: OK (σ-design kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
