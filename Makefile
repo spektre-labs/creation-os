@@ -348,7 +348,12 @@ merge-gate:
 	@$(MAKE) check-v141
 	@$(MAKE) check-v142
 	@$(MAKE) check-v143
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence)"
+	@$(MAKE) check-v144
+	@$(MAKE) check-v145
+	@$(MAKE) check-v146
+	@$(MAKE) check-v147
+	@$(MAKE) check-v148
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3240,6 +3245,32 @@ check-v147-reflect-thought-trace: creation_os_v147_reflect
 
 check-v147: check-v147-reflect-thought-trace
 	@echo "check-v147: OK (σ-reflect kernel)"
+
+# --- v148 σ-Sovereign (autonomous orchestrator) ------------------
+# Composes v144 (RSI) + v145 (skill) + v146 (genesis) + v147
+# (reflect) into one six-stage supervised loop: measure →
+# identify → improve → evolve → reflect → share.  Two σ-gates pace
+# it — σ_rsi > τ_sovereign self-halts the loop (G1), and SUPERVISED
+# mode keeps every structural change as pending_approvals until
+# the user calls cos_v148_approve_all() (G2).  Emergency stop is a
+# hot-path latch.
+V148_INC  = -Isrc/v148 -Isrc/v144 -Isrc/v145 -Isrc/v146 -Isrc/v147
+V148_SRCS = src/v148/sovereign.c src/v144/rsi.c src/v145/skill.c \
+            src/v146/genesis.c src/v147/reflect.c
+
+creation_os_v148_sovereign: $(V148_SRCS) src/v148/main.c
+	$(CC) $(CFLAGS) $(V148_INC) -o $@ \
+	    $(V148_SRCS) src/v148/main.c $(LDFLAGS)
+
+check-v148-sovereign-supervised-smoke: creation_os_v148_sovereign
+	@bash benchmarks/v148/check_v148_sovereign_supervised_smoke.sh
+	@echo "check-v148-sovereign-supervised-smoke: OK (supervised + autonomous + emergency)"
+
+check-v148: check-v148-sovereign-supervised-smoke
+	@echo "check-v148: OK (σ-sovereign kernel)"
+
+check-v144-v148: check-v144 check-v145 check-v146 check-v147 check-v148
+	@echo "check-v144-v148: OK (sovereign stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
