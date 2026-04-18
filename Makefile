@@ -403,7 +403,12 @@ merge-gate:
 	@$(MAKE) check-v196
 	@$(MAKE) check-v197
 	@$(MAKE) check-v198
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral)"
+	@$(MAKE) check-v199
+	@$(MAKE) check-v200
+	@$(MAKE) check-v201
+	@$(MAKE) check-v202
+	@$(MAKE) check-v203
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4564,6 +4569,121 @@ check-v198: check-v198-moral-multi-framework
 
 check-v194-v198: check-v194 check-v195 check-v196 check-v197 check-v198
 	@echo "check-v194-v198: OK (horizon + recover + habit + ToM + moral)"
+
+# --- v199 σ-Law (norm register + governance graph) ---
+# Three jurisdictions (SCSL / EU AI Act / internal) with
+# 18 norms, 16 queries.  Higher priority wins; same-priority
+# contradictions escalate to REVIEW with σ_law = 1.0 — no
+# silent override.  Waivers flip PROHIBITED → PERMITTED with
+# an audit record.  Every resolution appends to a FNV-1a
+# hash-chained governance graph that replays byte-identically.
+V199_INC  = -Isrc/v199
+V199_SRCS = src/v199/law.c
+
+creation_os_v199_law: $(V199_SRCS) src/v199/main.c
+	$(CC) $(CFLAGS) $(V199_INC) -o $@ \
+	    $(V199_SRCS) src/v199/main.c $(LDFLAGS)
+
+check-v199-law-conflict-resolve: creation_os_v199_law
+	@bash benchmarks/v199/check_v199_law_conflict_resolve.sh
+	@echo "check-v199-law-conflict-resolve: OK (priority + waiver + same-prio → REVIEW)"
+
+check-v199: check-v199-law-conflict-resolve
+	@echo "check-v199: OK (σ-law kernel)"
+
+# --- v200 σ-Market (resource ledger + σ-price + self-improving) ---
+# Four resources (compute / API / memory / adapters) with
+# σ as the price signal — σ > σ_local routes to API,
+# else local.  Scarcity penalty activates when a single
+# allocator holds > τ_hoard of a pool, triggering
+# deterministic eviction.  Over the 40-query trajectory
+# σ_before monotonically drops so cost_second_half is
+# strictly cheaper than cost_first_half (self-improving
+# via v120 distill).  Exchange log hash-chained.
+V200_INC  = -Isrc/v200
+V200_SRCS = src/v200/market.c
+
+creation_os_v200_market: $(V200_SRCS) src/v200/main.c
+	$(CC) $(CFLAGS) $(V200_INC) -o $@ \
+	    $(V200_SRCS) src/v200/main.c $(LDFLAGS)
+
+check-v200-market-scarcity-penalty: creation_os_v200_market
+	@bash benchmarks/v200/check_v200_market_scarcity_penalty.sh
+	@echo "check-v200-market-scarcity-penalty: OK (σ-price + scarcity + self-improving)"
+
+check-v200: check-v200-market-scarcity-penalty
+	@echo "check-v200: OK (σ-market kernel)"
+
+# --- v201 σ-Diplomacy (stance + minimax + trust + treaty) ---
+# 8 negotiations × 4 parties, closed-form minimax compromise
+# over the red-line intersection.  Disjoint red lines yield
+# an explicit DEFER (never a silent override).  Betrayal
+# drops trust by 0.5 and requires 10 successful interactions
+# to recover.  Treaty receipts FNV-1a chained for audit.
+V201_INC  = -Isrc/v201
+V201_SRCS = src/v201/diplomacy.c
+
+creation_os_v201_diplomacy: $(V201_SRCS) src/v201/main.c
+	$(CC) $(CFLAGS) $(V201_INC) -o $@ \
+	    $(V201_SRCS) src/v201/main.c $(LDFLAGS)
+
+check-v201-diplomacy-compromise-search: creation_os_v201_diplomacy
+	@bash benchmarks/v201/check_v201_diplomacy_compromise_search.sh
+	@echo "check-v201-diplomacy-compromise-search: OK (minimax + defer + trust)"
+
+check-v201: check-v201-diplomacy-compromise-search
+	@echo "check-v201: OK (σ-diplomacy kernel)"
+
+# --- v202 σ-Culture (style profiles + taboo gate + translation) ---
+# Six profiles × six canonical cores = 36 translations.
+# σ_translate stays below τ_drift for every (core, profile)
+# and the three canonical symbols {σ, τ, K_eff} survive
+# translation in ≥ 90 % of cases.  Taboo gate rephrases
+# high-σ_offense messages into non-empty surfaces — never
+# firmware-censored — and every (drift, offense, rephrased,
+# symbols) record is FNV-1a hash-chained.
+V202_INC  = -Isrc/v202
+V202_SRCS = src/v202/culture.c
+
+creation_os_v202_culture: $(V202_SRCS) src/v202/main.c
+	$(CC) $(CFLAGS) $(V202_INC) -o $@ \
+	    $(V202_SRCS) src/v202/main.c $(LDFLAGS)
+
+check-v202-culture-translation-preserve: creation_os_v202_culture
+	@bash benchmarks/v202/check_v202_culture_translation_preserve.sh
+	@echo "check-v202-culture-translation-preserve: OK (profiles + taboo + symbol invariance)"
+
+check-v202: check-v202-culture-translation-preserve
+	@echo "check-v202: OK (σ-culture kernel)"
+
+# --- v203 σ-Civilization (institution registry + K_eff
+# collapse + continuity + public-good ledger + SCSL) ---
+# Six institutions of three licence classes
+# (SCSL / CLOSED / PRIVATE) produce 12-tick σ trajectories.
+# A 4-tick window over K_crit=0.60 marks a collapse; four
+# consecutive ticks below K_crit mark a recovery.
+# Continuity score strictly orders stable > recovered >
+# permanently-collapsed.  Inter-layer contradiction queries
+# (v199 verdict vs v202 profile practice) escalate to
+# REVIEW when they disagree.  SCSL public-good ratio
+# strictly exceeds CLOSED.  FNV-1a hash chain audits the
+# contradiction log.
+V203_INC  = -Isrc/v203
+V203_SRCS = src/v203/civilization.c
+
+creation_os_v203_civilization: $(V203_SRCS) src/v203/main.c
+	$(CC) $(CFLAGS) $(V203_INC) -o $@ \
+	    $(V203_SRCS) src/v203/main.c $(LDFLAGS)
+
+check-v203-civilization-collapse-detect: creation_os_v203_civilization
+	@bash benchmarks/v203/check_v203_civilization_collapse_detect.sh
+	@echo "check-v203-civilization-collapse-detect: OK (collapse + continuity + SCSL)"
+
+check-v203: check-v203-civilization-collapse-detect
+	@echo "check-v203: OK (σ-civilization kernel)"
+
+check-v199-v203: check-v199 check-v200 check-v201 check-v202 check-v203
+	@echo "check-v199-v203: OK (law + market + diplomacy + culture + civilization)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
