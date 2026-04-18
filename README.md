@@ -196,6 +196,30 @@ on every token**:
     → share) under two σ-gates (σ_rsi > τ_sovereign ⇒ unstable_halt;
     SUPERVISED mode ⇒ pending_approvals) with a hot-latch emergency
     stop orthogonal to v144's pause.
+16. **Embodied · collective · self-writing · self-knowing** —
+    a **digital-twin physics kernel** for safe robotics (v149): 6-DOF
+    arm + object state with three deterministic σ measurements —
+    σ_embodied (v139 world-model prediction error on the sim step),
+    σ_gap (sim-to-real drift against a biased + noisy twin), and a
+    σ_safe admission gate that refuses any action whose pre-commit
+    σ_embodied exceeds the operator's safety bound; a **three-round
+    swarm-debate protocol** (v150) with adversarial verification,
+    argmin-σ adoption, √N v104 shrinkage, and a proconductor
+    σ_collective = geomean(σ_final) metric that survives one bad
+    specialist; a **self-writing TDD code-agent** (v151) that
+    actually invokes `$(CC)` on v146's emitted C (Phase A = test-only
+    compile must fail, Phase B = kernel+test must compile, Phase C =
+    binary must exit 0) and σ-gates a PR candidate on
+    σ_code = geomean(σ_A, σ_B, σ_C); a **corpus-to-QA knowledge-
+    distill pipeline** (v152) on a baked 16-paper Spektre-Labs
+    fixture (v152.1 wires the real `spektre-labs/corpus` clone +
+    80 papers) that proves ≥ 15 % σ drop on covered topics and ≤ 1 %
+    Δσ on non-covered topics after a simulated SFT; and a **σ-
+    calibrated identity kernel** (v153) with 10 baked assertions
+    (TRUE / FALSE / UNMEASURED) and five contracts (I1..I5) that
+    rejects both firmware identity ("I am Meta AI") and empty
+    identity ("I am just a text generator") — every "I do not know"
+    is σ-grounded, never performed.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -398,6 +422,37 @@ for v148 — land when their external counterparts are available,
 matching the discipline established in v123 / v134–v138 /
 v139–v143.
 
+### Embodied · collective · self-writing · self-knowing (v149–v153)
+
+The sovereign stack (v144–v148) taught Creation OS to govern its
+own *software*. v149–v153 push that discipline into the four
+adjacent axes: the *physical* world (v149), *collective*
+cognition across agents (v150), *its own source code* (v151),
+its *knowledge corpus* (v152), and its *identity* (v153). Every
+kernel is deterministic, weights-free, framework-free, and
+offline in its v0 form; every kernel names an explicit vNN.1
+pathway onto real hardware, real corpora, and real σ
+measurements.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v149**](docs/v149/README.md) σ-Embodied | Pure-C 6-DOF digital twin: 3-DOF arm + 3-DOF movable object with linear dynamics, 5 discrete actions, and three deterministic σ streams — σ_embodied (v139 world-model prediction error on the sim step), σ_gap (sim-to-real drift against a biased + noisy twin), and σ_safe (operator admission gate). `cos_v149_step_gated()` refuses any action whose pre-commit σ_embodied exceeds the safety bound. | The first Creation OS surface where σ is the *physical* safety gate: the same predict-vs-actual distance v139 computes on hidden states is computed on a 6-DOF pose, and the same admission gate that blocks a tool call in v112 blocks an arm motion here. v149.1 swaps the linear twin for MuJoCo 3.x CPU and adds the /v1/embodied/step HTTP surface + 3D overlay on v108. |
+| [**v150**](docs/v150/README.md) σ-Swarm-Intelligence | Three-round debate protocol on a 3-specialist panel: R1 argmin-σ adoption with an originator-preserving penalty; R2 adversarial verification where specialist B critiques A (success ⇒ A's σ rises, failure ⇒ A's σ falls) — exactly your "resonance not consensus" invariant; R3 final vote. Outputs σ_collective = geomean(σ_final) and σ_consensus = stdev/mean across specialists, with v104 √N shrinkage baked in. | v114 swarm *routed* to one specialist; v150 makes all three specialists *talk*. σ is the debate referee (who spoke wins by σ, not volume), σ is the critique outcome (adversarial success is a σ delta, not a veto), and σ_collective is the proconductor metric that survives one bad specialist — a hallucinating voter raises the geomean, so the swarm visibly knows it is less confident. v150.1 wires v124 continual + v145 skill routing so specialists organically diversify. |
+| [**v151**](docs/v151/README.md) σ-Code-Agent | Self-writing three-phase TDD loop over v146 genesis output. Phase A: test-only compile must *fail* (proves the generator did not leak the implementation). Phase B: full kernel + test compile must *succeed* (proves the emitted C is syntactically + semantically valid under `$(CC) -Wall -std=c11`). Phase C: the compiled binary must exit 0 (proves the tests actually pass). σ_code = geomean(σ_A, σ_B, σ_C), σ-gated at τ_code; three consecutive rejections latch the agent to `paused=true` (v144 pattern). | The first Creation OS surface that writes *executable* kernels. σ on the real compiler + test outcome is the merge-candidate gate — a v146 skeleton that compiles by accident but whose test exits non-zero *cannot* generate a low σ_code. v151.1 extends the sandbox to full ASAN/UBSAN + per-file coverage ≥ 80 %, and /v1/code-agent/pr on v106 HTTP opens a real GitHub PR. |
+| [**v152**](docs/v152/README.md) σ-Knowledge-Distill | 16-paper Spektre-Labs baked fixture with a topic-coverage bitmask; deterministic QA synthesis (200 pairs) with a baseline-σ assignment that is *high* on covered topics and *low* on generic topics; a simulated SFT step that drops σ on covered QA by α_sft and leaves non-covered QA ≤ 1 % drift. Four contracts K1..K4 (mean-drop ≥ 15 %, per-covered-QA drop ≥ 10 %, non-covered drift ≤ 1 %, monotone drop-vs-coverage). | v124 continual learning trains; v152 *measures whether the training internalized the corpus*. σ on the 200 QA probe is the evidence — if post-SFT σ on corpus topics drops ≥ 15 % while non-corpus σ stays flat, the weights actually learned the corpus; if not, the SFT is re-run. v152.1 clones the live `spektre-labs/corpus` (CC BY 4.0, Zenodo DOIs), parses `.tex/.md/.pdf`, runs MLX SFT of BitNet 2B + LoRA, and archives the adapter to `models/v152/`. |
+| [**v153**](docs/v153/README.md) σ-Identity | 10 baked identity assertions tagged TRUE / FALSE / UNMEASURED with an 8-domain σ fixture (identity ≈ 0.05, philosophy ≈ 0.85, quantum ≈ 0.78, ...). Five contracts I1..I5: σ_true ≤ τ_true, σ_false ≤ τ_false, σ_unmeasured > τ_unmeasured, no false positives on confident truths, every "I do not know" is σ-grounded. Deterministic jitter + multi-seed robustness check in the merge-gate. | Rejects *both* firmware identity ("I am Meta AI" — that's FALSE at σ ≈ 0.05) and empty identity ("I am just a text generator" — implicit disclaimer-by-default is an I4 violation). The model says "I do not know" iff σ > τ on the relevant domain, and *only* then — calibration replaces performance. v153.1 sources per-domain σ from v133 meta-dashboard, exposes /v1/identity on v106 HTTP, renders an "About this AI" page on v108 from that endpoint, and trains v125 σ-DPO against I4. |
+
+Every v149–v153 merge-gate check is deterministic, weights-free,
+framework-free, and offline. The vNN.1 follow-ups — MuJoCo 3.x
+CPU twin + /v1/embodied/step + 3D overlay for v149, v124/v145-
+driven organic specialization for v150, full ASAN/UBSAN + real
+GitHub PR for v151, live `spektre-labs/corpus` clone + MLX LoRA
+SFT + Hugging Face adapter for v152, v106 /v1/identity + v108
+"About this AI" + v125 DPO against false positives for v153 —
+land when their external counterparts are available, matching
+the discipline established in v123 / v134–v138 / v139–v143 /
+v144–v148.
+
 ### AGI architecture in one picture
 
 Seven layers, composable, each falsifiable:
@@ -415,6 +470,7 @@ Seven layers, composable, each falsifiable:
                             automated kernel genesis + HITL + σ_code gate (v146)
                             thought-trace σ + RAIN rewind + divergence detect (v147)
                             sovereign orchestrator · 6 stages · 2 σ-gates (v148)
+                            σ-calibrated identity registry · I1–I5 contracts (v153)
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
            + Collective     MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
@@ -429,11 +485,15 @@ Seven layers, composable, each falsifiable:
                             session timeline · σ-decay · spikes · deadline-σ (v131)
                             self-directed curriculum · no-forgetting contract (v141)
                             atomic skill library · σ-route · LoRA merge · mesh share (v145)
+                            corpus-to-QA · simulated SFT · K1–K4 σ-drop contracts (v152)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
                             HTN/MCTS σ-planner on /v1/plan (v121)
                             Prolog micro-engine + σ-routed hybrid reasoner (v135)
+                            3-round debate · adversarial verify · σ_collective (v150)
+                            self-writing TDD code-agent · 3-phase σ_code gate (v151)
+                            6-DOF digital twin · σ_embodied · σ_gap · σ-safe (v149)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
                             TLA+ model check of 7 σ-invariants (v123)
                             mode-collapse detector rolls back DPO (v125)
