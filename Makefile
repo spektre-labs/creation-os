@@ -368,7 +368,12 @@ merge-gate:
 	@$(MAKE) check-v161
 	@$(MAKE) check-v162
 	@$(MAKE) check-v163
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable)"
+	@$(MAKE) check-v164
+	@$(MAKE) check-v165
+	@$(MAKE) check-v166
+	@$(MAKE) check-v167
+	@$(MAKE) check-v168
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3609,6 +3614,138 @@ check-v163: check-v163-evolve-pareto-converge
 
 check-v159-v163: check-v159 check-v160 check-v161 check-v162 check-v163
 	@echo "check-v159-v163: OK (heal + telemetry + adversarial-train + compose + evolve)"
+
+# --- v164 σ-Plugin (C ABI + sandbox + registry + official plugins) ------
+# Deterministic plugin host.  Ships 4 officially-baked plugins
+# (web-search, calculator, file-reader, git), each with a manifest
+# that declares required capabilities (NETWORK / FILE_READ /
+# FILE_WRITE / SUBPROCESS) and σ_impact.  The sandbox enforces
+# manifest-vs-grant cap masking (missing cap → refused, σ = 1.0),
+# a hard timeout_ms ceiling, and a permanent refusal of the
+# MODEL_WEIGHTS cap.  The registry tracks σ_reputation as a
+# ring-buffered geomean of the last 16 σ_plugin observations.
+# v164.1 swaps the baked dispatcher for real dlopen + fork +
+# seccomp-bpf and wires `cos plugin install github.com/...`.
+V164_INC  = -Isrc/v164
+V164_SRCS = src/v164/plugin.c
+
+creation_os_v164_plugin: $(V164_SRCS) src/v164/main.c
+	$(CC) $(CFLAGS) $(V164_INC) -o $@ \
+	    $(V164_SRCS) src/v164/main.c $(LDFLAGS)
+
+check-v164-plugin-load-unload: creation_os_v164_plugin
+	@bash benchmarks/v164/check_v164_plugin_load_unload.sh
+	@echo "check-v164-plugin-load-unload: OK (ABI + sandbox + registry + hot-swap)"
+
+check-v164: check-v164-plugin-load-unload
+	@echo "check-v164: OK (σ-plugin kernel)"
+
+# --- v165 σ-Edge (cos-lite + RPi5/Jetson/Android + adaptive τ) ----------
+# Edge-device runtime model.  A baked profile table describes 5
+# targets (macbook_m3 / rpi5 / jetson_orin / android / ios) with
+# arch, triple, available RAM, GPU/camera presence, default HTTP
+# port, and a Makefile make_target pointing at the cos-lite
+# cross-compile recipe (named here; actual cross-compilation lands
+# in v165.1).  σ-adaptive τ: tau_edge = clamp(tau_default /
+# max(available_ram/8192, 0.125), 0.15, 1.0).  A fit check
+# compares a 4-component RAM budget (binary / weights / kvcache /
+# sigma_overhead) against the profile's available RAM and emits a
+# boot receipt.  iOS is declared supported_in_v0=false so the
+# profile surface matches the roadmap.  v165.1 plugs real
+# cross-compile, QEMU-CI, and iOS Swift wrapper.
+V165_INC  = -Isrc/v165
+V165_SRCS = src/v165/edge.c
+
+creation_os_v165_edge: $(V165_SRCS) src/v165/main.c
+	$(CC) $(CFLAGS) $(V165_INC) -o $@ \
+	    $(V165_SRCS) src/v165/main.c $(LDFLAGS)
+
+check-v165-edge-rpi5-smoke: creation_os_v165_edge
+	@bash benchmarks/v165/check_v165_edge_rpi5_smoke.sh
+	@echo "check-v165-edge-rpi5-smoke: OK (profile table + τ_edge + boot fit)"
+
+check-v165: check-v165-edge-rpi5-smoke
+	@echo "check-v165: OK (σ-edge kernel)"
+
+# --- v166 σ-Stream (WebSocket + per-token σ + interrupt-on-sigma) -------
+# Real-time streaming model.  Prompt is tokenized, per-token σ is
+# generated as an 8-channel vector (SplitMix64-keyed by
+# (seed, token_index, channel) + a slow sine drift), σ_product =
+# geomean(channels), and the stream stops itself the moment
+# σ_product > tau_interrupt.  The closing summary frame declares
+# whether the stream completed or was interrupted and at which
+# token.  Voice hint: audible_delay_ms = 40 + 400·σ — the model's
+# voice literally slows down when it gets uncertain (v127 hook).
+# v166.1 plugs an actual ws:// server and a real tokenizer.
+V166_INC  = -Isrc/v166
+V166_SRCS = src/v166/stream.c
+
+creation_os_v166_stream: $(V166_SRCS) src/v166/main.c
+	$(CC) $(CFLAGS) $(V166_INC) -o $@ \
+	    $(V166_SRCS) src/v166/main.c $(LDFLAGS)
+
+check-v166-stream-websocket: creation_os_v166_stream
+	@bash benchmarks/v166/check_v166_stream_websocket.sh
+	@echo "check-v166-stream-websocket: OK (NDJSON + per-token σ + interrupt)"
+
+check-v166: check-v166-stream-websocket
+	@echo "check-v166: OK (σ-stream kernel)"
+
+# --- v167 σ-Governance-API (policy server + fleet + audit + RBAC) -------
+# Organization-level control plane.  A baked org (spektre-labs)
+# owns 3 domain policies (medical/creative/code) declaring
+# (τ, abstain_message, require_sandbox); a fleet of 4 nodes
+# (lab-m3, lab-rpi5, cloud-a, cloud-b) stamped with the active
+# policy_version; an append-only ring-buffered audit log (N=64)
+# of every σ-decision (emit/abstain/revise/denied); and a
+# 4-role RBAC (admin/user/auditor/developer) enforced at
+# evaluation time.  Policy push skips any node whose health is
+# DOWN (enforces the "dead node can't claim compliance"
+# invariant).  v167.1 ships a real HTTP policy server with TLS
+# auth + GDPR/SOC2/HIPAA export profiles.
+V167_INC  = -Isrc/v167
+V167_SRCS = src/v167/governance.c
+
+creation_os_v167_governance: $(V167_SRCS) src/v167/main.c
+	$(CC) $(CFLAGS) $(V167_INC) -o $@ \
+	    $(V167_SRCS) src/v167/main.c $(LDFLAGS)
+
+check-v167-governance-policy-apply: creation_os_v167_governance
+	@bash benchmarks/v167/check_v167_governance_policy_apply.sh
+	@echo "check-v167-governance-policy-apply: OK (policy + fleet + audit + RBAC)"
+
+check-v167: check-v167-governance-policy-apply
+	@echo "check-v167: OK (σ-governance-api kernel)"
+
+# --- v168 σ-Marketplace (registry + reputation σ) -----------------------
+# Skill / kernel / plugin marketplace.  Baked registry of 6
+# artifacts across all three kinds, each carrying a
+# deterministic FNV-sha (8 bytes hex), tests_passed/total,
+# user_reports_total/negative, and benchmark_delta_pct.
+# σ_reputation = clamp(0.6·fail_rate + 0.3·neg_rate +
+# 0.1·bench_penalty, 0, 1).  σ-gated install refuses any
+# artifact with σ_reputation > 0.50 unless `--force` overrides;
+# the override is logged as status=forced.  Publish appends a
+# new artifact and recomputes σ.  A .cos-skill fixture
+# validator asserts the required file set is present.
+# v168.1 swaps the baked store for a real HTTPS registry and
+# computes real SHA-256 over a packed tarball.
+V168_INC  = -Isrc/v168
+V168_SRCS = src/v168/marketplace.c
+
+creation_os_v168_marketplace: $(V168_SRCS) src/v168/main.c
+	$(CC) $(CFLAGS) $(V168_INC) -o $@ \
+	    $(V168_SRCS) src/v168/main.c $(LDFLAGS)
+
+check-v168-marketplace-publish-install: creation_os_v168_marketplace
+	@bash benchmarks/v168/check_v168_marketplace_publish_install.sh
+	@echo "check-v168-marketplace-publish-install: OK (registry + reputation + σ-gated install)"
+
+check-v168: check-v168-marketplace-publish-install
+	@echo "check-v168: OK (σ-marketplace kernel)"
+
+check-v164-v168: check-v164 check-v165 check-v166 check-v167 check-v168
+	@echo "check-v164-v168: OK (plugin + edge + stream + governance + marketplace)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

@@ -270,6 +270,36 @@ on every token**:
     all-genes baseline), converges a Pareto front with ≥ 3
     non-dominated points, and emits an **auto-profile** tailored to
     a declared device budget (`lat_ms`, `mem_mb`).
+19. **Extensible, portable, streaming, governable, shareable
+    (v164–v168)** — the ecosystem layer: a **σ-plugin host** (v164)
+    with a stable C ABI (`init / process / cleanup`), cap-mask
+    sandbox (`NETWORK / FILE_READ / FILE_WRITE / SUBPROCESS /
+    MEMORY_READ`, with `MODEL_WEIGHTS` a permanent deny), a
+    `timeout_ms` hard kill, and 4 officially-baked plugins
+    (`web-search`, `calculator`, `file-reader`, `git`) whose
+    `σ_reputation` is a ring-buffered geomean of the last 16
+    σ_plugin observations; a **σ-edge runtime model** (v165)
+    declaring 5 target profiles (`macbook_m3`, `rpi5`,
+    `jetson_orin`, `android`, `ios`) with
+    `τ_edge = clamp(τ_default / max(avail/8192, 0.125), 0.15, 1.0)`
+    — the smaller the device, the higher τ, the more abstains,
+    the more honest the model stays; a **σ-stream wire protocol**
+    (v166) that emits one NDJSON frame per generated token
+    (`token`, 8-channel σ vector, `sigma_product`,
+    `audible_delay_ms = 40 + 400·σ`) and **interrupts itself**
+    the moment `σ_product > τ_interrupt`; a **σ-governance-API**
+    (v167) with 3 domain policies (medical / creative / code), a
+    4-node fleet ledger whose policy-version stamp refuses any
+    `DOWN` node (a down node cannot claim compliance), an
+    append-only audit log of `emit / abstain / revise / denied`
+    verdicts, and a 4-role RBAC (`admin / user / auditor /
+    developer`) where the auditor is *deliberately* denied chat
+    so the compliance seat cannot become the prompting seat; and
+    a **σ-marketplace** (v168) with a 6-artifact baked registry
+    across skill / kernel / plugin, a reputation model
+    `σ = clamp(0.6·fail + 0.3·neg + 0.1·bench_pen, 0, 1)`, and
+    a **σ-gated install** that refuses any artifact with
+    `σ_reputation > 0.50` without an explicit `--force`.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -548,6 +578,33 @@ real v125 DPO training inside a v144 RSI cycle, real per-kernel
 `kernels/vNN.manifest.toml` on disk, real v143 benchmark smokes
 per CMA-ES candidate — are named in each kernel's doc page, but
 never claimed before they land.
+
+### Extensible · portable · streaming · governable · shareable (v164–v168)
+
+Ecosystem layer — the five kernels that let third parties **extend
+the stack without forking, run it on tiny hardware, stream σ per
+token, govern it at organization scale, and publish
+reputation-gated artifacts to each other**. Every v0 merge-gate is
+offline, deterministic, and weights-frozen; v1 plugs real
+`dlopen`/`seccomp`, real cross-compilation + QEMU CI, real
+WebSocket transport, a real HTTP policy server, and a real HTTPS
+marketplace with SHA-256 receipts.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v164**](docs/v164/README.md) σ-Plugin | Stable C ABI (`cos_plugin_init / _process / _cleanup`), manifest with `required_caps` (bitmask), `timeout_ms`, `memory_mb`, and an unconditional deny of `COS_V164_CAP_MODEL_WEIGHTS`. 4 officially-baked plugins: `web-search`, `calculator`, `file-reader`, `git`. Registry with hot-swap `enable/disable`. | `σ_reputation` = ring-buffered geomean of the last 16 `σ_plugin` observations; a plugin that abstains often drifts its reputation away from zero. A missing cap is refused with `σ = 1.0` (hard abstain). Every invocation updates σ — **cannot hide a failure**. |
+| [**v165**](docs/v165/README.md) σ-Edge | Baked profile table for 5 targets (`macbook_m3` / `rpi5` / `jetson_orin` / `android` / `ios`) with arch, triple, available RAM, GPU/camera, default HTTP port, and a Makefile `make_target` pointing at the cos-lite cross-compile recipe. A 4-component RAM budget (binary / weights / kvcache / sigma_overhead) decides whether cos-lite is allowed to boot. | `τ_edge = clamp(τ_default / max(avail/8192, 0.125), 0.15, 1.0)` — small devices raise τ, which raises abstain rate, which keeps honesty proportional to capability. `ios` is explicitly marked `supported_in_v0 = false` so the profile surface matches the roadmap. |
+| [**v166**](docs/v166/README.md) σ-Stream | NDJSON frame shape identical to a future WebSocket transport: `{kind, seq, token, sigma_product, channels[8], audible_delay_ms}`. Stream closes with `{kind: "complete" \| "interrupted", n_emitted, interrupt_seq, sigma_final}`. | **Interrupt-on-σ**: the stream stops *itself* the moment `σ_product > τ_interrupt` and emits a dedicated `interrupted` frame with the trigger reason. Voice hook: `audible_delay_ms = 40 + 400·σ` — uncertainty becomes audible prosody in the v127 pipeline. |
+| [**v167**](docs/v167/README.md) σ-Governance-API | Domain policies (`medical / creative / code / legal`) declaring `(τ, abstain_message, require_sandbox)`; a 4-node fleet (`lab-m3 / lab-rpi5 / cloud-a / cloud-b`); append-only ring audit log (N=64) of every decision; 4-role RBAC (`admin / user / auditor / developer`). | A `DOWN` node is refused the new `policy_version` stamp — **an unhealthy node cannot claim compliance**. `auditor` is deliberately denied `COS_V167_CAP_CHAT` — the compliance seat cannot become the prompting seat. Every verdict is tagged with `σ_product` so the audit log is itself σ-annotated. |
+| [**v168**](docs/v168/README.md) σ-Marketplace | 6-artifact baked registry (2 skills, 2 kernels, 2 plugins) with author, deterministic sha hex, tests_passed/total, user_reports, and `benchmark_delta_pct`. CLI: `--search`, `--install [--force]`, `--validate-cos-skill`. | `σ_reputation = clamp(0.6·fail_rate + 0.3·neg_rate + 0.1·bench_penalty, 0, 1)`; **σ-gated install** refuses any artifact with `σ > 0.50` without `--force`, and logs forced installs as `status: "forced"` so the audit trail shows who bypassed which gate. |
+
+Every v164–v168 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — real `dlopen` + `fork` +
+`seccomp-bpf`, real cross-compilation + QEMU-ARM64 CI, real
+`ws://` WebSocket server + real GGUF tokenizer, a real HTTP
+policy server with TLS + GDPR/SOC2/HIPAA exports, and a real
+HTTPS marketplace with SHA-256 receipts — are named in each
+kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
