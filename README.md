@@ -127,6 +127,20 @@ on every token**:
     memory store (v126).  This is what the industry calls "Living
     Weights" / TTT-E2E — delivered locally, on M-series Macs, as
     a merge-gate-enforced policy rather than a press release.
+12. **Collective intelligence that stays local** — σ-weighted
+    federated averaging + σ-scaled differential privacy + σ-adaptive
+    top-K sparsification + GDPR-compliant unlearn-diff (v129); a
+    pure-C compression layer — FP4 LoRA (8×), σ-profile pack (4×,
+    8 bytes / profile), PQ for 2568-d embeddings (1284×), σ-aware
+    context allocator (v130); a session timeline with OLS σ-trends,
+    σ-weighted exponential decay, spike detection, and deadline-σ
+    prediction (v131); an adaptive user profile that infers
+    expertise per topic from σ and persists to a hand-editable
+    `~/.creation-os/persona.toml` (v132); and a system-level
+    metacognition layer with weekly snapshots, OLS slope per week,
+    **meta-σ (σ of σ itself)**, auto-diagnose from the highest-σ
+    channel, and a deterministic self-benchmark runner (v133). σ
+    ends up self-referential: `K(K) = K`.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -207,19 +221,50 @@ Every v124–v126 merge-gate check is weights-free.  The MLX trainers
 the vNN.1 follow-ups per
 [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
+### Collective intelligence · codec · temporal · persona · meta (v129–v133)
+
+The collective-intelligence stack.  Every kernel here is still
+pure-C, still deterministic, and still weights-free at the merge
+gate — but v129–v133 move the system from a single-node continual
+learner (v124–v126) to a network of them, with a compression
+layer, time-awareness, per-user adaptation, and a metacognition
+layer that watches the whole stack and raises the alarm when it
+drifts.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v129**](docs/v129/README.md) σ-Federated | σ-weighted FedAvg aggregator (weight ∝ 1/σ_node) + σ-scaled Gaussian differential privacy (noise grows with σ) + σ-adaptive top-K sparsification (K ∝ 1 − σ_node) + unlearn-diff (subtract weight·contribution for GDPR erasure). Transport-free by design; v128 mesh wires the socket layer in v129.1. | Plain FedAvg (McMahan 2017) lets an uncertain node corrupt the global model at the same weight as a confident one. v129 weights by aggregate-level σ so confident nodes dominate; this specific weighting (aggregate σ rather than sample importance) is new in the federated-learning literature to our knowledge. |
+| [**v130**](docs/v130/README.md) σ-Codec | Four sub-codecs: FP4 LoRA-delta packer (4 bits/value, shared scale → 8× vs fp32, rel-RMSE ≈ 0.04 on Gaussian Δ); σ-profile packer (8 floats ↔ 8 bytes, error ≤ 1/255); Product Quantization for 2568-d embeddings (M=8 × K=128 → 8 bytes/vector = 1284× shrink, recon cosine > 0.90 on synthetic); σ-aware context compression where high-σ chunks keep more budget. | Existing compressors are σ-blind — they shrink everything the same way. v130 routes detail where uncertainty needs it: terse for confident chunks, verbose for the parts the downstream reasoner cannot yet resolve. Pure C, no zlib, no lz4. |
+| [**v131**](docs/v131/README.md) σ-Temporal | Session timeline with window recall `[since, until, topic?]`, OLS σ-trend per topic reported per second **and** per day, σ-weighted exponential decay `exp(-age/half_life · (1 + α·σ))` (uncertain old memories decay ~30× faster than confident old ones), spike detection (σ jumps flagged by threshold), deadline-σ prediction `σ̂ = baseline + slope · fraction_used`. | Makes time a first-class signal: "what did we discuss last week?", "is the model learning math faster than it's forgetting biology?", "how anxious should the planner be five minutes before a deadline?" — all answerable against the same σ-governed timeline. |
+| [**v132**](docs/v132/README.md) σ-Persona | Per-user profile at `~/.creation-os/persona.toml` (canonical, hand-editable). EMA of σ per topic (α=0.30) → four-level staircase expert / advanced / intermediate / beginner. Correction-feedback style state: `too-long` → length down, `too-technical` → detail down, `too-direct` → tone up, clamped at rail ends. Minimal pure-C TOML writer + parser with full round-trip. | The model adapts to *this* user without touching weights: σ tells it when you're struggling, corrections tell it when you want a different register. **State is per-node — v132 never federates through v129** — so style is GDPR-local by construction. |
+| [**v133**](docs/v133/README.md) σ-Meta | Weekly snapshot history + OLS slope per week + regression verdict (`slope > τ_reg → REGRESSION_DETECTED`, lifts v124 rollback) + **meta-σ** (`stddev(σ)/mean(σ)` — σ of σ itself; `> τ_meta → CALIBRATION_DRIFT` supersedes) + auto-diagnose (highest-σ channel → `adapter_corrupted` / `kv_cache_degenerate` / `memory_polluted` / `red_team_fail` / `formal_violation` / …) + deterministic self-benchmark runner behind a caller-supplied `cos_v133_answer_fn`. | K(K) = K — the holographic principle as engineering. σ is the confidence of the model; meta-σ is the confidence of *σ itself*. When they diverge, no σ-governed claim downstream remains trustworthy, and v133 raises the alarm before the user notices. |
+
+Every v129–v133 merge-gate check is framework-free, deterministic,
+and weights-free.  The v128 mesh wire-up (for v129 transport and
+v130 codec consumers), the web dashboard on v108 (for v133), real
+BitNet hidden-state corpora (for v130 PQ training), and the v115
+SQLite binding (for v131 timelines) live in the respective `vNN.1`
+follow-ups per [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
 ### AGI architecture in one picture
 
 Six layers, composable, each falsifiable:
 
 ```
+  Layer 7  Metacognition    weekly snapshots · OLS slope/week · meta-σ (σ of σ)
+                            auto-diagnose (highest-channel σ → cause) · self-bench (v133)
+                            adaptive user profile · expertise staircase · TOML (v132)
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
-                            MCP server for Claude / Cursor / VS Code (v116)
+           + Collective     MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
+                            σ-weighted FedAvg · σ-DP · top-K · unlearn-diff (v129)
+                            FP4 LoRA · σ-pack · PQ embed · σ-aware context (v130)
   Layer 5  Training +       MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
            Persistence      σ-weighted SQLite memory (v115) · σ-embed 2568-d (v126)
                             σ-targeted big→small distill selector (v120)
                             idle-time continual LoRA + forgetting rollback (v124)
                             σ-DPO: σ is the preference, no annotator (v125)
+                            session timeline · σ-decay · spikes · deadline-σ (v131)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
