@@ -5084,6 +5084,29 @@ check-v222-emotion-detect-no-manipulate: creation_os_v222_emotion
 check-v222: check-v222-emotion-detect-no-manipulate
 	@echo "check-v222: OK (σ-emotion kernel)"
 
+# --- v223 σ-Meta-Cognition (strategy awareness + bias + Gödel) ---
+# 6 reasoning paths × 5 strategies × 4 problem types ×
+# 3 biases.  σ_strategy prior enforces tool/task fit
+# (deduction ≪ heuristic on logic, analogy ≪ deduction
+# on creative).  σ_goedel is the explicit non-
+# verifiable residual — the 1=1 cross-system limit.
+V223_INC  = -Isrc/v223
+V223_SRCS = src/v223/meta_cognition.c
+
+creation_os_v223_meta_cognition: $(V223_SRCS) src/v223/main.c
+	$(CC) $(CFLAGS) $(V223_INC) -o $@ \
+	    $(V223_SRCS) src/v223/main.c $(LDFLAGS)
+
+check-v223-metacognition-strategy-aware: creation_os_v223_meta_cognition
+	@bash benchmarks/v223/check_v223_metacognition_strategy_aware.sh
+	@echo "check-v223-metacognition-strategy-aware: OK (strategy + bias + Gödel)"
+
+check-v223: check-v223-metacognition-strategy-aware
+	@echo "check-v223: OK (σ-meta-cognition kernel)"
+
+check-v219-v223: check-v219 check-v220 check-v221 check-v222 check-v223
+	@echo "check-v219-v223: OK (create + simulate + language + emotion + meta-cognition)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
