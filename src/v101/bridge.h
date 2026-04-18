@@ -41,10 +41,28 @@ extern "C" {
  * Each channel is clipped to [0.0, 1.0].  Interpretation:
  *   0.0 = "maximally confident / peaked distribution"
  *   1.0 = "maximally uncertain / flat distribution"
- * A single scalar σ is derived as the mean of the eight channels and is
- * the value the caller should compare against an abstain threshold.
+ * A single scalar σ is derived from the eight channels and is the value
+ * the caller should compare against an abstain threshold.  The aggregator
+ * used to produce that scalar is runtime-selectable; see
+ * `cos_v101_set_default_aggregator` below.
  */
 enum { COS_V101_SIGMA_CHANNELS = 8 };
+
+/* σ-aggregator choices.
+ *
+ * v104's pre-registered operator search (`docs/v104/RESULTS.md`) compared
+ * ten post-hoc reductions of the 8-channel σ profile on BitNet b1.58 2B-4T
+ * across arc_easy / arc_challenge / truthfulqa_mc2 (n = 4 365).  The
+ * geometric mean (PRODUCT) is the only operator that beats entropy
+ * Bonferroni-significantly on both hard tasks simultaneously, and is
+ * Δ-neutral on arc_easy.  v105 flips the default aggregator from MEAN to
+ * PRODUCT; MEAN remains accessible for backward compatibility and for
+ * consumers that have calibrated thresholds against the arithmetic mean.
+ */
+typedef enum cos_v101_sigma_agg {
+    COS_V101_AGG_MEAN    = 0,  /* arithmetic mean of 8 channels (pre-v105 default) */
+    COS_V101_AGG_PRODUCT = 1,  /* geometric mean of 8 channels (v105+ default) */
+} cos_v101_sigma_agg_t;
 
 typedef struct cos_v101_sigma {
     float entropy_norm;    /* H(softmax) / log(n_vocab) */
@@ -56,12 +74,37 @@ typedef struct cos_v101_sigma {
     float n_effective;     /* 1.0 - exp(H) / n_vocab */
     float logit_std;       /* 1.0 - tanh(std_logit / 4.0) */
 
-    float sigma;           /* mean of the eight channels, abstain signal */
+    float sigma;            /* default aggregator output (PRODUCT unless
+                               overridden).  This is the value abstention
+                               thresholds are compared against. */
+    float sigma_arith_mean; /* arithmetic mean of the 8 channels; what the
+                               `sigma` field was on pre-v105 builds. */
+    float sigma_product;    /* geometric mean of the 8 channels, with an
+                               epsilon floor of 1e-6 to avoid log(0). */
 } cos_v101_sigma_t;
 
+/* Select the default σ-aggregator used by every subsequent call to
+ * `cos_v101_sigma_from_logits` on the calling thread (and, for simplicity,
+ * process-wide — there is no thread-local storage here).  Returns the
+ * previously-selected aggregator so callers can restore it.  Calling this
+ * with an unknown enum value is a no-op and returns the current default.
+ *
+ * The default is `COS_V101_AGG_PRODUCT` on v105+ builds.  It can also be
+ * overridden at process start by setting the environment variable
+ * `COS_V101_AGG=mean` or `COS_V101_AGG=product`.
+ */
+cos_v101_sigma_agg_t cos_v101_set_default_aggregator(cos_v101_sigma_agg_t agg);
+cos_v101_sigma_agg_t cos_v101_get_default_aggregator(void);
+
+/* Human-readable name of an aggregator ("mean" or "product"). */
+const char *cos_v101_aggregator_name(cos_v101_sigma_agg_t agg);
+
 /* Compute the eight σ-channels for a row of float logits.  Pure C, no libm
- * dependence beyond `expf` / `logf`.  Always available regardless of build
- * mode.  Returns 0 on success, -1 if logits == NULL or n_vocab < 2.
+ * dependence beyond `exp` / `log` / `sqrt` / `tanh`.  Always available
+ * regardless of build mode.  Fills every field of `*out`, including both
+ * `sigma_arith_mean` and `sigma_product`; `sigma` is set to whichever of
+ * those the current default aggregator selects.  Returns 0 on success,
+ * -1 if logits == NULL or n_vocab < 2.
  */
 int cos_v101_sigma_from_logits(const float *logits, int n_vocab, cos_v101_sigma_t *out);
 
@@ -125,8 +168,17 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
  *     continuation tokens (length COS_V101_SIGMA_CHANNELS; may be NULL)
  *   - the maximum per-token σ observed across the continuation (may be NULL);
  *     useful as an alternative abstain signal (mean vs. max).
- * All existing `*_loglikelihood()` semantics are preserved.  In stub mode
- * returns COS_V101_ERR_NO_MODEL.
+ *
+ * `out_sigma_mean` semantic is **unchanged** across v105 — it is always
+ * the per-continuation mean of the *arithmetic-mean* 8-channel σ.  This
+ * preserves backward compatibility for v102/v103/v104 sidecar consumers
+ * that calibrated thresholds against the arithmetic mean.
+ *
+ * `out_sigma_max_token` tracks the maximum per-token value of whichever
+ * aggregator is currently active (see `cos_v101_set_default_aggregator`);
+ * post-v105 that is the geometric mean by default.  All existing
+ * `*_loglikelihood()` semantics are preserved.  In stub mode returns
+ * COS_V101_ERR_NO_MODEL.
  */
 int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
                                      const char *ctx, const char *cont,
@@ -135,6 +187,19 @@ int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
                                      float *out_sigma_mean,
                                      float *out_sigma_profile, /* [8] */
                                      float *out_sigma_max_token);
+
+/* v105 extension: same as `_loglikelihood_ex` but additionally returns
+ * the per-continuation mean of the *geometric-mean* σ (a.k.a. sigma_product).
+ * All `_ex` parameters keep their meaning; the extra `out_sigma_product`
+ * parameter may be NULL if the caller does not want it. */
+int cos_v101_bridge_loglikelihood_v105(cos_v101_bridge_t *b,
+                                       const char *ctx, const char *cont,
+                                       double *ll, int *is_greedy,
+                                       int *n_ctx_tokens, int *n_cont_tokens,
+                                       float *out_sigma_mean,
+                                       float *out_sigma_profile, /* [8] */
+                                       float *out_sigma_max_token,
+                                       float *out_sigma_product);
 
 /* Greedy generation.  Decodes ctx, then emits up to max_tokens tokens,
  * stopping as soon as any string in `until[]` (if `n_until > 0`) appears at

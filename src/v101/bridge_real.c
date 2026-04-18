@@ -178,13 +178,14 @@ static int decode_tokens(struct llama_context *ctx,
 /* Loglikelihood: score log P(cont_tokens | ctx_tokens)                    */
 /* ---------------------------------------------------------------------- */
 
-int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
-                                     const char *ctx_text, const char *cont_text,
-                                     double *ll_out, int *is_greedy_out,
-                                     int *n_ctx_tokens_out, int *n_cont_tokens_out,
-                                     float *out_sigma_mean,
-                                     float *out_sigma_profile,  /* [8] */
-                                     float *out_sigma_max_token)
+int cos_v101_bridge_loglikelihood_v105(cos_v101_bridge_t *b,
+                                       const char *ctx_text, const char *cont_text,
+                                       double *ll_out, int *is_greedy_out,
+                                       int *n_ctx_tokens_out, int *n_cont_tokens_out,
+                                       float *out_sigma_mean,
+                                       float *out_sigma_profile,  /* [8] */
+                                       float *out_sigma_max_token,
+                                       float *out_sigma_product)
 {
     if (!b || !ctx_text || !cont_text) return COS_V101_ERR_INVAL;
 
@@ -238,10 +239,17 @@ int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
 
     double  ll_sum        = 0.0;
     int     all_greedy    = 1;
-    double  sigma_sum     = 0.0;
+    /* `sigma_sum` tracks the per-continuation mean of the arithmetic-mean
+     * σ scalar — this is what the historical `out_sigma_mean` API returns
+     * and what v102/v103/v104 sidecar consumers key on.  The effective
+     * aggregator (post-v105 default = PRODUCT) is also reported alongside
+     * via `s.sigma` and the `sigma_max_tok` tracks its per-token maximum.
+     */
+    double  sigma_sum       = 0.0;  /* Σ s.sigma_arith_mean (backward compat) */
+    double  sigma_prod_sum  = 0.0;  /* Σ s.sigma_product    (v105)             */
     double  sigma_prof_sum[COS_V101_SIGMA_CHANNELS] = {0};
-    float   sigma_max_tok = 0.0f;
-    int     n_vocab       = b->n_vocab;
+    float   sigma_max_tok   = 0.0f; /* max_t s.sigma (default aggregator)      */
+    int     n_vocab         = b->n_vocab;
 
     /* For each cont token, read the logits at the current tail,
      * record log p(cont_tok | prefix), then decode cont_tok with
@@ -265,10 +273,15 @@ int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
         ll_sum += log_p;
         if (argmax != cont_toks[k]) all_greedy = 0;
 
-        /* σ-channel aggregation. */
+        /* σ-channel aggregation.  We accumulate both the arithmetic-mean
+         * scalar (backward-compat) and the geometric-mean scalar (v105
+         * default) so the CLI and backends can expose both in a single
+         * pass.  `sigma_max_tok` uses `s.sigma` (the default aggregator's
+         * output) since this is the value used by the abstention gate. */
         cos_v101_sigma_t s;
         if (cos_v101_sigma_from_logits(logits, n_vocab, &s) == 0) {
-            sigma_sum += (double)s.sigma;
+            sigma_sum      += (double)s.sigma_arith_mean;
+            sigma_prod_sum += (double)s.sigma_product;
             sigma_prof_sum[0] += (double)s.entropy_norm;
             sigma_prof_sum[1] += (double)s.margin;
             sigma_prof_sum[2] += (double)s.top_k_mass;
@@ -302,9 +315,27 @@ int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
         }
     }
     if (out_sigma_max_token) *out_sigma_max_token = sigma_max_tok;
+    if (out_sigma_product)   *out_sigma_product   = (float)(sigma_prod_sum / denom);
 
     free(toks);
     return COS_V101_OK;
+}
+
+int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
+                                     const char *ctx_text, const char *cont_text,
+                                     double *ll_out, int *is_greedy_out,
+                                     int *n_ctx_tokens_out, int *n_cont_tokens_out,
+                                     float *out_sigma_mean,
+                                     float *out_sigma_profile,  /* [8] */
+                                     float *out_sigma_max_token)
+{
+    return cos_v101_bridge_loglikelihood_v105(b, ctx_text, cont_text,
+                                              ll_out, is_greedy_out,
+                                              n_ctx_tokens_out, n_cont_tokens_out,
+                                              out_sigma_mean,
+                                              out_sigma_profile,
+                                              out_sigma_max_token,
+                                              /*out_sigma_product=*/NULL);
 }
 
 int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
@@ -313,12 +344,13 @@ int cos_v101_bridge_loglikelihood(cos_v101_bridge_t *b,
                                   int *n_ctx_tokens_out, int *n_cont_tokens_out,
                                   float *out_sigma_mean)
 {
-    return cos_v101_bridge_loglikelihood_ex(b, ctx_text, cont_text,
-                                            ll_out, is_greedy_out,
-                                            n_ctx_tokens_out, n_cont_tokens_out,
-                                            out_sigma_mean,
-                                            /*out_sigma_profile=*/NULL,
-                                            /*out_sigma_max_token=*/NULL);
+    return cos_v101_bridge_loglikelihood_v105(b, ctx_text, cont_text,
+                                              ll_out, is_greedy_out,
+                                              n_ctx_tokens_out, n_cont_tokens_out,
+                                              out_sigma_mean,
+                                              /*out_sigma_profile=*/NULL,
+                                              /*out_sigma_max_token=*/NULL,
+                                              /*out_sigma_product=*/NULL);
 }
 
 /* ---------------------------------------------------------------------- */

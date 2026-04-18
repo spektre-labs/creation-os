@@ -207,22 +207,38 @@ static int stdin_loop(cos_v101_bridge_t *b)
             float sigma_mean = 0.f;
             float sigma_profile[COS_V101_SIGMA_CHANNELS] = {0};
             float sigma_max_token = 0.f;
-            int r = cos_v101_bridge_loglikelihood_ex(b, ctx, cont,
-                                                     &ll, &is_greedy,
-                                                     &n_ctx_t, &n_cont_t,
-                                                     &sigma_mean,
-                                                     sigma_profile,
-                                                     &sigma_max_token);
+            float sigma_product = 0.f;
+            int r = cos_v101_bridge_loglikelihood_v105(b, ctx, cont,
+                                                      &ll, &is_greedy,
+                                                      &n_ctx_t, &n_cont_t,
+                                                      &sigma_mean,
+                                                      sigma_profile,
+                                                      &sigma_max_token,
+                                                      &sigma_product);
             if (r != COS_V101_OK) {
                 printf("{\"error\":\"ll rc=%d\"}\n", r);
             } else {
+                /* v105: emit sigma_mean (arithmetic, backward compat for
+                 * v102/v103/v104 analysers), sigma_product (new default
+                 * aggregator output), sigma (alias of whichever aggregator
+                 * is active on this process), plus the full profile and
+                 * per-token max.  All fields are always present so downstream
+                 * tooling can key on whichever it prefers. */
+                cos_v101_sigma_agg_t agg = cos_v101_get_default_aggregator();
+                float sigma_default = (agg == COS_V101_AGG_MEAN)
+                                           ? sigma_mean : sigma_product;
                 printf("{\"loglikelihood\":%.8f,\"is_greedy\":%s,"
                        "\"n_ctx_tokens\":%d,\"n_cont_tokens\":%d,"
-                       "\"sigma_mean\":%.6f,\"sigma_max_token\":%.6f,"
+                       "\"sigma\":%.6f,\"sigma_aggregator\":\"%s\","
+                       "\"sigma_mean\":%.6f,\"sigma_product\":%.6f,"
+                       "\"sigma_max_token\":%.6f,"
                        "\"sigma_profile\":[%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f,%.6f]}\n",
                        ll, is_greedy ? "true" : "false",
                        n_ctx_t, n_cont_t,
-                       (double)sigma_mean, (double)sigma_max_token,
+                       (double)sigma_default,
+                       cos_v101_aggregator_name(agg),
+                       (double)sigma_mean, (double)sigma_product,
+                       (double)sigma_max_token,
                        (double)sigma_profile[0], (double)sigma_profile[1],
                        (double)sigma_profile[2], (double)sigma_profile[3],
                        (double)sigma_profile[4], (double)sigma_profile[5],

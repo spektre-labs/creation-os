@@ -809,13 +809,65 @@ If only ten PRs were allowed before the next release, rank:
     Bonferroni-significantly on **both** hard tasks simultaneously
     (truthfulqa_mc2 p = 0.003, arc_challenge p = 0.004) → tier P
     pending independent re-test at a second scale.
-0f. **v105 representation surgery (next)** — swap the `σ_mean > τ`
-    abstention gate for **either** `σ_product > τ` (default; cross-
-    task robust) **or** `σ_max_token > τ` (hard-task tuned; known
-    H1-confirmed winner on truthfulqa_mc2).  Rethink v29: drop
-    `logit_std` from the default profile **or** learn per-channel
-    weights via a calibration objective on a held-out split.  No
-    RLHF here (that is deficiency #7 and still follows v105).
+0f. **v105 representation surgery — phase 1 done.** The default
+    aggregator in `cos_v101_sigma_from_logits` is now the geometric
+    mean (`sigma_product`) of the eight channels; `sigma_arith_mean`
+    and `sigma_product` are both always on the struct, runtime-
+    selectable via `cos_v101_set_default_aggregator` or
+    `COS_V101_AGG=mean|product`, and the CLI JSON output carries all
+    three scalars (`sigma`, `sigma_mean`, `sigma_product`) plus a
+    `sigma_aggregator` label.  v102/v103/v104 sidecar readers are
+    bit-for-bit backward compatible because `sigma_mean` still means
+    "arithmetic mean over tokens and channels".  `make merge-gate`:
+    31/31 on `check-v101` (was 19/19).  Full rationale:
+    `docs/v105/REPRESENTATION_SURGERY.md`.  Phase 2 (dropping
+    `logit_std` from the default profile, or learning per-channel
+    weights on a held-out split) intentionally deferred: v105 on
+    its own has no new measurement claim, and the rest of the
+    production track (v106–v110) is ordered strictly to ship a
+    usable local LLM with σ-governance before reopening the
+    architecture surgery.
+0g. **v106 σ-Server (next)** — OpenAI-compatible HTTP layer around
+    the existing v101 bridge.  `POST /v1/chat/completions`,
+    `/v1/completions`, `/v1/models`, plus Creation-OS-specific
+    `GET /v1/sigma-profile` and `GET /health`.  SSE streaming for
+    `chat.completions.stream=true` so Cursor / Continue work
+    unmodified.  Config via `~/.creation-os/config.toml`; σ
+    aggregator selectable per request (falls back to server
+    default = `product`).  No BitNet specificity at this layer; the
+    model path is a CLI argument and the σ-math is
+    logit-distribution-only.  The abstention threshold τ, the
+    aggregator, and the streaming sigma-profile are all visible to
+    the HTTP client — the point of v106 is to make σ-governance
+    a first-class citizen of the OpenAI protocol surface.
+0h. **v107 σ-Installer** — Homebrew formula + `curl | sh` script +
+    Docker image from one universal-binary CI artefact.  No source
+    build required on target machines.  Homebrew tap:
+    `spektre-labs/creation-os`.  Docker Hub:
+    `spektrelabs/creation-os`.  Decision point for Lauri: does
+    `brew install spektre-labs/creation-os/cos` work on a clean macOS?
+0i. **v108 σ-Chat (Web UI)** — single static HTML file that talks to
+    the v106 server.  Vanilla JS only, no build step, no framework.
+    Renders σ-channel bars per response, abstention indicator, and
+    an asettings panel for τ / aggregator / model.
+    `http://localhost:8080/` serves it.
+0j. **v109 σ-MultiModel** — regression tests against Llama-3.1-8B,
+    Qwen2.5-7B, Mistral-7B (GGUF Q4_K_M).  If `sigma_product` is
+    cross-model robust the tier for "σ-stack is model-agnostic"
+    moves P → M and the tagline changes from "BitNet σ-wrapper" to
+    "σ-governance layer for any local GGUF model".
+0k. **v110 σ-Launch** — README rewrite with install-first ordering,
+    60-second silent demo video, Reddit / HN posts once the
+    previous v-levels have each cleared their acceptance test.
+_Original 0f gate text for the record — "swap the σ_mean > τ
+abstention gate for either σ_product > τ (default; cross-task
+robust) or σ_max_token > τ (hard-task tuned; known H1-confirmed
+winner on truthfulqa_mc2); rethink v29: drop logit_std from the
+default profile or learn per-channel weights via a calibration
+objective on a held-out split; no RLHF here — that is deficiency
+#7 and still follows v105."  v105 delivers the default-swap half
+of that sentence; the "drop logit_std / per-channel weights" half
+is held over to a later representation-surgery phase._
 1. **PQC: ML-KEM-768 + ML-DSA-65 in v63 σ-Cipher** (harvest-now-decrypt-
    later is a dated risk).
 2. **Real seL4 compartmentalisation** of v60..v80 as CAmkES components

@@ -84,6 +84,22 @@ int cos_v101_bridge_loglikelihood_ex(cos_v101_bridge_t *b,
     return COS_V101_ERR_NO_MODEL;
 }
 
+int cos_v101_bridge_loglikelihood_v105(cos_v101_bridge_t *b,
+                                       const char *ctx, const char *cont,
+                                       double *ll, int *is_greedy,
+                                       int *n_ctx_tokens, int *n_cont_tokens,
+                                       float *out_sigma_mean,
+                                       float *out_sigma_profile,
+                                       float *out_sigma_max_token,
+                                       float *out_sigma_product)
+{
+    (void)b; (void)ctx; (void)cont;
+    (void)ll; (void)is_greedy; (void)n_ctx_tokens; (void)n_cont_tokens;
+    (void)out_sigma_mean; (void)out_sigma_profile; (void)out_sigma_max_token;
+    (void)out_sigma_product;
+    return COS_V101_ERR_NO_MODEL;
+}
+
 int cos_v101_bridge_generate(cos_v101_bridge_t *b,
                              const char *ctx,
                              const char *const *until, int n_until,
