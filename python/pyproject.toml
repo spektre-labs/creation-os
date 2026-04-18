@@ -1,0 +1,37 @@
+[build-system]
+requires      = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name            = "creation-os"
+version         = "0.1.0"
+description     = "Python SDK for Creation OS — σ-gated, OpenAI-compatible chat client (v142 σ-Interop)."
+readme          = "README.md"
+requires-python = ">=3.9"
+license         = { text = "AGPL-3.0-or-later" }
+authors         = [{ name = "Spektre Labs", email = "ops@spektre.dev" }]
+keywords        = ["creation-os", "sigma", "llm", "openai", "langchain", "llamaindex"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+  "Operating System :: OS Independent",
+  "Intended Audience :: Developers",
+]
+
+# Zero hard dependencies on purpose — the SDK uses only the stdlib.
+# Framework integrations live behind optional extras.
+dependencies = []
+
+[project.optional-dependencies]
+langchain  = ["langchain-core>=0.1"]
+llamaindex = ["llama-index-core>=0.10"]
+openai     = ["openai>=1.0"]
+all        = ["langchain-core>=0.1", "llama-index-core>=0.10", "openai>=1.0"]
+
+[project.urls]
+Homepage   = "https://github.com/spektre-labs/creation-os"
+Repository = "https://github.com/spektre-labs/creation-os"
+
+[tool.setuptools.packages.find]
+where   = ["."]
+include = ["creation_os*"]
