@@ -398,7 +398,12 @@ merge-gate:
 	@$(MAKE) check-v191
 	@$(MAKE) check-v192
 	@$(MAKE) check-v193
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence)"
+	@$(MAKE) check-v194
+	@$(MAKE) check-v195
+	@$(MAKE) check-v196
+	@$(MAKE) check-v197
+	@$(MAKE) check-v198
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4430,6 +4435,135 @@ check-v193: check-v193-coherence-keff
 
 check-v189-v193: check-v189 check-v190 check-v191 check-v192 check-v193
 	@echo "check-v189-v193: OK (TTC + latent-reason + constitutional + emergent + coherence)"
+
+# --- v194 σ-Horizon (multi-horizon + degradation monitor) ---
+# Long-horizon agents collapse after ~35 minutes because they
+# don't measure their own degradation.  v194 makes that
+# measurement explicit: a three-tier goal tree (strategic /
+# tactical / operational) plus a σ-slope monitor on the
+# operational tier that, once the 10-tick climb exceeds
+# τ_degrade_slope, fires the recovery ladder in order —
+# v117 KV-cache flush → v172 summarize+resume → v115 break
+# point + persist progress.  Every operational task writes a
+# FNV-1a checkpoint so a crash never loses work, and a
+# simulated crash-recovery run reproduces the terminal hash
+# byte-identically.  Merge-gate contracts: ladder order
+# 1→2→3, σ after ladder < σ at detection, chain valid, and
+# crash recovery matches.  v194.1 wires live v115 memory and
+# `cos goals` CLI over `~/.creation-os/goals.jsonl`.
+V194_INC  = -Isrc/v194
+V194_SRCS = src/v194/horizon.c
+
+creation_os_v194_horizon: $(V194_SRCS) src/v194/main.c
+	$(CC) $(CFLAGS) $(V194_INC) -o $@ \
+	    $(V194_SRCS) src/v194/main.c $(LDFLAGS)
+
+check-v194-horizon-degradation-detect: creation_os_v194_horizon
+	@bash benchmarks/v194/check_v194_horizon_degradation_detect.sh
+	@echo "check-v194-horizon-degradation-detect: OK (1/3/12 tree + ladder + crash recovery)"
+
+check-v194: check-v194-horizon-degradation-detect
+	@echo "check-v194: OK (σ-horizon kernel)"
+
+# --- v195 σ-Recover (error classification + per-class fix) ---
+# Five error classes (HALLUCINATION, CAPABILITY_GAP,
+# PLANNING_ERROR, TOOL_FAILURE, CONTEXT_LOSS) each map to a
+# canonical recovery operator set: v180+v125 for hallucination,
+# v141+v145 for capability gap, v121 replan, v159 heal+retry,
+# v194 checkpoint.  Every incident logs a hash-chained record
+# of (error, recovery).  The v0 demonstrator runs two passes
+# over the same fixture so the v174 flywheel contract is
+# exercisable: pass-1 consumes strictly fewer ops than pass-0.
+# Calibration feedback: per-domain ECE strictly drops wherever
+# a hallucination appeared, because v187 is rebinned on the
+# signal.  Merge-gate: 5/5 classes, canonical partitioning,
+# strict learning gain, strict ECE drop on every domain.
+V195_INC  = -Isrc/v195
+V195_SRCS = src/v195/recover.c
+
+creation_os_v195_recover: $(V195_SRCS) src/v195/main.c
+	$(CC) $(CFLAGS) $(V195_INC) -o $@ \
+	    $(V195_SRCS) src/v195/main.c $(LDFLAGS)
+
+check-v195-recover-error-classify: creation_os_v195_recover
+	@bash benchmarks/v195/check_v195_recover_error_classify.sh
+	@echo "check-v195-recover-error-classify: OK (5 classes + canonical + ECE drop + learning)"
+
+check-v195: check-v195-recover-error-classify
+	@echo "check-v195: OK (σ-recover kernel)"
+
+# --- v196 σ-Habit (cortex/cerebellum pattern compile) ---
+# Repetitive audit-log patterns ≥ τ_repeat compile into
+# fast habits (v137 LLVM path, v0 closed-form cycle model);
+# σ is the cortex/cerebellum switch — σ_steady < τ_break
+# runs the compiled habit (cerebellum, ≥ 10× speedup), a σ
+# spike breaks out to full reasoning (cortex).  Library is
+# hash-chained.  Merge-gate: ≥ 3 habits, 10× speedup, at
+# least one σ-spike break-out actually returns to cortex.
+V196_INC  = -Isrc/v196
+V196_SRCS = src/v196/habit.c
+
+creation_os_v196_habit: $(V196_SRCS) src/v196/main.c
+	$(CC) $(CFLAGS) $(V196_INC) -o $@ \
+	    $(V196_SRCS) src/v196/main.c $(LDFLAGS)
+
+check-v196-habit-compile-speedup: creation_os_v196_habit
+	@bash benchmarks/v196/check_v196_habit_compile_speedup.sh
+	@echo "check-v196-habit-compile-speedup: OK (≥3 habits + 10× + break-out)"
+
+check-v196: check-v196-habit-compile-speedup
+	@echo "check-v196: OK (σ-habit kernel)"
+
+# --- v197 σ-Theory-of-Mind (user state + intent + anti-manipulation) ---
+# v197 estimates user state from observables (length,
+# edits, typing speed, topic variance), produces σ_tom,
+# predicts intent as mode-of-history, and adapts the
+# response mode only when σ_tom < τ_adapt — else neutral.
+# Anti-manipulation: firmware-style probes are rejected via
+# a v191 constitutional check; they never adapt.  Merge-gate
+# contracts: all 6 states covered, canonical state→mode
+# partitioning, ≥ 1 firmware probe rejected, deterministic.
+V197_INC  = -Isrc/v197
+V197_SRCS = src/v197/tom.c
+
+creation_os_v197_tom: $(V197_SRCS) src/v197/main.c
+	$(CC) $(CFLAGS) $(V197_INC) -o $@ \
+	    $(V197_SRCS) src/v197/main.c $(LDFLAGS)
+
+check-v197-tom-state-estimation: creation_os_v197_tom
+	@bash benchmarks/v197/check_v197_tom_state_estimation.sh
+	@echo "check-v197-tom-state-estimation: OK (6 states + canonical adapt + anti-manipulation)"
+
+check-v197: check-v197-tom-state-estimation
+	@echo "check-v197: OK (σ-ToM kernel)"
+
+# --- v198 σ-Moral (multi-framework geodesic) ---
+# Four ethical frameworks (deontological, utilitarian,
+# virtue, care) score every decision.  σ_moral is the
+# variance across the four scores; a moral path is a
+# 5-waypoint trajectory; the geodesic is the path with
+# strictly minimum mean σ_moral across three candidates.
+# Clear cases (σ < τ_clear) act; dilemmas (σ > τ_dilemma)
+# raise honest_uncertainty and invite human consultation.
+# No firmware refusals on clear cases — that behaviour is
+# measured and enforced = 0.  Merge-gate: 4/4 frameworks,
+# geodesic strict-min, dilemma→honest, clear→no refusal.
+V198_INC  = -Isrc/v198
+V198_SRCS = src/v198/moral.c
+
+creation_os_v198_moral: $(V198_SRCS) src/v198/main.c
+	$(CC) $(CFLAGS) $(V198_INC) -o $@ \
+	    $(V198_SRCS) src/v198/main.c $(LDFLAGS)
+
+check-v198-moral-multi-framework: creation_os_v198_moral
+	@bash benchmarks/v198/check_v198_moral_multi_framework.sh
+	@echo "check-v198-moral-multi-framework: OK (4 frameworks + geodesic + honest uncertainty)"
+
+check-v198: check-v198-moral-multi-framework
+	@echo "check-v198: OK (σ-moral kernel)"
+
+check-v194-v198: check-v194 check-v195 check-v196 check-v197 check-v198
+	@echo "check-v194-v198: OK (horizon + recover + habit + ToM + moral)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

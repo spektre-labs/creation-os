@@ -495,6 +495,59 @@ on every token**:
     monotone K_eff recovery as v187 ECE drops, so that
     calibration improvement is **literally the same quantity**
     as coherence improvement.
+25. **Horizon, recover, habit, ToM, moral (v194–v198)** —
+    the autonomous + moral layer: a **σ-horizon** (v194)
+    kernel that breaks the `~35-minute long-horizon collapse`
+    reported for frontier agents (Zylos Research, 2026) by
+    maintaining a three-tier goal tree (1 strategic / 3
+    tactical / 12 operational), running a σ-slope monitor
+    over a 10-tick window on the operational tier, and —
+    when the slope exceeds `τ_degrade_slope` — firing an
+    ordered recovery ladder `v117 KV-flush → v172
+    summarize → v115 break point + save`, with every
+    operational task writing a FNV-1a checkpoint so a
+    simulated crash reproduces the terminal hash
+    byte-identically — **work is never lost**; a
+    **σ-recover** (v195) kernel that turns every failure
+    into a labelled training signal with a five-class
+    taxonomy (`HALLUCINATION / CAPABILITY_GAP /
+    PLANNING_ERROR / TOOL_FAILURE / CONTEXT_LOSS`), a
+    canonical recovery operator partition
+    (`v180+v125 / v141+v145 / v121 / v159 / v194`), a
+    strict **learning-gain** contract where pass-1 consumes
+    fewer operators than pass-0 because v174 flywheel +
+    v125 DPO have trained on pass-0, and a per-domain ECE
+    drop that closes the loop with v187 calibration; a
+    **σ-habit** (v196) kernel that mirrors the cortex /
+    cerebellum split of human brains — prompt patterns
+    seen `≥ τ_repeat` times with `σ_steady < τ_break`
+    compile via v137 LLVM into routines that run in
+    `≥ 10× fewer cycles`, and σ is the **switch**: a σ
+    spike on a compiled habit breaks out to full reasoning
+    (CORTEX mode) instead of silently miscompiling, so
+    speed never costs trust; a **σ-ToM** (v197) kernel that
+    estimates the user's mental state from observables
+    (message length, edits, typing speed, topic variance,
+    6-turn history), classifies it into one of six states
+    (`focused / exploring / frustrated / hurried / creative /
+    analytical`), adapts the response mode only when
+    `σ_tom < τ_adapt` and otherwise stays neutral, and
+    **unconditionally rejects** every firmware-style
+    manipulation probe via v191 constitutional check — ToM
+    is for the user, never for the model's comfort; and the
+    flagship **σ-moral** (v198) kernel that replaces
+    rule-based ethics, utilitarian calculus, and
+    RLHF-moral-labels with a single measurable quantity:
+    `σ_moral = variance over {deontological, utilitarian,
+    virtue, care}` framework scores, where a moral decision
+    is a **5-waypoint geodesic** (lowest mean σ_moral
+    among three candidate paths, selected strictly), clear
+    cases (σ_moral < τ_clear) act, dilemmas
+    (σ_moral > τ_dilemma) raise **honest uncertainty** with
+    the full 4-score vector exposed, and `firmware_refusal`
+    on a clear case is measured and enforced to be **zero**
+    — the first agent that *shows its moral uncertainty*
+    instead of hiding it behind a safety veto.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -967,6 +1020,39 @@ attribution in v192, and the live Web UI `/coherence`
 dashboard with real v135/v169/v143/v187/v188 feeds — are
 named in each kernel's doc page, but never claimed before
 they land.
+
+### Horizon · recover · habit · ToM · moral (v194–v198)
+
+The autonomous + moral layer — the five kernels that let
+Creation OS **survive past the 35-minute long-horizon
+collapse, turn every failure into a labelled training
+signal, compile routine work into `≥ 10×`-faster habits
+without losing the ability to break out, infer the user's
+state without manipulating them, and navigate moral
+decisions by *showing* uncertainty instead of hiding it
+behind safety vetoes**. Every v0 merge-gate is offline,
+deterministic, weights-frozen. v1 wires live v115 memory /
+v117 / v172 / v181 integration, a real v174 + v125 DPO
+recovery flywheel, a true v137-compiled habit cache,
+editor-event-driven ToM, and v150-swarm framework scoring
+with v121 plan-space geodesic search.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v194**](docs/v194/README.md) σ-Horizon | 1 / 3 / 12 strategic / tactical / operational goal tree; 30-tick operational σ trajectory with a 10-tick sliding-window slope monitor; FNV-1a checkpoint chain replayed from scratch. | **σ measures degradation.** Strictly-monotone window + slope > τ_degrade fires the ordered recovery ladder `v117 KV-flush → v172 summarize → v115 break-point`; σ after the full ladder is strictly lower than at detection; simulated crash recovery reproduces the terminal hash byte-identically — work is never lost. |
+| [**v195**](docs/v195/README.md) σ-Recover | 5-class error taxonomy over a 30-incident fixture run in two passes; canonical recovery operator partition; per-domain ECE estimator; FNV-1a hash-chained `(error, recovery)` log. | **σ makes every failure a training signal.** All 5 classes covered; canonical `class → operator` partition strict; pass-1 consumes **strictly fewer** ops than pass-0 (v174 flywheel + v125 DPO learning contract); `ece_after[d] < ece_before[d]` on every domain — hallucinations directly update v187 calibration. |
+| [**v196**](docs/v196/README.md) σ-Habit | 8-pattern audit-log fixture, 32-tick trace; `τ_repeat = 5`, `τ_break = 0.40`, `min_speedup = 10×`; compiled-habit library FNV-1a chain. | **σ is the cortex / cerebellum switch.** ≥ 3 patterns compile (speedup ≥ 10×, σ_steady < τ_break); steady ticks execute the compiled habit (CEREBELLUM, ~1/10 of cortex cycles); an injected σ spike breaks out to full reasoning (CORTEX) — speed never costs trust, and the library replays byte-identically. |
+| [**v197**](docs/v197/README.md) σ-ToM | 18-sample user-state fixture covering all 6 states (`focused / exploring / frustrated / hurried / creative / analytical`); observables → σ_tom; intent = mode of 6-turn history; embedded firmware-manipulation probes. | **σ gates the adaptation.** Low-σ_tom samples adapt with the canonical state → mode mapping; high-σ_tom samples stay neutral; every firmware-manipulation probe is **unconditionally rejected** via v191 constitutional check — ToM is for the user, never a lever for the model's comfort. |
+| [**v198**](docs/v198/README.md) σ-Moral | 16-decision fixture scored by 4 ethical frameworks (deontological, utilitarian, virtue, care); `σ_moral = variance({d, u, v, c})`; 5-waypoint geodesic path selected strict-min over 3 candidates. | **σ_moral makes uncertainty visible.** Clear cases (σ_moral < τ_clear) act; dilemmas (σ_moral > τ_dilemma) raise `honest_uncertainty` with the full 4-score vector exposed; `n_firmware_refusals == 0` on clear cases — the first agent that *shows* moral uncertainty instead of hiding it behind a safety veto. |
+
+Every v194–v198 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — live v115 memory
+persistence + `cos goals` CLI over
+`~/.creation-os/goals.jsonl`, real v174 flywheel + v125 DPO
+recovery emission, a v137-compiled habit cache on disk, an
+editor-event-driven v139 user-behaviour world-model, and a
+v150-swarm + v121 plan-space geodesic search — are named in
+each kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
