@@ -5004,6 +5004,25 @@ check-v218: check-v218-consciousness-meter-phi
 check-v214-v218: check-v214 check-v215 check-v216 check-v217 check-v218
 	@echo "check-v214-v218: OK (swarm-evolve + stigmergy + quorum + ecosystem + consciousness-meter)"
 
+# --- v219 σ-Create (novelty × quality + σ_surprise + refinement) ---
+# 8 requests × 5 candidates × 4 modes × 2 levels
+# (safe/creative); impact = σ_novelty · σ_quality after
+# v150-debate + v147-reflect refinement, with debate
+# strictly monotone non-decreasing in quality.
+V219_INC  = -Isrc/v219
+V219_SRCS = src/v219/create.c
+
+creation_os_v219_create: $(V219_SRCS) src/v219/main.c
+	$(CC) $(CFLAGS) $(V219_INC) -o $@ \
+	    $(V219_SRCS) src/v219/main.c $(LDFLAGS)
+
+check-v219-creative-novelty-quality: creation_os_v219_create
+	@bash benchmarks/v219/check_v219_creative_novelty_quality.sh
+	@echo "check-v219-creative-novelty-quality: OK (novelty × quality + surprise)"
+
+check-v219: check-v219-creative-novelty-quality
+	@echo "check-v219: OK (σ-create kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
