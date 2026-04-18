@@ -5023,6 +5023,26 @@ check-v219-creative-novelty-quality: creation_os_v219_create
 check-v219: check-v219-creative-novelty-quality
 	@echo "check-v219: OK (σ-create kernel)"
 
+# --- v220 σ-Simulate (domain-agnostic + Monte Carlo + what-if) ---
+# 4-state × 4-rule system, 200 rollouts × 8 steps
+# baseline + whatif with shared rollout seeds so the
+# histogram delta is pure rule-attribution.  Normalised
+# Shannon entropy over the terminal histogram is the
+# σ_sim.
+V220_INC  = -Isrc/v220
+V220_SRCS = src/v220/simulate.c
+
+creation_os_v220_simulate: $(V220_SRCS) src/v220/main.c
+	$(CC) $(CFLAGS) $(V220_INC) -o $@ \
+	    $(V220_SRCS) src/v220/main.c $(LDFLAGS)
+
+check-v220-simulate-monte-carlo: creation_os_v220_simulate
+	@bash benchmarks/v220/check_v220_simulate_monte_carlo.sh
+	@echo "check-v220-simulate-monte-carlo: OK (MC + what-if + σ_causal)"
+
+check-v220: check-v220-simulate-monte-carlo
+	@echo "check-v220: OK (σ-simulate kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
