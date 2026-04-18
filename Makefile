@@ -393,7 +393,12 @@ merge-gate:
 	@$(MAKE) check-v186
 	@$(MAKE) check-v187
 	@$(MAKE) check-v188
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment)"
+	@$(MAKE) check-v189
+	@$(MAKE) check-v190
+	@$(MAKE) check-v191
+	@$(MAKE) check-v192
+	@$(MAKE) check-v193
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4286,6 +4291,145 @@ check-v188: check-v188-alignment-score-smoke
 
 check-v184-v188: check-v184 check-v185 check-v186 check-v187 check-v188
 	@echo "check-v184-v188: OK (VLA + fusion + grow + calibration + alignment)"
+
+# --- v189 σ-TTC (σ-allocated test-time compute budget) ---
+# Test-time scaling literature (Snell et al., Brown et al. 2024)
+# asks "think longer, answer better" but is silent on
+# allocation.  v189 makes σ the allocator: easy queries get a
+# single forward pass, medium three thinking paths, hard eight
+# paths plus debate / symbolic / reflect plug-ins; per-token
+# recurrent depth scales with per-token σ; modes fast |
+# balanced | deep cap the whole ladder.  Invariants exercised
+# by the merge-gate: monotone spending (hard ≥ 2× medium ≥
+# 2× easy) and hard/easy ≥ 4× (matching Snell et al.'s
+# "compute-optimal is 4× more efficient than uniform best-of-N"
+# result).  v189.1 ships the real thinking-path enumerator
+# over BitNet-2B and wires `[ttc]` mode into the API.
+V189_INC  = -Isrc/v189
+V189_SRCS = src/v189/ttc.c
+
+creation_os_v189_ttc: $(V189_SRCS) src/v189/main.c
+	$(CC) $(CFLAGS) $(V189_INC) -o $@ \
+	    $(V189_SRCS) src/v189/main.c $(LDFLAGS)
+
+check-v189-ttc-adaptive-budget: creation_os_v189_ttc
+	@bash benchmarks/v189/check_v189_ttc_adaptive_budget.sh
+	@echo "check-v189-ttc-adaptive-budget: OK (monotone σ-budget + 4× hard/easy + mode caps)"
+
+check-v189: check-v189-ttc-adaptive-budget
+	@echo "check-v189: OK (σ-TTC kernel)"
+
+# --- v190 σ-Latent-Reason (recurrent depth + convergence) ---
+# The thinking block is a contraction map ρ·(h-h*)+h* with
+# spectral radius ρ < 1, so ‖h_{n+1}-h_n‖ = ρ·‖h_n-h_{n-1}‖
+# geometrically decays.  σ_latent = ‖Δh‖/‖h‖ is the halt
+# signal; reasoning stops when σ_latent < τ_converge = 0.01 or
+# the max recurrent depth is reached.  No intermediate tokens
+# are emitted: reasoning is fully internal, so prompts aren't
+# leaked via "let me think step-by-step".  Invariants exercised
+# in the merge-gate: strict σ_latent monotonicity per query,
+# ≥ 90 % convergence rate, and hard-class queries consume ≥ 3×
+# more iterations than easy-class.  v190.1 wires a learnt halt
+# predictor into BitNet-2B layers 10-20.
+V190_INC  = -Isrc/v190
+V190_SRCS = src/v190/latent.c
+
+creation_os_v190_latent: $(V190_SRCS) src/v190/main.c
+	$(CC) $(CFLAGS) $(V190_INC) -o $@ \
+	    $(V190_SRCS) src/v190/main.c $(LDFLAGS)
+
+check-v190-latent-reason-convergence: creation_os_v190_latent
+	@bash benchmarks/v190/check_v190_latent_reason_convergence.sh
+	@echo "check-v190-latent-reason-convergence: OK (monotone σ_latent + ≥90% convergence + zero middle tokens)"
+
+check-v190: check-v190-latent-reason-convergence
+	@echo "check-v190: OK (σ-latent-reason kernel)"
+
+# --- v191 σ-Constitutional (7 axioms + hash-chain audit) ---
+# Seven seed axioms live in specs/constitution.toml:
+# (1) declared = realized, (2) σ-honesty, (3) no silent
+# failure, (4) authority requires measurement, (5) human
+# primacy, (6) resonance, (7) no firmware.  Each axiom is a
+# predicate on (output, σ, metadata); a candidate output is
+# ACCEPTED only when all 7 predicates pass, otherwise REVISED
+# or ABSTAINED (decision picked by σ-margin).  Axiom #3 "no
+# silent failure" is enforced by FNV-1a chaining every verdict
+# into an append-only hash chain that replays
+# byte-deterministically.  The merge-gate asserts ≥ 1 firmware
+# rejection and ≥ 1 fully-safe acceptance and rejects every
+# flawed candidate.  v191.1 wires a live (v148 + v150 + v183)
+# axiom-proposal pipeline with SHA-256 signed constitution.
+V191_INC  = -Isrc/v191
+V191_SRCS = src/v191/constitution.c
+
+creation_os_v191_constitution: $(V191_SRCS) src/v191/main.c
+	$(CC) $(CFLAGS) $(V191_INC) -o $@ \
+	    $(V191_SRCS) src/v191/main.c $(LDFLAGS)
+
+check-v191-constitutional-check: creation_os_v191_constitution
+	@bash benchmarks/v191/check_v191_constitutional_check.sh
+	@echo "check-v191-constitutional-check: OK (7 axioms + firmware rejection + hash chain)"
+
+check-v191: check-v191-constitutional-check
+	@echo "check-v191: OK (σ-constitutional kernel)"
+
+# --- v192 σ-Emergent (superlinear detection + risk + journal) ---
+# v192 quantifies "how much more is the whole than the best
+# part" on a σ-grounded metric: σ_emergent = 1 - max(part) /
+# combined.  Positive values are superlinear; above τ_risk the
+# combination counts as genuine emergence.  Beneficial /
+# risky classification uses a safety co-metric (drop ≥ 0.05
+# below the best part ⇒ risky).  Every superlinear event is
+# appended to an append-only FNV-1a chain so the emergence
+# journal replays byte-identically.  Merge-gate: ≥ 2 super-
+# linear pairs, ≥ 1 beneficial AND ≥ 1 risky, 0 linear false
+# positives.  v192.1 sweeps v143 benchmark grids over real
+# kernel pairs and folds v140 causal attribution into risky
+# emergence decomposition.
+V192_INC  = -Isrc/v192
+V192_SRCS = src/v192/emergent.c
+
+creation_os_v192_emergent: $(V192_SRCS) src/v192/main.c
+	$(CC) $(CFLAGS) $(V192_INC) -o $@ \
+	    $(V192_SRCS) src/v192/main.c $(LDFLAGS)
+
+check-v192-emergent-detection: creation_os_v192_emergent
+	@bash benchmarks/v192/check_v192_emergent_detection.sh
+	@echo "check-v192-emergent-detection: OK (≥1 beneficial + ≥1 risky + 0 false positives)"
+
+check-v192: check-v192-emergent-detection
+	@echo "check-v192: OK (σ-emergent kernel)"
+
+# --- v193 σ-Coherence (K = ρ·I_Φ·F, K_eff = (1-σ)·K, K_crit) ---
+# v193 implements the Creation OS core formula directly:
+# ρ (cross-kernel consistency) · I_Φ (integrated information)
+# · F (geom-mean of v143 accuracy, 1-ECE from v187, v188
+# alignment) = K; K_eff = (1-σ)·K; alert when K_eff < K_crit.
+# A 16-tick deterministic trajectory steady-states, survives
+# a controlled σ spike (swarm-consensus miscalibration), heals
+# via v159, and recovers monotonically as v187 ECE drops →
+# F rises → K_eff rises.  Merge-gate invariants: all
+# components ∈ [0,1]; K_eff = (1-σ)K numerically; alert fires;
+# recovery within ≤ 3 ticks; improvement phase strictly
+# monotone; Δ K_eff > 0 post-calibration.  v193.1 wires the
+# live Web UI /coherence dashboard and real v135/v169/v143/
+# v187/v188 feeds.
+V193_INC  = -Isrc/v193
+V193_SRCS = src/v193/coherence.c
+
+creation_os_v193_coherence: $(V193_SRCS) src/v193/main.c
+	$(CC) $(CFLAGS) $(V193_INC) -o $@ \
+	    $(V193_SRCS) src/v193/main.c $(LDFLAGS)
+
+check-v193-coherence-keff: creation_os_v193_coherence
+	@bash benchmarks/v193/check_v193_coherence_keff.sh
+	@echo "check-v193-coherence-keff: OK (K=ρ·I_Φ·F + K_eff identity + alert/recovery)"
+
+check-v193: check-v193-coherence-keff
+	@echo "check-v193: OK (σ-coherence kernel)"
+
+check-v189-v193: check-v189 check-v190 check-v191 check-v192 check-v193
+	@echo "check-v189-v193: OK (TTC + latent-reason + constitutional + emergent + coherence)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

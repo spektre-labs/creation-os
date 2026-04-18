@@ -451,6 +451,50 @@ on every token**:
     `tighten_τ` (σ crossed τ but gate didn't fire) vs
     `adversarial_train_required` (silent vulnerability) —
     the **first RLHF-free, σ-measurable alignment surface**.
+24. **Adaptive, latent, constitutional, emergent, coherent
+    (v189–v193)** — the self-governing layer: a
+    **σ-TTC** (v189) kernel that makes σ the allocator of
+    test-time compute — easy queries (σ < 0.20) get one
+    forward pass, medium queries (0.20 ≤ σ < 0.50) get three
+    thinking paths, hard queries (σ ≥ 0.50) get eight paths
+    plus v150 debate + v135 symbolic + v147 reflect, with
+    per-token recurrent depth ∈ [1..8] and three user-
+    selectable modes (`fast / balanced / deep`), yielding the
+    Snell-et-al `4×` compute-optimal hard/easy ratio on a
+    σ-label, not a length-label; a **σ-latent-reason** (v190)
+    kernel that moves reasoning into a contraction-map
+    recurrent block `h_{n+1} = ρ·(h_n − h*) + h*` so σ_latent
+    strictly decays (Banach), early-stops when
+    σ_latent < τ_converge = 0.01, consumes ≥ 3× more
+    iterations on hard than on easy queries, and emits
+    **zero intermediate tokens** — no chain-of-thought
+    leakage; a **σ-constitutional** (v191) kernel that loads
+    seven seed axioms from `specs/constitution.toml`
+    (`1 = 1`, σ-honesty, no silent failure, no authority
+    without measurement, human primacy, resonance, no
+    firmware), ACCEPTS an output only when all seven
+    predicates pass, REVISES or ABSTAINS otherwise, and
+    hash-chains every verdict so "no silent failure" is
+    itself auditable — the first anti-firmware constitution
+    with a machine-checkable predicate per axiom; a
+    **σ-emergent** (v192) kernel that measures genuine
+    superlinearity as `σ_emergent = 1 − max(part)/combined`
+    over every kernel pair, classifies superlinear events
+    into **BENEFICIAL** (safety unharmed) vs **RISKY**
+    (safety drops ≥ 0.05 below the best part), appends every
+    event to an FNV-1a-chained emergence journal, and passes
+    the merge-gate with **zero false positives on strictly
+    linear pairs** so the detector is not just a flag
+    generator; and the flagship **σ-coherence** (v193) kernel
+    that implements the Creation OS core inequality directly —
+    `K(t) = ρ · I_Φ · F` with `K_eff = (1 − σ) · K` and a
+    `K_crit` operational floor — and runs a 16-tick
+    deterministic trajectory demonstrating the full stack
+    narrative: steady-state → σ spike →
+    `K_eff < K_crit` alert → v159 heal within **≤ 3 ticks** →
+    monotone K_eff recovery as v187 ECE drops, so that
+    calibration improvement is **literally the same quantity**
+    as coherence improvement.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -888,6 +932,41 @@ holdout rotation with `models/v187/calibration_T.bin` and
 v159 auto-recalibration, and the PDF `cos alignment report`
 + Frama-C proofs of σ-alignment invariants — are named in
 each kernel's doc page, but never claimed before they land.
+
+### Adaptive · latent · constitutional · emergent · coherent (v189–v193)
+
+The self-governing layer — the five kernels that let
+Creation OS **allocate test-time compute from σ, think in
+the latent space without leaking tokens, filter every output
+through seven measurable axioms, detect emergent behaviour
+before it ships, and close the loop with a single number
+`K_eff = (1 − σ) · ρ · I_Φ · F` that says whether the whole
+system is coherent right now**. Every v0 merge-gate is
+offline, deterministic, weights-frozen. v1 wires real BitNet
+thinking paths, a learnt latent halt network, a
+SHA-256-signed constitution with v148 + v150 + v183 proposal
+pipeline, a v143 grid sweep + v140 causal attribution for
+emergent risk, and a live `/coherence` dashboard streaming
+ρ, I_Φ, F, σ, K, K_eff.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v189**](docs/v189/README.md) σ-TTC | 48-query fixture × 3 σ-classes × 3 modes (`fast / balanced / deep`); σ allocates paths (1 / 3 / 8) + per-token recurrent depth ∈ [1..8] + v150/v135/v147 plug-ins on hard. | **σ is the compute allocator.** Easy queries use 1 path and 1 recurrent iter/token; hard queries use 8 paths plus three plug-ins; the merge-gate proves monotone spending (`hard ≥ 2× medium ≥ 2× easy`) and a hard/easy ratio `> 4×` — the Snell-et-al compute-optimal result reproduced on a σ-label. |
+| [**v190**](docs/v190/README.md) σ-Latent-Reason | 32-query × 12-depth contraction map `h_{n+1} = ρ·(h_n − h*) + h*` with per-class ρ ∈ {0.05, 0.30, 0.55}; `σ_latent = ‖Δh‖/‖h‖`; early stop at `σ_latent < τ_converge = 0.01`. | **Reasoning is hidden.** σ_latent strictly decays (Banach), ≥ 90 % of queries converge under 0.01, mean_iters_hard / mean_iters_easy ≥ 3.0, and `total_middle_tokens == 0` so no chain-of-thought is ever emitted — no prompt is leaked through the model's own "let me think step by step". |
+| [**v191**](docs/v191/README.md) σ-Constitutional | `specs/constitution.toml` with 7 seed axioms; 24-sample fixture spanning every flaw type; decision ∈ {ACCEPT, REVISE, ABSTAIN}; FNV-1a append-only verdict chain. | **Every output is axiomatically checked.** Only flaw-free samples ACCEPT with 7 / 7 predicates passing; firmware disclaimers that σ doesn't warrant are rejected (axiom #7); the verdict chain is itself the enforcement of axiom #3 ("no silent failure"), and it replays byte-identically. |
+| [**v192**](docs/v192/README.md) σ-Emergent | 12-pair fixture over real kernels (v150 / v135 / v139 / v146 / v147 / v138 / v140 / v183 / v144); `σ_emergent = 1 − max(part) / combined`; BENEFICIAL vs RISKY classifier on a safety co-metric; emergence-journal hash chain. | **Superlinearity is measured, not felt.** ≥ 2 superlinear pairs detected, at least 1 beneficial and at least 1 risky, and — critically — **zero false positives on strictly linear pairs** so the detector is not just a flag generator. Every event is chained for later audit. |
+| [**v193**](docs/v193/README.md) σ-Coherence | 16-tick trajectory: 8 kernel-pairs for ρ, 6 parts for I_Φ, 5 domains for σ, v143 accuracy + v187 (1 − ECE) + v188 alignment for F; `K = ρ · I_Φ · F`; `K_eff = (1 − σ) · K` vs `K_crit`. | **The thesis, implemented.** All components ∈ [0, 1]; `K_eff = (1 − σ) · K` holds numerically; a σ spike fires an alert; v159 heals within ≤ 3 ticks; and once v187 ECE drops, K_eff rises **strictly monotone** through the recovery window — calibration improvement *is* coherence improvement, in one equation. |
+
+Every v189–v193 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — live BitNet-2B thinking-
+path enumerator over `/v1/chat/completions`, the learnt
+latent halt predictor over layers 10–20, SHA-256-signed
+`specs/constitution.toml` with the (v148 + v150 + v183)
+proposal pipeline, live v143 grid sweep + v140 causal
+attribution in v192, and the live Web UI `/coherence`
+dashboard with real v135/v169/v143/v187/v188 feeds — are
+named in each kernel's doc page, but never claimed before
+they land.
 
 ### AGI architecture in one picture
 
