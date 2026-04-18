@@ -3156,6 +3156,26 @@ check-v143: check-v143-benchmark-smoke
 check-v139-v143: check-v139 check-v140 check-v141 check-v142 check-v143
 	@echo "check-v139-v143: OK (world-intelligence stack)"
 
+# --- v144 σ-RSI (recursive self-improvement loop) ---------------
+# Deterministic state machine for the RSI cycle: submit candidate
+# score → accept-or-rollback → σ_rsi on last-10 history → 3-strike
+# pause latch.  v144.1 wires v133 meta-weaknesses, v141 curriculum,
+# v120 distill, v125 DPO, v124 continual, v143 benchmark into the
+# submit() callback.
+V144_INC  = -Isrc/v144
+V144_SRCS = src/v144/rsi.c
+
+creation_os_v144_rsi: $(V144_SRCS) src/v144/main.c
+	$(CC) $(CFLAGS) $(V144_INC) -o $@ \
+	    $(V144_SRCS) src/v144/main.c $(LDFLAGS)
+
+check-v144-rsi-cycle-smoke: creation_os_v144_rsi
+	@bash benchmarks/v144/check_v144_rsi_cycle_smoke.sh
+	@echo "check-v144-rsi-cycle-smoke: OK (cycle + rollback + pause)"
+
+check-v144: check-v144-rsi-cycle-smoke
+	@echo "check-v144: OK (σ-rsi kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
