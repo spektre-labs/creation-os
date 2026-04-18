@@ -366,7 +366,8 @@ merge-gate:
 	@$(MAKE) check-v159
 	@$(MAKE) check-v160
 	@$(MAKE) check-v161
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry + v161 adversarial-train)"
+	@$(MAKE) check-v162
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry + v161 adversarial-train + v162 compose)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3550,6 +3551,32 @@ check-v161-adversarial-train-harden: creation_os_v161_adv_train
 
 check-v161: check-v161-adversarial-train-harden
 	@echo "check-v161: OK (σ-adversarial-train kernel)"
+
+# --- v162 σ-Compose (kernel manifests + profiles + resolver + hot-swap) --
+# Deterministic kernel-composition kernel.  A baked manifest
+# table (what each kernel provides, requires, its latency/memory
+# impact, and the σ-channels it contributes) drives four
+# profiles (lean / researcher / sovereign / custom).  BFS +
+# recursive closure resolve declared roots into a dependency-
+# complete enabled set; DFS rejects cycles.  Hot-swap
+# enable/disable events respect the dependency graph (leaves
+# can drop, internal nodes cannot while dependents exist) and
+# are recorded in an event log.  v162.1 reads per-kernel
+# kernels/vNN.manifest.toml from disk and drives process-level
+# enable/disable via a v106 /v1/compose endpoint.
+V162_INC  = -Isrc/v162
+V162_SRCS = src/v162/compose.c
+
+creation_os_v162_compose: $(V162_SRCS) src/v162/main.c
+	$(CC) $(CFLAGS) $(V162_INC) -o $@ \
+	    $(V162_SRCS) src/v162/main.c $(LDFLAGS)
+
+check-v162-compose-profile-resolve: creation_os_v162_compose
+	@bash benchmarks/v162/check_v162_compose_profile_resolve.sh
+	@echo "check-v162-compose-profile-resolve: OK (manifests + profiles + deps + hot-swap)"
+
+check-v162: check-v162-compose-profile-resolve
+	@echo "check-v162: OK (σ-compose kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
