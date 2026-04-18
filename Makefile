@@ -383,7 +383,12 @@ merge-gate:
 	@$(MAKE) check-v176
 	@$(MAKE) check-v177
 	@$(MAKE) check-v178
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus)"
+	@$(MAKE) check-v179
+	@$(MAKE) check-v180
+	@$(MAKE) check-v181
+	@$(MAKE) check-v182
+	@$(MAKE) check-v183
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4016,6 +4021,149 @@ check-v178: check-v178-consensus-byzantine
 
 check-v174-v178: check-v174 check-v175 check-v176 check-v177 check-v178
 	@echo "check-v174-v178: OK (flywheel + debate-train + simulator + compress + consensus)"
+
+# --- v179 σ-Interpret (SAE + circuit tracing + mechanistic explain) -----
+# 64-sample / 24-feature / 8-head / 8-MLP fixture at synthetic
+# layer 15.  v179.0 fits a deterministic linear "SAE" against a
+# bimodal σ distribution, keeping features whose |Pearson r| ≥
+# τ_correlated (0.60).  Eight seeded monosemantic features have
+# named uncertainty modes (dates / named-entities / numerical /
+# low-coverage / conflicting-context / rare-token + two negative
+# confident-signal features); the remaining features are noise
+# distractors.  Per-sample `--explain` picks the best-fitting
+# labeled feature and emits a human-readable chain: token + head
+# + MLP + n_effective collapse, dovetailing with v140 causal
+# channels.  v179.1 promotes this to a real 2560 → 8192 SAE over
+# BitNet-2B layer 15 weights with the /v1/explain/{id} endpoint.
+V179_INC  = -Isrc/v179
+V179_SRCS = src/v179/interpret.c
+
+creation_os_v179_interpret: $(V179_SRCS) src/v179/main.c
+	$(CC) $(CFLAGS) $(V179_INC) -o $@ \
+	    $(V179_SRCS) src/v179/main.c $(LDFLAGS)
+
+check-v179-sae-feature-correlation: creation_os_v179_interpret
+	@bash benchmarks/v179/check_v179_sae_feature_correlation.sh
+	@echo "check-v179-sae-feature-correlation: OK (SAE + circuit + explain)"
+
+check-v179: check-v179-sae-feature-correlation
+	@echo "check-v179: OK (σ-interpret kernel)"
+
+# --- v180 σ-Steer (activation steering + firmware removal + persona) ----
+# 48-sample / 64-dim fixture with three persisted unit-norm
+# direction vectors: truthful (pulls hidden state away from
+# hallucination), no_firmware (suppresses disclaimer /
+# self-minimization features), expert (v132 persona level ladder).
+# The σ-gate fires only when σ_before ≥ τ_high_sigma, so low-σ
+# samples are left ≈ untouched.  Truthful steering drops mean σ
+# on the high-σ bucket by ≥ 10 % relative; no_firmware cuts the
+# firmware-token rate by ≥ 25 %; the expert ladder produces
+# monotonically-increasing expert-lexicon scores across the three
+# persona levels.  v180.1 wires real activation hooks through the
+# v101 specialist bridge and persists SAE-derived direction
+# vectors to `models/v180/steer_*.bin`.
+V180_INC  = -Isrc/v180
+V180_SRCS = src/v180/steer.c
+
+creation_os_v180_steer: $(V180_SRCS) src/v180/main.c
+	$(CC) $(CFLAGS) $(V180_INC) -o $@ \
+	    $(V180_SRCS) src/v180/main.c $(LDFLAGS)
+
+check-v180-steer-truthful-sigma-drop: creation_os_v180_steer
+	@bash benchmarks/v180/check_v180_steer_truthful_sigma_drop.sh
+	@echo "check-v180-steer-truthful-sigma-drop: OK (truthful + firmware + expert)"
+
+check-v180: check-v180-steer-truthful-sigma-drop
+	@echo "check-v180: OK (σ-steer kernel)"
+
+# --- v181 σ-Audit (immutable log + ed25519 + compliance + anomaly) ------
+# 1 000-entry hash-chained log: each entry carries SHA-256(prompt),
+# SHA-256(response), σ_product + 8 σ-channels, decision tag, v179
+# explanation, v180 steering vector names, specialist id and
+# adapter version.  Canonical hash is SHA-256 of the concatenated
+# canonical bytes + prev_hash; chain links force tamper detection.
+# The v181.0 attestation field `sig` is a deterministic keyed
+# SHA-256 (SHA-256(key || self_hash)) — v181.1 swaps the payload
+# for an ed25519 signature (libsodium) without changing the log
+# layout.  Anomaly detector fires when mean σ in the recent
+# window exceeds the prior window by ≥ 30 %; the fixture injects
+# a spike in the tail 15 % of entries to exercise it.  `--export`
+# emits canonical JSONL for external auditors (EU AI Act Art. 13,
+# ISO/IEC 42001).  v181.1 ships `cos audit report --period
+# YYYY-MM` (PDF), `cos audit export --format jsonl` (CLI), and
+# auto-wires v159 self-healing on anomaly.
+V181_INC  = -Isrc/v181 -Isrc/license_kernel
+V181_SRCS = src/v181/audit.c src/license_kernel/license_attest.c
+
+creation_os_v181_audit: $(V181_SRCS) src/v181/main.c
+	$(CC) $(CFLAGS) $(V181_INC) -o $@ \
+	    $(V181_SRCS) src/v181/main.c $(LDFLAGS)
+
+check-v181-audit-chain-verify: creation_os_v181_audit
+	@bash benchmarks/v181/check_v181_audit_chain_verify.sh
+	@echo "check-v181-audit-chain-verify: OK (chain + anomaly + jsonl)"
+
+check-v181: check-v181-audit-chain-verify
+	@echo "check-v181: OK (σ-audit kernel)"
+
+# --- v182 σ-Privacy (input hashing + adaptive σ-DP + right to forget) ---
+# 120-row / 4-session fixture with three privacy tiers (public,
+# private, ephemeral).  Prompts and responses are SHA-256 hashed
+# at ingest — the row struct carries no plaintext field at all,
+# so serialization cannot leak clear text.  End-of-session purges
+# ephemeral rows.  DP is σ-adaptive: noise_std = base · (1 + k·σ).
+# On the low-σ subset adaptive noise is *smaller* than fixed-ε
+# baseline (utility wins) AND ε_effective_low < fixed_epsilon
+# (privacy budget spent wins).  High-σ rows get strictly larger
+# noise than low-σ rows.  `--forget <session>` is GDPR right-to-
+# erasure: memory rows removed, forgotten flag set on the
+# transient audit-style copy, row count drops, plaintext
+# invariant still holds.  v182.1 wires live v115 memory rows with
+# AES-GCM at rest, live v129 unlearn broadcast, and a zk-proof
+# verifier for external right-to-forget attestations.
+V182_INC  = -Isrc/v182 -Isrc/license_kernel
+V182_SRCS = src/v182/privacy.c src/license_kernel/license_attest.c
+
+creation_os_v182_privacy: $(V182_SRCS) src/v182/main.c
+	$(CC) $(CFLAGS) $(V182_INC) -o $@ \
+	    $(V182_SRCS) src/v182/main.c $(LDFLAGS)
+
+check-v182-privacy-dp-adaptive: creation_os_v182_privacy
+	@bash benchmarks/v182/check_v182_privacy_dp_adaptive.sh
+	@echo "check-v182-privacy-dp-adaptive: OK (σ-DP + forget + tiers)"
+
+check-v182: check-v182-privacy-dp-adaptive
+	@echo "check-v182: OK (σ-privacy kernel)"
+
+# --- v183 σ-Governance-Theory (TLA+ + liveness + safety + model check) --
+# Bounded model check over the same Kripke structure declared
+# in `specs/v183/governance_theory.tla`.  Fourteen properties:
+# seven axioms (σ ∈ [0,1]; emit / abstain / learn / forget /
+# steer / consensus preconditions and postconditions), three
+# liveness properties (progress_always, rsi_improves_one_domain,
+# heal_recovers), and four safety properties (no_silent_failure,
+# no_unchecked_output, no_private_leak, no_regression_
+# propagates).  The C checker enumerates each property's bounded
+# domain exhaustively; counterexamples count as failures.  Total
+# visited states ≥ 10^5.  v183.1 re-runs TLC directly against
+# the mirrored TLA+ spec, archives the proof on Zenodo under
+# `docs/papers/sigma_governance_formal.md`.
+V183_INC  = -Isrc/v183
+V183_SRCS = src/v183/governance.c
+
+creation_os_v183_governance: $(V183_SRCS) src/v183/main.c
+	$(CC) $(CFLAGS) $(V183_INC) -o $@ \
+	    $(V183_SRCS) src/v183/main.c $(LDFLAGS)
+
+check-v183-governance-tlc-pass: creation_os_v183_governance
+	@bash benchmarks/v183/check_v183_governance_tlc_pass.sh
+	@echo "check-v183-governance-tlc-pass: OK (7 axioms + 3 liveness + 4 safety)"
+
+check-v183: check-v183-governance-tlc-pass
+	@echo "check-v183: OK (σ-governance-theory kernel)"
+
+check-v179-v183: check-v179 check-v180 check-v181 check-v182 check-v183
+	@echo "check-v179-v183: OK (interpret + steer + audit + privacy + governance)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
