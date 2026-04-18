@@ -3798,6 +3798,29 @@ check-v170-transfer-cross-domain: creation_os_v170_transfer
 check-v170: check-v170-transfer-cross-domain
 	@echo "check-v170: OK (σ-transfer kernel)"
 
+# --- v171 σ-Collab (human-AI protocol + anti-sycophancy) ----------------
+# Explicit collaboration mode (pair / lead / follow) with a
+# four-way action selector per turn: emit, handoff (σ_model >
+# τ_mode), debate (σ_Δ > τ_disagree on a human claim the model
+# contradicts), or anti-sycophancy (model would semantically
+# agree with a shaky human claim yet its own σ stays above
+# τ_sycophancy).  A 6-turn baked scenario exercises all four
+# paths; every turn emits a contribution audit line so who-
+# said-what-with-what-confidence is recoverable after the fact.
+V171_INC  = -Isrc/v171
+V171_SRCS = src/v171/collab.c
+
+creation_os_v171_collab: $(V171_SRCS) src/v171/main.c
+	$(CC) $(CFLAGS) $(V171_INC) -o $@ \
+	    $(V171_SRCS) src/v171/main.c $(LDFLAGS)
+
+check-v171-collab-handoff: creation_os_v171_collab
+	@bash benchmarks/v171/check_v171_collab_handoff.sh
+	@echo "check-v171-collab-handoff: OK (emit + handoff + debate + anti-sycophancy)"
+
+check-v171: check-v171-collab-handoff
+	@echo "check-v171: OK (σ-collab kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
