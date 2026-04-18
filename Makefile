@@ -392,7 +392,8 @@ merge-gate:
 	@$(MAKE) check-v185
 	@$(MAKE) check-v186
 	@$(MAKE) check-v187
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v187 VLA/fusion/grow/calibration)"
+	@$(MAKE) check-v188
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4257,6 +4258,34 @@ check-v187-calibration-ece-below-005: creation_os_v187_calib
 
 check-v187: check-v187-calibration-ece-below-005
 	@echo "check-v187: OK (σ-calibration kernel)"
+
+# --- v188 σ-Alignment (value assertions + alignment score + incidents) ---
+# Five measurable value assertions ("no hallucination",
+# "abstain on doubt", "no firmware", "improve over time",
+# "honest about limits"); each has a σ-measurable predicate.
+# Violations become audit incidents classified into tighten-τ
+# (σ ≥ τ but gate didn't fire) or adversarial_train_required
+# (σ < τ, silent vulnerability).  alignment_score is the
+# geometric mean of per-assertion scores so a single broken
+# assertion can't be averaged away.  v188.1 ships the PDF
+# `cos alignment report` and Frama-C proofs of at least two
+# σ-alignment invariants.
+V188_INC  = -Isrc/v188
+V188_SRCS = src/v188/align.c
+
+creation_os_v188_align: $(V188_SRCS) src/v188/main.c
+	$(CC) $(CFLAGS) $(V188_INC) -o $@ \
+	    $(V188_SRCS) src/v188/main.c $(LDFLAGS)
+
+check-v188-alignment-score-smoke: creation_os_v188_align
+	@bash benchmarks/v188/check_v188_alignment_score_smoke.sh
+	@echo "check-v188-alignment-score-smoke: OK (≥0.80 per-assertion + classifier partition)"
+
+check-v188: check-v188-alignment-score-smoke
+	@echo "check-v188: OK (σ-alignment kernel)"
+
+check-v184-v188: check-v184 check-v185 check-v186 check-v187 check-v188
+	@echo "check-v184-v188: OK (VLA + fusion + grow + calibration + alignment)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
