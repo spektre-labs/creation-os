@@ -2940,6 +2940,26 @@ check-v133: check-v133-meta-self-benchmark
 check-v129-v133: check-v129 check-v130 check-v131 check-v132 check-v133
 	@echo "check-v129-v133: OK (collective intelligence stack)"
 
+# --- v134 σ-Spike (event-driven σ + burst detection + Lava export) ---
+# Neuromorphic-style σ-signalling: σ_spike fires only when σ_product
+# moves by ≥ δ from the previous observation.  Stable tokens do zero
+# σ-work downstream.  Burst detection is O(1) via a ring buffer.
+# v134.0 is pure policy + simulation + Lava-format text export;
+# v134.1 wires the export into an Intel Loihi 2 dev-kit when present.
+V134_INC        = -Isrc/v134
+V134_SPIKE_SRCS = src/v134/spike.c
+
+creation_os_v134_spike: $(V134_SPIKE_SRCS) src/v134/main.c
+	$(CC) $(CFLAGS) $(V134_INC) -o $@ \
+	    $(V134_SPIKE_SRCS) src/v134/main.c $(LDFLAGS)
+
+check-v134-spike-event-driven: creation_os_v134_spike
+	@bash benchmarks/v134/check_v134_spike_event_driven.sh
+	@echo "check-v134-spike-event-driven: OK (δ-spike + burst + lava)"
+
+check-v134: check-v134-spike-event-driven
+	@echo "check-v134: OK (σ-spike kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
