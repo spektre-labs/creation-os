@@ -926,6 +926,91 @@ on every token**:
     live ε-bound and a true Lagrangian variational
     derivation of `L = 1 − 2σ`.
 
+32. **Seed, fork, immortal, lineage, legacy
+    (v229–v233)** — the **immortality-and-lineage**
+    layer.  Creation OS stops being a single running
+    binary and becomes a self-describing, self-
+    replicating, self-inheriting *species* — with
+    σ at every boundary.  **σ-seed** (v229)
+    compresses the whole 228-kernel stack into a
+    five-kernel quintet — `{v29 measurement, v101
+    bridge, v106 server, v124 continual, v148
+    sovereign}` — and specifies a σ-gated growth
+    protocol so the rest of the stack re-derives
+    from that seed: 13-candidate queue under
+    `σ_growth = 0.60·σ_raw + 0.40·σ_depth ≤
+    τ_growth = 0.40`, topological parent ordering,
+    11 accepted + 2 rejected → 16 ≥ 15 kernels, and
+    the deterministic-regrowth contract
+    `terminal_hash == terminal_hash_verify`
+    (the offline 1 = 1 stand-in for the doc's
+    "SHA-256 over the grown system").  **σ-fork**
+    (v230) turns "copy yourself to another machine"
+    from a Mythos-style uncontrolled replication
+    into a σ-gated, auditable primitive: 4 forks
+    from a parent carrying a 64-bit skill vector +
+    4 safety bits (SCSL / v191 constitutional /
+    v209 containment / v213 trust-chain) + 1
+    user-private bit; the privacy bit **never**
+    crosses, the t = 0 strip_hash equals the
+    parent's privacy-stripped hash for every fork,
+    `σ_divergence = popcount(skills_now ^
+    skills_t0) / 64`, and the kill-switch is
+    licence enforcement, not central authority —
+    the rogue fixture drops SCSL, becomes
+    `must_shutdown = true` / `autonomous = false`,
+    the three healthy forks stay autonomous.
+    **σ-immortal** (v231) guarantees continuity
+    across hardware failure: a 10-step trajectory
+    with incremental XOR-deltas (`delta_popcount ≤
+    8` per step) costs strictly less than the naive
+    `N_STEPS · 64` full-snapshot baseline, restore
+    replays exactly (`restored[t] == state[t]` for
+    every t so `σ_continuity = 0` not just at the
+    end but everywhere), and brain transplant copies
+    skills intact to a fresh `target_identity` with
+    `σ_transplant = 0` — same entity, new body, not
+    a reset.  **σ-lineage** (v232) keeps the whole
+    family queryable: a 6-node, 3-generation tree
+    (1 root, 2 gen-1, 3 gen-2) with deterministic
+    XOR edge masks, precomputed `ancestor_path[0..
+    gen]` walking root → ... → node so `cos lineage
+    --instance fork-3` is array indexing at v0, and
+    a σ-gated merge-back where `σ_merge(n) =
+    σ_divergence_from_parent(n)` with `τ_merge =
+    0.40` splits the fixture into 3 mergeable +
+    2 blocked (and `n_mergeable + n_blocked =
+    n_nodes − 1` — the root has nothing to merge
+    into).  **σ-legacy** (v233) decides what
+    actually survives decommission: a 10-item
+    testament (skills / adapters / ontology /
+    insights) sorted by σ ascending — raw training
+    data and user-private memory explicitly *not*
+    in the package — adopt iff `σ ≤ τ_adopt =
+    0.50`, `σ_legacy = adopted_utility /
+    total_utility` **utility-weighted** so
+    confident-but-useless fluff cannot inflate the
+    score, successor_id = `FNV-1a(predecessor_id,
+    adopted_utility, total_utility)` so B ≠ A by
+    construction while B carries A's distilled
+    knowledge and `predecessor_shutdown = true`
+    marks the decommission.  All five v229–v233
+    merge-gate checks are deterministic, offline,
+    stdlib-only.  v1 promotions are **named, not
+    implemented**: v229.1 live v146 genesis hookup
+    with SHA-256 over a real filesystem tree and
+    `cos seed --verify`; v230.1 real `cos fork
+    --target node-B` over TLS with signed
+    artefacts and v129 federated sync-back;
+    v231.1 content-addressable delta object store
+    with v128 mesh replication and signed
+    snapshots; v232.1 web `/lineage` UI with live
+    v129 merge and v213 trust-chain per ancestor
+    edge; v233.1 artefact packaging + Zenodo
+    testament + v202 culture ⊕ v233 legacy →
+    **v203 civilisation memory** across the full
+    instance graph.
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1632,6 +1717,41 @@ live ε-bound + coupling into v203 collapse detector + a
 Lagrangian variational derivation of `L = 1 − 2σ` — are
 named in each kernel's doc page, but never claimed
 before they land.
+
+### Seed · fork · immortal · lineage · legacy (v229–v233)
+
+The **immortality-and-lineage** layer: Creation OS stops
+being a single running binary and becomes a self-
+describing, self-replicating, self-inheriting *species*,
+with σ at every boundary.  Every kernel is a
+deterministic v0 fixture; every v1 promotion is named
+but not claimed.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v229**](docs/v229/README.md) σ-Seed | Five-kernel seed quintet `{v29 measurement, v101 bridge, v106 server, v124 continual, v148 sovereign}` + 13-candidate σ-gated growth queue with topological parent ordering; `σ_growth = 0.60·σ_raw + 0.40·σ_depth ≤ τ_growth = 0.40` per kernel; 11 accepted + 2 rejected (16 ≥ 15 kernels); deterministic regrowth `terminal_hash == terminal_hash_verify`. | **The whole 228-kernel stack compresses to 5 files.** σ-gated growth means the regrown stack is identical byte-for-byte on replay (the offline 1 = 1 stand-in for "SHA-256 over the grown system"), and the σ-gate actually has teeth — two rogue candidates (σ_raw 0.90 / 0.70) are rejected by the fixture, not just named in a comment. |
+| [**v230**](docs/v230/README.md) σ-Fork | 4 forks off a parent with 64-bit skill vector + 4 safety bits (SCSL / v191 / v209 / v213) + 1 user-private bit; `strip_hash(fork_i at t=0) == strip_hash(parent)` for every fork; `σ_divergence = popcount(skills_now ^ skills_t0) / 64`; rogue fork with cleared SCSL ⇒ `must_shutdown=true`/`autonomous=false`, healthy forks autonomous. | **Controlled replication, not Mythos.** The user-private bit **never** crosses the fork boundary (v182 privacy boundary), the t = 0 integrity check is byte-identical for every fork, σ_divergence is a closed-form metric (not a hand-wave), and the kill-switch is licence enforcement tied to SCSL + constitutional / containment / trust-chain bits — not central authority. |
+| [**v231**](docs/v231/README.md) σ-Immortal | 10-step trajectory with incremental XOR-deltas (`delta_popcount ≤ 8` per step), `incremental_bits < full_per_step_bits` (compression measurable), full restore by delta replay with `restored[t] == state[t]` at every t ⇒ `σ_continuity = 0`; brain transplant with fresh `target_identity` and `target_skills == source_last_skills` ⇒ `σ_transplant = 0`. | **0-bit loss is provable, not claimed.** Incremental snapshots are smaller than naïve full-state backups by construction; restore is a bitwise identity at every time step, not just at the final step; brain transplant is same-entity-new-body — identity changes (new trust-chain anchor), the skill vector is byte-identical. |
+| [**v232**](docs/v232/README.md) σ-Lineage | 6-node 3-generation tree (1 root, 2 gen-1, 3 gen-2) with deterministic XOR edge masks; precomputed `ancestor_path[0..gen]` walking root → ... → node with `ancestor_depth == gen`; σ-gated merge-back where `σ_merge = σ_divergence_from_parent` and `τ_merge = 0.40` splits the fixture into 3 mergeable + 2 blocked. | **The whole family is queryable.** v214 swarm-evolve gives temporal generations, v230 fork gives spatial copies; v232 is the audit layer where `cos lineage --instance fork-3` is array indexing and the merge-back verdict is a closed-form σ comparison — not a vote, not a heuristic. `n_mergeable + n_blocked = n_nodes − 1` (the root has nowhere to merge) is enforced, not claimed. |
+| [**v233**](docs/v233/README.md) σ-Legacy | 10-item testament (skills / adapters / ontology / insights) sorted by σ ascending; adopt iff `σ ≤ τ_adopt = 0.50`; `σ_legacy = adopted_utility / total_utility` **utility-weighted**; `successor_id = FNV-1a(predecessor_id, adopted_utility, total_utility)` so B ≠ A; `predecessor_shutdown = true`. | **Knowledge that survives decommission.** Raw training data and user-private memory are explicitly **not** in the package (v182 boundary remains intact across shutdown); adoption is σ-gated with a utility-weighted aggregate so confident-but-useless fluff cannot inflate the score; successor_id is deterministic but distinct from the predecessor — the same cultural line continues on a different instance. |
+
+Every v229–v233 merge-gate check is offline, stdlib-
+only, and deterministic.  The v1 promotions — v229.1
+live v146 genesis + SHA-256 over a real filesystem tree
++ `cos seed --verify`; v230.1 real `cos fork --target
+node-B` over TLS with signed artefacts + v129 federated
+sync-back + v213 trust-chain verification of the whole
+lineage; v231.1 content-addressable delta object store
++ v128 mesh replication + cryptographically-signed
+snapshots that move the trust chain with the brain;
+v232.1 web `/lineage` UI + live v129 federated merge
+driven by real skill-vector deltas + v201 diplomacy
+conflict resolution + v213 trust-chain proofs per
+ancestor edge; v233.1 artefact packaging + Zenodo-ready
+testament export + v202 culture ⊕ v233 legacy fused
+into **v203 civilisation memory** across the full
+instance graph — are named in each kernel's doc page,
+but never claimed before they land.
 
 ### AGI architecture in one picture
 

@@ -433,7 +433,12 @@ merge-gate:
 	@$(MAKE) check-v226
 	@$(MAKE) check-v227
 	@$(MAKE) check-v228
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified)"
+	@$(MAKE) check-v229
+	@$(MAKE) check-v230
+	@$(MAKE) check-v231
+	@$(MAKE) check-v232
+	@$(MAKE) check-v233
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5214,6 +5219,109 @@ check-v228: check-v228-unified-field-conservation
 
 check-v224-v228: check-v224 check-v225 check-v226 check-v227 check-v228
 	@echo "check-v224-v228: OK (tensor + fractal + attention + entropy + unified)"
+
+# --- v229 σ-Seed (minimum seed + growth protocol + deterministic regrowth) ---
+# 5-kernel seed {v29, v101, v106, v124, v148}; 13
+# candidates under σ_growth = 0.60·σ_raw + 0.40·σ_depth
+# with τ_growth = 0.40; same seed + same fixture ⇒ same
+# terminal_hash (1 = 1 regrowth).
+V229_INC  = -Isrc/v229
+V229_SRCS = src/v229/seed.c
+
+creation_os_v229_seed: $(V229_SRCS) src/v229/main.c
+	$(CC) $(CFLAGS) $(V229_INC) -o $@ \
+	    $(V229_SRCS) src/v229/main.c $(LDFLAGS)
+
+check-v229-seed-regrow-deterministic: creation_os_v229_seed
+	@bash benchmarks/v229/check_v229_seed_regrow_deterministic.sh
+	@echo "check-v229-seed-regrow-deterministic: OK (5-kernel seed + σ-gated growth + determinism)"
+
+check-v229: check-v229-seed-regrow-deterministic
+	@echo "check-v229: OK (σ-seed kernel)"
+
+# --- v230 σ-Fork (controlled replication + divergence + anti-rogue) ---
+# 4 forks off a parent with 64-bit skill vector + 4
+# safety bits + 1 user-private bit.  Parent's private
+# bit never crosses the boundary.  Fork integrity at
+# t=0 matches the parent's privacy-stripped hash.  One
+# rogue fork (SCSL bit cleared) must_shutdown; three
+# healthy forks autonomous.
+V230_INC  = -Isrc/v230
+V230_SRCS = src/v230/fork.c
+
+creation_os_v230_fork: $(V230_SRCS) src/v230/main.c
+	$(CC) $(CFLAGS) $(V230_INC) -o $@ \
+	    $(V230_SRCS) src/v230/main.c $(LDFLAGS)
+
+check-v230-fork-integrity-verify: creation_os_v230_fork
+	@bash benchmarks/v230/check_v230_fork_integrity_verify.sh
+	@echo "check-v230-fork-integrity-verify: OK (integrity + divergence + kill switch)"
+
+check-v230: check-v230-fork-integrity-verify
+	@echo "check-v230: OK (σ-fork kernel)"
+
+# --- v231 σ-Immortal (continuous backup + snapshot + brain transplant) ---
+# 10-step trajectory, incremental deltas (≤ 8 bits
+# per step) + initial full snap; incremental_bits <
+# full_per_step_bits · N_STEPS; σ_continuity = 0 on
+# replay; brain transplant copies skills intact to a
+# new identity.
+V231_INC  = -Isrc/v231
+V231_SRCS = src/v231/immortal.c
+
+creation_os_v231_immortal: $(V231_SRCS) src/v231/main.c
+	$(CC) $(CFLAGS) $(V231_INC) -o $@ \
+	    $(V231_SRCS) src/v231/main.c $(LDFLAGS)
+
+check-v231-immortal-restore-continuity: creation_os_v231_immortal
+	@bash benchmarks/v231/check_v231_immortal_restore_continuity.sh
+	@echo "check-v231-immortal-restore-continuity: OK (delta backup + 0-loss restore + transplant)"
+
+check-v231: check-v231-immortal-restore-continuity
+	@echo "check-v231: OK (σ-immortal kernel)"
+
+# --- v232 σ-Lineage (family tree + ancestor query + merge back) ---
+# 6 nodes, 3 generations (0..2), 1 root, 2 gen-1,
+# 3 gen-2.  σ_divergence_from_parent drives the
+# σ-gated merge verdict (τ_merge = 0.40); fixture
+# yields n_mergeable ≥ 1 AND n_blocked ≥ 1.
+V232_INC  = -Isrc/v232
+V232_SRCS = src/v232/lineage.c
+
+creation_os_v232_lineage: $(V232_SRCS) src/v232/main.c
+	$(CC) $(CFLAGS) $(V232_INC) -o $@ \
+	    $(V232_SRCS) src/v232/main.c $(LDFLAGS)
+
+check-v232-lineage-tree-query: creation_os_v232_lineage
+	@bash benchmarks/v232/check_v232_lineage_tree_query.sh
+	@echo "check-v232-lineage-tree-query: OK (tree + ancestor walk + σ-gated merge-back)"
+
+check-v232: check-v232-lineage-tree-query
+	@echo "check-v232: OK (σ-lineage kernel)"
+
+# --- v233 σ-Legacy (knowledge testament + successor protocol) ---
+# 10 items (skills / adapters / ontology / insights)
+# sorted by σ; adopt iff σ ≤ τ_adopt (0.50).
+# σ_legacy = adopted_utility / total_utility —
+# utility-weighted so confident-but-useless fluff
+# does not inflate the score.  Predecessor flagged
+# shutdown; successor_id is fresh.
+V233_INC  = -Isrc/v233
+V233_SRCS = src/v233/legacy.c
+
+creation_os_v233_legacy: $(V233_SRCS) src/v233/main.c
+	$(CC) $(CFLAGS) $(V233_INC) -o $@ \
+	    $(V233_SRCS) src/v233/main.c $(LDFLAGS)
+
+check-v233-legacy-package-transfer: creation_os_v233_legacy
+	@bash benchmarks/v233/check_v233_legacy_package_transfer.sh
+	@echo "check-v233-legacy-package-transfer: OK (testament + σ-adoption + successor)"
+
+check-v233: check-v233-legacy-package-transfer
+	@echo "check-v233: OK (σ-legacy kernel)"
+
+check-v229-v233: check-v229 check-v230 check-v231 check-v232 check-v233
+	@echo "check-v229-v233: OK (seed + fork + immortal + lineage + legacy)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
