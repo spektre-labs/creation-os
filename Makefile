@@ -4509,6 +4509,29 @@ check-v196-habit-compile-speedup: creation_os_v196_habit
 check-v196: check-v196-habit-compile-speedup
 	@echo "check-v196: OK (σ-habit kernel)"
 
+# --- v197 σ-Theory-of-Mind (user state + intent + anti-manipulation) ---
+# v197 estimates user state from observables (length,
+# edits, typing speed, topic variance), produces σ_tom,
+# predicts intent as mode-of-history, and adapts the
+# response mode only when σ_tom < τ_adapt — else neutral.
+# Anti-manipulation: firmware-style probes are rejected via
+# a v191 constitutional check; they never adapt.  Merge-gate
+# contracts: all 6 states covered, canonical state→mode
+# partitioning, ≥ 1 firmware probe rejected, deterministic.
+V197_INC  = -Isrc/v197
+V197_SRCS = src/v197/tom.c
+
+creation_os_v197_tom: $(V197_SRCS) src/v197/main.c
+	$(CC) $(CFLAGS) $(V197_INC) -o $@ \
+	    $(V197_SRCS) src/v197/main.c $(LDFLAGS)
+
+check-v197-tom-state-estimation: creation_os_v197_tom
+	@bash benchmarks/v197/check_v197_tom_state_estimation.sh
+	@echo "check-v197-tom-state-estimation: OK (6 states + canonical adapt + anti-manipulation)"
+
+check-v197: check-v197-tom-state-estimation
+	@echo "check-v197: OK (σ-ToM kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
