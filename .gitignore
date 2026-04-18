@@ -449,6 +449,10 @@ creation_os_v111
 creation_os_v112_tools
 creation_os_v113_sandbox
 creation_os_v114_swarm
+creation_os_v115_memory
+creation_os_v116_mcp
+creation_os_v117_long_context
+creation_os_v118_vision
 benchmarks/v111/__pycache__/
 training/v111/data/
 training/v111/runs/
