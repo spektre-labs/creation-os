@@ -3906,6 +3906,31 @@ check-v174-flywheel-one-cycle: creation_os_v174_flywheel
 check-v174: check-v174-flywheel-one-cycle
 	@echo "check-v174: OK (σ-flywheel kernel)"
 
+# --- v175 σ-Debate-Train (self-play DPO + Elo tournament + SPIN) --------
+# Harvests v150-style debates into DPO data: A answers,
+# B attempts to refute; if B wins → (A=rejected, B=chosen)
+# pair; if A survives → chosen positive; both-consensus-low-σ
+# rounds are SKIPped (uninformative) to avoid contaminating
+# the trainer.  Plus a 3-adapter round-robin tournament using
+# closed-form Elo (expected = 1/(1 + 10^((Rb−Ra)/400)),
+# update = K·(actual − expected), K=32), and a SPIN loop
+# whose σ_delta shrinks monotonically (0.50·0.55^gen) until
+# it falls below spin_convergence = 0.01.  v175.1 plugs in
+# real v150 debate + v125 DPO + real adapter swap.
+V175_INC  = -Isrc/v175
+V175_SRCS = src/v175/debate_train.c
+
+creation_os_v175_debate_train: $(V175_SRCS) src/v175/main.c
+	$(CC) $(CFLAGS) $(V175_INC) -o $@ \
+	    $(V175_SRCS) src/v175/main.c $(LDFLAGS)
+
+check-v175-debate-train-elo: creation_os_v175_debate_train
+	@bash benchmarks/v175/check_v175_debate_train_elo.sh
+	@echo "check-v175-debate-train-elo: OK (harvest + tournament + SPIN)"
+
+check-v175: check-v175-debate-train-elo
+	@echo "check-v175: OK (σ-debate-train kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
