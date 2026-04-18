@@ -408,7 +408,12 @@ merge-gate:
 	@$(MAKE) check-v201
 	@$(MAKE) check-v202
 	@$(MAKE) check-v203
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization)"
+	@$(MAKE) check-v204
+	@$(MAKE) check-v205
+	@$(MAKE) check-v206
+	@$(MAKE) check-v207
+	@$(MAKE) check-v208
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4684,6 +4689,115 @@ check-v203: check-v203-civilization-collapse-detect
 
 check-v199-v203: check-v199 check-v200 check-v201 check-v202 check-v203
 	@echo "check-v199-v203: OK (law + market + diplomacy + culture + civilization)"
+
+# --- v204 σ-Hypothesis (generation + grounding + novelty + impact) ---
+# N=10 candidate hypotheses ranked by
+# impact = σ_novelty × (1 − σ_hypothesis) with grounding
+# hard-zeroing when σ_grounding > τ_ground.  Top-3 go to
+# test queue (v205), rest to v115 memory.  Speculative
+# hypotheses are flagged, never pruned.
+V204_INC  = -Isrc/v204
+V204_SRCS = src/v204/hypothesis.c
+
+creation_os_v204_hypothesis: $(V204_SRCS) src/v204/main.c
+	$(CC) $(CFLAGS) $(V204_INC) -o $@ \
+	    $(V204_SRCS) src/v204/main.c $(LDFLAGS)
+
+check-v204-hypothesis-ranking: creation_os_v204_hypothesis
+	@bash benchmarks/v204/check_v204_hypothesis_ranking.sh
+	@echo "check-v204-hypothesis-ranking: OK (impact ranking + grounding + speculative)"
+
+check-v204: check-v204-hypothesis-ranking
+	@echo "check-v204: OK (σ-hypothesis kernel)"
+
+# --- v205 σ-Experiment (design + sim-first + power + repro) ---
+# One experiment per v204 TEST_QUEUE slot (3 total).  Each
+# has distinct dep/indep/control variable ids; n_required
+# follows (z_α+z_β)²/effect² deterministically; sim-first
+# (σ_sim < τ_sim) plus power check (σ_power < τ_power)
+# produce a tri-valued decision SIM_SUPPORTS /
+# SIM_REFUTES / UNDER_POWERED.  Full repro record hash-
+# chained — the `cos reproduce --experiment` spine.
+V205_INC  = -Isrc/v205
+V205_SRCS = src/v205/experiment.c
+
+creation_os_v205_experiment: $(V205_SRCS) src/v205/main.c
+	$(CC) $(CFLAGS) $(V205_INC) -o $@ \
+	    $(V205_SRCS) src/v205/main.c $(LDFLAGS)
+
+check-v205-experiment-design-valid: creation_os_v205_experiment
+	@bash benchmarks/v205/check_v205_experiment_design_valid.sh
+	@echo "check-v205-experiment-design-valid: OK (design + sim-first + power)"
+
+check-v205: check-v205-experiment-design-valid
+	@echo "check-v205: OK (σ-experiment kernel)"
+
+# --- v206 σ-Theorem (NL conjecture → Lean4 → σ-honest status) ---
+# 8 conjectures × 4 proof steps.  σ_proof = max(σ_step);
+# a simulated Lean 4 accept requires σ_formalization ≤
+# τ_formal AND σ_proof ≤ τ_step.  Status ladder covers
+# PROVEN / CONJECTURE / SPECULATION / REFUTED.  No
+# theorem is ever marked PROVEN without the accept flag
+# — σ-honesty enforced in the self-test.
+V206_INC  = -Isrc/v206
+V206_SRCS = src/v206/theorem.c
+
+creation_os_v206_theorem: $(V206_SRCS) src/v206/main.c
+	$(CC) $(CFLAGS) $(V206_INC) -o $@ \
+	    $(V206_SRCS) src/v206/main.c $(LDFLAGS)
+
+check-v206-theorem-lean-verify: creation_os_v206_theorem
+	@bash benchmarks/v206/check_v206_theorem_lean_verify.sh
+	@echo "check-v206-theorem-lean-verify: OK (Lean accept + σ-honest status)"
+
+check-v206: check-v206-theorem-lean-verify
+	@echo "check-v206: OK (σ-theorem kernel)"
+
+# --- v207 σ-Design (space + constraints + Pareto + receipt) ---
+# 12 design candidates over (performance, complexity,
+# cost) with hard constraints from v199 law, v191
+# constitutional, v200 market.  Infeasible candidates are
+# excluded from the Pareto front; front members must not
+# be dominated by any feasible candidate.  Receipt chain
+# (requirements → design → rationale) hashed.
+V207_INC  = -Isrc/v207
+V207_SRCS = src/v207/design.c
+
+creation_os_v207_design: $(V207_SRCS) src/v207/main.c
+	$(CC) $(CFLAGS) $(V207_INC) -o $@ \
+	    $(V207_SRCS) src/v207/main.c $(LDFLAGS)
+
+check-v207-design-pareto-front: creation_os_v207_design
+	@bash benchmarks/v207/check_v207_design_pareto_front.sh
+	@echo "check-v207-design-pareto-front: OK (Pareto front + constraints)"
+
+check-v207: check-v207-design-pareto-front
+	@echo "check-v207: OK (σ-design kernel)"
+
+# --- v208 σ-Manufacture (DFM + process sim + quality + closed loop) ---
+# 4 designs manufactured.  Each run carries 5 DFM
+# findings (σ_dfm + flagged + suggestion_id), 4 process
+# stages with σ_process, and σ_quality combining the two.
+# v159-style heal: checkpoints grow monotonically with
+# σ_quality.  Every run emits a non-zero feedback
+# hypothesis id that closes the
+#    v208 → v204 science / design / manufacture loop.
+V208_INC  = -Isrc/v208
+V208_SRCS = src/v208/manufacture.c
+
+creation_os_v208_manufacture: $(V208_SRCS) src/v208/main.c
+	$(CC) $(CFLAGS) $(V208_INC) -o $@ \
+	    $(V208_SRCS) src/v208/main.c $(LDFLAGS)
+
+check-v208-manufacture-dfm-check: creation_os_v208_manufacture
+	@bash benchmarks/v208/check_v208_manufacture_dfm_check.sh
+	@echo "check-v208-manufacture-dfm-check: OK (DFM + process + quality + closed loop)"
+
+check-v208: check-v208-manufacture-dfm-check
+	@echo "check-v208: OK (σ-manufacture kernel)"
+
+check-v204-v208: check-v204 check-v205 check-v206 check-v207 check-v208
+	@echo "check-v204-v208: OK (hypothesis + experiment + theorem + design + manufacture)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
