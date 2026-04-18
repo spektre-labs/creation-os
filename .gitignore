@@ -444,3 +444,8 @@ creation_os_server
 creation_os_server_hardened
 creation_os_server_asan
 creation_os_server_ubsan
+creation_os_v111_reason
+creation_os_v111
+benchmarks/v111/__pycache__/
+training/v111/data/
+training/v111/runs/

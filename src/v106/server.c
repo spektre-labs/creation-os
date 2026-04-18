@@ -14,15 +14,17 @@
  *     GET  /v1/sigma-profile     → last σ snapshot JSON
  *     POST /v1/chat/completions  → completion (SSE if stream=true)
  *     POST /v1/completions       → text completion
+ *     POST /v1/reason            → v111.2 multi-candidate σ-reasoning
  *     GET  /                     → web/index.html (v108)
  *     GET  /{static}             → simple mime-typed static file
  *
  * Routing is literal prefix matching.  For production we'd want a
- * router, but at five routes the switch is clearer than a table.
+ * router, but at six routes the switch is clearer than a table.
  */
 #include "server.h"
 
 #include "../v101/bridge.h"
+#include "../v111/reason.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -600,6 +602,83 @@ static int handle_completions(int fd, server_state_t *st, const char *body)
     return write_status(fd, 200, "OK", "application/json", payload, (size_t)n);
 }
 
+/* ------------------------------------------------------------------ */
+/* v111.2 reasoning endpoint: POST /v1/reason                         */
+/* ------------------------------------------------------------------ */
+
+static int handle_reason(int fd, server_state_t *st, const char *body)
+{
+    /* Validate body before the stub-mode 503 — a missing prompt is a
+     * client error regardless of whether the model is loaded. */
+    char prompt[8192];
+    if (cos_v106_json_get_string(body, "prompt", prompt, sizeof prompt) < 0) {
+        /* Fall back to chat-style "messages": pick last user message. */
+        if (cos_v106_json_extract_last_user(body, prompt, sizeof prompt) < 0) {
+            const char err[] = "{\"error\":{\"message\":\"missing prompt or messages\","
+                               "\"type\":\"invalid_request\"}}";
+            return write_status(fd, 400, "Bad Request", "application/json",
+                                err, sizeof err - 1);
+        }
+    }
+
+    if (!st->bridge) {
+        const char err[] =
+            "{\"error\":{\"message\":\"model not loaded — "
+            "configure [model].gguf_path in config.toml\","
+            "\"type\":\"not_loaded\"}}";
+        return write_status(fd, 503, "Service Unavailable", "application/json",
+                            err, sizeof err - 1);
+    }
+
+    cos_v111_reason_opts_t opts;
+    cos_v111_reason_opts_defaults(&opts);
+    opts.tau_abstain = (float)st->cfg->tau_abstain;
+
+    long k_cand     = cos_v106_json_get_int(body, "k_candidates", opts.k_candidates);
+    long max_tok    = cos_v106_json_get_int(body, "max_tokens",   opts.max_tokens);
+    double tau_body = cos_v106_json_get_double(body, "tau_abstain", opts.tau_abstain);
+    if (k_cand < 1) k_cand = 1;
+    if (k_cand > COS_V111_REASON_MAX_CANDIDATES) k_cand = COS_V111_REASON_MAX_CANDIDATES;
+    if (max_tok < 1)  max_tok = 1;
+    if (max_tok > 2048) max_tok = 2048;
+    opts.k_candidates = (int)k_cand;
+    opts.max_tokens   = (int)max_tok;
+    opts.tau_abstain  = (float)tau_body;
+
+    cos_v111_reason_report_t report;
+    int rc = cos_v111_reason_run(st->bridge, prompt, &opts, &report);
+    if (rc != 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"reasoning pipeline failed\","
+            "\"type\":\"internal\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+
+    /* Update the last-σ snapshot from the chosen candidate so the
+     * /v1/sigma-profile endpoint reflects what /v1/reason returned. */
+    if (report.chosen_index >= 0 && report.chosen_index < report.n_candidates) {
+        const cos_v111_reason_candidate_t *c =
+            &report.candidates[report.chosen_index];
+        sigma_snapshot_update(st->cfg->model_id,
+                              st->cfg->tau_abstain, st->agg,
+                              c->sigma_mean, c->sigma_product, 0.f,
+                              c->sigma_profile, report.abstained);
+    }
+
+    char payload[65536];
+    int  n = cos_v111_reason_report_to_json(&report, st->cfg->model_id,
+                                            payload, sizeof payload);
+    if (n < 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"reason payload overflow\","
+            "\"type\":\"internal\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+    return write_status(fd, 200, "OK", "application/json", payload, (size_t)n);
+}
+
 /* --- static file serving (v108 will land index.html at web/) ------ */
 
 static const char *mime_for_path(const char *path)
@@ -693,6 +772,8 @@ static int handle_one(int cfd, server_state_t *st)
             rc = handle_chat_completions(cfd, st, body);
         else if (strcmp(path, "/v1/completions") == 0)
             rc = handle_completions(cfd, st, body);
+        else if (strcmp(path, "/v1/reason") == 0)
+            rc = handle_reason(cfd, st, body);
         else {
             const char b[] = "{\"error\":{\"message\":\"not found\"}}";
             rc = write_status(cfd, 404, "Not Found", "application/json", b, sizeof b - 1);

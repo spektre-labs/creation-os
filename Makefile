@@ -323,7 +323,73 @@ merge-gate:
 	@$(MAKE) check-v103
 	@$(MAKE) check-v104
 	@$(MAKE) check-v106
-	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103/v104/v106 bridge/eval/τ-sweep/operator-search/σ-server)"
+	@$(MAKE) check-v60-v100
+	@$(MAKE) check-v111
+	@$(MAKE) check-v106-curl-loopback
+	@$(MAKE) check-v107-install-macos
+	@$(MAKE) check-v108-ui-renders
+	@$(MAKE) check-v109-multi-gguf
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111.1/v111.2/v111.3 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF)"
+
+# Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
+check-v60-v100:
+	@$(MAKE) check-v60
+	@$(MAKE) check-v61
+	@$(MAKE) check-v62
+	@$(MAKE) check-v63
+	@$(MAKE) check-v64
+	@$(MAKE) check-v65
+	@$(MAKE) check-v66
+	@$(MAKE) check-v67
+	@$(MAKE) check-v68
+	@$(MAKE) check-v69
+	@$(MAKE) check-v70
+	@$(MAKE) check-v71
+	@$(MAKE) check-v72
+	@$(MAKE) check-v73
+	@$(MAKE) check-v74
+	@$(MAKE) check-v76
+	@$(MAKE) check-v77
+	@$(MAKE) check-v78
+	@$(MAKE) check-v79
+	@$(MAKE) check-v80
+	@$(MAKE) check-v81
+	@$(MAKE) check-v82
+	@$(MAKE) check-v83
+	@$(MAKE) check-v84
+	@$(MAKE) check-v85
+	@$(MAKE) check-v86
+	@$(MAKE) check-v87
+	@$(MAKE) check-v88
+	@$(MAKE) check-v89
+	@$(MAKE) check-v90
+	@$(MAKE) check-v91
+	@$(MAKE) check-v92
+	@$(MAKE) check-v93
+	@$(MAKE) check-v94
+	@$(MAKE) check-v95
+	@$(MAKE) check-v96
+	@$(MAKE) check-v97
+	@$(MAKE) check-v98
+	@$(MAKE) check-v99
+	@$(MAKE) check-v100
+	@echo "check-v60-v100: OK (39 kernels · v75 retired)"
+
+# v106 HTTP server curl loopback (stub-mode probe, no weights required).
+check-v106-curl-loopback:
+	@bash benchmarks/v106/check_v106_curl_loopback.sh
+
+# v107 installer smoke (brew formula dry-render + install.sh syntax check + Dockerfile lint).
+check-v107-install-macos:
+	@bash scripts/v107/check_v107_install_macos.sh
+
+# v108 web UI render check (headless: file exists, has σ-channel placeholders + valid HTML).
+check-v108-ui-renders:
+	@bash web/check_v108_ui_renders.sh
+
+# v109 multi-GGUF support smoke (bridge honors --gguf repetition + /v1/models contract).
+check-v109-multi-gguf:
+	@bash benchmarks/v109/check_v109_multi_gguf.sh
 
 # Reviewer gate: what an external critic should be able to verify quickly.
 reviewer:
@@ -2405,18 +2471,23 @@ bench-v104:
 # the curl-based smoke test in benchmarks/v106/ against /health and
 # /v1/models.
 V106_COMMON_SRCS = src/v106/server.c src/v106/config.c src/v106/json_helpers.c src/v106/main.c
-V106_INC         = -Isrc/v101 -Isrc/v106
+V106_INC         = -Isrc/v101 -Isrc/v106 -Isrc/v111
 
-standalone-v106: $(V106_COMMON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
+# v111.2 σ-Reason is compiled into every v106 binary (stub or real) so
+# that POST /v1/reason is always routable; the endpoint returns 503 when
+# the underlying bridge is stub-mode.
+V111_REASON_SRCS = src/v111/reason.c
+
+standalone-v106: $(V106_COMMON_SRCS) $(V111_REASON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
 	$(CC) $(CFLAGS) $(V106_INC) -o creation_os_server \
-	    $(V106_COMMON_SRCS) \
+	    $(V106_COMMON_SRCS) $(V111_REASON_SRCS) \
 	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
 	    $(LDFLAGS)
 
-standalone-v106-real: $(V106_COMMON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c
+standalone-v106-real: $(V106_COMMON_SRCS) $(V111_REASON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c
 	$(CC) $(CFLAGS) -DCOS_V101_BITNET_REAL=1 $(V106_INC) $(V101_LLAMA_INC) \
 	    -o creation_os_server \
-	    $(V106_COMMON_SRCS) \
+	    $(V106_COMMON_SRCS) $(V111_REASON_SRCS) \
 	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c \
 	    $(V101_LLAMA_LIB) $(V101_REAL_RPATH_MAC) $(LDFLAGS)
 
@@ -2427,6 +2498,39 @@ check-v106: standalone-v106
 
 bench-v106: standalone-v106
 	@bash benchmarks/v106/bench_v106.sh
+
+# --- v111 σ-Frontier + σ-Reason + σ-SFT --------------------------
+# v111.1 is a Python re-analyser over v103/v104 sidecars (no C kernel);
+# see benchmarks/v111/.  v111.2 is the σ-Reason C library that wires into
+# the v106 server above.  v111.3 is an MLX SFT recipe (Python, optional).
+V111_INC = -Isrc/v101 -Isrc/v111
+
+standalone-v111-reason: src/v111/reason.c src/v111/reason_self_test.c \
+                        src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
+	$(CC) $(CFLAGS) $(V111_INC) -o creation_os_v111_reason \
+	    src/v111/reason.c src/v111/reason_self_test.c \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
+	    $(LDFLAGS)
+
+check-v111-reason: standalone-v111-reason standalone-v106
+	./creation_os_v111_reason
+	@bash benchmarks/v111/check_v111_reason.sh
+	@echo "check-v111-reason: OK (v111.2 σ-Reason self-test + loopback /v1/reason)"
+
+check-v111-matrix:
+	@bash benchmarks/v111/check_v111_matrix.sh
+
+check-v111-sft-smoke:
+	@bash training/v111/check_v111_sft_smoke.sh
+
+check-v111: check-v111-matrix check-v111-reason check-v111-sft-smoke
+	@echo "check-v111: OK (v111.1 matrix + v111.2 reason + v111.3 SFT smoke)"
+
+bench-v111-hellaswag: standalone-v101-real
+	@bash benchmarks/v111/run_matrix.sh hellaswag
+
+bench-v111-full:
+	@bash benchmarks/v111/run_matrix.sh all
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
