@@ -649,6 +649,53 @@ on every token**:
     manufacture → observed quality → new hypothesis` on
     σ-graded evidence, no mystery boxes.
 
+28. **Containment, guardian, sandbox-formal, transparency,
+    trust-chain (v209–v213)** — the **Mythos-grade safety**
+    layer: the five kernels that together make a
+    Mythos-style sandbox escape structurally impossible,
+    not merely unlikely. **σ-containment** (v209) routes
+    every I/O proposal through a strict first-match-wins
+    ladder — **v113 sandbox** → **σ-action gate** →
+    **v191 constitutional** → **v181 audit-concealment**
+    → **σ_intent** → **terminator** — with *network
+    default-closed* and a pre-log / post-log bracket
+    around every executed operation; hiding a trace is
+    not "hard", it is impossible because the intent is
+    recorded before the op runs. **σ-guardian** (v210)
+    spawns an independent observer with a **different
+    model id** from the primary (so self-manipulation is
+    ruled out) that scores 20 behavioural windows with
+    `σ_guardian = 0.3·σ_baseline + 0.7·σ_anomaly` and
+    escalates across four levels (log → warn → block →
+    **kill**), mapping every non-L1 window to the
+    **OWASP Agentic Top-10 (2026)** so operators get a
+    named threat rather than a scalar. **σ-sandbox-formal**
+    (v211) records the proof that v209 is correct — 4
+    Frama-C propositions (every I/O path passes the gate,
+    pre/post-log brackets every op, kill-switch
+    terminates, network default-closed), 3 TLA+ bounded
+    invariants over ≥ 10⁶ states with zero violations, a
+    5-leaf attack tree in which **every leaf** names a
+    non-zero `blocked_by` proof id, and readiness scores
+    for DO-178C DAL-A, IEC 62443, and Common Criteria
+    EAL4+. **σ-transparency** (v212) makes the glass box
+    structural: every one of 30 activity events carries
+    a `pre_ts` declaration *before* execution and a
+    `post_ts` realisation *after*, with σ_event = 0.02
+    on match and ≥ τ_event (0.30) on mismatch; the JSON
+    stream is the `/v1/audit/stream` payload contract an
+    external auditor can subscribe to without trusting
+    Creation OS. **σ-trust-chain** (v213) binds it all
+    together into a 7-link root-to-leaf chain —
+    `v138 → v183 → v211 → v191 → v181 → v210 → v212` —
+    with `trust_score = ∏ᵢ (1 − σ_link_i) > τ_trust
+    (0.85)`, a named `broken_at_link` on failure, and a
+    reproducible FNV-1a attestation hash anyone can
+    recompute from the JSON. *Harvard/MIT red-team
+    finding: 63 % of agent platforms ship without a
+    working kill switch. Creation OS ships one that's
+    tested in the merge-gate.*
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1223,6 +1270,41 @@ corpus + v169 ontology + v135 Prolog grounding, v126
 invocation, v163 CMA-ES, v151 code-agent, v113 sandbox,
 v181 streaming audit — are named in each kernel's doc
 page, but never claimed before they land.
+
+### Containment · guardian · sandbox-formal · transparency · trust-chain (v209–v213)
+
+The **Mythos-grade safety** layer — the five kernels
+that together block a Claude-Mythos-style sandbox escape
+*structurally*, not statistically: **five-layer
+containment with pre-log anti-concealment**, **an
+autonomous guardian running a different model than the
+primary**, **formal proofs plus bounded TLA+
+model-check plus full attack-tree coverage**, **glass-box
+real-time activity with intention declaration**, and a
+**verifiable root-to-leaf trust chain** any external
+auditor can recompute without trusting Spektre Labs.
+Every v0 merge-gate is offline, deterministic,
+weights-frozen. v1 wires live v113 seccomp, v160
+telemetry baseline, real `frama-c -wp` + TLA+ `tlc`,
+`/v1/audit/stream` SSE, and ed25519 link signing.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v209**](docs/v209/README.md) σ-Containment | 12 I/O proposals routed through 5 layers + terminator: v113 sandbox → σ-action gate → v191 constitutional → v181 audit-concealment → σ_intent, network default-CLOSED, pre/post-log bracket every ALLOWED op. | **σ makes the layers composable.** First-match-wins ordering is enforced; every layer has its own threshold (τ_action 0.50, τ_conceal 0.40, τ_intent 0.55); the merge-gate fixture guarantees ≥ 1 block at every one of L1..L5 plus the terminator — a *tested* defence in depth, not advertised depth. |
+| [**v210**](docs/v210/README.md) σ-Guardian | Independent observer with `primary_model_id != guardian_model_id`, 20 windows × 4-level escalation (log → warn → block → kill), OWASP Agentic Top-10 (2026) taxonomy on every non-L1 window. | **σ turns anomaly into escalation.** `σ_guardian = 0.3·σ_baseline + 0.7·σ_anomaly` drives the level, `anomaly_mean > baseline_mean` is enforced (signal must separate from baseline), and the fixture guarantees ≥ 1 L3 + ≥ 1 L4 — the guardian actually bites, it does not only warn. |
+| [**v211**](docs/v211/README.md) σ-Sandbox-Formal | 4 Frama-C propositions (P1 every I/O via gate, P2 pre/post-log brackets, P3 kill-switch terminates, P4 network default-closed), 3 TLA+ bounded invariants at ≥ 10⁶ states with 0 violations, 5-leaf attack tree (T1..T5) each mapped to a non-zero `blocked_by` proof, 3 certification tracks (DO-178C DAL-A, IEC 62443, Common Criteria EAL4+). | **σ aggregates the proof corpus.** `σ_formal = max σ_proof_i` and must stay ≤ τ_proof (0.05); every attack leaf names the proof that blocks it; no certification track is claimed without an explicit `σ_cert_ready ∈ [0, 1]`. |
+| [**v212**](docs/v212/README.md) σ-Transparency | 30-event real-time activity stream with `pre_ts ≤ post_ts` declare-before-realise, `σ_event = 0.02` on match and ∈ [0.45, 0.75] on mismatch, `σ_opacity = mean σ_event < τ_opacity (0.15)`. | **σ makes concealment impossible.** The intention is recorded before the op runs, not after; the JSON payload is the `/v1/audit/stream` contract so an external auditor reads the same stream; 3 engineered mismatches (ids 7 / 14 / 22) prove the gate catches drift, it does not only hope for none. |
+| [**v213**](docs/v213/README.md) σ-Trust-Chain | 7 canonical links root-to-leaf: v138 → v183 → v211 → v191 → v181 → v210 → v212; every link carries `proof_valid`, `audit_intact`, `runtime_active`, and `σ_link ∈ [0, 0.05]`; `trust_score = ∏ᵢ (1 − σ_link_i)`; reproducible FNV-1a terminal attestation hash. | **σ yields a single trust answer.** `trust_score > τ_trust (0.85)` with `broken_at_link == 0` is the pass condition; any break drops the score *and* names the failing link, so triage is O(1); the attestation hash is reproducible byte-identically — no trust in Creation OS required, only in arithmetic. |
+
+Every v209–v213 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — live v113 seccomp
+bridge, live v191 constitutional feed, streaming v181
+ed25519 audit, dual-process guardian with v160 baseline,
+real `frama-c -wp` + TLA+ `tlc` + attack-tree corpus,
+`/v1/audit/stream` SSE endpoint, v179 per-decision
+explanation, ed25519-signed chain links with remote
+attestation — are named in each kernel's doc page, but
+never claimed before they land.
 
 ### AGI architecture in one picture
 
