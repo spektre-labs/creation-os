@@ -3821,6 +3821,30 @@ check-v171-collab-handoff: creation_os_v171_collab
 check-v171: check-v171-collab-handoff
 	@echo "check-v171: OK (σ-collab kernel)"
 
+# --- v172 σ-Narrative (session summaries + goals + resumption) ----------
+# 3-session baked fixture (weeks 1..3) with σ_coverage per
+# summary, a chained narrative thread, three goals with
+# σ_progress, and four people with role/last-context and a
+# σ_ident.  The resumption protocol deterministically composes
+# an opener referencing the last session + the primary goal
+# (lowest σ_progress among non-done goals), so a fresh session
+# picks up at the right story-beat instead of cold-booting with
+# "How can I help?".  v172.1 swaps the fixture for real v115
+# memory iteration and BitNet-generated summaries.
+V172_INC  = -Isrc/v172
+V172_SRCS = src/v172/narrative.c
+
+creation_os_v172_narrative: $(V172_SRCS) src/v172/main.c
+	$(CC) $(CFLAGS) $(V172_INC) -o $@ \
+	    $(V172_SRCS) src/v172/main.c $(LDFLAGS)
+
+check-v172-narrative-resumption: creation_os_v172_narrative
+	@bash benchmarks/v172/check_v172_narrative_resumption.sh
+	@echo "check-v172-narrative-resumption: OK (thread + goals + people + resume)"
+
+check-v172: check-v172-narrative-resumption
+	@echo "check-v172: OK (σ-narrative kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
