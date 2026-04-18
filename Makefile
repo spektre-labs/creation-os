@@ -4939,6 +4939,25 @@ check-v215-stigmergy-trail-form: creation_os_v215_stigmergy
 check-v215: check-v215-stigmergy-trail-form
 	@echo "check-v215: OK (σ-stigmergy kernel)"
 
+# --- v216 σ-Quorum (gradual consensus + minority voice) ---
+# 5 proposals × 7 agents × 4-level decision ladder
+# (BOLD / CAUTIOUS / DEBATE / DEFER); σ_collective =
+# σ_majority_mean + minority_penalty; confident dissent
+# (σ < s_minority) is captured in the audit record.
+V216_INC  = -Isrc/v216
+V216_SRCS = src/v216/quorum.c
+
+creation_os_v216_quorum: $(V216_SRCS) src/v216/main.c
+	$(CC) $(CFLAGS) $(V216_INC) -o $@ \
+	    $(V216_SRCS) src/v216/main.c $(LDFLAGS)
+
+check-v216-quorum-gradual-consensus: creation_os_v216_quorum
+	@bash benchmarks/v216/check_v216_quorum_gradual_consensus.sh
+	@echo "check-v216-quorum-gradual-consensus: OK (gradual + minority + deadlock)"
+
+check-v216: check-v216-quorum-gradual-consensus
+	@echo "check-v216: OK (σ-quorum kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
