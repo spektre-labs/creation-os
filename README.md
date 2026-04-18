@@ -177,6 +177,25 @@ on every token**:
     accuracy + σ-spread, continual-learning ΔAccuracy + hold-out
     drift, adversarial detection@FPR≤5%) with a canonical JSON
     output shape destined for Hugging Face (v143).
+15. **Sovereign self-improvement — RSI loop, atomic skill library,
+    automated kernel generation, deep self-reflection, orchestrator** —
+    a **recursive self-improvement** state machine with accept/rollback,
+    3-strike regression pause, and σ_rsi stability signal over the
+    last-10 history window (v144); an **atomic skill library** with
+    σ-gated install, argmin-σ routing, `min/√n` LoRA-merge shrinkage,
+    mesh-share gate at τ, and monotone CMA-ES evolve (v145); **automated
+    kernel generation** — deterministic 4-file skeleton template with
+    σ_code gate, human-in-the-loop PENDING / APPROVED / REJECTED /
+    GATED_OUT state machine, and a 3-reject pause latch, whose output
+    is *proven* to compile by the merge-gate (v146); **deep
+    self-reflection** on v111.2 thought traces — argmax σ_product
+    weakest link, RAIN (ICLR 2024) rewind depth from σ_weakest, and
+    pure-vs-chain divergence detection (v147); and **v148 σ-sovereign**,
+    the capstone orchestrator that composes v144–v147 into one
+    six-stage loop (measure → identify → improve → evolve → reflect
+    → share) under two σ-gates (σ_rsi > τ_sovereign ⇒ unstable_halt;
+    SUPERVISED mode ⇒ pending_approvals) with a hot-latch emergency
+    stop orthogonal to v144's pause.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -348,6 +367,37 @@ v106 server, a real continual-learning run, a PyPI maintainer
 account, an archived benchmark corpus) are available, matching the
 discipline established in v123 / v134–v138.
 
+### Sovereign self-improvement · RSI · skill library · genesis · reflect · orchestrator (v144–v148)
+
+The sovereign stack. Creation OS already had every axis of a
+self-improving system separately (weights via v124, reward via
+v125 σ-DPO, agentic *where* via v112/v113/v114, safety via v133
+meta + v122 red-team). v144–v148 close them into one loop:
+v144 is the accept/rollback **state machine** with a σ_rsi
+stability signal; v145 is the **atomic skill library** that
+routes by σ and merges LoRA-style with `min/√n` shrinkage; v146
+is the **automated kernel generator** whose output the merge-gate
+actually compiles; v147 is **deep self-reflection** with RAIN
+rewind; and v148 is the **six-stage orchestrator** that runs the
+whole cycle under two σ-gates.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v144**](docs/v144/README.md) σ-RSI | Deterministic submit→accept/rollback state machine over a 10-wide rolling history ring; three consecutive regressions latch `paused=true` and freeze `current_score`; `cos_v144_resume()` clears the latch; `σ_rsi = variance/mean` on the accepted-score window (population variance, mean clamped). | The first Creation OS surface where σ *is* the scheduler: low σ_rsi ⇒ stable learning ⇒ the v148 loop can speed up, high σ_rsi ⇒ unstable learning ⇒ the loop must self-halt. The 3-strike pause is the generic safety floor reused by v146 genesis verbatim. |
+| [**v145**](docs/v145/README.md) σ-Skill | In-memory library of up to 64 atomic skills `{LoRA, template, self-test}` with five contracts: install σ-gate at τ_install, argmin-σ route on `target_topic`, stack σ = min/√n (conservative LoRA-merge shrinkage), share-gate at τ_share, and a CMA-ES-style `evolve()` that only installs σ-monotone improvements. Deterministic under SplitMix64. | σ is the install gate (rejected skills never enter the library), σ is the routing key (the best skill for a topic is the one with the lowest σ on that topic), σ is the share predicate (only low-σ skills leave the node), and σ is the evolution fitness (non-monotone regressions are never written back). |
+| [**v146**](docs/v146/README.md) σ-Genesis | Deterministic 4-file kernel-skeleton generator (`kernel.h` / `kernel.c` / `tests/test.c` / `README.md`) with a σ_code gate (σ_code < τ_merge ⇒ PENDING, σ_code ≥ τ ⇒ GATED_OUT) and a human-in-the-loop state machine: PENDING → APPROVED / REJECTED with a 3-reject pause latch. The merge-gate *actually compiles* the emitted `kernel.c` with `$(CC) -c -Wall -std=c11` to prove the skeleton is coherent. | The first Creation OS surface that writes *other* kernels. σ on the generated code (completeness + seeded novelty jitter) is the merge-candidate gate; the 3-strike pause protects the reviewer from a generator that keeps missing the real architectural gap. v146.1 wires v114 swarm (8B code specialist) as the real generator. |
+| [**v147**](docs/v147/README.md) σ-Reflect | Thought-trace kernel: each v111.2 reasoning step is tagged with its σ_product, v147 identifies the argmax-σ weakest link, computes a RAIN (ICLR 2024) rewind depth from σ_weakest (σ ≤ 0.30 → 1, ≤ 0.60 → ⌈n/2⌉, else n), and compares the pure answer (no chain shown) against the chain answer to detect divergence. | v133 measures *outcome* σ; v147 measures *process* σ. The weakest-step index is directly consumable by v125 σ-DPO as a preference signal, and the RAIN depth function is exposed so the sovereign loop (v148) can unwind a failing plan with the right granularity. |
+| [**v148**](docs/v148/README.md) σ-Sovereign | The orchestrator. Six ordered stages per cycle (MEASURE → IDENTIFY → IMPROVE → EVOLVE → REFLECT → SHARE) under two σ-gates (G1 stability: σ_rsi > τ_sovereign ⇒ unstable_halt; G2 supervision: SUPERVISED mode keeps every structural change as `pending_approvals`). SUPERVISED vs AUTONOMOUS selectable by `config.toml`. Emergency stop is a hot latch deliberately orthogonal to v144's pause — a paused-for-σ RSI loop cannot accidentally restart an emergency-stopped sovereign loop. | The first Creation OS surface that has authority to mutate itself. Every such authority comes from a σ-gate: σ_rsi > τ halts the loop (G1), σ ≥ τ_install blocks v145 skill install, σ_code ≥ τ_merge blocks a v146 candidate, `pending_approvals > 0` blocks a structural change in SUPERVISED mode (G2). There is no path from "model output" to "state change" that does not cross at least one σ-gate. |
+
+Every v144–v148 merge-gate check is deterministic, weights-free,
+framework-free, and offline. The vNN.1 follow-ups — live v143
+score feeding v144 submit, real v124 LoRA micro-tune in v145
+acquire, v114 swarm as the real v146 generator, v111.2 thought
+traces flowing into v147, and `/sovereign-dashboard` on v108 UI
+for v148 — land when their external counterparts are available,
+matching the discipline established in v123 / v134–v138 /
+v139–v143.
+
 ### AGI architecture in one picture
 
 Seven layers, composable, each falsifiable:
@@ -361,6 +411,10 @@ Seven layers, composable, each falsifiable:
                             linear latent world model · σ_world · rollout (v139)
                             counterfactual do-calculus + σ-channel attribution (v140)
                             5-category σ-native self-benchmark with JSON output (v143)
+                            RSI accept/rollback + σ_rsi + 3-strike pause (v144)
+                            automated kernel genesis + HITL + σ_code gate (v146)
+                            thought-trace σ + RAIN rewind + divergence detect (v147)
+                            sovereign orchestrator · 6 stages · 2 σ-gates (v148)
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
            + Collective     MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
@@ -374,6 +428,7 @@ Seven layers, composable, each falsifiable:
                             σ-DPO: σ is the preference, no annotator (v125)
                             session timeline · σ-decay · spikes · deadline-σ (v131)
                             self-directed curriculum · no-forgetting contract (v141)
+                            atomic skill library · σ-route · LoRA merge · mesh share (v145)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)

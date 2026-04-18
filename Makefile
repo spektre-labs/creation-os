@@ -348,7 +348,12 @@ merge-gate:
 	@$(MAKE) check-v141
 	@$(MAKE) check-v142
 	@$(MAKE) check-v143
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence)"
+	@$(MAKE) check-v144
+	@$(MAKE) check-v145
+	@$(MAKE) check-v146
+	@$(MAKE) check-v147
+	@$(MAKE) check-v148
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3155,6 +3160,117 @@ check-v143: check-v143-benchmark-smoke
 
 check-v139-v143: check-v139 check-v140 check-v141 check-v142 check-v143
 	@echo "check-v139-v143: OK (world-intelligence stack)"
+
+# --- v144 σ-RSI (recursive self-improvement loop) ---------------
+# Deterministic state machine for the RSI cycle: submit candidate
+# score → accept-or-rollback → σ_rsi on last-10 history → 3-strike
+# pause latch.  v144.1 wires v133 meta-weaknesses, v141 curriculum,
+# v120 distill, v125 DPO, v124 continual, v143 benchmark into the
+# submit() callback.
+V144_INC  = -Isrc/v144
+V144_SRCS = src/v144/rsi.c
+
+creation_os_v144_rsi: $(V144_SRCS) src/v144/main.c
+	$(CC) $(CFLAGS) $(V144_INC) -o $@ \
+	    $(V144_SRCS) src/v144/main.c $(LDFLAGS)
+
+check-v144-rsi-cycle-smoke: creation_os_v144_rsi
+	@bash benchmarks/v144/check_v144_rsi_cycle_smoke.sh
+	@echo "check-v144-rsi-cycle-smoke: OK (cycle + rollback + pause)"
+
+check-v144: check-v144-rsi-cycle-smoke
+	@echo "check-v144: OK (σ-rsi kernel)"
+
+# --- v145 σ-Skill (atomic skill library + σ-routed stacking) ----
+# In-memory, deterministic kernel for the skill-library discipline:
+# acquire (σ-gated install), route (argmin-σ on target_topic),
+# stack (LoRA-merge σ = min/√n), share (mesh broadcast at τ), and
+# evolve (CMA-ES-style monotone σ-improvement).  v145.1 wires the
+# on-disk skills/<name>.skill/ layout, real LoRA merge, and v128
+# mesh gossip for cross-node sharing.
+V145_INC  = -Isrc/v145
+V145_SRCS = src/v145/skill.c
+
+creation_os_v145_skill: $(V145_SRCS) src/v145/main.c
+	$(CC) $(CFLAGS) $(V145_INC) -o $@ \
+	    $(V145_SRCS) src/v145/main.c $(LDFLAGS)
+
+check-v145-skill-acquire-and-route: creation_os_v145_skill
+	@bash benchmarks/v145/check_v145_skill_acquire_and_route.sh
+	@echo "check-v145-skill-acquire-and-route: OK (acquire + route + evolve)"
+
+check-v145: check-v145-skill-acquire-and-route
+	@echo "check-v145: OK (σ-skill kernel)"
+
+# --- v146 σ-Genesis (automated kernel-skeleton generation) -------
+# Deterministic template generator that emits a canonical 4-file
+# kernel skeleton (kernel.h / kernel.c / tests/test.c / README.md)
+# with a σ-gate on σ_code (completeness + seeded novelty jitter)
+# and a human-in-the-loop state machine: generate → PENDING →
+# approve / reject; three consecutive rejects latch paused=true
+# and only cos_v146_resume() unblocks further approvals.  v146.1
+# wires v114 swarm (8B code specialist) as the real generator.
+V146_INC  = -Isrc/v146
+V146_SRCS = src/v146/genesis.c
+
+creation_os_v146_genesis: $(V146_SRCS) src/v146/main.c
+	$(CC) $(CFLAGS) $(V146_INC) -o $@ \
+	    $(V146_SRCS) src/v146/main.c $(LDFLAGS)
+
+check-v146-genesis-template-gen: creation_os_v146_genesis
+	@bash benchmarks/v146/check_v146_genesis_template_gen.sh
+	@echo "check-v146-genesis-template-gen: OK (skeleton + σ-gate + HITL)"
+
+check-v146: check-v146-genesis-template-gen
+	@echo "check-v146: OK (σ-genesis kernel)"
+
+# --- v147 σ-Reflect (thought-trace σ + RAIN rewind) --------------
+# Deterministic kernel for deep self-reflection: each v111.2
+# reasoning step is tagged with its σ_product, v147 identifies
+# the argmax-σ "weakest link", computes a RAIN (ICLR 2024) rewind
+# depth from σ_weakest (local / mid-chain / full restart), and
+# detects pure-vs-chain divergence.  v147.1 wires v111.2 to feed
+# real traces and v125 DPO to use weakest_step as a preference
+# signal.
+V147_INC  = -Isrc/v147
+V147_SRCS = src/v147/reflect.c
+
+creation_os_v147_reflect: $(V147_SRCS) src/v147/main.c
+	$(CC) $(CFLAGS) $(V147_INC) -o $@ \
+	    $(V147_SRCS) src/v147/main.c $(LDFLAGS)
+
+check-v147-reflect-thought-trace: creation_os_v147_reflect
+	@bash benchmarks/v147/check_v147_reflect_thought_trace.sh
+	@echo "check-v147-reflect-thought-trace: OK (weakest + RAIN + divergence)"
+
+check-v147: check-v147-reflect-thought-trace
+	@echo "check-v147: OK (σ-reflect kernel)"
+
+# --- v148 σ-Sovereign (autonomous orchestrator) ------------------
+# Composes v144 (RSI) + v145 (skill) + v146 (genesis) + v147
+# (reflect) into one six-stage supervised loop: measure →
+# identify → improve → evolve → reflect → share.  Two σ-gates pace
+# it — σ_rsi > τ_sovereign self-halts the loop (G1), and SUPERVISED
+# mode keeps every structural change as pending_approvals until
+# the user calls cos_v148_approve_all() (G2).  Emergency stop is a
+# hot-path latch.
+V148_INC  = -Isrc/v148 -Isrc/v144 -Isrc/v145 -Isrc/v146 -Isrc/v147
+V148_SRCS = src/v148/sovereign.c src/v144/rsi.c src/v145/skill.c \
+            src/v146/genesis.c src/v147/reflect.c
+
+creation_os_v148_sovereign: $(V148_SRCS) src/v148/main.c
+	$(CC) $(CFLAGS) $(V148_INC) -o $@ \
+	    $(V148_SRCS) src/v148/main.c $(LDFLAGS)
+
+check-v148-sovereign-supervised-smoke: creation_os_v148_sovereign
+	@bash benchmarks/v148/check_v148_sovereign_supervised_smoke.sh
+	@echo "check-v148-sovereign-supervised-smoke: OK (supervised + autonomous + emergency)"
+
+check-v148: check-v148-sovereign-supervised-smoke
+	@echo "check-v148: OK (σ-sovereign kernel)"
+
+check-v144-v148: check-v144 check-v145 check-v146 check-v147 check-v148
+	@echo "check-v144-v148: OK (sovereign stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
