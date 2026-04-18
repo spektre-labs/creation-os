@@ -330,7 +330,8 @@ merge-gate:
 	@$(MAKE) check-v108-ui-renders
 	@$(MAKE) check-v109-multi-gguf
 	@$(MAKE) check-v112-v114
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack)"
+	@$(MAKE) check-v115-v118
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2594,6 +2595,84 @@ check-v114: check-v114-swarm-routing check-v114-multi-specialist-consensus
 
 check-v112-v114: check-v112 check-v113 check-v114
 	@echo "check-v112-v114: OK (agentic stack — tools + sandbox + swarm)"
+
+# --- v115 σ-Memory, v116 σ-MCP, v117 σ-Long-Context, v118 σ-Vision ---
+# Four standalone C libraries + CLIs for the memory / MCP / long-context
+# / vision layer.  Each ships merge-gate-safe smoke tests that require
+# no weights and no network.  v115 links against libsqlite3 (system on
+# macOS; libsqlite3-dev on Debian / Ubuntu); if missing, build with
+# `make V115_SQLITE_OFF=1` to skip persistence (APIs return ENOSYS).
+V115_INC        = -Isrc/v115
+V116_INC        = -Isrc/v115 -Isrc/v116
+V117_INC        = -Isrc/v117
+V118_INC        = -Isrc/v118
+
+V115_MEMORY_SRCS = src/v115/memory.c
+V116_MCP_SRCS    = src/v116/mcp_server.c
+V117_LONGCTX_SRCS = src/v117/long_context.c
+V118_VISION_SRCS  = src/v118/vision.c
+
+# libsqlite3 is available by default on macOS and on any Linux with
+# libsqlite3-dev installed.  Override with V115_SQLITE_OFF=1 to compile
+# the pure-C fallback (self-test still runs; persistence disabled).
+V115_LDFLAGS = -lsqlite3
+ifneq ($(V115_SQLITE_OFF),)
+V115_CFLAGS_EXTRA = -DCOS_V115_NO_SQLITE=1
+V115_LDFLAGS =
+endif
+
+creation_os_v115_memory: $(V115_MEMORY_SRCS) src/v115/main.c
+	$(CC) $(CFLAGS) $(V115_CFLAGS_EXTRA) $(V115_INC) -o $@ \
+	    $(V115_MEMORY_SRCS) src/v115/main.c \
+	    $(V115_LDFLAGS) $(LDFLAGS)
+
+check-v115-memory-roundtrip: creation_os_v115_memory
+	@bash benchmarks/v115/check_v115_memory_roundtrip.sh
+	@echo "check-v115-memory-roundtrip: OK (σ-memory schema + JSON + round-trip)"
+
+check-v115-sigma-weighted-recall: creation_os_v115_memory
+	@bash benchmarks/v115/check_v115_sigma_weighted_recall.sh
+	@echo "check-v115-sigma-weighted-recall: OK (low-σ memories outrank high-σ duplicates)"
+
+check-v115: check-v115-memory-roundtrip check-v115-sigma-weighted-recall
+	@echo "check-v115: OK (σ-memory: SQLite + σ-weighted recall)"
+
+creation_os_v116_mcp: $(V116_MCP_SRCS) src/v116/main.c $(V115_MEMORY_SRCS)
+	$(CC) $(CFLAGS) $(V115_CFLAGS_EXTRA) $(V116_INC) -o $@ \
+	    $(V116_MCP_SRCS) src/v116/main.c $(V115_MEMORY_SRCS) \
+	    $(V115_LDFLAGS) $(LDFLAGS)
+
+check-v116-mcp-stdio-smoke: creation_os_v116_mcp
+	@bash benchmarks/v116/check_v116_mcp_stdio_smoke.sh
+	@echo "check-v116-mcp-stdio-smoke: OK (JSON-RPC 2.0 stdio — 5 tools + 3 resources + 2 prompts)"
+
+check-v116: check-v116-mcp-stdio-smoke
+	@echo "check-v116: OK (σ-MCP server)"
+
+creation_os_v117_long_context: $(V117_LONGCTX_SRCS) src/v117/main.c
+	$(CC) $(CFLAGS) $(V117_INC) -o $@ \
+	    $(V117_LONGCTX_SRCS) src/v117/main.c $(LDFLAGS)
+
+check-v117-long-context-32k: creation_os_v117_long_context
+	@bash benchmarks/v117/check_v117_long_context_32k.sh
+	@echo "check-v117-long-context-32k: OK (paged KV + σ-aware eviction + sliding window)"
+
+check-v117: check-v117-long-context-32k
+	@echo "check-v117: OK (σ-long-context)"
+
+creation_os_v118_vision: $(V118_VISION_SRCS) src/v118/main.c
+	$(CC) $(CFLAGS) $(V118_INC) -o $@ \
+	    $(V118_VISION_SRCS) src/v118/main.c $(LDFLAGS)
+
+check-v118-vision-smoke: creation_os_v118_vision
+	@bash benchmarks/v118/check_v118_vision_smoke.sh
+	@echo "check-v118-vision-smoke: OK (data URL parse + σ-gated projection)"
+
+check-v118: check-v118-vision-smoke
+	@echo "check-v118: OK (σ-vision interface layer)"
+
+check-v115-v118: check-v115 check-v116 check-v117 check-v118
+	@echo "check-v115-v118: OK (memory + MCP + long-context + vision)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

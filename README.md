@@ -108,6 +108,11 @@ on every token**:
 8. **Runs as a σ-governed agent** — σ-gated function calling (v112),
    subprocess sandbox with σ-gate on the generated code (v113), and a
    multi-specialist σ-routed swarm (v114).
+9. **Remembers across sessions, speaks MCP, holds 32k effective context,
+   and accepts images** — σ-weighted SQLite memory (v115), JSON-RPC 2.0
+   MCP server for Claude Desktop / Cursor / VS Code (v116), paged KV
+   cache with σ-aware eviction (v117), and `image_url` acceptance with
+   a σ-gated projection (v118).
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -130,8 +135,23 @@ Nature 2026 multi-agent review is what σ-routing is designed to catch:
 a bad hand-off shows up as a spike in σ_product on the hand-off token,
 **before** it cascades. That's the central claim of the agentic stack;
 the σ-gate is live, the standardised end-to-end verification on
-AgentBench / τ-bench is scheduled for v116 (see
-[`docs/RESEARCH_AND_THESIS_ARCHITECTURE.md`](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md)).
+AgentBench / τ-bench is tracked in
+[`docs/RESEARCH_AND_THESIS_ARCHITECTURE.md`](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md).
+
+### Memory · MCP · long context · vision (v115–v118)
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v115**](docs/v115/README.md) σ-Memory | SQLite file store (`~/.creation-os/memory.sqlite`) — three tables (episodic / knowledge / chat), 384-d embeddings, top-k search with cosine similarity | Every row stores the σ_product at write time; recall ranks by `cosine / (1 + λ·σ)`, so uncertain memories are automatically down-weighted. No other RAG system does this. |
+| [**v116**](docs/v116/README.md) σ-MCP | JSON-RPC 2.0 Model Context Protocol server over stdio — 5 tools (`cos_chat`, `cos_reason`, `cos_memory_search`, `cos_sandbox_execute`, `cos_sigma_profile`), 3 resources (`cos://memory/…`, `cos://knowledge/…`, `cos://sigma/history`), 2 prompts (`cos_analyze`, `cos_verify`) | `initialize` advertises an `experimental.sigmaGovernance` capability listing every σ channel; every tool response carries `result.sigma`; abstains surface as structured MCP errors with `data.abstained_channel`. Claude Desktop / Cursor / VS Code receive the **doubt** alongside the answer. |
+| [**v117**](docs/v117/README.md) σ-Long-Context | Paged KV-cache manager: 256-token pages, configurable native / target / sliding sizes, three eviction policies (LRU, σ-LRU, σ-only), offload hook into v115 | σ-LRU evicts the **most uncertain** non-recent page first and writes its preview to v115 so the long-range context becomes persistent rather than lost. Explains "we kept the low-σ reasoning chain, we dropped the high-σ tangent". |
+| [**v118**](docs/v118/README.md) σ-Vision | OpenAI `image_url` acceptance (base64 `data:` URLs decoded in-process), projection into BitNet's 2048-d token space, JSON response contract including `sigma_product`, `abstained`, `projection_channel`, `content_hash`, `preview[]` | σ is measured on the projection step itself (histogram entropy proxy today, SigLIP in v118.1). Out-of-distribution images (uniform bytes, no structure) force `abstained=true` with `projection_channel=embedding_entropy` instead of silently confabulating a caption. |
+
+The proconductor practice: Claude (or Cursor, or your editor of choice)
+connects to Creation OS over MCP, calls `cos_reason` or
+`cos_memory_search`, and receives a σ-annotated answer it can trust or
+down-rank. The large model gains access to a **local σ-signal**; the
+local model provides **measurable doubt**.
 
 ### AGI architecture in one picture
 
@@ -139,11 +159,15 @@ Six layers, composable, each falsifiable:
 
 ```
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
-  Layer 5  Training         MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
+                            MCP server for Claude / Cursor / VS Code (v116)
+  Layer 5  Training +       MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
+           Persistence      σ-weighted SQLite memory (v115)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
+                            paged KV + σ-aware eviction for 32k effective ctx (v117)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
   Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
+                            image_url + σ-gated projection (v118)
   Layer 1  Silicon          BitNet b1.58 · llama.cpp · forty branchless kernels (v60→v100)
 ```
 
