@@ -4071,6 +4071,36 @@ check-v180-steer-truthful-sigma-drop: creation_os_v180_steer
 check-v180: check-v180-steer-truthful-sigma-drop
 	@echo "check-v180: OK (σ-steer kernel)"
 
+# --- v181 σ-Audit (immutable log + ed25519 + compliance + anomaly) ------
+# 1 000-entry hash-chained log: each entry carries SHA-256(prompt),
+# SHA-256(response), σ_product + 8 σ-channels, decision tag, v179
+# explanation, v180 steering vector names, specialist id and
+# adapter version.  Canonical hash is SHA-256 of the concatenated
+# canonical bytes + prev_hash; chain links force tamper detection.
+# The v181.0 attestation field `sig` is a deterministic keyed
+# SHA-256 (SHA-256(key || self_hash)) — v181.1 swaps the payload
+# for an ed25519 signature (libsodium) without changing the log
+# layout.  Anomaly detector fires when mean σ in the recent
+# window exceeds the prior window by ≥ 30 %; the fixture injects
+# a spike in the tail 15 % of entries to exercise it.  `--export`
+# emits canonical JSONL for external auditors (EU AI Act Art. 13,
+# ISO/IEC 42001).  v181.1 ships `cos audit report --period
+# YYYY-MM` (PDF), `cos audit export --format jsonl` (CLI), and
+# auto-wires v159 self-healing on anomaly.
+V181_INC  = -Isrc/v181 -Isrc/license_kernel
+V181_SRCS = src/v181/audit.c src/license_kernel/license_attest.c
+
+creation_os_v181_audit: $(V181_SRCS) src/v181/main.c
+	$(CC) $(CFLAGS) $(V181_INC) -o $@ \
+	    $(V181_SRCS) src/v181/main.c $(LDFLAGS)
+
+check-v181-audit-chain-verify: creation_os_v181_audit
+	@bash benchmarks/v181/check_v181_audit_chain_verify.sh
+	@echo "check-v181-audit-chain-verify: OK (chain + anomaly + jsonl)"
+
+check-v181: check-v181-audit-chain-verify
+	@echo "check-v181: OK (σ-audit kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
