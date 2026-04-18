@@ -336,7 +336,8 @@ merge-gate:
 	@$(MAKE) check-v129
 	@$(MAKE) check-v130
 	@$(MAKE) check-v131
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec + v131 σ-temporal)"
+	@$(MAKE) check-v132
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec + v131 σ-temporal + v132 σ-persona)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2895,6 +2896,25 @@ check-v131-temporal-recall: creation_os_v131_temporal
 
 check-v131: check-v131-temporal-recall
 	@echo "check-v131: OK (σ-temporal kernel)"
+
+# --- v132 σ-Persona (expertise tracker + style + TOML profile) ---
+# Per-user adaptation: σ-driven expertise staircase, correction-
+# feedback style state, deterministic TOML round-trip.  v132 state
+# is *per-node* — never federates through v129, keeping personas
+# local.
+V132_INC          = -Isrc/v132
+V132_PERSONA_SRCS = src/v132/persona.c
+
+creation_os_v132_persona: $(V132_PERSONA_SRCS) src/v132/main.c
+	$(CC) $(CFLAGS) $(V132_INC) -o $@ \
+	    $(V132_PERSONA_SRCS) src/v132/main.c $(LDFLAGS)
+
+check-v132-persona-adaptation: creation_os_v132_persona
+	@bash benchmarks/v132/check_v132_persona_adaptation.sh
+	@echo "check-v132-persona-adaptation: OK (expertise + feedback + TOML)"
+
+check-v132: check-v132-persona-adaptation
+	@echo "check-v132: OK (σ-persona kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
