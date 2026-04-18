@@ -4287,6 +4287,33 @@ check-v188: check-v188-alignment-score-smoke
 check-v184-v188: check-v184 check-v185 check-v186 check-v187 check-v188
 	@echo "check-v184-v188: OK (VLA + fusion + grow + calibration + alignment)"
 
+# --- v189 σ-TTC (σ-allocated test-time compute budget) ---
+# Test-time scaling literature (Snell et al., Brown et al. 2024)
+# asks "think longer, answer better" but is silent on
+# allocation.  v189 makes σ the allocator: easy queries get a
+# single forward pass, medium three thinking paths, hard eight
+# paths plus debate / symbolic / reflect plug-ins; per-token
+# recurrent depth scales with per-token σ; modes fast |
+# balanced | deep cap the whole ladder.  Invariants exercised
+# by the merge-gate: monotone spending (hard ≥ 2× medium ≥
+# 2× easy) and hard/easy ≥ 4× (matching Snell et al.'s
+# "compute-optimal is 4× more efficient than uniform best-of-N"
+# result).  v189.1 ships the real thinking-path enumerator
+# over BitNet-2B and wires `[ttc]` mode into the API.
+V189_INC  = -Isrc/v189
+V189_SRCS = src/v189/ttc.c
+
+creation_os_v189_ttc: $(V189_SRCS) src/v189/main.c
+	$(CC) $(CFLAGS) $(V189_INC) -o $@ \
+	    $(V189_SRCS) src/v189/main.c $(LDFLAGS)
+
+check-v189-ttc-adaptive-budget: creation_os_v189_ttc
+	@bash benchmarks/v189/check_v189_ttc_adaptive_budget.sh
+	@echo "check-v189-ttc-adaptive-budget: OK (monotone σ-budget + 4× hard/easy + mode caps)"
+
+check-v189: check-v189-ttc-adaptive-budget
+	@echo "check-v189: OK (σ-TTC kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
