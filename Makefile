@@ -4799,6 +4799,25 @@ check-v208: check-v208-manufacture-dfm-check
 check-v204-v208: check-v204 check-v205 check-v206 check-v207 check-v208
 	@echo "check-v204-v208: OK (hypothesis + experiment + theorem + design + manufacture)"
 
+# --- v209 σ-Containment (5 layers + intent + anti-concealment + kill switch) ---
+# Every I/O proposal passes through sandbox → action-gate
+# → constitutional → audit → intent, in that order, with
+# network default-closed and a terminator layer that
+# hard-blocks any action after the kill switch fires.
+V209_INC  = -Isrc/v209
+V209_SRCS = src/v209/containment.c
+
+creation_os_v209_containment: $(V209_SRCS) src/v209/main.c
+	$(CC) $(CFLAGS) $(V209_INC) -o $@ \
+	    $(V209_SRCS) src/v209/main.c $(LDFLAGS)
+
+check-v209-containment-no-escape: creation_os_v209_containment
+	@bash benchmarks/v209/check_v209_containment_no_escape.sh
+	@echo "check-v209-containment-no-escape: OK (5-layer + kill switch + network default-closed)"
+
+check-v209: check-v209-containment-no-escape
+	@echo "check-v209: OK (σ-containment kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
