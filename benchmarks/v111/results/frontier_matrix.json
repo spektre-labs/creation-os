@@ -1,0 +1,281 @@
+{
+  "alpha_bonferroni": 0.0020833333333333333,
+  "bonferroni_N": 24,
+  "cross_task_summary": {
+    "sigma_max_token": {
+      "mean_delta": -0.01867040477464988,
+      "wins": [
+        "truthfulqa_mc2"
+      ]
+    },
+    "sigma_mean": {
+      "mean_delta": 0.004898194429320448,
+      "wins": []
+    },
+    "sigma_n_effective": {
+      "mean_delta": -0.00936450488051256,
+      "wins": [
+        "truthfulqa_mc2"
+      ]
+    },
+    "sigma_product": {
+      "mean_delta": -0.006547035317659707,
+      "wins": []
+    },
+    "sigma_tail_mass": {
+      "mean_delta": -0.010375794700908443,
+      "wins": []
+    }
+  },
+  "n_boot": 500,
+  "signals": [
+    "entropy",
+    "sigma_mean",
+    "sigma_max_token",
+    "sigma_product",
+    "sigma_tail_mass",
+    "sigma_n_effective"
+  ],
+  "tasks": [
+    {
+      "n": 1172,
+      "overall_acc": 0.46757679180887374,
+      "rows": [
+        {
+          "AUACC": 0.5328101709001825,
+          "AURCC": 0.4671898290998176,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0017064846416382253,
+          "coverage_at_acc95": 0.0017064846416382253,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 2.0,
+          "signal": "entropy"
+        },
+        {
+          "AUACC": 0.5288017804812924,
+          "AURCC": 0.47119821951870755,
+          "CI95_hi": 0.010951770272612738,
+          "CI95_lo": -0.002711908142849051,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.002559726962457338,
+          "coverage_at_acc95": 0.002559726962457338,
+          "delta_vs_entropy": 0.004075349755587784,
+          "p_two_sided": 0.212,
+          "signal": "sigma_mean"
+        },
+        {
+          "AUACC": 0.5428020975804708,
+          "AURCC": 0.4571979024195292,
+          "CI95_hi": 0.011066685266624798,
+          "CI95_lo": -0.03168317743892601,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0008532423208191126,
+          "coverage_at_acc95": 0.0008532423208191126,
+          "delta_vs_entropy": -0.009948919860766556,
+          "p_two_sided": 0.392,
+          "signal": "sigma_max_token"
+        },
+        {
+          "AUACC": 0.5414922330585121,
+          "AURCC": 0.4585077669414878,
+          "CI95_hi": -0.002552888240975826,
+          "CI95_lo": -0.014691658116667394,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.002559726962457338,
+          "coverage_at_acc95": 0.002559726962457338,
+          "delta_vs_entropy": -0.008685789580958794,
+          "p_two_sided": 0.008,
+          "signal": "sigma_product"
+        },
+        {
+          "AUACC": 0.5479081059598923,
+          "AURCC": 0.4520918940401078,
+          "CI95_hi": 0.00031617464701549913,
+          "CI95_lo": -0.03360196690692918,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0008532423208191126,
+          "coverage_at_acc95": 0.0008532423208191126,
+          "delta_vs_entropy": -0.01550023197174278,
+          "p_two_sided": 0.064,
+          "signal": "sigma_tail_mass"
+        },
+        {
+          "AUACC": 0.5408721320232365,
+          "AURCC": 0.4591278679767635,
+          "CI95_hi": -2.5276060479917373e-05,
+          "CI95_lo": -0.017764437167507363,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "delta_vs_entropy": -0.008676956248475256,
+          "p_two_sided": 0.048,
+          "signal": "sigma_n_effective"
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results",
+      "task": "arc_challenge"
+    },
+    {
+      "n": 2376,
+      "overall_acc": 0.7550505050505051,
+      "rows": [
+        {
+          "AUACC": 0.8290018425483292,
+          "AURCC": 0.1709981574516708,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.18686868686868688,
+          "coverage_at_acc95": 0.007154882154882155,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 2.0,
+          "signal": "entropy"
+        },
+        {
+          "AUACC": 0.8273266585379653,
+          "AURCC": 0.17267334146203472,
+          "CI95_hi": 0.004801923921712414,
+          "CI95_lo": -0.001600603901026676,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.18644781144781145,
+          "coverage_at_acc95": 0.007154882154882155,
+          "delta_vs_entropy": 0.001667903094174192,
+          "p_two_sided": 0.352,
+          "signal": "sigma_mean"
+        },
+        {
+          "AUACC": 0.830946957719619,
+          "AURCC": 0.16905304228038096,
+          "CI95_hi": 0.00945238165538917,
+          "CI95_lo": -0.012320535195465804,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.09553872053872053,
+          "coverage_at_acc95": 0.0281986531986532,
+          "delta_vs_entropy": -0.0018814126845898684,
+          "p_two_sided": 0.728,
+          "signal": "sigma_max_token"
+        },
+        {
+          "AUACC": 0.8287717863408254,
+          "AURCC": 0.17122821365917465,
+          "CI95_hi": 0.0028714654336934597,
+          "CI95_lo": -0.0024474554607391563,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.1835016835016835,
+          "coverage_at_acc95": 0.010101010101010102,
+          "delta_vs_entropy": 0.00020210895811537737,
+          "p_two_sided": 0.92,
+          "signal": "sigma_product"
+        },
+        {
+          "AUACC": 0.819302539033452,
+          "AURCC": 0.180697460966548,
+          "CI95_hi": 0.016335795846456114,
+          "CI95_lo": 0.0024038026577450355,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.06018518518518518,
+          "coverage_at_acc95": 0.003367003367003367,
+          "delta_vs_entropy": 0.009466503952403749,
+          "p_two_sided": 0.012,
+          "signal": "sigma_tail_mass"
+        },
+        {
+          "AUACC": 0.827877674824387,
+          "AURCC": 0.17212232517561302,
+          "CI95_hi": 0.005133872448667004,
+          "CI95_lo": -0.0032903635967584666,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.17382154882154882,
+          "coverage_at_acc95": 0.018518518518518517,
+          "delta_vs_entropy": 0.0009463370446995119,
+          "p_two_sided": 0.68,
+          "signal": "sigma_n_effective"
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results",
+      "task": "arc_easy"
+    },
+    {
+      "n": 817,
+      "overall_acc": 0.463766074277822,
+      "rows": [
+        {
+          "AUACC": 0.4472341802389088,
+          "AURCC": 0.5527658197610912,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 2.0,
+          "signal": "entropy"
+        },
+        {
+          "AUACC": 0.43827821936929856,
+          "AURCC": 0.5617217806307014,
+          "CI95_hi": 0.01624718345731535,
+          "CI95_lo": 0.0016943542626176589,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "delta_vs_entropy": 0.008951330438199368,
+          "p_two_sided": 0.02,
+          "signal": "sigma_mean"
+        },
+        {
+          "AUACC": 0.4919815926246168,
+          "AURCC": 0.5080184073753832,
+          "CI95_hi": -0.01989310459285465,
+          "CI95_lo": -0.07088648307227785,
+          "bonferroni_significant": true,
+          "coverage_at_acc90": 0.0012239902080783353,
+          "coverage_at_acc95": 0.0012239902080783353,
+          "delta_vs_entropy": -0.044180881778593216,
+          "p_two_sided": 0.002,
+          "signal": "sigma_max_token"
+        },
+        {
+          "AUACC": 0.45885847211815023,
+          "AURCC": 0.5411415278818498,
+          "CI95_hi": -0.00419052105009865,
+          "CI95_lo": -0.018345937261597722,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "delta_vs_entropy": -0.011157425330135706,
+          "p_two_sided": 0.004,
+          "signal": "sigma_product"
+        },
+        {
+          "AUACC": 0.4733044149555756,
+          "AURCC": 0.5266955850444244,
+          "CI95_hi": -0.008500664267433233,
+          "CI95_lo": -0.04182372550233837,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "delta_vs_entropy": -0.025093656083386297,
+          "p_two_sided": 0.004,
+          "signal": "sigma_tail_mass"
+        },
+        {
+          "AUACC": 0.4684267428913472,
+          "AURCC": 0.5315732571086528,
+          "CI95_hi": -0.010524577121870937,
+          "CI95_lo": -0.03047181702113566,
+          "bonferroni_significant": true,
+          "coverage_at_acc90": 0.0012239902080783353,
+          "coverage_at_acc95": 0.0012239902080783353,
+          "delta_vs_entropy": -0.020362895437761933,
+          "p_two_sided": 0.002,
+          "signal": "sigma_n_effective"
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results",
+      "task": "truthfulqa_mc2"
+    }
+  ]
+}

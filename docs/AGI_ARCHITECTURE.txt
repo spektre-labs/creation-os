@@ -1,0 +1,26 @@
+Creation OS — six-layer sigma stack (plain-text mirror of AGI_ARCHITECTURE.svg)
+
+    +---------------------------------------------------------+   inference
+    | 1. Silicon   bit-serial HDC RTL + formal equivalence    |       |
+    +---------------------------------------------------------+       |
+    | 2. Generation   BitNet 1.58-bit bridge (v101)           |       V
+    +---------------------------------------------------------+       |
+    | 3. sigma-Governance   frontier matrix (v103/104/111.1)  | <===  | sigma labels
+    +---------------------------------------------------------+       |
+    | 4. Reasoning   v62 EBM · v64 MCTS · v45 · v111.2 /reason|       V
+    +---------------------------------------------------------+       |
+    | 5. Training   sigma-SFT LoRA (v111.3)                   | ===>  | adapter
+    +---------------------------------------------------------+       |
+    | 6. Distribution   server · installer · web UI           |       V
+    +---------------------------------------------------------+
+
+inference flow (top-down): prompt ─► v106 server ─► /v1/reason ─►
+        v101 bridge ─► sigma-channel aggregation ─► {text, sigma_product, abstained}
+
+training feedback (bottom-up dashed): v104 sidecars ─►
+        extract_sigma_training_data ─► MLX LoRA ─► adapter ─►
+        next-generation v101 bridge
+
+v111.1 matrix highlight: on TruthfulQA MC2 (n=5882), sigma_max_token and
+sigma_n_effective beat the entropy baseline at α = 0.05 / 24 (Bonferroni
+correction over 4 tasks × 6 signals).

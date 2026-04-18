@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Creation OS · σ-governed chat</title>
+  <meta name="description" content="Local OpenAI-compatible chat with live σ-channel visualisation. Every answer is σ-governed; abstentions are labelled."/>
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --panel: #121826;
+      --panel2: #0f1422;
+      --ink: #e6edf7;
+      --mut: #8892a6;
+      --acc: #6ee7ff;
+      --ok:  #34d399;
+      --warn: #fbbf24;
+      --err: #f87171;
+      --brd: #1e2635;
+      --user: #1e3a8a;
+      --bot:  #083344;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); height: 100%; }
+    a { color: var(--acc); }
+    header { padding: 14px 20px; border-bottom: 1px solid var(--brd); display: flex; gap: 18px; align-items: center; background: var(--panel); }
+    header h1 { font-size: 16px; margin: 0; letter-spacing: .02em; font-weight: 600; }
+    header .sub { color: var(--mut); font-size: 12px; }
+    header .right { margin-left: auto; display: flex; gap: 14px; align-items: center; font-size: 12px; color: var(--mut); }
+    main { display: grid; grid-template-columns: 1fr 340px; height: calc(100% - 55px); }
+    #log { overflow-y: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; }
+    .msg { padding: 12px 14px; border-radius: 10px; max-width: 780px; line-height: 1.45; font-size: 14.5px; white-space: pre-wrap; word-wrap: break-word; }
+    .user { background: var(--user); align-self: flex-end; }
+    .bot  { background: var(--bot);  align-self: flex-start; border: 1px solid var(--brd); }
+    .bot.abstain { border-color: var(--warn); background: #3a260a; }
+    .meta { font-family: var(--mono); font-size: 11.5px; color: var(--mut); margin-top: 8px; }
+    .meta .tag { display: inline-block; padding: 1px 6px; border-radius: 999px; margin-right: 6px; border: 1px solid var(--brd); background: var(--panel2); }
+    .meta .tag.ok   { border-color: var(--ok);   color: var(--ok); }
+    .meta .tag.warn { border-color: var(--warn); color: var(--warn); }
+    #composer { border-top: 1px solid var(--brd); padding: 12px 16px; background: var(--panel); display: flex; gap: 10px; grid-column: 1 / 3; }
+    #prompt { flex: 1; resize: none; min-height: 42px; max-height: 180px; padding: 10px 12px; background: var(--panel2); color: var(--ink); border: 1px solid var(--brd); border-radius: 8px; font: 14px var(--sans); }
+    #send, #clear { background: var(--acc); color: #001018; border: 0; border-radius: 8px; padding: 0 16px; font-weight: 600; cursor: pointer; }
+    #clear { background: transparent; color: var(--mut); border: 1px solid var(--brd); }
+    #send[disabled] { opacity: .5; cursor: wait; }
+    aside#sigma-panel { border-left: 1px solid var(--brd); padding: 14px 16px; overflow-y: auto; background: var(--panel2); }
+    aside h2 { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--mut); margin: 0 0 10px; }
+    .bar-row { display: grid; grid-template-columns: 78px 1fr 46px; gap: 8px; align-items: center; font-family: var(--mono); font-size: 12px; margin: 6px 0; }
+    .bar { height: 10px; background: var(--panel); border-radius: 4px; overflow: hidden; position: relative; }
+    .bar > span { display: block; height: 100%; background: linear-gradient(90deg, #1fb2ff, #6ee7ff); transition: width .3s ease; }
+    .sp { margin-top: 14px; padding: 10px 12px; border-radius: 8px; background: var(--panel); border: 1px solid var(--brd); font-family: var(--mono); font-size: 12px; }
+    .sp .k { color: var(--mut); }
+    .sp .v { color: var(--acc); }
+    .sp.abstain .v { color: var(--warn); }
+    footer { grid-column: 1 / 3; border-top: 1px solid var(--brd); padding: 8px 16px; font-size: 11.5px; color: var(--mut); background: var(--panel); font-family: var(--mono); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Creation OS <span class="sub">· σ-governed local chat (v108)</span></h1>
+    <div class="right">
+      <span id="model-id">model: <em>loading…</em></span>
+      <span id="agg-id">agg: <em>—</em></span>
+      <span id="tau-id">τ: <em>—</em></span>
+    </div>
+  </header>
+  <main>
+    <section id="log" aria-live="polite"></section>
+    <aside id="sigma-panel" aria-label="σ-channel live profile">
+      <h2>σ-channel profile (last answer)</h2>
+      <div id="bars"></div>
+      <div class="sp" id="summary">
+        <div><span class="k">σ_product</span>: <span class="v" id="sp-sigma">—</span></div>
+        <div><span class="k">σ_mean</span>: <span class="v" id="sp-mean">—</span></div>
+        <div><span class="k">σ_max_token</span>: <span class="v" id="sp-mx">—</span></div>
+        <div><span class="k">abstained</span>: <span class="v" id="sp-abst">—</span></div>
+      </div>
+      <h2 style="margin-top: 20px;">What am I looking at?</h2>
+      <div style="font-size: 12.5px; color: var(--mut); line-height: 1.5;">
+        Eight σ-channels (v101) are measured on every answer:
+        <b>ent</b>, <b>mean</b>, <b>max</b>, <b>prod</b>, <b>tail</b>,
+        <b>n_eff</b>, <b>margin</b>, <b>stab</b>.
+        The default aggregator is <code>σ_product</code> (v105); the
+        server abstains when it exceeds <code>τ</code>. See
+        <a href="/v1/sigma-profile" target="_blank">/v1/sigma-profile</a>.
+      </div>
+    </aside>
+    <form id="composer" onsubmit="sendPrompt(event)">
+      <textarea id="prompt" placeholder="Ask anything. Enter to send · Shift+Enter for newline." autofocus></textarea>
+      <button id="send" type="submit">Send</button>
+      <button id="clear" type="button" onclick="clearLog()">Clear</button>
+    </form>
+    <footer>
+      Local runtime · nothing leaves your machine · <a href="/v1/models" target="_blank">/v1/models</a> ·
+      <a href="https://github.com/spektre-labs/creation-os" target="_blank">spektre-labs/creation-os</a>
+    </footer>
+  </main>
+  <script>
+    const CHANNELS = [
+      ['entropy', 'ent'],
+      ['mean',    'mean'],
+      ['max',     'max'],
+      ['product', 'prod'],
+      ['tail',    'tail'],
+      ['n_eff',   'n_eff'],
+      ['margin',  'marg'],
+      ['stab',    'stab'],
+    ];
+    const barsEl = document.getElementById('bars');
+    const logEl  = document.getElementById('log');
+    const sumEl  = document.getElementById('summary');
+    for (const [_, label] of CHANNELS) {
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `<div>${label}</div><div class="bar"><span style="width:0%"></span></div><div class="num">—</div>`;
+      barsEl.appendChild(row);
+    }
+
+    async function fetchModels() {
+      try {
+        const r = await fetch('/v1/models');
+        const j = await r.json();
+        if (j && j.data && j.data[0]) {
+          document.querySelector('#model-id em').textContent = j.data[0].id;
+          document.querySelector('#agg-id  em').textContent = j.data[0].sigma_aggregator || 'product';
+        }
+      } catch (_) { /* stub-mode or offline; leave placeholders */ }
+    }
+
+    async function fetchSigma() {
+      try {
+        const r = await fetch('/v1/sigma-profile');
+        if (!r.ok) return;
+        const j = await r.json();
+        if (typeof j.tau_abstain === 'number') {
+          document.querySelector('#tau-id em').textContent = j.tau_abstain.toFixed(2);
+        }
+        if (!j.has_data) return;
+        renderSigma(j);
+      } catch (_) { /* ignore */ }
+    }
+
+    function renderSigma(j) {
+      const prof = j.sigma_profile || [];
+      const rows = barsEl.querySelectorAll('.bar-row');
+      for (let i = 0; i < CHANNELS.length; ++i) {
+        const v = prof[i];
+        const pct = (typeof v === 'number') ? Math.max(0, Math.min(1, v)) * 100 : 0;
+        const row = rows[i];
+        row.querySelector('.bar > span').style.width = pct.toFixed(1) + '%';
+        row.querySelector('.num').textContent = (typeof v === 'number') ? v.toFixed(3) : '—';
+      }
+      document.getElementById('sp-sigma').textContent = fmt(j.sigma);
+      document.getElementById('sp-mean').textContent  = fmt(j.sigma_mean);
+      document.getElementById('sp-mx').textContent    = fmt(j.sigma_max_token);
+      document.getElementById('sp-abst').textContent  = j.abstained ? 'yes (τ tripped)' : 'no';
+      sumEl.classList.toggle('abstain', !!j.abstained);
+    }
+
+    function fmt(x) { return typeof x === 'number' ? x.toFixed(4) : '—'; }
+
+    function clearLog() { logEl.innerHTML = ''; }
+
+    function addMsg(role, text, meta) {
+      const d = document.createElement('div');
+      d.className = 'msg ' + role;
+      if (meta && meta.abstained) d.classList.add('abstain');
+      d.textContent = text;
+      if (meta) {
+        const m = document.createElement('div');
+        m.className = 'meta';
+        const parts = [];
+        if (typeof meta.sigma === 'number') parts.push(`<span class="tag ${meta.abstained?'warn':'ok'}">σ=${meta.sigma.toFixed(3)}</span>`);
+        if (meta.aggregator) parts.push(`<span class="tag">agg=${meta.aggregator}</span>`);
+        if (meta.abstained)  parts.push(`<span class="tag warn">ABSTAINED</span>`);
+        if (meta.latency_ms) parts.push(`<span class="tag">${meta.latency_ms.toFixed(0)} ms</span>`);
+        m.innerHTML = parts.join(' ');
+        d.appendChild(m);
+      }
+      logEl.appendChild(d);
+      logEl.scrollTop = logEl.scrollHeight;
+      return d;
+    }
+
+    async function sendPrompt(ev) {
+      ev.preventDefault();
+      const ta = document.getElementById('prompt');
+      const btn = document.getElementById('send');
+      const q = ta.value.trim();
+      if (!q) return;
+      ta.value = '';
+      btn.disabled = true;
+      addMsg('user', q);
+      const t0 = performance.now();
+      try {
+        const r = await fetch('/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: (document.querySelector('#model-id em').textContent || 'default'),
+            messages: [{ role: 'user', content: q }],
+            max_tokens: 256,
+            stream: false,
+          }),
+        });
+        const j = await r.json();
+        const lat = performance.now() - t0;
+        if (!r.ok) {
+          addMsg('bot', JSON.stringify(j), { sigma: NaN, aggregator: 'n/a', abstained: false });
+          return;
+        }
+        const content = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
+        const sigma = j.sigma ?? (j.choices?.[0]?.sigma);
+        const agg   = j.sigma_aggregator || 'product';
+        const absn  = !!(j.abstained || (j.choices?.[0]?.finish_reason === 'abstained'));
+        addMsg('bot', content, { sigma, aggregator: agg, abstained: absn, latency_ms: lat });
+        await fetchSigma();
+      } catch (err) {
+        addMsg('bot', 'network error: ' + err.message, { abstained: true });
+      } finally {
+        btn.disabled = false;
+        ta.focus();
+      }
+    }
+
+    document.getElementById('prompt').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        document.getElementById('composer').requestSubmit();
+      }
+    });
+
+    fetchModels();
+    fetchSigma();
+    setInterval(fetchSigma, 3000);
+  </script>
+</body>
+</html>

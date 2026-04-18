@@ -1,0 +1,122 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Creation OS v107 release pipeline — universal macOS + Linux binaries
+# plus the multi-arch Docker image.  Publishes artifacts to the tag's
+# GitHub Release.  Triggered on pushed tags `v*` and on manual dispatch.
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  binaries-macos:
+    name: macOS · universal (arm64 + x86_64)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build universal binaries
+        run: |
+          set -eux
+          # build arm64
+          ARCHFLAGS="-arch arm64" make -j cos standalone-v106 standalone
+          mv cos cos.arm64
+          mv creation_os_server creation_os_server.arm64
+          mv creation_os creation_os.arm64
+          make -s clean || true
+          # build x86_64
+          ARCHFLAGS="-arch x86_64" make -j cos standalone-v106 standalone
+          mv cos cos.x86_64
+          mv creation_os_server creation_os_server.x86_64
+          mv creation_os creation_os.x86_64
+          # fuse universal
+          mkdir -p dist
+          lipo -create -output dist/cos                cos.arm64                cos.x86_64
+          lipo -create -output dist/creation_os_server creation_os_server.arm64 creation_os_server.x86_64
+          lipo -create -output dist/creation_os        creation_os.arm64        creation_os.x86_64
+          # light smoke test (arm64 will run on the macos-14 M-series host)
+          ./dist/creation_os --self-test
+      - name: Tarball
+        run: |
+          cd dist
+          tar czf ../creation-os-${GITHUB_REF_NAME}-macos-universal.tar.gz cos creation_os_server creation_os
+      - uses: actions/upload-artifact@v4
+        with:
+          name: creation-os-macos-universal
+          path: creation-os-*-macos-universal.tar.gz
+
+  binaries-linux:
+    name: Linux · ${{ matrix.arch }}
+    strategy:
+      matrix:
+        include:
+          - arch: x86_64
+            runner: ubuntu-24.04
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          set -eux
+          make -j cos standalone-v106 standalone
+          mkdir -p dist
+          mv cos creation_os_server creation_os dist/
+          ./dist/creation_os --self-test
+      - name: Tarball
+        run: |
+          cd dist
+          tar czf ../creation-os-${GITHUB_REF_NAME}-linux-${{ matrix.arch }}.tar.gz cos creation_os_server creation_os
+      - uses: actions/upload-artifact@v4
+        with:
+          name: creation-os-linux-${{ matrix.arch }}
+          path: creation-os-*-linux-*.tar.gz
+
+  docker:
+    name: Docker · multi-arch
+    runs-on: ubuntu-24.04
+    needs: [binaries-linux]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: env.DOCKERHUB_TOKEN != ''
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build + push image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: ${{ env.DOCKERHUB_TOKEN != '' }}
+          tags: |
+            spektrelabs/creation-os:latest
+            spektrelabs/creation-os:${{ github.ref_name }}
+        env:
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  release:
+    name: GitHub release
+    runs-on: ubuntu-24.04
+    needs: [binaries-macos, binaries-linux]
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+      - name: Attach to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**/*.tar.gz
+          generate_release_notes: true

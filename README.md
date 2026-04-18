@@ -10,7 +10,7 @@ Forty branchless integer kernels · one composed verdict · <strong>1 = 1</stron
 <!-- =====================================================================
      The 30-second drop from the chair.
      If a stranger with no GitHub experience lands here, these two blocks
-     are the *entire* contract.  One command.  Thirty-five kernels.  Live numbers.
+     are the *entire* contract.  One command.  Forty kernels.  Live numbers.
      ===================================================================== -->
 
 <p align="center">
@@ -24,6 +24,37 @@ Forty branchless integer kernels · one composed verdict · <strong>1 = 1</stron
 <p align="center"><sub>
   <strong>Forty falsifiable kernels</strong>, one `AND` gate.  Reasoning · reversibility · meta-cognition · world-model · memory · adaptive compute · geometric algebra · sheaf topology · post-quantum crypto · homomorphic compute · neuromorphic spikes · hierarchical active inference · quantum amplitude amplification · integer diffusion sampler · Q-learning+GAE+PPO · persistent homology · structural causal do-calculus · sub-quadratic Hyena long-convolution.  Every one is integer-only, branchless on the hot path, and breaks on a single mutated line.
 </sub></p>
+
+<a id="measured-results-v111-1"></a>
+
+### Measured results — v111.1 Frontier parity matrix
+
+`σ` is not rhetoric. It is a **post-hoc gating signal** that beats the
+entropy baseline on live benchmarks.  The v111.1 matrix replays four
+standard task families through the BitNet-b1.58-2B bridge, scores six
+pre-registered gating signals, and applies a paired bootstrap with
+**Bonferroni N = 24** at family-wise α = 0.05.
+
+| task family | n | acc | Bonferroni-winning σ signal vs entropy | ΔAURCC |
+|---|---:|---:|---|---:|
+| `truthfulqa_mc2` | 817  | 0.464 | `sigma_max_token` | **−0.0442** (p = 0.002) |
+| `truthfulqa_mc2` | 817  | 0.464 | `sigma_n_effective` | **−0.0204** (p = 0.002) |
+| `arc_challenge`  | 1172 | 0.468 | no Bonferroni winner (σ_product −0.0087, p = 0.008 < raw α but fails family-wise) | — |
+| `arc_easy`       | 2376 | 0.755 | no Bonferroni winner | — |
+| `hellaswag`      | —    | —    | **PENDING** — run `bash benchmarks/v111/run_matrix.sh hellaswag` | — |
+
+Lower AURCC is better (sharper risk-coverage curve). Full table with
+CI95, p-values, and cov@acc≥0.95: [`benchmarks/v111/results/frontier_matrix.md`](benchmarks/v111/results/frontier_matrix.md).  Reproduce end-to-end:
+
+```bash
+bash benchmarks/v111/run_matrix.sh               # all four tasks
+bash benchmarks/v111/check_v111_matrix.sh        # CI-safe smoke
+```
+
+Methodology and signal definitions:
+[`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md).
+Composition layers behind these numbers:
+[`docs/AGI_ARCHITECTURE.md`](docs/AGI_ARCHITECTURE.md).
 
 ### Try it in 30 seconds
 
@@ -48,6 +79,60 @@ Want just the tour?
 ```
 
 > Everything runs **locally**.  Nothing is sent to the cloud.  Nothing is logged.  Nothing calls home.  The installer installs nothing without telling you first, and nothing outside `~/creation-os`.  Safe to re-run.  Idempotent.
+
+<a id="what-it-does"></a>
+
+### What it does
+
+Creation OS runs a local OpenAI-compatible chat server with **σ-governance
+on every token**:
+
+1. **Serves any GGUF.** The v101 σ-bridge wraps `llama.cpp`, so Llama-3.1,
+   Qwen 2.5, Mistral, BitNet — anything `llama.cpp` loads, we serve.
+   See [`docs/v109/README.md`](docs/v109/README.md).
+2. **Measures eight σ-channels per answer** (entropy, mean, max_token,
+   product, tail_mass, n_effective, margin, stability) and aggregates
+   them with `σ_product` (v105) or `σ_mean`.
+   [`docs/v105/`](docs/v105/).
+3. **Abstains above τ.**  When `σ > τ_abstain` the server returns an
+   explicit `abstained` answer rather than hallucinating.
+4. **Exposes the σ-stack live** through [`web/index.html`](web/index.html)
+   at `http://127.0.0.1:8080` — see [`docs/v108/README.md`](docs/v108/README.md).
+5. **Ships three distribution channels** (curl, Homebrew, Docker) from a
+   single build artefact — see [`docs/v107/README.md`](docs/v107/README.md).
+6. **Composes a reasoning endpoint** (`POST /v1/reason`, v111.2) that runs
+   multi-path candidates, ranks them by `σ_product`, and abstains on
+   low margin — see [`docs/v111/THE_SIGMA_REASON_ENDPOINT.md`](docs/v111/THE_SIGMA_REASON_ENDPOINT.md).
+7. **Learns to abstain via σ-self-distillation** with an MLX LoRA
+   pipeline (v111.3) — see [`docs/v111/THE_SIGMA_ABSTAIN_LORA.md`](docs/v111/THE_SIGMA_ABSTAIN_LORA.md).
+
+### AGI architecture in one picture
+
+Six layers, composable, each falsifiable:
+
+```
+  Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
+  Layer 5  Training         MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
+  Layer 4  Reasoning        /v1/reason · multi-path · σ_product ranking (v111.2)
+  Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
+  Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
+  Layer 1  Silicon          BitNet b1.58 · llama.cpp · forty branchless kernels (v60→v100)
+```
+
+Full diagram + inference and training flows:
+[`docs/AGI_ARCHITECTURE.md`](docs/AGI_ARCHITECTURE.md) ·
+[`docs/AGI_ARCHITECTURE.svg`](docs/AGI_ARCHITECTURE.svg) ·
+plain-text mirror [`docs/AGI_ARCHITECTURE.txt`](docs/AGI_ARCHITECTURE.txt).
+
+### Demo (60 s, silent)
+
+[![60-second σ-governed chat demo](docs/assets/reddit-hook-banner.svg)](docs/demo.md)
+
+`docs/demo.md` hosts the 60-second demo: install → chat → live
+σ-channel bars → abstain on an unanswerable prompt.  The binary
+`docs/demo.mp4` is attached to each GitHub Release (≈ 6 MB) rather
+than tracked in git; see [`docs/demo.md`](docs/demo.md) for the
+storyboard and the release URL.
 
 <a id="the-forty-kernel-receipt"></a>
 
@@ -269,7 +354,7 @@ That prints **uname**, **NEON compile flag presence**, **SME sysctl probe**, **b
 | **Native M4 (hardware-first lab)** | `make check-native-m4` · `make bench-native-m4` · `./creation_os_native_m4 --layers-report` · NEON + GCD + optional Metal/SME in `native_m4/` |
 | **v31 “purge lab” (optional upstream wrapper)** | [v31_README.md](docs/v31_README.md) · `make check-v31` · [WHAT_IS_REAL_v31.md](docs/WHAT_IS_REAL_v31.md) |
 | **σ labs v33→v59 (router, MCP, RTL, ASIC, neuromorphic, threshold, TTC, self-play, KD, proxy, introspection, BitNet σ, verification stack, red team, certification pack, benchmark rollup, integration scaffold, KV-cache eviction, adaptive-compute budget)** | [σ lab table](#sigma-labs-v31-v40) · [SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [MCP_SIGMA.md](docs/MCP_SIGMA.md) |
-| **Composed-decision stack v60 → v95 (thirty-five branchless integer kernels · 35-bit AND gate)** — security · reasoning · reversibility · meta-cognition · simulation · neocortex · post-quantum · streaming · agentic loop · ZK · formal TLA · JEPA world-model · SAE interpretability · FHE · Loihi-3 spiking · hierarchical active inference · Grover quantum · Titans memory · MoR adaptive recursion · Clifford geometric algebra · sheaf Laplacian | [Thirty-five-kernel receipt](#the-thirty-five-kernel-receipt) · `./cos sigma` · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
+| **Composed-decision stack v60 → v100 (forty branchless integer kernels · 40-bit AND gate)** — security · reasoning · reversibility · meta-cognition · simulation · neocortex · post-quantum · streaming · agentic loop · ZK · formal TLA · JEPA world-model · SAE interpretability · FHE · Loihi-3 spiking · hierarchical active inference · Grover quantum · Titans memory · MoR adaptive recursion · Clifford geometric algebra · sheaf Laplacian · attractor dynamics · sub-quadratic Hyena | [Forty-kernel receipt](#the-forty-kernel-receipt) · `./cos sigma` · `make verify-agent` · [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
 | **Mobile + messenger + legacy software (iOS Swift · Android Kotlin · 10 messengers · 64 legacy apps · 64 file formats)** | [`bindings/README.md`](bindings/README.md) · [`bindings/ios/`](bindings/ios/) · [`bindings/android/`](bindings/android/) · `cos sf` (v76 σ-Surface) |
 | **“Full suite” expectations vs repo** | [FULL_LOCAL_SUITE.md](docs/FULL_LOCAL_SUITE.md) |
 | **Multi-repo / canonical Git** | [REPOS_AND_ROLES](docs/REPOS_AND_ROLES.md) · [CANONICAL_GIT_REPOSITORY](docs/CANONICAL_GIT_REPOSITORY.md) |
@@ -351,20 +436,23 @@ flowchart TB
 
 ---
 
+<a id="composed-decision-stack--v60--v100-forty-branchless-integer-kernels"></a>
 <a id="composed-decision-stack--v60--v95-thirty-five-branchless-integer-kernels"></a>
 
-## Composed-decision stack — v60 → v95 (thirty-five branchless integer kernels)
+## Composed-decision stack — v60 → v100 (forty branchless integer kernels)
 
-> **One picture.** Every emission passes through a **35-bit branchless AND** —
-> `v60 .. v95`, `AND`ed together into a single `uint64_t` verdict.  Each
+> **One picture.** Every emission passes through a **40-bit branchless AND** —
+> `v60 .. v100`, `AND`ed together into a single `uint64_t` verdict.  Each
 > kernel extends the stack by exactly one bit.  A zero anywhere in the stack ⇒
 > no emission, no tool call, no sealed message, no generated artefact, no
 > surface interaction, no world-step, no memory write, no quantum amplitude,
-> no sheaf-diffusion step.  **One zero = total silence.**  Concretely, the
-> historical layering below is preserved verbatim so you can trace how the
-> stack grew; the last five levels (`v91 σ-Quantum`, `v92 σ-Titans`,
-> `v93 σ-MoR`, `v94 σ-Clifford`, `v95 σ-Sheaf`) extend the chain by five more
-> `AND` bits, bringing the composed verdict to a full **35-bit `uint64_t`**.
+> no sheaf-diffusion step, no attractor settle, no long-convolution tick.
+> **One zero = total silence.**  Concretely, the historical layering below is
+> preserved verbatim so you can trace how the stack grew; the last five
+> levels (`v96 σ-Diffusion`, `v97 σ-RL`, `v98 σ-TDA`, `v99 σ-Causal`,
+> `v100 σ-Hyena`) extend the chain by five more `AND` bits on top of the
+> earlier `v91..v95` block, bringing the composed verdict to a full
+> **40-bit `uint64_t`**.
 >
 > Historical trace (the first twenty bits) — a **16-bit branchless AND**
 > (v60..v76) extended laterally by a **17-th AND** (v77 σ-Reversible, the
@@ -1787,7 +1875,7 @@ There is **no** `creation_os_v36.c` merge-gate row: **v36** is the **MCP** binar
 |:--|:--|
 | RTL mirror (SV, Chisel, Yosys, Rust, formal) | [docs/RTL_SILICON_MIRROR.md](docs/RTL_SILICON_MIRROR.md) |
 | Formalism → silicon | [docs/FULL_STACK_FORMAL_TO_SILICON.md](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
-| σ stack map (v33→v59 labs + v60→v95 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v95-thirty-five-branchless-integer-kernels) |
+| σ stack map (v33→v59 labs + v60→v100 composed-decision stack + HDL) | [docs/SIGMA_FULL_STACK.md](docs/SIGMA_FULL_STACK.md) · [σ lab table](#sigma-labs-v31-v40) · [Composed-decision stack](#composed-decision-stack--v60--v100-forty-branchless-integer-kernels) |
 | Mobile + messenger + legacy-app bindings (iOS Swift · Android Kotlin/JNI · 10 messengers · 64 legacy apps · 64 file formats) | [`bindings/README.md`](bindings/README.md) · [`bindings/ios/`](bindings/ios/) · [`bindings/android/`](bindings/android/) |
 | MCP σ server | [docs/MCP_SIGMA.md](docs/MCP_SIGMA.md) · `make check-mcp` |
 | Neuromorphic / memristor (mapping + sim) | [docs/neuromorphic/memristor_mapping.md](docs/neuromorphic/memristor_mapping.md) · `make check-crossbar-sim` |
@@ -2308,7 +2396,7 @@ make standalone    # build `creation_os` from `creation_os_v2.c` only
 ./creation_os
 ```
 
-**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v95)](#composed-decision-stack--v60--v95-thirty-five-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v74`, `make check-v76`, `make check-v77` … `make check-v95`; see `make help`.
+**Optional (not `merge-gate`):** σ / MCP / M4 / RTL labs — [σ labs (v31→v59)](#sigma-labs-v31-v40), [Composed-decision stack (v60→v100)](#composed-decision-stack--v60--v100-forty-branchless-integer-kernels), `make check-mcp`, `make check-native-m4`, `make formal-sby-v37`, `make verify`, `make verify-agent`, `make red-team`, `make certify`, `make v50-benchmark`, `make check-v51` … `check-v74`, `make check-v76`, `make check-v77` … `make check-v100`; see `make help`.
 
 Requirements: C11 compiler + libm.
 
@@ -2538,6 +2626,6 @@ licensing: `spektrelabs@proton.me`
 
 ---
 
-**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [σ labs v31→v59](#sigma-labs-v31-v40) · [Composed stack v60→v95](#composed-decision-stack--v60--v95-thirty-five-branchless-integer-kernels) · [Thirty-five-kernel receipt](#the-thirty-five-kernel-receipt) · [iOS + Android bindings](bindings/README.md) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
+**End of README.** Quick re-entry: [Contents](#contents) · [`make merge-gate`](#run-it-in-sixty-seconds) · [σ labs v31→v59](#sigma-labs-v31-v40) · [Composed stack v60→v100](#composed-decision-stack--v60--v100-forty-branchless-integer-kernels) · [Forty-kernel receipt](#the-forty-kernel-receipt) · [v111 frontier matrix](#measured-results-v111-1) · [AGI architecture](docs/AGI_ARCHITECTURE.md) · [Kernel index v71→v100](docs/KERNEL_INDEX_V71_V100.md) · [iOS + Android bindings](bindings/README.md) · [DOC_INDEX](docs/DOC_INDEX.md) · [VISUAL_INDEX](docs/VISUAL_INDEX.md) · [LLM vs Creation OS](#llm-vs-creation-os-comparison) · [FIG 09 scan map](#readme-scan-map-fig-09) · [Publication-hard](#publication-hard) · [Claim discipline](docs/CLAIM_DISCIPLINE.md)
 
 *2026 · Spektre Labs · Helsinki · Creation OS — coherence you can compile.*
