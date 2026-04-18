@@ -1,0 +1,47 @@
+{
+  "name": "creation-os",
+  "version": "1.0.0",
+  "description": "Launcher for Creation OS — a local OpenAI-compatible runtime with σ-governance. Delegates to the native binary after detecting / downloading it for the current platform.",
+  "keywords": [
+    "creation-os",
+    "sigma",
+    "llm",
+    "openai",
+    "bitnet",
+    "local-ai"
+  ],
+  "homepage": "https://github.com/spektre-labs/creation-os",
+  "bugs": "https://github.com/spektre-labs/creation-os/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spektre-labs/creation-os.git",
+    "directory": "packaging/npm"
+  },
+  "license": "SEE LICENSE IN ../../LICENSE",
+  "author": "Spektre Labs <ops@spektre.dev>",
+  "main": "index.js",
+  "bin": {
+    "creation-os": "./bin/creation-os.js",
+    "cos": "./bin/creation-os.js"
+  },
+  "files": [
+    "index.js",
+    "bin/",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux"
+  ],
+  "cpu": [
+    "x64",
+    "arm64"
+  ],
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  }
+}
