@@ -5170,6 +5170,25 @@ check-v226-attention-per-head-sigma: creation_os_v226_attention
 check-v226: check-v226-attention-per-head-sigma
 	@echo "check-v226: OK (σ-attention kernel)"
 
+# --- v227 σ-Entropy (decomposition + information-theoretic + free energy) ---
+# 8 distributions over K=5 categories.  σ_H, σ_nEff,
+# σ_tail, σ_top1 four channels; σ_product = geometric
+# mean; KL(p||uniform) = log K − H; σ_free = KL/log K;
+# σ_mutual = 1 − MI/H.  Contract: mse_product < mse_H.
+V227_INC  = -Isrc/v227
+V227_SRCS = src/v227/entropy.c
+
+creation_os_v227_entropy: $(V227_SRCS) src/v227/main.c
+	$(CC) $(CFLAGS) $(V227_INC) -o $@ \
+	    $(V227_SRCS) src/v227/main.c $(LDFLAGS)
+
+check-v227-entropy-decomposition: creation_os_v227_entropy
+	@bash benchmarks/v227/check_v227_entropy_decomposition.sh
+	@echo "check-v227-entropy-decomposition: OK (4 channels + KL + MI + free energy)"
+
+check-v227: check-v227-entropy-decomposition
+	@echo "check-v227: OK (σ-entropy kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
