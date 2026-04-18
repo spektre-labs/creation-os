@@ -332,7 +332,8 @@ merge-gate:
 	@$(MAKE) check-v112-v114
 	@$(MAKE) check-v115-v118
 	@$(MAKE) check-v119-v123
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal)"
+	@$(MAKE) check-v124-v126
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2810,6 +2811,29 @@ check-v125-dpo-smoke: creation_os_v125_dpo
 
 check-v125: check-v125-dpo-smoke
 	@echo "check-v125: OK (σ-DPO kernel)"
+
+# --- v126 σ-Embed (2568-d σ-aware embedding for v115 memory) ---
+# Pure-C hash-shingle projector (BitNet layer-15 stand-in), σ-block
+# concatenation, σ-weighted cosine, top-k rank.  v115 memory already
+# exposes an `embed_fn` indirect pointer — v126.1 plugs the real
+# BitNet hidden-state extractor in without changing anything below
+# v115's ranking contract.
+V126_INC        = -Isrc/v126
+V126_EMBED_SRCS = src/v126/embed.c
+
+creation_os_v126_embed: $(V126_EMBED_SRCS) src/v126/main.c
+	$(CC) $(CFLAGS) $(V126_INC) -o $@ \
+	    $(V126_EMBED_SRCS) src/v126/main.c $(LDFLAGS)
+
+check-v126-embed-smoke: creation_os_v126_embed
+	@bash benchmarks/v126/check_v126_embed_smoke.sh
+	@echo "check-v126-embed-smoke: OK (2568-d hybrid embed + σ-weighted rank)"
+
+check-v126: check-v126-embed-smoke
+	@echo "check-v126: OK (σ-embed kernel)"
+
+check-v124-v126: check-v124 check-v125 check-v126
+	@echo "check-v124-v126: OK (continual + DPO + σ-embed)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

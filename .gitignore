@@ -461,6 +461,7 @@ benchmarks/v122/red_team_report.md
 creation_os_v123_formal
 creation_os_v124_continual
 creation_os_v125_dpo
+creation_os_v126_embed
 benchmarks/v111/__pycache__/
 training/v111/data/
 training/v111/runs/
