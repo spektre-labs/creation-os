@@ -157,6 +157,26 @@ on every token**:
     σ-gate, with a pure-C shape validator that always runs plus an
     opportunistic Frama-C WP tier-2 for DO-178C DAL-A-style
     unbounded proofs (v138).
+14. **World intelligence — internal world model, causal explanation,
+    self-directed curriculum, framework interop, self-benchmark** —
+    a **linear latent world model** fit by normal-equations least
+    squares that predicts the next state and emits `σ_world` as a
+    normalised surprise signal, with a multi-step rollout that
+    feeds v121 planning (v139); **do-calculus counterfactual
+    propagation** on the learned `A` plus per-channel σ-ablation
+    **attribution** (top-3 contributors by |Δ|) — the "why did the
+    model answer this way" primitive (v140); a **self-directed
+    curriculum** scheduler that detects the weakest topic from the
+    σ-per-topic histogram, targets it for training, and enforces a
+    **no-forgetting contract** on the strong ones (v141);
+    framework **interop** — a stdlib-only Python SDK + OpenAI-SDK
+    drop-in + LangChain / LlamaIndex adapters (lazy-loaded, no hard
+    deps) wired for `pip install creation-os` (v142); and the
+    first **Creation OS benchmark suite** — five σ-native categories
+    (calibration ECE, abstention coverage@95, swarm routing
+    accuracy + σ-spread, continual-learning ΔAccuracy + hold-out
+    drift, adversarial detection@FPR≤5%) with a canonical JSON
+    output shape destined for Hugging Face (v143).
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -299,6 +319,35 @@ the external loop:
   CI (with a provers container); Coq extraction of the discharged
   lemmas; full DO-178C DAL-A certification dossier.
 
+### World intelligence · world-model · causal · curriculum · interop · benchmark (v139–v143)
+
+The world-intelligence stack. v139 gives Creation OS an internal
+theory of "what happens next" (a linear latent predictor), v140
+gives it "what would happen IF" (counterfactual propagation +
+σ-channel attribution), v141 gives it "where am I weakest" (a
+self-directed curriculum scheduler with a no-forgetting contract),
+v142 lets any Python agentic framework *consume* Creation OS with a
+`pip install`, and v143 ships the first benchmark suite designed
+around the σ-contract itself rather than tokenwise accuracy.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v139**](docs/v139/README.md) σ-WorldModel | Linear transition `A ∈ ℝ^{D×D}` fit by normal-equations least squares with Tikhonov regularisation (`A (S_c S_cᵀ + λI) = S_n S_cᵀ`) over a sequence of D-dim latent states. One D×D mat-mul predicts the next state; multi-step rollout returns the `σ_world` trajectory plus a monotone-rising flag. | LLMs predict the next *token*. v139 is the first Creation OS surface that predicts the next *state*. `σ_world = ‖s_actual − s_pred‖ / ‖s_actual‖` turns the prediction residual into a normalised surprise signal the rest of the stack can route on — low `σ_world` = "the world is familiar", rising `σ_world` along a rollout = "the plan is breaking down", which v121 HTN planning uses to prune branches. |
+| [**v140**](docs/v140/README.md) σ-Causal | Counterfactual `s_do[t+1] = A · do_k(s_t, v)` vs `s_nat[t+1] = A · s_t` on v139's linear `A`, with `σ_causal = ‖Δ‖/‖s_nat‖` as the interventional magnitude. Plus log-geomean σ-channel ablation: set `σ_i ← 1.0` (the neutral no-signal point), recompute the aggregator, rank the top-3 channels by |Δ| with percent-of-total attribution. | The first "why did the model decide this" primitive that isn't post-hoc rationalisation. Counterfactuals answer "what would happen IF"; σ-channel attribution answers "which channel was driving the verdict" ("abstain was 62% n_effective, 28% tail_mass, 10% entropy"). Composes directly with v108 (clickable σ-bars) and v106 (`/v1/explain`) in the v140.1 follow-up. |
+| [**v141**](docs/v141/README.md) σ-Curriculum | Self-directed curriculum loop: `argmax σ_topic` to find the weakness, deterministic σ-decay (`σ_new = σ_old · (1 − α)`) as a tier-0 stand-in for a real micro-tune step, and a **no-forgetting invariant** (untouched topics' σ is preserved *exactly*, `max_forgetting < 1e-6` asserted in the merge-gate). The weakness label rotates as topics cross below the next-weakest — verified over 5 cycles in the self-test (history → math → language → history → math on the default 5-topic roster). | v124 continual learning drifts without direction. v141 gives it an aim: the same σ the rest of the stack already computes *is* the curriculum signal. No external dataset curation. No per-topic compute budget tuning by hand. v141.1 swaps σ-decay for the real v124 MLX LoRA step + v114 swarm-generated pairs + v125 DPO labelling, all σ-routed. |
+| [**v142**](docs/v142/README.md) σ-Interop | `pip install creation-os` — a stdlib-only Python SDK (`COS`, `ChatResponse`, `ChatMessage`) that parses v106's OpenAI-compatible response plus the `X-COS-*` metadata headers, exposing `.sigma_product`, `.specialist`, `.emitted` as first-class fields. LangChain `BaseChatModel` and LlamaIndex `QueryEngine` adapters **lazy-import** their frameworks and degrade gracefully — the SDK has zero hard deps. `pyproject.toml` ships optional extras `[langchain]`, `[llamaindex]`, `[openai]`, `[all]`. | Every response from Creation OS already carries σ-metadata in the transport layer; v142 is the first surface that *surfaces* it so agentic frameworks can gate on σ without parsing HTTP headers. The merge-gate proves 100% offline (stdlib import smoke + 8-test unittest suite + `tomllib` parse of `pyproject.toml`) — the live network path is covered by v106's own curl-loopback gate. |
+| [**v143**](docs/v143/README.md) σ-Benchmark | Five σ-native categories with synthetic tier-0 data (seeded SplitMix64 + Box-Muller): **σ-Calibration** (ECE across 10 bins, gate < 0.15), **σ-Abstention** (coverage @ 95% accuracy with τ-sweep, gate > 0.30), **σ-Swarm routing** (argmin σ across K specialists, gate > 0.80 + σ-spread > 0.30), **σ-Learning** (ΔAccuracy with no-forgetting hold-out drift, gate Δ > 0 and \|drift\| < 0.10), **σ-Adversarial** (detection @ FPR ≤ 5%, gate > 0.70). One canonical JSON at `benchmarks/v143/creation_os_benchmark.json` with a `"tier"` field that honestly labels synthetic vs archived data. | External benchmarks (MMLU, ARC, HellaSwag) measure tokenwise accuracy. Creation OS is a σ-gated system — so "does σ correlate with error", "does the model abstain when it can't know", "does the router pick the right specialist" are the interesting questions. v143 is the first cross-model benchmark where σ is the subject, not the noise. Deterministic under a fixed seed (asserted in the merge-gate), so CI can compare runs byte-identically. |
+
+Every v139–v143 merge-gate check is deterministic, weights-free,
+framework-free, and offline. The vNN.1 follow-ups — real BitNet
+hidden states for v139, sign-aware attribution + `/v1/explain` for
+v140, real MLX/LoRA + v114 swarm for v141, CrewAI/AutoGen + PyPI
+publication for v142, archived σ-traces + Hugging Face publish for
+v143 — land when their external counterparts (a trained BitNet, a
+v106 server, a real continual-learning run, a PyPI maintainer
+account, an archived benchmark corpus) are available, matching the
+discipline established in v123 / v134–v138.
+
 ### AGI architecture in one picture
 
 Seven layers, composable, each falsifiable:
@@ -309,17 +358,22 @@ Seven layers, composable, each falsifiable:
                             adaptive user profile · expertise staircase · TOML (v132)
                             (μ/μ, λ)-ES architecture search for σ-aggregator (v136)
                             ACSL + Frama-C WP proof of σ-gate invariants (v138)
+                            linear latent world model · σ_world · rollout (v139)
+                            counterfactual do-calculus + σ-channel attribution (v140)
+                            5-category σ-native self-benchmark with JSON output (v143)
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
            + Collective     MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
                             σ-weighted FedAvg · σ-DP · top-K · unlearn-diff (v129)
                             FP4 LoRA · σ-pack · PQ embed · σ-aware context (v130)
+                            pip install creation-os · LangChain · LlamaIndex (v142)
   Layer 5  Training +       MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
            Persistence      σ-weighted SQLite memory (v115) · σ-embed 2568-d (v126)
                             σ-targeted big→small distill selector (v120)
                             idle-time continual LoRA + forgetting rollback (v124)
                             σ-DPO: σ is the preference, no annotator (v125)
                             session timeline · σ-decay · spikes · deadline-σ (v131)
+                            self-directed curriculum · no-forgetting contract (v141)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
