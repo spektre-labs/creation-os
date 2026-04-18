@@ -462,6 +462,11 @@ creation_os_v123_formal
 creation_os_v124_continual
 creation_os_v125_dpo
 creation_os_v126_embed
+creation_os_v129_federated
+creation_os_v130_codec
+creation_os_v131_temporal
+creation_os_v132_persona
+creation_os_v133_meta
 benchmarks/v111/__pycache__/
 training/v111/data/
 training/v111/runs/

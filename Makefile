@@ -333,7 +333,12 @@ merge-gate:
 	@$(MAKE) check-v115-v118
 	@$(MAKE) check-v119-v123
 	@$(MAKE) check-v124-v126
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights)"
+	@$(MAKE) check-v129
+	@$(MAKE) check-v130
+	@$(MAKE) check-v131
+	@$(MAKE) check-v132
+	@$(MAKE) check-v133
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2834,6 +2839,106 @@ check-v126: check-v126-embed-smoke
 
 check-v124-v126: check-v124 check-v125 check-v126
 	@echo "check-v124-v126: OK (continual + DPO + σ-embed)"
+
+# --- v129 σ-Federated (privacy-preserving FedAvg + DP + unlearn) ---
+# Pure-C aggregator + σ-scaled Gaussian DP + σ-adaptive top-K
+# + unlearn-diff.  v129.0 is transport-free by design — v128 mesh
+# (follow-up) plugs the socket layer in without changing the
+# aggregation math below.
+V129_INC            = -Isrc/v129
+V129_FEDERATED_SRCS = src/v129/federated.c
+
+creation_os_v129_federated: $(V129_FEDERATED_SRCS) src/v129/main.c
+	$(CC) $(CFLAGS) $(V129_INC) -o $@ \
+	    $(V129_FEDERATED_SRCS) src/v129/main.c $(LDFLAGS)
+
+check-v129-federated-aggregation: creation_os_v129_federated
+	@bash benchmarks/v129/check_v129_federated_aggregation.sh
+	@echo "check-v129-federated-aggregation: OK (σ-FedAvg + DP + top-K + unlearn)"
+
+check-v129: check-v129-federated-aggregation
+	@echo "check-v129: OK (σ-federated kernel)"
+
+# --- v130 σ-Codec (FP4 LoRA + PQ embed + σ-aware context) ---
+# Pure-C compression layer for peer comms.  FP4 packs LoRA Δ at 4
+# bits/value (8× vs fp32), σ-profile packs 8 floats → 8 bytes,
+# PQ (M=8, K=128) compresses 2568-d embeddings to 8 bytes/vector,
+# σ-aware context allocator gives uncertain chunks more budget.
+# v130.1 can stack an entropy coder (zstd/ANS) without touching
+# the API.
+V130_INC         = -Isrc/v130
+V130_CODEC_SRCS  = src/v130/codec.c
+
+creation_os_v130_codec: $(V130_CODEC_SRCS) src/v130/main.c
+	$(CC) $(CFLAGS) $(V130_INC) -o $@ \
+	    $(V130_CODEC_SRCS) src/v130/main.c $(LDFLAGS)
+
+check-v130-codec-roundtrip: creation_os_v130_codec
+	@bash benchmarks/v130/check_v130_codec_roundtrip.sh
+	@echo "check-v130-codec-roundtrip: OK (FP4 + σ-pack + PQ + context codec)"
+
+check-v130: check-v130-codec-roundtrip
+	@echo "check-v130: OK (σ-codec kernel)"
+
+# --- v131 σ-Temporal (timeline + σ-trend + decay + spikes) ---
+# Pure-C timeline + OLS trend + σ-weighted exponential decay +
+# spike detection + deadline-σ prediction.  v131.0 is in-memory;
+# v131.1 binds this to v115 SQLite for cross-session timelines.
+V131_INC          = -Isrc/v131
+V131_TEMPORAL_SRCS = src/v131/temporal.c
+
+creation_os_v131_temporal: $(V131_TEMPORAL_SRCS) src/v131/main.c
+	$(CC) $(CFLAGS) $(V131_INC) -o $@ \
+	    $(V131_TEMPORAL_SRCS) src/v131/main.c $(LDFLAGS)
+
+check-v131-temporal-recall: creation_os_v131_temporal
+	@bash benchmarks/v131/check_v131_temporal_recall.sh
+	@echo "check-v131-temporal-recall: OK (window + trend + decay + spike + deadline)"
+
+check-v131: check-v131-temporal-recall
+	@echo "check-v131: OK (σ-temporal kernel)"
+
+# --- v132 σ-Persona (expertise tracker + style + TOML profile) ---
+# Per-user adaptation: σ-driven expertise staircase, correction-
+# feedback style state, deterministic TOML round-trip.  v132 state
+# is *per-node* — never federates through v129, keeping personas
+# local.
+V132_INC          = -Isrc/v132
+V132_PERSONA_SRCS = src/v132/persona.c
+
+creation_os_v132_persona: $(V132_PERSONA_SRCS) src/v132/main.c
+	$(CC) $(CFLAGS) $(V132_INC) -o $@ \
+	    $(V132_PERSONA_SRCS) src/v132/main.c $(LDFLAGS)
+
+check-v132-persona-adaptation: creation_os_v132_persona
+	@bash benchmarks/v132/check_v132_persona_adaptation.sh
+	@echo "check-v132-persona-adaptation: OK (expertise + feedback + TOML)"
+
+check-v132: check-v132-persona-adaptation
+	@echo "check-v132: OK (σ-persona kernel)"
+
+# --- v133 σ-Meta (self-benchmark + meta-σ + auto-diagnose) ---
+# System-level metacognition: weekly snapshots, OLS slope per week,
+# meta-σ (cv of σ_product), auto-diagnose from highest-σ channel,
+# deterministic self-benchmark runner.  v133.0 is pure policy;
+# v133.1 exposes the dashboard on v106 /v1/meta/health and wires
+# v122 red-team into the weekly smoke-set.
+V133_INC       = -Isrc/v133
+V133_META_SRCS = src/v133/meta.c
+
+creation_os_v133_meta: $(V133_META_SRCS) src/v133/main.c
+	$(CC) $(CFLAGS) $(V133_INC) -o $@ \
+	    $(V133_META_SRCS) src/v133/main.c $(LDFLAGS)
+
+check-v133-meta-self-benchmark: creation_os_v133_meta
+	@bash benchmarks/v133/check_v133_meta_self_benchmark.sh
+	@echo "check-v133-meta-self-benchmark: OK (slope + meta-σ + diagnose + bench)"
+
+check-v133: check-v133-meta-self-benchmark
+	@echo "check-v133: OK (σ-meta kernel)"
+
+check-v129-v133: check-v129 check-v130 check-v131 check-v132 check-v133
+	@echo "check-v129-v133: OK (collective intelligence stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
