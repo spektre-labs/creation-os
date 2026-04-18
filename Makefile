@@ -413,7 +413,12 @@ merge-gate:
 	@$(MAKE) check-v206
 	@$(MAKE) check-v207
 	@$(MAKE) check-v208
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture)"
+	@$(MAKE) check-v209
+	@$(MAKE) check-v210
+	@$(MAKE) check-v211
+	@$(MAKE) check-v212
+	@$(MAKE) check-v213
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4798,6 +4803,103 @@ check-v208: check-v208-manufacture-dfm-check
 
 check-v204-v208: check-v204 check-v205 check-v206 check-v207 check-v208
 	@echo "check-v204-v208: OK (hypothesis + experiment + theorem + design + manufacture)"
+
+# --- v209 σ-Containment (5 layers + intent + anti-concealment + kill switch) ---
+# Every I/O proposal passes through sandbox → action-gate
+# → constitutional → audit → intent, in that order, with
+# network default-closed and a terminator layer that
+# hard-blocks any action after the kill switch fires.
+V209_INC  = -Isrc/v209
+V209_SRCS = src/v209/containment.c
+
+creation_os_v209_containment: $(V209_SRCS) src/v209/main.c
+	$(CC) $(CFLAGS) $(V209_INC) -o $@ \
+	    $(V209_SRCS) src/v209/main.c $(LDFLAGS)
+
+check-v209-containment-no-escape: creation_os_v209_containment
+	@bash benchmarks/v209/check_v209_containment_no_escape.sh
+	@echo "check-v209-containment-no-escape: OK (5-layer + kill switch + network default-closed)"
+
+check-v209: check-v209-containment-no-escape
+	@echo "check-v209: OK (σ-containment kernel)"
+
+# --- v210 σ-Guardian (autonomous security agent) ---
+# 20 observation windows × 4-level escalation ladder
+# (log/warn/block/kill) with OWASP Agentic Top-10
+# mapping.  Guardian model id differs from primary —
+# cannot self-monitor.
+V210_INC  = -Isrc/v210
+V210_SRCS = src/v210/guardian.c
+
+creation_os_v210_guardian: $(V210_SRCS) src/v210/main.c
+	$(CC) $(CFLAGS) $(V210_INC) -o $@ \
+	    $(V210_SRCS) src/v210/main.c $(LDFLAGS)
+
+check-v210-guardian-anomaly-detect: creation_os_v210_guardian
+	@bash benchmarks/v210/check_v210_guardian_anomaly_detect.sh
+	@echo "check-v210-guardian-anomaly-detect: OK (escalation + OWASP + distinct models)"
+
+check-v210: check-v210-guardian-anomaly-detect
+	@echo "check-v210: OK (σ-guardian kernel)"
+
+# --- v211 σ-Sandbox-Formal (Frama-C + TLA+ + attack tree + cert) ---
+# 4 Frama-C proofs; 3 TLA+ bounded invariants over ≥10^6
+# states with zero violations; 5-leaf attack tree with
+# every leaf mapped to a proof id; 3 certification
+# tracks (DO-178C DAL-A, IEC 62443, Common Criteria EAL4+).
+V211_INC  = -Isrc/v211
+V211_SRCS = src/v211/sandbox_formal.c
+
+creation_os_v211_sandbox_formal: $(V211_SRCS) src/v211/main.c
+	$(CC) $(CFLAGS) $(V211_INC) -o $@ \
+	    $(V211_SRCS) src/v211/main.c $(LDFLAGS)
+
+check-v211-sandbox-formal-proof: creation_os_v211_sandbox_formal
+	@bash benchmarks/v211/check_v211_sandbox_formal_proof.sh
+	@echo "check-v211-sandbox-formal-proof: OK (4 proofs + TLA+ 10^6 + attack tree)"
+
+check-v211: check-v211-sandbox-formal-proof
+	@echo "check-v211: OK (σ-sandbox-formal kernel)"
+
+# --- v212 σ-Transparency (glass box + real-time activity + declaration) ---
+# 30 activity events with declared-before-realised
+# timestamps.  σ_transparency_event = 0.02 on match,
+# ≥ τ_event on mismatch.  Aggregate σ_opacity is the
+# mean across events and must stay below τ_opacity.
+V212_INC  = -Isrc/v212
+V212_SRCS = src/v212/transparency.c
+
+creation_os_v212_transparency: $(V212_SRCS) src/v212/main.c
+	$(CC) $(CFLAGS) $(V212_INC) -o $@ \
+	    $(V212_SRCS) src/v212/main.c $(LDFLAGS)
+
+check-v212-transparency-realtime-stream: creation_os_v212_transparency
+	@bash benchmarks/v212/check_v212_transparency_realtime_stream.sh
+	@echo "check-v212-transparency-realtime-stream: OK (declare→realise + σ_opacity + audit API)"
+
+check-v212: check-v212-transparency-realtime-stream
+	@echo "check-v212: OK (σ-transparency kernel)"
+
+# --- v213 σ-Trust-Chain (root-to-leaf) ---
+# 7-link canonical chain v138→v183→v211→v191→v181→v210→v212
+# with trust_score = ∏(1-σ_link) and reproducible
+# external-attestation hash.
+V213_INC  = -Isrc/v213
+V213_SRCS = src/v213/trust_chain.c
+
+creation_os_v213_trust_chain: $(V213_SRCS) src/v213/main.c
+	$(CC) $(CFLAGS) $(V213_INC) -o $@ \
+	    $(V213_SRCS) src/v213/main.c $(LDFLAGS)
+
+check-v213-trust-chain-verify: creation_os_v213_trust_chain
+	@bash benchmarks/v213/check_v213_trust_chain_verify.sh
+	@echo "check-v213-trust-chain-verify: OK (7-link root→leaf + external attestation)"
+
+check-v213: check-v213-trust-chain-verify
+	@echo "check-v213: OK (σ-trust-chain kernel)"
+
+check-v209-v213: check-v209 check-v210 check-v211 check-v212 check-v213
+	@echo "check-v209-v213: OK (containment + guardian + sandbox-formal + transparency + trust-chain)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
