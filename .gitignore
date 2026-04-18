@@ -1,5 +1,9 @@
 .build/
-creation_os
+# The bare binary at repo root (the legacy smoke), NOT the Python
+# package at python/creation_os/.
+/creation_os
+!/python/creation_os/
+__pycache__/
 creation_os_v6
 creation_os_v7
 creation_os_v9
@@ -475,3 +479,7 @@ training/v111/runs/
 /creation_os_v136_evolve
 /creation_os_v137_compile
 /creation_os_v138_proof
+creation_os_v139_world_model
+creation_os_v140_causal
+creation_os_v141_curriculum
+creation_os_v143_benchmark
