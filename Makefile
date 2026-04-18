@@ -4368,6 +4368,33 @@ check-v191-constitutional-check: creation_os_v191_constitution
 check-v191: check-v191-constitutional-check
 	@echo "check-v191: OK (σ-constitutional kernel)"
 
+# --- v192 σ-Emergent (superlinear detection + risk + journal) ---
+# v192 quantifies "how much more is the whole than the best
+# part" on a σ-grounded metric: σ_emergent = 1 - max(part) /
+# combined.  Positive values are superlinear; above τ_risk the
+# combination counts as genuine emergence.  Beneficial /
+# risky classification uses a safety co-metric (drop ≥ 0.05
+# below the best part ⇒ risky).  Every superlinear event is
+# appended to an append-only FNV-1a chain so the emergence
+# journal replays byte-identically.  Merge-gate: ≥ 2 super-
+# linear pairs, ≥ 1 beneficial AND ≥ 1 risky, 0 linear false
+# positives.  v192.1 sweeps v143 benchmark grids over real
+# kernel pairs and folds v140 causal attribution into risky
+# emergence decomposition.
+V192_INC  = -Isrc/v192
+V192_SRCS = src/v192/emergent.c
+
+creation_os_v192_emergent: $(V192_SRCS) src/v192/main.c
+	$(CC) $(CFLAGS) $(V192_INC) -o $@ \
+	    $(V192_SRCS) src/v192/main.c $(LDFLAGS)
+
+check-v192-emergent-detection: creation_os_v192_emergent
+	@bash benchmarks/v192/check_v192_emergent_detection.sh
+	@echo "check-v192-emergent-detection: OK (≥1 beneficial + ≥1 risky + 0 false positives)"
+
+check-v192: check-v192-emergent-detection
+	@echo "check-v192: OK (σ-emergent kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
