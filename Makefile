@@ -334,7 +334,8 @@ merge-gate:
 	@$(MAKE) check-v119-v123
 	@$(MAKE) check-v124-v126
 	@$(MAKE) check-v129
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated)"
+	@$(MAKE) check-v130
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2854,6 +2855,27 @@ check-v129-federated-aggregation: creation_os_v129_federated
 
 check-v129: check-v129-federated-aggregation
 	@echo "check-v129: OK (σ-federated kernel)"
+
+# --- v130 σ-Codec (FP4 LoRA + PQ embed + σ-aware context) ---
+# Pure-C compression layer for peer comms.  FP4 packs LoRA Δ at 4
+# bits/value (8× vs fp32), σ-profile packs 8 floats → 8 bytes,
+# PQ (M=8, K=128) compresses 2568-d embeddings to 8 bytes/vector,
+# σ-aware context allocator gives uncertain chunks more budget.
+# v130.1 can stack an entropy coder (zstd/ANS) without touching
+# the API.
+V130_INC         = -Isrc/v130
+V130_CODEC_SRCS  = src/v130/codec.c
+
+creation_os_v130_codec: $(V130_CODEC_SRCS) src/v130/main.c
+	$(CC) $(CFLAGS) $(V130_INC) -o $@ \
+	    $(V130_CODEC_SRCS) src/v130/main.c $(LDFLAGS)
+
+check-v130-codec-roundtrip: creation_os_v130_codec
+	@bash benchmarks/v130/check_v130_codec_roundtrip.sh
+	@echo "check-v130-codec-roundtrip: OK (FP4 + σ-pack + PQ + context codec)"
+
+check-v130: check-v130-codec-roundtrip
+	@echo "check-v130: OK (σ-codec kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
