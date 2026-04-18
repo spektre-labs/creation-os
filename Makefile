@@ -4727,6 +4727,27 @@ check-v205-experiment-design-valid: creation_os_v205_experiment
 check-v205: check-v205-experiment-design-valid
 	@echo "check-v205: OK (σ-experiment kernel)"
 
+# --- v206 σ-Theorem (NL conjecture → Lean4 → σ-honest status) ---
+# 8 conjectures × 4 proof steps.  σ_proof = max(σ_step);
+# a simulated Lean 4 accept requires σ_formalization ≤
+# τ_formal AND σ_proof ≤ τ_step.  Status ladder covers
+# PROVEN / CONJECTURE / SPECULATION / REFUTED.  No
+# theorem is ever marked PROVEN without the accept flag
+# — σ-honesty enforced in the self-test.
+V206_INC  = -Isrc/v206
+V206_SRCS = src/v206/theorem.c
+
+creation_os_v206_theorem: $(V206_SRCS) src/v206/main.c
+	$(CC) $(CFLAGS) $(V206_INC) -o $@ \
+	    $(V206_SRCS) src/v206/main.c $(LDFLAGS)
+
+check-v206-theorem-lean-verify: creation_os_v206_theorem
+	@bash benchmarks/v206/check_v206_theorem_lean_verify.sh
+	@echo "check-v206-theorem-lean-verify: OK (Lean accept + σ-honest status)"
+
+check-v206: check-v206-theorem-lean-verify
+	@echo "check-v206: OK (σ-theorem kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
