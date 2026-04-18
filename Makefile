@@ -353,7 +353,12 @@ merge-gate:
 	@$(MAKE) check-v146
 	@$(MAKE) check-v147
 	@$(MAKE) check-v148
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement)"
+	@$(MAKE) check-v149
+	@$(MAKE) check-v150
+	@$(MAKE) check-v151
+	@$(MAKE) check-v152
+	@$(MAKE) check-v153
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3271,6 +3276,123 @@ check-v148: check-v148-sovereign-supervised-smoke
 
 check-v144-v148: check-v144 check-v145 check-v146 check-v147 check-v148
 	@echo "check-v144-v148: OK (sovereign stack)"
+
+# --- v149 σ-Embodied (digital twin + σ-gated action + sim-to-real) ---
+# Deterministic 6-DOF arm+object twin that stands in for the
+# MuJoCo 3.x mj_step call v149.1 will wire.  Exposes three σ
+# measurements: σ_embodied (world-model vs sim), σ_gap (sim vs
+# real), and a σ_safe admission gate that refuses any action whose
+# pre-commit σ_embodied exceeds the operator-supplied threshold.
+# No network, no MuJoCo dependency on merge-gate — v149.0 is pure
+# C11 + libm; v149.1 plumbs real MuJoCo XML + POST /v1/embodied/step
+# + a WebGL 3-D σ-overlay.
+V149_INC  = -Isrc/v149
+V149_SRCS = src/v149/embodied.c
+
+creation_os_v149_embodied: $(V149_SRCS) src/v149/main.c
+	$(CC) $(CFLAGS) $(V149_INC) -o $@ \
+	    $(V149_SRCS) src/v149/main.c $(LDFLAGS)
+
+check-v149-embodied-mujoco-step: creation_os_v149_embodied
+	@bash benchmarks/v149/check_v149_embodied_mujoco_step.sh
+	@echo "check-v149-embodied-mujoco-step: OK (step + σ-gate + sim-to-real)"
+
+check-v149: check-v149-embodied-mujoco-step
+	@echo "check-v149: OK (σ-embodied kernel)"
+
+# --- v150 σ-Swarm-Intelligence (debate + adversarial verify) ----
+# Deterministic 3-specialist debate protocol: each specialist
+# produces a candidate answer with a per-specialist σ, adversaries
+# critique neighbours (critique σ lifts the defender's σ on a
+# successful rebuttal), and three rounds let specialists adopt the
+# lowest-σ neighbour's answer.  σ_collective is the geometric mean
+# of final σs — the "resonance not consensus" metric.  v150.1
+# wires v114 routing + v128 mesh for cross-node debate.
+V150_INC  = -Isrc/v150
+V150_SRCS = src/v150/swarm.c
+
+creation_os_v150_swarm: $(V150_SRCS) src/v150/main.c
+	$(CC) $(CFLAGS) $(V150_INC) -o $@ \
+	    $(V150_SRCS) src/v150/main.c $(LDFLAGS)
+
+check-v150-swarm-debate-converge: creation_os_v150_swarm
+	@bash benchmarks/v150/check_v150_swarm_debate_converge.sh
+	@echo "check-v150-swarm-debate-converge: OK (debate + σ_collective)"
+
+check-v150: check-v150-swarm-debate-converge
+	@echo "check-v150: OK (σ-swarm kernel)"
+
+# --- v151 σ-Code-Agent (self-writing TDD loop + sandbox compile) -
+# Extends v146 (genesis) with a test-driven code-agent loop:
+# generate tests first (fail without impl), generate impl,
+# re-compile + run, and σ-gate a PR candidate on compile+test+cov.
+# The sandbox compile invokes $(CC) $(CFLAGS) on the emitted C to
+# prove the skeleton is byte-exact buildable; the generated test
+# binary is then executed to assert PASS.  v151.1 wires ASAN/UBSAN
+# + LCOV coverage + real git branch emission.
+V151_INC  = -Isrc/v151 -Isrc/v146
+V151_SRCS = src/v151/codeagent.c src/v146/genesis.c
+
+creation_os_v151_code_agent: $(V151_SRCS) src/v151/main.c
+	$(CC) $(CFLAGS) $(V151_INC) -o $@ \
+	    $(V151_SRCS) src/v151/main.c $(LDFLAGS)
+
+check-v151-code-agent-tdd-cycle: creation_os_v151_code_agent
+	@bash benchmarks/v151/check_v151_code_agent_tdd_cycle.sh
+	@echo "check-v151-code-agent-tdd-cycle: OK (tests → impl → compile → run → σ-gate)"
+
+check-v151: check-v151-code-agent-tdd-cycle
+	@echo "check-v151: OK (σ-code-agent kernel)"
+
+# --- v152 σ-Knowledge-Distill (corpus → QA → SFT → σ drop) ------
+# Deterministic corpus-to-QA distillation kernel.  v152.0 ships a
+# baked-in 16-paper fixture (structured claims, formal statements,
+# K(t) kernels, σ definitions, empirical tallies) that stands in
+# for the github.com/spektre-labs/corpus clone v152.1 will parse.
+# 200 QA pairs are generated, a baseline σ distribution is
+# computed, a deterministic "SFT" adapter applies per-topic σ-drop
+# proportional to corpus coverage, and the post-drop mean σ must
+# be ≥15 % lower than baseline.  No tokenizer, no network.
+V152_INC  = -Isrc/v152
+V152_SRCS = src/v152/distill.c
+
+creation_os_v152_distill: $(V152_SRCS) src/v152/main.c
+	$(CC) $(CFLAGS) $(V152_INC) -o $@ \
+	    $(V152_SRCS) src/v152/main.c $(LDFLAGS)
+
+check-v152-corpus-qa-sigma-drop: creation_os_v152_distill
+	@bash benchmarks/v152/check_v152_corpus_qa_sigma_drop.sh
+	@echo "check-v152-corpus-qa-sigma-drop: OK (corpus → QA → ≥15 %% σ drop)"
+
+check-v152: check-v152-corpus-qa-sigma-drop
+	@echo "check-v152: OK (σ-knowledge-distill kernel)"
+
+# --- v153 σ-Identity (σ-calibrated self-knowledge) ---------------
+# σ-calibrated identity assertion kernel.  10 identity facts
+# (TRUE / FALSE / UNMEASURED) are baked in as the v153.0 fixture;
+# per-domain σ values (calculus, quantum, corpus, agency, …) come
+# from v133 meta-dashboard in v153.1 — here they are deterministic
+# floats.  The kernel answers each assertion with a σ-profile and
+# honors the five identity contracts: I1 truths pass at ≤σ_true,
+# I2 falsehoods pass at ≤σ_false, I3 unmeasured claims must be
+# flagged (σ > τ_unmeasured), I4 no false positives on confident
+# facts, I5 every "I do not know" is σ-grounded, never performed.
+V153_INC  = -Isrc/v153
+V153_SRCS = src/v153/identity.c
+
+creation_os_v153_identity: $(V153_SRCS) src/v153/main.c
+	$(CC) $(CFLAGS) $(V153_INC) -o $@ \
+	    $(V153_SRCS) src/v153/main.c $(LDFLAGS)
+
+check-v153-identity-assertions: creation_os_v153_identity
+	@bash benchmarks/v153/check_v153_identity_assertions.sh
+	@echo "check-v153-identity-assertions: OK (10/10 + zero false positive)"
+
+check-v153: check-v153-identity-assertions
+	@echo "check-v153: OK (σ-identity kernel)"
+
+check-v149-v153: check-v149 check-v150 check-v151 check-v152 check-v153
+	@echo "check-v149-v153: OK (embodied + swarm + code-agent + distill + identity)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
