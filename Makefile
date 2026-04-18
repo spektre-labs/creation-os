@@ -4431,6 +4431,35 @@ check-v193: check-v193-coherence-keff
 check-v189-v193: check-v189 check-v190 check-v191 check-v192 check-v193
 	@echo "check-v189-v193: OK (TTC + latent-reason + constitutional + emergent + coherence)"
 
+# --- v194 σ-Horizon (multi-horizon + degradation monitor) ---
+# Long-horizon agents collapse after ~35 minutes because they
+# don't measure their own degradation.  v194 makes that
+# measurement explicit: a three-tier goal tree (strategic /
+# tactical / operational) plus a σ-slope monitor on the
+# operational tier that, once the 10-tick climb exceeds
+# τ_degrade_slope, fires the recovery ladder in order —
+# v117 KV-cache flush → v172 summarize+resume → v115 break
+# point + persist progress.  Every operational task writes a
+# FNV-1a checkpoint so a crash never loses work, and a
+# simulated crash-recovery run reproduces the terminal hash
+# byte-identically.  Merge-gate contracts: ladder order
+# 1→2→3, σ after ladder < σ at detection, chain valid, and
+# crash recovery matches.  v194.1 wires live v115 memory and
+# `cos goals` CLI over `~/.creation-os/goals.jsonl`.
+V194_INC  = -Isrc/v194
+V194_SRCS = src/v194/horizon.c
+
+creation_os_v194_horizon: $(V194_SRCS) src/v194/main.c
+	$(CC) $(CFLAGS) $(V194_INC) -o $@ \
+	    $(V194_SRCS) src/v194/main.c $(LDFLAGS)
+
+check-v194-horizon-degradation-detect: creation_os_v194_horizon
+	@bash benchmarks/v194/check_v194_horizon_degradation_detect.sh
+	@echo "check-v194-horizon-degradation-detect: OK (1/3/12 tree + ladder + crash recovery)"
+
+check-v194: check-v194-horizon-degradation-detect
+	@echo "check-v194: OK (σ-horizon kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
