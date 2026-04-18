@@ -4837,6 +4837,25 @@ check-v210-guardian-anomaly-detect: creation_os_v210_guardian
 check-v210: check-v210-guardian-anomaly-detect
 	@echo "check-v210: OK (σ-guardian kernel)"
 
+# --- v211 σ-Sandbox-Formal (Frama-C + TLA+ + attack tree + cert) ---
+# 4 Frama-C proofs; 3 TLA+ bounded invariants over ≥10^6
+# states with zero violations; 5-leaf attack tree with
+# every leaf mapped to a proof id; 3 certification
+# tracks (DO-178C DAL-A, IEC 62443, Common Criteria EAL4+).
+V211_INC  = -Isrc/v211
+V211_SRCS = src/v211/sandbox_formal.c
+
+creation_os_v211_sandbox_formal: $(V211_SRCS) src/v211/main.c
+	$(CC) $(CFLAGS) $(V211_INC) -o $@ \
+	    $(V211_SRCS) src/v211/main.c $(LDFLAGS)
+
+check-v211-sandbox-formal-proof: creation_os_v211_sandbox_formal
+	@bash benchmarks/v211/check_v211_sandbox_formal_proof.sh
+	@echo "check-v211-sandbox-formal-proof: OK (4 proofs + TLA+ 10^6 + attack tree)"
+
+check-v211: check-v211-sandbox-formal-proof
+	@echo "check-v211: OK (σ-sandbox-formal kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
