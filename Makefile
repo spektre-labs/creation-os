@@ -364,7 +364,8 @@ merge-gate:
 	@$(MAKE) check-v157
 	@$(MAKE) check-v158
 	@$(MAKE) check-v159
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal)"
+	@$(MAKE) check-v160
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3497,6 +3498,30 @@ check-v159-heal-restart-cycle: creation_os_v159_heal
 
 check-v159: check-v159-heal-restart-cycle
 	@echo "check-v159: OK (σ-heal self-healing kernel)"
+
+# --- v160 σ-Telemetry (OTLP + Prometheus + structured logs) -----
+# Deterministic emitter producing: (a) OTLP-JSON for a 6-span
+# cognitive trace (encode → recall → predict → generate →
+# metacognition → decide), each span carrying its σ as an
+# attribute; (b) Prometheus text-format /metrics (σ_product,
+# σ_channel, abstain/heal/rsi counters, skill_count gauge); (c)
+# ndjson structured logs with trace_id + σ_product.  v160.0 is
+# fully in-process; v160.1 wires the emitter to a real
+# OTLP/HTTP POST, a real /metrics endpoint on v106, a log-
+# rotation daemon, and the v108 dashboard tile layout.
+V160_INC  = -Isrc/v160
+V160_SRCS = src/v160/telemetry.c
+
+creation_os_v160_telemetry: $(V160_SRCS) src/v160/main.c
+	$(CC) $(CFLAGS) $(V160_INC) -o $@ \
+	    $(V160_SRCS) src/v160/main.c $(LDFLAGS)
+
+check-v160-telemetry-otlp-export: creation_os_v160_telemetry
+	@bash benchmarks/v160/check_v160_telemetry_otlp_export.sh
+	@echo "check-v160-telemetry-otlp-export: OK (OTLP + Prometheus + ndjson)"
+
+check-v160: check-v160-telemetry-otlp-export
+	@echo "check-v160: OK (σ-telemetry observability)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
