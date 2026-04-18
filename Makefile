@@ -5275,6 +5275,25 @@ check-v231-immortal-restore-continuity: creation_os_v231_immortal
 check-v231: check-v231-immortal-restore-continuity
 	@echo "check-v231: OK (σ-immortal kernel)"
 
+# --- v232 σ-Lineage (family tree + ancestor query + merge back) ---
+# 6 nodes, 3 generations (0..2), 1 root, 2 gen-1,
+# 3 gen-2.  σ_divergence_from_parent drives the
+# σ-gated merge verdict (τ_merge = 0.40); fixture
+# yields n_mergeable ≥ 1 AND n_blocked ≥ 1.
+V232_INC  = -Isrc/v232
+V232_SRCS = src/v232/lineage.c
+
+creation_os_v232_lineage: $(V232_SRCS) src/v232/main.c
+	$(CC) $(CFLAGS) $(V232_INC) -o $@ \
+	    $(V232_SRCS) src/v232/main.c $(LDFLAGS)
+
+check-v232-lineage-tree-query: creation_os_v232_lineage
+	@bash benchmarks/v232/check_v232_lineage_tree_query.sh
+	@echo "check-v232-lineage-tree-query: OK (tree + ancestor walk + σ-gated merge-back)"
+
+check-v232: check-v232-lineage-tree-query
+	@echo "check-v232: OK (σ-lineage kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
