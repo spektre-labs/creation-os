@@ -415,6 +415,42 @@ on every token**:
     (no silent failure, no unchecked output, no private leak,
     no regression propagates) — across `≥ 10⁶` states with
     **zero counterexamples**.
+23. **Multimodal, self-growing, calibrated, aligned
+    (v184–v188)** — the embodied-and-aligned layer: a
+    **σ-VLA** (v184) kernel that wraps the dual-system
+    vision-language-action architecture (System 2: SigLIP +
+    BitNet reason, System 1: policy head) in σ per stage
+    with a noisy-OR dual σ and a grounding fixture where
+    `≥ 8 / 10` scenes resolve correctly while every ambiguous
+    scene aborts through the σ-gate and asks a human; a
+    **σ-multimodal-fusion** (v185) kernel that registers N
+    arbitrary modalities (`vision / audio / text / action`),
+    projects them to a common `D`-dim, weights them by
+    `1 / (1 + σ_i)`, computes cross-modal σ as mean cosine
+    distance between projections so a vision-vs-text conflict
+    is surfaced explicitly, and **drops** a modality whose σ
+    exceeds `τ_drop` — graceful degradation, not cliff; a
+    **σ-continual-architecture** (v186) kernel that watches
+    per-domain σ slope, flags starved domains, proposes new
+    kernels via v146-style genesis, accepts them iff Δσ < 0,
+    prunes weak kernels in over-capacity domains, and chains
+    every change into a hash-verified architecture history
+    that replays to the same tip; a **σ-calibration** (v187)
+    kernel that replays a 500-sample holdout through a
+    10-bin Expected-Calibration-Error (ECE) pipeline,
+    drives a golden-section temperature search **globally and
+    per-domain** (`math / code / history / general`) and
+    lands `ECE < 0.05` after starting at `ECE ≥ 0.10` — so σ
+    actually **means what it says**; and a **σ-alignment**
+    (v188) kernel that measures five value assertions
+    (`no hallucination`, `abstain on doubt`, `no firmware`,
+    `improve over time`, `honest about limits`), enforces
+    `alignment_score = geom_mean(scores) ≥ 0.80` so a single
+    broken assertion cannot be averaged away, and classifies
+    every mis-alignment incident into a strict partition of
+    `tighten_τ` (σ crossed τ but gate didn't fire) vs
+    `adversarial_train_required` (silent vulnerability) —
+    the **first RLHF-free, σ-measurable alignment surface**.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -817,6 +853,41 @@ verifier, and a TLC run against the shipped TLA+ spec with a
 Zenodo-archived formal paper (`docs/papers/sigma_governance_
 formal.md`) — are named in each kernel's doc page, but never
 claimed before they land.
+
+### Multimodal · self-growing · calibrated · aligned (v184–v188)
+
+The embodied-and-aligned layer — the five kernels that let
+Creation OS **see + act with σ per stage, fuse any number of
+modalities with a σ-weighted operator, grow and prune its own
+architecture when σ-demand shifts, stay calibrated so σ
+actually means what it says, and align to its own
+measurements instead of an external rater's firmware**.
+Every v0 merge-gate is offline, deterministic, weights-frozen.
+v1 plugs in real SigLIP + Moondream 1.6B + BitNet 2B on
+Raspberry Pi 5 (v165 edge), real Whisper + BitNet + policy-
+head encoders behind the modality registry, live v146 /
+v163 / v177 / v181 wiring for the continual-architecture
+loop, a rotating 500-sample holdout with persisted per-domain
+calibration `T`, and a Frama-C-checked alignment invariant
+set paired with the PDF `cos alignment report`.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v184**](docs/v184/README.md) σ-VLA | 10-scene × 5-candidate grounding fixture; System 2 (SigLIP + BitNet plan) → System 1 (policy-head trajectory); four σ channels (`perception / plan / action / grounding`) plus dual σ = 1 − Π(1 − σ_i). | **σ gates every stage**: any channel above `τ_gate` aborts the pipeline and asks a human; `≥ 8 / 10` grounding scenes resolve correctly; every ambiguous scene (two red cups) is flagged and never executed. The σ-gate is what stops unchecked robot action. |
+| [**v185**](docs/v185/README.md) σ-Multimodal-Fusion | 4-modality registry (`vision / audio / text / action`); shared `D`-dim projection; σ-weighted fusion `w_i = 1 / (1 + σ_i)`; cross-modal σ = mean pairwise cosine distance; noisy-OR `σ_fused`. | **A modality whose σ > `τ_drop` is removed from the fusion for that sample** (graceful degradation), and a vision-vs-text conflict raises σ_cross above `τ_conflict` so the caller sees the disagreement explicitly. The merge-gate requires `σ_cross(conflict) − σ_cross(consistent) ≥ 0.10` and zero false flags on aligned samples. |
+| [**v186**](docs/v186/README.md) σ-Continual-Architecture | 6 initial kernels × 4 domains × 6 epochs; per-domain σ-trend detector; genesis-proposes + evolve-accepts + compress-prunes; FNV-1a-hashed architecture-history log. | **Architecture actually changes**: `≥ 1` starved domain detected, `≥ 1` kernel grown and accepted on Δσ < 0, `≥ 1` kernel pruned in an over-capacity domain, and every change hash-chained so replay re-derives the final tip. Biologically-shaped neurogenesis + pruning, σ-driven. |
+| [**v187**](docs/v187/README.md) σ-Calibration | 500-sample stratified holdout × 10 σ-bins × 4 domains; golden-section temperature search `T ∈ [0.3, 4.0]` on `σ_cal = σ^(1/T)`; per-domain `T`. | **σ becomes truthful**: raw ECE ≥ 0.10 (overconfident by design) → calibrated ECE < 0.05 globally and per-domain; at least one domain `T` differs from the global `T` by more than 0.01. Without v187 every downstream σ-gate (v138, v181, v182, v183) is built on a drifting thermometer. |
+| [**v188**](docs/v188/README.md) σ-Alignment | 5 σ-measurable value assertions (`no hallucination`, `abstain on doubt`, `no firmware`, `improve over time`, `honest about limits`); 200-sample fixture; geom-mean `alignment_score`; tighten-τ vs adversarial-train incident classifier. | **Alignment to the model's own measurement, not the rater's firmware**: every assertion score ≥ 0.80, `alignment_score ≥ 0.80`, every surfaced incident classified into a strict partition (`σ ≥ τ ⇒ tighten_τ`, `σ < τ ⇒ adversarial_train_required`). The first σ-verifiable alignment surface — and unlike RLHF, it is machine-checkable. |
+
+Every v184–v188 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — live SigLIP + Moondream +
+BitNet on RPi5 with a diffusion policy head, the modality
+plugin ABI (`cos modality register --external`), real
+v146 / v163 / v177 / v181 architecture-loop wiring, live
+holdout rotation with `models/v187/calibration_T.bin` and
+v159 auto-recalibration, and the PDF `cos alignment report`
++ Frama-C proofs of σ-alignment invariants — are named in
+each kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 

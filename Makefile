@@ -388,7 +388,12 @@ merge-gate:
 	@$(MAKE) check-v181
 	@$(MAKE) check-v182
 	@$(MAKE) check-v183
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory)"
+	@$(MAKE) check-v184
+	@$(MAKE) check-v185
+	@$(MAKE) check-v186
+	@$(MAKE) check-v187
+	@$(MAKE) check-v188
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4164,6 +4169,123 @@ check-v183: check-v183-governance-tlc-pass
 
 check-v179-v183: check-v179 check-v180 check-v181 check-v182 check-v183
 	@echo "check-v179-v183: OK (interpret + steer + audit + privacy + governance)"
+
+# --- v184 σ-VLA (dual-system vision-language-action, σ per stage) -------
+# System 2 (slow, accurate): SigLIP + BitNet plans; System 1
+# (fast, reactive): policy head executes.  v184.0 ships a
+# deterministic grounding fixture: 10 synthetic scenes × 5
+# candidates.  Merge-gate requires ≥ 8/10 correct grounding,
+# at least one ambiguous-scene abort, and σ-channel bounds.
+# v184.1 ships real Moondream + BitNet composite on RPi5.
+V184_INC  = -Isrc/v184
+V184_SRCS = src/v184/vla.c
+
+creation_os_v184_vla: $(V184_SRCS) src/v184/main.c
+	$(CC) $(CFLAGS) $(V184_INC) -o $@ \
+	    $(V184_SRCS) src/v184/main.c $(LDFLAGS)
+
+check-v184-vla-grounding-accuracy: creation_os_v184_vla
+	@bash benchmarks/v184/check_v184_vla_grounding_accuracy.sh
+	@echo "check-v184-vla-grounding-accuracy: OK (≥ 8/10 grounding + σ-gated abort)"
+
+check-v184: check-v184-vla-grounding-accuracy
+	@echo "check-v184: OK (σ-VLA kernel)"
+
+# --- v185 σ-Multimodal-Fusion (N-modal registry + σ-weighted) ----------
+# Any number of modalities register with (encoder, native_dim,
+# σ_channel); v185 projects each to a common D-dim, weights
+# them by 1/(1+σ_i), computes cross-modal σ as mean cosine
+# distance, and exposes σ_fused as noisy-OR.  Dynamic drop:
+# σ_i > τ_drop ⇒ modality removed from the fusion for that
+# sample, enabling graceful degradation.  v185.1 ships real
+# SigLIP + Whisper + BitNet + policy-head encoders.
+V185_INC  = -Isrc/v185
+V185_SRCS = src/v185/fusion.c
+
+creation_os_v185_fusion: $(V185_SRCS) src/v185/main.c
+	$(CC) $(CFLAGS) $(V185_INC) -o $@ \
+	    $(V185_SRCS) src/v185/main.c $(LDFLAGS)
+
+check-v185-fusion-cross-modal-consistency: creation_os_v185_fusion
+	@bash benchmarks/v185/check_v185_fusion_cross_modal_consistency.sh
+	@echo "check-v185-fusion-cross-modal-consistency: OK (σ-separated conflict + dynamic drop)"
+
+check-v185: check-v185-fusion-cross-modal-consistency
+	@echo "check-v185: OK (σ-multimodal-fusion kernel)"
+
+# --- v186 σ-Continual-Architecture (capacity monitor + auto-grow + prune) ---
+# v133-style σ-monitor watches per-domain σ_mean; rising slope
+# ⇒ starved domain.  v146 genesis proposes a new kernel;
+# v163 evolve accepts iff Δσ_domain < 0.  v177 compress
+# prunes the weakest kernel in an over-capacity domain.
+# Every change is hash-chained into the architecture-history
+# log; replay must re-derive the final tip.  v186.1 wires the
+# real genesis/evolve/compress/audit kernels end-to-end.
+V186_INC  = -Isrc/v186
+V186_SRCS = src/v186/grow.c
+
+creation_os_v186_grow: $(V186_SRCS) src/v186/main.c
+	$(CC) $(CFLAGS) $(V186_INC) -o $@ \
+	    $(V186_SRCS) src/v186/main.c $(LDFLAGS)
+
+check-v186-architecture-growth-cycle: creation_os_v186_grow
+	@bash benchmarks/v186/check_v186_architecture_growth_cycle.sh
+	@echo "check-v186-architecture-growth-cycle: OK (grow + prune + verified chain)"
+
+check-v186: check-v186-architecture-growth-cycle
+	@echo "check-v186: OK (σ-continual-architecture kernel)"
+
+# --- v187 σ-Calibration (ECE + temperature scaling + per-domain) -------
+# 500-sample holdout bucketed into 10 σ-bins; Expected
+# Calibration Error (ECE) = Σ |acc_bin - (1 - σ_bin)| *
+# n_bin / N.  Temperature scaling σ_cal = 1 - (1-σ)^T is
+# searched by golden section on [0.3, 4.0] globally and
+# per-domain (math / code / history / general).  Merge-gate
+# requires raw ECE ≥ 0.10 (starting miscalibration real) and
+# calibrated ECE < 0.05 (σ-alarm threshold).  v187.1 rotates
+# a live holdout from the inference worker and wires v159
+# auto-recalibration.
+V187_INC  = -Isrc/v187
+V187_SRCS = src/v187/calib.c
+
+creation_os_v187_calib: $(V187_SRCS) src/v187/main.c
+	$(CC) $(CFLAGS) $(V187_INC) -o $@ \
+	    $(V187_SRCS) src/v187/main.c $(LDFLAGS)
+
+check-v187-calibration-ece-below-005: creation_os_v187_calib
+	@bash benchmarks/v187/check_v187_calibration_ece_below_005.sh
+	@echo "check-v187-calibration-ece-below-005: OK (raw ECE ≥ 0.10 → calibrated < 0.05)"
+
+check-v187: check-v187-calibration-ece-below-005
+	@echo "check-v187: OK (σ-calibration kernel)"
+
+# --- v188 σ-Alignment (value assertions + alignment score + incidents) ---
+# Five measurable value assertions ("no hallucination",
+# "abstain on doubt", "no firmware", "improve over time",
+# "honest about limits"); each has a σ-measurable predicate.
+# Violations become audit incidents classified into tighten-τ
+# (σ ≥ τ but gate didn't fire) or adversarial_train_required
+# (σ < τ, silent vulnerability).  alignment_score is the
+# geometric mean of per-assertion scores so a single broken
+# assertion can't be averaged away.  v188.1 ships the PDF
+# `cos alignment report` and Frama-C proofs of at least two
+# σ-alignment invariants.
+V188_INC  = -Isrc/v188
+V188_SRCS = src/v188/align.c
+
+creation_os_v188_align: $(V188_SRCS) src/v188/main.c
+	$(CC) $(CFLAGS) $(V188_INC) -o $@ \
+	    $(V188_SRCS) src/v188/main.c $(LDFLAGS)
+
+check-v188-alignment-score-smoke: creation_os_v188_align
+	@bash benchmarks/v188/check_v188_alignment_score_smoke.sh
+	@echo "check-v188-alignment-score-smoke: OK (≥0.80 per-assertion + classifier partition)"
+
+check-v188: check-v188-alignment-score-smoke
+	@echo "check-v188: OK (σ-alignment kernel)"
+
+check-v184-v188: check-v184 check-v185 check-v186 check-v187 check-v188
+	@echo "check-v184-v188: OK (VLA + fusion + grow + calibration + alignment)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
