@@ -4629,6 +4629,28 @@ check-v201-diplomacy-compromise-search: creation_os_v201_diplomacy
 check-v201: check-v201-diplomacy-compromise-search
 	@echo "check-v201: OK (σ-diplomacy kernel)"
 
+# --- v202 σ-Culture (style profiles + taboo gate + translation) ---
+# Six profiles × six canonical cores = 36 translations.
+# σ_translate stays below τ_drift for every (core, profile)
+# and the three canonical symbols {σ, τ, K_eff} survive
+# translation in ≥ 90 % of cases.  Taboo gate rephrases
+# high-σ_offense messages into non-empty surfaces — never
+# firmware-censored — and every (drift, offense, rephrased,
+# symbols) record is FNV-1a hash-chained.
+V202_INC  = -Isrc/v202
+V202_SRCS = src/v202/culture.c
+
+creation_os_v202_culture: $(V202_SRCS) src/v202/main.c
+	$(CC) $(CFLAGS) $(V202_INC) -o $@ \
+	    $(V202_SRCS) src/v202/main.c $(LDFLAGS)
+
+check-v202-culture-translation-preserve: creation_os_v202_culture
+	@bash benchmarks/v202/check_v202_culture_translation_preserve.sh
+	@echo "check-v202-culture-translation-preserve: OK (profiles + taboo + symbol invariance)"
+
+check-v202: check-v202-culture-translation-preserve
+	@echo "check-v202: OK (σ-culture kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
