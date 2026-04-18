@@ -343,7 +343,12 @@ merge-gate:
 	@$(MAKE) check-v136
 	@$(MAKE) check-v137
 	@$(MAKE) check-v138
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure)"
+	@$(MAKE) check-v139
+	@$(MAKE) check-v140
+	@$(MAKE) check-v141
+	@$(MAKE) check-v142
+	@$(MAKE) check-v143
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3057,6 +3062,99 @@ prove: creation_os_v138_proof
 
 check-v134-v138: check-v134 check-v135 check-v136 check-v137 check-v138
 	@echo "check-v134-v138: OK (deep-infrastructure stack)"
+
+# --- v139 σ-WorldModel (linear latent predictor, D≤64) -----------
+# Fits A ∈ ℝ^{D×D} by normal-equations least squares on a
+# deterministic synthetic trajectory, predicts the next state, and
+# computes σ_world = ‖s_actual − s_pred‖ / ‖s_actual‖.  v139.0 is
+# tier-0: pure C, no BitNet hidden-state extractor yet.  v139.1
+# lifts D to 2560 and reads real layer-15 states via v101/v126.
+V139_INC  = -Isrc/v139
+V139_SRCS = src/v139/world_model.c
+
+creation_os_v139_world_model: $(V139_SRCS) src/v139/main.c
+	$(CC) $(CFLAGS) $(V139_INC) -o $@ \
+	    $(V139_SRCS) src/v139/main.c $(LDFLAGS)
+
+check-v139-world-model-prediction: creation_os_v139_world_model
+	@bash benchmarks/v139/check_v139_world_model_prediction.sh
+	@echo "check-v139-world-model-prediction: OK (LS fit + <10% held-out)"
+
+check-v139: check-v139-world-model-prediction
+	@echo "check-v139: OK (σ-world-model kernel)"
+
+# --- v140 σ-Causal (counterfactual + per-channel ablation) -------
+# Reuses v139's linear A for counterfactual propagation and adds
+# per-σ-channel ablation attribution, returning the top-3
+# contributing channels to an abstain decision.
+V140_INC  = -Isrc/v140 -Isrc/v139
+V140_SRCS = src/v140/causal.c src/v139/world_model.c
+
+creation_os_v140_causal: $(V140_SRCS) src/v140/main.c
+	$(CC) $(CFLAGS) $(V140_INC) -o $@ \
+	    $(V140_SRCS) src/v140/main.c $(LDFLAGS)
+
+check-v140-causal-attribution: creation_os_v140_causal
+	@bash benchmarks/v140/check_v140_causal_attribution.sh
+	@echo "check-v140-causal-attribution: OK (do-calc + top-3 channels)"
+
+check-v140: check-v140-causal-attribution
+	@echo "check-v140: OK (σ-causal kernel)"
+
+# --- v141 σ-Curriculum (weakness detection + improvement loop) ---
+# Pure scheduler: identifies weakest topic from a σ-histogram,
+# simulates one curriculum cycle against a synthetic answer
+# function, asserts the weakest topic improves without forgetting
+# the strong ones.  Real MLX/LoRA hand-off lives in v141.1.
+V141_INC  = -Isrc/v141
+V141_SRCS = src/v141/curriculum.c
+
+creation_os_v141_curriculum: $(V141_SRCS) src/v141/main.c
+	$(CC) $(CFLAGS) $(V141_INC) -o $@ \
+	    $(V141_SRCS) src/v141/main.c $(LDFLAGS)
+
+check-v141-curriculum-cycle: creation_os_v141_curriculum
+	@bash benchmarks/v141/check_v141_curriculum_cycle.sh
+	@echo "check-v141-curriculum-cycle: OK (weakness → cycle → improvement)"
+
+check-v141: check-v141-curriculum-cycle
+	@echo "check-v141: OK (σ-curriculum kernel)"
+
+# --- v142 σ-Interop (Python SDK + OpenAI shape + adapters) -------
+# No C binary for v142: surface is a stdlib-only Python package
+# under python/creation_os/.  The merge-gate verifies the module
+# imports, that the OpenAI-SDK-shape smoke passes, and that the
+# LangChain/LlamaIndex adapters import cleanly even when those
+# frameworks are absent (graceful lazy-import).
+check-v142-interop-openai-sdk:
+	@bash benchmarks/v142/check_v142_interop_openai_sdk.sh
+	@echo "check-v142-interop-openai-sdk: OK (SDK + OpenAI shape + adapters)"
+
+check-v142: check-v142-interop-openai-sdk
+	@echo "check-v142: OK (σ-interop kernel)"
+
+# --- v143 σ-Benchmark (5-category synthetic benchmark suite) -----
+# Runs calibration + abstention + swarm-routing + learning +
+# adversarial on tier-0 synthetic data, writes
+# benchmarks/v143/creation_os_benchmark.json.  v143.1 replaces each
+# synthetic set with archived σ-traces from v104/v106 and publishes
+# to Hugging Face.
+V143_INC  = -Isrc/v143
+V143_SRCS = src/v143/benchmark.c
+
+creation_os_v143_benchmark: $(V143_SRCS) src/v143/main.c
+	$(CC) $(CFLAGS) $(V143_INC) -o $@ \
+	    $(V143_SRCS) src/v143/main.c $(LDFLAGS)
+
+check-v143-benchmark-smoke: creation_os_v143_benchmark
+	@bash benchmarks/v143/check_v143_benchmark_smoke.sh
+	@echo "check-v143-benchmark-smoke: OK (5 categories + JSON)"
+
+check-v143: check-v143-benchmark-smoke
+	@echo "check-v143: OK (σ-benchmark kernel)"
+
+check-v139-v143: check-v139 check-v140 check-v141 check-v142 check-v143
+	@echo "check-v139-v143: OK (world-intelligence stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
