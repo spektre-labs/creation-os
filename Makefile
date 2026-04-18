@@ -3747,6 +3747,33 @@ check-v168: check-v168-marketplace-publish-install
 check-v164-v168: check-v164 check-v165 check-v166 check-v167 check-v168
 	@echo "check-v164-v168: OK (plugin + edge + stream + governance + marketplace)"
 
+# --- v169 σ-Ontology (auto KG + OWL-lite + corpus navigation) ----------
+# Deterministic ontology builder.  50 synthetic memory-like
+# entries are parsed into candidate (subject, predicate, object)
+# triples with a σ_extraction per triple; τ_extract = 0.35 gates
+# which triples join the KG.  Kept triples feed a hierarchical
+# typer mapping entities to 6 top-level classes (Person /
+# Software / Metric / Kernel / Device / Concept) with a
+# σ_type confidence.  A query API returns source entry-ids for
+# any (predicate, object?) pattern, so v152 corpus questions
+# like "which entries mention σ?" resolve structurally instead
+# of by substring search.  OWL-lite is emitted as JSON in v0;
+# v169.1 writes real OWL/XML to ~/.creation-os/ontology.owl and
+# drives the extractor off BitNet over real v115 memory entries.
+V169_INC  = -Isrc/v169
+V169_SRCS = src/v169/ontology.c
+
+creation_os_v169_ontology: $(V169_SRCS) src/v169/main.c
+	$(CC) $(CFLAGS) $(V169_INC) -o $@ \
+	    $(V169_SRCS) src/v169/main.c $(LDFLAGS)
+
+check-v169-ontology-rdf-extract: creation_os_v169_ontology
+	@bash benchmarks/v169/check_v169_ontology_rdf_extract.sh
+	@echo "check-v169-ontology-rdf-extract: OK (extract + type + query)"
+
+check-v169: check-v169-ontology-rdf-extract
+	@echo "check-v169: OK (σ-ontology kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
