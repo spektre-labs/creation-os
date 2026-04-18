@@ -135,6 +135,11 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [MLX_GUIDE.md](MLX_GUIDE.md) | MLX integrators | Python / MLX paths where applicable |
 | [cursor_briefing_creation_os.md](cursor_briefing_creation_os.md) | Cursor users | Editor integration notes |
 | [cursor_integration_creation_os.md](cursor_integration_creation_os.md) | Cursor users | Deeper integration |
+| [v164/README.md](v164/README.md) | Plugin authors, sandbox reviewers | v164 σ-Plugin: C ABI + cap-mask sandbox + σ_reputation ring buffer + 4 baked official plugins; `make check-v164` |
+| [v165/README.md](v165/README.md) | Edge / RPi5 / Jetson / Android integrators | v165 σ-Edge: baked target profile table + τ-adaptive rule τ_edge = τ_default / (avail/8192) + cos-lite fit check; `make check-v165` |
+| [v166/README.md](v166/README.md) | Streaming / voice / WebSocket integrators | v166 σ-Stream: per-token σ NDJSON frames + interrupt-on-sigma + audible_delay_ms voice hook for v127; `make check-v166` |
+| [v167/README.md](v167/README.md) | Org admins, compliance readers | v167 σ-Governance-API: domain policies + fleet stamping + append-only audit log + 4-role RBAC; `make check-v167` |
+| [v168/README.md](v168/README.md) | Skill / kernel / plugin publishers | v168 σ-Marketplace: shareable artifact registry + σ_reputation model + σ-gated install with `--force` override; `make check-v168` |
 
 **Quick verify:** from repository root of this tree, `make check` (build + structural tests); `make check-v6` / `make check-v7` / `make check-v9` / `make check-v10` when editing those sources ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)). **What ships where:** [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md).
 
