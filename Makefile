@@ -383,7 +383,12 @@ merge-gate:
 	@$(MAKE) check-v176
 	@$(MAKE) check-v177
 	@$(MAKE) check-v178
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus)"
+	@$(MAKE) check-v179
+	@$(MAKE) check-v180
+	@$(MAKE) check-v181
+	@$(MAKE) check-v182
+	@$(MAKE) check-v183
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4129,6 +4134,36 @@ check-v182-privacy-dp-adaptive: creation_os_v182_privacy
 
 check-v182: check-v182-privacy-dp-adaptive
 	@echo "check-v182: OK (σ-privacy kernel)"
+
+# --- v183 σ-Governance-Theory (TLA+ + liveness + safety + model check) --
+# Bounded model check over the same Kripke structure declared
+# in `specs/v183/governance_theory.tla`.  Fourteen properties:
+# seven axioms (σ ∈ [0,1]; emit / abstain / learn / forget /
+# steer / consensus preconditions and postconditions), three
+# liveness properties (progress_always, rsi_improves_one_domain,
+# heal_recovers), and four safety properties (no_silent_failure,
+# no_unchecked_output, no_private_leak, no_regression_
+# propagates).  The C checker enumerates each property's bounded
+# domain exhaustively; counterexamples count as failures.  Total
+# visited states ≥ 10^5.  v183.1 re-runs TLC directly against
+# the mirrored TLA+ spec, archives the proof on Zenodo under
+# `docs/papers/sigma_governance_formal.md`.
+V183_INC  = -Isrc/v183
+V183_SRCS = src/v183/governance.c
+
+creation_os_v183_governance: $(V183_SRCS) src/v183/main.c
+	$(CC) $(CFLAGS) $(V183_INC) -o $@ \
+	    $(V183_SRCS) src/v183/main.c $(LDFLAGS)
+
+check-v183-governance-tlc-pass: creation_os_v183_governance
+	@bash benchmarks/v183/check_v183_governance_tlc_pass.sh
+	@echo "check-v183-governance-tlc-pass: OK (7 axioms + 3 liveness + 4 safety)"
+
+check-v183: check-v183-governance-tlc-pass
+	@echo "check-v183: OK (σ-governance-theory kernel)"
+
+check-v179-v183: check-v179 check-v180 check-v181 check-v182 check-v183
+	@echo "check-v179-v183: OK (interpret + steer + audit + privacy + governance)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
