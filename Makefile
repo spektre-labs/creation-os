@@ -403,7 +403,12 @@ merge-gate:
 	@$(MAKE) check-v196
 	@$(MAKE) check-v197
 	@$(MAKE) check-v198
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral)"
+	@$(MAKE) check-v199
+	@$(MAKE) check-v200
+	@$(MAKE) check-v201
+	@$(MAKE) check-v202
+	@$(MAKE) check-v203
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4650,6 +4655,35 @@ check-v202-culture-translation-preserve: creation_os_v202_culture
 
 check-v202: check-v202-culture-translation-preserve
 	@echo "check-v202: OK (σ-culture kernel)"
+
+# --- v203 σ-Civilization (institution registry + K_eff
+# collapse + continuity + public-good ledger + SCSL) ---
+# Six institutions of three licence classes
+# (SCSL / CLOSED / PRIVATE) produce 12-tick σ trajectories.
+# A 4-tick window over K_crit=0.60 marks a collapse; four
+# consecutive ticks below K_crit mark a recovery.
+# Continuity score strictly orders stable > recovered >
+# permanently-collapsed.  Inter-layer contradiction queries
+# (v199 verdict vs v202 profile practice) escalate to
+# REVIEW when they disagree.  SCSL public-good ratio
+# strictly exceeds CLOSED.  FNV-1a hash chain audits the
+# contradiction log.
+V203_INC  = -Isrc/v203
+V203_SRCS = src/v203/civilization.c
+
+creation_os_v203_civilization: $(V203_SRCS) src/v203/main.c
+	$(CC) $(CFLAGS) $(V203_INC) -o $@ \
+	    $(V203_SRCS) src/v203/main.c $(LDFLAGS)
+
+check-v203-civilization-collapse-detect: creation_os_v203_civilization
+	@bash benchmarks/v203/check_v203_civilization_collapse_detect.sh
+	@echo "check-v203-civilization-collapse-detect: OK (collapse + continuity + SCSL)"
+
+check-v203: check-v203-civilization-collapse-detect
+	@echo "check-v203: OK (σ-civilization kernel)"
+
+check-v199-v203: check-v199 check-v200 check-v201 check-v202 check-v203
+	@echo "check-v199-v203: OK (law + market + diplomacy + culture + civilization)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
