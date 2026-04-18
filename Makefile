@@ -5255,6 +5255,26 @@ check-v230-fork-integrity-verify: creation_os_v230_fork
 check-v230: check-v230-fork-integrity-verify
 	@echo "check-v230: OK (σ-fork kernel)"
 
+# --- v231 σ-Immortal (continuous backup + snapshot + brain transplant) ---
+# 10-step trajectory, incremental deltas (≤ 8 bits
+# per step) + initial full snap; incremental_bits <
+# full_per_step_bits · N_STEPS; σ_continuity = 0 on
+# replay; brain transplant copies skills intact to a
+# new identity.
+V231_INC  = -Isrc/v231
+V231_SRCS = src/v231/immortal.c
+
+creation_os_v231_immortal: $(V231_SRCS) src/v231/main.c
+	$(CC) $(CFLAGS) $(V231_INC) -o $@ \
+	    $(V231_SRCS) src/v231/main.c $(LDFLAGS)
+
+check-v231-immortal-restore-continuity: creation_os_v231_immortal
+	@bash benchmarks/v231/check_v231_immortal_restore_continuity.sh
+	@echo "check-v231-immortal-restore-continuity: OK (delta backup + 0-loss restore + transplant)"
+
+check-v231: check-v231-immortal-restore-continuity
+	@echo "check-v231: OK (σ-immortal kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
