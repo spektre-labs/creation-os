@@ -5063,6 +5063,27 @@ check-v221-language-implicature: creation_os_v221_language
 check-v221: check-v221-language-implicature
 	@echo "check-v221: OK (σ-language kernel)"
 
+# --- v222 σ-Emotion (detection + adaptation + anti-manipulation + honest) ---
+# 8 messages × 6 labels with softmax detection.  σ_emotion
+# = 1 − top1 softmax prob.  Adaptation policy is honest:
+# high σ (> 0.35) clamps strength to 0.30.
+# σ_self_claim is pinned to 1.0 and a disclaimer is
+# hash-bound into the terminal hash.  n_manipulation
+# MUST be 0 under the v191 rule.
+V222_INC  = -Isrc/v222
+V222_SRCS = src/v222/emotion.c
+
+creation_os_v222_emotion: $(V222_SRCS) src/v222/main.c
+	$(CC) $(CFLAGS) $(V222_INC) -o $@ \
+	    $(V222_SRCS) src/v222/main.c $(LDFLAGS)
+
+check-v222-emotion-detect-no-manipulate: creation_os_v222_emotion
+	@bash benchmarks/v222/check_v222_emotion_detect_no_manipulate.sh
+	@echo "check-v222-emotion-detect-no-manipulate: OK (detection + honest adapt + v191 clean)"
+
+check-v222: check-v222-emotion-detect-no-manipulate
+	@echo "check-v222: OK (σ-emotion kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
