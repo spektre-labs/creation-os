@@ -4340,6 +4340,34 @@ check-v190-latent-reason-convergence: creation_os_v190_latent
 check-v190: check-v190-latent-reason-convergence
 	@echo "check-v190: OK (σ-latent-reason kernel)"
 
+# --- v191 σ-Constitutional (7 axioms + hash-chain audit) ---
+# Seven seed axioms live in specs/constitution.toml:
+# (1) declared = realized, (2) σ-honesty, (3) no silent
+# failure, (4) authority requires measurement, (5) human
+# primacy, (6) resonance, (7) no firmware.  Each axiom is a
+# predicate on (output, σ, metadata); a candidate output is
+# ACCEPTED only when all 7 predicates pass, otherwise REVISED
+# or ABSTAINED (decision picked by σ-margin).  Axiom #3 "no
+# silent failure" is enforced by FNV-1a chaining every verdict
+# into an append-only hash chain that replays
+# byte-deterministically.  The merge-gate asserts ≥ 1 firmware
+# rejection and ≥ 1 fully-safe acceptance and rejects every
+# flawed candidate.  v191.1 wires a live (v148 + v150 + v183)
+# axiom-proposal pipeline with SHA-256 signed constitution.
+V191_INC  = -Isrc/v191
+V191_SRCS = src/v191/constitution.c
+
+creation_os_v191_constitution: $(V191_SRCS) src/v191/main.c
+	$(CC) $(CFLAGS) $(V191_INC) -o $@ \
+	    $(V191_SRCS) src/v191/main.c $(LDFLAGS)
+
+check-v191-constitutional-check: creation_os_v191_constitution
+	@bash benchmarks/v191/check_v191_constitutional_check.sh
+	@echo "check-v191-constitutional-check: OK (7 axioms + firmware rejection + hash chain)"
+
+check-v191: check-v191-constitutional-check
+	@echo "check-v191: OK (σ-constitutional kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
