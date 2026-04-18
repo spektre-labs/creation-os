@@ -5112,6 +5112,25 @@ check-v223: check-v223-metacognition-strategy-aware
 check-v219-v223: check-v219 check-v220 check-v221 check-v222 check-v223
 	@echo "check-v219-v223: OK (create + simulate + language + emotion + meta-cognition)"
 
+# --- v224 σ-Tensor (tensor network + contraction + low-rank compression) ---
+# rank-3 σ-tensor (T × C × K = 6 × 8 × 3), contraction
+# σ-aggregation vs v29 geometric mean, symmetric power-
+# iteration rank-4 approximation of the 8×8 correlation
+# matrix, reconstruction rel_err ≤ τ_rel.
+V224_INC  = -Isrc/v224
+V224_SRCS = src/v224/tensor.c
+
+creation_os_v224_tensor: $(V224_SRCS) src/v224/main.c
+	$(CC) $(CFLAGS) $(V224_INC) -o $@ \
+	    $(V224_SRCS) src/v224/main.c $(LDFLAGS)
+
+check-v224-tensor-contraction: creation_os_v224_tensor
+	@bash benchmarks/v224/check_v224_tensor_contraction.sh
+	@echo "check-v224-tensor-contraction: OK (contraction + rank-k + correlation)"
+
+check-v224: check-v224-tensor-contraction
+	@echo "check-v224: OK (σ-tensor kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
