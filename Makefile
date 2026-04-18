@@ -5131,6 +5131,26 @@ check-v224-tensor-contraction: creation_os_v224_tensor
 check-v224: check-v224-tensor-contraction
 	@echo "check-v224: OK (σ-tensor kernel)"
 
+# --- v225 σ-Fractal (hierarchical σ + scale invariance + K(K)=K) ---
+# Binary tree, 5 levels, 31 nodes.  Aggregator A = mean.
+# σ_parent = mean(σ_children) by construction; cross-
+# scale incoherence detector against a planted declared
+# mismatch; holographic K(K)=K identity at every
+# internal node.
+V225_INC  = -Isrc/v225
+V225_SRCS = src/v225/fractal.c
+
+creation_os_v225_fractal: $(V225_SRCS) src/v225/main.c
+	$(CC) $(CFLAGS) $(V225_INC) -o $@ \
+	    $(V225_SRCS) src/v225/main.c $(LDFLAGS)
+
+check-v225-fractal-cross-scale: creation_os_v225_fractal
+	@bash benchmarks/v225/check_v225_fractal_cross_scale.sh
+	@echo "check-v225-fractal-cross-scale: OK (scale-invariance + cross-scale + K(K)=K)"
+
+check-v225: check-v225-fractal-cross-scale
+	@echo "check-v225: OK (σ-fractal kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
