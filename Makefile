@@ -3662,6 +3662,30 @@ check-v165-edge-rpi5-smoke: creation_os_v165_edge
 check-v165: check-v165-edge-rpi5-smoke
 	@echo "check-v165: OK (σ-edge kernel)"
 
+# --- v166 σ-Stream (WebSocket + per-token σ + interrupt-on-sigma) -------
+# Real-time streaming model.  Prompt is tokenized, per-token σ is
+# generated as an 8-channel vector (SplitMix64-keyed by
+# (seed, token_index, channel) + a slow sine drift), σ_product =
+# geomean(channels), and the stream stops itself the moment
+# σ_product > tau_interrupt.  The closing summary frame declares
+# whether the stream completed or was interrupted and at which
+# token.  Voice hint: audible_delay_ms = 40 + 400·σ — the model's
+# voice literally slows down when it gets uncertain (v127 hook).
+# v166.1 plugs an actual ws:// server and a real tokenizer.
+V166_INC  = -Isrc/v166
+V166_SRCS = src/v166/stream.c
+
+creation_os_v166_stream: $(V166_SRCS) src/v166/main.c
+	$(CC) $(CFLAGS) $(V166_INC) -o $@ \
+	    $(V166_SRCS) src/v166/main.c $(LDFLAGS)
+
+check-v166-stream-websocket: creation_os_v166_stream
+	@bash benchmarks/v166/check_v166_stream_websocket.sh
+	@echo "check-v166-stream-websocket: OK (NDJSON + per-token σ + interrupt)"
+
+check-v166: check-v166-stream-websocket
+	@echo "check-v166: OK (σ-stream kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
