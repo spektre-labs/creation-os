@@ -2710,6 +2710,25 @@ check-v120-distill-smoke: creation_os_v120_distill
 check-v120: check-v120-distill-smoke
 	@echo "check-v120: OK (σ-distill selector layer)"
 
+# --- v121 σ-Planning (HTN + MCTS backtrack on σ > τ_step) ---
+# Pure-C multi-step planner: HTN decomposition + lowest-σ branch
+# selection + bounded MCTS-style replan on any step whose geometric-
+# mean σ exceeds τ_step.  Emits /v1/plan-shaped JSON.  Real tool
+# backends (v112/v113/v114) are wired in v121.1.
+V121_INC            = -Isrc/v121
+V121_PLANNING_SRCS  = src/v121/planning.c
+
+creation_os_v121_planning: $(V121_PLANNING_SRCS) src/v121/main.c
+	$(CC) $(CFLAGS) $(V121_INC) -o $@ \
+	    $(V121_PLANNING_SRCS) src/v121/main.c $(LDFLAGS)
+
+check-v121-planning-loop: creation_os_v121_planning
+	@bash benchmarks/v121/check_v121_planning_loop.sh
+	@echo "check-v121-planning-loop: OK (HTN/MCTS + /v1/plan JSON contract)"
+
+check-v121: check-v121-planning-loop
+	@echo "check-v121: OK (σ-planning)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
