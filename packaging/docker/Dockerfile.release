@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+#
+# v155 σ-Publish — release Dockerfile for `docker pull spektrelabs/creation-os`.
+#
+# Build:
+#   docker build -f packaging/docker/Dockerfile.release \
+#     -t spektrelabs/creation-os:v1.0.0 .
+#
+# Run:
+#   docker run --rm -p 8080:8080 spektrelabs/creation-os:v1.0.0
+#
+# The image ships the portable kernel + the v106 σ-server + the cos
+# CLI. It does NOT ship weights: set [model].gguf_path in the config
+# or mount a weights volume at /opt/creation-os/models.
+#
+# v155.1 extends this image with a default BitNet-b1.58-2B GGUF
+# pre-baked + a multi-arch manifest (linux/amd64 + linux/arm64).
+
+FROM debian:bookworm-slim AS build
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        build-essential ca-certificates make git && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /src
+COPY . /src
+RUN make cos standalone standalone-v106 && \
+    make check && \
+    strip cos creation_os creation_os_server || true
+
+FROM debian:bookworm-slim
+LABEL org.opencontainers.image.title="Creation OS" \
+      org.opencontainers.image.description="Local OpenAI-compatible runtime with σ-governance" \
+      org.opencontainers.image.source="https://github.com/spektre-labs/creation-os" \
+      org.opencontainers.image.licenses="LicenseRef-SCSL-1.0 OR AGPL-3.0-only" \
+      org.opencontainers.image.vendor="Spektre Labs"
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends ca-certificates libstdc++6 libgomp1 && \
+    rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/creation-os
+COPY --from=build /src/cos                /usr/local/bin/cos
+COPY --from=build /src/creation_os        /usr/local/bin/creation_os
+COPY --from=build /src/creation_os_server /usr/local/bin/creation_os_server
+COPY --from=build /src/web                /opt/creation-os/web
+COPY --from=build /src/docs/AGI_ARCHITECTURE.md  /opt/creation-os/AGI_ARCHITECTURE.md
+COPY --from=build /src/README.md          /opt/creation-os/README.md
+EXPOSE 8080
+ENV COS_HOME=/opt/creation-os
+CMD ["creation_os_server", "--host", "0.0.0.0", "--port", "8080"]

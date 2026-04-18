@@ -220,6 +220,27 @@ on every token**:
     rejects both firmware identity ("I am Meta AI") and empty
     identity ("I am just a text generator") — every "I do not know"
     is σ-grounded, never performed.
+17. **Creation OS v1.0 — release (v154–v158)** — the gate-complete,
+    documentation-complete v1.0.0 release surface: a **3-scenario
+    showcase orchestrator** (v154) that chains v118/v152/v135/
+    v111/v150/v140/v153/v115 for *research*, v151/v113/v147/v119/
+    v124/v145 for *coder*, and v128/v129/v150/v130 for *collab* with
+    a per-stage σ, a geomean σ_product, and a σ_abstain gate you
+    can run start-to-finish in one command; a **5-surface publish
+    matrix** (v155) — PyPI + Homebrew + Docker + Hugging Face + npm
+    — each with an offline stdlib-only validator so manifests never
+    silently drift (`make check-v155`); a **single unifying paper**
+    at [`docs/papers/creation_os_v1.md`](docs/papers/creation_os_v1.md)
+    (v156) whose 12 sections + 1200-word floor + six required
+    back-references are enforced by `make check-v156`; a **community
+    gate** (v157) canonizing the BDFL model, the 1 = 1 invariant,
+    and seven falsifiable merge requirements in `GOVERNANCE.md` +
+    `.github/ISSUE_TEMPLATE/` + `docs/GOOD_FIRST_ISSUES.md`; and a
+    **release checklist** at [`docs/RELEASE_v1_0.md`](docs/RELEASE_v1_0.md)
+    (v158) whose A+B+C engineering / documentation / packaging
+    items are `[x]`-ticked in-tree while its D+E release-day +
+    communication items are enumerated-but-*never*-ticked in-tree
+    until the BDFL actually performs the action.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -452,6 +473,27 @@ SFT + Hugging Face adapter for v152, v106 /v1/identity + v108
 land when their external counterparts are available, matching
 the discipline established in v123 / v134–v138 / v139–v143 /
 v144–v148.
+
+### Creation OS v1.0 — release (v154–v158)
+
+The v1.0.0 release surface — **gate-complete, documentation-
+complete, scope-locked.** Five kernels whose job is not to add a
+new σ surface but to ship the existing 153-kernel stack into the
+world and make every claim falsifiable before it leaves the tree.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v154**](docs/v154/README.md) σ-Showcase | Three end-to-end demo pipelines (`--scenario research / coder / collab`) chaining the headline kernel stack per scenario — research: v118 → v152 → v135 → v111.2 → v150 → v140 → v153 → v115 (8 stages); coder: v151 → v113 → v147 → v119 → v124 → v145 (6 stages); collab: v128 → v129 → v150 → v130 (4 stages). σ is chained forward (`sigma_in[i] == sigma_out[i-1]`) and the pipeline refuses to emit when any stage σ or σ_product exceeds τ_abstain. | The first Creation OS surface whose output *is* the composition diagram. σ is the visible glue: a reader runs `creation_os_v154_showcase --demo-all` and sees the per-kernel σ, the geomean, and the gate fire or not. v154.1 wires live cross-kernel calls so every stage σ is a *real* σ from v118/v152/…/v130 rather than synthetic. |
+| [**v155**](docs/v155/README.md) σ-Publish | 5-surface packaging matrix — PyPI (`python/pyproject.toml` + `class COS`), Homebrew (`packaging/brew/creation-os.rb`), Docker (`packaging/docker/Dockerfile.release` + top-level `Dockerfile`), Hugging Face (3 model cards: `creation-os-benchmark`, `creation-os-corpus-qa`, `bitnet-2b-sigma-lora`), npm (`packaging/npm/package.json` + shebang launcher). An offline stdlib-only validator (`scripts/v155_publish_check.py`) asserts every manifest parses, carries the required metadata, and cross-links every back-reference. | σ-by-contract on packaging. Any PR that bumps one manifest without the others fails `make check-v155` offline — no network, no `twine`, no `brew`, no `docker`, no `hf`, no `npm` needed. v155.1 is the live upload, gated on v155.0 passing first. |
+| [**v156**](docs/v156/README.md) σ-Paper | Single unifying paper at [`docs/papers/creation_os_v1.md`](docs/papers/creation_os_v1.md) — 2000+ words, 12 headings (Abstract + 11 numbered sections), six required back-references (repo URL, `benchmarks/v111`, the `@misc{creation_os_v1}` bibtex key, `CC-BY-4.0`, `SCSL-1.0`, `BitNet-b1.58`). Structure-validator (`scripts/v156_paper_check.py`) enforces word-floor and heading set on every CI build. | The paper replaces the ~ 80 per-kernel Zenodo notes with one readable document. Every quantitative claim in it reduces to a `make` target (v111.1 Bonferroni numbers, v152 46.32 % σ drop, 16 416 185 PASS / 0 FAIL receipt). v156.1 is arXiv + Zenodo submission with the resulting DOI back-linked into `CITATION.cff`. |
+| [**v157**](docs/v157/README.md) σ-Community | Contribution infrastructure: [`GOVERNANCE.md`](GOVERNANCE.md) (BDFL role + 7 falsifiable merge requirements + the `1 = 1` invariant), three new `.github/ISSUE_TEMPLATE/` entries (`feature_request`, `kernel_proposal`, `benchmark_submission`), and [`docs/GOOD_FIRST_ISSUES.md`](docs/GOOD_FIRST_ISSUES.md) with seven scope-contained tickets. A coreutils-only linter (`scripts/v157_contributing_lint.sh`) asserts every required file is present and every template prompts for the σ-contract + merge-gate + v0/v1 split. | σ discipline applies to the contribution flow itself: a PR that deletes the `1 = 1` invariant from `GOVERNANCE.md`, or that opens a feature-request without a σ-contract section, fails `make check-v157` before it can be merged. v157.1 activates GitHub Discussions (5 categories). |
+| [**v158**](docs/v158/README.md) σ-v1.0 | Canonical release checklist at [`docs/RELEASE_v1_0.md`](docs/RELEASE_v1_0.md) — 18 engineering/documentation/packaging items (`A1..A7, B1..B6, C1..C5`) all `[x]`-ticked in-tree; 16 release-day + communication items (`D1..D10, E1..E6`) enumerated but NOT ticked until the BDFL performs the action. A new top CHANGELOG.md section `v1.0.0 — Creation OS v153 release` describes what is in / NOT in v1.0.0 and the upgrade path. | `make check-v158` parses `RELEASE_v1_0.md` and fails if anyone pre-ticks a BDFL-driven item in-tree. The repo is therefore *honest* about release state at all times: if the r/LocalLLaMA box is still `[ ]`, the thread has not been posted. |
+
+Every v154–v158 merge-gate check is offline, stdlib-only, and
+deterministic. The release itself — `git tag v1.0.0`, `twine
+upload`, `docker push`, `hf upload`, `npm publish`, arXiv + Zenodo
+submission, and the five announcement surfaces — is v158.1, gated
+on v158.0 being green first.
 
 ### AGI architecture in one picture
 
