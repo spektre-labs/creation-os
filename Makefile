@@ -322,7 +322,8 @@ merge-gate:
 	@$(MAKE) check-v102
 	@$(MAKE) check-v103
 	@$(MAKE) check-v104
-	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103/v104 bridge/eval/τ-sweep/operator-search)"
+	@$(MAKE) check-v106
+	@echo "merge-gate: OK (Creation OS portable + v6..v29 self-tests + v101/v102/v103/v104/v106 bridge/eval/τ-sweep/operator-search/σ-server)"
 
 # Reviewer gate: what an external critic should be able to verify quickly.
 reviewer:
@@ -2394,6 +2395,38 @@ bench-v104:
 	    --results benchmarks/v104/n5000_results
 	@.venv-bitnet/bin/python benchmarks/v104/hybrid_sweep.py \
 	    --results benchmarks/v104/n5000_results --second sigma_max_token
+
+# --- v106 σ-Server ------------------------------------------------
+# OpenAI-compatible HTTP layer around the v101 σ-bridge.
+# `standalone-v106` builds in stub mode (merge-gate safe, no GGUF
+# required).  `check-v106` runs a zero-network self-test that parses
+# a synthetic JSON body and verifies the JSON helpers + config
+# defaults.  `bench-v106` starts the server on a free port and runs
+# the curl-based smoke test in benchmarks/v106/ against /health and
+# /v1/models.
+V106_COMMON_SRCS = src/v106/server.c src/v106/config.c src/v106/json_helpers.c src/v106/main.c
+V106_INC         = -Isrc/v101 -Isrc/v106
+
+standalone-v106: $(V106_COMMON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
+	$(CC) $(CFLAGS) $(V106_INC) -o creation_os_server \
+	    $(V106_COMMON_SRCS) \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
+	    $(LDFLAGS)
+
+standalone-v106-real: $(V106_COMMON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c
+	$(CC) $(CFLAGS) -DCOS_V101_BITNET_REAL=1 $(V106_INC) $(V101_LLAMA_INC) \
+	    -o creation_os_server \
+	    $(V106_COMMON_SRCS) \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c \
+	    $(V101_LLAMA_LIB) $(V101_REAL_RPATH_MAC) $(LDFLAGS)
+
+check-v106: standalone-v106
+	./creation_os_server --self-test
+	@bash benchmarks/v106/check_v106.sh
+	@echo "check-v106: OK (v106 σ-Server — config + JSON helpers + loopback curl)"
+
+bench-v106: standalone-v106
+	@bash benchmarks/v106/bench_v106.sh
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

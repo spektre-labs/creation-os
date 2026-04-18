@@ -440,3 +440,7 @@ creation_os_v101
 creation_os_v101_hardened
 creation_os_v101_asan
 creation_os_v101_ubsan
+creation_os_server
+creation_os_server_hardened
+creation_os_server_asan
+creation_os_server_ubsan

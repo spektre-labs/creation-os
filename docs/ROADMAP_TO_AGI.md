@@ -827,19 +827,23 @@ If only ten PRs were allowed before the next release, rank:
     production track (v106–v110) is ordered strictly to ship a
     usable local LLM with σ-governance before reopening the
     architecture surgery.
-0g. **v106 σ-Server (next)** — OpenAI-compatible HTTP layer around
-    the existing v101 bridge.  `POST /v1/chat/completions`,
-    `/v1/completions`, `/v1/models`, plus Creation-OS-specific
-    `GET /v1/sigma-profile` and `GET /health`.  SSE streaming for
-    `chat.completions.stream=true` so Cursor / Continue work
-    unmodified.  Config via `~/.creation-os/config.toml`; σ
-    aggregator selectable per request (falls back to server
-    default = `product`).  No BitNet specificity at this layer; the
-    model path is a CLI argument and the σ-math is
-    logit-distribution-only.  The abstention threshold τ, the
-    aggregator, and the streaming sigma-profile are all visible to
-    the HTTP client — the point of v106 is to make σ-governance
-    a first-class citizen of the OpenAI protocol surface.
+0g. **v106 σ-Server — done.** OpenAI-compatible HTTP layer around
+    the existing v101 bridge.  Surfaces: `GET /health`,
+    `GET /v1/models`, `GET /v1/sigma-profile`, `POST /v1/chat/
+    completions` (JSON or SSE), `POST /v1/completions`, static
+    serving for `/`.  SSE emits one content delta chunk plus a
+    σ-annotated terminator chunk plus `[DONE]` — valid minimal
+    OpenAI streaming framing that Cursor / Continue accept.
+    Every completion carries a `creation_os` block with
+    `sigma`, `sigma_mean`, `sigma_product`, `sigma_profile[8]`
+    and `abstained`.  Config lives in
+    `~/.creation-os/config.toml` (tiny TOML-ish loader, zero
+    deps).  `make check-v106` is the directive's acceptance test
+    for PÄÄTÖS-PISTE v106 (*"toimiiko curl-testi loopback:lla?"*):
+    9 curl checks against the stub-mode server pass on every
+    host.  `make bench-v106` is the real-model follow-up once a
+    GGUF is present.  Full surface and rationale in
+    `docs/v106/THE_SIGMA_SERVER.md`.
 0h. **v107 σ-Installer** — Homebrew formula + `curl | sh` script +
     Docker image from one universal-binary CI artefact.  No source
     build required on target machines.  Homebrew tap:
