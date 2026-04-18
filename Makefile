@@ -389,7 +389,8 @@ merge-gate:
 	@$(MAKE) check-v182
 	@$(MAKE) check-v183
 	@$(MAKE) check-v184
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184 VLA)"
+	@$(MAKE) check-v185
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v185 VLA/fusion)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4186,6 +4187,28 @@ check-v184-vla-grounding-accuracy: creation_os_v184_vla
 
 check-v184: check-v184-vla-grounding-accuracy
 	@echo "check-v184: OK (σ-VLA kernel)"
+
+# --- v185 σ-Multimodal-Fusion (N-modal registry + σ-weighted) ----------
+# Any number of modalities register with (encoder, native_dim,
+# σ_channel); v185 projects each to a common D-dim, weights
+# them by 1/(1+σ_i), computes cross-modal σ as mean cosine
+# distance, and exposes σ_fused as noisy-OR.  Dynamic drop:
+# σ_i > τ_drop ⇒ modality removed from the fusion for that
+# sample, enabling graceful degradation.  v185.1 ships real
+# SigLIP + Whisper + BitNet + policy-head encoders.
+V185_INC  = -Isrc/v185
+V185_SRCS = src/v185/fusion.c
+
+creation_os_v185_fusion: $(V185_SRCS) src/v185/main.c
+	$(CC) $(CFLAGS) $(V185_INC) -o $@ \
+	    $(V185_SRCS) src/v185/main.c $(LDFLAGS)
+
+check-v185-fusion-cross-modal-consistency: creation_os_v185_fusion
+	@bash benchmarks/v185/check_v185_fusion_cross_modal_consistency.sh
+	@echo "check-v185-fusion-cross-modal-consistency: OK (σ-separated conflict + dynamic drop)"
+
+check-v185: check-v185-fusion-cross-modal-consistency
+	@echo "check-v185: OK (σ-multimodal-fusion kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
