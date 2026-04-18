@@ -3845,6 +3845,36 @@ check-v172-narrative-resumption: creation_os_v172_narrative
 check-v172: check-v172-narrative-resumption
 	@echo "check-v172: OK (σ-narrative kernel)"
 
+# --- v173 σ-Teach (Socratic + curriculum + exercises + σ-honest) --------
+# Four canonical subtopics (HD vectors, σ-gating, KV cache,
+# v1.58-bit quantization).  Socratic pass ingests per-subtopic
+# learner correctness → σ_student (=1-p) → curriculum ordered
+# weakest-first; difficulty tracks σ_student in four tiers.
+# Teach cycle iterates the curriculum, emits ≤ 2 exercises
+# per subtopic with a closed-form σ-drop model, marks mastery
+# at σ_student ≤ τ_mastery, and ABSTAINS on the
+# `v1.58-bit quantization` subtopic because its baked
+# σ_teacher=0.75 is above τ_teacher=0.60 — a σ-honest teacher.
+# v173.1 wires BitNet for diagnostic generation and v132
+# persona for tone adaptation.
+V173_INC  = -Isrc/v173
+V173_SRCS = src/v173/teach.c
+
+creation_os_v173_teach: $(V173_SRCS) src/v173/main.c
+	$(CC) $(CFLAGS) $(V173_INC) -o $@ \
+	    $(V173_SRCS) src/v173/main.c $(LDFLAGS)
+
+check-v173-teach-socratic-cycle: creation_os_v173_teach
+	@bash benchmarks/v173/check_v173_teach_socratic_cycle.sh
+	@echo "check-v173-teach-socratic-cycle: OK (diag + curriculum + abstain + mastery)"
+
+check-v173: check-v173-teach-socratic-cycle
+	@echo "check-v173: OK (σ-teach kernel)"
+
+# Aggregate check-v169-v173
+check-v169-v173: check-v169 check-v170 check-v171 check-v172 check-v173
+	@echo "check-v169-v173: OK (ontology + transfer + collab + narrative + teach)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
