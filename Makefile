@@ -3000,6 +3000,28 @@ check-v136-evolve-cmaes-converge: creation_os_v136_evolve
 check-v136: check-v136-evolve-cmaes-converge
 	@echo "check-v136: OK (σ-evolve kernel)"
 
+# --- v137 σ-Compile (AOT specialisation of the σ-decision tree) ---
+# Emits a branchless per-profile C decision tree that $(CC) -O3
+# lowers to whatever IR the local toolchain uses (LLVM on clang,
+# GIMPLE/RTL on gcc — we don't hard-depend on either).  v137.0
+# ships the generator + an embedded example-compiled gate so the
+# merge-gate can run end-to-end from one binary; v137.1 adds a
+# `make compile-sigma` that generates, compiles, and dlopens a
+# fresh per-profile .so per run.
+V137_INC          = -Isrc/v137
+V137_COMPILE_SRCS = src/v137/compile.c
+
+creation_os_v137_compile: $(V137_COMPILE_SRCS) src/v137/main.c
+	$(CC) $(CFLAGS) -O3 $(V137_INC) -o $@ \
+	    $(V137_COMPILE_SRCS) src/v137/main.c $(LDFLAGS)
+
+check-v137-compile-llvm-smoke: creation_os_v137_compile
+	@bash benchmarks/v137/check_v137_compile_llvm_smoke.sh
+	@echo "check-v137-compile-llvm-smoke: OK (emit + $(CC) -O3 + latency)"
+
+check-v137: check-v137-compile-llvm-smoke
+	@echo "check-v137: OK (σ-compile kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
