@@ -2791,6 +2791,26 @@ check-v124-continual-learning: creation_os_v124_continual
 check-v124: check-v124-continual-learning
 	@echo "check-v124: OK (σ-continual policy)"
 
+# --- v125 σ-DPO (σ-derived preference optimization) ---
+# Pure-C σ-labeler, numerically-stable DPO loss kernel, and a σ-
+# distribution mode-collapse detector.  No weights, no MLX: the self-
+# test uses DPO's analytical limits (δ=0 → L=log 2, strong chosen →
+# L→0, strong rejected → L≈|δ|).  v125.1 stacks a real LoRA DPO
+# adapter on top of the v124 continual adapter via MLX.
+V125_INC       = -Isrc/v125
+V125_DPO_SRCS  = src/v125/dpo.c
+
+creation_os_v125_dpo: $(V125_DPO_SRCS) src/v125/main.c
+	$(CC) $(CFLAGS) $(V125_INC) -o $@ \
+	    $(V125_DPO_SRCS) src/v125/main.c $(LDFLAGS)
+
+check-v125-dpo-smoke: creation_os_v125_dpo
+	@bash benchmarks/v125/check_v125_dpo_smoke.sh
+	@echo "check-v125-dpo-smoke: OK (DPO loss + σ-labeler + mode-collapse)"
+
+check-v125: check-v125-dpo-smoke
+	@echo "check-v125: OK (σ-DPO kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
