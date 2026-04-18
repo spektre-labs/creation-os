@@ -377,6 +377,44 @@ on every token**:
     decision) and folded into a merkle root that fails
     verification under any tamper — **resonance, not
     consensus**.
+22. **Transparent, steerable, auditable, private, proven
+    (v179–v183)** — the explainability-and-governance layer:
+    a **σ-interpret** (v179) kernel that runs an SAE over
+    layer-15 activations, keeps the features whose `|Pearson r|
+    ≥ 0.60` against `σ_product`, labels the eight
+    top-correlated ones with named uncertainty modes
+    (`uncertainty-about-dates`, `numerical-ambiguity`,
+    `low-training-coverage`, `rare-token-fallback`, …) and
+    emits a human-readable σ-circuit trace (head + MLP + token
+    + `n_effective` collapse) — the **first EU-AI-Act-grade
+    mechanistic explanation** of a local runtime's σ-signal;
+    a **σ-steer** (v180) kernel that applies three σ-gated
+    unit-norm direction vectors (`truthful`, `no_firmware`,
+    `expert`) to the hidden state at runtime, proving a
+    `≥ 10 %` relative σ drop on high-σ inputs, a `≥ 25 %`
+    firmware-token-rate drop, and a strictly monotone expert
+    ladder — while leaving low-σ inputs essentially untouched
+    (`|Δσ|_low ≤ 0.02`); a **σ-audit** (v181) kernel that
+    hash-chains 1 000 σ-decisions with SHA-256 canonical
+    hashes + keyed attestation (ed25519 in v181.1), passes two
+    tamper tests, detects a σ-anomaly at `≥ 30 %` relative
+    rise, and exports auditor-grade JSONL; a **σ-privacy**
+    (v182) kernel with plaintext-free row layout (only
+    SHA-256 hashes persist), public/private/ephemeral tiers,
+    σ-adaptive DP noise that is **Pareto-better than
+    fixed-ε** (utility wins on low-σ, privacy wins on
+    high-σ), and a working GDPR right-to-forget that shrinks
+    the row set without breaking invariants; and a
+    **σ-governance-theory** (v183) kernel that specifies the
+    σ-governance Kripke structure in TLA+
+    (`specs/v183/governance_theory.tla`) and ships a **bounded
+    C model-checker** that walks 14 properties — 7 axioms
+    (σ range, emit / abstain / learn / forget / steer /
+    consensus preconditions), 3 liveness properties
+    (progress, RSI improvement, heal), and 4 safety properties
+    (no silent failure, no unchecked output, no private leak,
+    no regression propagates) — across `≥ 10⁶` states with
+    **zero counterexamples**.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -744,6 +782,41 @@ and dreams, a real BitNet-2B → `models/v177/bitnet_1b_sigma_
 pruned.gguf` emission, and a live v128 mesh with signed
 ed25519 messages + streaming v72 merkle anchoring — are named
 in each kernel's doc page, but never claimed before they land.
+
+### Transparent · steerable · auditable · private · proven (v179–v183)
+
+The explainability-and-governance layer — the five kernels
+that let Creation OS **explain why σ rose, steer the model
+away from hallucination, record every decision in a
+tamper-evident log, enforce differential privacy with σ as
+the knob, and prove the whole governance model correct**.
+Every v0 merge-gate is offline, deterministic, and
+weights-frozen; v1 plugs in a real 2 560 → 8 192 SAE over
+BitNet-2B layer 15, live activation hooks through the v101
+specialist bridge with on-disk `models/v180/steer_*.bin`
+payloads, real ed25519 attestation signatures (libsodium),
+live v129 federated unlearn broadcasts, and a TLC run
+against the shipped `.tla` spec archived on Zenodo.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v179**](docs/v179/README.md) σ-Interpret | 64-sample / 24-feature / 8-head / 8-MLP fixture at synthetic layer 15; SAE decomposition keeping features with `|r| ≥ 0.60` against σ; σ-circuit trace (token + head + MLP + `n_effective` collapse); human-readable `--explain N` endpoint. | **σ is the target**: eight seeded monosemantic features carry named uncertainty modes (`uncertainty-about-dates`, `low-training-coverage`, `rare-token-fallback`, …) and the top-correlated feature has `r ≈ 0.82`. The merge-gate requires `≥ 5` correlated features and a non-empty mechanistic explanation mentioning the feature id, σ, and the n_effective collapse — the **first EU-AI-Act-compatible mechanistic σ-explanation**. |
+| [**v180**](docs/v180/README.md) σ-Steer | 48-sample / 64-dim fixture with three persisted unit-norm direction vectors (`truthful`, `no_firmware`, `expert`); single vector addition per layer. | **σ is the gate**: truthful steering fires only when `σ ≥ τ = 0.50`, so low-σ inputs are left untouched (`|Δσ|_low ≤ 0.02`). The merge-gate asserts `≥ 10 %` relative σ drop on the high-σ subset, `≥ 25 %` firmware-token-rate drop, and a strictly monotone expert ladder — representation surgery without retraining. |
+| [**v181**](docs/v181/README.md) σ-Audit | 1 000-entry SHA-256 hash-chained σ-decision log; canonical self-hash per entry; keyed attestation `sig` (ed25519 in v181.1); σ-anomaly detector on a rolling window; JSONL exporter. | Every entry carries σ_product + 8 σ-channels, decision, v179 explanation, v180 steering set. Tampering any byte of any entry or signature breaks the chain at the exact index. The merge-gate runs two tamper tests, a 1 000-line JSONL round-trip, and a σ-anomaly at `≥ 30 %` relative rise on an injected spike. |
+| [**v182**](docs/v182/README.md) σ-Privacy | 120-row / 4-session fixture with 3 privacy tiers (public / private / ephemeral); SHA-256 on ingest; σ-adaptive Gaussian noise (`std(σ) = base + k·σ`); session-level right-to-forget. | **σ-adaptive DP is Pareto-better than fixed-ε**: on the low-σ subset adaptive error is strictly lower (utility wins), and on the high-σ subset `ε_effective < fixed_ε` (privacy wins). The row layout has no plaintext field, so serialization cannot leak cleartext; `--forget 2026-04-18` shrinks the row set and preserves the invariant. |
+| [**v183**](docs/v183/README.md) σ-Governance-Theory | Bounded C model checker over the 14-property Kripke structure mirrored in `specs/v183/governance_theory.tla`; 7 axioms + 3 liveness + 4 safety. | **The whole governance model is proven correct on `≥ 10⁶` states**: σ ∈ [0,1] (A1), emit / abstain / learn / forget / steer / consensus postconditions (A2–A7), progress / RSI improvement / heal liveness (L1–L3), no silent failure / no unchecked output / no private leak / no regression propagates (S1–S4). Zero counterexamples; merge-gate aborts if any property fails. |
+
+Every v179–v183 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — a real 2 560 → 8 192 SAE
+over BitNet-2B layer 15 with the `GET /v1/explain/{id}`
+endpoint, real activation hooks + `models/v180/steer_*.bin`
+persisted steering vectors, ed25519 attestation + PDF
+compliance reports + auto v159 heal on anomaly, live v115
+memory + AES-GCM + v129 unlearn broadcast + zk right-to-forget
+verifier, and a TLC run against the shipped TLA+ spec with a
+Zenodo-archived formal paper (`docs/papers/sigma_governance_
+formal.md`) — are named in each kernel's doc page, but never
+claimed before they land.
 
 ### AGI architecture in one picture
 
