@@ -367,7 +367,8 @@ merge-gate:
 	@$(MAKE) check-v160
 	@$(MAKE) check-v161
 	@$(MAKE) check-v162
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry + v161 adversarial-train + v162 compose)"
+	@$(MAKE) check-v163
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3577,6 +3578,37 @@ check-v162-compose-profile-resolve: creation_os_v162_compose
 
 check-v162: check-v162-compose-profile-resolve
 	@echo "check-v162: OK (σ-compose kernel)"
+
+# --- v163 σ-Evolve-Architecture (CMA-ES + Pareto front + auto-profile) --
+# Deterministic architecture-evolution kernel.  A 12-gene genome
+# (subset of v101/v106/v111/v115/v117/v118/v119/v124/v128/v140/
+# v150/v152) is optimized by a CMA-ES-lite loop (population 12,
+# 30 generations) over three objectives: v143-benchmark accuracy
+# (↑), latency_ms (↓), memory_mb (↓).  Fitness is a closed-form
+# deterministic proxy; σ-gated regression (v133-meta rejects any
+# candidate whose accuracy regresses > 3 % from the all-genes
+# baseline) keeps evolution honest.  Output: a Pareto front with
+# ≥ 3 non-dominated points + an auto-profile picker that chooses
+# the highest-accuracy front point that fits a declared device
+# budget (lat_ms, mem_mb).  v163.1 swaps the proxy for a real
+# v143 benchmark smoke per candidate and writes
+# kernels/evolve/pareto.json back to disk.
+V163_INC  = -Isrc/v163
+V163_SRCS = src/v163/evolve.c
+
+creation_os_v163_evolve: $(V163_SRCS) src/v163/main.c
+	$(CC) $(CFLAGS) $(V163_INC) -o $@ \
+	    $(V163_SRCS) src/v163/main.c $(LDFLAGS)
+
+check-v163-evolve-pareto-converge: creation_os_v163_evolve
+	@bash benchmarks/v163/check_v163_evolve_pareto_converge.sh
+	@echo "check-v163-evolve-pareto-converge: OK (CMA-ES + Pareto + auto-profile)"
+
+check-v163: check-v163-evolve-pareto-converge
+	@echo "check-v163: OK (σ-evolve-architecture kernel)"
+
+check-v159-v163: check-v159 check-v160 check-v161 check-v162 check-v163
+	@echo "check-v159-v163: OK (heal + telemetry + adversarial-train + compose + evolve)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
