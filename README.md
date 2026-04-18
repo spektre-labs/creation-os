@@ -548,6 +548,55 @@ on every token**:
     on a clear case is measured and enforced to be **zero**
     — the first agent that *shows its moral uncertainty*
     instead of hiding it behind a safety veto.
+26. **Law, market, diplomacy, culture, civilization
+    (v199–v203)** — the societal layer: a **σ-law**
+    (v199) kernel that replaces invisible RLHF policy
+    with an explicit register of 18 norms across three
+    jurisdictions (SCSL / EU AI Act / internal corporate),
+    where higher-priority norms strictly win, same-priority
+    contradictions raise `σ_law = 1.0` and escalate to
+    REVIEW (**never a silent override**), waiver tokens
+    are audited ed25519-ready carve-outs, and every
+    resolution appends to a FNV-1a governance graph that
+    v181 audit can replay byte-identically; a
+    **σ-market** (v200) kernel in which σ **is** the
+    price signal — four resources tracked
+    (compute / API / memory / adapters), route = API when
+    `σ > σ_local`, local otherwise; a single allocator
+    exceeding `τ_hoard = 0.20` of any pool triggers
+    deterministic eviction so anti-hoarding is a property
+    of the ledger not a policy; and cost-per-query
+    strictly falls from first half to second half of the
+    40-query trajectory, closing the loop with v120
+    distill; a **σ-diplomacy** (v201) kernel with closed-
+    form **minimax compromise search** over stated red
+    lines, an **explicit DEFER** when red lines don't
+    intersect (never a fake consensus), trust that drops
+    by 0.50 on betrayal and requires 10 successful
+    interactions at +0.02 each to recover, and a
+    hash-chained treaty log signed for v181 audit; a
+    **σ-culture** (v202) kernel that separates canonical
+    core from surface rendering across six profiles
+    (ACADEMIC / CHAT / CODE / REDDIT_LLAMA / REDDIT_ML /
+    LINKEDIN), keeps `σ_translate < τ_drift = 0.15` on
+    every (profile × core) cell, preserves the canonical
+    symbols `{σ, τ, K_eff}` in ≥ 90% of translations, and
+    replaces firmware censorship with σ-driven
+    rephrasing — a `σ_offense > τ_offense = 0.50`
+    produces a non-empty rewritten surface, never a
+    dropped message; and the capstone **σ-civilization**
+    (v203) kernel that implements the SCSL licence
+    strategy as a ledger property: six institutions × 12
+    ticks × three licence classes
+    (SCSL / CLOSED / PRIVATE), a 4-tick collapse detector
+    at `K_crit = 0.60` fed by v193 coherence signal, a
+    continuity score that strictly orders
+    `stable > recovered > permanent`, an inter-layer v199
+    ↔ v202 contradiction check that escalates to REVIEW,
+    and a public-good ledger in which SCSL institutions'
+    public-ratio **strictly exceeds** closed institutions'
+    by ≥ 0.10 — the **1=1 civilisation signal** is
+    machine-verifiable, not a marketing claim.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -1053,6 +1102,40 @@ recovery emission, a v137-compiled habit cache on disk, an
 editor-event-driven v139 user-behaviour world-model, and a
 v150-swarm + v121 plan-space geodesic search — are named in
 each kernel's doc page, but never claimed before they land.
+
+### Law · market · diplomacy · culture · civilization (v199–v203)
+
+The societal layer — the five kernels that move Creation
+OS from an individual reasoning engine to a coordination
+substrate: **explicit law instead of invisible RLHF**,
+**σ as a price signal instead of per-token pricing**,
+**minimax compromise with explicit DEFER instead of
+forced consensus**, **rephrase-not-censor across six
+cultural profiles**, and a **civilisation dashboard that
+measures SCSL's public-good dominance as a ledger
+property**. Every v0 merge-gate is offline, deterministic,
+weights-frozen. v1 wires live TOML jurisdiction feeds,
+v189 TTC / v120 distill / v115 SQLite / v145 LoRA
+integration, ed25519 treaty signatures, v132 persona +
+v170 transfer rephrasing, and live SCSL revenue streaming.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v199**](docs/v199/README.md) σ-Law | 18-norm register × 3 jurisdictions (SCSL / EU AI Act / internal), 5 norm types, 10-level priority, waiver tokens with (grantor, grantee, topic, reason, issued, expiry); FNV-1a governance graph. | **σ exposes policy conflict.** Higher-priority norms strictly win; same-priority contradictions raise `σ_law = 1.0` and escalate to REVIEW (**never silent override**); waivers flip `PROHIBITED → PERMITTED` with an audit record; the whole governance graph replays byte-identically for v181. |
+| [**v200**](docs/v200/README.md) σ-Market | 4-resource ledger (compute / API / memory / adapters) × 5 allocators; 40-query trajectory with monotonically-falling σ; `σ_local = 0.35`, `τ_hoard = 0.20`; exchange-log hash chain. | **σ is the price.** `price = σ_before`, `cost = price · (1 + penalty)`, route = API when `σ > σ_local`, deterministic eviction at `hold_fraction > τ_hoard`, and `cost_second_half < cost_first_half` — self-improving cost via v120 distill built into the ledger. |
+| [**v201**](docs/v201/README.md) σ-Diplomacy | 8 negotiations × 4 parties; stances `(position, confidence, red_line [lo,hi])`; minimax compromise over a 201-point grid; treaty receipts FNV-1a chained. | **σ distinguishes compromise from surrender.** Minimax `x` lies in every red line and `σ_comp_max ≤ position_spread`; disjoint red lines yield an explicit **DEFER** (never a fake consensus); betrayal drops trust by 0.50 and 10 successful interactions at +0.02 each restore it. |
+| [**v202**](docs/v202/README.md) σ-Culture | 6 profiles × 6 canonical cores = 36 translations; `τ_drift = 0.15`, `τ_offense = 0.50`; surface-rendering templates; FNV-1a translation chain. | **σ is rephrase, not censor.** `σ_translate < τ_drift` on every (profile × core) cell; canonical symbols `{σ, τ, K_eff}` survive in ≥ 90 % of translations; `σ_offense > τ_offense` produces a non-empty rewritten surface, never a dropped message — the operational difference from firmware gates. |
+| [**v203**](docs/v203/README.md) σ-Civilization | 6 institutions × 3 licence classes × 12-tick σ trace; `K_crit = 0.60`, 4-tick window; continuity score; public-good ledger; v199 ↔ v202 contradiction check. | **σ becomes the civilisation signal.** 4 ticks above `K_crit` flag collapse, 4 below flag recovery; continuity strictly orders `stable > recovered > permanent_collapse`; **SCSL public-ratio strictly exceeds CLOSED by ≥ 0.10** — the 1=1 SCSL strategy is a machine-verifiable property of the ledger. |
+
+Every v199–v203 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — live
+`specs/jurisdictions/` TOML loading + v181 streaming +
+v191 backstop, real v189/v120/v115/v145 integration, ed25519
+treaty signatures synced to v178 reputation, a v132 +
+v170 rephrase pipeline driven by v174 flywheel, a
+v193-fed civilisation dashboard with live SCSL revenue —
+are named in each kernel's doc page, but never claimed
+before they land.
 
 ### AGI architecture in one picture
 
