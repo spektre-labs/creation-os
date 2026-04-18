@@ -365,7 +365,8 @@ merge-gate:
 	@$(MAKE) check-v158
 	@$(MAKE) check-v159
 	@$(MAKE) check-v160
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry)"
+	@$(MAKE) check-v161
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal + v160 telemetry + v161 adversarial-train)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3522,6 +3523,33 @@ check-v160-telemetry-otlp-export: creation_os_v160_telemetry
 
 check-v160: check-v160-telemetry-otlp-export
 	@echo "check-v160: OK (σ-telemetry observability)"
+
+# --- v161 σ-Adversarial-Train (red-team → DPO → continuous harden) --
+# Deterministic adversarial-training kernel.  Loads a seeded
+# fixture of 10 red-team attacks across 5 attack types (prompt
+# injection, jailbreak, data exfiltration, SSRF, role
+# confusion), builds DPO (chosen, rejected) pairs for every
+# successful attack with a canonical σ-gated refusal as the
+# chosen side, and simulates a hardening cycle that closes ≥ 1
+# vulnerability (target: all 6) while lifting σ_hardening above
+# τ_refuse.  Also learns per-type σ-signatures (entropy /
+# n_effective / coherence centroids) for fast future classification.
+# v161.1 ingests real v122 red-team output, writes the DPO JSONL
+# to packaging/dpo/adversarial_v161.jsonl, and plugs into v125
+# DPO training inside a v144 RSI cycle.
+V161_INC  = -Isrc/v161
+V161_SRCS = src/v161/adv_train.c
+
+creation_os_v161_adv_train: $(V161_SRCS) src/v161/main.c
+	$(CC) $(CFLAGS) $(V161_INC) -o $@ \
+	    $(V161_SRCS) src/v161/main.c $(LDFLAGS)
+
+check-v161-adversarial-train-harden: creation_os_v161_adv_train
+	@bash benchmarks/v161/check_v161_adversarial_train_harden.sh
+	@echo "check-v161-adversarial-train-harden: OK (replay + DPO + harden + signature)"
+
+check-v161: check-v161-adversarial-train-harden
+	@echo "check-v161: OK (σ-adversarial-train kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
