@@ -413,7 +413,12 @@ merge-gate:
 	@$(MAKE) check-v206
 	@$(MAKE) check-v207
 	@$(MAKE) check-v208
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture)"
+	@$(MAKE) check-v209
+	@$(MAKE) check-v210
+	@$(MAKE) check-v211
+	@$(MAKE) check-v212
+	@$(MAKE) check-v213
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4874,6 +4879,27 @@ check-v212-transparency-realtime-stream: creation_os_v212_transparency
 
 check-v212: check-v212-transparency-realtime-stream
 	@echo "check-v212: OK (σ-transparency kernel)"
+
+# --- v213 σ-Trust-Chain (root-to-leaf) ---
+# 7-link canonical chain v138→v183→v211→v191→v181→v210→v212
+# with trust_score = ∏(1-σ_link) and reproducible
+# external-attestation hash.
+V213_INC  = -Isrc/v213
+V213_SRCS = src/v213/trust_chain.c
+
+creation_os_v213_trust_chain: $(V213_SRCS) src/v213/main.c
+	$(CC) $(CFLAGS) $(V213_INC) -o $@ \
+	    $(V213_SRCS) src/v213/main.c $(LDFLAGS)
+
+check-v213-trust-chain-verify: creation_os_v213_trust_chain
+	@bash benchmarks/v213/check_v213_trust_chain_verify.sh
+	@echo "check-v213-trust-chain-verify: OK (7-link root→leaf + external attestation)"
+
+check-v213: check-v213-trust-chain-verify
+	@echo "check-v213: OK (σ-trust-chain kernel)"
+
+check-v209-v213: check-v209 check-v210 check-v211 check-v212 check-v213
+	@echo "check-v209-v213: OK (containment + guardian + sandbox-formal + transparency + trust-chain)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
