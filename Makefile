@@ -4101,6 +4101,35 @@ check-v181-audit-chain-verify: creation_os_v181_audit
 check-v181: check-v181-audit-chain-verify
 	@echo "check-v181: OK (σ-audit kernel)"
 
+# --- v182 σ-Privacy (input hashing + adaptive σ-DP + right to forget) ---
+# 120-row / 4-session fixture with three privacy tiers (public,
+# private, ephemeral).  Prompts and responses are SHA-256 hashed
+# at ingest — the row struct carries no plaintext field at all,
+# so serialization cannot leak clear text.  End-of-session purges
+# ephemeral rows.  DP is σ-adaptive: noise_std = base · (1 + k·σ).
+# On the low-σ subset adaptive noise is *smaller* than fixed-ε
+# baseline (utility wins) AND ε_effective_low < fixed_epsilon
+# (privacy budget spent wins).  High-σ rows get strictly larger
+# noise than low-σ rows.  `--forget <session>` is GDPR right-to-
+# erasure: memory rows removed, forgotten flag set on the
+# transient audit-style copy, row count drops, plaintext
+# invariant still holds.  v182.1 wires live v115 memory rows with
+# AES-GCM at rest, live v129 unlearn broadcast, and a zk-proof
+# verifier for external right-to-forget attestations.
+V182_INC  = -Isrc/v182 -Isrc/license_kernel
+V182_SRCS = src/v182/privacy.c src/license_kernel/license_attest.c
+
+creation_os_v182_privacy: $(V182_SRCS) src/v182/main.c
+	$(CC) $(CFLAGS) $(V182_INC) -o $@ \
+	    $(V182_SRCS) src/v182/main.c $(LDFLAGS)
+
+check-v182-privacy-dp-adaptive: creation_os_v182_privacy
+	@bash benchmarks/v182/check_v182_privacy_dp_adaptive.sh
+	@echo "check-v182-privacy-dp-adaptive: OK (σ-DP + forget + tiers)"
+
+check-v182: check-v182-privacy-dp-adaptive
+	@echo "check-v182: OK (σ-privacy kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
