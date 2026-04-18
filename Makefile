@@ -4685,6 +4685,26 @@ check-v203: check-v203-civilization-collapse-detect
 check-v199-v203: check-v199 check-v200 check-v201 check-v202 check-v203
 	@echo "check-v199-v203: OK (law + market + diplomacy + culture + civilization)"
 
+# --- v204 σ-Hypothesis (generation + grounding + novelty + impact) ---
+# N=10 candidate hypotheses ranked by
+# impact = σ_novelty × (1 − σ_hypothesis) with grounding
+# hard-zeroing when σ_grounding > τ_ground.  Top-3 go to
+# test queue (v205), rest to v115 memory.  Speculative
+# hypotheses are flagged, never pruned.
+V204_INC  = -Isrc/v204
+V204_SRCS = src/v204/hypothesis.c
+
+creation_os_v204_hypothesis: $(V204_SRCS) src/v204/main.c
+	$(CC) $(CFLAGS) $(V204_INC) -o $@ \
+	    $(V204_SRCS) src/v204/main.c $(LDFLAGS)
+
+check-v204-hypothesis-ranking: creation_os_v204_hypothesis
+	@bash benchmarks/v204/check_v204_hypothesis_ranking.sh
+	@echo "check-v204-hypothesis-ranking: OK (impact ranking + grounding + speculative)"
+
+check-v204: check-v204-hypothesis-ranking
+	@echo "check-v204: OK (σ-hypothesis kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
