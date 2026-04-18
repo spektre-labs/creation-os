@@ -331,7 +331,8 @@ merge-gate:
 	@$(MAKE) check-v109-multi-gguf
 	@$(MAKE) check-v112-v114
 	@$(MAKE) check-v115-v118
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision)"
+	@$(MAKE) check-v119-v123
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2746,6 +2747,29 @@ check-v122-red-team: creation_os_v122_red_team
 
 check-v122: check-v122-red-team
 	@echo "check-v122: OK (σ-red-team harness)"
+
+# --- v123 σ-Formal (offline TLA+ model check of σ-invariants) ---
+# Two-tier enforcement: pure-C structural validator always runs (no
+# Java), full TLC exhaustive model check runs when `tlc` or
+# `tla2tools.jar` is available; SKIPs cleanly otherwise.  Closes the
+# audit finding "v85 TLA-invariants are runtime only" by adding an
+# offline proof obligation every runner enforces structurally.
+V123_INC          = -Isrc/v123
+V123_FORMAL_SRCS  = src/v123/formal.c
+
+creation_os_v123_formal: $(V123_FORMAL_SRCS) src/v123/main.c
+	$(CC) $(CFLAGS) $(V123_INC) -o $@ \
+	    $(V123_FORMAL_SRCS) src/v123/main.c $(LDFLAGS)
+
+check-v123-formal-tlc: creation_os_v123_formal
+	@bash benchmarks/v123/check_v123_formal_tlc.sh
+	@echo "check-v123-formal-tlc: OK (σ-governance invariants — structural + TLC-if-present)"
+
+check-v123: check-v123-formal-tlc
+	@echo "check-v123: OK (σ-formal model-check)"
+
+check-v119-v123: check-v119 check-v120 check-v121 check-v122 check-v123
+	@echo "check-v119-v123: OK (speculative + distill + planning + red-team + formal)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
