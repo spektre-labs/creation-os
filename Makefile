@@ -5215,6 +5215,25 @@ check-v228: check-v228-unified-field-conservation
 check-v224-v228: check-v224 check-v225 check-v226 check-v227 check-v228
 	@echo "check-v224-v228: OK (tensor + fractal + attention + entropy + unified)"
 
+# --- v229 σ-Seed (minimum seed + growth protocol + deterministic regrowth) ---
+# 5-kernel seed {v29, v101, v106, v124, v148}; 13
+# candidates under σ_growth = 0.60·σ_raw + 0.40·σ_depth
+# with τ_growth = 0.40; same seed + same fixture ⇒ same
+# terminal_hash (1 = 1 regrowth).
+V229_INC  = -Isrc/v229
+V229_SRCS = src/v229/seed.c
+
+creation_os_v229_seed: $(V229_SRCS) src/v229/main.c
+	$(CC) $(CFLAGS) $(V229_INC) -o $@ \
+	    $(V229_SRCS) src/v229/main.c $(LDFLAGS)
+
+check-v229-seed-regrow-deterministic: creation_os_v229_seed
+	@bash benchmarks/v229/check_v229_seed_regrow_deterministic.sh
+	@echo "check-v229-seed-regrow-deterministic: OK (5-kernel seed + σ-gated growth + determinism)"
+
+check-v229: check-v229-seed-regrow-deterministic
+	@echo "check-v229: OK (σ-seed kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
