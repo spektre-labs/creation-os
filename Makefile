@@ -337,7 +337,8 @@ merge-gate:
 	@$(MAKE) check-v130
 	@$(MAKE) check-v131
 	@$(MAKE) check-v132
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated + v130 σ-codec + v131 σ-temporal + v132 σ-persona)"
+	@$(MAKE) check-v133
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2915,6 +2916,29 @@ check-v132-persona-adaptation: creation_os_v132_persona
 
 check-v132: check-v132-persona-adaptation
 	@echo "check-v132: OK (σ-persona kernel)"
+
+# --- v133 σ-Meta (self-benchmark + meta-σ + auto-diagnose) ---
+# System-level metacognition: weekly snapshots, OLS slope per week,
+# meta-σ (cv of σ_product), auto-diagnose from highest-σ channel,
+# deterministic self-benchmark runner.  v133.0 is pure policy;
+# v133.1 exposes the dashboard on v106 /v1/meta/health and wires
+# v122 red-team into the weekly smoke-set.
+V133_INC       = -Isrc/v133
+V133_META_SRCS = src/v133/meta.c
+
+creation_os_v133_meta: $(V133_META_SRCS) src/v133/main.c
+	$(CC) $(CFLAGS) $(V133_INC) -o $@ \
+	    $(V133_META_SRCS) src/v133/main.c $(LDFLAGS)
+
+check-v133-meta-self-benchmark: creation_os_v133_meta
+	@bash benchmarks/v133/check_v133_meta_self_benchmark.sh
+	@echo "check-v133-meta-self-benchmark: OK (slope + meta-σ + diagnose + bench)"
+
+check-v133: check-v133-meta-self-benchmark
+	@echo "check-v133: OK (σ-meta kernel)"
+
+check-v129-v133: check-v129 check-v130 check-v131 check-v132 check-v133
+	@echo "check-v129-v133: OK (collective intelligence stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
