@@ -388,7 +388,8 @@ merge-gate:
 	@$(MAKE) check-v181
 	@$(MAKE) check-v182
 	@$(MAKE) check-v183
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory)"
+	@$(MAKE) check-v184
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184 VLA)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4164,6 +4165,27 @@ check-v183: check-v183-governance-tlc-pass
 
 check-v179-v183: check-v179 check-v180 check-v181 check-v182 check-v183
 	@echo "check-v179-v183: OK (interpret + steer + audit + privacy + governance)"
+
+# --- v184 σ-VLA (dual-system vision-language-action, σ per stage) -------
+# System 2 (slow, accurate): SigLIP + BitNet plans; System 1
+# (fast, reactive): policy head executes.  v184.0 ships a
+# deterministic grounding fixture: 10 synthetic scenes × 5
+# candidates.  Merge-gate requires ≥ 8/10 correct grounding,
+# at least one ambiguous-scene abort, and σ-channel bounds.
+# v184.1 ships real Moondream + BitNet composite on RPi5.
+V184_INC  = -Isrc/v184
+V184_SRCS = src/v184/vla.c
+
+creation_os_v184_vla: $(V184_SRCS) src/v184/main.c
+	$(CC) $(CFLAGS) $(V184_INC) -o $@ \
+	    $(V184_SRCS) src/v184/main.c $(LDFLAGS)
+
+check-v184-vla-grounding-accuracy: creation_os_v184_vla
+	@bash benchmarks/v184/check_v184_vla_grounding_accuracy.sh
+	@echo "check-v184-vla-grounding-accuracy: OK (≥ 8/10 grounding + σ-gated abort)"
+
+check-v184: check-v184-vla-grounding-accuracy
+	@echo "check-v184: OK (σ-VLA kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
