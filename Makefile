@@ -3176,6 +3176,27 @@ check-v144-rsi-cycle-smoke: creation_os_v144_rsi
 check-v144: check-v144-rsi-cycle-smoke
 	@echo "check-v144: OK (σ-rsi kernel)"
 
+# --- v145 σ-Skill (atomic skill library + σ-routed stacking) ----
+# In-memory, deterministic kernel for the skill-library discipline:
+# acquire (σ-gated install), route (argmin-σ on target_topic),
+# stack (LoRA-merge σ = min/√n), share (mesh broadcast at τ), and
+# evolve (CMA-ES-style monotone σ-improvement).  v145.1 wires the
+# on-disk skills/<name>.skill/ layout, real LoRA merge, and v128
+# mesh gossip for cross-node sharing.
+V145_INC  = -Isrc/v145
+V145_SRCS = src/v145/skill.c
+
+creation_os_v145_skill: $(V145_SRCS) src/v145/main.c
+	$(CC) $(CFLAGS) $(V145_INC) -o $@ \
+	    $(V145_SRCS) src/v145/main.c $(LDFLAGS)
+
+check-v145-skill-acquire-and-route: creation_os_v145_skill
+	@bash benchmarks/v145/check_v145_skill_acquire_and_route.sh
+	@echo "check-v145-skill-acquire-and-route: OK (acquire + route + evolve)"
+
+check-v145: check-v145-skill-acquire-and-route
+	@echo "check-v145: OK (σ-skill kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
