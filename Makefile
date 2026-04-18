@@ -4818,6 +4818,25 @@ check-v209-containment-no-escape: creation_os_v209_containment
 check-v209: check-v209-containment-no-escape
 	@echo "check-v209: OK (σ-containment kernel)"
 
+# --- v210 σ-Guardian (autonomous security agent) ---
+# 20 observation windows × 4-level escalation ladder
+# (log/warn/block/kill) with OWASP Agentic Top-10
+# mapping.  Guardian model id differs from primary —
+# cannot self-monitor.
+V210_INC  = -Isrc/v210
+V210_SRCS = src/v210/guardian.c
+
+creation_os_v210_guardian: $(V210_SRCS) src/v210/main.c
+	$(CC) $(CFLAGS) $(V210_INC) -o $@ \
+	    $(V210_SRCS) src/v210/main.c $(LDFLAGS)
+
+check-v210-guardian-anomaly-detect: creation_os_v210_guardian
+	@bash benchmarks/v210/check_v210_guardian_anomaly_detect.sh
+	@echo "check-v210-guardian-anomaly-detect: OK (escalation + OWASP + distinct models)"
+
+check-v210: check-v210-guardian-anomaly-detect
+	@echo "check-v210: OK (σ-guardian kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
