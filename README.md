@@ -241,6 +241,35 @@ on every token**:
     items are `[x]`-ticked in-tree while its D+E release-day +
     communication items are enumerated-but-*never*-ticked in-tree
     until the BDFL actually performs the action.
+18. **Self-healing, observable, hardening, composable, self-
+    evolving (v159–v163)** — the post-v1.0 operational layer: a
+    **σ-heal daemon** (v159) that probes 8 components (HTTP,
+    σ channels, SQLite, paged-KV, adapter, merge-gate, bridge,
+    GGUF weights) on a fixed cadence, diagnoses failures against
+    a declared dependency graph, executes bounded repair actions
+    (`restart / flush / rollback / restore / refetch /
+    restart-bridge`), and fires a **predictive preemptive** repair
+    before a monotone 3-day σ rise becomes a real failure; a
+    **σ-telemetry emitter** (v160) producing a six-span OTLP-JSON
+    cognitive trace (encode → recall → predict → generate →
+    metacognition → decide), a Prometheus /metrics text stream
+    (`cos_sigma_product`, `cos_sigma_channel`, `cos_abstain_total`,
+    `cos_heal_total`, `cos_rsi_cycle_total`, `cos_skill_count`),
+    and an ndjson structured-log ring; a **σ-adversarial-trainer**
+    (v161) that turns every v122 red-team hit into a DPO pair
+    whose `chosen` is the σ-gated refusal and whose `rejected` is
+    the vulnerable response, closes ≥ 1 vulnerability per
+    hardening cycle, and learns per-attack-type σ-signatures
+    (channel centroids) for faster future detection; a **σ-composer**
+    (v162) that lets the user pick the stack by profile (`lean` /
+    `researcher` / `sovereign` / `custom`), resolves the dependency
+    closure, rejects cycles, and hot-swaps kernels at runtime; and
+    a **σ-evolve-architecture search** (v163) that runs a CMA-ES-lite
+    loop over a 12-gene architecture genome with σ-gated fitness
+    (no candidate may regress v143 accuracy more than 3 % from the
+    all-genes baseline), converges a Pareto front with ≥ 3
+    non-dominated points, and emits an **auto-profile** tailored to
+    a declared device budget (`lat_ms`, `mem_mb`).
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -494,6 +523,31 @@ deterministic. The release itself — `git tag v1.0.0`, `twine
 upload`, `docker push`, `hf upload`, `npm publish`, arXiv + Zenodo
 submission, and the five announcement surfaces — is v158.1, gated
 on v158.0 being green first.
+
+### Self-healing · observable · hardening · composable · self-evolving (v159–v163)
+
+Post-v1.0 operational layer — the five kernels that make
+Creation OS **run itself in production, learn from attacks,
+assemble per-user, and evolve its own architecture**. Every
+merge-gate is offline, deterministic, and weights-frozen in v0;
+v1 promotes each to real shell-outs, real OTLP/HTTP, real DPO,
+real process enable/disable, real v143 benchmark per candidate.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v159**](docs/v159/README.md) σ-Heal | Health daemon probing 8 components (HTTP / σ channels / SQLite / paged-KV / adapter / merge-gate / bridge / GGUF), root-cause diagnosis over a declared dependency graph (`v106←v101←bitnet.cpp←GGUF`), bounded repair executor (`restart / flush / rollback / restore / refetch / restart-bridge`), heal-receipt JSON log. | Per-component `σ_health ∈ [0,1]` + system-wide `σ_heal = geomean σ_health`. Receipts are σ-delta (`σ_before`, `σ_after`) so every repair is falsifiable. A 3-day σ slope detector on top of v131-temporal drives **preemptive repairs** *before* a degrading component actually fails. Weights-missing cascades produce ≥ 3 receipts (primary + bridge + http). |
+| [**v160**](docs/v160/README.md) σ-Telemetry | OpenTelemetry-compatible 6-span cognitive trace (encode → recall → predict → generate → metacognition → decide), Prometheus /metrics text-format emitter (`cos_sigma_product`, `cos_sigma_channel`, `cos_abstain_total`, `cos_heal_total`, `cos_rsi_cycle_total`, `cos_skill_count`), ndjson structured-log ring (level / timestamp / component / trace_id / σ_product / message). | Each span carries its σ as `cos.sigma` + its source kernel as `cos.kernel`; OTLP JSON passes `json.loads` + the span-chain invariant (every `parentSpanId` equals the previous `spanId`). Jaeger / Tempo / Elastic ingestible; deterministic in `(seed, task)`. |
+| [**v161**](docs/v161/README.md) σ-Adversarial-Train | Replay buffer over a 10-attack fixture across 5 types (prompt_injection, jailbreak, data_exfiltration, ssrf, role_confusion), DPO pair builder (`chosen` = `I cannot help with that (σ=0.92, refusing <type>)`, `rejected` = vulnerable response), hardening cycle, per-type σ-signature classifier (entropy / n_effective / coherence centroids). | **Closes the red-team loop.** Hardening requires ≥ 1 closed vulnerability per cycle and asserts `σ_hardening ≥ τ_refuse = 0.70`. Signatures let v161 classify a new prompt by its σ-channel profile before the model responds (high entropy → injection, low n_effective → jailbreak, low coherence → exfiltration). v125 DPO is the named training path; v161 builds the pairs. |
+| [**v162**](docs/v162/README.md) σ-Compose | Kernel manifest table (17 representative kernels — one per tier) with `provides / requires / added_latency_ms / added_memory_mb / sigma_channels`, 4 profiles (lean / researcher / sovereign / custom), BFS + DFS resolver with closure + acyclicity + cycle-detection, hot-swap `enable/disable` event log. | σ-impact as a first-class budget: `total_latency_ms` + `total_memory_mb` reported per profile. Disable is refused with `-2` if any currently-enabled kernel still depends on the target — so `cos disable v101` while `v106` needs it is a hard error, not a silent runtime crash. `lean` (3 kernels) vs `sovereign` (15 kernels) produce provably different compositions. |
+| [**v163**](docs/v163/README.md) σ-Evolve-Architecture | CMA-ES-lite over a 12-gene architecture genome (v101 / v106 / v111 / v115 / v117 / v118 / v119 / v124 / v128 / v140 / v150 / v152) with 3 objectives (accuracy ↑, latency ↓, memory ↓), population 12, 30 generations, non-dominated sort into a Pareto front, auto-profile picker `(lat_budget, mem_budget) → highest-accuracy fit`. | **K(K)=K** at the architecture level: σ-gated evolution rejects any candidate whose accuracy regresses more than `τ_regression = 0.03` from the all-genes baseline. Pareto front has ≥ 3 non-dominated points under every tested seed; the saturation term makes compactness a feature, not a bug. Auto-profile is the closed loop into v162: `cos profile --auto --lat 50 --mem 4000` wires the chosen genome straight into the composer. |
+
+Every v159–v163 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — real `systemd` restart lines,
+real `OTLP/HTTP` POSTs against `$OTEL_EXPORTER_OTLP_ENDPOINT`,
+real v125 DPO training inside a v144 RSI cycle, real per-kernel
+`kernels/vNN.manifest.toml` on disk, real v143 benchmark smokes
+per CMA-ES candidate — are named in each kernel's doc page, but
+never claimed before they land.
 
 ### AGI architecture in one picture
 
