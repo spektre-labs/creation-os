@@ -105,6 +105,33 @@ on every token**:
    low margin — see [`docs/v111/THE_SIGMA_REASON_ENDPOINT.md`](docs/v111/THE_SIGMA_REASON_ENDPOINT.md).
 7. **Learns to abstain via σ-self-distillation** with an MLX LoRA
    pipeline (v111.3) — see [`docs/v111/THE_SIGMA_ABSTAIN_LORA.md`](docs/v111/THE_SIGMA_ABSTAIN_LORA.md).
+8. **Runs as a σ-governed agent** — σ-gated function calling (v112),
+   subprocess sandbox with σ-gate on the generated code (v113), and a
+   multi-specialist σ-routed swarm (v114).
+
+### Agentic capabilities (v112–v114) — σ-governed by construction
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v112**](docs/v112/README.md) σ-Agent | OpenAI `tools` / `tool_choice` parity on `/v1/chat/completions` | Refuses to dispatch a tool call when `σ_product > τ_tool`; returns the most-collapsed channel as the diagnostic. No other agent framework does this. |
+| [**v113**](docs/v113/README.md) σ-Sandbox | `POST /v1/sandbox/execute` — subprocess + rlimit + deadline + new PGID | Refuses to execute LLM-generated code when `σ_product > τ_code`; returns an execution receipt with the gate reason. Addresses LLM-in-Sandbox (Cheng et al. 2025) three meta-capabilities plus σ. |
+| [**v114**](docs/v114/README.md) σ-Swarm | Multi-GGUF specialists routed by `σ_product_min`; resonance flag when N agree at low σ | Exposes every specialist's σ to the client (headers + JSON); abstains honestly when all specialists are uncertain instead of voting a hallucination. |
+
+How this compares to other agent stacks — in one line each:
+
+- **OpenAI Swarm** routes blindly (role hand-off). Creation OS routes by σ-product.
+- **LangGraph** is a deterministic graph. Creation OS is stochastic but calibrated.
+- **CrewAI** is role-based, no measurement. Creation OS is measurement-first; roles are secondary.
+- **LLM-in-Sandbox** (Cheng et al.) has the sandbox but no σ-gate. Creation OS gates the code *before* it runs.
+- All of the above need cloud APIs or a GPU. Creation OS runs on an 8 GB M3 Air with local GGUFs.
+
+The "cascading small routing mistakes" failure mode identified by the
+Nature 2026 multi-agent review is what σ-routing is designed to catch:
+a bad hand-off shows up as a spike in σ_product on the hand-off token,
+**before** it cascades. That's the central claim of the agentic stack;
+the σ-gate is live, the standardised end-to-end verification on
+AgentBench / τ-bench is scheduled for v116 (see
+[`docs/RESEARCH_AND_THESIS_ARCHITECTURE.md`](docs/RESEARCH_AND_THESIS_ARCHITECTURE.md)).
 
 ### AGI architecture in one picture
 
@@ -113,7 +140,8 @@ Six layers, composable, each falsifiable:
 ```
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
   Layer 5  Training         MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
-  Layer 4  Reasoning        /v1/reason · multi-path · σ_product ranking (v111.2)
+  Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
+           Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
   Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
   Layer 1  Silicon          BitNet b1.58 · llama.cpp · forty branchless kernels (v60→v100)

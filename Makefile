@@ -329,7 +329,8 @@ merge-gate:
 	@$(MAKE) check-v107-install-macos
 	@$(MAKE) check-v108-ui-renders
 	@$(MAKE) check-v109-multi-gguf
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111.1/v111.2/v111.3 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF)"
+	@$(MAKE) check-v112-v114
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2471,23 +2472,29 @@ bench-v104:
 # the curl-based smoke test in benchmarks/v106/ against /health and
 # /v1/models.
 V106_COMMON_SRCS = src/v106/server.c src/v106/config.c src/v106/json_helpers.c src/v106/main.c
-V106_INC         = -Isrc/v101 -Isrc/v106 -Isrc/v111
+V106_INC         = -Isrc/v101 -Isrc/v106 -Isrc/v111 -Isrc/v112 -Isrc/v113 -Isrc/v114
 
-# v111.2 σ-Reason is compiled into every v106 binary (stub or real) so
-# that POST /v1/reason is always routable; the endpoint returns 503 when
-# the underlying bridge is stub-mode.
+# v111.2 σ-Reason + v112 σ-Agent + v113 σ-Sandbox + v114 σ-Swarm are
+# compiled into every v106 binary so that the HTTP surface is complete
+# in both stub and real mode.  Endpoints return 503 where the bridge
+# cannot back them (e.g. no GGUF loaded).
 V111_REASON_SRCS = src/v111/reason.c
+V112_TOOLS_SRCS  = src/v112/tools.c
+V113_SANDBOX_SRCS = src/v113/sandbox.c
+V114_SWARM_SRCS   = src/v114/swarm.c
 
-standalone-v106: $(V106_COMMON_SRCS) $(V111_REASON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
+V106_AGENT_SRCS = $(V111_REASON_SRCS) $(V112_TOOLS_SRCS) $(V113_SANDBOX_SRCS) $(V114_SWARM_SRCS)
+
+standalone-v106: $(V106_COMMON_SRCS) $(V106_AGENT_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c
 	$(CC) $(CFLAGS) $(V106_INC) -o creation_os_server \
-	    $(V106_COMMON_SRCS) $(V111_REASON_SRCS) \
+	    $(V106_COMMON_SRCS) $(V106_AGENT_SRCS) \
 	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
 	    $(LDFLAGS)
 
-standalone-v106-real: $(V106_COMMON_SRCS) $(V111_REASON_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c
+standalone-v106-real: $(V106_COMMON_SRCS) $(V106_AGENT_SRCS) src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c
 	$(CC) $(CFLAGS) -DCOS_V101_BITNET_REAL=1 $(V106_INC) $(V101_LLAMA_INC) \
 	    -o creation_os_server \
-	    $(V106_COMMON_SRCS) $(V111_REASON_SRCS) \
+	    $(V106_COMMON_SRCS) $(V106_AGENT_SRCS) \
 	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_real.c \
 	    $(V101_LLAMA_LIB) $(V101_REAL_RPATH_MAC) $(LDFLAGS)
 
@@ -2531,6 +2538,62 @@ bench-v111-hellaswag: standalone-v101-real
 
 bench-v111-full:
 	@bash benchmarks/v111/run_matrix.sh all
+
+# --- v112 σ-Agent, v113 σ-Sandbox, v114 σ-Swarm ------------------
+# These three kernels ship as libraries compiled into the v106 server
+# (so the HTTP endpoints are always available) *and* as standalone
+# CLI tools for merge-gate smoke checks that do not require weights.
+V112_INC = -Isrc/v101 -Isrc/v112
+V113_INC = -Isrc/v101 -Isrc/v112 -Isrc/v113
+V114_INC = -Isrc/v101 -Isrc/v112 -Isrc/v114
+
+creation_os_v112_tools: $(V112_TOOLS_SRCS) src/v112/main.c \
+                         src/v101/sigma_channels.c src/v101/self_test.c \
+                         src/v101/bridge_stub.c
+	$(CC) $(CFLAGS) $(V112_INC) -o $@ \
+	    $(V112_TOOLS_SRCS) src/v112/main.c \
+	    src/v101/sigma_channels.c src/v101/self_test.c \
+	    src/v101/bridge_stub.c $(LDFLAGS)
+
+check-v112-function-calling: creation_os_v112_tools
+	@bash benchmarks/v112/check_v112_function_calling.sh
+	@echo "check-v112: OK (σ-gated function calling + 10 scenarios)"
+
+check-v112: check-v112-function-calling
+
+creation_os_v113_sandbox: $(V113_SANDBOX_SRCS) src/v113/main.c
+	$(CC) $(CFLAGS) $(V113_INC) -o $@ \
+	    $(V113_SANDBOX_SRCS) src/v113/main.c $(LDFLAGS)
+
+check-v113-sandbox-execute: creation_os_v113_sandbox
+	@bash benchmarks/v113/check_v113_sandbox_execute.sh
+	@echo "check-v113: OK (σ-gated subprocess sandbox + rlimit + deadline)"
+
+check-v113: check-v113-sandbox-execute
+
+creation_os_v114_swarm: $(V114_SWARM_SRCS) src/v114/main.c \
+                         $(V112_TOOLS_SRCS) \
+                         src/v101/sigma_channels.c src/v101/self_test.c \
+                         src/v101/bridge_stub.c
+	$(CC) $(CFLAGS) $(V114_INC) -o $@ \
+	    $(V114_SWARM_SRCS) src/v114/main.c \
+	    $(V112_TOOLS_SRCS) \
+	    src/v101/sigma_channels.c src/v101/self_test.c \
+	    src/v101/bridge_stub.c $(LDFLAGS)
+
+check-v114-swarm-routing: creation_os_v114_swarm
+	@bash benchmarks/v114/check_v114_swarm_routing.sh
+	@echo "check-v114-swarm-routing: OK (σ_product_min router)"
+
+check-v114-multi-specialist-consensus: creation_os_v114_swarm
+	@bash benchmarks/v114/check_v114_consensus.sh
+	@echo "check-v114-consensus: OK (resonance-threshold agreement)"
+
+check-v114: check-v114-swarm-routing check-v114-multi-specialist-consensus
+	@echo "check-v114: OK (σ-swarm multi-specialist orchestration)"
+
+check-v112-v114: check-v112 check-v113 check-v114
+	@echo "check-v112-v114: OK (agentic stack — tools + sandbox + swarm)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

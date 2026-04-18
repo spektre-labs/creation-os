@@ -446,6 +446,9 @@ creation_os_server_asan
 creation_os_server_ubsan
 creation_os_v111_reason
 creation_os_v111
+creation_os_v112_tools
+creation_os_v113_sandbox
+creation_os_v114_swarm
 benchmarks/v111/__pycache__/
 training/v111/data/
 training/v111/runs/

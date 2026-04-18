@@ -25,6 +25,9 @@
 
 #include "../v101/bridge.h"
 #include "../v111/reason.h"
+#include "../v112/tools.h"
+#include "../v113/sandbox.h"
+#include "../v114/swarm.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -389,6 +392,94 @@ static int run_inference(int fd, server_state_t *st,
     return 0;
 }
 
+/* v112 σ-Agent: σ-gated tool selection.  Called only when the request
+ * body contains a top-level "tools":[…] array.  Returns 1 if the request
+ * was handled here (response already written), 0 to fall through to the
+ * normal chat.completions path, <0 on transport error. */
+static int maybe_handle_tools(int fd, server_state_t *st, const char *body,
+                              const char *prompt, long max_tokens,
+                              const char *model_req)
+{
+    if (!strstr(body, "\"tools\"")) return 0;
+
+    cos_v112_tool_def_t tools[COS_V112_TOOLS_MAX];
+    int n = cos_v112_parse_tools(body, tools, COS_V112_TOOLS_MAX);
+    if (n <= 0) return 0;
+
+    cos_v112_tool_choice_t choice;
+    cos_v112_parse_tool_choice(body, &choice);
+
+    cos_v112_opts_t opts;
+    cos_v112_opts_defaults(&opts);
+    opts.max_tokens = (int)max_tokens;
+    double tau_body = cos_v106_json_get_double(body, "tau_tool", -1.0);
+    if (tau_body >= 0.0 && tau_body <= 1.0) opts.tau_tool = (float)tau_body;
+
+    cos_v112_tool_call_report_t report;
+    int rc = cos_v112_run_tool_selection(st->bridge, prompt,
+                                         tools, (size_t)n,
+                                         &choice, &opts, &report);
+    if (rc != 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"tool selection failed\","
+            "\"type\":\"internal\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+
+    /* Propagate σ telemetry to /v1/sigma-profile. */
+    sigma_snapshot_update(model_req, st->cfg->tau_abstain, st->agg,
+                          report.sigma_mean, report.sigma_product,
+                          report.sigma_max_token,
+                          report.sigma_profile, report.abstained);
+
+    char message_js[8192];
+    int  mlen = cos_v112_report_to_message_json(&report, message_js,
+                                                sizeof message_js);
+    if (mlen < 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"tool report overflow\","
+            "\"type\":\"internal\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+
+    char payload[16384];
+    long created = (long)time(NULL);
+    int  pn = snprintf(payload, sizeof payload,
+        "{"
+        "\"id\":\"chatcmpl-tool-%ld\","
+        "\"object\":\"chat.completion\","
+        "\"created\":%ld,"
+        "\"model\":\"%s\","
+        "\"choices\":[{"
+            "\"index\":0,"
+            "\"message\":%s,"
+            "\"finish_reason\":\"%s\""
+        "}],"
+        "\"creation_os\":{"
+            "\"tool_gate\":true,"
+            "\"tau_tool\":%.4f,"
+            "\"sigma_product\":%.6f,"
+            "\"sigma_mean\":%.6f,"
+            "\"abstained\":%s"
+        "}"
+        "}",
+        created, created, model_req, message_js,
+        report.abstained ? "cos_abstained"
+                         : (report.tool_called ? "tool_calls" : "stop"),
+        (double)report.tau_tool,
+        (double)report.sigma_product, (double)report.sigma_mean,
+        report.abstained ? "true" : "false");
+    if (pn < 0 || (size_t)pn >= sizeof payload) {
+        const char err[] = "{\"error\":{\"message\":\"tool payload overflow\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+    return write_status(fd, 200, "OK", "application/json",
+                        payload, (size_t)pn) < 0 ? -1 : 1;
+}
+
 static int handle_chat_completions(int fd, server_state_t *st, const char *body)
 {
     char prompt[8192];
@@ -405,6 +496,14 @@ static int handle_chat_completions(int fd, server_state_t *st, const char *body)
     char model_req[128];
     if (cos_v106_json_get_string(body, "model", model_req, sizeof model_req) < 0) {
         snprintf(model_req, sizeof model_req, "%s", st->cfg->model_id);
+    }
+
+    /* v112 σ-Agent: σ-gated tool calling.  If `tools` is present, the
+     * v112 driver takes ownership of the response. */
+    {
+        int tool_rc = maybe_handle_tools(fd, st, body, prompt,
+                                         max_tokens, model_req);
+        if (tool_rc != 0) return (tool_rc < 0) ? -1 : 0;
     }
 
     char out_buf[8192];
@@ -679,6 +778,37 @@ static int handle_reason(int fd, server_state_t *st, const char *body)
     return write_status(fd, 200, "OK", "application/json", payload, (size_t)n);
 }
 
+/* --- v113 σ-Sandbox -------------------------------------------- */
+
+static int handle_sandbox_execute(int fd, server_state_t *st, const char *body)
+{
+    (void)st;
+    cos_v113_request_t req;
+    if (cos_v113_parse_request(body, &req) != 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"malformed sandbox request\","
+            "\"type\":\"invalid_request\"}}";
+        return write_status(fd, 400, "Bad Request", "application/json",
+                            err, sizeof err - 1);
+    }
+    cos_v113_result_t res;
+    if (cos_v113_sandbox_run(&req, &res) != 0) {
+        const char err[] =
+            "{\"error\":{\"message\":\"sandbox runtime error\","
+            "\"type\":\"internal\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+    static char js[96 * 1024];
+    int jl = cos_v113_result_to_json(&res, js, sizeof js);
+    if (jl < 0) {
+        const char err[] = "{\"error\":{\"message\":\"receipt overflow\"}}";
+        return write_status(fd, 500, "Internal Server Error",
+                            "application/json", err, sizeof err - 1);
+    }
+    return write_status(fd, 200, "OK", "application/json", js, (size_t)jl);
+}
+
 /* --- static file serving (v108 will land index.html at web/) ------ */
 
 static const char *mime_for_path(const char *path)
@@ -774,6 +904,8 @@ static int handle_one(int cfd, server_state_t *st)
             rc = handle_completions(cfd, st, body);
         else if (strcmp(path, "/v1/reason") == 0)
             rc = handle_reason(cfd, st, body);
+        else if (strcmp(path, "/v1/sandbox/execute") == 0)
+            rc = handle_sandbox_execute(cfd, st, body);
         else {
             const char b[] = "{\"error\":{\"message\":\"not found\"}}";
             rc = write_status(cfd, 404, "Not Found", "application/json", b, sizeof b - 1);

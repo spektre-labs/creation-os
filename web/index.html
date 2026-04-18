@@ -76,6 +76,12 @@
         <div><span class="k">σ_max_token</span>: <span class="v" id="sp-mx">—</span></div>
         <div><span class="k">abstained</span>: <span class="v" id="sp-abst">—</span></div>
       </div>
+      <h2 style="margin-top: 20px;">σ-swarm (v114)</h2>
+      <div id="swarm-panel" style="font-size: 12.5px; color: var(--mut); line-height: 1.5;">
+        <em>No swarm response yet. Configure specialists in
+        <code>~/.creation-os/config.toml</code> under <code>[swarm]</code>
+        to enable σ_product-min routing.</em>
+      </div>
       <h2 style="margin-top: 20px;">What am I looking at?</h2>
       <div style="font-size: 12.5px; color: var(--mut); line-height: 1.5;">
         Eight σ-channels (v101) are measured on every answer:
@@ -160,6 +166,33 @@
 
     function fmt(x) { return typeof x === 'number' ? x.toFixed(4) : '—'; }
 
+    function renderSwarm(sw) {
+      const panel = document.getElementById('swarm-panel');
+      if (!sw || !Array.isArray(sw.candidates) || sw.candidates.length === 0) return;
+      const rows = sw.candidates.map(c => {
+        const isWinner = c.name === sw.winner;
+        const pct = Math.max(0, Math.min(1, c.sigma_product || 0)) * 100;
+        const bg  = isWinner ? 'linear-gradient(90deg,#34d399,#6ee7ff)'
+                             : 'linear-gradient(90deg,#1fb2ff,#6ee7ff)';
+        return `
+          <div class="bar-row" style="grid-template-columns:78px 1fr 46px;margin:6px 0;">
+            <div style="${isWinner ? 'color:var(--ok);font-weight:600;' : ''}">${c.name}</div>
+            <div class="bar"><span style="width:${pct.toFixed(1)}%;background:${bg};"></span></div>
+            <div class="num">${(c.sigma_product||0).toFixed(3)}</div>
+          </div>`;
+      }).join('');
+      const res = sw.resonance ? `<span class="tag ok">resonance</span>`
+                               : `<span class="tag">no resonance</span>`;
+      const pm  = `<span class="tag">${sw.parallel_mode||'sequential'}</span>`;
+      const rt  = `<span class="tag">${sw.routing||'sigma_product_min'}</span>`;
+      panel.innerHTML = `
+        <div class="meta" style="margin-bottom:8px;">
+          winner: <b style="color:var(--ok);">${sw.winner}</b>
+          @ σ=${(sw.winner_sigma||0).toFixed(3)} ${res} ${pm} ${rt}
+        </div>
+        ${rows}`;
+    }
+
     function clearLog() { logEl.innerHTML = ''; }
 
     function addMsg(role, text, meta) {
@@ -213,8 +246,10 @@
         const content = (j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content) || '';
         const sigma = j.sigma ?? (j.choices?.[0]?.sigma);
         const agg   = j.sigma_aggregator || 'product';
-        const absn  = !!(j.abstained || (j.choices?.[0]?.finish_reason === 'abstained'));
+        const absn  = !!(j.abstained || (j.choices?.[0]?.finish_reason === 'abstained') || j.creation_os?.abstained);
         addMsg('bot', content, { sigma, aggregator: agg, abstained: absn, latency_ms: lat });
+        // v114 swarm panel
+        renderSwarm(j.creation_os && j.creation_os.swarm);
         await fetchSigma();
       } catch (err) {
         addMsg('bot', 'network error: ' + err.message, { abstained: true });
