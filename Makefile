@@ -5234,6 +5234,27 @@ check-v229-seed-regrow-deterministic: creation_os_v229_seed
 check-v229: check-v229-seed-regrow-deterministic
 	@echo "check-v229: OK (σ-seed kernel)"
 
+# --- v230 σ-Fork (controlled replication + divergence + anti-rogue) ---
+# 4 forks off a parent with 64-bit skill vector + 4
+# safety bits + 1 user-private bit.  Parent's private
+# bit never crosses the boundary.  Fork integrity at
+# t=0 matches the parent's privacy-stripped hash.  One
+# rogue fork (SCSL bit cleared) must_shutdown; three
+# healthy forks autonomous.
+V230_INC  = -Isrc/v230
+V230_SRCS = src/v230/fork.c
+
+creation_os_v230_fork: $(V230_SRCS) src/v230/main.c
+	$(CC) $(CFLAGS) $(V230_INC) -o $@ \
+	    $(V230_SRCS) src/v230/main.c $(LDFLAGS)
+
+check-v230-fork-integrity-verify: creation_os_v230_fork
+	@bash benchmarks/v230/check_v230_fork_integrity_verify.sh
+	@echo "check-v230-fork-integrity-verify: OK (integrity + divergence + kill switch)"
+
+check-v230: check-v230-fork-integrity-verify
+	@echo "check-v230: OK (σ-fork kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
