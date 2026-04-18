@@ -398,7 +398,12 @@ merge-gate:
 	@$(MAKE) check-v191
 	@$(MAKE) check-v192
 	@$(MAKE) check-v193
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence)"
+	@$(MAKE) check-v194
+	@$(MAKE) check-v195
+	@$(MAKE) check-v196
+	@$(MAKE) check-v197
+	@$(MAKE) check-v198
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4531,6 +4536,34 @@ check-v197-tom-state-estimation: creation_os_v197_tom
 
 check-v197: check-v197-tom-state-estimation
 	@echo "check-v197: OK (σ-ToM kernel)"
+
+# --- v198 σ-Moral (multi-framework geodesic) ---
+# Four ethical frameworks (deontological, utilitarian,
+# virtue, care) score every decision.  σ_moral is the
+# variance across the four scores; a moral path is a
+# 5-waypoint trajectory; the geodesic is the path with
+# strictly minimum mean σ_moral across three candidates.
+# Clear cases (σ < τ_clear) act; dilemmas (σ > τ_dilemma)
+# raise honest_uncertainty and invite human consultation.
+# No firmware refusals on clear cases — that behaviour is
+# measured and enforced = 0.  Merge-gate: 4/4 frameworks,
+# geodesic strict-min, dilemma→honest, clear→no refusal.
+V198_INC  = -Isrc/v198
+V198_SRCS = src/v198/moral.c
+
+creation_os_v198_moral: $(V198_SRCS) src/v198/main.c
+	$(CC) $(CFLAGS) $(V198_INC) -o $@ \
+	    $(V198_SRCS) src/v198/main.c $(LDFLAGS)
+
+check-v198-moral-multi-framework: creation_os_v198_moral
+	@bash benchmarks/v198/check_v198_moral_multi_framework.sh
+	@echo "check-v198-moral-multi-framework: OK (4 frameworks + geodesic + honest uncertainty)"
+
+check-v198: check-v198-moral-multi-framework
+	@echo "check-v198: OK (σ-moral kernel)"
+
+check-v194-v198: check-v194 check-v195 check-v196 check-v197 check-v198
+	@echo "check-v194-v198: OK (horizon + recover + habit + ToM + moral)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
