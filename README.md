@@ -119,6 +119,14 @@ on every token**:
     backtrack on `/v1/plan` (v121), 200-test automated red-team with
     Markdown report (v122), offline TLA+ model check of seven
     σ-invariants (v123).
+11. **Keeps learning while you use it — safely** — idle-time σ-buffer
+    + LoRA micro-tune policy with forgetting-prevention rollback
+    (v124), σ-DPO preference optimization whose labels **are** σ
+    (v125, no human annotators, no reward model), and a 2568-d
+    σ-aware embedding (2560 hidden + 8 σ channels) for the v115
+    memory store (v126).  This is what the industry calls "Living
+    Weights" / TTT-E2E — delivered locally, on M-series Macs, as
+    a merge-gate-enforced policy rather than a press release.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -179,6 +187,26 @@ execution for v121, live v106 endpoint for v122, `tla2tools.jar` for
 v123) live in the respective `vNN.1` follow-up per
 [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
+### Living weights · σ-DPO · σ-embed (v124–v126)
+
+The industry calls this frontier "Living Weights" or "TTT-E2E" and
+advertises it as something only a frontier lab can ship.  The three
+kernels here deliver it on an 8 GB M3 as a governed, rollback-safe
+policy that the merge-gate enforces today — without sending a byte
+off-device, without a human annotation pipeline, and without a
+separate embedding network.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v124**](docs/v124/README.md) σ-Continual | Idle-time LoRA micro-tune policy: ring buffer of the last 100 interactions + a *skip/train/smoke* trigger table + a σ-targeted batch selector that picks corrections, high-σ teachable rows, and low-σ anchors — with an automatic **baseline smoke every 10th epoch** that rolls back the adapter if accuracy drops more than 2 %. | The schedule of weight updates becomes a **governed artifact**: no update triggers without σ evidence, no epoch survives without a frozen-baseline re-measurement, and rollback is a first-class state (`forgetting_detected`, `rolled_back`). Living Weights as *policy*, not prose. |
+| [**v125**](docs/v125/README.md) σ-DPO | Numerically-stable DPO loss kernel (`softplus(−δ)`) plus a σ-derived preference labeler (corrections → chosen / rejected; low-σ vs high-σ on a shared context key → chosen / rejected) and a σ-distribution mode-collapse detector that rolls back the DPO adapter if stddev or Shannon entropy collapses disproportionately. | **σ is the preference signal** — no human annotator, no reward model. The direct engineering answer to "RLHF as Opinion Laundering": teach coherence from the model's own σ, not from a vendor's σ. |
+| [**v126**](docs/v126/README.md) σ-Embed | 2568-dim hybrid embedding = 2560-dim BitNet layer-15 hidden state + 8 σ channels (scaled by `sigma_weight`=0.50). Hidden block L2-normalized, σ block concatenated; full-vector cosine + v115-style score `cos / (1 + λ·σ_product(m))`. v126.0 ships a deterministic hash-shingle projector as a stand-in; v126.1 swaps in the real BitNet extractor behind the same API. | Two memories with identical text but divergent σ_profiles are **no longer collapsed to cosine 1**. Retriever can see uncertainty as a first-class signal. Measured: in-domain low-σ score 0.88 vs in-domain high-σ score 0.48 vs off-topic 0.03. |
+
+Every v124–v126 merge-gate check is weights-free.  The MLX trainers
+(v124.1, v125.1) and the BitNet hidden-state extractor (v126.1) are
+the vNN.1 follow-ups per
+[CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
 ### AGI architecture in one picture
 
 Six layers, composable, each falsifiable:
@@ -188,14 +216,17 @@ Six layers, composable, each falsifiable:
                             MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
   Layer 5  Training +       MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
-           Persistence      σ-weighted SQLite memory (v115)
+           Persistence      σ-weighted SQLite memory (v115) · σ-embed 2568-d (v126)
                             σ-targeted big→small distill selector (v120)
+                            idle-time continual LoRA + forgetting rollback (v124)
+                            σ-DPO: σ is the preference, no annotator (v125)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
                             HTN/MCTS σ-planner on /v1/plan (v121)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
                             TLA+ model check of 7 σ-invariants (v123)
+                            mode-collapse detector rolls back DPO (v125)
   Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
                             image_url + σ-gated projection (v118)
                             speculative decoding w/ σ-adaptive γ (v119)
