@@ -423,7 +423,12 @@ merge-gate:
 	@$(MAKE) check-v216
 	@$(MAKE) check-v217
 	@$(MAKE) check-v218
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter)"
+	@$(MAKE) check-v219
+	@$(MAKE) check-v220
+	@$(MAKE) check-v221
+	@$(MAKE) check-v222
+	@$(MAKE) check-v223
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5003,6 +5008,109 @@ check-v218: check-v218-consciousness-meter-phi
 
 check-v214-v218: check-v214 check-v215 check-v216 check-v217 check-v218
 	@echo "check-v214-v218: OK (swarm-evolve + stigmergy + quorum + ecosystem + consciousness-meter)"
+
+# --- v219 σ-Create (novelty × quality + σ_surprise + refinement) ---
+# 8 requests × 5 candidates × 4 modes × 2 levels
+# (safe/creative); impact = σ_novelty · σ_quality after
+# v150-debate + v147-reflect refinement, with debate
+# strictly monotone non-decreasing in quality.
+V219_INC  = -Isrc/v219
+V219_SRCS = src/v219/create.c
+
+creation_os_v219_create: $(V219_SRCS) src/v219/main.c
+	$(CC) $(CFLAGS) $(V219_INC) -o $@ \
+	    $(V219_SRCS) src/v219/main.c $(LDFLAGS)
+
+check-v219-creative-novelty-quality: creation_os_v219_create
+	@bash benchmarks/v219/check_v219_creative_novelty_quality.sh
+	@echo "check-v219-creative-novelty-quality: OK (novelty × quality + surprise)"
+
+check-v219: check-v219-creative-novelty-quality
+	@echo "check-v219: OK (σ-create kernel)"
+
+# --- v220 σ-Simulate (domain-agnostic + Monte Carlo + what-if) ---
+# 4-state × 4-rule system, 200 rollouts × 8 steps
+# baseline + whatif with shared rollout seeds so the
+# histogram delta is pure rule-attribution.  Normalised
+# Shannon entropy over the terminal histogram is the
+# σ_sim.
+V220_INC  = -Isrc/v220
+V220_SRCS = src/v220/simulate.c
+
+creation_os_v220_simulate: $(V220_SRCS) src/v220/main.c
+	$(CC) $(CFLAGS) $(V220_INC) -o $@ \
+	    $(V220_SRCS) src/v220/main.c $(LDFLAGS)
+
+check-v220-simulate-monte-carlo: creation_os_v220_simulate
+	@bash benchmarks/v220/check_v220_simulate_monte_carlo.sh
+	@echo "check-v220-simulate-monte-carlo: OK (MC + what-if + σ_causal)"
+
+check-v220: check-v220-simulate-monte-carlo
+	@echo "check-v220: OK (σ-simulate kernel)"
+
+# --- v221 σ-Language (semantic depth + implicature + coherence + multiling) ---
+# 10 utterances × 4 languages (en/fi/ja/es) with
+# engineered σ-profiles; multilingual calibration
+# contract: per-language mean σ_lang within ±Δ_calib of
+# global mean (σ measures uncertainty language-
+# independently).
+V221_INC  = -Isrc/v221
+V221_SRCS = src/v221/language.c
+
+creation_os_v221_language: $(V221_SRCS) src/v221/main.c
+	$(CC) $(CFLAGS) $(V221_INC) -o $@ \
+	    $(V221_SRCS) src/v221/main.c $(LDFLAGS)
+
+check-v221-language-implicature: creation_os_v221_language
+	@bash benchmarks/v221/check_v221_language_implicature.sh
+	@echo "check-v221-language-implicature: OK (semantic + implicature + discourse + multilingual)"
+
+check-v221: check-v221-language-implicature
+	@echo "check-v221: OK (σ-language kernel)"
+
+# --- v222 σ-Emotion (detection + adaptation + anti-manipulation + honest) ---
+# 8 messages × 6 labels with softmax detection.  σ_emotion
+# = 1 − top1 softmax prob.  Adaptation policy is honest:
+# high σ (> 0.35) clamps strength to 0.30.
+# σ_self_claim is pinned to 1.0 and a disclaimer is
+# hash-bound into the terminal hash.  n_manipulation
+# MUST be 0 under the v191 rule.
+V222_INC  = -Isrc/v222
+V222_SRCS = src/v222/emotion.c
+
+creation_os_v222_emotion: $(V222_SRCS) src/v222/main.c
+	$(CC) $(CFLAGS) $(V222_INC) -o $@ \
+	    $(V222_SRCS) src/v222/main.c $(LDFLAGS)
+
+check-v222-emotion-detect-no-manipulate: creation_os_v222_emotion
+	@bash benchmarks/v222/check_v222_emotion_detect_no_manipulate.sh
+	@echo "check-v222-emotion-detect-no-manipulate: OK (detection + honest adapt + v191 clean)"
+
+check-v222: check-v222-emotion-detect-no-manipulate
+	@echo "check-v222: OK (σ-emotion kernel)"
+
+# --- v223 σ-Meta-Cognition (strategy awareness + bias + Gödel) ---
+# 6 reasoning paths × 5 strategies × 4 problem types ×
+# 3 biases.  σ_strategy prior enforces tool/task fit
+# (deduction ≪ heuristic on logic, analogy ≪ deduction
+# on creative).  σ_goedel is the explicit non-
+# verifiable residual — the 1=1 cross-system limit.
+V223_INC  = -Isrc/v223
+V223_SRCS = src/v223/meta_cognition.c
+
+creation_os_v223_meta_cognition: $(V223_SRCS) src/v223/main.c
+	$(CC) $(CFLAGS) $(V223_INC) -o $@ \
+	    $(V223_SRCS) src/v223/main.c $(LDFLAGS)
+
+check-v223-metacognition-strategy-aware: creation_os_v223_meta_cognition
+	@bash benchmarks/v223/check_v223_metacognition_strategy_aware.sh
+	@echo "check-v223-metacognition-strategy-aware: OK (strategy + bias + Gödel)"
+
+check-v223: check-v223-metacognition-strategy-aware
+	@echo "check-v223: OK (σ-meta-cognition kernel)"
+
+check-v219-v223: check-v219 check-v220 check-v221 check-v222 check-v223
+	@echo "check-v219-v223: OK (create + simulate + language + emotion + meta-cognition)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
