@@ -390,7 +390,8 @@ merge-gate:
 	@$(MAKE) check-v183
 	@$(MAKE) check-v184
 	@$(MAKE) check-v185
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v185 VLA/fusion)"
+	@$(MAKE) check-v186
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v186 VLA/fusion/grow)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4209,6 +4210,28 @@ check-v185-fusion-cross-modal-consistency: creation_os_v185_fusion
 
 check-v185: check-v185-fusion-cross-modal-consistency
 	@echo "check-v185: OK (σ-multimodal-fusion kernel)"
+
+# --- v186 σ-Continual-Architecture (capacity monitor + auto-grow + prune) ---
+# v133-style σ-monitor watches per-domain σ_mean; rising slope
+# ⇒ starved domain.  v146 genesis proposes a new kernel;
+# v163 evolve accepts iff Δσ_domain < 0.  v177 compress
+# prunes the weakest kernel in an over-capacity domain.
+# Every change is hash-chained into the architecture-history
+# log; replay must re-derive the final tip.  v186.1 wires the
+# real genesis/evolve/compress/audit kernels end-to-end.
+V186_INC  = -Isrc/v186
+V186_SRCS = src/v186/grow.c
+
+creation_os_v186_grow: $(V186_SRCS) src/v186/main.c
+	$(CC) $(CFLAGS) $(V186_INC) -o $@ \
+	    $(V186_SRCS) src/v186/main.c $(LDFLAGS)
+
+check-v186-architecture-growth-cycle: creation_os_v186_grow
+	@bash benchmarks/v186/check_v186_architecture_growth_cycle.sh
+	@echo "check-v186-architecture-growth-cycle: OK (grow + prune + verified chain)"
+
+check-v186: check-v186-architecture-growth-cycle
+	@echo "check-v186: OK (σ-continual-architecture kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
