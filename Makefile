@@ -3880,6 +3880,32 @@ check-v173: check-v173-teach-socratic-cycle
 check-v169-v173: check-v169 check-v170 check-v171 check-v172 check-v173
 	@echo "check-v169-v173: OK (ontology + transfer + collab + narrative + teach)"
 
+# --- v174 σ-Flywheel (self-evolving data pipeline) ----------------------
+# Proposer → solver → σ-verifier → DPO data loop with σ used
+# as a data filter: σ<τ_confident → chosen; σ>τ_uncertain →
+# negative + big-model correction (PAIR); middle band → SKIP
+# (uninformative).  50 synthetic questions over 5 clusters,
+# three-mode σ distribution so every class is exercised under
+# the baked seed.  Three anti-model-collapse guards:
+# (a) answer-entropy H < H_min, (b) σ-variance < var_min,
+# (c) benchmark score regresses below baseline − slack;
+# any one aborts the cycle with an explicit reason.  v174.1
+# wires real v151 proposer, v114 swarm big-model, and
+# v125 DPO + v124 hot-swap.
+V174_INC  = -Isrc/v174
+V174_SRCS = src/v174/flywheel.c
+
+creation_os_v174_flywheel: $(V174_SRCS) src/v174/main.c
+	$(CC) $(CFLAGS) $(V174_INC) -o $@ \
+	    $(V174_SRCS) src/v174/main.c $(LDFLAGS)
+
+check-v174-flywheel-one-cycle: creation_os_v174_flywheel
+	@bash benchmarks/v174/check_v174_flywheel_one_cycle.sh
+	@echo "check-v174-flywheel-one-cycle: OK (chosen + pair + skip + anti-collapse)"
+
+check-v174: check-v174-flywheel-one-cycle
+	@echo "check-v174: OK (σ-flywheel kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
