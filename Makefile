@@ -2960,6 +2960,26 @@ check-v134-spike-event-driven: creation_os_v134_spike
 check-v134: check-v134-spike-event-driven
 	@echo "check-v134: OK (σ-spike kernel)"
 
+# --- v135 σ-Symbolic (Prolog micro-engine + hybrid reasoning) ---
+# ~400-line Horn-clause micro-engine supporting ground-fact KBs
+# and unification-based queries.  Rules (:-) are a v135.1 follow-up
+# and are refused by the parser so callers never silently degrade.
+# Exposes a σ-routed hybrid reasoner: σ < τ → BitNet only, σ ≥ τ
+# + logical → KB verify / override, σ ≥ τ + non-logical → abstain.
+V135_INC           = -Isrc/v135
+V135_SYMBOLIC_SRCS = src/v135/symbolic.c
+
+creation_os_v135_symbolic: $(V135_SYMBOLIC_SRCS) src/v135/main.c
+	$(CC) $(CFLAGS) $(V135_INC) -o $@ \
+	    $(V135_SYMBOLIC_SRCS) src/v135/main.c $(LDFLAGS)
+
+check-v135-symbolic-prolog-roundtrip: creation_os_v135_symbolic
+	@bash benchmarks/v135/check_v135_symbolic_prolog_roundtrip.sh
+	@echo "check-v135-symbolic-prolog-roundtrip: OK (KB + query + consistency)"
+
+check-v135: check-v135-symbolic-prolog-roundtrip
+	@echo "check-v135: OK (σ-symbolic kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
