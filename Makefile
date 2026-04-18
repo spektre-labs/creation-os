@@ -363,7 +363,8 @@ merge-gate:
 	@$(MAKE) check-v156
 	@$(MAKE) check-v157
 	@$(MAKE) check-v158
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release)"
+	@$(MAKE) check-v159
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159 self-heal)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3472,6 +3473,30 @@ check-v158: check-v158-release-checklist
 
 check-v154-v158: check-v154 check-v155 check-v156 check-v157 check-v158
 	@echo "check-v154-v158: OK (showcase + publish + paper + community + v1.0-release)"
+
+# --- v159 σ-Heal (self-healing infrastructure) -------------------
+# Deterministic health-monitor daemon + root-cause analyzer +
+# self-repair action executor.  Six component probes (v106 HTTP,
+# v101 σ channels, v115 SQLite, v117 KV-cache, v124 adapter,
+# merge-gate smoke) are simulated with injected failure scenarios.
+# A 3-day slope detector on top of v131-temporal drives predictive
+# repairs.  v159.0 is fully in-process and deterministic; v159.1
+# promotes the action stubs to real shell-outs + a real
+# systemd-style daemon wrapper + a /v1/health history endpoint on
+# v106.
+V159_INC  = -Isrc/v159
+V159_SRCS = src/v159/heal.c
+
+creation_os_v159_heal: $(V159_SRCS) src/v159/main.c
+	$(CC) $(CFLAGS) $(V159_INC) -o $@ \
+	    $(V159_SRCS) src/v159/main.c $(LDFLAGS)
+
+check-v159-heal-restart-cycle: creation_os_v159_heal
+	@bash benchmarks/v159/check_v159_heal_restart_cycle.sh
+	@echo "check-v159-heal-restart-cycle: OK (detect + diagnose + repair + predict)"
+
+check-v159: check-v159-heal-restart-cycle
+	@echo "check-v159: OK (σ-heal self-healing kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
