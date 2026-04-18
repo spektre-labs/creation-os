@@ -3982,6 +3982,36 @@ check-v177-compress-sigma-prune: creation_os_v177_compress
 check-v177: check-v177-compress-sigma-prune
 	@echo "check-v177: OK (σ-compress kernel)"
 
+# --- v178 σ-Consensus (Byzantine + reputation + sybil + merkle) ---------
+# 5-node mesh (3 honest mature + 1 honest young + 1 byzantine)
+# runs one σ-Byzantine agreement round over 4 baked claims
+# (θ = 0.30).  Reputation-weighted quorum at 2/3: accept /
+# reject / abstain.  Sybil-resistance: young nodes start at
+# rep 1.0 — they vote but cannot override mature nodes.
+# Byzantine reputations decay faster (−0.40 vs −0.20).  Each
+# resolved claim is leaf-hashed (SHA-256 of packed σ+decision)
+# and folded into a merkle root — tampering any leaf breaks
+# verification.  "Resonance not consensus": truth = σ-signal
+# convergence above quorum; mesh abstains when it cannot
+# converge.  v178.1 wires live v128 mesh transport + signed
+# messages + streaming v72 anchoring.
+V178_INC  = -Isrc/v178 -Isrc/license_kernel
+V178_SRCS = src/v178/consensus.c src/license_kernel/license_attest.c
+
+creation_os_v178_consensus: $(V178_SRCS) src/v178/main.c
+	$(CC) $(CFLAGS) $(V178_INC) -o $@ \
+	    $(V178_SRCS) src/v178/main.c $(LDFLAGS)
+
+check-v178-consensus-byzantine: creation_os_v178_consensus
+	@bash benchmarks/v178/check_v178_consensus_byzantine.sh
+	@echo "check-v178-consensus-byzantine: OK (quorum + reputation + merkle)"
+
+check-v178: check-v178-consensus-byzantine
+	@echo "check-v178: OK (σ-consensus kernel)"
+
+check-v174-v178: check-v174 check-v175 check-v176 check-v177 check-v178
+	@echo "check-v174-v178: OK (flywheel + debate-train + simulator + compress + consensus)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
