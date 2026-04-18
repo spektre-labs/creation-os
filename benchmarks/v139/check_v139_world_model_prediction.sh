@@ -19,7 +19,7 @@ echo "[v139] 1/3 self-test"
 
 echo "[v139] 2/3 demo JSON shape"
 OUT="$("$BIN" --demo)"
-echo "$OUT" | tr -d '\n' | head -c 400; echo
+printf '%s\n' "${OUT:0:400}..."
 echo "$OUT" | grep -q '"v139_demo":true'         || { echo "[v139] FAIL demo flag"; exit 1; }
 echo "$OUT" | grep -q '"mean_l2_residual":'      || { echo "[v139] FAIL residual field"; exit 1; }
 echo "$OUT" | grep -q '"sigma_world":\['         || { echo "[v139] FAIL sigma_world array"; exit 1; }

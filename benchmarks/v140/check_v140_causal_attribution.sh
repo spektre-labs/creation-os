@@ -18,7 +18,7 @@ echo "[v140] 1/3 self-test"
 
 echo "[v140] 2/3 demo JSON"
 OUT="$("$BIN" --demo)"
-echo "$OUT" | tr -d '\n' | head -c 600; echo
+printf '%s\n' "${OUT:0:600}..."
 echo "$OUT" | grep -q '"v140_demo":true'    || { echo "[v140] FAIL demo flag"; exit 1; }
 echo "$OUT" | grep -q '"counterfactual":'   || { echo "[v140] FAIL counterfactual block"; exit 1; }
 echo "$OUT" | grep -q '"attribution":'      || { echo "[v140] FAIL attribution block"; exit 1; }
