@@ -4314,6 +4314,32 @@ check-v189-ttc-adaptive-budget: creation_os_v189_ttc
 check-v189: check-v189-ttc-adaptive-budget
 	@echo "check-v189: OK (σ-TTC kernel)"
 
+# --- v190 σ-Latent-Reason (recurrent depth + convergence) ---
+# The thinking block is a contraction map ρ·(h-h*)+h* with
+# spectral radius ρ < 1, so ‖h_{n+1}-h_n‖ = ρ·‖h_n-h_{n-1}‖
+# geometrically decays.  σ_latent = ‖Δh‖/‖h‖ is the halt
+# signal; reasoning stops when σ_latent < τ_converge = 0.01 or
+# the max recurrent depth is reached.  No intermediate tokens
+# are emitted: reasoning is fully internal, so prompts aren't
+# leaked via "let me think step-by-step".  Invariants exercised
+# in the merge-gate: strict σ_latent monotonicity per query,
+# ≥ 90 % convergence rate, and hard-class queries consume ≥ 3×
+# more iterations than easy-class.  v190.1 wires a learnt halt
+# predictor into BitNet-2B layers 10-20.
+V190_INC  = -Isrc/v190
+V190_SRCS = src/v190/latent.c
+
+creation_os_v190_latent: $(V190_SRCS) src/v190/main.c
+	$(CC) $(CFLAGS) $(V190_INC) -o $@ \
+	    $(V190_SRCS) src/v190/main.c $(LDFLAGS)
+
+check-v190-latent-reason-convergence: creation_os_v190_latent
+	@bash benchmarks/v190/check_v190_latent_reason_convergence.sh
+	@echo "check-v190-latent-reason-convergence: OK (monotone σ_latent + ≥90% convergence + zero middle tokens)"
+
+check-v190: check-v190-latent-reason-convergence
+	@echo "check-v190: OK (σ-latent-reason kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
