@@ -5151,6 +5151,25 @@ check-v225-fractal-cross-scale: creation_os_v225_fractal
 check-v225: check-v225-fractal-cross-scale
 	@echo "check-v225: OK (σ-fractal kernel)"
 
+# --- v226 σ-Attention (attention = 1=1, per-head σ) ---
+# 8 heads × 6 tokens × key-length 6.  σ_head_token =
+# H(softmax(QK^T)) / log(L); σ_head = mean σ_token.
+# Surgery classification: prune / boost / keep.  v0 is
+# offline and weights-free (no modification).
+V226_INC  = -Isrc/v226
+V226_SRCS = src/v226/attention.c
+
+creation_os_v226_attention: $(V226_SRCS) src/v226/main.c
+	$(CC) $(CFLAGS) $(V226_INC) -o $@ \
+	    $(V226_SRCS) src/v226/main.c $(LDFLAGS)
+
+check-v226-attention-per-head-sigma: creation_os_v226_attention
+	@bash benchmarks/v226/check_v226_attention_per_head_sigma.sh
+	@echo "check-v226-attention-per-head-sigma: OK (per-head σ + surgery classification)"
+
+check-v226: check-v226-attention-per-head-sigma
+	@echo "check-v226: OK (σ-attention kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
