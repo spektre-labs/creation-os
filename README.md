@@ -141,6 +141,22 @@ on every token**:
     **meta-σ (σ of σ itself)**, auto-diagnose from the highest-σ
     channel, and a deterministic self-benchmark runner (v133). σ
     ends up self-referential: `K(K) = K`.
+13. **Deep infrastructure — neuromorphic, neurosymbolic, evolved,
+    AOT-compiled, formally proven** — an event-driven σ-spike
+    encoder with O(1) burst detection and Lava-compatible export,
+    saving σ-work on stable tokens (v134); a pure-C Horn-clause
+    micro-engine that consistency-checks BitNet answers against a
+    fact base, routed by σ so the symbolic engine only pays its
+    cost when the statistical leg isn't confident (v135); a
+    gradient-free (μ/μ, λ)-ES with diagonal covariance that
+    discovers a weighted-geometric σ-aggregator which beats uniform
+    weights by ≥ 0.20 fitness in seconds on an M3 (v136); a σ-gate
+    generator that emits branchless, constant-folded C for a
+    specific σ-profile and hands it to `$(CC) -O3` for native
+    lowering (v137); and machine-checkable ACSL contracts for the
+    σ-gate, with a pure-C shape validator that always runs plus an
+    opportunistic Frama-C WP tier-2 for DO-178C DAL-A-style
+    unbounded proofs (v138).
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -246,14 +262,53 @@ BitNet hidden-state corpora (for v130 PQ training), and the v115
 SQLite binding (for v131 timelines) live in the respective `vNN.1`
 follow-ups per [CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
 
+### Deep infrastructure · spike · symbolic · evolve · compile · proof (v134–v138)
+
+The deep-infrastructure stack.  Every kernel here is framework-free,
+weights-free at the merge gate, and deliberately scoped so the
+honest v134.0–v138.0 surface is always green even when the heavier
+external dependency (Loihi 2, Frama-C, LLVM, archived logs) isn't
+on the host.  The vNN.1 follow-ups close the external loop where
+the environment supports it, exactly like the v123 TLC pattern.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v134**](docs/v134/README.md) σ-Spike | δ-threshold σ-spike encoder (`σ_spike ← \|σ_now − σ_last\| ≥ δ`, default δ=0.10) + O(1) burst detector (ring buffer over last W=5 tokens, K=3+ spikes → BURST) + Lava-compatible JSON export with a frozen `{process, port, delta, burst_window, burst_count, events:[{t,v}…]}` schema. | The σ-stream becomes *event-driven* rather than continuous: stable tokens carry no downstream σ-work (the "0 W on a flat stream" claim, measured on a 70/30 synthetic as stable_ratio = 0.7000 and under test as ≥ 0.60). One spike = SPIKE (emit + mark); a sustained burst = BURST (abstain) — the first σ-layer to distinguish information from instability explicitly. |
+| [**v135**](docs/v135/README.md) σ-Symbolic | ~400-line Horn-clause micro-engine: interned atom table, ground fact base (rules refused with a clear error in v135.0), unification-based queries with repeated variables, `cos_v135_check_triple` returning CONFIRM / CONTRADICT / UNKNOWN for functional predicates, and σ-gated triple extraction. | σ is the **router** between statistical and symbolic reasoning: below τ BitNet answers direct; above τ + logical → KB verify / override; above τ + non-logical → ABSTAIN. Classic neurosymbolic stacks invoke the symbolic engine unconditionally; v135 pays that cost only when the statistical leg isn't confident. |
+| [**v136**](docs/v136/README.md) σ-Evolve | Deterministic (μ/μ, λ)-ES with diagonal covariance adaptation — a consciously simplified CMA-ES-family optimiser — on a 9-real genotype (8 channel weights + τ). Elitism guarantees a monotone non-decreasing trajectory. Output: TOML block v29 can consume at runtime. | v104 picked the geometric mean *by hand*. v136 discovers the **weighted** geometric aggregator automatically: on a synthetic sidecar where channels 0..4 carry signal and channels 5..7 are uniform-[0,1] noise, uniform weights score ≈ 0.74 and the evolved config reaches ≈ 0.98 in 50 generations — gradient-free, no GPU, sub-second on an M3. |
+| [**v137**](docs/v137/README.md) σ-Compile | Per-profile C-source generator: emits a single branchless `cos_v137_compiled_gate(const float ch[8])` with every τ-threshold baked in as a C literal; `$(CC) -O3` lowers it natively (LLVM on clang, GIMPLE on gcc). Includes a runtime-τ interpreted reference and a hand-written embedded compiled gate so the merge-gate runs end-to-end without invoking `$(CC)` at test time. | The σ-layer touches every token; any per-call table load or dispatch shows up in the whole-stack latency. v137 removes the last interpretive cost by trading generality for a profile-specialised branchless predicate. Both paths measure < 500 ns/call on the merge-gate (≈ 0.6–1.2 ns/call on M3 after -O3 SIMD auto-vectorisation). |
+| [**v138**](docs/v138/README.md) σ-Proof | ACSL-annotated reference σ-gate (`src/v138/sigma_gate.c`) with frozen contracts in `specs/v138/sigma_gate.acsl`. Two-tier gate: tier-1 pure-C validator asserts every annotated function carries `requires` + `ensures`, the 0 ≤ σ ≤ 1 domain predicate, the emit/abstain partition, `disjoint behaviors`, and loop invariants for the vec8 existential OR. Tier-2 is opportunistic `frama-c -wp -wp-rte`; `V138_REQUIRE_FRAMA_C=1` makes it mandatory. | v123 TLA+ is *bounded*. v138 is the *unbounded* leg: σ-gate correctness is now a machine-checked obligation under every commit, with DO-178C DAL-A compatibility wherever Frama-C is installed. Same green-tier-1-plus-optional-tier-2 discipline v123 established for TLC. |
+
+Every v134–v138 merge-gate check is deterministic, weights-free,
+and framework-free in the sense that no external prover, neuromorphic
+chip, LLVM toolchain plug-in, or archived benchmark corpus is
+required for the tier-1 gate to pass.  The vNN.1 follow-ups close
+the external loop:
+
+* **v134.1** — real Loihi 2 dev-kit handoff for the spike stream;
+  v106 `X-COS-Sigma-Spikes` header; v108 pulse-train visualisation.
+* **v135.1** — Horn rules (`:-`) with SLD resolution; v115 memory →
+  automatic KG extraction path; `POST /v1/verify` on v106.
+* **v136.1** — full CMA-ES with rank-1/rank-μ covariance updates;
+  real archived σ-logs from v104/v106; evolved config auto-loaded
+  by v29 at runtime.
+* **v137.1** — `make compile-sigma` that emits, compiles, and
+  dlopens a per-profile `.so`; raw LLVM IR via `clang -S
+  -emit-llvm`; ARM AMX / AVX-512 / WASM backends.
+* **v138.1** — alt-ergo / z3 / cvc4 proof obligations mandatory on
+  CI (with a provers container); Coq extraction of the discharged
+  lemmas; full DO-178C DAL-A certification dossier.
+
 ### AGI architecture in one picture
 
-Six layers, composable, each falsifiable:
+Seven layers, composable, each falsifiable:
 
 ```
   Layer 7  Metacognition    weekly snapshots · OLS slope/week · meta-σ (σ of σ)
                             auto-diagnose (highest-channel σ → cause) · self-bench (v133)
                             adaptive user profile · expertise staircase · TOML (v132)
+                            (μ/μ, λ)-ES architecture search for σ-aggregator (v136)
+                            ACSL + Frama-C WP proof of σ-gate invariants (v138)
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
            + Collective     MCP server for Claude / Cursor / VS Code (v116)
                             200-test σ-red-team harness in CI (v122)
@@ -269,13 +324,17 @@ Six layers, composable, each falsifiable:
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
                             HTN/MCTS σ-planner on /v1/plan (v121)
+                            Prolog micro-engine + σ-routed hybrid reasoner (v135)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
                             TLA+ model check of 7 σ-invariants (v123)
                             mode-collapse detector rolls back DPO (v125)
+                            event-driven σ-spike + O(1) burst detector (v134)
+                            AOT-compiled branchless σ-gate · <500 ns/call (v137)
   Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
                             image_url + σ-gated projection (v118)
                             speculative decoding w/ σ-adaptive γ (v119)
   Layer 1  Silicon          BitNet b1.58 · llama.cpp · forty branchless kernels (v60→v100)
+                            Lava-compatible spike-stream export, Loihi 2 in v134.1
 ```
 
 Full diagram + inference and training flows:
