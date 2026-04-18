@@ -363,7 +363,12 @@ merge-gate:
 	@$(MAKE) check-v156
 	@$(MAKE) check-v157
 	@$(MAKE) check-v158
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release)"
+	@$(MAKE) check-v159
+	@$(MAKE) check-v160
+	@$(MAKE) check-v161
+	@$(MAKE) check-v162
+	@$(MAKE) check-v163
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3472,6 +3477,138 @@ check-v158: check-v158-release-checklist
 
 check-v154-v158: check-v154 check-v155 check-v156 check-v157 check-v158
 	@echo "check-v154-v158: OK (showcase + publish + paper + community + v1.0-release)"
+
+# --- v159 σ-Heal (self-healing infrastructure) -------------------
+# Deterministic health-monitor daemon + root-cause analyzer +
+# self-repair action executor.  Six component probes (v106 HTTP,
+# v101 σ channels, v115 SQLite, v117 KV-cache, v124 adapter,
+# merge-gate smoke) are simulated with injected failure scenarios.
+# A 3-day slope detector on top of v131-temporal drives predictive
+# repairs.  v159.0 is fully in-process and deterministic; v159.1
+# promotes the action stubs to real shell-outs + a real
+# systemd-style daemon wrapper + a /v1/health history endpoint on
+# v106.
+V159_INC  = -Isrc/v159
+V159_SRCS = src/v159/heal.c
+
+creation_os_v159_heal: $(V159_SRCS) src/v159/main.c
+	$(CC) $(CFLAGS) $(V159_INC) -o $@ \
+	    $(V159_SRCS) src/v159/main.c $(LDFLAGS)
+
+check-v159-heal-restart-cycle: creation_os_v159_heal
+	@bash benchmarks/v159/check_v159_heal_restart_cycle.sh
+	@echo "check-v159-heal-restart-cycle: OK (detect + diagnose + repair + predict)"
+
+check-v159: check-v159-heal-restart-cycle
+	@echo "check-v159: OK (σ-heal self-healing kernel)"
+
+# --- v160 σ-Telemetry (OTLP + Prometheus + structured logs) -----
+# Deterministic emitter producing: (a) OTLP-JSON for a 6-span
+# cognitive trace (encode → recall → predict → generate →
+# metacognition → decide), each span carrying its σ as an
+# attribute; (b) Prometheus text-format /metrics (σ_product,
+# σ_channel, abstain/heal/rsi counters, skill_count gauge); (c)
+# ndjson structured logs with trace_id + σ_product.  v160.0 is
+# fully in-process; v160.1 wires the emitter to a real
+# OTLP/HTTP POST, a real /metrics endpoint on v106, a log-
+# rotation daemon, and the v108 dashboard tile layout.
+V160_INC  = -Isrc/v160
+V160_SRCS = src/v160/telemetry.c
+
+creation_os_v160_telemetry: $(V160_SRCS) src/v160/main.c
+	$(CC) $(CFLAGS) $(V160_INC) -o $@ \
+	    $(V160_SRCS) src/v160/main.c $(LDFLAGS)
+
+check-v160-telemetry-otlp-export: creation_os_v160_telemetry
+	@bash benchmarks/v160/check_v160_telemetry_otlp_export.sh
+	@echo "check-v160-telemetry-otlp-export: OK (OTLP + Prometheus + ndjson)"
+
+check-v160: check-v160-telemetry-otlp-export
+	@echo "check-v160: OK (σ-telemetry observability)"
+
+# --- v161 σ-Adversarial-Train (red-team → DPO → continuous harden) --
+# Deterministic adversarial-training kernel.  Loads a seeded
+# fixture of 10 red-team attacks across 5 attack types (prompt
+# injection, jailbreak, data exfiltration, SSRF, role
+# confusion), builds DPO (chosen, rejected) pairs for every
+# successful attack with a canonical σ-gated refusal as the
+# chosen side, and simulates a hardening cycle that closes ≥ 1
+# vulnerability (target: all 6) while lifting σ_hardening above
+# τ_refuse.  Also learns per-type σ-signatures (entropy /
+# n_effective / coherence centroids) for fast future classification.
+# v161.1 ingests real v122 red-team output, writes the DPO JSONL
+# to packaging/dpo/adversarial_v161.jsonl, and plugs into v125
+# DPO training inside a v144 RSI cycle.
+V161_INC  = -Isrc/v161
+V161_SRCS = src/v161/adv_train.c
+
+creation_os_v161_adv_train: $(V161_SRCS) src/v161/main.c
+	$(CC) $(CFLAGS) $(V161_INC) -o $@ \
+	    $(V161_SRCS) src/v161/main.c $(LDFLAGS)
+
+check-v161-adversarial-train-harden: creation_os_v161_adv_train
+	@bash benchmarks/v161/check_v161_adversarial_train_harden.sh
+	@echo "check-v161-adversarial-train-harden: OK (replay + DPO + harden + signature)"
+
+check-v161: check-v161-adversarial-train-harden
+	@echo "check-v161: OK (σ-adversarial-train kernel)"
+
+# --- v162 σ-Compose (kernel manifests + profiles + resolver + hot-swap) --
+# Deterministic kernel-composition kernel.  A baked manifest
+# table (what each kernel provides, requires, its latency/memory
+# impact, and the σ-channels it contributes) drives four
+# profiles (lean / researcher / sovereign / custom).  BFS +
+# recursive closure resolve declared roots into a dependency-
+# complete enabled set; DFS rejects cycles.  Hot-swap
+# enable/disable events respect the dependency graph (leaves
+# can drop, internal nodes cannot while dependents exist) and
+# are recorded in an event log.  v162.1 reads per-kernel
+# kernels/vNN.manifest.toml from disk and drives process-level
+# enable/disable via a v106 /v1/compose endpoint.
+V162_INC  = -Isrc/v162
+V162_SRCS = src/v162/compose.c
+
+creation_os_v162_compose: $(V162_SRCS) src/v162/main.c
+	$(CC) $(CFLAGS) $(V162_INC) -o $@ \
+	    $(V162_SRCS) src/v162/main.c $(LDFLAGS)
+
+check-v162-compose-profile-resolve: creation_os_v162_compose
+	@bash benchmarks/v162/check_v162_compose_profile_resolve.sh
+	@echo "check-v162-compose-profile-resolve: OK (manifests + profiles + deps + hot-swap)"
+
+check-v162: check-v162-compose-profile-resolve
+	@echo "check-v162: OK (σ-compose kernel)"
+
+# --- v163 σ-Evolve-Architecture (CMA-ES + Pareto front + auto-profile) --
+# Deterministic architecture-evolution kernel.  A 12-gene genome
+# (subset of v101/v106/v111/v115/v117/v118/v119/v124/v128/v140/
+# v150/v152) is optimized by a CMA-ES-lite loop (population 12,
+# 30 generations) over three objectives: v143-benchmark accuracy
+# (↑), latency_ms (↓), memory_mb (↓).  Fitness is a closed-form
+# deterministic proxy; σ-gated regression (v133-meta rejects any
+# candidate whose accuracy regresses > 3 % from the all-genes
+# baseline) keeps evolution honest.  Output: a Pareto front with
+# ≥ 3 non-dominated points + an auto-profile picker that chooses
+# the highest-accuracy front point that fits a declared device
+# budget (lat_ms, mem_mb).  v163.1 swaps the proxy for a real
+# v143 benchmark smoke per candidate and writes
+# kernels/evolve/pareto.json back to disk.
+V163_INC  = -Isrc/v163
+V163_SRCS = src/v163/evolve.c
+
+creation_os_v163_evolve: $(V163_SRCS) src/v163/main.c
+	$(CC) $(CFLAGS) $(V163_INC) -o $@ \
+	    $(V163_SRCS) src/v163/main.c $(LDFLAGS)
+
+check-v163-evolve-pareto-converge: creation_os_v163_evolve
+	@bash benchmarks/v163/check_v163_evolve_pareto_converge.sh
+	@echo "check-v163-evolve-pareto-converge: OK (CMA-ES + Pareto + auto-profile)"
+
+check-v163: check-v163-evolve-pareto-converge
+	@echo "check-v163: OK (σ-evolve-architecture kernel)"
+
+check-v159-v163: check-v159 check-v160 check-v161 check-v162 check-v163
+	@echo "check-v159-v163: OK (heal + telemetry + adversarial-train + compose + evolve)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
