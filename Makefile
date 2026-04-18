@@ -418,7 +418,12 @@ merge-gate:
 	@$(MAKE) check-v211
 	@$(MAKE) check-v212
 	@$(MAKE) check-v213
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain)"
+	@$(MAKE) check-v214
+	@$(MAKE) check-v215
+	@$(MAKE) check-v216
+	@$(MAKE) check-v217
+	@$(MAKE) check-v218
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4976,6 +4981,28 @@ check-v217-ecosystem-trophic-balance: creation_os_v217_ecosystem
 
 check-v217: check-v217-ecosystem-trophic-balance
 	@echo "check-v217: OK (σ-ecosystem kernel)"
+
+# --- v218 σ-Consciousness-Meter (Φ estimate + honest disclaimer) ---
+# 5 coherence indicators (I_phi, I_self, I_cal,
+# I_reflect, I_world) aggregated into K_eff_meter and
+# σ_meter.  σ_consciousness_claim is pinned to 1.0 —
+# the meter measures, it does not claim.
+V218_INC  = -Isrc/v218
+V218_SRCS = src/v218/consciousness_meter.c
+
+creation_os_v218_consciousness_meter: $(V218_SRCS) src/v218/main.c
+	$(CC) $(CFLAGS) $(V218_INC) -o $@ \
+	    $(V218_SRCS) src/v218/main.c $(LDFLAGS)
+
+check-v218-consciousness-meter-phi: creation_os_v218_consciousness_meter
+	@bash benchmarks/v218/check_v218_consciousness_meter_phi.sh
+	@echo "check-v218-consciousness-meter-phi: OK (K_eff_meter + honest disclaimer)"
+
+check-v218: check-v218-consciousness-meter-phi
+	@echo "check-v218: OK (σ-consciousness-meter kernel)"
+
+check-v214-v218: check-v214 check-v215 check-v216 check-v217 check-v218
+	@echo "check-v214-v218: OK (swarm-evolve + stigmergy + quorum + ecosystem + consciousness-meter)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
