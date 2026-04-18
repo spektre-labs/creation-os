@@ -4586,6 +4586,29 @@ check-v199-law-conflict-resolve: creation_os_v199_law
 check-v199: check-v199-law-conflict-resolve
 	@echo "check-v199: OK (σ-law kernel)"
 
+# --- v200 σ-Market (resource ledger + σ-price + self-improving) ---
+# Four resources (compute / API / memory / adapters) with
+# σ as the price signal — σ > σ_local routes to API,
+# else local.  Scarcity penalty activates when a single
+# allocator holds > τ_hoard of a pool, triggering
+# deterministic eviction.  Over the 40-query trajectory
+# σ_before monotonically drops so cost_second_half is
+# strictly cheaper than cost_first_half (self-improving
+# via v120 distill).  Exchange log hash-chained.
+V200_INC  = -Isrc/v200
+V200_SRCS = src/v200/market.c
+
+creation_os_v200_market: $(V200_SRCS) src/v200/main.c
+	$(CC) $(CFLAGS) $(V200_INC) -o $@ \
+	    $(V200_SRCS) src/v200/main.c $(LDFLAGS)
+
+check-v200-market-scarcity-penalty: creation_os_v200_market
+	@bash benchmarks/v200/check_v200_market_scarcity_penalty.sh
+	@echo "check-v200-market-scarcity-penalty: OK (σ-price + scarcity + self-improving)"
+
+check-v200: check-v200-market-scarcity-penalty
+	@echo "check-v200: OK (σ-market kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
