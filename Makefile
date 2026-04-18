@@ -4565,6 +4565,27 @@ check-v198: check-v198-moral-multi-framework
 check-v194-v198: check-v194 check-v195 check-v196 check-v197 check-v198
 	@echo "check-v194-v198: OK (horizon + recover + habit + ToM + moral)"
 
+# --- v199 σ-Law (norm register + governance graph) ---
+# Three jurisdictions (SCSL / EU AI Act / internal) with
+# 18 norms, 16 queries.  Higher priority wins; same-priority
+# contradictions escalate to REVIEW with σ_law = 1.0 — no
+# silent override.  Waivers flip PROHIBITED → PERMITTED with
+# an audit record.  Every resolution appends to a FNV-1a
+# hash-chained governance graph that replays byte-identically.
+V199_INC  = -Isrc/v199
+V199_SRCS = src/v199/law.c
+
+creation_os_v199_law: $(V199_SRCS) src/v199/main.c
+	$(CC) $(CFLAGS) $(V199_INC) -o $@ \
+	    $(V199_SRCS) src/v199/main.c $(LDFLAGS)
+
+check-v199-law-conflict-resolve: creation_os_v199_law
+	@bash benchmarks/v199/check_v199_law_conflict_resolve.sh
+	@echo "check-v199-law-conflict-resolve: OK (priority + waiver + same-prio → REVIEW)"
+
+check-v199: check-v199-law-conflict-resolve
+	@echo "check-v199: OK (σ-law kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
