@@ -598,6 +598,57 @@ on every token**:
     by ≥ 0.10 — the **1=1 civilisation signal** is
     machine-verifiable, not a marketing claim.
 
+27. **Hypothesis, experiment, theorem, design, manufacture
+    (v204–v208)** — the scientific-discovery layer: the
+    closed loop that turns observations into shipped
+    artefacts with every step σ-graded. **σ-hypothesis**
+    (v204) generates `N = 10` deterministic candidates per
+    observation, scores each with
+    `σ_hypothesis` (raw generator confidence),
+    `σ_grounding` (contradiction with a 5-fact corpus), and
+    `σ_novelty` (L2 distance in a 16-d hash embedding to
+    the nearest known hypothesis); `impact = σ_novelty ·
+    (1 − σ_hypothesis)` is **hard-zeroed** when
+    `σ_grounding > τ_ground = 0.55`, so a logically
+    inconsistent hypothesis cannot sneak into the queue by
+    being novel; the top-3 by impact are promoted to the
+    **TEST_QUEUE**, speculative candidates are flagged but
+    never pruned. **σ-experiment** (v205) builds a design
+    per queue slot with distinct dep / indep / control
+    variable ids, closed-form `n_required = ⌈(z_α + z_β)²
+    / effect²⌉`, and a **simulation-first** decision ladder
+    (`UNDER_POWERED → SIM_SUPPORTS → SIM_REFUTES`) so an
+    experiment that cannot answer its question never runs
+    — the full record is hash-chained as a
+    `cos reproduce --experiment` receipt. **σ-theorem**
+    (v206) formalises each conjecture (σ_formalization),
+    runs a 4-step proof search (σ_proof = max σ_step,
+    weakest step recorded for iterative repair), and
+    exposes a **σ-honest status ladder** PROVEN /
+    CONJECTURE / SPECULATION / REFUTED in which nothing is
+    marked PROVEN without a simulated Lean-4 accept
+    (`σ_formalization ≤ τ_formal ∧ σ_proof ≤ τ_step`) and
+    refutations must carry a non-zero counter-example id.
+    **σ-design** (v207) explores 12 candidates over
+    (performance↑, complexity↓, cost↓) with **hard
+    constraints** from v199 law, v191 constitutional, v200
+    market budget; infeasible candidates are excluded from
+    the Pareto front, and no feasible candidate may
+    dominate any front member; the full
+    requirements → design → rationale → implementation →
+    test receipt is hash-chained for v181. And the capstone
+    **σ-manufacture** (v208) runs 4 designs through 5-rule
+    DFM analysis (each flagged finding carries an
+    actionable suggestion id), 4-stage process simulation,
+    and a quality predictor `σ_quality = 0.6 · σ_process_max
+    + 0.4 · mean(σ_dfm)`; v159-style heal adds checkpoints
+    monotonically in σ_quality, and every run emits a
+    **non-zero `feedback_hypothesis_id`** that closes the
+    loop back to v204 —
+    `hypothesis → experiment → theorem → design →
+    manufacture → observed quality → new hypothesis` on
+    σ-graded evidence, no mystery boxes.
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1136,6 +1187,42 @@ v170 rephrase pipeline driven by v174 flywheel, a
 v193-fed civilisation dashboard with live SCSL revenue —
 are named in each kernel's doc page, but never claimed
 before they land.
+
+### Hypothesis · experiment · theorem · design · manufacture (v204–v208)
+
+The scientific-discovery loop — the five kernels that
+turn observations into shipped artefacts on σ-graded
+evidence: **automated hypothesis generation with
+grounding and novelty instead of unchecked brainstorm**,
+**simulation-first experiment design with power analysis
+instead of underpowered rituals**, **σ-honest theorem
+status with mandatory Lean acceptance for PROVEN**,
+**Pareto design exploration with hard law / ethics / cost
+constraints**, and a **closed-loop digital manufacture
+that feeds observed quality back into the next
+hypothesis**. Every v0 merge-gate is offline,
+deterministic, weights-frozen. v1 wires live v111.2
+hypothesis generation, v152 + v169 grounding, v135
+Prolog, v126 embeddings, v121 planner, v176 simulator,
+real `lake env lean` invocation, v163 CMA-ES, v151
+code-agent, v113 sandbox, v181 streaming audit.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v204**](docs/v204/README.md) σ-Hypothesis | N=10 candidates per observation with σ_hypothesis / σ_grounding / σ_novelty (16-d hash embedding L2 to 5 known facts); FNV-1a hash-chained ranked queue. | **σ turns generation into prioritisation.** `impact = σ_novelty · (1 − σ_hypothesis)`, hard-zeroed when `σ_grounding > τ_ground = 0.55`; top-3 promoted to TEST_QUEUE; speculative candidates are flagged (`σ > τ_spec = 0.60`), never silently pruned. |
+| [**v205**](docs/v205/README.md) σ-Experiment | 3 experiments per v204 queue, distinct (dep, indep, control) variable ids, closed-form `n_required = ⌈(z_α + z_β)² / effect²⌉`, simulation-first decision ladder, FNV-1a repro receipt. | **σ refuses the unanswerable test.** `UNDER_POWERED` (`σ_power ≥ τ_power = 0.40`) is evaluated **before** the sim result — a test that cannot answer never runs; SIM_SUPPORTS requires `σ_sim < τ_sim = 0.35`. |
+| [**v206**](docs/v206/README.md) σ-Theorem | 8 conjectures × 4 proof steps, σ_formalization + σ_step vector + σ_proof = max σ_step + weakest-step index; simulated Lean 4 accept; counter-example ids for refutations. | **σ forbids pose-as-proven.** PROVEN requires both `σ_formal ≤ τ_formal = 0.35` **and** `σ_proof ≤ τ_step = 0.50`; every REFUTED carries a non-zero witness id; CONJECTURE / SPECULATION are kept honest, not hidden. |
+| [**v207**](docs/v207/README.md) σ-Design | 12 candidates over (perf↑, cplx↓, cost↓) with v199/v191/v200 hard constraints; σ_feasibility; Pareto front; `requirements → design → rationale → implementation → test` FNV-1a receipt. | **σ exposes the constraint violation.** Infeasibility decomposes into explicit law / ethics / cost flags with per-flag penalties; `pareto ⇒ feasible`; no feasible candidate may dominate any Pareto member (machine-verified). |
+| [**v208**](docs/v208/README.md) σ-Manufacture | 4 designs × 5-rule DFM + 4-stage process sim + quality predictor `σ_quality = 0.6·σ_process_max + 0.4·mean(σ_dfm)`; checkpoints via v159 heal; non-zero `feedback_hypothesis_id` per run. | **σ closes the scientific loop.** Flagged DFM findings carry actionable suggestion ids (never a bare "something is wrong"); `higher σ_quality ⇒ ≥ checkpoints` (monotone); every run emits `feedback_hypothesis_id ≠ 0` feeding the next v204 generation — `hypothesis → experiment → theorem → design → manufacture → new hypothesis` as a σ-graded closed loop. |
+
+Every v204–v208 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — live v111.2 +
+v190 latent-reason hypothesis / proof candidates, v152
+corpus + v169 ontology + v135 Prolog grounding, v126
+σ-embed, v121 planner, v176 simulator, real Lean 4 `lake`
+invocation, v163 CMA-ES, v151 code-agent, v113 sandbox,
+v181 streaming audit — are named in each kernel's doc
+page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
