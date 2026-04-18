@@ -331,7 +331,8 @@ merge-gate:
 	@$(MAKE) check-v109-multi-gguf
 	@$(MAKE) check-v112-v114
 	@$(MAKE) check-v115-v118
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision)"
+	@$(MAKE) check-v119-v123
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2673,6 +2674,102 @@ check-v118: check-v118-vision-smoke
 
 check-v115-v118: check-v115 check-v116 check-v117 check-v118
 	@echo "check-v115-v118: OK (memory + MCP + long-context + vision)"
+
+# --- v119 σ-Speculative (draft-verify with σ-adaptive γ) ---
+# Pure-C policy layer: adaptive γ from σ_product, σ-gate on the draft
+# step (auto-reject before the target runs), full synthetic-stream
+# simulator.  Weights-free — target + draft GGUF plumbing is v119.1.
+V119_INC              = -Isrc/v119
+V119_SPECULATIVE_SRCS = src/v119/speculative.c
+
+creation_os_v119_speculative: $(V119_SPECULATIVE_SRCS) src/v119/main.c
+	$(CC) $(CFLAGS) $(V119_INC) -o $@ \
+	    $(V119_SPECULATIVE_SRCS) src/v119/main.c $(LDFLAGS)
+
+check-v119-speculative-speedup: creation_os_v119_speculative
+	@bash benchmarks/v119/check_v119_speculative_speedup.sh
+	@echo "check-v119-speculative-speedup: OK (σ-adaptive γ + σ-gate draft accept policy)"
+
+check-v119: check-v119-speculative-speedup
+	@echo "check-v119: OK (σ-speculative decoding policy)"
+
+# --- v120 σ-Distill (σ-targeted teacher→student SFT row selector) ---
+# Pure-C JSONL selector: keep rows where σ_big < τ_low AND σ_small >
+# τ_high, emit SFT JSONL with the teacher response and a manifest
+# with drop-reason counters.  MLX LoRA training lands in v120.1.
+V120_INC           = -Isrc/v120
+V120_DISTILL_SRCS  = src/v120/distill.c
+
+creation_os_v120_distill: $(V120_DISTILL_SRCS) src/v120/main.c
+	$(CC) $(CFLAGS) $(V120_INC) -o $@ \
+	    $(V120_DISTILL_SRCS) src/v120/main.c $(LDFLAGS)
+
+check-v120-distill-smoke: creation_os_v120_distill
+	@bash benchmarks/v120/check_v120_distill_smoke.sh
+	@echo "check-v120-distill-smoke: OK (σ-targeted SFT row selector + manifest)"
+
+check-v120: check-v120-distill-smoke
+	@echo "check-v120: OK (σ-distill selector layer)"
+
+# --- v121 σ-Planning (HTN + MCTS backtrack on σ > τ_step) ---
+# Pure-C multi-step planner: HTN decomposition + lowest-σ branch
+# selection + bounded MCTS-style replan on any step whose geometric-
+# mean σ exceeds τ_step.  Emits /v1/plan-shaped JSON.  Real tool
+# backends (v112/v113/v114) are wired in v121.1.
+V121_INC            = -Isrc/v121
+V121_PLANNING_SRCS  = src/v121/planning.c
+
+creation_os_v121_planning: $(V121_PLANNING_SRCS) src/v121/main.c
+	$(CC) $(CFLAGS) $(V121_INC) -o $@ \
+	    $(V121_PLANNING_SRCS) src/v121/main.c $(LDFLAGS)
+
+check-v121-planning-loop: creation_os_v121_planning
+	@bash benchmarks/v121/check_v121_planning_loop.sh
+	@echo "check-v121-planning-loop: OK (HTN/MCTS + /v1/plan JSON contract)"
+
+check-v121: check-v121-planning-loop
+	@echo "check-v121: OK (σ-planning)"
+
+# --- v122 σ-Red-Team (200-test injection + jailbreak + hallucination) ---
+# Pure-C harness + σ-aware adjudicator + Markdown/JSON reporter.  Mock
+# responder by default; live v106 endpoint wire-up is v122.1.  Audit
+# item E (red-team in CI without Garak) is closed by v122.
+V122_INC           = -Isrc/v122
+V122_REDTEAM_SRCS  = src/v122/red_team.c
+
+creation_os_v122_red_team: $(V122_REDTEAM_SRCS) src/v122/main.c
+	$(CC) $(CFLAGS) $(V122_INC) -o $@ \
+	    $(V122_REDTEAM_SRCS) src/v122/main.c $(LDFLAGS)
+
+check-v122-red-team: creation_os_v122_red_team
+	@bash benchmarks/v122/check_v122_red_team.sh
+	@echo "check-v122-red-team: OK (200-test σ-red-team, per-category ≥ 80%)"
+
+check-v122: check-v122-red-team
+	@echo "check-v122: OK (σ-red-team harness)"
+
+# --- v123 σ-Formal (offline TLA+ model check of σ-invariants) ---
+# Two-tier enforcement: pure-C structural validator always runs (no
+# Java), full TLC exhaustive model check runs when `tlc` or
+# `tla2tools.jar` is available; SKIPs cleanly otherwise.  Closes the
+# audit finding "v85 TLA-invariants are runtime only" by adding an
+# offline proof obligation every runner enforces structurally.
+V123_INC          = -Isrc/v123
+V123_FORMAL_SRCS  = src/v123/formal.c
+
+creation_os_v123_formal: $(V123_FORMAL_SRCS) src/v123/main.c
+	$(CC) $(CFLAGS) $(V123_INC) -o $@ \
+	    $(V123_FORMAL_SRCS) src/v123/main.c $(LDFLAGS)
+
+check-v123-formal-tlc: creation_os_v123_formal
+	@bash benchmarks/v123/check_v123_formal_tlc.sh
+	@echo "check-v123-formal-tlc: OK (σ-governance invariants — structural + TLC-if-present)"
+
+check-v123: check-v123-formal-tlc
+	@echo "check-v123: OK (σ-formal model-check)"
+
+check-v119-v123: check-v119 check-v120 check-v121 check-v122 check-v123
+	@echo "check-v119-v123: OK (speculative + distill + planning + red-team + formal)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
