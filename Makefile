@@ -408,7 +408,12 @@ merge-gate:
 	@$(MAKE) check-v201
 	@$(MAKE) check-v202
 	@$(MAKE) check-v203
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization)"
+	@$(MAKE) check-v204
+	@$(MAKE) check-v205
+	@$(MAKE) check-v206
+	@$(MAKE) check-v207
+	@$(MAKE) check-v208
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4768,6 +4773,31 @@ check-v207-design-pareto-front: creation_os_v207_design
 
 check-v207: check-v207-design-pareto-front
 	@echo "check-v207: OK (σ-design kernel)"
+
+# --- v208 σ-Manufacture (DFM + process sim + quality + closed loop) ---
+# 4 designs manufactured.  Each run carries 5 DFM
+# findings (σ_dfm + flagged + suggestion_id), 4 process
+# stages with σ_process, and σ_quality combining the two.
+# v159-style heal: checkpoints grow monotonically with
+# σ_quality.  Every run emits a non-zero feedback
+# hypothesis id that closes the
+#    v208 → v204 science / design / manufacture loop.
+V208_INC  = -Isrc/v208
+V208_SRCS = src/v208/manufacture.c
+
+creation_os_v208_manufacture: $(V208_SRCS) src/v208/main.c
+	$(CC) $(CFLAGS) $(V208_INC) -o $@ \
+	    $(V208_SRCS) src/v208/main.c $(LDFLAGS)
+
+check-v208-manufacture-dfm-check: creation_os_v208_manufacture
+	@bash benchmarks/v208/check_v208_manufacture_dfm_check.sh
+	@echo "check-v208-manufacture-dfm-check: OK (DFM + process + quality + closed loop)"
+
+check-v208: check-v208-manufacture-dfm-check
+	@echo "check-v208: OK (σ-manufacture kernel)"
+
+check-v204-v208: check-v204 check-v205 check-v206 check-v207 check-v208
+	@echo "check-v204-v208: OK (hypothesis + experiment + theorem + design + manufacture)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
