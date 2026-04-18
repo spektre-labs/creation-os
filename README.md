@@ -338,6 +338,45 @@ on every token**:
     `v1.58-bit quantization` because its baked
     `σ_teacher = 0.75 > τ_teacher = 0.60` — a model that admits
     when it should not teach.
+21. **Self-evolving, self-play, simulated, compressed,
+    distributed (v174–v178)** — the self-evolving and
+    distributed-truth layer: a **σ-flywheel** (v174) that runs
+    the proposer → solver → σ-verifier → DPO loop with **σ as
+    the data filter** (chosen if `σ < 0.25`, pair + big-model
+    fix if `σ > 0.60`, else SKIP — uninformative middle band
+    is never trained on), backed by three anti-model-collapse
+    guards (entropy `H ≥ 1.20`, σ-variance `≥ 0.010`, benchmark
+    score `≥ baseline − 0.05`) that abort the cycle with an
+    explicit reason; a **σ-debate-train** (v175) that harvests
+    12 v150-style debates into DPO pairs, runs a 3-adapter
+    round-robin Elo tournament (`K = 32`, expected =
+    `1/(1 + 10^((R_b − R_a)/400))`), and closes a SPIN
+    convergence loop whose σ_delta shrinks monotonically until
+    `< 0.01`; a **σ-simulator** (v176) that procedurally
+    generates 6 candidate worlds with `σ_realism` +
+    `σ_difficulty`, builds a 5-world easy→hard curriculum
+    (`σ_realism ≤ 0.35`), measures sim-to-sim `σ_transfer`
+    with an `overfit` flag at `> 0.15`, and trains on 1000
+    latent **dream** rollouts whose mean σ beats the real-step
+    baseline within a slack window — learning without a single
+    physics step; a **σ-compress** (v177) that shrinks a
+    16-layer × 64-neuron stack by σ-aware neuron pruning
+    (`σ_impact < 0.05 → drop`), σ-aware mixed precision
+    (`≤ 0.15 → INT8`, `≤ 0.40 → INT4`, else INT2), and
+    σ-profile **layer merging** — producing an 80 % parameter
+    reduction, 6 merges and 3/3/4 precision split inside a
+    **5 % σ-calibration drift budget** (measured 0.72 %); and a
+    **σ-consensus** (v178) protocol where a 5-node mesh
+    (3 mature honest + 1 young + 1 byzantine) runs one
+    reputation-weighted σ-Byzantine agreement round over 4
+    claims at quorum `2/3` with `θ = 0.30`, producing `2 accept
+    / 1 reject / 1 abstain`; the byzantine node's reputation
+    decays to 0, the young node gains net reputation without
+    overriding mature votes (sybil-resistance), and every
+    decision is leaf-hashed (SHA-256 of packed σ vector +
+    decision) and folded into a merkle root that fails
+    verification under any tamper — **resonance, not
+    consensus**.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -673,6 +712,38 @@ LoRA-adapter composition driving v141 curriculum, real
 iteration for narrative threads, and BitNet-generated Socratic
 probes with v132 persona adaptation — are named in each
 kernel's doc page, but never claimed before they land.
+
+### Self-evolving · self-play · simulated · compressed · distributed (v174–v178)
+
+Self-evolving and distributed-truth layer — the five kernels
+that let Creation OS **feed its own training data under σ
+quality control, harvest its own debates for DPO, dream its
+own physics simulations, shrink itself without losing
+calibration, and agree with its peers without trusting any
+one of them**. Every v0 merge-gate is offline, deterministic
+and weights-frozen; v1 plugs in real v151-proposer + v114
+swarm big-model + v125 DPO + v124 hot-swap, a real MuJoCo /
+DreamerV3 backend, a real BitNet-2B → `bitnet_1b_sigma_pruned.
+gguf` emission, and a live v128 mesh with signed messages +
+streaming v72 anchoring.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v174**](docs/v174/README.md) σ-Flywheel | Proposer → solver → σ-verifier → DPO loop over 50 synthetic prompts across 5 embedding clusters, three-mode σ distribution so every class is exercised in one cycle. | **σ is the data filter**: `σ < 0.25 → chosen`, `σ > 0.60 → pair + big-model fix`, middle band → SKIP (never trained on). Three anti-model-collapse guards (`H ≥ 1.20`, `σ-variance ≥ 0.010`, `score ≥ baseline − 0.05`) abort the cycle with a typed reason; the merge-gate forces the regression guard to fire at `baseline = 0.99`. |
+| [**v175**](docs/v175/README.md) σ-Debate-Train | 12 debates (4 prompts × 3 specialists) harvested into DPO pairs; 3-adapter home/away round-robin with classic Elo (`K = 32`); SPIN convergence loop with `σ_delta → 0`. | Consensus-low-σ rounds are SKIPped (uninformative) instead of contaminating the trainer — **σ admits when a debate is not teaching anything**. The champion emerges from σ-ordering (adapter 0 has the lowest σ_base) and the merge-gate asserts `σ_chosen < σ_rejected` on every harvested PAIR record. |
+| [**v176**](docs/v176/README.md) σ-Simulator | 6 procedurally parametrised worlds (room, objects, friction, mass) with `σ_realism` + `σ_difficulty`, 5-world easy→hard curriculum, 4 sim-to-sim transfer pairs, 1000 latent Box-Muller dream rollouts. | Realistic worlds are gated on `σ_realism ≤ τ_realism = 0.35`; transfer pairs flag `overfit` at `σ_transfer > 0.15`; dreams are accepted only when `σ_dream_mean ≤ σ_real + dream_slack` — so the model can learn from latent rollouts **only when those rollouts are calibrated**, which is the v176 contract in one sentence. |
+| [**v177**](docs/v177/README.md) σ-Compress | 16-layer × 64-neuron synthetic BitNet-like stack; σ-aware pruning, INT8/INT4/INT2 mixed precision, and σ-profile layer merging, all in closed form. | The whole kernel is built around **σ-calibration drift ≤ 5 %** as the exit invariant. Baked seed produces params −80.1 %, 3/3/4 INT8/INT4/INT2 split, 6 merges and a measured drift of 0.72 % — the shrunken model keeps its σ-calibration. |
+| [**v178**](docs/v178/README.md) σ-Consensus | 5-node mesh (3 mature honest, 1 young, 1 byzantine) runs one σ-Byzantine agreement round over 4 claims at `θ = 0.30`, `quorum = 2/3`; reputation-weighted; SHA-256 merkle tree over leaf-hashed σ + decision. | No authority picks truth: `truth = convergence of σ above quorum`, and the mesh **abstains** when it cannot converge. Sybil-resistance holds (young rep 1.0 cannot override mature 3.0); byzantine rep decays to 0 in one round; any tampered leaf fails `verify_merkle` — **resonance, not consensus**. |
+
+Every v174–v178 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — real v151 proposer + v114
+swarm + v125 DPO + v124 hot-swap driving the flywheel, real
+v150 debate sockets + LoRA adapter swaps feeding the
+tournament, real MuJoCo / DreamerV3 backing the simulator
+and dreams, a real BitNet-2B → `models/v177/bitnet_1b_sigma_
+pruned.gguf` emission, and a live v128 mesh with signed
+ed25519 messages + streaming v72 merkle anchoring — are named
+in each kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 

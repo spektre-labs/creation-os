@@ -378,7 +378,12 @@ merge-gate:
 	@$(MAKE) check-v171
 	@$(MAKE) check-v172
 	@$(MAKE) check-v173
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach)"
+	@$(MAKE) check-v174
+	@$(MAKE) check-v175
+	@$(MAKE) check-v176
+	@$(MAKE) check-v177
+	@$(MAKE) check-v178
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3879,6 +3884,138 @@ check-v173: check-v173-teach-socratic-cycle
 # Aggregate check-v169-v173
 check-v169-v173: check-v169 check-v170 check-v171 check-v172 check-v173
 	@echo "check-v169-v173: OK (ontology + transfer + collab + narrative + teach)"
+
+# --- v174 σ-Flywheel (self-evolving data pipeline) ----------------------
+# Proposer → solver → σ-verifier → DPO data loop with σ used
+# as a data filter: σ<τ_confident → chosen; σ>τ_uncertain →
+# negative + big-model correction (PAIR); middle band → SKIP
+# (uninformative).  50 synthetic questions over 5 clusters,
+# three-mode σ distribution so every class is exercised under
+# the baked seed.  Three anti-model-collapse guards:
+# (a) answer-entropy H < H_min, (b) σ-variance < var_min,
+# (c) benchmark score regresses below baseline − slack;
+# any one aborts the cycle with an explicit reason.  v174.1
+# wires real v151 proposer, v114 swarm big-model, and
+# v125 DPO + v124 hot-swap.
+V174_INC  = -Isrc/v174
+V174_SRCS = src/v174/flywheel.c
+
+creation_os_v174_flywheel: $(V174_SRCS) src/v174/main.c
+	$(CC) $(CFLAGS) $(V174_INC) -o $@ \
+	    $(V174_SRCS) src/v174/main.c $(LDFLAGS)
+
+check-v174-flywheel-one-cycle: creation_os_v174_flywheel
+	@bash benchmarks/v174/check_v174_flywheel_one_cycle.sh
+	@echo "check-v174-flywheel-one-cycle: OK (chosen + pair + skip + anti-collapse)"
+
+check-v174: check-v174-flywheel-one-cycle
+	@echo "check-v174: OK (σ-flywheel kernel)"
+
+# --- v175 σ-Debate-Train (self-play DPO + Elo tournament + SPIN) --------
+# Harvests v150-style debates into DPO data: A answers,
+# B attempts to refute; if B wins → (A=rejected, B=chosen)
+# pair; if A survives → chosen positive; both-consensus-low-σ
+# rounds are SKIPped (uninformative) to avoid contaminating
+# the trainer.  Plus a 3-adapter round-robin tournament using
+# closed-form Elo (expected = 1/(1 + 10^((Rb−Ra)/400)),
+# update = K·(actual − expected), K=32), and a SPIN loop
+# whose σ_delta shrinks monotonically (0.50·0.55^gen) until
+# it falls below spin_convergence = 0.01.  v175.1 plugs in
+# real v150 debate + v125 DPO + real adapter swap.
+V175_INC  = -Isrc/v175
+V175_SRCS = src/v175/debate_train.c
+
+creation_os_v175_debate_train: $(V175_SRCS) src/v175/main.c
+	$(CC) $(CFLAGS) $(V175_INC) -o $@ \
+	    $(V175_SRCS) src/v175/main.c $(LDFLAGS)
+
+check-v175-debate-train-elo: creation_os_v175_debate_train
+	@bash benchmarks/v175/check_v175_debate_train_elo.sh
+	@echo "check-v175-debate-train-elo: OK (harvest + tournament + SPIN)"
+
+check-v175: check-v175-debate-train-elo
+	@echo "check-v175: OK (σ-debate-train kernel)"
+
+# --- v176 σ-Simulator (world gen + curriculum + dream training) ---------
+# Procedurally generates 6 candidate worlds (room, objects,
+# friction, mass) with σ_realism and σ_difficulty derived
+# from parameter plausibility; builds a 5-world curriculum
+# ordered by σ_difficulty ascending (easy → hard, realistic
+# worlds first); measures sim-to-sim σ_transfer between
+# consecutive curriculum worlds; then runs 1000 latent
+# "dream" rollouts (Box-Muller-sampled σ around 0.12 ±0.05)
+# and asserts σ_dream_mean ≤ σ_real + dream_slack — the
+# signal that dreams are a safer learning source when σ-gated.
+# v176.1 emits real MuJoCo XML + a DreamerV3-style neural
+# world model behind the rollouts.
+V176_INC  = -Isrc/v176
+V176_SRCS = src/v176/simulator.c
+
+creation_os_v176_simulator: $(V176_SRCS) src/v176/main.c
+	$(CC) $(CFLAGS) $(V176_INC) -o $@ \
+	    $(V176_SRCS) src/v176/main.c $(LDFLAGS)
+
+check-v176-simulator-dream-train: creation_os_v176_simulator
+	@bash benchmarks/v176/check_v176_simulator_dream_train.sh
+	@echo "check-v176-simulator-dream-train: OK (worlds + curriculum + transfer + dreams)"
+
+check-v176: check-v176-simulator-dream-train
+	@echo "check-v176: OK (σ-simulator kernel)"
+
+# --- v177 σ-Compress (σ-aware pruning + mixed precision + merging) ------
+# Closed-form compression of a synthetic 16×64 BitNet-like
+# stack.  Three σ-aware passes: (1) prune neurons whose
+# σ_impact < prune_tau (0.05) — they contribute nothing to
+# calibration; (2) assign mixed precision per layer by
+# σ_layer (INT8 if ≤ 0.15; INT4 if ≤ 0.40; INT2 otherwise);
+# (3) merge adjacent layers sharing a σ-profile (|Δσ| ≤
+# merge_tau = 0.03) at the same precision.  Exit invariant:
+# σ_calibration drift ≤ drift_budget_pct = 5 %, with a
+# material (≥ 30 %) parameter drop.  v177.1 emits a real
+# models/v177/bitnet_1b_sigma_pruned.gguf.
+V177_INC  = -Isrc/v177
+V177_SRCS = src/v177/compress.c
+
+creation_os_v177_compress: $(V177_SRCS) src/v177/main.c
+	$(CC) $(CFLAGS) $(V177_INC) -o $@ \
+	    $(V177_SRCS) src/v177/main.c $(LDFLAGS)
+
+check-v177-compress-sigma-prune: creation_os_v177_compress
+	@bash benchmarks/v177/check_v177_compress_sigma_prune.sh
+	@echo "check-v177-compress-sigma-prune: OK (prune + mixed prec + merge)"
+
+check-v177: check-v177-compress-sigma-prune
+	@echo "check-v177: OK (σ-compress kernel)"
+
+# --- v178 σ-Consensus (Byzantine + reputation + sybil + merkle) ---------
+# 5-node mesh (3 honest mature + 1 honest young + 1 byzantine)
+# runs one σ-Byzantine agreement round over 4 baked claims
+# (θ = 0.30).  Reputation-weighted quorum at 2/3: accept /
+# reject / abstain.  Sybil-resistance: young nodes start at
+# rep 1.0 — they vote but cannot override mature nodes.
+# Byzantine reputations decay faster (−0.40 vs −0.20).  Each
+# resolved claim is leaf-hashed (SHA-256 of packed σ+decision)
+# and folded into a merkle root — tampering any leaf breaks
+# verification.  "Resonance not consensus": truth = σ-signal
+# convergence above quorum; mesh abstains when it cannot
+# converge.  v178.1 wires live v128 mesh transport + signed
+# messages + streaming v72 anchoring.
+V178_INC  = -Isrc/v178 -Isrc/license_kernel
+V178_SRCS = src/v178/consensus.c src/license_kernel/license_attest.c
+
+creation_os_v178_consensus: $(V178_SRCS) src/v178/main.c
+	$(CC) $(CFLAGS) $(V178_INC) -o $@ \
+	    $(V178_SRCS) src/v178/main.c $(LDFLAGS)
+
+check-v178-consensus-byzantine: creation_os_v178_consensus
+	@bash benchmarks/v178/check_v178_consensus_byzantine.sh
+	@echo "check-v178-consensus-byzantine: OK (quorum + reputation + merkle)"
+
+check-v178: check-v178-consensus-byzantine
+	@echo "check-v178: OK (σ-consensus kernel)"
+
+check-v174-v178: check-v174 check-v175 check-v176 check-v177 check-v178
+	@echo "check-v174-v178: OK (flywheel + debate-train + simulator + compress + consensus)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

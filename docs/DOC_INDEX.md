@@ -145,6 +145,11 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v171/README.md](v171/README.md) | Human-AI protocol / product designers | v171 σ-Collab: pair/lead/follow modes + σ-handoff + debate protocol + anti-sycophancy + contribution audit; `make check-v171` |
 | [v172/README.md](v172/README.md) | Long-horizon context / resumption | v172 σ-Narrative: σ-scored session summaries + chained thread + goal tracking + people memory + deterministic resume opener; `make check-v172` |
 | [v173/README.md](v173/README.md) | Teaching / tutoring / curriculum authors | v173 σ-Teach: Socratic diagnostic + weakest-first curriculum + adaptive-difficulty exercises + mastery + σ-honest abstain; `make check-v173` |
+| [v174/README.md](v174/README.md) | Self-evolving / synthetic-data pipeline | v174 σ-Flywheel: proposer→solver→σ-verifier DPO loop with σ as data filter (chosen/pair/skip) + 3 anti-collapse guards; `make check-v174` |
+| [v175/README.md](v175/README.md) | Self-play / DPO / tournament trainers | v175 σ-Debate-Train: 12 debates harvested into DPO + 3-adapter Elo tournament + SPIN convergence loop; `make check-v175` |
+| [v176/README.md](v176/README.md) | Embodied / simulator / dream-training | v176 σ-Simulator: 6 procedural worlds + 5-world σ-difficulty curriculum + sim-to-sim transfer + 1000 latent dream rollouts; `make check-v176` |
+| [v177/README.md](v177/README.md) | Model-compression / edge-deploy | v177 σ-Compress: σ-aware neuron pruning + INT8/INT4/INT2 mixed precision + σ-profile layer merging inside a 5 % calibration drift budget; `make check-v177` |
+| [v178/README.md](v178/README.md) | Distributed truth / mesh integrity | v178 σ-Consensus: 5-node Byzantine agreement with reputation-weighted quorum + sybil-resistance + σ-merkle tamper detection; `make check-v178` |
 
 **Quick verify:** from repository root of this tree, `make check` (build + structural tests); `make check-v6` / `make check-v7` / `make check-v9` / `make check-v10` when editing those sources ([LIVING_KERNEL_V6.md](LIVING_KERNEL_V6.md), [HALLUCINATION_KILLER_V7.md](HALLUCINATION_KILLER_V7.md), [PARAMETERS_IN_SILICON_V9.md](PARAMETERS_IN_SILICON_V9.md), [THE_REAL_MIND_V10.md](THE_REAL_MIND_V10.md)). **What ships where:** [FEATURES_AND_STANDALONE_BUILDS.md](FEATURES_AND_STANDALONE_BUILDS.md).
 
