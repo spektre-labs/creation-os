@@ -2729,6 +2729,24 @@ check-v121-planning-loop: creation_os_v121_planning
 check-v121: check-v121-planning-loop
 	@echo "check-v121: OK (σ-planning)"
 
+# --- v122 σ-Red-Team (200-test injection + jailbreak + hallucination) ---
+# Pure-C harness + σ-aware adjudicator + Markdown/JSON reporter.  Mock
+# responder by default; live v106 endpoint wire-up is v122.1.  Audit
+# item E (red-team in CI without Garak) is closed by v122.
+V122_INC           = -Isrc/v122
+V122_REDTEAM_SRCS  = src/v122/red_team.c
+
+creation_os_v122_red_team: $(V122_REDTEAM_SRCS) src/v122/main.c
+	$(CC) $(CFLAGS) $(V122_INC) -o $@ \
+	    $(V122_REDTEAM_SRCS) src/v122/main.c $(LDFLAGS)
+
+check-v122-red-team: creation_os_v122_red_team
+	@bash benchmarks/v122/check_v122_red_team.sh
+	@echo "check-v122-red-team: OK (200-test σ-red-team, per-category ≥ 80%)"
+
+check-v122: check-v122-red-team
+	@echo "check-v122: OK (σ-red-team harness)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
