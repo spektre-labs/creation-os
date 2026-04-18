@@ -428,7 +428,12 @@ merge-gate:
 	@$(MAKE) check-v221
 	@$(MAKE) check-v222
 	@$(MAKE) check-v223
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition)"
+	@$(MAKE) check-v224
+	@$(MAKE) check-v225
+	@$(MAKE) check-v226
+	@$(MAKE) check-v227
+	@$(MAKE) check-v228
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5111,6 +5116,104 @@ check-v223: check-v223-metacognition-strategy-aware
 
 check-v219-v223: check-v219 check-v220 check-v221 check-v222 check-v223
 	@echo "check-v219-v223: OK (create + simulate + language + emotion + meta-cognition)"
+
+# --- v224 σ-Tensor (tensor network + contraction + low-rank compression) ---
+# rank-3 σ-tensor (T × C × K = 6 × 8 × 3), contraction
+# σ-aggregation vs v29 geometric mean, symmetric power-
+# iteration rank-4 approximation of the 8×8 correlation
+# matrix, reconstruction rel_err ≤ τ_rel.
+V224_INC  = -Isrc/v224
+V224_SRCS = src/v224/tensor.c
+
+creation_os_v224_tensor: $(V224_SRCS) src/v224/main.c
+	$(CC) $(CFLAGS) $(V224_INC) -o $@ \
+	    $(V224_SRCS) src/v224/main.c $(LDFLAGS)
+
+check-v224-tensor-contraction: creation_os_v224_tensor
+	@bash benchmarks/v224/check_v224_tensor_contraction.sh
+	@echo "check-v224-tensor-contraction: OK (contraction + rank-k + correlation)"
+
+check-v224: check-v224-tensor-contraction
+	@echo "check-v224: OK (σ-tensor kernel)"
+
+# --- v225 σ-Fractal (hierarchical σ + scale invariance + K(K)=K) ---
+# Binary tree, 5 levels, 31 nodes.  Aggregator A = mean.
+# σ_parent = mean(σ_children) by construction; cross-
+# scale incoherence detector against a planted declared
+# mismatch; holographic K(K)=K identity at every
+# internal node.
+V225_INC  = -Isrc/v225
+V225_SRCS = src/v225/fractal.c
+
+creation_os_v225_fractal: $(V225_SRCS) src/v225/main.c
+	$(CC) $(CFLAGS) $(V225_INC) -o $@ \
+	    $(V225_SRCS) src/v225/main.c $(LDFLAGS)
+
+check-v225-fractal-cross-scale: creation_os_v225_fractal
+	@bash benchmarks/v225/check_v225_fractal_cross_scale.sh
+	@echo "check-v225-fractal-cross-scale: OK (scale-invariance + cross-scale + K(K)=K)"
+
+check-v225: check-v225-fractal-cross-scale
+	@echo "check-v225: OK (σ-fractal kernel)"
+
+# --- v226 σ-Attention (attention = 1=1, per-head σ) ---
+# 8 heads × 6 tokens × key-length 6.  σ_head_token =
+# H(softmax(QK^T)) / log(L); σ_head = mean σ_token.
+# Surgery classification: prune / boost / keep.  v0 is
+# offline and weights-free (no modification).
+V226_INC  = -Isrc/v226
+V226_SRCS = src/v226/attention.c
+
+creation_os_v226_attention: $(V226_SRCS) src/v226/main.c
+	$(CC) $(CFLAGS) $(V226_INC) -o $@ \
+	    $(V226_SRCS) src/v226/main.c $(LDFLAGS)
+
+check-v226-attention-per-head-sigma: creation_os_v226_attention
+	@bash benchmarks/v226/check_v226_attention_per_head_sigma.sh
+	@echo "check-v226-attention-per-head-sigma: OK (per-head σ + surgery classification)"
+
+check-v226: check-v226-attention-per-head-sigma
+	@echo "check-v226: OK (σ-attention kernel)"
+
+# --- v227 σ-Entropy (decomposition + information-theoretic + free energy) ---
+# 8 distributions over K=5 categories.  σ_H, σ_nEff,
+# σ_tail, σ_top1 four channels; σ_product = geometric
+# mean; KL(p||uniform) = log K − H; σ_free = KL/log K;
+# σ_mutual = 1 − MI/H.  Contract: mse_product < mse_H.
+V227_INC  = -Isrc/v227
+V227_SRCS = src/v227/entropy.c
+
+creation_os_v227_entropy: $(V227_SRCS) src/v227/main.c
+	$(CC) $(CFLAGS) $(V227_INC) -o $@ \
+	    $(V227_SRCS) src/v227/main.c $(LDFLAGS)
+
+check-v227-entropy-decomposition: creation_os_v227_entropy
+	@bash benchmarks/v227/check_v227_entropy_decomposition.sh
+	@echo "check-v227-entropy-decomposition: OK (4 channels + KL + MI + free energy)"
+
+check-v227: check-v227-entropy-decomposition
+	@echo "check-v227: OK (σ-entropy kernel)"
+
+# --- v228 σ-Unified (field equation + conservation + phase transitions) ---
+# dσ/dt = −α·K_eff + β·noise + γ·interaction, 100 steps.
+# Noether conservation K_eff · τ = C enforced by τ(t) :=
+# C/K_eff(t).  Phase transition at K_crit = 0.5.
+V228_INC  = -Isrc/v228
+V228_SRCS = src/v228/unified.c
+
+creation_os_v228_unified: $(V228_SRCS) src/v228/main.c
+	$(CC) $(CFLAGS) $(V228_INC) -o $@ \
+	    $(V228_SRCS) src/v228/main.c $(LDFLAGS)
+
+check-v228-unified-field-conservation: creation_os_v228_unified
+	@bash benchmarks/v228/check_v228_unified_field_conservation.sh
+	@echo "check-v228-unified-field-conservation: OK (field eq + conservation + phase)"
+
+check-v228: check-v228-unified-field-conservation
+	@echo "check-v228: OK (σ-unified kernel)"
+
+check-v224-v228: check-v224 check-v225 check-v226 check-v227 check-v228
+	@echo "check-v224-v228: OK (tensor + fractal + attention + entropy + unified)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
