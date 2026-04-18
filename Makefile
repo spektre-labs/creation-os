@@ -2692,6 +2692,24 @@ check-v119-speculative-speedup: creation_os_v119_speculative
 check-v119: check-v119-speculative-speedup
 	@echo "check-v119: OK (σ-speculative decoding policy)"
 
+# --- v120 σ-Distill (σ-targeted teacher→student SFT row selector) ---
+# Pure-C JSONL selector: keep rows where σ_big < τ_low AND σ_small >
+# τ_high, emit SFT JSONL with the teacher response and a manifest
+# with drop-reason counters.  MLX LoRA training lands in v120.1.
+V120_INC           = -Isrc/v120
+V120_DISTILL_SRCS  = src/v120/distill.c
+
+creation_os_v120_distill: $(V120_DISTILL_SRCS) src/v120/main.c
+	$(CC) $(CFLAGS) $(V120_INC) -o $@ \
+	    $(V120_DISTILL_SRCS) src/v120/main.c $(LDFLAGS)
+
+check-v120-distill-smoke: creation_os_v120_distill
+	@bash benchmarks/v120/check_v120_distill_smoke.sh
+	@echo "check-v120-distill-smoke: OK (σ-targeted SFT row selector + manifest)"
+
+check-v120: check-v120-distill-smoke
+	@echo "check-v120: OK (σ-distill selector layer)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
