@@ -696,6 +696,59 @@ on every token**:
     working kill switch. Creation OS ships one that's
     tested in the merge-gate.*
 
+29. **Swarm-evolve, stigmergy, quorum, ecosystem,
+    consciousness-meter (v214–v218)** — the **collective
+    ecosystem** layer: agents are no longer a fixed
+    debating set, they are an evolving population with
+    indirect communication, gradual consensus, trophic
+    dynamics, and a hash-bound honesty meter on top.
+    **σ-swarm-evolve** (v214) runs a 10-generation ×
+    12-agent × 4-niche lifecycle with the simplest
+    possible fitness function — `fitness = 1/(σ_mean+ε)`;
+    σ *is* the fitness — using a per-niche carrying-
+    capacity rule (retire niche-worst, breed niche-top-2)
+    because the naive global-worst rule collapses
+    diversity to one niche by generation 5 on the same
+    fixture; `σ_emergent(g)` is enforced monotone
+    non-increasing by the self-test, so the swarm is
+    mechanically prevented from getting worse. **σ-stigmergy**
+    (v215) replaces message passing with pheromone trails
+    in v115 memory — 6 trails × 20 steps with closed-form
+    decay `Σ(1−σ_k)·e^{−λ·Δt}`, 4 true trails surviving
+    (≥ 3 distinct reinforcer nodes each, forcing cross-
+    v128-mesh formation) and 2 false trails self-
+    annihilating below τ_trail = 0.40; σ *is* the
+    pheromone *and* the gate. **σ-quorum** (v216) makes
+    v178's binary Byzantine vote gradual with a 4-level
+    ladder (**BOLD / CAUTIOUS / DEBATE / DEFER**) driven
+    by `σ_collective = σ_majority_mean + 2·max(0,
+    s_minority − min_σ_dissent)` — a single *confident*
+    dissenter can push a 5-to-2 majority from BOLD into
+    CAUTIOUS, and minority voices are captured by author
+    id in the audit record; deadlocks are never forced
+    through (DEFER happens only after `r_max = 3` rounds).
+    **σ-ecosystem** (v217) is the whole-system health
+    snapshot — 4 trophic levels (**producers v174 /
+    consumers v101 / decomposers v177+v159 / predators
+    v122+v210**), populations tuned so no level exceeds
+    τ_dom = 0.40, 5 named symbiotic pairs covering
+    mutualism (v120 distill), competition (v150 debate,
+    v210 vs v122), and commensalism (v215 stigmergy);
+    aggregate `σ_ecosystem = 0.4·dominance + 0.4·balance
+    + 0.2·symbiosis`, `K_eff = 1 − σ_ecosystem >
+    τ_healthy (0.55)`. **σ-consciousness-meter** (v218) is
+    the refusal kernel: five coherence indicators
+    (**I_phi** v193-IIT, **I_self** v153 identity,
+    **I_cal** v187 σ-calibration, **I_reflect** v147
+    reflect, **I_world** v139 world-model) aggregated
+    into `K_eff_meter` with `σ_meter = 1 − K_eff_meter`,
+    while `σ_consciousness_claim` is **pinned to 1.0**
+    and the disclaimer is **absorbed into the FNV-1a
+    terminal hash** — silently stripping or rewording
+    "we genuinely don't know" breaks byte-determinism
+    and the merge-gate. Honesty is not an editorial
+    policy; it is a hash check.
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1305,6 +1358,35 @@ real `frama-c -wp` + TLA+ `tlc` + attack-tree corpus,
 explanation, ed25519-signed chain links with remote
 attestation — are named in each kernel's doc page, but
 never claimed before they land.
+
+### Swarm-evolve · stigmergy · quorum · ecosystem · consciousness-meter (v214–v218)
+
+The **collective-ecosystem** layer — agents are no
+longer a fixed debating set, they are an evolving
+population with indirect communication, gradual
+consensus, trophic dynamics, and a hash-bound honesty
+meter on top. Every kernel is a deterministic v0
+fixture; every v1 promotion is named but not claimed.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v214**](docs/v214/README.md) σ-Swarm-Evolve | 10 generations × 12 agents × 4 ecological niches (MATH / CODE / PROSE / BENCH); per-niche lifecycle (retire niche-worst σ̄, breed niche-top-2, child σ̄ = max(0.05, 0.97 · mean(parents))); σ_emergent(g) = fleet-wide σ̄. | **σ *is* the fitness.** `fitness = 1/(σ_mean+ε)` — no human grader, no RLHF proxy. The naive global-worst rule was rejected because it collapses diversity to one niche by gen 5 on the same fixture; the per-niche rule keeps ≥ 3 species alive at gen 10 while still driving σ_emergent monotone non-increasing. |
+| [**v215**](docs/v215/README.md) σ-Stigmergy | 6 trails (4 true, 2 false) × 20 steps; closed-form pheromone strength `Σ_k max(0, 1 − σ_k)·e^{−λ·(t_f−t_k)}` normalised to [0, 1]; trail formation requires ≥ 3 distinct author nodes; λ = 0.08 per step, τ_trail = 0.40. | **σ *is* the pheromone *and* the gate.** Low-σ marks persist, high-σ marks evaporate; false trails self-annihilate because followers produce high σ which dilutes reinforcement; formation across ≥ 3 v128-mesh nodes is enforced by the self-test so a single-node "trail" never counts. |
+| [**v216**](docs/v216/README.md) σ-Quorum | 5 proposals × 7 agents; 4-level decision ladder (**BOLD** σ_c < 0.30 / **CAUTIOUS** < 0.55 / **DEBATE** re-run / **DEFER** after r_max = 3 rounds); minority-voice capture with author id; `σ_collective = σ_maj_mean + 2·max(0, s_minority − min_σ_dissent)`. | **σ scales the action.** Gradual consensus means a 5-to-2 majority with one σ = 0.12 dissenter ends up CAUTIOUS, not BOLD — confident-dissent mathematically beats head-count; deadlocks are *never* forced through (DEFER only fires with rounds_used == r_max), which the self-test enforces. |
+| [**v217**](docs/v217/README.md) σ-Ecosystem | 4 trophic levels (**PRODUCERS** v174 / **CONSUMERS** v101 / **DECOMPOSERS** v177+v159 / **PREDATORS** v122+v210), populations 32 / 28 / 22 / 18 out of 100, no share > τ_dom = 0.40; 5 symbiotic pairs covering mutualism (v120 distill, v121↔v151), competition (v150 debate, v210↔v122), commensalism (v215 stigmergy). | **σ is the whole-system health number.** `σ_ecosystem = 0.4·dominance + 0.4·balance + 0.2·symbiosis`, `K_eff = 1 − σ_ecosystem > τ_healthy (0.55)` on the v0 fixture; the merge-gate catches regressions, not baseline failures, so drift is detectable. |
+| [**v218**](docs/v218/README.md) σ-Consciousness-Meter | 5 coherence indicators — I_phi (v193 IIT-inspired Φ), I_self (v153 identity), I_cal (v187 calibration), I_reflect (v147 reflect), I_world (v139 world-model) — weighted 0.35 / 0.15 / 0.15 / 0.15 / 0.20 into `K_eff_meter`; `σ_meter = 1 − K_eff_meter`; disclaimer absorbed into the FNV-1a terminal hash. | **σ refuses to overclaim.** `σ_consciousness_claim` is pinned to 1.0 regardless of K_eff_meter; the disclaimer "This meter measures … We genuinely don't know." is bound to the terminal hash, so silently editing it breaks byte-determinism and the merge-gate. Honesty is a hash check, not an editorial policy. |
+
+Every v214–v218 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — live v125 LoRA
+merge + v136 CMA-ES outer loop + v143 real benchmark
+re-score (v214), live v115 memory backing + v128 mesh
+reads (v215), live v178 quorum + v201 diplomacy
+compromise-search + v181 streaming audit (v216), live
+v174 / v101 / v177 / v159 / v122 / v210 head-counts +
+v200 market + v193 dashboard (v217), and live wiring of
+I_phi / I_self / I_cal / I_reflect / I_world with a
+`/consciousness` web UI (v218) — are named in each
+kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
