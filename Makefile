@@ -4487,6 +4487,28 @@ check-v195-recover-error-classify: creation_os_v195_recover
 check-v195: check-v195-recover-error-classify
 	@echo "check-v195: OK (σ-recover kernel)"
 
+# --- v196 σ-Habit (cortex/cerebellum pattern compile) ---
+# Repetitive audit-log patterns ≥ τ_repeat compile into
+# fast habits (v137 LLVM path, v0 closed-form cycle model);
+# σ is the cortex/cerebellum switch — σ_steady < τ_break
+# runs the compiled habit (cerebellum, ≥ 10× speedup), a σ
+# spike breaks out to full reasoning (cortex).  Library is
+# hash-chained.  Merge-gate: ≥ 3 habits, 10× speedup, at
+# least one σ-spike break-out actually returns to cortex.
+V196_INC  = -Isrc/v196
+V196_SRCS = src/v196/habit.c
+
+creation_os_v196_habit: $(V196_SRCS) src/v196/main.c
+	$(CC) $(CFLAGS) $(V196_INC) -o $@ \
+	    $(V196_SRCS) src/v196/main.c $(LDFLAGS)
+
+check-v196-habit-compile-speedup: creation_os_v196_habit
+	@bash benchmarks/v196/check_v196_habit_compile_speedup.sh
+	@echo "check-v196-habit-compile-speedup: OK (≥3 habits + 10× + break-out)"
+
+check-v196: check-v196-habit-compile-speedup
+	@echo "check-v196: OK (σ-habit kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
