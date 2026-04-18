@@ -338,7 +338,12 @@ merge-gate:
 	@$(MAKE) check-v131
 	@$(MAKE) check-v132
 	@$(MAKE) check-v133
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence)"
+	@$(MAKE) check-v134
+	@$(MAKE) check-v135
+	@$(MAKE) check-v136
+	@$(MAKE) check-v137
+	@$(MAKE) check-v138
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2939,6 +2944,119 @@ check-v133: check-v133-meta-self-benchmark
 
 check-v129-v133: check-v129 check-v130 check-v131 check-v132 check-v133
 	@echo "check-v129-v133: OK (collective intelligence stack)"
+
+# --- v134 σ-Spike (event-driven σ + burst detection + Lava export) ---
+# Neuromorphic-style σ-signalling: σ_spike fires only when σ_product
+# moves by ≥ δ from the previous observation.  Stable tokens do zero
+# σ-work downstream.  Burst detection is O(1) via a ring buffer.
+# v134.0 is pure policy + simulation + Lava-format text export;
+# v134.1 wires the export into an Intel Loihi 2 dev-kit when present.
+V134_INC        = -Isrc/v134
+V134_SPIKE_SRCS = src/v134/spike.c
+
+creation_os_v134_spike: $(V134_SPIKE_SRCS) src/v134/main.c
+	$(CC) $(CFLAGS) $(V134_INC) -o $@ \
+	    $(V134_SPIKE_SRCS) src/v134/main.c $(LDFLAGS)
+
+check-v134-spike-event-driven: creation_os_v134_spike
+	@bash benchmarks/v134/check_v134_spike_event_driven.sh
+	@echo "check-v134-spike-event-driven: OK (δ-spike + burst + lava)"
+
+check-v134: check-v134-spike-event-driven
+	@echo "check-v134: OK (σ-spike kernel)"
+
+# --- v135 σ-Symbolic (Prolog micro-engine + hybrid reasoning) ---
+# ~400-line Horn-clause micro-engine supporting ground-fact KBs
+# and unification-based queries.  Rules (:-) are a v135.1 follow-up
+# and are refused by the parser so callers never silently degrade.
+# Exposes a σ-routed hybrid reasoner: σ < τ → BitNet only, σ ≥ τ
+# + logical → KB verify / override, σ ≥ τ + non-logical → abstain.
+V135_INC           = -Isrc/v135
+V135_SYMBOLIC_SRCS = src/v135/symbolic.c
+
+creation_os_v135_symbolic: $(V135_SYMBOLIC_SRCS) src/v135/main.c
+	$(CC) $(CFLAGS) $(V135_INC) -o $@ \
+	    $(V135_SYMBOLIC_SRCS) src/v135/main.c $(LDFLAGS)
+
+check-v135-symbolic-prolog-roundtrip: creation_os_v135_symbolic
+	@bash benchmarks/v135/check_v135_symbolic_prolog_roundtrip.sh
+	@echo "check-v135-symbolic-prolog-roundtrip: OK (KB + query + consistency)"
+
+check-v135: check-v135-symbolic-prolog-roundtrip
+	@echo "check-v135: OK (σ-symbolic kernel)"
+
+# --- v136 σ-Evolve (gradient-free architecture search) -----------
+# Deterministic (μ/μ, λ) Evolution Strategy with diagonal covariance
+# adaptation — a consciously simplified member of the CMA-ES family.
+# Searches the weighted-geometric σ-aggregator genotype (8 weights
+# + τ) against a synthetic sidecar; emits an evolved_sigma_config
+# TOML for v29 to consume.  No gradients, no GPU.
+V136_INC         = -Isrc/v136
+V136_EVOLVE_SRCS = src/v136/evolve.c
+
+creation_os_v136_evolve: $(V136_EVOLVE_SRCS) src/v136/main.c
+	$(CC) $(CFLAGS) $(V136_INC) -o $@ \
+	    $(V136_EVOLVE_SRCS) src/v136/main.c $(LDFLAGS)
+
+check-v136-evolve-cmaes-converge: creation_os_v136_evolve
+	@bash benchmarks/v136/check_v136_evolve_cmaes_converge.sh
+	@echo "check-v136-evolve-cmaes-converge: OK (ES beats baseline + monotone)"
+
+check-v136: check-v136-evolve-cmaes-converge
+	@echo "check-v136: OK (σ-evolve kernel)"
+
+# --- v137 σ-Compile (AOT specialisation of the σ-decision tree) ---
+# Emits a branchless per-profile C decision tree that $(CC) -O3
+# lowers to whatever IR the local toolchain uses (LLVM on clang,
+# GIMPLE/RTL on gcc — we don't hard-depend on either).  v137.0
+# ships the generator + an embedded example-compiled gate so the
+# merge-gate can run end-to-end from one binary; v137.1 adds a
+# `make compile-sigma` that generates, compiles, and dlopens a
+# fresh per-profile .so per run.
+V137_INC          = -Isrc/v137
+V137_COMPILE_SRCS = src/v137/compile.c
+
+creation_os_v137_compile: $(V137_COMPILE_SRCS) src/v137/main.c
+	$(CC) $(CFLAGS) -O3 $(V137_INC) -o $@ \
+	    $(V137_COMPILE_SRCS) src/v137/main.c $(LDFLAGS)
+
+check-v137-compile-llvm-smoke: creation_os_v137_compile
+	@bash benchmarks/v137/check_v137_compile_llvm_smoke.sh
+	@echo "check-v137-compile-llvm-smoke: OK (emit + $(CC) -O3 + latency)"
+
+check-v137: check-v137-compile-llvm-smoke
+	@echo "check-v137: OK (σ-compile kernel)"
+
+# --- v138 σ-Proof (ACSL annotations + Frama-C WP tier 2) ---------
+# Tier 1 (always runs): pure-C validator over ACSL annotation
+# blocks in src/v138/sigma_gate.c asserts the σ-contract shape
+# (requires + ensures + 0≤σ≤1 domain + complete emit/abstain
+# partition + loop invariants).  Tier 2 (opportunistic): runs
+# `frama-c -wp -wp-rte` when the binary is on $PATH; otherwise
+# prints "tier-2 skipped" and tier-1 is authoritative.  Export
+# V138_REQUIRE_FRAMA_C=1 to fail the gate on a missing frama-c.
+V138_INC        = -Isrc/v138
+V138_PROOF_SRCS = src/v138/proof.c
+
+creation_os_v138_proof: $(V138_PROOF_SRCS) src/v138/main.c
+	$(CC) $(CFLAGS) $(V138_INC) -o $@ \
+	    $(V138_PROOF_SRCS) src/v138/main.c $(LDFLAGS)
+
+check-v138-prove-frama-c-wp: creation_os_v138_proof
+	@bash benchmarks/v138/check_v138_prove_frama_c_wp.sh
+	@echo "check-v138-prove-frama-c-wp: OK (tier-1 + tier-2 probe)"
+
+check-v138: check-v138-prove-frama-c-wp
+	@echo "check-v138: OK (σ-proof kernel)"
+
+# `make prove` runs the merge-gate's σ-proof scope as a standalone
+# target so authors can iterate on ACSL contracts quickly.
+prove: creation_os_v138_proof
+	@./creation_os_v138_proof --prove src/v138/sigma_gate.c
+	@echo "prove: OK (tier-1 + tier-2 probe)"
+
+check-v134-v138: check-v134 check-v135 check-v136 check-v137 check-v138
+	@echo "check-v134-v138: OK (deep-infrastructure stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

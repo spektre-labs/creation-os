@@ -470,3 +470,8 @@ creation_os_v133_meta
 benchmarks/v111/__pycache__/
 training/v111/data/
 training/v111/runs/
+/creation_os_v134_spike
+/creation_os_v135_symbolic
+/creation_os_v136_evolve
+/creation_os_v137_compile
+/creation_os_v138_proof
