@@ -4901,6 +4901,25 @@ check-v213: check-v213-trust-chain-verify
 check-v209-v213: check-v209 check-v210 check-v211 check-v212 check-v213
 	@echo "check-v209-v213: OK (containment + guardian + sandbox-formal + transparency + trust-chain)"
 
+# --- v214 σ-Swarm-Evolve (evolutionary swarm intelligence) ---
+# 10 generations × 12 agents × 4 niches.  fitness =
+# 1/(σ_mean+ε); top-2 per niche breed, global bottom-2
+# retire, population stays constant, σ_emergent monotone
+# non-increasing.
+V214_INC  = -Isrc/v214
+V214_SRCS = src/v214/swarm_evolve.c
+
+creation_os_v214_swarm_evolve: $(V214_SRCS) src/v214/main.c
+	$(CC) $(CFLAGS) $(V214_INC) -o $@ \
+	    $(V214_SRCS) src/v214/main.c $(LDFLAGS)
+
+check-v214-swarm-evolve-speciation: creation_os_v214_swarm_evolve
+	@bash benchmarks/v214/check_v214_swarm_evolve_speciation.sh
+	@echo "check-v214-swarm-evolve-speciation: OK (10 gens + 3+ species + monotone σ_emergent)"
+
+check-v214: check-v214-swarm-evolve-speciation
+	@echo "check-v214: OK (σ-swarm-evolve kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
