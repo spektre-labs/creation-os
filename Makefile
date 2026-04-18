@@ -433,7 +433,12 @@ merge-gate:
 	@$(MAKE) check-v226
 	@$(MAKE) check-v227
 	@$(MAKE) check-v228
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified)"
+	@$(MAKE) check-v229
+	@$(MAKE) check-v230
+	@$(MAKE) check-v231
+	@$(MAKE) check-v232
+	@$(MAKE) check-v233
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5293,6 +5298,30 @@ check-v232-lineage-tree-query: creation_os_v232_lineage
 
 check-v232: check-v232-lineage-tree-query
 	@echo "check-v232: OK (σ-lineage kernel)"
+
+# --- v233 σ-Legacy (knowledge testament + successor protocol) ---
+# 10 items (skills / adapters / ontology / insights)
+# sorted by σ; adopt iff σ ≤ τ_adopt (0.50).
+# σ_legacy = adopted_utility / total_utility —
+# utility-weighted so confident-but-useless fluff
+# does not inflate the score.  Predecessor flagged
+# shutdown; successor_id is fresh.
+V233_INC  = -Isrc/v233
+V233_SRCS = src/v233/legacy.c
+
+creation_os_v233_legacy: $(V233_SRCS) src/v233/main.c
+	$(CC) $(CFLAGS) $(V233_INC) -o $@ \
+	    $(V233_SRCS) src/v233/main.c $(LDFLAGS)
+
+check-v233-legacy-package-transfer: creation_os_v233_legacy
+	@bash benchmarks/v233/check_v233_legacy_package_transfer.sh
+	@echo "check-v233-legacy-package-transfer: OK (testament + σ-adoption + successor)"
+
+check-v233: check-v233-legacy-package-transfer
+	@echo "check-v233: OK (σ-legacy kernel)"
+
+check-v229-v233: check-v229 check-v230 check-v231 check-v232 check-v233
+	@echo "check-v229-v233: OK (seed + fork + immortal + lineage + legacy)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
