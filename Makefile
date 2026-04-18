@@ -2674,6 +2674,24 @@ check-v118: check-v118-vision-smoke
 check-v115-v118: check-v115 check-v116 check-v117 check-v118
 	@echo "check-v115-v118: OK (memory + MCP + long-context + vision)"
 
+# --- v119 σ-Speculative (draft-verify with σ-adaptive γ) ---
+# Pure-C policy layer: adaptive γ from σ_product, σ-gate on the draft
+# step (auto-reject before the target runs), full synthetic-stream
+# simulator.  Weights-free — target + draft GGUF plumbing is v119.1.
+V119_INC              = -Isrc/v119
+V119_SPECULATIVE_SRCS = src/v119/speculative.c
+
+creation_os_v119_speculative: $(V119_SPECULATIVE_SRCS) src/v119/main.c
+	$(CC) $(CFLAGS) $(V119_INC) -o $@ \
+	    $(V119_SPECULATIVE_SRCS) src/v119/main.c $(LDFLAGS)
+
+check-v119-speculative-speedup: creation_os_v119_speculative
+	@bash benchmarks/v119/check_v119_speculative_speedup.sh
+	@echo "check-v119-speculative-speedup: OK (σ-adaptive γ + σ-gate draft accept policy)"
+
+check-v119: check-v119-speculative-speedup
+	@echo "check-v119: OK (σ-speculative decoding policy)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
