@@ -3219,6 +3219,28 @@ check-v146-genesis-template-gen: creation_os_v146_genesis
 check-v146: check-v146-genesis-template-gen
 	@echo "check-v146: OK (σ-genesis kernel)"
 
+# --- v147 σ-Reflect (thought-trace σ + RAIN rewind) --------------
+# Deterministic kernel for deep self-reflection: each v111.2
+# reasoning step is tagged with its σ_product, v147 identifies
+# the argmax-σ "weakest link", computes a RAIN (ICLR 2024) rewind
+# depth from σ_weakest (local / mid-chain / full restart), and
+# detects pure-vs-chain divergence.  v147.1 wires v111.2 to feed
+# real traces and v125 DPO to use weakest_step as a preference
+# signal.
+V147_INC  = -Isrc/v147
+V147_SRCS = src/v147/reflect.c
+
+creation_os_v147_reflect: $(V147_SRCS) src/v147/main.c
+	$(CC) $(CFLAGS) $(V147_INC) -o $@ \
+	    $(V147_SRCS) src/v147/main.c $(LDFLAGS)
+
+check-v147-reflect-thought-trace: creation_os_v147_reflect
+	@bash benchmarks/v147/check_v147_reflect_thought_trace.sh
+	@echo "check-v147-reflect-thought-trace: OK (weakest + RAIN + divergence)"
+
+check-v147: check-v147-reflect-thought-trace
+	@echo "check-v147: OK (σ-reflect kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
