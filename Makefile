@@ -3635,6 +3635,33 @@ check-v164-plugin-load-unload: creation_os_v164_plugin
 check-v164: check-v164-plugin-load-unload
 	@echo "check-v164: OK (σ-plugin kernel)"
 
+# --- v165 σ-Edge (cos-lite + RPi5/Jetson/Android + adaptive τ) ----------
+# Edge-device runtime model.  A baked profile table describes 5
+# targets (macbook_m3 / rpi5 / jetson_orin / android / ios) with
+# arch, triple, available RAM, GPU/camera presence, default HTTP
+# port, and a Makefile make_target pointing at the cos-lite
+# cross-compile recipe (named here; actual cross-compilation lands
+# in v165.1).  σ-adaptive τ: tau_edge = clamp(tau_default /
+# max(available_ram/8192, 0.125), 0.15, 1.0).  A fit check
+# compares a 4-component RAM budget (binary / weights / kvcache /
+# sigma_overhead) against the profile's available RAM and emits a
+# boot receipt.  iOS is declared supported_in_v0=false so the
+# profile surface matches the roadmap.  v165.1 plugs real
+# cross-compile, QEMU-CI, and iOS Swift wrapper.
+V165_INC  = -Isrc/v165
+V165_SRCS = src/v165/edge.c
+
+creation_os_v165_edge: $(V165_SRCS) src/v165/main.c
+	$(CC) $(CFLAGS) $(V165_INC) -o $@ \
+	    $(V165_SRCS) src/v165/main.c $(LDFLAGS)
+
+check-v165-edge-rpi5-smoke: creation_os_v165_edge
+	@bash benchmarks/v165/check_v165_edge_rpi5_smoke.sh
+	@echo "check-v165-edge-rpi5-smoke: OK (profile table + τ_edge + boot fit)"
+
+check-v165: check-v165-edge-rpi5-smoke
+	@echo "check-v165: OK (σ-edge kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
