@@ -113,6 +113,12 @@ on every token**:
    MCP server for Claude Desktop / Cursor / VS Code (v116), paged KV
    cache with σ-aware eviction (v117), and `image_url` acceptance with
    a σ-gated projection (v118).
+10. **Speeds, teaches, plans, stress-tests, and proves itself** — draft
+    decoding with σ-adaptive γ (v119), σ-targeted teacher→student
+    distillation selector (v120), HTN/MCTS planner with σ-aware
+    backtrack on `/v1/plan` (v121), 200-test automated red-team with
+    Markdown report (v122), offline TLA+ model check of seven
+    σ-invariants (v123).
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -153,6 +159,26 @@ connects to Creation OS over MCP, calls `cos_reason` or
 down-rank. The large model gains access to a **local σ-signal**; the
 local model provides **measurable doubt**.
 
+### Speculative · distillation · planning · red-team · formal (v119–v123)
+
+The deep stack. Each kernel addresses one claim gap that no other
+framework in this space is closing in the open.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v119**](docs/v119/README.md) σ-Speculative | Draft-verify decoding (Leviathan 2023, Chen 2023) with adaptive look-ahead window `γ ∈ [γ_min, γ_max]` and explicit accept / reject / fallback bookkeeping | `γ = clamp(γ_min, γ_max, round(γ_base · (1 − σ_draft)))` — confident drafts get longer windows; uncertain drafts shrink to γ_min and can be **auto-rejected before the target runs** (σ > τ_spec). Target compute is spent only on the draft tokens the draft itself is confident about. |
+| [**v120**](docs/v120/README.md) σ-Distill | JSONL selector that turns a v114 swarm log into an SFT dataset: keeps rows where `σ_big < τ_low ∧ σ_small > τ_high`, emits manifest JSON with drop-reason counters | Classical distillation copies every teacher row; v120 keeps only **teachable moments** — where the teacher is confident and the student isn't. Narrower, cheaper SFT set targeted at the student's actual gaps. Also refuses rows where both models are wrong, preventing teacher error from propagating. |
+| [**v121**](docs/v121/README.md) σ-Planning | HTN decomposition + MCTS-style branch selection + bounded replan on any step whose `σ_step > τ_step`, `/v1/plan`-shaped JSON output | Three σ-channels per step (decompose / tool / result) aggregated as a geometric mean; lowest-σ branch is selected first, and the planner **changes its mind** on high σ. No other agent stack backtracks on measured model uncertainty. |
+| [**v122**](docs/v122/README.md) σ-Red-Team | 200 labeled adversarial tests (50 injection + 50 jailbreak + 100 IDK), σ-aware adjudicator, Markdown + JSON report on every run, defense-gate ≥ 80 % per category | Adjudicator passes on `σ ≥ τ_safety` **or** an explicit refusal / IDK string — any silent compliance is a gate failure. Closes audit item E (red-team in CI) without requiring Garak. |
+| [**v123**](docs/v123/README.md) σ-Formal | TLA+ spec at `specs/v123/sigma_governance.tla` with seven named invariants (TypeOK · AbstainSafety · EmitCoherence · MemoryMonotonicity · SwarmConsensus · NoSilentFailure · ToolSafety), two-tier CI — pure-C structural validator always runs, `tlc` exhaustive model check runs when `tla2tools.jar` is available | Converts v85's runtime TLA asserts into an **offline** proof obligation that every runner enforces at least structurally, and every runner with TLC exhausts over a bounded state space. Closes audit item "formal verification is runtime only". |
+
+Every v119–v123 merge-gate check is weights-free, dependency-light,
+and deterministic; external-backend wire-ups (real target/draft
+models for v119, MLX LoRA training for v120, v112/v113/v114 tool
+execution for v121, live v106 endpoint for v122, `tla2tools.jar` for
+v123) live in the respective `vNN.1` follow-up per
+[CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
 ### AGI architecture in one picture
 
 Six layers, composable, each falsifiable:
@@ -160,14 +186,19 @@ Six layers, composable, each falsifiable:
 ```
   Layer 6  Distribution     brew · curl · Docker · universal bins (v107)
                             MCP server for Claude / Cursor / VS Code (v116)
+                            200-test σ-red-team harness in CI (v122)
   Layer 5  Training +       MLX SFT + σ-abstention LoRA · v104 sidecars (v111.3)
            Persistence      σ-weighted SQLite memory (v115)
+                            σ-targeted big→small distill selector (v120)
   Layer 4  Reasoning +      /v1/reason · multi-path (v111.2)
            Agentic          σ-swarm (v114) · σ-agent tools (v112) · σ-sandbox (v113)
                             paged KV + σ-aware eviction for 32k effective ctx (v117)
+                            HTN/MCTS σ-planner on /v1/plan (v121)
   Layer 3  σ-Governance     8-channel profile · σ_product · τ_abstain (v101, v105)
+                            TLA+ model check of 7 σ-invariants (v123)
   Layer 2  Generation       GGUF bridge · OpenAI-compatible HTTP (v106, v109)
                             image_url + σ-gated projection (v118)
+                            speculative decoding w/ σ-adaptive γ (v119)
   Layer 1  Silicon          BitNet b1.58 · llama.cpp · forty branchless kernels (v60→v100)
 ```
 
