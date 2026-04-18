@@ -1,5 +1,79 @@
 # Changelog
 
+## v1.0.0 — Creation OS v153 release (2026-04-18)
+
+Creation OS v1.0.0 — the gate-complete, documentation-complete
+release. 153 composable σ-governed kernels (v6 through v153;
+v75 intentionally skipped), one unifying paper
+([`docs/papers/creation_os_v1.md`](docs/papers/creation_os_v1.md)),
+one merge-gate green receipt (16 416 185 PASS / 0 FAIL on Apple M4),
+and a five-surface packaging manifest (PyPI · Homebrew · Docker ·
+Hugging Face · npm).
+
+### What is in v1.0.0
+
+- **153 kernels.** Every kernel carries its own `src/vN/` +
+  `benchmarks/vN/` + `docs/vN/` triad and a deterministic
+  `check-vN` target wired into `make merge-gate`.
+- **The v154–v158 release series.** σ-showcase (3 demo pipelines
+  end-to-end), σ-publish (packaging manifests + offline validator),
+  σ-paper (single unifying paper), σ-community (governance +
+  issue templates + good-first-issues), σ-v1.0 (this release gate).
+- **Measured σ beats entropy** on `truthfulqa_mc2` (n = 817):
+  `σ_max_token` Δ AURCC −0.0442, p = 0.002 (Bonferroni N = 24,
+  family-wise α = 0.05). Full table:
+  [`benchmarks/v111/results/frontier_matrix.md`](benchmarks/v111/results/frontier_matrix.md).
+- **v152 corpus distillation** drops σ on covered QA by 46.32 %
+  (deterministic 16-paper fixture) with non-covered drift 0.06 %.
+- **Formal guarantees.** v123 TLA+ model check of seven σ-invariants.
+  v138 Frama-C WP on the σ-gate hot path.
+- **Sovereign self-improvement.** v144 σ-RSI accept/rollback,
+  v145 atomic skill library, v146 σ-genesis kernel generator,
+  v147 σ-reflect thought-trace analysis, v148 σ-sovereign
+  orchestrator with SUPERVISED + AUTONOMOUS modes and a two-gate
+  G1 stability + G2 supervision contract.
+- **Embodiment, collective, self-writing, self-knowing.** v149
+  6-DOF σ-embodied digital twin with σ_embodied + σ_gap + σ_safe.
+  v150 three-round σ-swarm debate with adversarial verify and
+  σ_collective. v151 σ-code-agent TDD loop with real `$(CC)`
+  compile + test-exit verification. v152 σ-knowledge-distill
+  with K1–K4 contracts. v153 σ-identity with I1–I5 contracts.
+
+### What is explicitly NOT in v1.0.0
+
+- Trained LoRA weights on Hugging Face (`bitnet-2b-sigma-lora`
+  ships as a card-only placeholder; the real adapter lands in
+  v1.1 with the live `spektre-labs/corpus` clone).
+- Live MuJoCo 3.x digital twin — v149.0 ships a pure-C physics
+  stand-in; v149.1 wires MuJoCo.
+- Multi-node federated rollouts (v129 is in-tree and passing, but
+  a signed-off multi-node demo is v1.1).
+- r/LocalLLaMA / HN / arXiv announcements — D/E blocks in
+  [`docs/RELEASE_v1_0.md`](docs/RELEASE_v1_0.md) remain unchecked
+  until the BDFL publishes.
+
+### Upgrade from pre-release
+
+Pre-release users (v152 / v153 feature branches) upgrade in one step:
+
+```bash
+git pull
+make merge-gate
+```
+
+All kernel names, merge-gate targets, and HTTP routes are
+backward-compatible. No config migration needed.
+
+### Provenance
+
+- Source: [`spektre-labs/creation-os`](https://github.com/spektre-labs/creation-os)
+- Governance: [`GOVERNANCE.md`](GOVERNANCE.md) (BDFL, merge reqs,
+  1 = 1 invariant)
+- Licenses: SCSL-1.0 (primary, commercial) and AGPL-3.0-only
+  (fallback), as per [`LICENSE`](LICENSE).
+- Release gate: `make check-v158` (parses
+  [`docs/RELEASE_v1_0.md`](docs/RELEASE_v1_0.md)).
+
 ## v70 σ-Hyperscale — trillion-parameter / hyperscale-killer substrate kernel: ShiftAddLLM power-of-2 weight quantisation (NeurIPS 2024, arXiv:2406.05981) with ±2^k 4-bit packing + multiply-free `int32_t` shift + conditional negate GEMV (signed-shift-safe via `uint32_t` shift) + Mamba-2 / Mamba-3 selective SSM scan (arXiv:2312.00752 + arXiv:2603.15569) with content-dependent gates A, B, C, Δ in Q0.15, constant memory per token, no KV cache + RWKV-7 "Goose" delta-rule update (arXiv:2503.14456) with vector-valued gating + in-context learning rate, O(1) per token + DeepSeek-V3 auxiliary-loss-free MoE-10k routing (arXiv:2412.19437) with branchless top-K MaxScore over up to 10 240 experts + integer bias controller + Samsung HBM-PIM bit-serial AND-popcount surrogate (arXiv:2603.09216) with column-major bit-packed weights + `__builtin_popcountll(act_word & weight_col)` + photonic wavelength-multiplexed dot product (SKYLIGHT arXiv:2602.19031 + LightMat-HP arXiv:2604.12278 + Lightmatter Envise) with eight independent int32 wavelength lanes + branchless lane-select reduction + Intel Loihi 3 (Jan 2026, 8 M neurons / 64 B synapses / 4 nm) graded-spike sparse activation + MatMul-free LLM (arXiv:2503.18002) with branchless threshold spike trigger + NVIDIA NCCL bandwidth-optimal integer ring all-reduce (Patarasuk & Yuan 2009) with reduce-scatter + all-gather over N ranks in 2(N-1) steps + branchless modulo + saturating int32 add + topology-balance check + Petals + Helix + Microsoft DirectStorage + NVIDIA GPUDirect Storage + AMD Ryzen AI Max+ LRU streaming weight scheduler (64-slot LRU over 64-bit (layer, expert) keys + branchless O(N) lookup + monotone-clock victim + `__builtin_prefetch` on insert) + HSL "Hyperscale Language" 10-opcode integer bytecode ISA (HALT / SHIFT / SCAN / TIMEMIX / ROUTEK / PIMPOP / WDM / SPIKE / RING / GATE) with per-instruction silicon-unit cost accounting and a GATE opcode that writes `v70_ok` iff `silicon_cost ≤ silicon_budget AND reg_q15[a] ≥ throughput_floor AND topology_ok == 1 AND NOT abstained`, composed with v60..v69 as an **11-bit branchless decision** (2026-04-17)
 
 - **Driving oivallus.** v60..v69 close the *fleet* loop —
