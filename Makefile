@@ -373,7 +373,12 @@ merge-gate:
 	@$(MAKE) check-v166
 	@$(MAKE) check-v167
 	@$(MAKE) check-v168
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace)"
+	@$(MAKE) check-v169
+	@$(MAKE) check-v170
+	@$(MAKE) check-v171
+	@$(MAKE) check-v172
+	@$(MAKE) check-v173
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -3746,6 +3751,134 @@ check-v168: check-v168-marketplace-publish-install
 
 check-v164-v168: check-v164 check-v165 check-v166 check-v167 check-v168
 	@echo "check-v164-v168: OK (plugin + edge + stream + governance + marketplace)"
+
+# --- v169 σ-Ontology (auto KG + OWL-lite + corpus navigation) ----------
+# Deterministic ontology builder.  50 synthetic memory-like
+# entries are parsed into candidate (subject, predicate, object)
+# triples with a σ_extraction per triple; τ_extract = 0.35 gates
+# which triples join the KG.  Kept triples feed a hierarchical
+# typer mapping entities to 6 top-level classes (Person /
+# Software / Metric / Kernel / Device / Concept) with a
+# σ_type confidence.  A query API returns source entry-ids for
+# any (predicate, object?) pattern, so v152 corpus questions
+# like "which entries mention σ?" resolve structurally instead
+# of by substring search.  OWL-lite is emitted as JSON in v0;
+# v169.1 writes real OWL/XML to ~/.creation-os/ontology.owl and
+# drives the extractor off BitNet over real v115 memory entries.
+V169_INC  = -Isrc/v169
+V169_SRCS = src/v169/ontology.c
+
+creation_os_v169_ontology: $(V169_SRCS) src/v169/main.c
+	$(CC) $(CFLAGS) $(V169_INC) -o $@ \
+	    $(V169_SRCS) src/v169/main.c $(LDFLAGS)
+
+check-v169-ontology-rdf-extract: creation_os_v169_ontology
+	@bash benchmarks/v169/check_v169_ontology_rdf_extract.sh
+	@echo "check-v169-ontology-rdf-extract: OK (extract + type + query)"
+
+check-v169: check-v169-ontology-rdf-extract
+	@echo "check-v169: OK (σ-ontology kernel)"
+
+# --- v170 σ-Transfer (cross-domain transfer + negative-transfer rollback) ---
+# Eight baked domains (math, physics, chemistry, biology, code,
+# logic, history, poetry) in a deterministic 4-D embedding
+# space.  v170 picks the nearest source with σ_source ≤ τ_src
+# whose gap to σ_target is ≥ δ, applies a closed-form
+# σ-delta (improvement shrinks exponentially with distance;
+# penalty if distance > d_max), rolls back via v124 when σ
+# rises, and ensembles the k=2 nearest strong neighbours for
+# zero-shot adaptation to unseen domains.  v170.1 swaps the
+# closed-form model for real LoRA-adapter composition.
+V170_INC  = -Isrc/v170
+V170_SRCS = src/v170/transfer.c
+
+creation_os_v170_transfer: $(V170_SRCS) src/v170/main.c
+	$(CC) $(CFLAGS) $(V170_INC) -o $@ \
+	    $(V170_SRCS) src/v170/main.c $(LDFLAGS)
+
+check-v170-transfer-cross-domain: creation_os_v170_transfer
+	@bash benchmarks/v170/check_v170_transfer_cross_domain.sh
+	@echo "check-v170-transfer-cross-domain: OK (decide + apply + rollback + zero-shot)"
+
+check-v170: check-v170-transfer-cross-domain
+	@echo "check-v170: OK (σ-transfer kernel)"
+
+# --- v171 σ-Collab (human-AI protocol + anti-sycophancy) ----------------
+# Explicit collaboration mode (pair / lead / follow) with a
+# four-way action selector per turn: emit, handoff (σ_model >
+# τ_mode), debate (σ_Δ > τ_disagree on a human claim the model
+# contradicts), or anti-sycophancy (model would semantically
+# agree with a shaky human claim yet its own σ stays above
+# τ_sycophancy).  A 6-turn baked scenario exercises all four
+# paths; every turn emits a contribution audit line so who-
+# said-what-with-what-confidence is recoverable after the fact.
+V171_INC  = -Isrc/v171
+V171_SRCS = src/v171/collab.c
+
+creation_os_v171_collab: $(V171_SRCS) src/v171/main.c
+	$(CC) $(CFLAGS) $(V171_INC) -o $@ \
+	    $(V171_SRCS) src/v171/main.c $(LDFLAGS)
+
+check-v171-collab-handoff: creation_os_v171_collab
+	@bash benchmarks/v171/check_v171_collab_handoff.sh
+	@echo "check-v171-collab-handoff: OK (emit + handoff + debate + anti-sycophancy)"
+
+check-v171: check-v171-collab-handoff
+	@echo "check-v171: OK (σ-collab kernel)"
+
+# --- v172 σ-Narrative (session summaries + goals + resumption) ----------
+# 3-session baked fixture (weeks 1..3) with σ_coverage per
+# summary, a chained narrative thread, three goals with
+# σ_progress, and four people with role/last-context and a
+# σ_ident.  The resumption protocol deterministically composes
+# an opener referencing the last session + the primary goal
+# (lowest σ_progress among non-done goals), so a fresh session
+# picks up at the right story-beat instead of cold-booting with
+# "How can I help?".  v172.1 swaps the fixture for real v115
+# memory iteration and BitNet-generated summaries.
+V172_INC  = -Isrc/v172
+V172_SRCS = src/v172/narrative.c
+
+creation_os_v172_narrative: $(V172_SRCS) src/v172/main.c
+	$(CC) $(CFLAGS) $(V172_INC) -o $@ \
+	    $(V172_SRCS) src/v172/main.c $(LDFLAGS)
+
+check-v172-narrative-resumption: creation_os_v172_narrative
+	@bash benchmarks/v172/check_v172_narrative_resumption.sh
+	@echo "check-v172-narrative-resumption: OK (thread + goals + people + resume)"
+
+check-v172: check-v172-narrative-resumption
+	@echo "check-v172: OK (σ-narrative kernel)"
+
+# --- v173 σ-Teach (Socratic + curriculum + exercises + σ-honest) --------
+# Four canonical subtopics (HD vectors, σ-gating, KV cache,
+# v1.58-bit quantization).  Socratic pass ingests per-subtopic
+# learner correctness → σ_student (=1-p) → curriculum ordered
+# weakest-first; difficulty tracks σ_student in four tiers.
+# Teach cycle iterates the curriculum, emits ≤ 2 exercises
+# per subtopic with a closed-form σ-drop model, marks mastery
+# at σ_student ≤ τ_mastery, and ABSTAINS on the
+# `v1.58-bit quantization` subtopic because its baked
+# σ_teacher=0.75 is above τ_teacher=0.60 — a σ-honest teacher.
+# v173.1 wires BitNet for diagnostic generation and v132
+# persona for tone adaptation.
+V173_INC  = -Isrc/v173
+V173_SRCS = src/v173/teach.c
+
+creation_os_v173_teach: $(V173_SRCS) src/v173/main.c
+	$(CC) $(CFLAGS) $(V173_INC) -o $@ \
+	    $(V173_SRCS) src/v173/main.c $(LDFLAGS)
+
+check-v173-teach-socratic-cycle: creation_os_v173_teach
+	@bash benchmarks/v173/check_v173_teach_socratic_cycle.sh
+	@echo "check-v173-teach-socratic-cycle: OK (diag + curriculum + abstain + mastery)"
+
+check-v173: check-v173-teach-socratic-cycle
+	@echo "check-v173: OK (σ-teach kernel)"
+
+# Aggregate check-v169-v173
+check-v169-v173: check-v169 check-v170 check-v171 check-v172 check-v173
+	@echo "check-v169-v173: OK (ontology + transfer + collab + narrative + teach)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

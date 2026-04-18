@@ -300,6 +300,44 @@ on every token**:
     `σ = clamp(0.6·fail + 0.3·neg + 0.1·bench_pen, 0, 1)`, and
     a **σ-gated install** that refuses any artifact with
     `σ_reputation > 0.50` without an explicit `--force`.
+20. **Knowledge, transfer, collaboration, narrative, teaching
+    (v169–v173)** — the knowledge-and-collaboration layer: an
+    **auto-ontology builder** (v169) that parses 50 memory-like
+    entries into ≥ 50 candidate RDF triples, σ-gates each at
+    `τ_extract = 0.35`, types the surviving entities into 6
+    classes (`Person / Software / Metric / Kernel / Device /
+    Concept`), emits an OWL-lite schema, and exposes a
+    structural corpus-navigation query (`mentions σ` resolves
+    to the matching entry-ids without substring search);
+    **cross-domain transfer** (v170) over 8 baked domains
+    (`math, physics, chemistry, biology, code, logic, history,
+    poetry`) in ℝ⁴, with a σ-gated source picker
+    (`closest ∧ σ_source ≤ τ_src ∧ σ_source ≤ σ_target − δ`),
+    a closed-form outcome model
+    (`Δ = −α·gap·exp(−d) + penalty(d > d_max)`),
+    **automatic v124 rollback** when σ rises, and a k=2-nearest
+    zero-shot ensemble for unseen domains;
+    an **explicit human↔AI protocol** (v171) with
+    `pair / lead / follow` modes (τ_handoff ∈ {0.60, 0.75, 0.40}),
+    four priority-ordered actions per turn
+    (`anti_sycophancy > debate > handoff > emit`), a
+    σ_Δ-gated debate protocol, a glossy-yes detector that
+    refuses to agree when the model's own σ ≥ τ_sycophancy,
+    and a contribution-audit NDJSON trail of who-said-what-
+    with-what-confidence; a **long-horizon narrative** (v172)
+    that σ-scores 3 baked session summaries, chains them into a
+    growing thread, tracks 3 goals by σ_progress, remembers 4
+    people with role + last-context + σ_ident, and emits a
+    deterministic resume opener referencing the last session
+    **and** the primary (lowest-σ open) goal; and a
+    **Socratic teacher** (v173) that diagnoses 4 subtopics into
+    σ_student via correctness probes, orders a weakest-first
+    curriculum, emits up to 2 difficulty-tracked exercises per
+    subtopic (`easy / medium / hard / expert`), marks mastery at
+    `σ_student ≤ τ_mastery = 0.20`, and **abstains** on
+    `v1.58-bit quantization` because its baked
+    `σ_teacher = 0.75 > τ_teacher = 0.60` — a model that admits
+    when it should not teach.
 
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
@@ -604,6 +642,36 @@ deterministic. The v1 promotions — real `dlopen` + `fork` +
 `ws://` WebSocket server + real GGUF tokenizer, a real HTTP
 policy server with TLS + GDPR/SOC2/HIPAA exports, and a real
 HTTPS marketplace with SHA-256 receipts — are named in each
+kernel's doc page, but never claimed before they land.
+
+### Knowledge · transfer · collaboration · narrative · teaching (v169–v173)
+
+Knowledge-and-collaboration layer — the five kernels that let
+Creation OS **build its own ontology from memory, carry skill
+across domains with auto-rollback, collaborate explicitly with
+humans without sycophancy, remember the story across sessions,
+and teach what it knows while σ-honestly abstaining on what it
+doesn't**. Every v0 merge-gate is offline, deterministic and
+weights-frozen; v1 plugs in real BitNet extraction, real LoRA
+adapter composition, real config-driven collaboration modes,
+real v115 memory-backed narrative, and real BitNet-generated
+Socratic probes.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v169**](docs/v169/README.md) σ-Ontology | 50-entry memory-like fixture parsed into ≤ 4 candidate `(subject, predicate, object)` triples per entry; hierarchical typer into 6 classes (`Person / Software / Metric / Kernel / Device / Concept`); OWL-lite-JSON schema emitter; structural corpus-query API (`--query PRED [OBJ]`). | Every triple is σ-gated (`τ_extract = 0.35`): the merge-gate asserts `0 < n_kept < n_triples`, so the ontology can never silently swallow low-confidence facts. Each entity carries a `σ_type` so downstream reasoners (v135) know which types are firm. |
+| [**v170**](docs/v170/README.md) σ-Transfer | 8 baked domains in a deterministic ℝ⁴ embedding space (math-physics near, math-poetry far). Decision picks the nearest source with `σ_source ≤ τ_src ∧ σ_source ≤ σ_target − δ`. Outcome model `Δ = −α·gap·exp(−d) + penalty(d > d_max)`. Zero-shot ensemble of k=2 nearest strong neighbours for unseen targets. | **Automatic v124 rollback** when `Δ > 0`: σ_target is restored and the failed transfer is recorded with a reason. The merge-gate runs the canonical `chemistry → biology` success (σ 0.71 → 0.47) and a negative `math → poetry` attempt that is rolled back — so the kernel is proven to both help and to refuse to harm. |
+| [**v171**](docs/v171/README.md) σ-Collab | Explicit `pair / lead / follow` modes with per-mode τ_handoff (0.60 / 0.75 / 0.40). Four priority-ordered actions per turn: `anti_sycophancy > debate > handoff > emit`. NDJSON contribution audit of `{human_input, model_contribution, σ_model, σ_human, sycophancy_suspected, human_validated}` per turn. | An anti-sycophancy gate (`σ_model ≥ τ_sycophancy ∧ agrees_semantically`) forces the model to say *"I appear to agree but my σ suggests I'm uncertain"* instead of gliding past a shaky human claim. Debate path activates only when `σ_Δ > τ_disagree = 0.25` — no more fake capitulations, no more fake pushback. |
+| [**v172**](docs/v172/README.md) σ-Narrative | 3-session baked fixture (weeks 1..3) with σ_coverage per summary (`τ_coverage = 0.30`), chained narrative thread, 3 goals with σ_progress, 4 people with role + last_context + σ_ident. Deterministic `--resume` opener references the last session **and** the primary (lowest-σ open) goal. | σ turns the resume from "pretend you remember" into "this is what we did, with this much confidence, and this is the next open thread". The goal selector = open-goal with the lowest σ_progress, so the kernel surfaces the *most trusted next step* instead of the loudest. |
+| [**v173**](docs/v173/README.md) σ-Teach | Socratic diagnostic per subtopic → `σ_student = 1 − p`; curriculum ordered weakest-first; 4-tier difficulty ladder auto-tracks σ_student; closed-form σ-drop per exercise; mastery at `σ_student ≤ τ_mastery = 0.20`. | **σ-honest teaching**: every subtopic has a baked `σ_teacher`. When `σ_teacher > τ_teacher = 0.60` the kernel **abstains** from teaching (`v1.58-bit quantization` in the fixture) and records *"verify with another source"*. A teacher that admits the limits of its own expertise is the only kind that should teach. |
+
+Every v169–v173 merge-gate check is offline, stdlib-only, and
+deterministic. The v1 promotions — real BitNet-driven triple
+extraction, real OWL/XML at `~/.creation-os/ontology.owl`, real
+LoRA-adapter composition driving v141 curriculum, real
+`config.toml [collaboration]` wiring, real v115 memory
+iteration for narrative threads, and BitNet-generated Socratic
+probes with v132 persona adaptation — are named in each
 kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
