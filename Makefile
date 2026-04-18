@@ -3197,6 +3197,28 @@ check-v145-skill-acquire-and-route: creation_os_v145_skill
 check-v145: check-v145-skill-acquire-and-route
 	@echo "check-v145: OK (σ-skill kernel)"
 
+# --- v146 σ-Genesis (automated kernel-skeleton generation) -------
+# Deterministic template generator that emits a canonical 4-file
+# kernel skeleton (kernel.h / kernel.c / tests/test.c / README.md)
+# with a σ-gate on σ_code (completeness + seeded novelty jitter)
+# and a human-in-the-loop state machine: generate → PENDING →
+# approve / reject; three consecutive rejects latch paused=true
+# and only cos_v146_resume() unblocks further approvals.  v146.1
+# wires v114 swarm (8B code specialist) as the real generator.
+V146_INC  = -Isrc/v146
+V146_SRCS = src/v146/genesis.c
+
+creation_os_v146_genesis: $(V146_SRCS) src/v146/main.c
+	$(CC) $(CFLAGS) $(V146_INC) -o $@ \
+	    $(V146_SRCS) src/v146/main.c $(LDFLAGS)
+
+check-v146-genesis-template-gen: creation_os_v146_genesis
+	@bash benchmarks/v146/check_v146_genesis_template_gen.sh
+	@echo "check-v146-genesis-template-gen: OK (skeleton + σ-gate + HITL)"
+
+check-v146: check-v146-genesis-template-gen
+	@echo "check-v146: OK (σ-genesis kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
