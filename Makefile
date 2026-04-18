@@ -2771,6 +2771,26 @@ check-v123: check-v123-formal-tlc
 check-v119-v123: check-v119 check-v120 check-v121 check-v122 check-v123
 	@echo "check-v119-v123: OK (speculative + distill + planning + red-team + formal)"
 
+# --- v124 σ-Continual (on-device living weights) ---
+# Pure-C buffer + idle-trigger + forgetting-smoke state machine.
+# Exercises healthy and pathological baselines deterministically so
+# the merge-gate sees both the happy and the rollback paths without
+# MLX, weights, or network.  v124.1 wires a real MLX LoRA trainer
+# and hot-swaps the adapter into v106.
+V124_INC            = -Isrc/v124
+V124_CONTINUAL_SRCS = src/v124/continual.c
+
+creation_os_v124_continual: $(V124_CONTINUAL_SRCS) src/v124/main.c
+	$(CC) $(CFLAGS) $(V124_INC) -o $@ \
+	    $(V124_CONTINUAL_SRCS) src/v124/main.c $(LDFLAGS)
+
+check-v124-continual-learning: creation_os_v124_continual
+	@bash benchmarks/v124/check_v124_continual_learning.sh
+	@echo "check-v124-continual-learning: OK (σ-buffer + idle-trigger + rollback)"
+
+check-v124: check-v124-continual-learning
+	@echo "check-v124: OK (σ-continual policy)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
