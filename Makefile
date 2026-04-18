@@ -2980,6 +2980,26 @@ check-v135-symbolic-prolog-roundtrip: creation_os_v135_symbolic
 check-v135: check-v135-symbolic-prolog-roundtrip
 	@echo "check-v135: OK (σ-symbolic kernel)"
 
+# --- v136 σ-Evolve (gradient-free architecture search) -----------
+# Deterministic (μ/μ, λ) Evolution Strategy with diagonal covariance
+# adaptation — a consciously simplified member of the CMA-ES family.
+# Searches the weighted-geometric σ-aggregator genotype (8 weights
+# + τ) against a synthetic sidecar; emits an evolved_sigma_config
+# TOML for v29 to consume.  No gradients, no GPU.
+V136_INC         = -Isrc/v136
+V136_EVOLVE_SRCS = src/v136/evolve.c
+
+creation_os_v136_evolve: $(V136_EVOLVE_SRCS) src/v136/main.c
+	$(CC) $(CFLAGS) $(V136_INC) -o $@ \
+	    $(V136_EVOLVE_SRCS) src/v136/main.c $(LDFLAGS)
+
+check-v136-evolve-cmaes-converge: creation_os_v136_evolve
+	@bash benchmarks/v136/check_v136_evolve_cmaes_converge.sh
+	@echo "check-v136-evolve-cmaes-converge: OK (ES beats baseline + monotone)"
+
+check-v136: check-v136-evolve-cmaes-converge
+	@echo "check-v136: OK (σ-evolve kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
