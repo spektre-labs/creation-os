@@ -3931,6 +3931,32 @@ check-v175-debate-train-elo: creation_os_v175_debate_train
 check-v175: check-v175-debate-train-elo
 	@echo "check-v175: OK (σ-debate-train kernel)"
 
+# --- v176 σ-Simulator (world gen + curriculum + dream training) ---------
+# Procedurally generates 6 candidate worlds (room, objects,
+# friction, mass) with σ_realism and σ_difficulty derived
+# from parameter plausibility; builds a 5-world curriculum
+# ordered by σ_difficulty ascending (easy → hard, realistic
+# worlds first); measures sim-to-sim σ_transfer between
+# consecutive curriculum worlds; then runs 1000 latent
+# "dream" rollouts (Box-Muller-sampled σ around 0.12 ±0.05)
+# and asserts σ_dream_mean ≤ σ_real + dream_slack — the
+# signal that dreams are a safer learning source when σ-gated.
+# v176.1 emits real MuJoCo XML + a DreamerV3-style neural
+# world model behind the rollouts.
+V176_INC  = -Isrc/v176
+V176_SRCS = src/v176/simulator.c
+
+creation_os_v176_simulator: $(V176_SRCS) src/v176/main.c
+	$(CC) $(CFLAGS) $(V176_INC) -o $@ \
+	    $(V176_SRCS) src/v176/main.c $(LDFLAGS)
+
+check-v176-simulator-dream-train: creation_os_v176_simulator
+	@bash benchmarks/v176/check_v176_simulator_dream_train.sh
+	@echo "check-v176-simulator-dream-train: OK (worlds + curriculum + transfer + dreams)"
+
+check-v176: check-v176-simulator-dream-train
+	@echo "check-v176: OK (σ-simulator kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
