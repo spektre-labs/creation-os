@@ -3686,6 +3686,32 @@ check-v166-stream-websocket: creation_os_v166_stream
 check-v166: check-v166-stream-websocket
 	@echo "check-v166: OK (σ-stream kernel)"
 
+# --- v167 σ-Governance-API (policy server + fleet + audit + RBAC) -------
+# Organization-level control plane.  A baked org (spektre-labs)
+# owns 3 domain policies (medical/creative/code) declaring
+# (τ, abstain_message, require_sandbox); a fleet of 4 nodes
+# (lab-m3, lab-rpi5, cloud-a, cloud-b) stamped with the active
+# policy_version; an append-only ring-buffered audit log (N=64)
+# of every σ-decision (emit/abstain/revise/denied); and a
+# 4-role RBAC (admin/user/auditor/developer) enforced at
+# evaluation time.  Policy push skips any node whose health is
+# DOWN (enforces the "dead node can't claim compliance"
+# invariant).  v167.1 ships a real HTTP policy server with TLS
+# auth + GDPR/SOC2/HIPAA export profiles.
+V167_INC  = -Isrc/v167
+V167_SRCS = src/v167/governance.c
+
+creation_os_v167_governance: $(V167_SRCS) src/v167/main.c
+	$(CC) $(CFLAGS) $(V167_INC) -o $@ \
+	    $(V167_SRCS) src/v167/main.c $(LDFLAGS)
+
+check-v167-governance-policy-apply: creation_os_v167_governance
+	@bash benchmarks/v167/check_v167_governance_policy_apply.sh
+	@echo "check-v167-governance-policy-apply: OK (policy + fleet + audit + RBAC)"
+
+check-v167: check-v167-governance-policy-apply
+	@echo "check-v167: OK (σ-governance-api kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
