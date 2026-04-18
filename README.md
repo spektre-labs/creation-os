@@ -829,6 +829,103 @@ on every token**:
     0.20·σ_bias + 0.20·σ_goedel` is the aggregated
     honesty score.
 
+31. **Tensor, fractal, attention, entropy, unified
+    (v224–v228)** — the **unified-theory** layer. The
+    8 σ-channels stop being an 8-tuple and become a
+    genuine mathematical object. **σ-tensor** (v224)
+    lifts them into a rank-3 σ-tensor
+    `T ∈ R^{6 × 8 × 3}` (tokens × channels × context)
+    generated from two latent loadings so channels 0–3
+    and channels 4–7 form two correlated blocks by
+    construction; tensor contraction then replaces
+    v29's geometric mean with `σ_agg[t] = Σ_c w_c ·
+    mean_k T[t,c,k]` and both aggregates are reported
+    so v136 can choose — the hard invariant is
+    `n_divergent ≥ 1` (the contraction actually picks
+    up a correlation the geometric mean misses).  The
+    8 × 8 channel-correlation matrix is approximated
+    by the top k = 4 eigen-components via symmetric
+    power iteration with rank-1 deflation, giving
+    `rel_err = ||R − R_k||_F / ||R||_F ≤ τ_rel = 0.15`
+    and cutting storage from `C² = 64` down to
+    `k · (C + 1) = 36` floats — ≈ 44 % of full storage
+    for ≤ 15 % error.  **σ-fractal** (v225) then
+    enforces that σ is *literally the same function at
+    every scale*: a 5-level binary tree (tokens →
+    sentences → responses → sessions → system, 31
+    nodes) with `A := mean` as the aggregator, so
+    `σ_parent = mean(σ_children)` is an exact identity
+    at every internal node.  Two cross-scale detectors
+    are reported: `n_cross_true_diff` (parents vs
+    their own aggregated children, always 0 — the
+    1 = 1 baseline), and `n_cross_declared_diff`
+    (parents' *declared* σ vs the true child-mean,
+    ≥ 1 because the fixture plants one deliberate
+    mismatch).  The holographic identity `K(K) = K`
+    is enforced at every internal node: with
+    `K := 1 − σ_node`, `A({K, K, ..., K}) = K` to
+    `ε_kk = 1e-5` — the fixed-point invariant is
+    baked in.  **σ-attention** (v226) makes the paper's
+    attention reading executable: with `Q = observer`,
+    `K = observed`, `V = meaning`,
+    `softmax(Q·K^T) = σ-distribution over keys`, and
+    the per-(head, token) σ is simply the normalised
+    Shannon entropy `σ_head_token = H(softmax) / log
+    L`.  Eight heads × six tokens × key-length 6 with
+    two 'factual' (sharp, σ_head ≪ τ_useful = 0.40),
+    two 'diffuse' (flat, σ_head ≫ τ_noisy = 0.70), and
+    four mixed heads; the surgery classification into
+    **boost / keep / prune** is read-only in v0 (no
+    weights modified), giving v177 / v180 a stable
+    per-head σ to consume downstream.  **σ-entropy**
+    (v227) formalises why v104's `σ_product > entropy`
+    holds empirically, on a fixed offline fixture that
+    anyone can replay: 8 distributions over K = 5
+    categories (sharp peak, bimodal, near-uniform,
+    skewed decay, heavy tail, very sharp, pyramid) are
+    decomposed into four channels (σ_H, σ_nEff,
+    σ_tail, σ_top1); `σ_product` is their geometric
+    mean with an ε-floor of 0.05.  The free-energy
+    identity `σ_H + σ_free = 1` (because
+    `KL(p || uniform) = log K − H`) is enforced
+    numerically, `I(X;C)` is clamped to `[0, H(p)]`,
+    and the falsifiable claim is a strict MSE contract
+    against a transparent reference (`σ_true =
+    arithmetic mean of the four channels`): the gate
+    requires `mse_product < mse_H`.  **σ-unified**
+    (v228) writes the whole stack as *one scalar field
+    equation*: `dσ/dt = −α·K_eff + β·noise +
+    γ·interaction` integrated Euler-forward for 100
+    steps with `α = 0.20`, `β = 0.02`, `γ = 0.01`,
+    σ(0) = 0.90, deterministic `sin φ(t)` noise and
+    `cos(0.13·t)` interaction.  The Noether-style 1 =
+    1 symmetry gives a conservation law
+    `K_eff(t) · τ(t) = C` that is enforced **as an
+    identity** (`τ(t) := C / K_eff(t)`, so the
+    conservation is definitional, not hopeful; the
+    contract is `|K_eff·τ − C| ≤ ε_cons = 1e-6` for
+    every t).  Phase transitions at `K_crit = 0.50`
+    are real: `σ_end < σ_start` and `n_transitions
+    ≥ 1` — the trajectory actually crosses the
+    critical line, which is what v203 collapse
+    detector consumes.  The unification map lines up
+    cleanly: **v29** is the local σ-aggregate, **v193**
+    is the global K_eff, **v225** is the fractal
+    scale-invariance, **v227** is the information-
+    theoretic reading, and **v228** is the dynamics —
+    one field, one equation, one invariant: **1 = 1**.
+    All five v224–v228 merge-gate checks are
+    deterministic, offline, and stdlib-only.  v1
+    promotions are **named, not implemented**: v224.1
+    true SVD + v136 CMA-ES on live σ-history tensors;
+    v225.1 pluggable aggregator and continuous-scale
+    Haar-wavelet decomposition; v226.1 live attention
+    export + `/attention` dashboard; v227.1 active
+    inference loop minimising free energy; v228.1
+    measured (non-definitional) conservation with a
+    live ε-bound and a true Lagrangian variational
+    derivation of `L = 1 − 2σ`.
+
 ### Agentic capabilities (v112–v114) — σ-governed by construction
 
 | Capability | What it is | What σ adds |
@@ -1499,6 +1596,42 @@ meta-diagnostics + v141 curriculum driven by σ_goedel +
 cross-system 1 = 1 verification pairing (v223) — are
 named in each kernel's doc page, but never claimed before
 they land.
+
+### Tensor · fractal · attention · entropy · unified (v224–v228)
+
+The **unified-theory** layer: the 8 σ-channels become a
+tensor network, σ becomes self-similar across five
+scales, transformer attention becomes an executable
+σ-read of `Q·K^T`, entropy decomposes into four weighted
+components, and the whole stack collapses into a single
+scalar field equation with a conservation law.  Every
+kernel is a deterministic v0 fixture; every v1 promotion
+is named but not claimed.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v224**](docs/v224/README.md) σ-Tensor | Rank-3 σ-tensor `T ∈ R^{6×8×3}` from two latent block loadings so channels 0–3 and 4–7 are two correlated blocks by construction; contraction `σ_agg[t] = Σ_c w_c · mean_k T[t,c,k]` reported alongside the geometric mean `σ_gmean`; 8×8 correlation matrix approximated by symmetric power-iteration rank-4 eigen-decomposition with rank-1 deflation; `rel_err ≤ τ_rel = 0.15`; storage `k · (C+1) = 36 floats < C² = 64 floats`; `n_divergent ≥ 1` per run. | **Correlation-aware σ.** Geometric mean treats channels as independent; tensor contraction does not.  The rank-4 approximation gives ≈ 44 % of full storage at ≤ 15 % Frobenius error — a concrete, auditable compression.  Quantum-inspired only in the formalism: the code runs on a classical CPU and the cost is classical. |
+| [**v225**](docs/v225/README.md) σ-Fractal | 5 levels × fan-out 2 = 31 nodes (L0 tokens .. L4 system, BFS order); aggregator `A := mean`; scale-invariance `σ_parent = mean(σ_children)` enforced exactly; cross-scale detector against both the true aggregate (`n_cross_true = 0`) and a declared σ (`n_cross_declared ≥ 1`, one planted mismatch at node 7); holographic identity `K(K) = K` with `K := 1 − σ_node`, enforced to `ε_kk = 1e-5` at every internal node. | **σ is the same function at every scale.** The cross-scale detector turns "every sentence is right but the response doesn't answer the question" into a testable signal: the planted declared mismatch surfaces as `n_cross_declared_diff ≥ 1` while the true aggregate stays at 0.  `K(K) = K` is the identity that makes the whole fractal self-consistent — and it is a line of C, not a slogan. |
+| [**v226**](docs/v226/README.md) σ-Attention | 8 heads × 6 tokens × key-length 6; `Q·K^T` from distance-to-preferred-key `(t + h) mod L`; per-head temperature picks two 'factual' heads (T = 0.20, 0.25), two 'diffuse' heads (T = 2.20, 2.50), four 'mixed' heads; `σ_head_token = H(softmax) / log L`, `σ_head = mean_t σ_head_token`; τ_useful = 0.40 / τ_noisy = 0.70 → boost / keep / prune classification, read-only in v0. | **Attention IS softmax-normalised σ.** The paper's `Q = observer`, `K = observed`, `V = meaning`, `softmax = σ` reading becomes an executable per-head σ-profile.  Two heads are flagged valuable, two are flagged noisy, and the surgery verdict is reproducible byte-for-byte — a concrete foundation for v180's eventual live attention surgery, without modifying any weight in v0. |
+| [**v227**](docs/v227/README.md) σ-Entropy | 8 distributions over K = 5 (sharp peak / bimodal / near-uniform / skewed decay / heavy tail / very sharp / pyramid); four-channel decomposition (`σ_H`, `σ_nEff`, `σ_tail`, `σ_top1`) with `σ_product` = GM (ε-floor 0.05); free-energy identity `σ_H + σ_free = 1` enforced; `I(X;C)` clamped to `[0, H(p)]`; hard MSE contract `mse_product < mse_H` against a transparent reference `σ_true = arithmetic mean of the four channels`. | **Why v104's σ_product > entropy, made falsifiable.** A single channel cannot track a four-channel mean as tightly as the geometric mean of all four can.  v227 reproduces v104's empirical win as a decomposition-geometry *contract* on a fixed offline fixture: if `mse_product ≥ mse_H` the gate fails.  The free-energy link (`σ_free = KL(p‖uniform) / log K`) ties the σ stack directly to Friston-style active inference without hand-waving. |
+| [**v228**](docs/v228/README.md) σ-Unified | 100-step Euler-forward integration of `dσ/dt = −α·K_eff + β·noise + γ·interaction` with `α = 0.20`, `β = 0.02`, `γ = 0.01`, `σ(0) = 0.90`, deterministic `sin φ(t)` noise and `cos(0.13·t)` interaction; Noether-style conservation `K_eff(t) · τ(t) = C` by definition (`τ := C / K_eff`) so `|K_eff·τ − C| ≤ ε_cons = 1e-6` is an identity; phase transition at `K_crit = 0.50` with `n_transitions ≥ 1` and `σ_end < σ_start`. | **One field, one equation, one invariant.** v29 local + v193 global + v225 scale + v227 info + v228 dynamics = the same σ seen from five angles.  Conservation is enforced as a mathematical identity (not a fit); the phase crossing is what v203's civilization-collapse detector already consumes; the whole trajectory replays byte-identically via the FNV-1a chain.  v228.1 will relax the identity to a *measured* conservation within a live ε-bound. |
+
+Every v224–v228 merge-gate check is offline, stdlib-only,
+and deterministic. The v1 promotions — v224.1 true SVD
+on live σ-history tensors + v136 CMA-ES over the channel
+weight vector + MPO / tree-tensor contraction; v225.1
+pluggable aggregator (v224 contraction / v227 entropy /
+v193 K_eff) + continuous-scale Haar-wavelet
+decomposition over live σ-traces; v226.1 live
+transformer attention export + v180 surgery wiring +
+`/attention` dashboard with per-head real-time σ;
+v227.1 active-inference policy minimising free energy +
+KL-based calibration + v224 tensor channel plug-in;
+v228.1 measured (non-definitional) conservation with a
+live ε-bound + coupling into v203 collapse detector + a
+Lagrangian variational derivation of `L = 1 − 2σ` — are
+named in each kernel's doc page, but never claimed
+before they land.
 
 ### AGI architecture in one picture
 
