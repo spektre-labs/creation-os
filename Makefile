@@ -4609,6 +4609,26 @@ check-v200-market-scarcity-penalty: creation_os_v200_market
 check-v200: check-v200-market-scarcity-penalty
 	@echo "check-v200: OK (σ-market kernel)"
 
+# --- v201 σ-Diplomacy (stance + minimax + trust + treaty) ---
+# 8 negotiations × 4 parties, closed-form minimax compromise
+# over the red-line intersection.  Disjoint red lines yield
+# an explicit DEFER (never a silent override).  Betrayal
+# drops trust by 0.5 and requires 10 successful interactions
+# to recover.  Treaty receipts FNV-1a chained for audit.
+V201_INC  = -Isrc/v201
+V201_SRCS = src/v201/diplomacy.c
+
+creation_os_v201_diplomacy: $(V201_SRCS) src/v201/main.c
+	$(CC) $(CFLAGS) $(V201_INC) -o $@ \
+	    $(V201_SRCS) src/v201/main.c $(LDFLAGS)
+
+check-v201-diplomacy-compromise-search: creation_os_v201_diplomacy
+	@bash benchmarks/v201/check_v201_diplomacy_compromise_search.sh
+	@echo "check-v201-diplomacy-compromise-search: OK (minimax + defer + trust)"
+
+check-v201: check-v201-diplomacy-compromise-search
+	@echo "check-v201: OK (σ-diplomacy kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
