@@ -391,7 +391,8 @@ merge-gate:
 	@$(MAKE) check-v184
 	@$(MAKE) check-v185
 	@$(MAKE) check-v186
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v186 VLA/fusion/grow)"
+	@$(MAKE) check-v187
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v187 VLA/fusion/grow/calibration)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -4232,6 +4233,30 @@ check-v186-architecture-growth-cycle: creation_os_v186_grow
 
 check-v186: check-v186-architecture-growth-cycle
 	@echo "check-v186: OK (σ-continual-architecture kernel)"
+
+# --- v187 σ-Calibration (ECE + temperature scaling + per-domain) -------
+# 500-sample holdout bucketed into 10 σ-bins; Expected
+# Calibration Error (ECE) = Σ |acc_bin - (1 - σ_bin)| *
+# n_bin / N.  Temperature scaling σ_cal = 1 - (1-σ)^T is
+# searched by golden section on [0.3, 4.0] globally and
+# per-domain (math / code / history / general).  Merge-gate
+# requires raw ECE ≥ 0.10 (starting miscalibration real) and
+# calibrated ECE < 0.05 (σ-alarm threshold).  v187.1 rotates
+# a live holdout from the inference worker and wires v159
+# auto-recalibration.
+V187_INC  = -Isrc/v187
+V187_SRCS = src/v187/calib.c
+
+creation_os_v187_calib: $(V187_SRCS) src/v187/main.c
+	$(CC) $(CFLAGS) $(V187_INC) -o $@ \
+	    $(V187_SRCS) src/v187/main.c $(LDFLAGS)
+
+check-v187-calibration-ece-below-005: creation_os_v187_calib
+	@bash benchmarks/v187/check_v187_calibration_ece_below_005.sh
+	@echo "check-v187-calibration-ece-below-005: OK (raw ECE ≥ 0.10 → calibrated < 0.05)"
+
+check-v187: check-v187-calibration-ece-below-005
+	@echo "check-v187: OK (σ-calibration kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
