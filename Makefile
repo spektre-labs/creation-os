@@ -4017,6 +4017,33 @@ check-v178: check-v178-consensus-byzantine
 check-v174-v178: check-v174 check-v175 check-v176 check-v177 check-v178
 	@echo "check-v174-v178: OK (flywheel + debate-train + simulator + compress + consensus)"
 
+# --- v179 σ-Interpret (SAE + circuit tracing + mechanistic explain) -----
+# 64-sample / 24-feature / 8-head / 8-MLP fixture at synthetic
+# layer 15.  v179.0 fits a deterministic linear "SAE" against a
+# bimodal σ distribution, keeping features whose |Pearson r| ≥
+# τ_correlated (0.60).  Eight seeded monosemantic features have
+# named uncertainty modes (dates / named-entities / numerical /
+# low-coverage / conflicting-context / rare-token + two negative
+# confident-signal features); the remaining features are noise
+# distractors.  Per-sample `--explain` picks the best-fitting
+# labeled feature and emits a human-readable chain: token + head
+# + MLP + n_effective collapse, dovetailing with v140 causal
+# channels.  v179.1 promotes this to a real 2560 → 8192 SAE over
+# BitNet-2B layer 15 weights with the /v1/explain/{id} endpoint.
+V179_INC  = -Isrc/v179
+V179_SRCS = src/v179/interpret.c
+
+creation_os_v179_interpret: $(V179_SRCS) src/v179/main.c
+	$(CC) $(CFLAGS) $(V179_INC) -o $@ \
+	    $(V179_SRCS) src/v179/main.c $(LDFLAGS)
+
+check-v179-sae-feature-correlation: creation_os_v179_interpret
+	@bash benchmarks/v179/check_v179_sae_feature_correlation.sh
+	@echo "check-v179-sae-feature-correlation: OK (SAE + circuit + explain)"
+
+check-v179: check-v179-sae-feature-correlation
+	@echo "check-v179: OK (σ-interpret kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
