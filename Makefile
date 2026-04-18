@@ -4705,6 +4705,28 @@ check-v204-hypothesis-ranking: creation_os_v204_hypothesis
 check-v204: check-v204-hypothesis-ranking
 	@echo "check-v204: OK (σ-hypothesis kernel)"
 
+# --- v205 σ-Experiment (design + sim-first + power + repro) ---
+# One experiment per v204 TEST_QUEUE slot (3 total).  Each
+# has distinct dep/indep/control variable ids; n_required
+# follows (z_α+z_β)²/effect² deterministically; sim-first
+# (σ_sim < τ_sim) plus power check (σ_power < τ_power)
+# produce a tri-valued decision SIM_SUPPORTS /
+# SIM_REFUTES / UNDER_POWERED.  Full repro record hash-
+# chained — the `cos reproduce --experiment` spine.
+V205_INC  = -Isrc/v205
+V205_SRCS = src/v205/experiment.c
+
+creation_os_v205_experiment: $(V205_SRCS) src/v205/main.c
+	$(CC) $(CFLAGS) $(V205_INC) -o $@ \
+	    $(V205_SRCS) src/v205/main.c $(LDFLAGS)
+
+check-v205-experiment-design-valid: creation_os_v205_experiment
+	@bash benchmarks/v205/check_v205_experiment_design_valid.sh
+	@echo "check-v205-experiment-design-valid: OK (design + sim-first + power)"
+
+check-v205: check-v205-experiment-design-valid
+	@echo "check-v205: OK (σ-experiment kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
