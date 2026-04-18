@@ -333,7 +333,8 @@ merge-gate:
 	@$(MAKE) check-v115-v118
 	@$(MAKE) check-v119-v123
 	@$(MAKE) check-v124-v126
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights)"
+	@$(MAKE) check-v129
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129 σ-federated)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -2834,6 +2835,25 @@ check-v126: check-v126-embed-smoke
 
 check-v124-v126: check-v124 check-v125 check-v126
 	@echo "check-v124-v126: OK (continual + DPO + σ-embed)"
+
+# --- v129 σ-Federated (privacy-preserving FedAvg + DP + unlearn) ---
+# Pure-C aggregator + σ-scaled Gaussian DP + σ-adaptive top-K
+# + unlearn-diff.  v129.0 is transport-free by design — v128 mesh
+# (follow-up) plugs the socket layer in without changing the
+# aggregation math below.
+V129_INC            = -Isrc/v129
+V129_FEDERATED_SRCS = src/v129/federated.c
+
+creation_os_v129_federated: $(V129_FEDERATED_SRCS) src/v129/main.c
+	$(CC) $(CFLAGS) $(V129_INC) -o $@ \
+	    $(V129_FEDERATED_SRCS) src/v129/main.c $(LDFLAGS)
+
+check-v129-federated-aggregation: creation_os_v129_federated
+	@bash benchmarks/v129/check_v129_federated_aggregation.sh
+	@echo "check-v129-federated-aggregation: OK (σ-FedAvg + DP + top-K + unlearn)"
+
+check-v129: check-v129-federated-aggregation
+	@echo "check-v129: OK (σ-federated kernel)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
