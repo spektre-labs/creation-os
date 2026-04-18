@@ -3022,6 +3022,37 @@ check-v137-compile-llvm-smoke: creation_os_v137_compile
 check-v137: check-v137-compile-llvm-smoke
 	@echo "check-v137: OK (σ-compile kernel)"
 
+# --- v138 σ-Proof (ACSL annotations + Frama-C WP tier 2) ---------
+# Tier 1 (always runs): pure-C validator over ACSL annotation
+# blocks in src/v138/sigma_gate.c asserts the σ-contract shape
+# (requires + ensures + 0≤σ≤1 domain + complete emit/abstain
+# partition + loop invariants).  Tier 2 (opportunistic): runs
+# `frama-c -wp -wp-rte` when the binary is on $PATH; otherwise
+# prints "tier-2 skipped" and tier-1 is authoritative.  Export
+# V138_REQUIRE_FRAMA_C=1 to fail the gate on a missing frama-c.
+V138_INC        = -Isrc/v138
+V138_PROOF_SRCS = src/v138/proof.c
+
+creation_os_v138_proof: $(V138_PROOF_SRCS) src/v138/main.c
+	$(CC) $(CFLAGS) $(V138_INC) -o $@ \
+	    $(V138_PROOF_SRCS) src/v138/main.c $(LDFLAGS)
+
+check-v138-prove-frama-c-wp: creation_os_v138_proof
+	@bash benchmarks/v138/check_v138_prove_frama_c_wp.sh
+	@echo "check-v138-prove-frama-c-wp: OK (tier-1 + tier-2 probe)"
+
+check-v138: check-v138-prove-frama-c-wp
+	@echo "check-v138: OK (σ-proof kernel)"
+
+# `make prove` runs the merge-gate's σ-proof scope as a standalone
+# target so authors can iterate on ACSL contracts quickly.
+prove: creation_os_v138_proof
+	@./creation_os_v138_proof --prove src/v138/sigma_gate.c
+	@echo "prove: OK (tier-1 + tier-2 probe)"
+
+check-v134-v138: check-v134 check-v135 check-v136 check-v137 check-v138
+	@echo "check-v134-v138: OK (deep-infrastructure stack)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
