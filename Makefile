@@ -5043,6 +5043,26 @@ check-v220-simulate-monte-carlo: creation_os_v220_simulate
 check-v220: check-v220-simulate-monte-carlo
 	@echo "check-v220: OK (σ-simulate kernel)"
 
+# --- v221 σ-Language (semantic depth + implicature + coherence + multiling) ---
+# 10 utterances × 4 languages (en/fi/ja/es) with
+# engineered σ-profiles; multilingual calibration
+# contract: per-language mean σ_lang within ±Δ_calib of
+# global mean (σ measures uncertainty language-
+# independently).
+V221_INC  = -Isrc/v221
+V221_SRCS = src/v221/language.c
+
+creation_os_v221_language: $(V221_SRCS) src/v221/main.c
+	$(CC) $(CFLAGS) $(V221_INC) -o $@ \
+	    $(V221_SRCS) src/v221/main.c $(LDFLAGS)
+
+check-v221-language-implicature: creation_os_v221_language
+	@bash benchmarks/v221/check_v221_language_implicature.sh
+	@echo "check-v221-language-implicature: OK (semantic + implicature + discourse + multilingual)"
+
+check-v221: check-v221-language-implicature
+	@echo "check-v221: OK (σ-language kernel)"
+
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
 # Tiny, dependency-free, integer-only C kernel that:
