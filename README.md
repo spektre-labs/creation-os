@@ -124,6 +124,15 @@ The live stack ships today:
   σ-boundary self/other/world zones with an anti-enmeshment gate,
   and σ-sovereignty: five axioms, a σ-tempered autonomy gradient,
   human primacy override, and the IndependentArchitect signature.
+- **v239–v243** — the **complete-system layer**: σ-compose-runtime
+  (demand-driven activation with a hard σ-budget and topological
+  hot-load), σ-pipeline (dynamic shape assembly with mid-pipeline
+  branching and cross-shape fusion), σ-api-surface (10 `/v1/*`
+  endpoints + 4 SDKs + OpenAI-compatible chat), σ-kernel-os
+  (processes + σ-scheduler + 3 IPC + 5 FS dirs + 6-step boot /
+  3-step shutdown), and **σ-complete** — the 15-category cognitive
+  completeness test with the 1=1 audit that closes the loop from
+  seed (v229) to **cognitively complete** (v243).
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -912,6 +921,38 @@ into v148 sovereign RSI loop + override on the admin
 surface + per-session sovereignty profiles via v115 —
 are named in each kernel's doc page, but never claimed
 before they land.
+
+### Runtime · pipeline · API · kernel-OS · completeness (v239–v243)
+
+The **complete-system** layer.  Once v234–v238 make presence,
+locus, autobiography, boundary, and sovereignty falsifiable,
+v239–v243 answer the last honest questions — *how do kernels
+enter and leave memory?  in what order do they run on a given
+task?  what does the outside world see?  is this actually an
+OS?  and is the stack cognitively complete?* — in five typed
+C kernels with strict audit chains.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v239**](docs/v239/README.md) σ-Compose-Runtime | 5 requests × 4 difficulty tiers (`EASY` / `MEDIUM` / `HARD` / `CODE`) plus one deliberately over-budget case; 11-edge dependency graph (`v150→v114`, `v114→v106`, `v115→v106`, `v111→v101`, …, `v101→v29`) whose transitive closure is re-proven per request; topological activation with per-kernel `activated_at_tick`; `σ_activation = n_active / max_kernels` and a hard σ-budget that **rejects** the over-budget request with no partial activation. | **Composition is demand-driven, not static.** v162 picks kernels once by profile; v239 picks them *per request* from declared difficulty, closes the parent graph deterministically, and proves every parent was activated at a strictly earlier tick.  The σ-budget has teeth — the over-budget fixture is a gate failure, so a caller can't silently overload a node. |
+| [**v240**](docs/v240/README.md) σ-Pipeline | 6 requests: 4 clean shapes (`FACTUAL` recall→verify→emit · `CREATIVE` generate→debate→refine→emit · `CODE` plan→generate→sandbox→test→emit · `MORAL` analyse→multi_framework→geodesic→emit) + 1 branch (`FACTUAL → EXPLORATORY` when σ > τ_branch = 0.50, `σ_at_branch = 0.62` in the fixture) + 1 fusion (`CODE + MORAL → FUSED`: moral_analyse → code_plan → sandbox → moral_verify → emit); per-stage σ ∈ [0,1] with strictly-ascending ticks; `σ_pipeline = max stage σ`; fusion must carry ≥1 `CODE` stage AND ≥1 `MORAL` stage. | **Reasoning order is not a global constant.** Every request picks a shape by task type, σ per stage is recorded, and the pipeline is *allowed* to branch when σ rises or fuse when the task straddles two shapes.  The merge-gate proves the branch event is triggered by σ (not by whim), and proves a fused pipeline genuinely carries both parent shapes — no silent reshaping. |
+| [**v241**](docs/v241/README.md) σ-API-Surface | Exactly 10 `/v1/*` endpoints — `POST /v1/chat/completions` (OpenAI-compatible) · `POST /v1/reason` · `POST /v1/plan` · `POST /v1/create` · `POST /v1/simulate` · `POST /v1/teach` · `GET /v1/health` · `GET /v1/identity` · `GET /v1/coherence` · `GET /v1/audit/stream`; every endpoint emits `X-COS-*` headers (`X-COS-Sigma`, `X-COS-Kernel-Path`, `X-COS-Audit-Chain`); exactly 4 first-class SDKs (`python` · `javascript` · `rust` · `go`) with canonical install strings; `api_version_major == 1`; `σ_api = 1 − passing / total` and must be `0.0` in v0. | **238 kernels, one typed surface.** The OpenAI-compatible endpoint is the backward-compat hinge: any existing OpenAI client is a drop-in caller, and the Creation OS σ-envelope rides on response headers instead of breaking the body schema.  The merge-gate re-verifies the whole surface byte-for-byte every run, so a silent rename of a path or an SDK is a gate failure, not a regression you find in production. |
+| [**v242**](docs/v242/README.md) σ-Kernel-OS | 12 typed processes with σ ∈ [0,1] and priority == argsort σ **ascending** (low σ = high priority); exactly 3 IPC mechanisms (`MESSAGE_PASSING` · `SHARED_MEMORY` · `SIGNALS`); exactly 5 FS dirs under `~/.creation-os/` (`models/` · `memory/` · `config/` · `audit/` · `skills/`); 6-step boot `v29 → v101 → v106 → v234 → v162 → v239` with ≥ 5 ready kernels including `{29, 101, 106, 234, 162}`; 3-step shutdown `v231 → v181 → v233`; `σ_os = fail / steps` and must be `0.0`. | **Creation OS is a real OS surface, not just a name.** The scheduler is σ-first, which is the whole philosophy compressed into one predicate: confident work runs ahead of uncertain work, always.  Boot and shutdown are byte-deterministic typed sequences — a reordering is a gate failure — so the "we booted" claim is as falsifiable as everything else in the stack. |
+| [**v243**](docs/v243/README.md) σ-Complete | Typed checklist over exactly **15 canonical categories** — `PERCEPTION` · `MEMORY` · `REASONING` · `PLANNING` · `ACTION` · `LEARNING` · `REFLECTION` · `IDENTITY` · `MORALITY` · `SOCIALITY` · `CREATIVITY` · `SCIENCE` · `SAFETY` · `CONTINUITY` · `SOVEREIGNTY` — each with ≥ 1 covering kernel id, an evidence tier (`M` = measured / `P` = partial), and a per-category σ ∈ [0, 1]; `σ_completeness = 1 − covered / 15` and must be `0.0`; **the 1=1 test**: declared coverage byte-identical to realized coverage on every run; `cognitive_complete = one_equals_one ∧ covered == 15`. | **Cognitive completeness is a falsifiable predicate.** v243 closes the loop from v229 seed to "is this stack cognitively complete?" with a typed answer, not a vibe: every one of the 15 canonical categories has a covering kernel, an honest M/P tier, and a σ; the 1=1 audit refuses the run if declared ≠ realized.  The P-tier rows are labelled honestly — host-level benchmarks (ARC, MMLU, HumanEval, …) have to promote them to M in v243.1; no silent upgrades. |
+
+Every v239–v243 merge-gate check is offline, stdlib-only, and
+deterministic.  The v1 promotions — v239.1 live `mmap` hot-load
+via v107 installer + RAM-pressure hot-unload + runtime budget
+re-negotiation across v235 mesh peers; v240.1 `/pipeline` live
+UI with server-sent stage events + branch-learning policy that
+updates σ→shape from outcomes; v241.1 real HTTP router bound
+to the endpoint manifest + SSE streaming for `/v1/audit/stream`
++ SDK package-lock generation; v242.1 real fork/exec hooks into
+v107 + POSIX signal bridge for v134 + userspace filesystem mount
++ cgroup/sandbox integration for v113; v243.1 promote every
+P-tier category to M by wiring host-level benchmarks through the
+harness and updating `WHAT_IS_REAL.md` — are named in each
+kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 

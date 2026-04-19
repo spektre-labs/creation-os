@@ -443,7 +443,12 @@ merge-gate:
 	@$(MAKE) check-v236
 	@$(MAKE) check-v237
 	@$(MAKE) check-v238
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty)"
+	@$(MAKE) check-v239
+	@$(MAKE) check-v240
+	@$(MAKE) check-v241
+	@$(MAKE) check-v242
+	@$(MAKE) check-v243
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5433,6 +5438,113 @@ check-v238: check-v238-sovereignty-axioms
 
 check-v234-v238: check-v234 check-v235 check-v236 check-v237 check-v238
 	@echo "check-v234-v238: OK (presence + locus + autobiography + boundary + sovereignty)"
+
+# --- v239 σ-Compose-Runtime (demand-driven activation + hot-load + σ-budget) ---
+# 5 requests across 4 difficulty tiers (EASY/MEDIUM/HARD/CODE)
+# plus 1 deliberate over-budget case; transitive parent
+# closure re-proven per request; topological activation
+# with per-kernel activated_at_tick; σ_activation =
+# n_active / max_kernels; hard σ-budget rejects the
+# over-budget request; FNV-1a chain replays byte-identically.
+V239_INC  = -Isrc/v239
+V239_SRCS = src/v239/runtime.c
+
+creation_os_v239_runtime: $(V239_SRCS) src/v239/main.c
+	$(CC) $(CFLAGS) $(V239_INC) -o $@ \
+	    $(V239_SRCS) src/v239/main.c $(LDFLAGS)
+
+check-v239-runtime-demand-activate: creation_os_v239_runtime
+	@bash benchmarks/v239/check_v239_runtime_demand_activate.sh
+	@echo "check-v239-runtime-demand-activate: OK (closure + topo + σ-budget)"
+
+check-v239: check-v239-runtime-demand-activate
+	@echo "check-v239: OK (σ-compose-runtime kernel)"
+
+# --- v240 σ-Pipeline (dynamic assembly + branching + fusion + viz) ---
+# 6 requests: 4 clean shapes (FACTUAL/CREATIVE/CODE/MORAL),
+# 1 branch (FACTUAL → EXPLORATORY when σ > τ_branch),
+# 1 fusion (CODE + MORAL → FUSED); per-stage σ with
+# strict tick ordering; σ_pipeline = max stage σ; branch
+# event records sigma_at_branch; fusion must carry ≥1 CODE
+# and ≥1 MORAL stage.
+V240_INC  = -Isrc/v240
+V240_SRCS = src/v240/pipeline.c
+
+creation_os_v240_pipeline: $(V240_SRCS) src/v240/main.c
+	$(CC) $(CFLAGS) $(V240_INC) -o $@ \
+	    $(V240_SRCS) src/v240/main.c $(LDFLAGS)
+
+check-v240-pipeline-dynamic-assembly: creation_os_v240_pipeline
+	@bash benchmarks/v240/check_v240_pipeline_dynamic_assembly.sh
+	@echo "check-v240-pipeline-dynamic-assembly: OK (shapes + branch + fusion)"
+
+check-v240: check-v240-pipeline-dynamic-assembly
+	@echo "check-v240: OK (σ-pipeline kernel)"
+
+# --- v241 σ-API-Surface (unified API + 4 SDKs + backward-compat) ---
+# Exactly 10 /v1/* endpoints, every one emits X-COS-*
+# headers; exactly one OpenAI-compatible endpoint
+# (POST /v1/chat/completions); 4 SDKs (python/js/rust/go)
+# all maintained; api_version_major == 1;
+# σ_api = 1 − passing / total and must be 0.0 in v0.
+V241_INC  = -Isrc/v241
+V241_SRCS = src/v241/api.c
+
+creation_os_v241_api: $(V241_SRCS) src/v241/main.c
+	$(CC) $(CFLAGS) $(V241_INC) -o $@ \
+	    $(V241_SRCS) src/v241/main.c $(LDFLAGS)
+
+check-v241-api-openai-compatible: creation_os_v241_api
+	@bash benchmarks/v241/check_v241_api_openai_compatible.sh
+	@echo "check-v241-api-openai-compatible: OK (10 endpoints + 4 SDKs)"
+
+check-v241: check-v241-api-openai-compatible
+	@echo "check-v241: OK (σ-api-surface kernel)"
+
+# --- v242 σ-Kernel-OS (process + IPC + FS + boot/shutdown) ---
+# 12 processes with priority == argsort σ ascending;
+# exactly 3 IPC (MESSAGE_PASSING/SHARED_MEMORY/SIGNALS);
+# exactly 5 FS dirs under ~/.creation-os/
+# (models/memory/config/audit/skills); boot 6 steps
+# (v29→v101→v106→v234→v162→v239) with ≥5 ready kernels
+# incl. {29,101,106,234,162}; shutdown 3 steps
+# (v231→v181→v233); σ_os must be 0.0.
+V242_INC  = -Isrc/v242
+V242_SRCS = src/v242/kernel_os.c
+
+creation_os_v242_kernel_os: $(V242_SRCS) src/v242/main.c
+	$(CC) $(CFLAGS) $(V242_INC) -o $@ \
+	    $(V242_SRCS) src/v242/main.c $(LDFLAGS)
+
+check-v242-kernel-os-boot-sequence: creation_os_v242_kernel_os
+	@bash benchmarks/v242/check_v242_kernel_os_boot_sequence.sh
+	@echo "check-v242-kernel-os-boot-sequence: OK (procs + IPC + FS + boot/shutdown)"
+
+check-v242: check-v242-kernel-os-boot-sequence
+	@echo "check-v242: OK (σ-kernel-os kernel)"
+
+# --- v243 σ-Complete (cognitive completeness + 1=1 test) ---
+# Exactly 15 canonical categories (perception → sovereignty);
+# every category has ≥1 kernel id, tier in {M, P},
+# σ_category ∈ [0,1]; n_covered == 15; σ_completeness
+# ∈ [0,1] AND == 0.0; one_equals_one == true;
+# cognitive_complete == true.
+V243_INC  = -Isrc/v243
+V243_SRCS = src/v243/complete.c
+
+creation_os_v243_complete: $(V243_SRCS) src/v243/main.c
+	$(CC) $(CFLAGS) $(V243_INC) -o $@ \
+	    $(V243_SRCS) src/v243/main.c $(LDFLAGS)
+
+check-v243-completeness-checklist: creation_os_v243_complete
+	@bash benchmarks/v243/check_v243_completeness_checklist.sh
+	@echo "check-v243-completeness-checklist: OK (15 categories + 1=1 test)"
+
+check-v243: check-v243-completeness-checklist
+	@echo "check-v243: OK (σ-complete kernel)"
+
+check-v239-v243: check-v239 check-v240 check-v241 check-v242 check-v243
+	@echo "check-v239-v243: OK (runtime + pipeline + api + kernel-os + complete)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
