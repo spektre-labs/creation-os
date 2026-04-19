@@ -473,7 +473,12 @@ merge-gate:
 	@$(MAKE) check-v267
 	@$(MAKE) check-v268
 	@$(MAKE) check-v269
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2)"
+	@$(MAKE) check-v270
+	@$(MAKE) check-v271
+	@$(MAKE) check-v272
+	@$(MAKE) check-v273
+	@$(MAKE) check-v274
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6209,6 +6214,144 @@ check-v269: check-v269-compile-v2-full-pipeline-aot
 
 check-v265-v269: check-v265 check-v266 check-v267 check-v268 check-v269
 	@echo "check-v265-v269: OK (speculative + flash + mamba + continuous-batch + compile-v2)"
+
+# --- v270 σ-TinyML (MCU σ-gate) ---
+#
+# v0 contracts: footprint envelope (sigma_measurement
+# == 12 B, code_flash ≤ 1024 B, ram ≤ 100 B, thumb2
+# ≤ 24 instr, branchless); exactly 4 MCU targets
+# canonical (cortex_m0_plus, cortex_m4, cortex_m7,
+# xtensa_esp32) all supported; exactly 3 sensors
+# canonical (temperature, humidity, pressure); exactly
+# 4 fusion fixtures, decision matches σ_fusion vs
+# τ_fusion=0.30 with ≥1 TRANSMIT AND ≥1 RETRY; exactly
+# 4 anomaly rows with anomaly == (σ > σ_baseline+delta)
+# firing both branches; exactly 3 OTA rounds every
+# applied AND every firmware_reflash==false;
+# σ_tinyml==0.0; FNV-1a chain replays byte-identically.
+V270_INC  = -Isrc/v270
+V270_SRCS = src/v270/tinyml.c
+
+creation_os_v270_tinyml: $(V270_SRCS) src/v270/main.c
+	$(CC) $(CFLAGS) $(V270_INC) -o $@ \
+	    $(V270_SRCS) src/v270/main.c $(LDFLAGS)
+
+check-v270-tinyml-mcu-sigma-gate: creation_os_v270_tinyml
+	@bash benchmarks/v270/check_v270_tinyml_mcu_sigma_gate.sh
+	@echo "check-v270-tinyml-mcu-sigma-gate: OK (footprint + targets + fusion + anomaly + ota)"
+
+check-v270: check-v270-tinyml-mcu-sigma-gate
+	@echo "check-v270: OK (σ-tinyml kernel)"
+
+# --- v271 σ-Swarm-Edge (mesh sensor orchestration) ---
+#
+# v0 contracts: 6 mesh sensors; included iff σ_local
+# ≤ τ_consensus=0.50; σ_swarm < σ_raw; exactly 4
+# distributed-anomaly fixtures with spatial_anomaly
+# == ((σ_center - σ_neighborhood) > 0.25) firing both
+# branches; exactly 3 energy tiers canonical (charged,
+# medium, low) with σ_energy strictly ascending AND
+# sample_rate_hz strictly descending; gateway
+# bridged_to_engine in v262 set; swarm_size_nodes==6;
+# σ_swarm_edge==0.0; FNV-1a chain replays
+# byte-identically.
+V271_INC  = -Isrc/v271
+V271_SRCS = src/v271/swarm_edge.c
+
+creation_os_v271_swarm_edge: $(V271_SRCS) src/v271/main.c
+	$(CC) $(CFLAGS) $(V271_INC) -o $@ \
+	    $(V271_SRCS) src/v271/main.c $(LDFLAGS)
+
+check-v271-swarm-edge-consensus: creation_os_v271_swarm_edge
+	@bash benchmarks/v271/check_v271_swarm_edge_consensus.sh
+	@echo "check-v271-swarm-edge-consensus: OK (consensus + spatial + energy + gateway)"
+
+check-v271: check-v271-swarm-edge-consensus
+	@echo "check-v271: OK (σ-swarm-edge kernel)"
+
+# --- v272 σ-Digital-Twin (physical + digital) ---
+#
+# v0 contracts: exactly 4 twin-sync fixtures with
+# stable == (σ_twin < 0.05) AND drifted == (σ_twin >
+# 0.30) firing both branches; exactly 3 maintenance
+# rows REPLACE iff σ_prediction ≤ 0.30 firing both
+# branches; exactly 3 what-if rows IMPLEMENT iff
+# σ_whatif ≤ 0.25 firing both branches; exactly 3
+# verified-action rows σ_match == |declared - realized|
+# PASS iff σ_match ≤ 0.10 firing both branches;
+# σ_digital_twin==0.0; FNV-1a chain replays
+# byte-identically.
+V272_INC  = -Isrc/v272
+V272_SRCS = src/v272/digital_twin.c
+
+creation_os_v272_digital_twin: $(V272_SRCS) src/v272/main.c
+	$(CC) $(CFLAGS) $(V272_INC) -o $@ \
+	    $(V272_SRCS) src/v272/main.c $(LDFLAGS)
+
+check-v272-digital-twin-sigma-sync: creation_os_v272_digital_twin
+	@bash benchmarks/v272/check_v272_digital_twin_sigma_sync.sh
+	@echo "check-v272-digital-twin-sigma-sync: OK (sync + pred + whatif + verified)"
+
+check-v272: check-v272-digital-twin-sigma-sync
+	@echo "check-v272: OK (σ-digital-twin kernel)"
+
+# --- v273 σ-Robotics (physical robotics σ-layer) ---
+#
+# v0 contracts: exactly 4 action fixtures with cascade
+# decision (σ≤0.20 EXECUTE, σ≤0.50 SIMPLIFY, else
+# ASK_HUMAN) with all three branches firing; exactly 3
+# perception sensors canonical (camera, lidar,
+# ultrasonic) with fused_in == (σ_local ≤ τ_fuse=0.40)
+# and sigma_percep_fused < sigma_percep_naive; exactly
+# 4 safety envelope rows with σ_safety strictly
+# ascending AND slow_factor strictly descending; exactly
+# 3 failure-memory rows with σ_current > σ_prior for
+# all; σ_robotics==0.0; FNV-1a chain replays
+# byte-identically.
+V273_INC  = -Isrc/v273
+V273_SRCS = src/v273/robotics.c
+
+creation_os_v273_robotics: $(V273_SRCS) src/v273/main.c
+	$(CC) $(CFLAGS) $(V273_INC) -o $@ \
+	    $(V273_SRCS) src/v273/main.c $(LDFLAGS)
+
+check-v273-robotics-action-sigma: creation_os_v273_robotics
+	@bash benchmarks/v273/check_v273_robotics_action_sigma.sh
+	@echo "check-v273-robotics-action-sigma: OK (action + percep + safety + fail)"
+
+check-v273: check-v273-robotics-action-sigma
+	@echo "check-v273: OK (σ-robotics kernel)"
+
+# --- v274 σ-Industrial (Industry 4.0 σ-governance) ---
+#
+# v0 contracts: exactly 4 process params canonical
+# (temperature, pressure, speed, material) with
+# σ_process == max(σ_param) and action CONTINUE iff
+# σ_process ≤ τ_process=0.40 (fixture drives HALT);
+# exactly 4 supply links canonical (supplier, factory,
+# distribution, customer) with backup_activated iff
+# σ_link > τ_backup=0.45 firing both branches; exactly
+# 3 quality rows SKIP_MANUAL iff σ_quality ≤ 0.25
+# firing both branches; exactly 3 OEE shifts with
+# oee == a*p*q (1e-4) and trustworthy iff σ_oee ≤ 0.20
+# firing both branches; σ_industrial==0.0; FNV-1a chain
+# replays byte-identically.
+V274_INC  = -Isrc/v274
+V274_SRCS = src/v274/industrial.c
+
+creation_os_v274_industrial: $(V274_SRCS) src/v274/main.c
+	$(CC) $(CFLAGS) $(V274_INC) -o $@ \
+	    $(V274_SRCS) src/v274/main.c $(LDFLAGS)
+
+check-v274-industrial-process-sigma: creation_os_v274_industrial
+	@bash benchmarks/v274/check_v274_industrial_process_sigma.sh
+	@echo "check-v274-industrial-process-sigma: OK (process + supply + quality + oee)"
+
+check-v274: check-v274-industrial-process-sigma
+	@echo "check-v274: OK (σ-industrial kernel)"
+
+check-v270-v274: check-v270 check-v271 check-v272 check-v273 check-v274
+	@echo "check-v270-v274: OK (tinyml + swarm-edge + digital-twin + robotics + industrial)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

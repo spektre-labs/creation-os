@@ -229,6 +229,45 @@ The live stack ships today:
   rows where `optimization == "aggressive" iff hotpath_fraction ≥ 0.20`
   firing both strategies, 6 elim rows where
   `elided iff sigma_profile < 0.05` exercising adaptive elimination).
+- **v270–v274** — the **physical-world integration layer**: σ-tinyml
+  (MCU footprint envelope `sigma_measurement_bytes == 12` ·
+  `code_flash ≤ 1024 B` · `ram ≤ 100 B` · `thumb2 ≤ 24 instr` ·
+  branchless, 4 canonical MCU targets `cortex_m0_plus · cortex_m4 ·
+  cortex_m7 · xtensa_esp32`, 3 canonical sensors `temperature ·
+  humidity · pressure`, 4 fusion fixtures at `τ_fusion = 0.30` with
+  `σ_fusion == max(σ_sensor)` and both TRANSMIT and RETRY branches
+  firing, 4 anomaly rows where `anomaly == (σ > σ_baseline + delta)`
+  firing both branches, 3 OTA rounds every `applied &&
+  !firmware_reflash`), σ-swarm-edge (6-sensor mesh at `τ_consensus =
+  0.50` with consensus strictly beating naive mean, 4 distributed-
+  anomaly fixtures where `spatial_anomaly == ((σ_center −
+  σ_neighborhood) > 0.25)` firing both branches, 3 canonical energy
+  tiers `charged · medium · low` with σ_energy strictly ascending AND
+  sample_rate_hz strictly descending, gateway bridging to the v262
+  engine set with `swarm_size_nodes == 6`), σ-digital-twin (4 twin-
+  sync fixtures firing both `stable` (σ_twin < 0.05) and `drifted`
+  (σ_twin > 0.30), 3 maintenance rows `REPLACE iff σ_prediction ≤
+  0.30` firing both, 3 what-if rows `IMPLEMENT iff σ_whatif ≤ 0.25`
+  firing both, 3 verified-action rows typing 1=1 as `σ_match ==
+  |declared_sim − realized_phys|` with `PASS iff σ_match ≤ 0.10`
+  firing both), σ-robotics (4 action fixtures with three-branch
+  cascade `σ ≤ 0.20 → EXECUTE · σ ≤ 0.50 → SIMPLIFY · else
+  ASK_HUMAN` every branch firing, 3 canonical perception sensors
+  `camera · lidar · ultrasonic` with fused-only mean strictly less
+  than naive mean, 4 safety-envelope rows with σ_safety strictly
+  ascending AND slow_factor strictly descending, 3 failure-memory
+  rows with σ_current > σ_prior for all rows — "never repeat the
+  same mistake"), and **σ-industrial** — Industry 4.0 governance
+  (4 canonical process params `temperature · pressure · speed ·
+  material` with `σ_process == max(σ_param)` and action matching
+  τ_process = 0.40, 4 canonical supply links `supplier · factory ·
+  distribution · customer` with backup activation firing both
+  branches at τ_backup = 0.45, 3 quality rows `SKIP_MANUAL iff
+  σ_quality ≤ 0.25` firing both branches, 3 OEE shifts with
+  `oee == a × p × q` (1e-4) and `trustworthy iff σ_oee ≤ 0.20`
+  firing both branches — **σ_oee is a meta-measurement: when the
+  measurement itself is uncertain, the OEE headline is explicitly
+  marked untrustworthy**).
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -1227,6 +1266,36 @@ v269.1 live LLVM / MLIR AOT pipeline with measured tok/s
 per platform + PGO data fed from production runs — are
 named in each kernel's doc page, but never claimed before
 they land.
+
+### TinyML · swarm-edge · twin · robotics · industrial (v270–v274)
+
+The **physical-world integration** layer.  v270–v274
+take the sovereign + performance stack and carry it
+down to MCUs, sensor swarms, digital twins, physical
+robotics, and the factory floor.  σ is no longer just
+a confidence on a token — it is the gate on what gets
+transmitted, what gets fused, what action is taken in
+the real world, and whether an OEE number is
+trustworthy at all.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v270**](docs/v270/README.md) σ-TinyML | Typed MCU footprint envelope: `sigma_measurement_bytes == 12` (three float32, nothing else), `code_flash_bytes ≤ 1024`, `ram_bytes_per_instance ≤ 100`, `thumb2_instr_count ≤ 24`, `branchless == true`; exactly 4 MCU targets in canonical order (`cortex_m0_plus` · `cortex_m4` · `cortex_m7` · `xtensa_esp32`) every `supported` AND `cpu_mhz > 0`; exactly 3 sensors in canonical order (`temperature` · `humidity` · `pressure`); exactly 4 fusion fixtures at `τ_fusion = 0.30` with `σ_fusion == max(σ_temp, σ_humidity, σ_pressure)` and decision `TRANSMIT iff σ_fusion ≤ τ_fusion` else `RETRY`, both branches firing; exactly 4 anomaly rows with `anomaly == (σ_measured > σ_baseline + delta)` firing both branches; exactly 3 OTA rounds every `applied == true` AND every `firmware_reflash == false`; `σ_tinyml = 1 − passing / (1+4+3+4+1+4+1+3)` and must be `0.0`. | **σ fits in 12 bytes and runs in ≤ 24 Thumb-2 instructions.**  v137 σ-compile shrank the gate to 0.6 ns on workstations; v270 types the same gate for Cortex-M0+ / M4 / M7 / ESP32 and makes every footprint limit a merge-gate predicate.  Sensor fusion is `max(σ)`, so one bad sensor pokes out immediately (a regression that averages σ instead of maxing it fails).  Anomaly detection is literally "σ rose above baseline + delta" — no ML model required.  OTA τ calibration is payload-only, not firmware reflash, so the gate is always less expensive to retune than to replace. |
+| [**v271**](docs/v271/README.md) σ-Swarm-Edge | Exactly 6 mesh sensors at `τ_consensus = 0.50` with `included == (σ_local ≤ τ_consensus)`, ≥ 1 included AND ≥ 1 excluded, AND `σ_swarm < σ_raw` (consensus mean over included strictly beats naive mean over all); exactly 4 distributed-anomaly fixtures where `spatial_anomaly == ((σ_center − σ_neighborhood) > 0.25)` firing both branches; exactly 3 energy tiers in canonical order (`charged` · `medium` · `low`) with **σ_energy strictly ascending AND sample_rate_hz strictly descending** (hotter battery → faster sampling); exactly 1 gateway fixture where `bridged_to_engine` is a valid v262 engine (`bitnet-3B-local · airllm-70B-local · engram-lookup · api-claude · api-gpt`) AND `swarm_size_nodes == 6` (matches the mesh exactly); `σ_swarm_edge = 1 − passing / (6+1+4+1+3+1+1)` and must be `0.0`. | **σ is the swarm's consensus rule.** "Ignore the outlier" is usually a heuristic; v271 makes it a gate predicate — `σ_swarm < σ_raw` is byte-exact arithmetic, so a regression that keeps high-σ sensors in the consensus fails.  Spatial σ-anomaly (`σ_center − σ_neighborhood > 0.25`) turns "something happened near sensor B" into a distributed, centralised-server-free trigger.  Energy-aware σ makes sample-rate-vs-battery a two-way monotonic predicate: charged battery → 100 Hz, dead battery → 1 Hz, with strict ordering — a regression that reverses the relationship fails.  The gateway is typed as bridging to the v262 engine set, so the swarm is explicitly a first-class member of the sovereign stack. |
+| [**v272**](docs/v272/README.md) σ-Digital-Twin | Exactly 4 twin-sync fixtures where `stable == (σ_twin < 0.05)` AND `drifted == (σ_twin > 0.30)` with ≥ 1 stable AND ≥ 1 drifted; exactly 3 maintenance rows where `action ∈ {REPLACE, MONITOR}` with `REPLACE iff σ_prediction ≤ τ_pred = 0.30`, both branches firing; exactly 3 what-if rows where `decision ∈ {IMPLEMENT, ABORT}` with `IMPLEMENT iff σ_whatif ≤ τ_whatif = 0.25`, both branches firing; exactly 3 verified-action rows where `σ_match == |declared_sim − realized_phys|` (1=1 typing of declared = realized) and `verdict ∈ {PASS, BLOCK}` with `PASS iff σ_match ≤ τ_match = 0.10`, both branches firing; `σ_digital_twin = 1 − passing / (4+1+3+1+3+1+3+1)` and must be `0.0`. | **σ makes the twin a first-class contract.** `σ_twin` is "how much the simulator has drifted from the physical system" as a number; stable / drifted both fire, so a regression that sticks in one state (always-stable or always-drifted) fails.  Predictive maintenance becomes a σ-threshold: REPLACE iff σ is low enough to trust the prediction, else MONITOR — two-branch testing kills "always replace" and "never replace" alike.  What-if is a simulator query gated by σ_whatif; a regression that implements every change fails at the IMPLEMENT-vs-ABORT predicate.  Verified action is the decisive 1=1 contract: `σ_match == |declared − realized|` — if simulation disagreed with physics, σ_match is exactly the gap, and the verdict is merge-gate arithmetic. |
+| [**v273**](docs/v273/README.md) σ-Robotics | Exactly 4 action fixtures with three-branch cascade `σ ≤ τ_exec = 0.20 → EXECUTE · σ ≤ τ_simple = 0.50 → SIMPLIFY · else ASK_HUMAN` with every branch firing ≥ 1×; exactly 3 perception sensors in canonical order (`camera` · `lidar` · `ultrasonic`) with `fused_in == (σ_local ≤ τ_fuse = 0.40)`, ≥ 1 fused AND ≥ 1 excluded, AND `σ_percep_fused < σ_percep_naive` (σ-fusion beats indiscriminate averaging); exactly 4 safety-envelope rows with **σ_safety strictly ascending AND slow_factor strictly descending** (closer to the boundary → higher σ → stronger slowdown); exactly 3 failure-memory rows where `σ_current > σ_prior` for **all** rows (`all_learned`); `σ_robotics = 1 − passing / (4+1+3+1+1+4+1+3+1)` and must be `0.0`. | **σ is the physical-safety gate.** LLM abstention in text is "don't say the wrong thing"; v273 abstention in robotics is "don't slam the actuator". Three branches EXECUTE / SIMPLIFY / ASK_HUMAN every firing is a merge-gate predicate — a regression that always executes (or always asks) fails at the gate.  Perception fusion gain is a two-way contract: `σ_percep_fused < σ_percep_naive` — blending every sensor equally, including the noisy one, makes things worse and fails the gate.  Safety envelope monotonicity is two-way: approach the boundary, σ rises, slow_factor drops — a regression that accelerates near a boundary fails instantly.  Failure memory is all-or-nothing: every row must show `σ_current > σ_prior`, "never repeat the same mistake without extra caution" as merge-gate arithmetic. |
+| [**v274**](docs/v274/README.md) σ-Industrial | Exactly 4 process parameters in canonical order (`temperature` · `pressure` · `speed` · `material`) with `σ_process == max(σ_param_i)` (strict typing, not a mean) and `action ∈ {CONTINUE, HALT}` matching `σ_process ≤ τ_process = 0.40` — the fixture drives the HALT branch so a regression that collapses max→mean fails; exactly 4 supply links in canonical order (`supplier` · `factory` · `distribution` · `customer`) with `backup_activated == (σ_link > τ_backup = 0.45)`, both branches firing; exactly 3 quality rows with `action ∈ {SKIP_MANUAL, REQUIRE_MANUAL}` matching `σ_quality ≤ τ_quality = 0.25`, both branches firing; exactly 3 OEE shift fixtures with `oee == availability × performance × quality` (within 1e-4) AND `trustworthy == (σ_oee ≤ τ_oee = 0.20)`, both branches firing; `σ_industrial = 1 − passing / (4+1+1+4+1+3+1+3+1+1)` and must be `0.0`. | **σ_oee is a meta-measurement: the confidence in the measurement itself.**  OEE is the canonical Industry 4.0 KPI.  v274 makes it explicit: when the measurement is uncertain (σ_oee > 0.20), the OEE number is marked untrustworthy at the gate, not quietly reported as fact.  Process σ is `max(σ_param)` — one bad parameter HALTs the line; a regression that averages σ fails.  Supply chain σ lets the backup supplier fire **before** the problem is visible (σ_link > 0.45 ⇒ backup activates), turning "reactive" supply chain into a σ-threshold predicate.  Quality prediction is SKIP-vs-REQUIRE manual — both branches forced to fire, so "skip all manual checks" and "require all manual checks" regressions both fail. |
+
+Every v270–v274 merge-gate check is offline, stdlib-only,
+and deterministic.  The v1 promotions — v270.1 physical
+MCU builds with measured flash / RAM / disassembly,
+v271.1 live BLE / LoRa / Zigbee mesh with v128 transport,
+v272.1 live sensor feed into v220 simulator with
+receipt-stamped twin sync, v273.1 real ROS2 integration
+with on-robot failure memory, v274.1 live MES / SCADA /
+OPC-UA integration with receipt-stamped σ_oee — are
+named in each kernel's doc page, but never claimed
+before they land.
 
 ### AGI architecture in one picture
 
