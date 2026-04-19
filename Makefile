@@ -482,7 +482,11 @@ merge-gate:
 	@$(MAKE) check-v276
 	@$(MAKE) check-v277
 	@$(MAKE) check-v278
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi)"
+	@$(MAKE) check-v279
+	@$(MAKE) check-v280
+	@$(MAKE) check-v281
+	@$(MAKE) check-v282
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6469,6 +6473,120 @@ check-v278: check-v278-recursive-self-improve
 
 check-v275-v278: check-v275 check-v276 check-v277 check-v278
 	@echo "check-v275-v278: OK (ttt + gated-deltanet + distill-runtime + rsi)"
+
+# --- v279 σ-JEPA (world model with σ = prediction error) ---
+#
+# v0 contracts: exactly 4 prediction rows (ACT iff
+# σ_prediction ≤ τ_predict=0.30 else OBSERVE, both
+# branches); exactly 3 latent checkpoints canonical
+# (early, mid, late) with entropy_z and sigma_latent
+# both strictly decreasing AND per-row convergence
+# |entropy_z − sigma_latent| ≤ 0.05; exactly 2 loss
+# terms canonical (prediction, regularizer), distinct,
+# weights sum to 1.0 (± 1e-3); exactly 2 validation
+# citations (lecun_jepa_2022 + leworldmodel_2026_03)
+# present and distinct; σ_jepa==0.0; FNV-1a chain
+# replays byte-identically.
+V279_INC  = -Isrc/v279
+V279_SRCS = src/v279/jepa.c
+
+creation_os_v279_jepa: $(V279_SRCS) src/v279/main.c
+	$(CC) $(CFLAGS) $(V279_INC) -o $@ \
+	    $(V279_SRCS) src/v279/main.c $(LDFLAGS)
+
+check-v279-jepa-world-model-sigma: creation_os_v279_jepa
+	@bash benchmarks/v279/check_v279_jepa_world_model_sigma.sh
+	@echo "check-v279-jepa-world-model-sigma: OK (predict + latent + loss + validation)"
+
+check-v279: check-v279-jepa-world-model-sigma
+	@echo "check-v279: OK (σ-jepa kernel)"
+
+# --- v280 σ-MoE (Mixture of Experts with σ on the router) ---
+#
+# v0 contracts: exactly 4 routing rows (TOP_K iff
+# σ_routing ≤ τ_route=0.35 else DIVERSIFY, both
+# branches); exactly 3 routing signatures canonical
+# (code, math, creative) with familiar KNOWN iff
+# routing_entropy ≤ τ_sig=0.40 else NOVEL, both
+# branches; exactly 3 prefetch rows canonical (low,
+# mid, high) with strategy cascade AGGRESSIVE ≤ 0.20
+# / BALANCED ≤ 0.50 / CONSERVATIVE else each firing
+# exactly once; exactly 3 MoBiE rows canonical
+# (expert_0..expert_2) with bits cascade BIT1 ≤ 0.20
+# / BIT2 ≤ 0.50 / BIT4 else each firing exactly once;
+# σ_moe==0.0; FNV-1a chain replays byte-identically.
+V280_INC  = -Isrc/v280
+V280_SRCS = src/v280/moe.c
+
+creation_os_v280_moe: $(V280_SRCS) src/v280/main.c
+	$(CC) $(CFLAGS) $(V280_INC) -o $@ \
+	    $(V280_SRCS) src/v280/main.c $(LDFLAGS)
+
+check-v280-moe-sigma-routing: creation_os_v280_moe
+	@bash benchmarks/v280/check_v280_moe_sigma_routing.sh
+	@echo "check-v280-moe-sigma-routing: OK (route + signatures + prefetch + mobie)"
+
+check-v280: check-v280-moe-sigma-routing
+	@echo "check-v280: OK (σ-moe kernel)"
+
+# --- v281 σ-Jamba (hybrid Transformer · Mamba · MoE) ---
+#
+# v0 contracts: exactly 3 layer types canonical
+# (mamba LINEAR, transformer QUADRATIC, moe SPARSE)
+# all distinct; exactly 4 mixing rows canonical
+# (easy→MAMBA, hard→TRANSFORMER, factual→MOE,
+# long→MAMBA) with ≥ 2 distinct archs chosen; exactly
+# 5 memory tiers canonical (engram, mamba, ttt,
+# transformer, moe) all enabled with tier_slot
+# permutation [1,2,3,4,5]; exactly 3 bench metrics
+# canonical (accuracy, latency, throughput) with
+# sigma_jamba ≤ sigma_baseline per metric;
+# σ_jamba==0.0; FNV-1a chain replays byte-identically.
+V281_INC  = -Isrc/v281
+V281_SRCS = src/v281/jamba.c
+
+creation_os_v281_jamba: $(V281_SRCS) src/v281/main.c
+	$(CC) $(CFLAGS) $(V281_INC) -o $@ \
+	    $(V281_SRCS) src/v281/main.c $(LDFLAGS)
+
+check-v281-jamba-hybrid-adaptive: creation_os_v281_jamba
+	@bash benchmarks/v281/check_v281_jamba_hybrid_adaptive.sh
+	@echo "check-v281-jamba-hybrid-adaptive: OK (layer + mixing + memory + bench)"
+
+check-v281: check-v281-jamba-hybrid-adaptive
+	@echo "check-v281: OK (σ-jamba kernel)"
+
+# --- v282 σ-Agent (autonomous agent with σ everywhere) ---
+#
+# v0 contracts: exactly 4 action rows with 3-way
+# cascade (AUTO ≤ 0.20 / ASK ≤ 0.60 / BLOCK else)
+# each branch firing ≥ 1; exactly 2 propagation
+# chains (short 3@0.10, long 10@0.30) with σ_total
+# = 1 − (1 − σ_per_step)^n_steps matching within
+# 1e-4 AND PROCEED (σ_total ≤ τ_chain=0.70) and
+# ABORT each firing exactly once; exactly 3 tool
+# rows canonical (correct, wrong_light, wrong_heavy)
+# with cascade USE ≤ 0.30 / SWAP ≤ 0.60 / BLOCK else
+# each branch firing ≥ 1; exactly 3 recovery rows
+# with σ_after_fail > σ_first_try strictly per row
+# AND gate_update_applied on every row; σ_agent==0.0;
+# FNV-1a chain replays byte-identically.
+V282_INC  = -Isrc/v282
+V282_SRCS = src/v282/agent.c
+
+creation_os_v282_agent: $(V282_SRCS) src/v282/main.c
+	$(CC) $(CFLAGS) $(V282_INC) -o $@ \
+	    $(V282_SRCS) src/v282/main.c $(LDFLAGS)
+
+check-v282-agent-action-sigma-gate: creation_os_v282_agent
+	@bash benchmarks/v282/check_v282_agent_action_sigma_gate.sh
+	@echo "check-v282-agent-action-sigma-gate: OK (action + chain + tool + recovery)"
+
+check-v282: check-v282-agent-action-sigma-gate
+	@echo "check-v282: OK (σ-agent kernel)"
+
+check-v279-v282: check-v279 check-v280 check-v281 check-v282
+	@echo "check-v279-v282: OK (jepa + moe + jamba + agent)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

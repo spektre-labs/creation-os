@@ -300,6 +300,42 @@ The live stack ships today:
   0.40` and `CALL_PROCONDUCTOR` — **recursive self-improvement stays
   Gödel-aware by construction: when σ cannot see its own blind spot,
   an external verifier is called**).
+- **v279–v282** — the **world-model + agents layer**: σ-jepa (world
+  model with σ = prediction error, 4 prediction rows at
+  `τ_predict = 0.30` firing both ACT and OBSERVE, 3 canonical latent
+  checkpoints `early · mid · late` where `entropy_z` and
+  `sigma_latent` are BOTH strictly decreasing AND converge to each
+  other per row with `|entropy_z − sigma_latent| ≤ 0.05` — entropy
+  minimisation *is* σ minimisation — 2 canonical loss terms
+  `prediction · regularizer` summing to 1.0, and a 2-citation
+  validation manifest pinning LeCun-JEPA + LeWorldModel 2026/03 as
+  convergent evidence), σ-moe (4 routing rows at `τ_route = 0.35`
+  firing both TOP_K and DIVERSIFY, 3 canonical task signatures
+  `code · math · creative` with `KNOWN iff routing_entropy ≤ 0.40`
+  firing both branches, a 3-row prefetch cascade `AGGRESSIVE ≤ 0.20 ·
+  BALANCED ≤ 0.50 · CONSERVATIVE` firing each strategy exactly once,
+  and a 3-row MoBiE cascade `BIT1 ≤ 0.20 · BIT2 ≤ 0.50 · BIT4`
+  firing each width exactly once — adaptive quantisation driven by
+  per-expert σ_shift), σ-jamba (3 canonical layer types
+  `mamba LINEAR · transformer QUADRATIC · moe SPARSE` all distinct,
+  4 mixing contexts with canonical chosen archs
+  `easy→MAMBA · hard→TRANSFORMER · factual→MOE · long→MAMBA` and
+  ≥ 2 distinct archs across contexts, a 5-tier memory hierarchy
+  `engram · mamba · ttt · transformer · moe` with `tier_slot`
+  permutation `[1..5]`, and a 3-metric unified bench
+  `accuracy · latency · throughput` with `σ_jamba ≤ σ_baseline` per
+  row — σ-calibration contract, not a measured throughput claim), and
+  **σ-agent** — 4 action rows with three-way cascade
+  `AUTO ≤ 0.20 · ASK ≤ 0.60 · BLOCK` firing every branch, 2
+  propagation chains `short (3@0.10) · long (10@0.30)` with
+  `σ_total = 1 − (1 − σ_per_step)^n_steps` matched within `1e-4`
+  firing PROCEED AND ABORT exactly once each, 3 canonical tool rows
+  `correct · wrong_light · wrong_heavy` with cascade
+  `USE ≤ 0.30 · SWAP ≤ 0.60 · BLOCK` firing every branch, and 3
+  recovery rows where `σ_after_fail > σ_first_try` strictly per row
+  AND the σ-gate update is applied on every row — **the agent
+  abstains on uncertain actions, fails long risky plans by
+  construction, and learns from every failure**.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
