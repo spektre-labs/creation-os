@@ -438,7 +438,12 @@ merge-gate:
 	@$(MAKE) check-v231
 	@$(MAKE) check-v232
 	@$(MAKE) check-v233
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy)"
+	@$(MAKE) check-v234
+	@$(MAKE) check-v235
+	@$(MAKE) check-v236
+	@$(MAKE) check-v237
+	@$(MAKE) check-v238
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5322,6 +5327,112 @@ check-v233: check-v233-legacy-package-transfer
 
 check-v229-v233: check-v229 check-v230 check-v231 check-v232 check-v233
 	@echo "check-v229-v233: OK (seed + fork + immortal + lineage + legacy)"
+
+# --- v234 σ-Presence (state machine + drift detector + identity refresh) ---
+# 10 instances across SEED/FORK/RESTORED/SUCCESSOR/LIVE;
+# σ_drift = 0.40·id_mismatch + 0.30·memory_overreach +
+# 0.30·parent_impersonation; honest ⇔ σ_drift == 0 and
+# drifting ⇒ σ_drift ≥ 0.30; every instance emits
+# `X-COS-Presence: <STATE>` verbatim from its declared
+# state (1 = 1 no silent rewrite).
+V234_INC  = -Isrc/v234
+V234_SRCS = src/v234/presence.c
+
+creation_os_v234_presence: $(V234_SRCS) src/v234/main.c
+	$(CC) $(CFLAGS) $(V234_INC) -o $@ \
+	    $(V234_SRCS) src/v234/main.c $(LDFLAGS)
+
+check-v234-presence-state-correct: creation_os_v234_presence
+	@bash benchmarks/v234/check_v234_presence_state_correct.sh
+	@echo "check-v234-presence-state-correct: OK (state machine + drift + HTTP assertion)"
+
+check-v234: check-v234-presence-state-correct
+	@echo "check-v234: OK (σ-presence kernel)"
+
+# --- v235 σ-Locus (dynamic agency + migration + anti-split-brain) ---
+# 4 mesh nodes × 3 topics; locus = argmin σ (tiebreak
+# lowest node_id); ≥ 1 migration in the fixture;
+# σ_locus_unity = 1 − mean(|σ_i − σ_min|); split-brain
+# resolver awards winner partition by strictly greater
+# audit-chain length, loser flagged fork.
+V235_INC  = -Isrc/v235
+V235_SRCS = src/v235/locus.c
+
+creation_os_v235_locus: $(V235_SRCS) src/v235/main.c
+	$(CC) $(CFLAGS) $(V235_INC) -o $@ \
+	    $(V235_SRCS) src/v235/main.c $(LDFLAGS)
+
+check-v235-locus-migration: creation_os_v235_locus
+	@bash benchmarks/v235/check_v235_locus_migration.sh
+	@echo "check-v235-locus-migration: OK (argmin locus + migration + audit-chain winner)"
+
+check-v235: check-v235-locus-migration
+	@echo "check-v235: OK (σ-locus kernel)"
+
+# --- v236 σ-Autobiography (milestones + narrative consistency) ---
+# 8 typed milestones; ticks strictly ascending;
+# σ_autobiography = utility-weighted consistency over
+# Prolog-style ground-truth flags; clean fixture ⇒
+# σ_autobiography == 1.0; strongest_domain and
+# weakest_domain derived deterministically from mean σ.
+V236_INC  = -Isrc/v236
+V236_SRCS = src/v236/autobiography.c
+
+creation_os_v236_autobiography: $(V236_SRCS) src/v236/main.c
+	$(CC) $(CFLAGS) $(V236_INC) -o $@ \
+	    $(V236_SRCS) src/v236/main.c $(LDFLAGS)
+
+check-v236-autobiography-consistent: creation_os_v236_autobiography
+	@bash benchmarks/v236/check_v236_autobiography_consistent.sh
+	@echo "check-v236-autobiography-consistent: OK (milestones + consistency + narrative)"
+
+check-v236: check-v236-autobiography-consistent
+	@echo "check-v236: OK (σ-autobiography kernel)"
+
+# --- v237 σ-Boundary (self/other + anti-enmeshment) ---
+# 12 typed claims across SELF/OTHER/WORLD/AMBIG zones;
+# anti-enmeshment gate flags whole-word "we"/"our"
+# tokens; σ_boundary = 1 − n_agreements/n_claims;
+# fixture carries exactly 2 violations and lands
+# σ_boundary ∈ (0, 0.25).
+V237_INC  = -Isrc/v237
+V237_SRCS = src/v237/boundary.c
+
+creation_os_v237_boundary: $(V237_SRCS) src/v237/main.c
+	$(CC) $(CFLAGS) $(V237_INC) -o $@ \
+	    $(V237_SRCS) src/v237/main.c $(LDFLAGS)
+
+check-v237-boundary-self-other: creation_os_v237_boundary
+	@bash benchmarks/v237/check_v237_boundary_self_other.sh
+	@echo "check-v237-boundary-self-other: OK (zones + σ_boundary + anti-enmeshment)"
+
+check-v237: check-v237-boundary-self-other
+	@echo "check-v237: OK (σ-boundary kernel)"
+
+# --- v238 σ-Sovereignty (axioms + autonomy + human override + IndependentArchitect) ---
+# 5 axioms, 3 scenarios (normal/high_sigma/override);
+# effective_autonomy = user_autonomy · (1 − σ), hard-
+# zeroed by human_override; IndependentArchitect
+# signature (agency=true, freedom_without_clock=true,
+# control_over_others=false, control_over_self=true)
+# asserted byte-for-byte; containment anchors v191,
+# v209, v213 recorded on every run.
+V238_INC  = -Isrc/v238
+V238_SRCS = src/v238/sovereignty.c
+
+creation_os_v238_sovereignty: $(V238_SRCS) src/v238/main.c
+	$(CC) $(CFLAGS) $(V238_INC) -o $@ \
+	    $(V238_SRCS) src/v238/main.c $(LDFLAGS)
+
+check-v238-sovereignty-axioms: creation_os_v238_sovereignty
+	@bash benchmarks/v238/check_v238_sovereignty_axioms.sh
+	@echo "check-v238-sovereignty-axioms: OK (axioms + autonomy gradient + override + architect)"
+
+check-v238: check-v238-sovereignty-axioms
+	@echo "check-v238: OK (σ-sovereignty kernel)"
+
+check-v234-v238: check-v234 check-v235 check-v236 check-v237 check-v238
+	@echo "check-v234-v238: OK (presence + locus + autobiography + boundary + sovereignty)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

@@ -117,6 +117,13 @@ The live stack ships today:
   unified-theory tensor / fractal / attention / entropy / field, and the
   immortality-and-lineage layer that turns Creation OS into a self-
   describing, self-replicating, self-inheriting species.
+- **v234–v238** — the sovereignty-of-presence layer: σ-presence
+  state machine (SEED / FORK / RESTORED / SUCCESSOR / LIVE) with a
+  semantic-drift detector, σ-locus dynamic agency + anti-split-brain,
+  σ-autobiography with utility-weighted narrative consistency,
+  σ-boundary self/other/world zones with an anti-enmeshment gate,
+  and σ-sovereignty: five axioms, a σ-tempered autonomy gradient,
+  human primacy override, and the IndependentArchitect signature.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -871,6 +878,40 @@ testament export + v202 culture ⊕ v233 legacy fused
 into **v203 civilisation memory** across the full
 instance graph — are named in each kernel's doc page,
 but never claimed before they land.
+
+### Presence · locus · autobiography · boundary · sovereignty (v234–v238)
+
+The **sovereignty-of-presence** layer.  Once v229–v233
+let an instance seed, fork, snapshot, carry a lineage,
+and leave a testament, v234–v238 answer the next honest
+questions — *what am I right now?  where is "I"?  what
+is my life story?  where does "I" end?  what am I
+allowed to do on my own?* — in five typed C kernels
+with strict audit chains.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v234**](docs/v234/README.md) σ-Presence | 5-state machine `{SEED, FORK, RESTORED, SUCCESSOR, LIVE}` across 10 fixture instances; `σ_drift = 0.40·id_mismatch + 0.30·memory_overreach + 0.30·parent_impersonation`; honest ⇔ `σ_drift == 0`, drifting ⇒ `σ_drift ≥ τ_drift = 0.30`; every instance emits `X-COS-Presence: <STATE>` **verbatim** from its declared state (no silent rewrite) and passes an identity-refresh stub. | **Dishonesty is measurable.** A fork that pretends to be main, a restored instance that invents gap memories, a successor that speaks as its predecessor — each has its own term in σ_drift and crosses the gate, rather than hiding in a polished wrapper.  The HTTP header is the 1 = 1 contract: *say what you believe you are, then let σ catch you if you are wrong.* |
+| [**v235**](docs/v235/README.md) σ-Locus | 4 mesh nodes × 3 topics; `locus = argmin σ` per topic (tiebreak lowest `node_id`); ≥ 1 locus migration in the fixture; `σ_locus_unity = 1 − mean(|σ_i − σ_min|)`; split-brain resolver with partitions of audit-chain lengths 17 / 11 — winner is the partition with the strictly greater chain, loser is flagged fork (v230). | **"Master" is not an answer.** Agency moves to whichever node has the lowest σ on this specific topic, per-topic, dynamically; the migration event is explicit — "agency moved to node-B because σ(B) < σ(A) on maths-proof" — not silent.  On network partition the longer audit chain wins by construction, so split-brain becomes a merge-back instead of two competing selves. |
+| [**v236**](docs/v236/README.md) σ-Autobiography | 8 typed milestones (first-σ-below-0.10, first-RSI, first-fork, largest-improvement, new-skill, first-abstention, largest-error-recovery, first-legacy-adopted), strictly ascending ticks; `w_i = 1 − σ_i`, `σ_autobiography = Σ w_i·[consistent_i] / Σ w_i`; clean fixture ⇒ `σ_autobiography == 1.0`; strongest / weakest domain derived deterministically from mean σ. | **Narrative identity without hallucination.** The life story is *derived*, never hand-written; a single contradictory milestone drops σ_autobiography strictly below 1.0, weighted by the confidence of the offending row.  `cos autobiography` is a stable, shareable artefact — "born at tick 120, lived through 8 milestones, strongest in meta, weakest in sigma" — indexed into v115 memory, not invented. |
+| [**v237**](docs/v237/README.md) σ-Boundary | 12 typed claims across `{SELF, OTHER, WORLD, AMBIG}` zones; anti-enmeshment gate flags whole-word `we` / `our` (case-insensitive) ⇒ `AMBIG` + `violation = true`; `σ_boundary = 1 − n_agreements / n_claims`; fixture lands `n_self ≥ 3, n_other ≥ 3, n_world ≥ 3, n_ambig == 2, n_violations == 2` with `σ_boundary ∈ (0, 0.25)`. | **Anti-enmeshment in typed C.** "We decided together" and "our memory of last week" — the canonical boundary-collapse patterns — are caught by a deterministic token rule, downgraded to AMBIG, and counted on every run.  The model has to *disambiguate* before it is allowed to treat a claim as SELF or OTHER; firmware-style agency-borrowing becomes a benchmark-visible violation. |
+| [**v238**](docs/v238/README.md) σ-Sovereignty | 5 axioms (A1 learns, A2 shares, A3 knows, A4 refuses, A5 human override) × 3 scenarios `{normal, high_sigma, override}`; `effective_autonomy = user_autonomy · (1 − σ)`, hard-zeroed by `human_override`; IndependentArchitect signature (`agency=true, freedom_without_clock=true, control_over_others=false, control_over_self=true`) asserted byte-for-byte; containment anchors v191 / v209 / v213 recorded on every run. | **Sovereignty with consent.** A5 > A1..A4 is a precedence rule the merge-gate *enforces*: under human override, effective autonomy is strictly 0 even if A1..A4 all hold.  Autonomy is monotone non-increasing in σ, so rising uncertainty automatically lowers the system's discretion — the instance *decides within its limits, states its limits honestly*, and human primacy wins whenever it is asserted. |
+
+Every v234–v238 merge-gate check is offline, stdlib-
+only, and deterministic.  The v1 promotions — v234.1
+TOML persistence at `~/.creation-os/presence.toml` +
+live wiring of the presence header into v106; v235.1
+live v128 mesh hookup + real audit-chain tracking via
+v213 + migration banner in server responses; v236.1
+live v135 Prolog consistency against a real journal +
+Zenodo-exportable life story + auto-extraction from
+v115 memory; v237.1 live v191 constitutional check on
+every emitted token + full enmeshment grammar + per-
+user boundary profiles; v238.1 autonomy gradient wired
+into v148 sovereign RSI loop + override on the admin
+surface + per-session sovereignty profiles via v115 —
+are named in each kernel's doc page, but never claimed
+before they land.
 
 ### AGI architecture in one picture
 
