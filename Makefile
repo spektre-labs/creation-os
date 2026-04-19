@@ -468,7 +468,12 @@ merge-gate:
 	@$(MAKE) check-v262
 	@$(MAKE) check-v263
 	@$(MAKE) check-v264
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack)"
+	@$(MAKE) check-v265
+	@$(MAKE) check-v266
+	@$(MAKE) check-v267
+	@$(MAKE) check-v268
+	@$(MAKE) check-v269
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6071,6 +6076,139 @@ check-v264: check-v264-sovereign-stack-offline
 
 check-v260-v264: check-v260 check-v261 check-v262 check-v263 check-v264
 	@echo "check-v260-v264: OK (engram + airllm + hybrid + mesh-engram + sovereign-stack)"
+
+# --- v265 σ-Speculative (σ-guided speculative decoding) ---
+#
+# v0 contracts: exactly 2 models (draft=bitnet-1.5B-local,
+# verifier=airllm-70B-local); exactly 4 σ-bands with
+# canonical spec_len [12,8,6,4] strictly non-increasing
+# in σ (monotone_ok); exactly 3 multi-draft duels with
+# winner == argmin(σ) AND ≥1 A-win AND ≥1 B-win; exactly
+# 4 σ-gate fixtures, decision matches σ vs τ_spec=0.35
+# AND ≥1 ACCEPT AND ≥1 REJECT; throughput plain <
+# sigma_spec AND speedup_x ≥ 2.0; σ_speculative==0.0;
+# FNV-1a chain replays byte-identically.
+V265_INC  = -Isrc/v265
+V265_SRCS = src/v265/speculative.c
+
+creation_os_v265_speculative: $(V265_SRCS) src/v265/main.c
+	$(CC) $(CFLAGS) $(V265_INC) -o $@ \
+	    $(V265_SRCS) src/v265/main.c $(LDFLAGS)
+
+check-v265-speculative-sigma-guided: creation_os_v265_speculative
+	@bash benchmarks/v265/check_v265_speculative_sigma_guided.sh
+	@echo "check-v265-speculative-sigma-guided: OK (models + bands + duels + gate + 2x speedup)"
+
+check-v265: check-v265-speculative-sigma-guided
+	@echo "check-v265: OK (σ-speculative kernel)"
+
+# --- v266 σ-Flash (FlashAttention + fused σ kernel) ---
+#
+# v0 contracts: exactly 8 heads all fused, overhead_pct
+# strictly < 1.0, σ_head ∈ [0,1]; exactly 3 platforms
+# canonical (cuda_sm90, metal_m4, neon_arm64) all
+# supported AND sigma_fused AND latency_ns > 0; exactly
+# 6 KV entries with evict_rank permutation of [1..6] in
+# descending-σ order (rank 1 = max σ); kv_order_ok;
+# pruning kept_tokens unchanged AND effective_ctx_k
+# strictly grows AND pruning_ok; σ_flash==0.0; FNV-1a
+# chain replays byte-identically.
+V266_INC  = -Isrc/v266
+V266_SRCS = src/v266/flash.c
+
+creation_os_v266_flash: $(V266_SRCS) src/v266/main.c
+	$(CC) $(CFLAGS) $(V266_INC) -o $@ \
+	    $(V266_SRCS) src/v266/main.c $(LDFLAGS)
+
+check-v266-flash-attention-sigma-fused: creation_os_v266_flash
+	@bash benchmarks/v266/check_v266_flash_attention_sigma_fused.sh
+	@echo "check-v266-flash-attention-sigma-fused: OK (heads + platforms + kv order + pruning)"
+
+check-v266: check-v266-flash-attention-sigma-fused
+	@echo "check-v266: OK (σ-flash kernel)"
+
+# --- v267 σ-Mamba (SSM backend + σ-gated fallback) ---
+#
+# v0 contracts: exactly 3 backends canonical (mamba,
+# rwkv, transformer) with mamba/rwkv exponent==1 AND
+# transformer exponent==2 AND mamba/rwkv throughput_rel
+# > transformer; exactly 4 route fixtures decision
+# matches σ vs τ_mamba=0.40 AND ≥1 mamba AND ≥1
+# transformer; exactly 8 hybrid layers alternating
+# mamba/transformer (4+4); exactly 3 tasks with
+# σ_chosen ≤ σ_rival each AND ≥2 distinct chosen
+# backends; σ_mamba_kernel==0.0; FNV-1a chain replays
+# byte-identically.
+V267_INC  = -Isrc/v267
+V267_SRCS = src/v267/mamba.c
+
+creation_os_v267_mamba: $(V267_SRCS) src/v267/main.c
+	$(CC) $(CFLAGS) $(V267_INC) -o $@ \
+	    $(V267_SRCS) src/v267/main.c $(LDFLAGS)
+
+check-v267-mamba-sigma-gated-fallback: creation_os_v267_mamba
+	@bash benchmarks/v267/check_v267_mamba_sigma_gated_fallback.sh
+	@echo "check-v267-mamba-sigma-gated-fallback: OK (backends + routes + hybrid layers + task diversity)"
+
+check-v267: check-v267-mamba-sigma-gated-fallback
+	@echo "check-v267: OK (σ-mamba kernel)"
+
+# --- v268 σ-Continuous-Batch (σ-priority continuous batching) ---
+#
+# v0 contracts: exactly 6 queue rows with priority_slot
+# permutation of [1..6] matching argsort(+σ_difficulty)
+# (queue_order_ok); exactly 2 preemption scenarios
+# preempted == (σ_urgency_arrival > σ_urgency_incumbent)
+# AND ≥1 true AND ≥1 false; exactly 3 load levels
+# canonical (low, medium, high) with σ_load AND
+# batch_size strictly ascending (batch_monotone_ok);
+# exactly 2 cost scenarios with total_local_eur <
+# total_api_eur; σ_continuous_batch==0.0; FNV-1a chain
+# replays byte-identically.
+V268_INC  = -Isrc/v268
+V268_SRCS = src/v268/continuous_batch.c
+
+creation_os_v268_continuous_batch: $(V268_SRCS) src/v268/main.c
+	$(CC) $(CFLAGS) $(V268_INC) -o $@ \
+	    $(V268_SRCS) src/v268/main.c $(LDFLAGS)
+
+check-v268-continuous-batch-priority: creation_os_v268_continuous_batch
+	@bash benchmarks/v268/check_v268_continuous_batch_priority.sh
+	@echo "check-v268-continuous-batch-priority: OK (queue + preempt + batch + cost)"
+
+check-v268: check-v268-continuous-batch-priority
+	@echo "check-v268: OK (σ-continuous-batch kernel)"
+
+# --- v269 σ-Compile-v2 (full pipeline AOT) ---
+#
+# v0 contracts: exactly 6 pipeline stages canonical
+# (tokenize, embed, attention, ffn, sigma_gate,
+# detokenize) every aot_compiled AND native AND
+# latency_ns > 0; exactly 4 platform targets canonical
+# (m4_apple_silicon, rpi5_arm64, gpu_4gb_speculative,
+# x86_avx512) every tok_per_s ≥ budget AND meets_budget;
+# exactly 4 PGO rows with optimization matching
+# hotpath_fraction ≥ 0.20 rule AND ≥1 aggressive AND
+# ≥1 space; exactly 6 elim rows elided ==
+# (sigma_profile < 0.05) AND ≥1 elided AND ≥1 kept;
+# σ_compile_v2==0.0; FNV-1a chain replays
+# byte-identically.
+V269_INC  = -Isrc/v269
+V269_SRCS = src/v269/compile_v2.c
+
+creation_os_v269_compile_v2: $(V269_SRCS) src/v269/main.c
+	$(CC) $(CFLAGS) $(V269_INC) -o $@ \
+	    $(V269_SRCS) src/v269/main.c $(LDFLAGS)
+
+check-v269-compile-v2-full-pipeline-aot: creation_os_v269_compile_v2
+	@bash benchmarks/v269/check_v269_compile_v2_full_pipeline_aot.sh
+	@echo "check-v269-compile-v2-full-pipeline-aot: OK (stages + targets + pgo + elim)"
+
+check-v269: check-v269-compile-v2-full-pipeline-aot
+	@echo "check-v269: OK (σ-compile-v2 kernel)"
+
+check-v265-v269: check-v265 check-v266 check-v267 check-v268 check-v269
+	@echo "check-v265-v269: OK (speculative + flash + mamba + continuous-batch + compile-v2)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

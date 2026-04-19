@@ -199,6 +199,36 @@ The live stack ships today:
   anchors (v234 · v182 · v148 · v238), and a cost model
   `eur_baseline = 200 → eur_sigma_sovereign = 20 → reduction_pct = 90`.
   *"Its like a hobby bro 200 €/mo" → "its like a coffee bro 20 €/mo."*
+- **v265–v269** — the **performance-maximum layer**: σ-speculative
+  (draft=bitnet-1.5B + verifier=airllm-70B, 4 σ-bands with canonical
+  `spec_len [12, 8, 6, 4]` strictly non-increasing in σ, 3 multi-draft
+  duels where winner == argmin(σ) exercising both A-wins AND B-wins,
+  4-fixture speculation σ-gate at `τ_spec = 0.35` with both ACCEPT
+  AND REJECT branches firing, throughput plain < σ-spec AND
+  `speedup_x ≥ 2.0`), σ-flash (8-head FlashAttention with fused σ
+  at `overhead_pct < 1.0` per head, 3 canonical platform kernels
+  `cuda_sm90 · metal_m4 · neon_arm64`, 6-entry KV cache with
+  `evict_rank` as the permutation matching descending-σ order, long-
+  context σ-pruning keeping `kept_tokens` constant while
+  `effective_ctx_k` strictly grows), σ-mamba (3 backends `mamba ·
+  rwkv · transformer` with `exponent ∈ {1, 1, 2}` and mamba / rwkv
+  throughput_rel > transformer, 4 σ-gated routes at `τ_mamba = 0.40`
+  firing both branches, 8-layer Jamba-style hybrid alternating
+  mamba / transformer 4+4, 3 tasks with `σ_chosen ≤ σ_rival` across
+  ≥ 2 distinct chosen backends), σ-continuous-batch (6-request
+  priority queue with `priority_slot` matching
+  argsort(+σ_difficulty), 2 preemption scenarios where `preempted ==
+  (σ_urgency_arrival > σ_urgency_incumbent)` exercises both outcomes,
+  3-level adaptive batch `low / medium / high` with σ_load AND
+  batch_size strictly ascending, 2-scenario cost tracker
+  `total_local_eur < total_api_eur`), and **σ-compile-v2** — full
+  pipeline AOT (6 canonical stages `tokenize · embed · attention ·
+  ffn · sigma_gate · detokenize` every `aot_compiled && native`, 4
+  platform targets with `tok_per_s ≥ budget` each
+  `m4 ≥ 100 · rpi5 ≥ 10 · 4 GB GPU ≥ 50 · x86_avx512 ≥ 80`, 4 PGO
+  rows where `optimization == "aggressive" iff hotpath_fraction ≥ 0.20`
+  firing both strategies, 6 elim rows where
+  `elided iff sigma_profile < 0.05` exercising adaptive elimination).
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -1165,6 +1195,38 @@ target + auto-detected hardware profile + wired mesh P2P
 stack + signed sovereign identity + real invoice
 reconciliation for the 20 €/mo claim — are named in each
 kernel's doc page, but never claimed before they land.
+
+### Speculative · flash · mamba · batch · compile (v265–v269)
+
+The **performance-maximum** layer.  v265–v269 take the
+sovereign stack and make it fast: σ-guided speculative
+decoding, FlashAttention with σ fused into the same
+kernel, Mamba / RWKV state-space backends with σ-gated
+transformer fallback, σ-prioritised continuous batching
+with preemption and adaptive batch size, and full
+inference-pipeline AOT compilation with σ-guided PGO and
+compile-time σ-elimination of always-cold paths.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v265**](docs/v265/README.md) σ-Speculative | Exactly 2 models (`bitnet-1.5B-local` draft + `airllm-70B-local` verifier); exactly 4 σ-bands with canonical `spec_len [12, 8, 6, 4]` and `spec_len` strictly non-increasing in σ (`monotone_ok`); exactly 3 multi-draft duels where `winner == argmin(σ_draft)` AND both A-wins and B-wins fire; exactly 4 σ-gate fixtures where `σ_speculated ≤ τ_spec = 0.35 → ACCEPT` else `REJECT` with ≥ 1 ACCEPT AND ≥ 1 REJECT (the extra σ-gate has teeth — a token the verifier would keep can still be rejected); throughput `tok_per_s_plain < tok_per_s_sigma_spec` AND `speedup_x ≥ 2.0`; `σ_speculative = 1 − passing / (2+4+1+3+1+4+1+1)` and must be `0.0`. | **σ picks how many tokens to speculate.** Classical speculative decoding speculates a fixed N; v265 makes N a function of σ (easy context → 12 tokens, hard context → 4).  The band monotonicity is a gate predicate — a regression that flips the relationship (spending more speculation on hard context) fails immediately.  Multi-draft duels are forced to exercise both A-wins and B-wins, so a regression that always picks draft A fails.  The ≥ 2× speedup and ≥ 1 ACCEPT + ≥ 1 REJECT turn "speculative decoding helps" from marketing into a merge-gate arithmetic predicate. |
+| [**v266**](docs/v266/README.md) σ-Flash | Exactly 8 attention heads all `fused == true` with `overhead_pct ∈ [0, 1.0)` per head (strict sub-1 % σ-fusion cost over raw FlashAttention) and `σ_head ∈ [0, 1]`; exactly 3 platform kernels in canonical order (`cuda_sm90` · `metal_m4` · `neon_arm64`) every `supported`, `latency_ns > 0`, `sigma_fused`; exactly 6 KV cache entries where `evict_rank` is a permutation of `[1..6]` matching descending-σ order (rank 1 = max σ evicted first, rank 6 = min σ evicted last), `kv_order_ok`; long-context pruning with `kept_tokens_before == kept_tokens_after` AND `effective_ctx_k_after > effective_ctx_k_before` (same memory, strictly larger effective context); `σ_flash = 1 − passing / (8+3+6+1+1)` and must be `0.0`. | **σ comes "free" in the FlashAttention kernel.** Per-head σ is usually an after-the-fact pass that doubles memory traffic; v266 fuses it into the same kernel and caps the overhead at `< 1 %` per head as a gate predicate.  The KV cache becomes σ-aware: high-σ entries evict first, so the cache keeps valuable context.  Long-context pruning is typed as "same kept_tokens, strictly larger effective_ctx_k" — a regression that shrinks effective context while holding memory fails. |
+| [**v267**](docs/v267/README.md) σ-Mamba | Exactly 3 backends in canonical order (`mamba` · `rwkv` · `transformer`) with `mamba.exponent == 1` AND `rwkv.exponent == 1` AND `transformer.exponent == 2` AND mamba / rwkv `throughput_rel > transformer.throughput_rel`; exactly 4 route fixtures where `σ_mamba ≤ τ_mamba = 0.40 → mamba` else `transformer` with ≥ 1 mamba AND ≥ 1 transformer; exactly 8 Jamba-style hybrid layers alternating `mamba / transformer` (4 + 4) with `σ_arch ∈ [0, 1]`; exactly 3 tasks with `σ_chosen ≤ σ_rival` each AND ≥ 2 distinct chosen backends across the 3 tasks; `σ_mamba_kernel = 1 − passing / (3+4+1+8+1+3+1)` and must be `0.0`. | **σ picks the architecture per query.** Mamba wins on long context (linear), transformer wins on in-context learning (quadratic); v267 makes the decision a σ-gate.  Exponent contract is falsifiable (a regression that mislabels RWKV as quadratic fails).  The Jamba-style interleaving is counted explicitly (4 mamba + 4 transformer), so a build that silently drops all mamba layers fails.  Task-level diversity requires ≥ 2 distinct chosen backends, killing "everything becomes transformer" regressions at the gate. |
+| [**v268**](docs/v268/README.md) σ-Continuous-Batch | Exactly 6 queue requests with `priority_slot` as a permutation of `[1..6]` matching `argsort(+σ_difficulty)` — low σ first, fast path (`queue_order_ok`); exactly 2 preemption scenarios where `preempted == (σ_urgency_arrival > σ_urgency_incumbent)` and both `true` and `false` outcomes fire; exactly 3 load levels in canonical order (`low` · `medium` · `high`) with `σ_load` AND `batch_size` *both* strictly monotone-ascending (`batch_monotone_ok`); exactly 2 cost scenarios where `total_local_eur < total_api_eur`; `σ_continuous_batch = 1 − passing / (6+1+2+1+3+1+2+1)` and must be `0.0`. | **σ is the scheduler.** Priority is driven by σ_difficulty (easy queries jump the queue and finish faster), preemption by σ_urgency, batch size by σ_load, cost by σ_cost.  The permutation contract on `priority_slot` makes "low σ first" a byte-exact gate predicate — a regression that flips priority order fails.  Preemption is forced to exercise both outcomes, so "always preempt" or "never preempt" regressions both fail.  Batch-size monotonicity in σ_load is a two-way ordered predicate, catching any load-level regression immediately. |
+| [**v269**](docs/v269/README.md) σ-Compile-v2 | Exactly 6 pipeline stages in canonical order (`tokenize` · `embed` · `attention` · `ffn` · `sigma_gate` · `detokenize`) every `aot_compiled == true` AND `native == true` AND `latency_ns > 0`; exactly 4 platform targets in canonical order (`m4_apple_silicon` · `rpi5_arm64` · `gpu_4gb_speculative` · `x86_avx512`) every `tok_per_s ≥ budget_tok_per_s` AND `meets_budget` (budgets: M4 ≥ 100, RPi5 ≥ 10, 4 GB GPU ≥ 50, x86-AVX512 ≥ 80); exactly 4 PGO hot paths where `optimization == "aggressive" iff hotpath_fraction ≥ 0.20` with ≥ 1 aggressive AND ≥ 1 space; exactly 6 compile-time σ-elimination rows where `elided == (sigma_profile < 0.05)` with ≥ 1 elided AND ≥ 1 kept (adaptive — not all-or-nothing); `σ_compile_v2 = 1 − passing / (6+4+4+1+6+1)` and must be `0.0`. | **The entire inference pipeline goes AOT.** v137 did this for the σ-gate alone (0.6 ns, branchless); v269 does it for tokenize → embed → attention → FFN → σ-gate → detokenize.  Per-platform throughput budgets are gate predicates, so "100 tok/s on M4" is not a slide — it's a merge-gate failure otherwise.  σ-guided PGO is two-sided (hot paths aggressive, cold paths space), forcing both strategies to exercise.  Compile-time σ-elimination requires *both* elided and kept rows to exist — adaptive, not all-or-nothing, so a regression that strips every σ-check away fails. |
+
+Every v265–v269 merge-gate check is offline, stdlib-only,
+and deterministic.  The v1 promotions — v265.1 live
+draft + verifier inference wired to v262 hybrid engine
+with real GPU throughput, v266.1 live CUDA / Metal / NEON
+kernels emitting per-head σ + PagedAttention with σ_kv
+eviction + live σ-pruning, v267.1 live SSM / RWKV / Jamba
+inference driven by v262, v268.1 live queue wired to v262
+with real preemption under load + live cost tracker,
+v269.1 live LLVM / MLIR AOT pipeline with measured tok/s
+per platform + PGO data fed from production runs — are
+named in each kernel's doc page, but never claimed before
+they land.
 
 ### AGI architecture in one picture
 
