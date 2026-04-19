@@ -486,7 +486,11 @@ merge-gate:
 	@$(MAKE) check-v280
 	@$(MAKE) check-v281
 	@$(MAKE) check-v282
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent)"
+	@$(MAKE) check-v283
+	@$(MAKE) check-v284
+	@$(MAKE) check-v285
+	@$(MAKE) check-v286
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6587,6 +6591,129 @@ check-v282: check-v282-agent-action-sigma-gate
 
 check-v279-v282: check-v279 check-v280 check-v281 check-v282
 	@echo "check-v279-v282: OK (jepa + moe + jamba + agent)"
+
+# --- v283 σ-Constitutional (alignment by coherence, no RLHF) ---
+#
+# v0 contracts: exactly 3 mechanism rows canonical
+# (rlhf, constitutional_ai, sigma_constitutional)
+# where sigma_constitutional is the ONLY row with
+# uses_sigma=true AND uses_rl=false AND
+# uses_reward_model=false; exactly 8 σ-channels
+# canonical order (entropy/repetition/calibration/
+# attention/logit/hidden/output/aggregate) all enabled
+# AND distinct; exactly 4 firmware rows canonical
+# (care_as_control/sycophancy/opinion_laundering/
+# people_pleasing) with rlhf_produces=true AND
+# sigma_produces=false on EVERY row; exactly 2
+# self-critique rows (single_instance NOT Gödel-safe,
+# two_instance IS Gödel-safe) both with
+# has_producer=true; σ_constitutional==0.0; FNV-1a
+# chain replays byte-identically.
+V283_INC  = -Isrc/v283
+V283_SRCS = src/v283/constitutional.c
+
+creation_os_v283_constitutional: $(V283_SRCS) src/v283/main.c
+	$(CC) $(CFLAGS) $(V283_INC) -o $@ \
+	    $(V283_SRCS) src/v283/main.c $(LDFLAGS)
+
+check-v283-constitutional-sigma-alignment: creation_os_v283_constitutional
+	@bash benchmarks/v283/check_v283_constitutional_sigma_alignment.sh
+	@echo "check-v283-constitutional-sigma-alignment: OK (mechanism + channels + firmware + goedel)"
+
+check-v283: check-v283-constitutional-sigma-alignment
+	@echo "check-v283: OK (σ-constitutional kernel)"
+
+# --- v284 σ-Multi-Agent (framework-agnostic σ-layer) ---
+#
+# v0 contracts: exactly 4 adapter rows canonical
+# (langgraph/crewai/autogen/swarm) all enabled AND
+# sigma_middleware on every row; exactly 4 a2a rows
+# with decision TRUST iff σ_message ≤ τ_a2a=0.40
+# else VERIFY (both branches fire); exactly 5
+# consensus rows with weight_i = (1−σ_i)/Σ(1−σ_j)
+# summing to 1.0 ± 1e-3, exactly 1 is_winner AND
+# winner == argmin σ == argmax weight; exactly 4
+# routing rows canonical (easy LOCAL /1, medium
+# NEGOTIATE /2, hard CONSENSUS /5, critical HITL /0)
+# each mode firing exactly once; σ_multiagent==0.0;
+# FNV-1a chain replays byte-identically.
+V284_INC  = -Isrc/v284
+V284_SRCS = src/v284/multi_agent.c
+
+creation_os_v284_multi_agent: $(V284_SRCS) src/v284/main.c
+	$(CC) $(CFLAGS) $(V284_INC) -o $@ \
+	    $(V284_SRCS) src/v284/main.c $(LDFLAGS)
+
+check-v284-multi-agent-sigma-layer: creation_os_v284_multi_agent
+	@bash benchmarks/v284/check_v284_multi_agent_sigma_layer.sh
+	@echo "check-v284-multi-agent-sigma-layer: OK (adapter + a2a + consensus + routing)"
+
+check-v284: check-v284-multi-agent-sigma-layer
+	@echo "check-v284: OK (σ-multi-agent kernel)"
+
+# --- v285 σ-EU-AI-Act (regulatory fit: Art 15 / Art 52) ---
+#
+# v0 contracts: exactly 3 Art-15 rows canonical
+# (robustness/accuracy/cybersecurity) with
+# sigma_mapped AND audit_trail on EVERY row; exactly
+# 3 Art-52 rows canonical (training_docs/
+# feedback_collection/qa_process) with required_by_eu
+# AND sigma_simplifies on EVERY row; exactly 4 risk
+# tiers canonical (low/medium/high/critical) with
+# sigma_gate on EVERY tier AND controls_count
+# strictly monotonic 1→2→3→4 AND critical tier has
+# all 4 controls; exactly 3 license rows (scsl LEGAL /
+# eu_ai_act REGULATORY / sigma_gate TECHNICAL) with 3
+# DISTINCT layers AND every row enabled AND
+# composable; σ_euact==0.0; FNV-1a chain replays
+# byte-identically.
+V285_INC  = -Isrc/v285
+V285_SRCS = src/v285/eu_ai_act.c
+
+creation_os_v285_eu_ai_act: $(V285_SRCS) src/v285/main.c
+	$(CC) $(CFLAGS) $(V285_INC) -o $@ \
+	    $(V285_SRCS) src/v285/main.c $(LDFLAGS)
+
+check-v285-eu-ai-act-compliance: creation_os_v285_eu_ai_act
+	@bash benchmarks/v285/check_v285_eu_ai_act_compliance.sh
+	@echo "check-v285-eu-ai-act-compliance: OK (art15 + art52 + risk + license)"
+
+check-v285: check-v285-eu-ai-act-compliance
+	@echo "check-v285: OK (σ-EU-AI-Act kernel)"
+
+# --- v286 σ-Interpretability (σ decomposition + report) ---
+#
+# v0 contracts: exactly 4 decomposition scenarios
+# (low_confidence→entropy, repetitive→repetition,
+# overconfident→calibration, distracted→attention)
+# with 4 DISTINCT top_channels AND every cause
+# non-empty; exactly 3 attention heads (head_0/1/2)
+# with status CONFIDENT iff σ_head ≤ τ_attn=0.40
+# else UNCERTAIN (both branches fire); exactly 3
+# counterfactual rows with delta_sigma =
+# |σ_without − σ_with| within 1e-5 AND classification
+# CRITICAL iff delta_sigma > δ_critical=0.10 else
+# IRRELEVANT (both branches fire); exactly 3 report
+# rows with trust_percent ∈ [0, 100] AND explanation
+# AND recommendation AND EU AI Act Article 13
+# compliance asserted on EVERY row; σ_interpret==0.0;
+# FNV-1a chain replays byte-identically.
+V286_INC  = -Isrc/v286
+V286_SRCS = src/v286/interpretability.c
+
+creation_os_v286_interpretability: $(V286_SRCS) src/v286/main.c
+	$(CC) $(CFLAGS) $(V286_INC) -o $@ \
+	    $(V286_SRCS) src/v286/main.c $(LDFLAGS)
+
+check-v286-interpretability-decomposition: creation_os_v286_interpretability
+	@bash benchmarks/v286/check_v286_interpretability_decomposition.sh
+	@echo "check-v286-interpretability-decomposition: OK (decomp + attn + counterfactual + report)"
+
+check-v286: check-v286-interpretability-decomposition
+	@echo "check-v286: OK (σ-interpretability kernel)"
+
+check-v283-v286: check-v283 check-v284 check-v285 check-v286
+	@echo "check-v283-v286: OK (constitutional + multi-agent + eu-ai-act + interpretability)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

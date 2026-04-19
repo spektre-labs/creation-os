@@ -336,6 +336,54 @@ The live stack ships today:
   AND the σ-gate update is applied on every row — **the agent
   abstains on uncertain actions, fails long risky plans by
   construction, and learns from every failure**.
+- **v283–v286** — the **alignment + governance + interpretability
+  layer**: σ-constitutional (3 canonical mechanism rows `rlhf ·
+  constitutional_ai · sigma_constitutional` where
+  `sigma_constitutional` is the ONLY row with `uses_sigma = true`
+  AND `uses_rl = false` AND `uses_reward_model = false`, 8 canonical
+  σ-channels `entropy · repetition · calibration · attention ·
+  logit · hidden · output · aggregate` all enabled AND distinct, 4
+  canonical firmware rows `care_as_control · sycophancy ·
+  opinion_laundering · people_pleasing` with `rlhf_produces = true`
+  AND `sigma_produces = false` on every row, and 2 self-critique
+  rows where `single_instance` is NOT Gödel-safe AND `two_instance`
+  IS — **alignment by measuring coherence instead of laundering
+  opinion, Gödel-safe by producer/measurer separation, no RLHF
+  firmware by construction**), σ-multi-agent (4 canonical adapter
+  rows `langgraph · crewai · autogen · swarm` all enabled AND
+  σ-middleware on every row, 4 a2a rows with decision `TRUST iff
+  σ_message ≤ τ_a2a = 0.40` else VERIFY firing both branches, 5
+  consensus rows with `weight_i = (1 − σ_i) / Σ (1 − σ_j)` summing
+  to 1.0 ± 1e-3 AND winner == argmin σ == argmax weight, and 4
+  canonical routing tiers `easy LOCAL / 1 · medium NEGOTIATE / 2 ·
+  hard CONSENSUS / 5 · critical HITL / 0` firing each mode exactly
+  once — **a framework-agnostic σ-layer that stops failure cascade
+  in the agent mesh and picks the cheapest sufficient number of
+  agents from the σ alone**), σ-EU-AI-Act (3 canonical Art-15 rows
+  `robustness · accuracy · cybersecurity` with `sigma_mapped` AND
+  `audit_trail` on every row, 3 canonical Art-52 rows `training_docs
+  · feedback_collection · qa_process` with `required_by_eu` AND
+  `sigma_simplifies` on every row, 4 canonical risk tiers `low ·
+  medium · high · critical` with `sigma_gate` on EVERY tier AND
+  `controls_count` strictly monotonic `1 → 2 → 3 → 4`, and 3
+  canonical license/regulation rows `scsl LEGAL · eu_ai_act
+  REGULATORY · sigma_gate TECHNICAL` with 3 DISTINCT layers AND all
+  enabled AND all composable — **regulatory fit stated as v0
+  predicates the auditor can verify statically**; an actual
+  Article-15/52 evidence-bundle pipeline is v285.1), and
+  **σ-interpretability** — 4 decomposition scenarios canonical
+  `low_confidence → entropy · repetitive → repetition ·
+  overconfident → calibration · distracted → attention` with 4
+  DISTINCT top_channels AND every cause non-empty, 3 attention heads
+  `head_0 · head_1 · head_2` with status `CONFIDENT iff σ_head ≤
+  τ_attn = 0.40` else UNCERTAIN firing both branches, 3
+  counterfactual rows where `delta_sigma = |σ_without − σ_with|`
+  (verified within 1e-5) classifies `CRITICAL iff delta_sigma >
+  δ_critical = 0.10` else IRRELEVANT firing both branches, and 3
+  report rows with `trust_percent ∈ [0, 100]` AND explanation AND
+  recommendation AND EU AI Act Article 13 compliance asserted on
+  every row — **the report is an actionable human sentence, not
+  just a number**.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
