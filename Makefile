@@ -478,7 +478,11 @@ merge-gate:
 	@$(MAKE) check-v272
 	@$(MAKE) check-v273
 	@$(MAKE) check-v274
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial)"
+	@$(MAKE) check-v275
+	@$(MAKE) check-v276
+	@$(MAKE) check-v277
+	@$(MAKE) check-v278
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6352,6 +6356,119 @@ check-v274: check-v274-industrial-process-sigma
 
 check-v270-v274: check-v270 check-v271 check-v272 check-v273 check-v274
 	@echo "check-v270-v274: OK (tinyml + swarm-edge + digital-twin + robotics + industrial)"
+
+# --- v275 σ-TTT (test-time training gated by σ) ---
+#
+# v0 contracts: exactly 4 σ-gated update rows (LEARN
+# iff σ_update ≤ τ_update=0.30 else SKIP, both
+# branches); exactly 3 dual-track rows with cascade
+# SYNCED <0.15 / DIVERGING <0.50 / RESET else firing
+# all three branches; exactly 6 sliding-window tokens
+# whose evict_rank is a permutation of [1..6] matching
+# descending σ; exactly 2 validation citations
+# (v124_sigma_continual + ttt_e2e_2025) present and
+# distinct; σ_ttt==0.0; FNV-1a chain replays
+# byte-identically.
+V275_INC  = -Isrc/v275
+V275_SRCS = src/v275/ttt.c
+
+creation_os_v275_ttt: $(V275_SRCS) src/v275/main.c
+	$(CC) $(CFLAGS) $(V275_INC) -o $@ \
+	    $(V275_SRCS) src/v275/main.c $(LDFLAGS)
+
+check-v275-ttt-sigma-gated-update: creation_os_v275_ttt
+	@bash benchmarks/v275/check_v275_ttt_sigma_gated_update.sh
+	@echo "check-v275-ttt-sigma-gated-update: OK (update + dualtrack + window + validation)"
+
+check-v275: check-v275-ttt-sigma-gated-update
+	@echo "check-v275: OK (σ-ttt kernel)"
+
+# --- v276 σ-Gated-DeltaNet (linear attention with σ) ---
+#
+# v0 contracts: exactly 2 canonical backends
+# (deltanet exp=1 gate=true · transformer exp=2
+# gate=false) with deltanet.throughput_rel >
+# transformer.throughput_rel; exactly 4 σ-gate
+# fixtures with decision LINEAR iff σ_gate ≤
+# τ_gate=0.35 else FALLBACK_FULL firing both branches;
+# exactly 3 combo components canonical (deltanet, ttt,
+# sigma_gate) each enabled with layer_slot 1..3;
+# exactly 3 tri-backend tasks with chosen ==
+# argmin(σ_backend) AND σ_chosen ≤ σ_rival for each
+# task AND ≥ 2 distinct chosen backends across the 3
+# tasks; σ_deltanet==0.0; FNV-1a chain replays
+# byte-identically.
+V276_INC  = -Isrc/v276
+V276_SRCS = src/v276/gated_deltanet.c
+
+creation_os_v276_gated_deltanet: $(V276_SRCS) src/v276/main.c
+	$(CC) $(CFLAGS) $(V276_INC) -o $@ \
+	    $(V276_SRCS) src/v276/main.c $(LDFLAGS)
+
+check-v276-deltanet-linear-attention-sigma: creation_os_v276_gated_deltanet
+	@bash benchmarks/v276/check_v276_deltanet_linear_attention_sigma.sh
+	@echo "check-v276-deltanet-linear-attention-sigma: OK (backend + gate + combo + tasks)"
+
+check-v276: check-v276-deltanet-linear-attention-sigma
+	@echo "check-v276: OK (σ-gated-deltanet kernel)"
+
+# --- v277 σ-Distill-Runtime (live teacher/student σ) ---
+#
+# v0 contracts: pair canonical (api-claude /
+# bitnet-3B-local, distinct); exactly 4 σ-filter rows
+# with LEARN iff σ_teacher ≤ τ_learn=0.25 else SKIP
+# firing both branches; exactly 3 domains canonical
+# (law, code, medical) with route LOCAL_ONLY iff
+# σ_domain ≤ τ_domain=0.30 else API firing both
+# branches; exactly 4 trajectory checkpoints
+# (month_0/1/3/12) with api_share+local_share=1,
+# api_share strictly decreasing, local_share strictly
+# increasing, cost strictly decreasing, and anchors
+# api_share[0]≥0.75 / api_share[-1]≤0.10;
+# σ_distill==0.0; FNV-1a chain replays byte-identically.
+V277_INC  = -Isrc/v277
+V277_SRCS = src/v277/distill_runtime.c
+
+creation_os_v277_distill_runtime: $(V277_SRCS) src/v277/main.c
+	$(CC) $(CFLAGS) $(V277_INC) -o $@ \
+	    $(V277_SRCS) src/v277/main.c $(LDFLAGS)
+
+check-v277-distill-runtime-live: creation_os_v277_distill_runtime
+	@bash benchmarks/v277/check_v277_distill_runtime_live.sh
+	@echo "check-v277-distill-runtime-live: OK (pair + filter + domains + trajectory)"
+
+check-v277: check-v277-distill-runtime-live
+	@echo "check-v277: OK (σ-distill-runtime kernel)"
+
+# --- v278 σ-Recursive-Self-Improve (σ improves σ) ---
+#
+# v0 contracts: exactly 4 calibration epochs with
+# strictly decreasing σ_calibration_err and last
+# epoch ≤ 0.05; exactly 3 arch configs (6/8/12
+# channels) with chosen == argmax(aurcc) AND ≥ 2
+# distinct aurcc values; exactly 3 thresholds
+# canonical (code=0.20, creative=0.50, medical=0.15)
+# each τ ∈ (0, 1) AND ≥ 2 distinct τ values; exactly
+# 3 Gödel rows with SELF_CONFIDENT iff σ_goedel ≤
+# τ_goedel=0.40 else CALL_PROCONDUCTOR firing both
+# branches; σ_rsi==0.0; FNV-1a chain replays
+# byte-identically.
+V278_INC  = -Isrc/v278
+V278_SRCS = src/v278/rsi.c
+
+creation_os_v278_rsi: $(V278_SRCS) src/v278/main.c
+	$(CC) $(CFLAGS) $(V278_INC) -o $@ \
+	    $(V278_SRCS) src/v278/main.c $(LDFLAGS)
+
+check-v278-recursive-self-improve: creation_os_v278_rsi
+	@bash benchmarks/v278/check_v278_recursive_self_improve.sh
+	@echo "check-v278-recursive-self-improve: OK (calib + arch + thresh + goedel)"
+
+check-v278: check-v278-recursive-self-improve
+	@echo "check-v278: OK (σ-recursive-self-improve kernel)"
+
+check-v275-v278: check-v275 check-v276 check-v277 check-v278
+	@echo "check-v275-v278: OK (ttt + gated-deltanet + distill-runtime + rsi)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

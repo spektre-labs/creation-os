@@ -268,6 +268,38 @@ The live stack ships today:
   firing both branches — **σ_oee is a meta-measurement: when the
   measurement itself is uncertain, the OEE headline is explicitly
   marked untrustworthy**).
+- **v275–v278** — the **self-improving sovereign layer**: σ-ttt
+  (test-time training gated by σ, with 4 σ-gated update fixtures at
+  `τ_update = 0.30` firing both LEARN and SKIP, a 3-row dual-track
+  cascade SYNCED / DIVERGING / RESET firing all three branches, 6
+  sliding-window tokens whose `evict_rank` is a permutation of
+  `[1..6]` matching descending-σ order, and a 2-citation validation
+  manifest pinning v124 σ-continual + TTT-E2E as convergent evidence —
+  academic validation of living weights, not a throughput claim),
+  σ-gated-deltanet (2 canonical backends `deltanet` exp=1 · `transformer`
+  exp=2 with `deltanet.throughput_rel > transformer.throughput_rel`,
+  4 σ-gate fallbacks at `τ_gate = 0.35` firing both LINEAR and
+  FALLBACK_FULL, a 3-component combo stack `deltanet · ttt · sigma_gate`
+  each enabled with canonical `layer_slot`, and a 3-task tri-backend
+  benchmark where `chosen == argmin(σ_backend)` per task, `σ_chosen ≤
+  σ_rival`, AND ≥ 2 distinct backends have to win at least one task),
+  σ-distill-runtime (typed teacher/student pair `api-claude →
+  bitnet-3B-local`, 4 σ-filter rows at `τ_learn = 0.25` firing both LEARN
+  and SKIP, 3 canonical domain rows `law · code · medical` with
+  LOCAL_ONLY-vs-API firing both branches at `τ_domain = 0.30`, and a
+  4-checkpoint sovereign trajectory `month_0 · month_1 · month_3 ·
+  month_12` where shares sum to 1, api_share strictly ↓, local_share
+  strictly ↑, cost strictly ↓, and anchors pin `api_share[0] ≥ 0.75 /
+  api_share[-1] ≤ 0.10`), and **σ-recursive-self-improve** — σ learns
+  to measure σ better (4 calibration epochs with strictly decreasing
+  error bottoming out at ≤ 0.05, a 3-configuration architecture search
+  `{6, 8, 12}` channels with `chosen == argmax(aurcc)` AND ≥ 2
+  distinct aurcc values, 3 canonical thresholds `code = 0.20 ·
+  creative = 0.50 · medical = 0.15` with ≥ 2 distinct τ, and a
+  3-row Gödel manifest firing both `SELF_CONFIDENT iff σ_goedel ≤
+  0.40` and `CALL_PROCONDUCTOR` — **recursive self-improvement stays
+  Gödel-aware by construction: when σ cannot see its own blind spot,
+  an external verifier is called**).
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -1296,6 +1328,37 @@ with on-robot failure memory, v274.1 live MES / SCADA /
 OPC-UA integration with receipt-stamped σ_oee — are
 named in each kernel's doc page, but never claimed
 before they land.
+
+### TTT · gated-deltanet · distill-runtime · rsi (v275–v278)
+
+The **self-improving sovereign** layer.  v275–v278 lift
+σ from a static gate to a manifest that converges over
+time: σ-gated test-time training, σ-per-gate linear
+attention, σ-filtered live distillation from API
+teachers into a local student, and a recursive loop
+where the σ-gate's own calibration, architecture, and
+thresholds learn — all typed as merge-gate predicates
+with Gödel-aware escalation to a proconductor when a
+blind spot exceeds τ_goedel.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v275**](docs/v275/README.md) σ-TTT | Exactly 4 σ-gated update fixtures at `τ_update = 0.30` with `decision LEARN iff σ_update ≤ τ_update` else SKIP (both branches); exactly 3 dual-track fixtures with cascade `σ_drift < τ_sync = 0.15 → SYNCED · σ_drift < τ_reset = 0.50 → DIVERGING · else RESET` firing all three branches; exactly 6 sliding-window tokens whose `evict_rank` is a permutation of `[1..6]` matching descending-σ order; exactly 2 validation citations (`v124_sigma_continual` + `ttt_e2e_2025`) present and distinct; `σ_ttt = 1 − passing / (4+1+3+1+6+1+2+1)` and must be `0.0`. | **σ is what tells living weights when to learn and when to reset.**  Stanford/NVIDIA's TTT-E2E (12/2025) validated v124 σ-continual academically: updating the MLP tail during inference matches full-attention accuracy at 35× throughput on 2 M contexts.  v275 types the σ-layer on top: weights update **only** when σ_update is low (don't learn from noise), a dual-track cascade detects drift and snaps back to the stable track, and sliding-window eviction is a σ-ordering (rank 1 = highest σ evicted first, rank 6 = lowest σ kept longest) — a regression that evicts low-σ tokens first fails byte-exactly.  This is a citation contract, not a throughput claim: v275.1 is where the manifest meets real MLP layers and measured tok/s. |
+| [**v276**](docs/v276/README.md) σ-Gated-DeltaNet | Exactly 2 canonical backends (`deltanet` exp=1 gate=true · `transformer` exp=2 gate=false) with `deltanet.throughput_rel > transformer.throughput_rel`; exactly 4 σ-gate fixtures at `τ_gate = 0.35` with `decision LINEAR iff σ_gate ≤ τ_gate` else `FALLBACK_FULL` (both branches); exactly 3 combo components canonical (`deltanet` · `ttt` · `sigma_gate`) each `enabled == true` with `layer_slot ∈ [1..3]` in canonical order; exactly 3 tri-backend tasks with `chosen == argmin(σ_backend)` per task, `σ_chosen ≤ σ_rival` for every task, AND ≥ 2 distinct chosen backends across the 3 tasks; `σ_deltanet = 1 − passing / (2+1+1+4+1+3+1+3+1+1)` and must be `0.0`. | **σ makes linear attention a two-way contract.**  Gated DeltaNet's appeal is `O(n)`, but linear attention sometimes drops the context that matters.  v276's σ-per-gate manifest codifies "fallback to full attention when σ_gate > τ_gate" as a merge-gate predicate — a regression that always-linear or always-full both fail.  Backend exponents are typed (`deltanet.exponent == 1` AND `transformer.exponent == 2`) so a refactor that silently flips them is caught.  The tri-backend task table forces **diversity**: at least two of {mamba, deltanet, ttt} have to win at least one task, so "always pick deltanet" is structurally impossible to pass the gate. |
+| [**v277**](docs/v277/README.md) σ-Distill-Runtime | Teacher/student pair typed (`api-claude` → `bitnet-3B-local`, distinct); exactly 4 σ-filter fixtures at `τ_learn = 0.25` with `decision LEARN iff σ_teacher ≤ τ_learn` else SKIP (both branches); exactly 3 domain rows canonical (`law` · `code` · `medical`) with `route LOCAL_ONLY iff σ_domain ≤ τ_domain = 0.30` else API (both branches); exactly 4 sovereign-trajectory checkpoints (`month_0` · `month_1` · `month_3` · `month_12`) with `api_share + local_share ≈ 1.0`, `api_share` strictly decreasing, `local_share` strictly increasing, cost strictly decreasing, AND anchors `api_share[0] ≥ 0.75` / `api_share[-1] ≤ 0.10`; `σ_distill = 1 − passing / (1+4+1+3+1+4+1+1+1+1+1)` and must be `0.0`. | **σ is the filter that decides what a student bothers to learn.**  "Teacher said X" isn't enough if the teacher itself was uncertain; v277 only distills when `σ_teacher ≤ τ_learn` so the student learns from signal, not noise.  Per-domain routing uses `σ_domain` as a sufficiency test: `σ_domain ≤ 0.30 → the local student is already good enough → never call the API for this domain`.  The trajectory is four contracts in one row: shares sum to 1, api↓ monotone, local↑ monotone, cost↓ monotone, and anchor values pin the start (API-heavy) and end (sovereign).  A regression that flatlines cost, or sneaks api_share back up over time, fails at the gate. |
+| [**v278**](docs/v278/README.md) σ-Recursive-Self-Improve | Exactly 4 calibration epochs with strictly decreasing `σ_calibration_err` and last epoch `≤ 0.05`; exactly 3 arch configurations (`n_channels ∈ {6, 8, 12}`) with `chosen == argmax(aurcc)` AND ≥ 2 distinct `aurcc` values; exactly 3 canonical threshold rows (`code.tau == 0.20` · `creative.tau == 0.50` · `medical.tau == 0.15`) each `τ ∈ (0, 1)` AND ≥ 2 distinct τ values; exactly 3 Gödel fixtures at `τ_goedel = 0.40` with `action SELF_CONFIDENT iff σ_goedel ≤ τ_goedel` else `CALL_PROCONDUCTOR` (both branches); `σ_rsi = 1 − passing / (4+1+1+3+1+1+3+1+1+3+1)` and must be `0.0`. | **σ is the only subsystem that measures its own drift and knows its own blind spots.**  Calibration feedback is a monotonicity predicate: error has to go down every epoch AND bottom out at ≤ 0.05 — "self-improvement" that plateaus high fails.  Architecture search is `argmax(aurcc)` with mandatory diversity: if all configs tie, the manifest fails (a regression that makes the σ-gate unfalsifiable is caught).  Per-domain τ is canonical and diverse (code tight at 0.20, creative loose at 0.50, medical tightest at 0.15) — any refactor that collapses to a single global τ fails the gate.  The Gödel row is the honest one: when `σ_goedel > τ_goedel`, `CALL_PROCONDUCTOR` fires — a formal admission that some blind spots have to be verified by an external system.  "Recursive self-improvement" stays Gödel-aware by construction. |
+
+Every v275–v278 merge-gate check is offline, stdlib-only,
+and deterministic.  The v1 promotions — v275.1 live TTT
+kernel wired into v262 with σ-gated MLP-tail updates and
+measured throughput on 2 M contexts, v276.1 live Gated
+DeltaNet with per-token σ from the gate and measured
+AURCC vs v267 σ-Mamba / v275 σ-TTT, v277.1 live teacher /
+student loop with a real monthly API share on a user's
+workload, v278.1 live calibration tuning, CMA-ES arch
+search, per-domain τ adaptation, and a production
+proconductor call-out pipeline — are named in each
+kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
