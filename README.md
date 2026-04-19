@@ -173,6 +173,32 @@ The live stack ships today:
   measure + anti-drift gate with both ACCEPT and REJECT branches
   firing + 4 long-term anchors v203 / v233 / v238 / 1 = 1) that
   puts purpose in code.
+- **v260–v264** — the **sovereign-infrastructure layer**: σ-engram
+  (DeepSeek Engram integration — 20–25 % static / 75–80 % dynamic
+  split, 5 O(1) DRAM lookups with `lookup_ns ≤ 100`, 3-row MoE
+  reasoning, 4 σ-gate fixtures exercising USE AND VERIFY, long-context
+  manifest `hit_rate_pct == 97` with σ-flagged misses), σ-airllm
+  (layer-by-layer inference with σ per layer — 8 layers, σ-driven
+  selective precision `≤ 0.20 → 4-bit · ≤ 0.40 → 8-bit · > 0.40 →
+  16-bit`, unique-argmax problem-layer identifier, 4 hardware backends,
+  3-regime tradeoff where `aircos` strictly wins effective tokens/s),
+  σ-hybrid-engine (5 engines `bitnet-3B-local / airllm-70B-local /
+  engram-lookup / api-claude / api-gpt`, 4-route σ-difficulty router
+  with ≥ 3 distinct engines, 4-step cascade where step 0 is
+  `ESCALATE` and ≥ 1 cloud step fires, monthly cost report
+  `local_pct ≥ 80` AND `savings_pct ≥ 80`), σ-mesh-engram (3 mesh nodes
+  A / B / C with contiguous non-overlapping shards covering
+  `[0, 256)`, 4 lookup fixtures each node served, 4 replication rows
+  with both `quorum_ok` branches firing, 4-tier memory hierarchy
+  L1 → L4 with strictly ascending latency + capacity, 4-row
+  σ-forgetting policy exercising all four `KEEP_L1 / MOVE_L2 /
+  MOVE_L3 / DROP` branches), and **σ-sovereign-stack** — 7-layer
+  pino (hardware · model · memory · gate · network · api_fallback ·
+  license) where only `api_fallback` is cloud-bound, 4 offline flows on
+  local engines with ≥ 2 distinct engines used, 4 sovereign identity
+  anchors (v234 · v182 · v148 · v238), and a cost model
+  `eur_baseline = 200 → eur_sigma_sovereign = 20 → reduction_pct = 90`.
+  *"Its like a hobby bro 200 €/mo" → "its like a coffee bro 20 €/mo."*
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -1100,6 +1126,45 @@ feeding a running anti-drift classifier + v203 / v233 / v238
 binding to real governance / legacy / sovereignty subsystems —
 are named in each kernel's doc page, but never claimed before
 they land.
+
+### Engram · AirLLM · hybrid · mesh · sovereign (v260–v264)
+
+The **sovereign-infrastructure** layer.  v260–v264 make
+Creation OS its own hardware / model / memory / routing
+/ mesh stack — DeepSeek Engram on the fact side, AirLLM
+on the heavy-model side, a σ-router that picks between
+local and cloud by σ, a distributed hash table for mesh
+memory, and a 7-layer sovereign pino that runs offline
+for ~20 €/mo.  Every kernel is a typed, falsifiable
+manifest whose σ-gates have teeth.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v260**](docs/v260/README.md) σ-Engram | Parameter split `static_pct ∈ [20, 25]` AND `dynamic_pct ∈ [75, 80]` AND sum 100 (DeepSeek's ratio); exactly 5 static-knowledge lookups in canonical order with non-zero hash, `hit == true`, `σ_result ∈ [0, 1]`, `lookup_ns ≤ 100` (O(1) DRAM budget); exactly 3 dynamic-reasoning (MoE) rows with `experts_activated > 0` AND `σ_result ∈ [0, 1]`; exactly 4 σ-gate fixtures where `σ_result ≤ τ_fact = 0.30 → USE` else `VERIFY`, with ≥ 1 `USE` AND ≥ 1 `VERIFY` (both branches fire); long-context manifest `hit_rate_pct == 97` AND `miss_rate_pct == 3` AND `miss_flagged_by_sigma`; `σ_engram = 1 − passing / (5+3+4+1+1)` and must be `0.0`. | **A σ on every Engram hit.** DeepSeek Engram ships 97 % NIAH @ 1 M — but the 3 % miss is *silent*.  v260 types the surface so every lookup has an `σ_result`, and the gate forces both `USE` and `VERIFY` to fire on a real fixture, making `Engram + σ ≈ 99 %+` a merge-gate predicate rather than a promise.  The O(1) budget is enforced per row (`lookup_ns ≤ 100`) — Engram that silently slows down fails the gate. |
+| [**v261**](docs/v261/README.md) σ-AirLLM | Exactly 8 layers with indices 0 .. 7 strictly ascending, `σ_layer ∈ [0, 1]`, `precision_bits` matching the σ-driven rule byte-for-byte (`σ ≤ 0.20 → 4` · `0.20 < σ ≤ 0.40 → 8` · `σ > 0.40 → 16`); exactly one `is_problem == true` AND it is the unique argmax of `σ_layer` AND matches `problem_index`; exactly 4 hardware backends in canonical order (`cuda_4gb_gpu` · `cpu_only` · `macos_mps` · `linux_cuda`) every `supported` with `min_ram_gb ≥ 4`; exactly 3 tradeoff regimes (`slow` · `aircos` · `human`) where `aircos` has the **strictly** highest `tokens_per_s` AND `abstain_pct > 0` (gate has teeth); `σ_airllm = 1 − passing / (8+8+4+3+1)` and must be `0.0`. | **Layer-level σ + selective precision are gate predicates.** AirLLM alone cannot tell you *which* layer adds the noise; v261 surfaces it with a unique-argmax problem-layer identifier AND drives per-layer precision from σ — so a deployment that silently pushes every layer back to 4-bit fails the gate.  The tradeoff table is equally hard: `aircos` must win effective tokens/s *and* actually abstain (otherwise the σ-gate is just dead code).  4 GB GPU, CPU-only, macOS, Linux all typed — hardware-agnostic is falsifiable, not a flyer. |
+| [**v262**](docs/v262/README.md) σ-Hybrid-Engine | Exactly 5 engines in canonical order (`bitnet-3B-local` · `airllm-70B-local` · `engram-lookup` · `api-claude` · `api-gpt`) every `cost_per_1k_eur ≥ 0` AND `σ_floor ∈ [0, 1]` AND `engine_ok`; exactly 4 routing fixtures where `chosen_engine` is in the registry AND ≥ 3 **distinct** engines are chosen (router has teeth); exactly 4 cascade steps where `σ_result ≤ τ_accept = 0.40 → OK` else `ESCALATE`, with step 0 REQUIRED to `ESCALATE` AND ≥ 1 `OK` AND ≥ 1 cloud-tier step (fallback works); cost report `local_pct + api_pct == 100`, `local_pct ≥ 80`, `savings_pct ≥ 80` AND matches `100 × (eur_api_only − eur_sigma_route) / eur_api_only` within ±1 pt; `σ_hybrid_engine = 1 − passing / (5+4+1+4+1)` and must be `0.0`. | **σ picks the engine.** v262 types the router: easy question → `bitnet-3B-local`, fact query → `engram-lookup`, heavy → `airllm-70B-local`, only the ≥ 0.50-difficulty step escalates to cloud.  The cascade forces step 0 to `ESCALATE`, so a regression that routes everything straight to `api-claude` (= cost blow-up) fails the gate.  The 87 % / 13 % local/api split produces the 4.20 € vs 32.00 € receipt — the "85 %+ savings" claim becomes a merge-gate arithmetic predicate, not a slide. |
+| [**v263**](docs/v263/README.md) σ-Mesh-Engram | Exactly 3 mesh nodes A / B / C with contiguous, non-overlapping shards covering `[0, 256)` (`shards_ok`); exactly 4 lookup fixtures where `served_by == expected_node`, `lookup_ns ≤ 100`, AND every node ∈ {A, B, C} serves at least one fixture (`n_nodes_covered == 3`); exactly 4 replication rows with `replicas == 3`, `σ_replication ∈ [0, 1]`, `quorum_ok ⇔ σ_replication ≤ τ_quorum = 0.25`, with ≥ 1 `quorum_ok == true` AND ≥ 1 `== false`; exactly 4 memory-hierarchy tiers L1 (`local_sqlite`) → L2 (`engram_dram`) → L3 (`mesh_engram`) → L4 (`api_search`) with `latency_ns` AND `capacity_mb` strictly ascending (L4 encoded as `UINT32_MAX`); exactly 4 σ-forgetting rows where action matches `σ ≤ 0.20 → KEEP_L1` · `≤ 0.50 → MOVE_L2` · `≤ 0.80 → MOVE_L3` · else `DROP`, every branch firing at least once; `σ_mesh_engram = 1 − passing / (1+4+1+4+1+1+4+1)` and must be `0.0`. | **Engram, but distributed — with σ holding quorum, hierarchy, and eviction honest.** v263 makes shard coverage a gate predicate: any shard with no node (or overlapping shards) fails immediately.  The replication table requires both `quorum_ok` branches to fire, so a build that silently hides quorum drift fails.  The memory hierarchy is *strictly* ascending in both latency and capacity — a regression that puts L3 at lower latency than L2, or caps L4 below L3 in MB, fails the gate.  Forgetting is σ-driven with every branch exercised: hot stays, warm moves, cold mesh, noise drops. |
+| [**v264**](docs/v264/README.md) σ-Sovereign-Stack | Exactly 7 stack layers in canonical order (`hardware` · `model` · `memory` · `gate` · `network` · `api_fallback` · `license`) with every `open_source == true` for layers 0 .. 5 AND *only* `api_fallback` has `requires_cloud == true` AND *only* `api_fallback` has `works_offline == false` (all other layers 0 .. 4, 6 are offline); exactly 4 offline flows (`helper_query` · `explain_concept` · `fact_lookup` · `reasoning_chain`) where `engine ∈ {bitnet-3B-local, airllm-70B-local, engram-lookup}`, `used_cloud == false`, `ok == true`, with ≥ 2 distinct local engines used; exactly 4 sovereign-identity anchors fulfilled (`v234` presence · `v182` privacy · `v148` sovereign · `v238` sovereignty); cost model `eur_baseline == 200` AND `eur_sigma_sovereign == 20` AND `reduction_pct == round(100 × (200 − 20) / 200) == 90`; `σ_sovereign_stack = 1 − passing / (7+4+1+4+1)` and must be `0.0`. | **One stack, zero cloud dependency, ~20 €/mo — as a merge-gate predicate.** v264 types every layer's offline/cloud polarity so a regression that makes `model` silently require cloud fails the gate.  The offline-flows fixture proves the four canonical flows run with no cloud touch on ≥ 2 distinct local engines — a build that secretly calls `api-claude` from `helper_query` fails immediately.  The sovereign anchor set binds v234 / v182 / v148 / v238 so removing any one of them breaks the stack contract.  Cost is a clean identity: `200 → 20 → 90 %` reduction.  "Its like a hobby bro" → "its like a coffee bro." |
+
+Every v260–v264 merge-gate check is offline, stdlib-only,
+and deterministic.  The v1 promotions — v260.1 live DRAM
+hash-table-backed Engram + real MoE reasoning wired
+through v243 pipeline + v227 entropy decomposition
+driving the knowledge-vs-reasoning split at inference +
+live NIAH harness producing `hit_rate_pct` from measured
+runs; v261.1 live AirLLM layer streamer + on-disk layer
+cache + runtime precision-switching driven by a live σ
+feed + multi-backend auto-detection at boot; v262.1 live
+`cos engines` CLI with backend auto-detection + real-time
+σ-router wired to v243 + invoice reconciliation for
+`api-claude` / `api-gpt` + σ-proxy cost optimiser as a
+cascade driver; v263.1 live gossip on v128 mesh + live
+quorum via v216 + σ-driven eviction wired to v115 / v242
+storage backends; v264.1 live `cos start --offline` boot
+target + auto-detected hardware profile + wired mesh P2P
+stack + signed sovereign identity + real invoice
+reconciliation for the 20 €/mo claim — are named in each
+kernel's doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 

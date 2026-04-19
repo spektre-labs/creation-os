@@ -463,7 +463,12 @@ merge-gate:
 	@$(MAKE) check-v256
 	@$(MAKE) check-v257
 	@$(MAKE) check-v258
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission)"
+	@$(MAKE) check-v260
+	@$(MAKE) check-v261
+	@$(MAKE) check-v262
+	@$(MAKE) check-v263
+	@$(MAKE) check-v264
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5930,6 +5935,142 @@ check-v258: check-v258-mission-anti-drift
 
 check-v254-v258: check-v254 check-v255 check-v256 check-v257 check-v258
 	@echo "check-v254-v258: OK (tutor + collaborate + wellness + locale + mission)"
+
+# --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
+#
+# v0 contracts: parameter split static_pct ∈ [20,25] AND
+# dynamic_pct ∈ [75,80] AND sum==100; exactly 5 static
+# lookups with hash != 0, hit, σ in [0,1], lookup_ns <= 100
+# (O(1) DRAM budget); exactly 3 dynamic-reasoning rows
+# (experts_activated > 0, σ in [0,1]); exactly 4 gate
+# fixtures decision matches σ vs τ_fact=0.30 (≤→USE,
+# >→VERIFY), ≥1 USE AND ≥1 VERIFY; long context
+# hit_rate_pct==97, miss_rate_pct==3, miss_flagged_by_sigma;
+# σ_engram==0.0; FNV-1a chain replays byte-identically.
+V260_INC  = -Isrc/v260
+V260_SRCS = src/v260/engram.c
+
+creation_os_v260_engram: $(V260_SRCS) src/v260/main.c
+	$(CC) $(CFLAGS) $(V260_INC) -o $@ \
+	    $(V260_SRCS) src/v260/main.c $(LDFLAGS)
+
+check-v260-engram-sigma-gated-lookup: creation_os_v260_engram
+	@bash benchmarks/v260/check_v260_engram_sigma_gated_lookup.sh
+	@echo "check-v260-engram-sigma-gated-lookup: OK (static O(1) + dynamic MoE + gate + long-ctx)"
+
+check-v260: check-v260-engram-sigma-gated-lookup
+	@echo "check-v260: OK (σ-engram kernel)"
+
+# --- v261 σ-AirLLM (layer-wise σ + selective precision) ---
+#
+# v0 contracts: exactly 8 layers (indices 0..7 strictly
+# ascending) with σ_layer in [0,1] AND precision_bits
+# matching the σ-driven rule (≤0.20→4, ≤0.40→8, >0.40→16)
+# byte-for-byte; exactly one is_problem==true AND it is
+# the argmax σ_layer; exactly 4 backends (cuda_4gb_gpu,
+# cpu_only, macos_mps, linux_cuda) all supported with
+# min_ram_gb≥4; exactly 3 tradeoff regimes — aircos has
+# STRICTLY highest tokens_per_s AND abstain_pct>0 (gate
+# teeth); σ_airllm==0.0; FNV-1a chain replays
+# byte-identically.
+V261_INC  = -Isrc/v261
+V261_SRCS = src/v261/airllm.c
+
+creation_os_v261_airllm: $(V261_SRCS) src/v261/main.c
+	$(CC) $(CFLAGS) $(V261_INC) -o $@ \
+	    $(V261_SRCS) src/v261/main.c $(LDFLAGS)
+
+check-v261-airllm-layer-sigma: creation_os_v261_airllm
+	@bash benchmarks/v261/check_v261_airllm_layer_sigma.sh
+	@echo "check-v261-airllm-layer-sigma: OK (layer σ + selective precision + backends + tradeoff)"
+
+check-v261: check-v261-airllm-layer-sigma
+	@echo "check-v261: OK (σ-airllm kernel)"
+
+# --- v262 σ-Hybrid-Engine (multi-engine σ-routing) ---
+#
+# v0 contracts: exactly 5 engines in canonical order
+# (bitnet-3B-local, airllm-70B-local, engram-lookup,
+# api-claude, api-gpt) with cost>=0 AND sigma_floor in
+# [0,1]; exactly 4 routing fixtures chosen_engine in
+# registry AND ≥3 DISTINCT engines; exactly 4 cascade
+# steps decision matches σ vs τ_accept=0.40 (≤→OK else
+# ESCALATE) AND step 0 is ESCALATE AND ≥1 OK AND ≥1
+# cloud; cost: local_pct+api_pct==100, local_pct>=80,
+# savings_pct>=80 AND matches within ±1 pt;
+# σ_hybrid_engine==0.0; FNV-1a chain replays
+# byte-identically.
+V262_INC  = -Isrc/v262
+V262_SRCS = src/v262/hybrid_engine.c
+
+creation_os_v262_hybrid_engine: $(V262_SRCS) src/v262/main.c
+	$(CC) $(CFLAGS) $(V262_INC) -o $@ \
+	    $(V262_SRCS) src/v262/main.c $(LDFLAGS)
+
+check-v262-hybrid-engine-routing: creation_os_v262_hybrid_engine
+	@bash benchmarks/v262/check_v262_hybrid_engine_routing.sh
+	@echo "check-v262-hybrid-engine-routing: OK (engines + routes + cascade + cost)"
+
+check-v262: check-v262-hybrid-engine-routing
+	@echo "check-v262: OK (σ-hybrid-engine kernel)"
+
+# --- v263 σ-Mesh-Engram (distributed O(1) hash) ---
+#
+# v0 contracts: exactly 3 mesh nodes A/B/C with
+# contiguous non-overlapping shards covering [0,256);
+# exactly 4 lookup fixtures served_by==expected_node
+# AND lookup_ns<=100 AND every node {A,B,C} served ≥1
+# fixture; exactly 4 replication rows replicas==3,
+# quorum_ok matches σ<=τ_quorum=0.25 AND ≥1 true AND
+# ≥1 false; exactly 4 hierarchy tiers L1..L4 with
+# latency_ns AND capacity_mb strictly ascending; exactly
+# 4 forgetting rows action matches σ rule byte-for-byte
+# AND every branch (KEEP_L1/MOVE_L2/MOVE_L3/DROP) fires
+# ≥1; σ_mesh_engram==0.0; FNV-1a chain replays
+# byte-identically.
+V263_INC  = -Isrc/v263
+V263_SRCS = src/v263/mesh_engram.c
+
+creation_os_v263_mesh_engram: $(V263_SRCS) src/v263/main.c
+	$(CC) $(CFLAGS) $(V263_INC) -o $@ \
+	    $(V263_SRCS) src/v263/main.c $(LDFLAGS)
+
+check-v263-mesh-engram-distributed: creation_os_v263_mesh_engram
+	@bash benchmarks/v263/check_v263_mesh_engram_distributed.sh
+	@echo "check-v263-mesh-engram-distributed: OK (nodes + lookups + replication + hierarchy + forgetting)"
+
+check-v263: check-v263-mesh-engram-distributed
+	@echo "check-v263: OK (σ-mesh-engram kernel)"
+
+# --- v264 σ-Sovereign-Stack (full local pino + 20 €/mo) ---
+#
+# v0 contracts: exactly 7 stack layers in canonical order
+# (hardware, model, memory, gate, network, api_fallback,
+# license) every open_source; only api_fallback has
+# works_offline==false AND requires_cloud==true; exactly
+# 4 offline flows used_cloud==false, ok==true, engine in
+# {bitnet-3B-local, airllm-70B-local, engram-lookup},
+# ≥2 distinct engines; exactly 4 sovereign anchors
+# (v234, v182, v148, v238) all fulfilled; cost
+# eur_baseline==200, eur_sigma_sovereign==20,
+# reduction_pct==90; σ_sovereign_stack==0.0; FNV-1a
+# chain replays byte-identically.
+V264_INC  = -Isrc/v264
+V264_SRCS = src/v264/sovereign_stack.c
+
+creation_os_v264_sovereign_stack: $(V264_SRCS) src/v264/main.c
+	$(CC) $(CFLAGS) $(V264_INC) -o $@ \
+	    $(V264_SRCS) src/v264/main.c $(LDFLAGS)
+
+check-v264-sovereign-stack-offline: creation_os_v264_sovereign_stack
+	@bash benchmarks/v264/check_v264_sovereign_stack_offline.sh
+	@echo "check-v264-sovereign-stack-offline: OK (layers + offline flows + anchors + 200→20 €/mo)"
+
+check-v264: check-v264-sovereign-stack-offline
+	@echo "check-v264: OK (σ-sovereign-stack kernel)"
+
+check-v260-v264: check-v260 check-v261 check-v262 check-v263 check-v264
+	@echo "check-v260-v264: OK (engram + airllm + hybrid + mesh-engram + sovereign-stack)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
