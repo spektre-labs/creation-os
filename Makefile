@@ -448,7 +448,12 @@ merge-gate:
 	@$(MAKE) check-v241
 	@$(MAKE) check-v242
 	@$(MAKE) check-v243
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete)"
+	@$(MAKE) check-v244
+	@$(MAKE) check-v245
+	@$(MAKE) check-v246
+	@$(MAKE) check-v247
+	@$(MAKE) check-v248
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5545,6 +5550,116 @@ check-v243: check-v243-completeness-checklist
 
 check-v239-v243: check-v239 check-v240 check-v241 check-v242 check-v243
 	@echo "check-v239-v243: OK (runtime + pipeline + api + kernel-os + complete)"
+
+# --- v244 σ-Package (cross-platform install + minimal/full + first-run + update) ---
+# Exactly 4 platforms (macOS/linux/docker/windows) with
+# non-empty install commands; minimal profile == seed
+# quintet {29,101,106,124,148}; full profile n_kernels
+# >= 243; first-run SEED → GROWING → CHECKING → READY
+# with ascending ticks; 4-step update fixture has ≥3
+# accepted + ≥1 rejected (σ > τ_update=0.50);
+# rollback_ok == true; σ_package ∈ [0,1] AND == 0.0.
+V244_INC  = -Isrc/v244
+V244_SRCS = src/v244/package.c
+
+creation_os_v244_package: $(V244_SRCS) src/v244/main.c
+	$(CC) $(CFLAGS) $(V244_INC) -o $@ \
+	    $(V244_SRCS) src/v244/main.c $(LDFLAGS)
+
+check-v244-package-install-boot: creation_os_v244_package
+	@bash benchmarks/v244/check_v244_package_install_boot.sh
+	@echo "check-v244-package-install-boot: OK (4 platforms + minimal/full + firstrun + update)"
+
+check-v244: check-v244-package-install-boot
+	@echo "check-v244: OK (σ-package kernel)"
+
+# --- v245 σ-Observe (Prometheus metrics + structured logs + OTel traces + alerts) ---
+# Exactly 7 Prometheus-valid metrics (gauge/counter/histogram),
+# scrape endpoint "GET /metrics"; 8 log fields + 4 levels
+# (DEBUG/INFO/WARN/ERROR); ≥3 OTel spans with ascending
+# ticks and per-span σ ∈ [0,1]; exactly 4 alert rules
+# A1..A4 each with a non-empty condition and ≥1 channel;
+# σ_observe ∈ [0,1] AND == 0.0.
+V245_INC  = -Isrc/v245
+V245_SRCS = src/v245/observe.c
+
+creation_os_v245_observe: $(V245_SRCS) src/v245/main.c
+	$(CC) $(CFLAGS) $(V245_INC) -o $@ \
+	    $(V245_SRCS) src/v245/main.c $(LDFLAGS)
+
+check-v245-observe-metrics-endpoint: creation_os_v245_observe
+	@bash benchmarks/v245/check_v245_observe_metrics_endpoint.sh
+	@echo "check-v245-observe-metrics-endpoint: OK (metrics + logs + trace + alerts)"
+
+check-v245: check-v245-observe-metrics-endpoint
+	@echo "check-v245: OK (σ-observe kernel)"
+
+# --- v246 σ-Harden (error handling + resource limits + chaos testing + security) ---
+# Exactly 5 chaos scenarios (kill-random-kernel,
+# high-load, network-partition, corrupt-memory,
+# oom-attempt) all recovered with typed error paths;
+# 6 resource limits all > 0; 5 input-validation
+# checks all pass; 5 security items all on;
+# σ_harden ∈ [0,1] AND == 0.0.
+V246_INC  = -Isrc/v246
+V246_SRCS = src/v246/harden.c
+
+creation_os_v246_harden: $(V246_SRCS) src/v246/main.c
+	$(CC) $(CFLAGS) $(V246_INC) -o $@ \
+	    $(V246_SRCS) src/v246/main.c $(LDFLAGS)
+
+check-v246-harden-chaos-recovery: creation_os_v246_harden
+	@bash benchmarks/v246/check_v246_harden_chaos_recovery.sh
+	@echo "check-v246-harden-chaos-recovery: OK (chaos + limits + inputs + security)"
+
+check-v246: check-v246-harden-chaos-recovery
+	@echo "check-v246: OK (σ-harden kernel)"
+
+# --- v247 σ-Benchmark-Suite (correctness + performance + cognitive + comparative) ---
+# 4 categories in canonical order; 4 correctness tests
+# all pass; p50 ≤ p95 ≤ p99, throughput_rps > 0,
+# σ-overhead < τ_overhead (0.05); cognitive consistency
+# 10/10, adversarial 20/20; 2 comparative rows
+# (creation_os_vs_raw_llama, creation_os_vs_openai_api);
+# CI targets {test, bench, verify}; σ_suite == 0.0.
+V247_INC  = -Isrc/v247
+V247_SRCS = src/v247/benchmark_suite.c
+
+creation_os_v247_benchmark_suite: $(V247_SRCS) src/v247/main.c
+	$(CC) $(CFLAGS) $(V247_INC) -o $@ \
+	    $(V247_SRCS) src/v247/main.c $(LDFLAGS)
+
+check-v247-benchmark-suite-pass: creation_os_v247_benchmark_suite
+	@bash benchmarks/v247/check_v247_benchmark_suite_pass.sh
+	@echo "check-v247-benchmark-suite-pass: OK (correctness + perf + cognitive + compare)"
+
+check-v247: check-v247-benchmark-suite-pass
+	@echo "check-v247: OK (σ-benchmark-suite kernel)"
+
+# --- v248 σ-Release (1.0.0 artifacts + docs + WHAT_IS_REAL + release criteria) ---
+# version == "1.0.0" (major=1, minor=0, patch=0);
+# exactly 6 release artifacts (github/docker/homebrew/
+# pypi/npm/crates) all present with non-empty locators;
+# 6 doc sections all present; 15 WHAT_IS_REAL categories
+# each tier ∈ {M,P}; 7 release criteria C1..C7 all
+# satisfied; release_ready, scsl_pinned, and
+# proconductor_approved all true; σ_release == 0.0.
+V248_INC  = -Isrc/v248
+V248_SRCS = src/v248/release.c
+
+creation_os_v248_release: $(V248_SRCS) src/v248/main.c
+	$(CC) $(CFLAGS) $(V248_INC) -o $@ \
+	    $(V248_SRCS) src/v248/main.c $(LDFLAGS)
+
+check-v248-release-artifacts-exist: creation_os_v248_release
+	@bash benchmarks/v248/check_v248_release_artifacts_exist.sh
+	@echo "check-v248-release-artifacts-exist: OK (1.0.0 artifacts + docs + criteria)"
+
+check-v248: check-v248-release-artifacts-exist
+	@echo "check-v248: OK (σ-release kernel)"
+
+check-v244-v248: check-v244 check-v245 check-v246 check-v247 check-v248
+	@echo "check-v244-v248: OK (package + observe + harden + benchmark-suite + release)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

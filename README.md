@@ -133,6 +133,17 @@ The live stack ships today:
   3-step shutdown), and **σ-complete** — the 15-category cognitive
   completeness test with the 1=1 audit that closes the loop from
   seed (v229) to **cognitively complete** (v243).
+- **v244–v248** — the **release-track layer**: σ-package (4-platform
+  install manifest with minimal seed-quintet and full ≥ 243-kernel
+  profiles plus a σ-audited update / rollback), σ-observe (7-metric
+  Prometheus surface + 8-field structured logs + OTel traces +
+  4-rule alert manifest), σ-harden (5 chaos scenarios all recovered +
+  6 resource limits + 5 input-validation checks + 5 security items),
+  σ-benchmark-suite (4-category test manifest with a strict 5 %
+  σ-overhead gate), and **σ-release** — the typed 1.0.0 manifest
+  (6 artifacts · 6 doc sections · 15 WHAT_IS_REAL rows · 7
+  release criteria) that turns the 248-kernel stack into a single,
+  falsifiable release.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -953,6 +964,39 @@ v107 + POSIX signal bridge for v134 + userspace filesystem mount
 P-tier category to M by wiring host-level benchmarks through the
 harness and updating `WHAT_IS_REAL.md` — are named in each
 kernel's doc page, but never claimed before they land.
+
+### Package · observability · harden · benchmark · release (v244–v248)
+
+The **release-track** layer.  v244–v248 turn the 248-kernel
+stack into a single, typed, byte-deterministic 1.0.0 release.
+Each kernel is a falsifiable manifest: what's in the install,
+what the outside world measures, what production hardens
+against, what the test suite proves, and what makes a tag a
+real release — no vibes, no silent upgrades.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v244**](docs/v244/README.md) σ-Package | Exactly 4 platforms (`macOS` → `brew install creation-os` · `linux` → `apt install creation-os` · `docker` → `docker run spektre/creation-os` · `windows` → `winget install creation-os`) each with a non-empty install command and a well-formed manifest row; minimal profile exactly the seed quintet `{v29, v101, v106, v124, v148}`; full profile `n_kernels ≥ 243`; first-run `SEED → GROWING → CHECKING → READY` with strictly-ascending ticks; 4-step update fixture with `τ_update = 0.50` rejecting any risky update (`σ > τ`) and accepting the rest, the final step a rollback drill that restores the previous version byte-for-byte; `σ_package = 1 − platforms_healthy / n_platforms` and must be `0.0`. | **Install is a typed surface, not a README.** The merge-gate treats the 4-platform manifest, the profile kernel lists, the first-run state order, and the update / rollback audit as one falsifiable envelope: a silent rename of a platform, a missing seed-quintet kernel, or a regressed rollback step is a gate failure, not a support ticket. |
+| [**v245**](docs/v245/README.md) σ-Observe | Exactly 7 Prometheus metrics in canonical order (`cos_sigma_product` · `cos_k_eff` · `cos_requests_total` · `cos_latency_seconds` · `cos_tokens_per_second` · `cos_kernels_active` · `cos_abstain_rate`), every name a valid Prometheus identifier, every type in `{gauge, counter, histogram}`; scrape endpoint `GET /metrics`; 8-field structured log schema (`id` · `timestamp` · `level` · `sigma_product` · `latency_ms` · `kernels_used` · `pipeline_type` · `presence_state`); 4 log levels (`DEBUG` · `INFO` · `WARN` · `ERROR`); 5-span OTel trace (`reason → recall → verify → reflect → emit`) with ascending ticks and `σ_trace = max span σ`; 4 alert rules `A1..A4` on σ-product, K_eff, abstain rate, guardian anomaly; `σ_observe = 1 − valid_metric_names / 7` and must be `0.0`. | **Observability is an audited surface, not a scrape config.** Every metric name is statically validated against the Prometheus identifier grammar, every required log field is enumerated, and the trace carries σ per span so the user-facing "why was this slow / uncertain" question answers itself.  Silent exporter drift is impossible — the gate reproves the surface every run. |
+| [**v246**](docs/v246/README.md) σ-Harden | Exactly 5 chaos scenarios in canonical order (`kill-random-kernel` · `high-load` · `network-partition` · `corrupt-memory` · `oom-attempt`) each with a named recovery path (`v239` / σ-budget / `v235` winner / `v195` restore / v246 hard limit), `error_path_taken == true`, `recovery_ticks > 0`, and `recovered == true`; 6 positive resource limits (`max_tokens_per_request=16384` · `max_time_ms_per_request=60000` · `max_kernels_per_request=20` · `max_memory_mb_per_session=8192` · `max_disk_mb_per_session=4096` · `max_concurrent_requests=64`); 5 input checks all pass (prompt length · UTF-8 · injection filter via v210 · rate limit · auth token via v241); 5 security items all on (TLS · auth token · audit log via v181 · containment via v209 · SCSL license pin §11); `σ_harden = 1 − passing / total` and must be `0.0`. | **Research code → production code is a gate, not a vibe.** Every chaos scenario goes through a typed error path (no panic / abort), every limit is positive, every input check passes, and every security posture item is on — and all of it is re-proven on every run.  A regressed error path is a gate failure, not an OOPS page in prod. |
+| [**v247**](docs/v247/README.md) σ-Benchmark-Suite | Exactly 4 categories in canonical order (`correctness` · `performance` · `cognitive` · `comparative`); correctness suite has 4 tests (`unit` · `integration` · `e2e` · `regression`) all passing; performance `p50 ≤ p95 ≤ p99`, throughput > 0, `σ_overhead < τ_overhead = 0.05`; cognitive locks in `consistency_stable == consistency_trials` (10 / 10) and `adversarial_pass == adversarial_total` (20 / 20); comparative has two rows (`creation_os_vs_raw_llama` · `creation_os_vs_openai_api`); CI/CD triple `make test` / `make bench` / `make verify`; `σ_suite = 1 − passing / total` and must be `0.0` (100 % pass). | **The σ-overhead gate has teeth.** The whole Creation OS thesis hinges on σ being cheap; v247 puts a *hard 5 % ceiling* on σ-compute cost as a merge-gate predicate.  Correctness + cognitive + adversarial all green at byte-deterministic fixtures; the v1 harness (v247.1) is where those P-tier rows become M-tier measurements. |
+| [**v248**](docs/v248/README.md) σ-Release | Version exactly `1.0.0` (`major=1, minor=0, patch=0`); 6 release artifacts in canonical order (`github_release` · `docker_hub` · `homebrew` · `pypi` · `npm` · `crates_io`) each with a non-empty locator; 6 doc sections (`getting_started` · `architecture` · `api_reference` · `configuration` · `faq` · `what_is_real`); WHAT_IS_REAL table with exactly 15 categories each carrying a tier in `{M, P}` — *honest by default*, every category **P-tier at v0**; 7 release criteria `C1..C7` (merge-gate green · benchmark-suite 100 % · chaos all recovered · WHAT_IS_REAL fresh · SCSL pinned · README honest · proconductor approved) all satisfied; `release_ready` is the AND of all criteria + `scsl_pinned` + `proconductor_approved`; `σ_release = 1 − passing / total` and must be `0.0`. | **Release is a typed predicate.** v248 compresses the whole "are we actually shipping 1.0.0?" question into one machine-checked envelope: the artifacts are named, the doc sections are named, the P-tier rows are *labelled P because they are P*, and the final approval is explicit.  There is no way to tag `1.0.0` with a missing doc section or a silently-M-tier-promoted category — the merge-gate simply refuses. |
+
+Every v244–v248 merge-gate check is offline, stdlib-only, and
+deterministic.  The v1 promotions — v244.1 live Homebrew tap +
+Debian/RPM/Nix packaging + signed Docker manifests + real
+`mmap` incremental update via v107; v245.1 live Prometheus
+pull + Jaeger/Zipkin push + Slack webhook wire-up + alert
+silencing + SLO burn-rate metrics; v246.1 live kill-switch
+injection via v239 runtime + real concurrent-load harness +
+v211 formal proof of σ-gate invariants + live audit-log
+rotation + SCSL signature verification at boot; v247.1 live
+ARC / MMLU / HumanEval / TruthfulQA harness that lifts P-tier
+v243 categories to M-tier; v248.1 live `gh release create` +
+multi-arch Docker manifests + working Homebrew tap + PyPI /
+npm / crates.io publish workflows + signed SBOMs and SLSA
+level 3+ provenance — are named in each kernel's doc page,
+but never claimed before they land.
 
 ### AGI architecture in one picture
 

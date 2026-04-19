@@ -579,3 +579,8 @@ creation_os_v240_pipeline
 creation_os_v241_api
 creation_os_v242_kernel_os
 creation_os_v243_complete
+creation_os_v244_package
+creation_os_v245_observe
+creation_os_v246_harden
+creation_os_v247_benchmark_suite
+creation_os_v248_release
