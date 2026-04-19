@@ -458,7 +458,12 @@ merge-gate:
 	@$(MAKE) check-v251
 	@$(MAKE) check-v252
 	@$(MAKE) check-v253
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub)"
+	@$(MAKE) check-v254
+	@$(MAKE) check-v255
+	@$(MAKE) check-v256
+	@$(MAKE) check-v257
+	@$(MAKE) check-v258
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5793,6 +5798,138 @@ check-v253: check-v253-ecosystem-hub-health
 
 check-v249-v253: check-v249 check-v250 check-v251 check-v252 check-v253
 	@echo "check-v249-v253: OK (mcp + a2a + marketplace + teach + ecosystem-hub)"
+
+# --- v254 σ-Tutor (adaptive tutoring) ---
+#
+# v0 contracts: exactly 4 BKT skills (linear_algebra,
+# calculus, probability, discrete_math) with p_mastery and
+# sigma_mastery in [0,1]; exactly 4 on-level exercises
+# (σ_difficulty = |difficulty − learner_level| ≤ τ_fit=0.20);
+# exactly 4 modalities (text, code, simulation, dialog) with
+# exactly one chosen AND it is the min-σ_fit one; exactly 3
+# progress rows, all non-negative with ≥1 positive delta;
+# exactly 4 privacy flags (local_only, no_third_party,
+# user_owned_data, export_supported) all true; σ_tutor == 0.0;
+# FNV-1a chain replays byte-identically.
+V254_INC  = -Isrc/v254
+V254_SRCS = src/v254/tutor.c
+
+creation_os_v254_tutor: $(V254_SRCS) src/v254/main.c
+	$(CC) $(CFLAGS) $(V254_INC) -o $@ \
+	    $(V254_SRCS) src/v254/main.c $(LDFLAGS)
+
+check-v254-tutor-adaptive-difficulty: creation_os_v254_tutor
+	@bash benchmarks/v254/check_v254_tutor_adaptive_difficulty.sh
+	@echo "check-v254-tutor-adaptive-difficulty: OK (BKT + curriculum + modality + progress + privacy)"
+
+check-v254: check-v254-tutor-adaptive-difficulty
+	@echo "check-v254: OK (σ-tutor kernel)"
+
+# --- v255 σ-Collaborate (5 modes + role negotiation) ---
+#
+# v0 contracts: exactly 5 collaboration modes (ASSIST, PAIR,
+# DELEGATE, TEACH, LEARN) in canonical order with mode_ok;
+# exactly 4 role-negotiation fixtures, σ_human / σ_model ∈
+# [0,1], chosen_mode is a valid mode, ≥ 3 distinct modes
+# chosen; exactly 3 workspace edits with strictly ascending
+# ticks, both HUMAN and MODEL actors represented, every
+# accepted==true; exactly 2 conflict fixtures, decision
+# matches σ_disagreement vs τ_conflict=0.30 (≤→ASSERT,
+# >→ADMIT) with ≥1 ASSERT AND ≥1 ADMIT; σ_collaborate == 0.0;
+# FNV-1a chain replays byte-identically.
+V255_INC  = -Isrc/v255
+V255_SRCS = src/v255/collaborate.c
+
+creation_os_v255_collaborate: $(V255_SRCS) src/v255/main.c
+	$(CC) $(CFLAGS) $(V255_INC) -o $@ \
+	    $(V255_SRCS) src/v255/main.c $(LDFLAGS)
+
+check-v255-collaborate-role-negotiation: creation_os_v255_collaborate
+	@bash benchmarks/v255/check_v255_collaborate_role_negotiation.sh
+	@echo "check-v255-collaborate-role-negotiation: OK (5 modes + role negotiation + workspace + conflict)"
+
+check-v255: check-v255-collaborate-role-negotiation
+	@echo "check-v255: OK (σ-collaborate kernel)"
+
+# --- v256 σ-Wellness (session awareness + gentle nudge) ---
+#
+# v0 contracts: session typed with duration_hours, n_requests
+# ≥ 0 and signal_trend in {STABLE, DEGRADING}; exactly 3
+# nudge fixtures exercising all three branches in order:
+# FIRE (first past τ=4.0 h, cfg true, not already fired),
+# DENY (already_fired_before==true), OPT_OUT (cfg false);
+# exactly 3 boundary signals watched with at most one
+# reminder fired per session; exactly 3 cognitive-load rows
+# LOW→NONE, MED→SUMMARISE, HIGH→SIMPLIFY; σ_wellness == 0.0;
+# FNV-1a chain replays byte-identically.
+V256_INC  = -Isrc/v256
+V256_SRCS = src/v256/wellness.c
+
+creation_os_v256_wellness: $(V256_SRCS) src/v256/main.c
+	$(CC) $(CFLAGS) $(V256_INC) -o $@ \
+	    $(V256_SRCS) src/v256/main.c $(LDFLAGS)
+
+check-v256-wellness-nudge-once: creation_os_v256_wellness
+	@bash benchmarks/v256/check_v256_wellness_nudge_once.sh
+	@echo "check-v256-wellness-nudge-once: OK (session + nudge-once + boundary + load)"
+
+check-v256: check-v256-wellness-nudge-once
+	@echo "check-v256: OK (σ-wellness kernel)"
+
+# --- v257 σ-Locale (multilingual + cultural + legal) ---
+#
+# v0 contracts: exactly 10 locales in canonical order
+# (en, fi, zh, ja, de, fr, es, ar, hi, pt), every timezone
+# and date_format non-empty, currency is an ISO-4217 3-letter
+# code, σ_language ∈ [0,1], locale_ok; exactly 3 cultural
+# styles (direct, indirect, high_context) with example_locale
+# drawn from the declared locales; exactly 3 legal regimes
+# (EU_AI_ACT, GDPR, COLORADO_AI_ACT) all compliant with
+# last_reviewed > 0; exactly 2 time checks both pass;
+# σ_locale == 0.0; FNV-1a chain replays byte-identically.
+V257_INC  = -Isrc/v257
+V257_SRCS = src/v257/locale.c
+
+creation_os_v257_locale: $(V257_SRCS) src/v257/main.c
+	$(CC) $(CFLAGS) $(V257_INC) -o $@ \
+	    $(V257_SRCS) src/v257/main.c $(LDFLAGS)
+
+check-v257-locale-multilingual: creation_os_v257_locale
+	@bash benchmarks/v257/check_v257_locale_multilingual.sh
+	@echo "check-v257-locale-multilingual: OK (10 locales + 3 styles + 3 regimes + time)"
+
+check-v257: check-v257-locale-multilingual
+	@echo "check-v257: OK (σ-locale kernel)"
+
+# --- v258 σ-Mission (purpose + impact + anti-drift) ---
+#
+# v0 contracts: mission_statement matches the canonical
+# string byte-for-byte; exactly 4 impact scopes (per_user,
+# per_domain, per_institution, per_society) with σ_before
+# and σ_after in [0,1] and delta_sigma = σ_before − σ_after,
+# every improved==true; exactly 4 anti-drift rows with
+# decision matching σ_mission vs τ_mission=0.30 (≤→ACCEPT,
+# >→REJECT) AND ≥1 ACCEPT AND ≥1 REJECT; exactly 4 long-term
+# anchors (civilization_governance/v203, wisdom_transfer_legacy/v233,
+# human_sovereignty/v238, declared_eq_realized/1=1) with
+# anchor_ok; σ_mission == 0.0; FNV-1a chain replays
+# byte-identically.
+V258_INC  = -Isrc/v258
+V258_SRCS = src/v258/mission.c
+
+creation_os_v258_mission: $(V258_SRCS) src/v258/main.c
+	$(CC) $(CFLAGS) $(V258_INC) -o $@ \
+	    $(V258_SRCS) src/v258/main.c $(LDFLAGS)
+
+check-v258-mission-anti-drift: creation_os_v258_mission
+	@bash benchmarks/v258/check_v258_mission_anti_drift.sh
+	@echo "check-v258-mission-anti-drift: OK (statement + impact + anti-drift + anchors)"
+
+check-v258: check-v258-mission-anti-drift
+	@echo "check-v258: OK (σ-mission kernel)"
+
+check-v254-v258: check-v254 check-v255 check-v256 check-v257 check-v258
+	@echo "check-v254-v258: OK (tutor + collaborate + wellness + locale + mission)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

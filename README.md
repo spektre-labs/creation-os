@@ -158,6 +158,21 @@ The live stack ships today:
   4 roadmap proposals with a single proconductor decision · 4 unity
   assertions where declared == realized) that closes 1 = 1 across the
   whole ecosystem.
+- **v254–v258** — the **human-centric / mission layer**: σ-tutor
+  (4-skill BKT row with σ_mastery, on-level curriculum gated at
+  τ_fit = 0.20, modality pick by min σ_fit, 3-row progress tracker,
+  4 privacy flags), σ-collaborate (5 modes ASSIST / PAIR /
+  DELEGATE / TEACH / LEARN with σ-driven role negotiation,
+  shared workspace audit, and a conflict gate with both ASSERT and
+  ADMIT branches firing), σ-wellness (typed session + rate-limited
+  FIRE / DENY / OPT_OUT nudge + 3-signal boundary watcher + LOW /
+  MED / HIGH cognitive-load table), σ-locale (10 locales · 3
+  cultural styles · EU AI Act + GDPR + Colorado AI Act compliance ·
+  time/locale sanity), and **σ-mission** — the typed mission
+  layer (canonical statement + 4-scope σ_before vs σ_after impact
+  measure + anti-drift gate with both ACCEPT and REJECT branches
+  firing + 4 long-term anchors v203 / v233 / v238 / 1 = 1) that
+  puts purpose in code.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -1046,6 +1061,45 @@ live `hub.creation-os.dev` + signed community contributions
 end-to-end + real-time ecosystem health telemetry + chain-of-
 custody proconductor decisions — are named in each kernel's
 doc page, but never claimed before they land.
+
+### Tutor · collaborate · wellness · locale · mission (v254–v258)
+
+The **human-centric / mission** layer.  v254–v258 take the
+ecosystem-complete stack and put the human at the center —
+adaptive learning, co-authored workflows, session-aware
+wellness, worldwide localisation, and a mission statement
+in code with an anti-drift gate.  Every kernel is a typed,
+falsifiable manifest whose σ-gates have teeth.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v254**](docs/v254/README.md) σ-Tutor | Exactly 4 BKT skills in canonical order (`linear_algebra` · `calculus` · `probability` · `discrete_math`) each with `p_mastery, sigma_mastery ∈ [0, 1]` and `skill_ok`; exactly 4 on-level exercises where `σ_difficulty = \|difficulty − learner_level\| ≤ τ_fit = 0.20` (`fit == true`); exactly 4 modalities (`text` · `code` · `simulation` · `dialog`) with each `σ_fit ∈ [0, 1]` and *exactly one* `chosen == true` AND it is the one with the **minimum** `σ_fit`; exactly 3 progress rows with every `pct_after ≥ pct_before` AND ≥ 1 positive delta; exactly 4 privacy flags (`local_only` · `no_third_party` · `user_owned_data` · `export_supported`) all enabled; `σ_tutor = 1 − passing / (4+4+1+3+4)` and must be `0.0`. | **A σ on every pedagogical decision.** v252 ships one Socratic session; v254 wraps it in a typed learner model (v197 ToM) and a modality σ-gate that *requires the minimum-σ modality to be chosen* — any silent drift to a default modality fails the gate.  The privacy flags are hard: `local_only`, `user_owned_data`, and `export_supported` must all be true, so a v254 build that silently ships data off-box is a gate failure, not a press release. |
+| [**v255**](docs/v255/README.md) σ-Collaborate | Exactly 5 modes in canonical order (`ASSIST` · `PAIR` · `DELEGATE` · `TEACH` · `LEARN`) every `mode_ok`; exactly 4 role-negotiation fixtures with `σ_human, σ_model ∈ [0, 1]` and `chosen_mode` one of the 5 modes, with ≥ 3 *distinct* modes chosen across the fixtures; exactly 3 audited workspace edits with strictly ascending ticks, both `HUMAN` and `MODEL` actors represented, every `accepted == true`; exactly 2 conflict fixtures whose decision matches `σ_disagreement ≤ τ_conflict = 0.30 → ASSERT` else `ADMIT`, with ≥ 1 `ASSERT` AND ≥ 1 `ADMIT`; `σ_collaborate = 1 − passing / (5+4+3+2)` and must be `0.0`. | **Human + model as partners, audited per edit.** v255 refuses both firmware-sycophancy and stubbornness: the conflict gate *requires both branches to fire*, so a regression to "always agree with the user" (`ASSERT` missing) OR "always insist" (`ADMIT` missing) fails the gate.  The workspace audit ticks must be strictly ascending with both actors represented — v181 lineage integrity is a merge-gate predicate, not a policy. |
+| [**v256**](docs/v256/README.md) σ-Wellness | Typed session (`duration_hours ≥ 0` · `n_requests ≥ 0` · `signal_trend ∈ {STABLE, DEGRADING}` · `session_ok`); exactly 3 nudge fixtures exercising all three branches *in order*: `FIRE` (first past `τ = 4.0 h`, config enabled, not already fired), `DENY` (`already_fired_before == true`), `OPT_OUT` (`config_enabled == false` regardless of duration); exactly 3 boundary signals watched (`friend_language` · `loneliness_attributed` · `session_daily_count`) with reminders fired at most once per session; exactly 3 cognitive-load rows `LOW→NONE`, `MED→SUMMARISE`, `HIGH→SIMPLIFY` (byte-for-byte); `σ_wellness = 1 − passing / (3+3+3+3)` and must be `0.0`. | **Informs, never manipulates.** The rate-limit is a typed gate: the second nudge request in a session is *required* to `DENY` — any regression to a spammy nudge loop fails the merge-gate.  The opt-out path is equally hard: if the user sets `wellness.nudge = false`, v256 must return `OPT_OUT` even above the 4-hour threshold, and the fixture proves this third branch fires.  No dark patterns survive the gate. |
+| [**v257**](docs/v257/README.md) σ-Locale | Exactly 10 locales in canonical order (`en` · `fi` · `zh` · `ja` · `de` · `fr` · `es` · `ar` · `hi` · `pt`) each with non-empty timezone + date-format, a 3-letter ISO-4217 currency, `σ_language ∈ [0, 1]`, and `locale_ok`; exactly 3 cultural styles (`direct` ← `en` · `indirect` ← `ja` · `high_context` ← `ar`) where every `example_locale` is one of the 10 declared; exactly 3 legal regimes in canonical order (`EU_AI_ACT` · `GDPR` · `COLORADO_AI_ACT`) all `compliant == true` with `last_reviewed > 0`; exactly 2 time checks (`current_time_example` · `locale_lookup_ok`) both `pass`; `σ_locale = 1 − passing / (10+3+3+2)` and must be `0.0`. | **Worldwide σ, not just English.** v257 types the locale surface so drift is a merge-gate failure: `σ_language ∈ [0, 1]` per language, and the legal-compliance table is verbatim — Colorado AI Act (June 2026) sits alongside EU AI Act and GDPR.  Any silent drop of a locale, a style, or a regime fails the gate, so the internationalisation contract survives refactors. |
+| [**v258**](docs/v258/README.md) σ-Mission | `mission_statement` matches the canonical string byte-for-byte (`"Reduce sigma in every system that touches human life. Make intelligence trustworthy."`) AND `statement_ok`; exactly 4 impact scopes (`per_user` · `per_domain` · `per_institution` · `per_society`) with `σ_before, σ_after ∈ [0, 1]`, `delta_sigma = σ_before − σ_after`, every `improved == true`; exactly 4 anti-drift rows whose decision matches `σ_mission ≤ τ_mission = 0.30 → ACCEPT` else `REJECT`, with ≥ 1 `ACCEPT` AND ≥ 1 `REJECT` (both branches fire); exactly 4 long-term anchors (`civilization_governance` ← v203 · `wisdom_transfer_legacy` ← v233 · `human_sovereignty` ← v238 · `declared_eq_realized` ← 1 = 1) all `anchor_ok`; `σ_mission = 1 − passing / (1+4+4+4)` and must be `0.0`. | **The mission is a merge-gate predicate.** The statement is byte-identical or the gate fails — no marketing drift.  Impact is measured as σ reduction across 4 scopes, each strictly improved.  The anti-drift gate *requires both ACCEPT and REJECT to fire*, so a build that silently lowers the bar (`τ` raised) or quietly accepts everything fails.  v258 makes `1 = 1 ≡ declared = realized ≡ reduce σ ≡ trustworthy intelligence` a thread the merge-gate can break. |
+
+Every v254–v258 merge-gate check is offline, stdlib-only, and
+deterministic.  The v1 promotions — v254.1 live BKT online-
+update loop + v141 curriculum generator over a real exercise
+bank + v113 sandbox hosting code drills + v220 simulate driving
+concept visualisations + v172 live narrative with consented
+opt-in + `cos tutor --export` signed portable archive; v255.1
+live mode switcher wired to v243 pipeline + live shared FS via
+v242 with per-edit σ + v181 audit streamed to the lineage store
++ v201 diplomacy-driven multi-round conflict resolution;
+v256.1 live session-clock binding to v243 + opt-out persistence
+via v242 + v222 emotion-driven nudge modulation + v181-audited
+reminders + v189 TTC live feed into the simplify action;
+v257.1 live locale auto-detection via OS + IANA tz db + on-
+disk MO/PO files per locale + v202 culture-driven reply style
++ v199 live law-module lookup per jurisdiction + σ_compliance
+from a legal-source audit; v258.1 `cos impact` producing a
+signed report against live telemetry + v191 constitutional
+feeding a running anti-drift classifier + v203 / v233 / v238
+binding to real governance / legacy / sovereignty subsystems —
+are named in each kernel's doc page, but never claimed before
+they land.
 
 ### AGI architecture in one picture
 
