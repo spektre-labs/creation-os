@@ -453,7 +453,12 @@ merge-gate:
 	@$(MAKE) check-v246
 	@$(MAKE) check-v247
 	@$(MAKE) check-v248
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release)"
+	@$(MAKE) check-v249
+	@$(MAKE) check-v250
+	@$(MAKE) check-v251
+	@$(MAKE) check-v252
+	@$(MAKE) check-v253
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -5660,6 +5665,134 @@ check-v248: check-v248-release-artifacts-exist
 
 check-v244-v248: check-v244 check-v245 check-v246 check-v247 check-v248
 	@echo "check-v244-v248: OK (package + observe + harden + benchmark-suite + release)"
+
+# --- v249 σ-MCP (Model Context Protocol integration) ---
+#
+# v0 contracts: JSON-RPC 2.0; exactly 5 tools (reason, plan,
+# create, simulate, teach) and 3 resources (memory, ontology,
+# skills) in canonical order; exactly 4 external servers
+# (database, api, filesystem, search) with σ_trust ∈ [0,1];
+# exactly 5 σ-gated tool calls with ≥ 3 USE, ≥ 1 WARN
+# (σ > τ_tool=0.40), ≥ 1 REFUSE (σ > τ_refuse=0.75); exactly
+# 3 discovery modes (local, mdns, registry), ontology mapping;
+# σ_mcp == 0.0; FNV-1a chain replays byte-identically.
+V249_INC  = -Isrc/v249
+V249_SRCS = src/v249/mcp.c
+
+creation_os_v249_mcp: $(V249_SRCS) src/v249/main.c
+	$(CC) $(CFLAGS) $(V249_INC) -o $@ \
+	    $(V249_SRCS) src/v249/main.c $(LDFLAGS)
+
+check-v249-mcp-server-register: creation_os_v249_mcp
+	@bash benchmarks/v249/check_v249_mcp_server_register.sh
+	@echo "check-v249-mcp-server-register: OK (5 tools + 3 resources + 4 externals + σ-gated calls + discovery)"
+
+check-v249: check-v249-mcp-server-register
+	@echo "check-v249: OK (σ-mcp kernel)"
+
+# --- v250 σ-A2A (Agent-to-Agent protocol) ---
+#
+# v0 contracts: Agent Card with 6 required fields including
+# sigma_profile ∈ [0,1], presence="LIVE", scsl=true; exactly 6
+# capabilities in canonical order; 4 delegation tasks with
+# decision tree (ACCEPT/NEGOTIATE at τ_neg=0.50 / REFUSE at
+# τ_refuse=0.75), ≥ 1 of each; exactly 3 federation partners
+# (alice, bob, carol) with σ_trust ∈ [0,1]; σ_a2a == 0.0;
+# FNV-1a chain replays byte-identically.
+V250_INC  = -Isrc/v250
+V250_SRCS = src/v250/a2a.c
+
+creation_os_v250_a2a: $(V250_SRCS) src/v250/main.c
+	$(CC) $(CFLAGS) $(V250_INC) -o $@ \
+	    $(V250_SRCS) src/v250/main.c $(LDFLAGS)
+
+check-v250-a2a-agent-card-publish: creation_os_v250_a2a
+	@bash benchmarks/v250/check_v250_a2a_agent_card_publish.sh
+	@echo "check-v250-a2a-agent-card-publish: OK (agent card + delegation + negotiation + federation)"
+
+check-v250: check-v250-a2a-agent-card-publish
+	@echo "check-v250: OK (σ-a2a kernel)"
+
+# --- v251 σ-Marketplace (kernel registry + quality scoring) ---
+#
+# v0 contracts: registry.creation-os.dev; exactly 5 kernels
+# (medical-v1, legal-v1, finance-v1, science-v1,
+# teach-pro-v1) each with σ_quality = mean(4 axes) ± 1e-4;
+# install of medical-v1 resolves deps; compose medical-v1 +
+# legal-v1 → medical-legal with σ_compatibility < τ_compat
+# (0.50); publish contract of 4 items (merge_gate_green,
+# sigma_profile_attached, docs_attached, scsl_license_attached)
+# all required AND met; σ_marketplace == 0.0; FNV-1a chain
+# replays byte-identically.
+V251_INC  = -Isrc/v251
+V251_SRCS = src/v251/marketplace.c
+
+creation_os_v251_marketplace: $(V251_SRCS) src/v251/main.c
+	$(CC) $(CFLAGS) $(V251_INC) -o $@ \
+	    $(V251_SRCS) src/v251/main.c $(LDFLAGS)
+
+check-v251-marketplace-kernel-install: creation_os_v251_marketplace
+	@bash benchmarks/v251/check_v251_marketplace_kernel_install.sh
+	@echo "check-v251-marketplace-kernel-install: OK (5 kernels + install + compose + publish contract)"
+
+check-v251: check-v251-marketplace-kernel-install
+	@echo "check-v251: OK (σ-marketplace kernel)"
+
+# --- v252 σ-Teach (Socratic + adaptive + gap detection) ---
+#
+# v0 contracts: exactly 4 Socratic turns with first 3
+# QUESTION + last LEAD and n_questions ≥ 3; exactly 4
+# adaptive steps, action matches learner_state rule
+# (BORED→UP, FLOW→HOLD, FRUSTRATED→DOWN) with ≥ 1 UP and
+# ≥ 1 DOWN; exactly 3 knowledge gaps with σ_gap ∈ [0,1] and
+# every targeted_addressed true; teaching receipt with 5
+# required fields and taught ≥ understood + not_understood;
+# σ_understanding = 1 − understood/taught ± 1e-4;
+# σ_teach == 0.0; FNV-1a chain replays byte-identically.
+V252_INC  = -Isrc/v252
+V252_SRCS = src/v252/teach.c
+
+creation_os_v252_teach: $(V252_SRCS) src/v252/main.c
+	$(CC) $(CFLAGS) $(V252_INC) -o $@ \
+	    $(V252_SRCS) src/v252/main.c $(LDFLAGS)
+
+check-v252-teach-socratic-mode: creation_os_v252_teach
+	@bash benchmarks/v252/check_v252_teach_socratic_mode.sh
+	@echo "check-v252-teach-socratic-mode: OK (Socratic + adaptive + gap + receipt)"
+
+check-v252: check-v252-teach-socratic-mode
+	@echo "check-v252: OK (σ-teach kernel)"
+
+# --- v253 σ-Ecosystem-Hub (hub + health + contribution) ---
+#
+# v0 contracts: hub.creation-os.dev; exactly 5 hub sections
+# (marketplace, agent_directory, documentation,
+# community_forum, benchmark_dashboard) in canonical order
+# with upstream citations; exactly 4 health metrics
+# (active_instances, kernels_published, a2a_federations,
+# contributors_30d) all > 0; exactly 5 contribution steps
+# (fork, write_kernel, pull_request, merge_gate, publish);
+# 4 roadmap proposals with ≥ 1 voted-in AND exactly 1
+# proconductor_decision; exactly 4 unity assertions
+# (instance, kernel, interaction, a2a_message) all
+# declared AND realized; σ_ecosystem == 0.0; FNV-1a chain
+# replays byte-identically.
+V253_INC  = -Isrc/v253
+V253_SRCS = src/v253/ecosystem_hub.c
+
+creation_os_v253_ecosystem_hub: $(V253_SRCS) src/v253/main.c
+	$(CC) $(CFLAGS) $(V253_INC) -o $@ \
+	    $(V253_SRCS) src/v253/main.c $(LDFLAGS)
+
+check-v253-ecosystem-hub-health: creation_os_v253_ecosystem_hub
+	@bash benchmarks/v253/check_v253_ecosystem_hub_health.sh
+	@echo "check-v253-ecosystem-hub-health: OK (hub + health + contribution + roadmap + unity)"
+
+check-v253: check-v253-ecosystem-hub-health
+	@echo "check-v253: OK (σ-ecosystem-hub kernel)"
+
+check-v249-v253: check-v249 check-v250 check-v251 check-v252 check-v253
+	@echo "check-v249-v253: OK (mcp + a2a + marketplace + teach + ecosystem-hub)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

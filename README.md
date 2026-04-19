@@ -144,6 +144,20 @@ The live stack ships today:
   (6 artifacts · 6 doc sections · 15 WHAT_IS_REAL rows · 7
   release criteria) that turns the 248-kernel stack into a single,
   falsifiable release.
+- **v249–v253** — the **interop / ecosystem layer**: σ-mcp (JSON-RPC 2.0
+  server with 5 tools + 3 resources, 4 external clients, and a 3-way
+  σ-gate with ≥ 1 USE / WARN / REFUSE fixture), σ-a2a (Agent Card with
+  public σ-profile, 4 delegation fixtures with NEGOTIATE/REFUSE at
+  τ_neg / τ_refuse, 3 federation partners), σ-marketplace (5-kernel
+  registry with σ_quality = mean(4 axes), 1 install, 1 σ-compatibility
+  composition, and a 4-item hard publish contract keeping SCSL pinned),
+  σ-teach (Socratic mode with ≥ 3 questions, adaptive difficulty with
+  UP/DOWN/HOLD rule, 3-gap ToM detector, receipt with
+  σ_understanding), and **σ-ecosystem-hub** — the typed ecosystem
+  manifest (5 hub sections · 4 health metrics · 5 contribution steps ·
+  4 roadmap proposals with a single proconductor decision · 4 unity
+  assertions where declared == realized) that closes 1 = 1 across the
+  whole ecosystem.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
@@ -997,6 +1011,41 @@ multi-arch Docker manifests + working Homebrew tap + PyPI /
 npm / crates.io publish workflows + signed SBOMs and SLSA
 level 3+ provenance — are named in each kernel's doc page,
 but never claimed before they land.
+
+### MCP · A2A · marketplace · teach · ecosystem-hub (v249–v253)
+
+The **interop / ecosystem** layer.  v249–v253 take the
+1.0.0 release and wire it into the rest of the agent world
+— and carry a σ on every envelope that leaves the kernel
+boundary.  Each kernel is a falsifiable manifest: what the
+protocol requires, what the σ-gate refuses, and what it
+means for the ecosystem to be healthy.
+
+| Capability | What it is | What σ adds |
+|---|---|---|
+| [**v249**](docs/v249/README.md) σ-MCP | JSON-RPC 2.0; exactly 5 server-side tools in canonical order (`reason` · `plan` · `create` · `simulate` · `teach`) and 3 resources (`memory` · `ontology` · `skills`); exactly 4 external clients (`database` · `api` · `filesystem` · `search`) each with `σ_trust ∈ [0, 1]`; 5 σ-gated tool-call fixtures with hard thresholds `τ_tool = 0.40` / `τ_refuse = 0.75`, requiring ≥ 3 `USE`, ≥ 1 `WARN`, ≥ 1 `REFUSE` so all branches are exercised; 3 discovery modes (`local` · `mdns` · `registry`) with v169 ontology mapping; `σ_mcp = 1 − passing / (5+3+4+5+3)` and must be `0.0`. | **Every tool call carries a σ.** MCP as-shipped has no typed notion of "can I trust this tool's result?" — v249 puts the σ-gate *at the tool boundary* as a merge-gate predicate, and demonstrates teeth by requiring the `WARN` and `REFUSE` branches to fire in the fixture.  Any silent removal of those branches is a gate failure, not a warning. |
+| [**v250**](docs/v250/README.md) σ-A2A | Agent Card with exactly 6 required fields (`name` · `capabilities[6]` · `sigma_profile.{mean, calibration}` · `presence="LIVE"` · `scsl=true` · non-empty `endpoint`) and 6 capabilities (`reason` · `plan` · `create` · `simulate` · `teach` · `coherence`); 4 task-delegation fixtures with decision tree at `τ_neg = 0.50` / `τ_refuse = 0.75`, ≥ 1 `ACCEPT` / `NEGOTIATE` / `REFUSE` each; 3 federation partners (`alice` · `bob` · `carol`) each with `σ_trust ∈ [0, 1]` and a `presence` marker; v128 mesh as transport, v129 federated learning riding it; `σ_a2a = 1 − passing / (6+4+3)` and must be `0.0`. | **Every cross-agent envelope carries a σ.** The public `sigma_profile` on the Agent Card is the distinguishing field — no other agent ships one.  The negotiation branch (`σ > τ_neg`) and refuse branch (`σ > τ_refuse`) are both exercised by the v0 fixture, so a typo that collapses the decision tree to "always accept" fails the gate. |
+| [**v251**](docs/v251/README.md) σ-Marketplace | Registry `registry.creation-os.dev`; 5 kernels in canonical order (`medical-v1` · `legal-v1` · `finance-v1` · `science-v1` · `teach-pro-v1`), each with semver, kernel-id deps, 4 quality axes in `[0, 1]` and `σ_quality = mean(axes) ± 1e-4`; install of `medical-v1` with `deps_resolved == n_deps`; 1 composition `medical-v1 + legal-v1 → medical-legal` with `σ_compatibility < τ_compat = 0.50`; publish contract of exactly 4 items (`merge_gate_green` · `sigma_profile_attached` · `docs_attached` · `scsl_license_attached`) all `required AND met`; `σ_marketplace = 1 − passing / (5+1+1+4)` and must be `0.0`. | **Every published kernel has an audited σ-profile and pinned SCSL.** The merge-gate verifies quality scoring is consistent (derived σ matches declared axes ± 1e-4), that install / compose paths land on a σ-compatible result, and — crucially — that the 4-item publish contract is *hard*: no σ-profile, no docs, or no SCSL attestation → publish refused.  License drift is a gate failure, not a policy email. |
+| [**v252**](docs/v252/README.md) σ-Teach | Exactly 4 Socratic turns with `QUESTION · QUESTION · QUESTION · LEAD` in order (`n_questions ≥ 3`); 4 adaptive difficulty steps with rule `BORED → UP`, `FLOW → HOLD`, `FRUSTRATED → DOWN` and ≥ 1 `UP` AND ≥ 1 `DOWN`; 3 knowledge-gap rows (v197 ToM) each with `σ_gap ∈ [0, 1]` and `targeted_addressed == true`; teaching receipt with 5 required fields (`session_id` · `taught` · `understood` · `not_understood` · `next_session_start`) and `taught ≥ understood + not_understood`; `σ_understanding = 1 − understood/taught ± 1e-4`; `σ_teach = 1 − passing / 4` and must be `0.0`. | **Teaching is a typed, σ-audited session, not a prompt.** The merge-gate verifies the Socratic ratio has teeth (3 questions *before* the lead), that difficulty both went up *and* came down under the emotion / TTC rule (v189 · v222), that the gap detector addressed every identified gap, and that the receipt is complete — so a silent regression to "just answer it directly" or "never adapt" fails the gate. |
+| [**v253**](docs/v253/README.md) σ-Ecosystem-Hub | Hub `hub.creation-os.dev` with exactly 5 sections in canonical order (`marketplace` ← v251 · `agent_directory` ← v250 · `documentation` ← v248 · `community_forum` ← v253 · `benchmark_dashboard` ← v247); 4 ecosystem-health metrics all strictly positive (`active_instances` · `kernels_published` · `a2a_federations` · `contributors_30d`); 5 contribution steps (`fork → write_kernel → pull_request → merge_gate → publish`); 4 roadmap proposals with ≥ 1 voted-in AND *exactly 1* `proconductor_decision == true` (community proposes, Proconductor prioritises); 4 `1 = 1` assertions across scopes `instance · kernel · interaction · a2a_message` with `declared == realized == true`; `σ_ecosystem = 1 − passing / (5+4+5+4)` and must be `0.0`. | **The σ-loop closes across the ecosystem.** v253 composes v249 / v250 / v251 / v252 / v248 / v247 into one typed surface where the "what you declare equals what you realize" audit is enforced *per scope* — a running instance, a published kernel, a user interaction, and an A2A message all have to prove `declared == realized`.  Ecosystem-level declaration drift is a gate failure, not a blog post. |
+
+Every v249–v253 merge-gate check is offline, stdlib-only, and
+deterministic.  The v1 promotions — v249.1 live JSON-RPC
+transport + real mDNS advertisement + live v169 ontology-driven
+tool selection + streamed tool results with incremental σ;
+v250.1 live A2A wire protocol + cross-agent TLS handshake +
+v201 diplomacy-driven negotiation state machine + v129
+federated learning over the real mesh; v251.1 live
+`registry.creation-os.dev` + signed package manifests + real
+`cos search` / `cos install` / `cos publish` CLI + live quality-
+score ingestion from v247 harness runs; v252.1 live multi-turn
+tutor over v243 pipeline + real-time TTC hooks via v189 +
+emotion-reactive adaptation via v222 + v197 ToM-driven
+targeted gap closure with measured learning outcomes; v253.1
+live `hub.creation-os.dev` + signed community contributions
+end-to-end + real-time ecosystem health telemetry + chain-of-
+custody proconductor decisions — are named in each kernel's
+doc page, but never claimed before they land.
 
 ### AGI architecture in one picture
 
