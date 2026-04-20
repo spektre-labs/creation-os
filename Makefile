@@ -6073,8 +6073,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-paper check-cos-unified \
                       check-cos-c-dispatch check-repro-bundle \
                       check-sigma-truthfulqa check-mesh-2node \
-                      check-lean-t3-discharged check-sigma-paper-latex
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex)"
+                      check-lean-t3-discharged check-sigma-paper-latex \
+                      check-sigma-dp
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6549,6 +6550,26 @@ check-sigma-federation: creation_os_sigma_federation
 	@bash benchmarks/sigma_pipeline/check_sigma_federation.sh
 	@echo "check-sigma-federation: OK (σ-weighted aggregate + σ-gate + poison guard + abstain)"
 
+# --- σ-pipeline: Differential Privacy layer (PROD-1) ---
+#
+# (ε, δ)-DP mechanism on top of σ-federation: before the aggregator
+# averages Δweight contributions, each local gradient is clipped to
+# L2 ≤ C and perturbed with Lap(C / ε) noise.  An ε-budget tracker
+# refuses further rounds once ε_spent + ε_round > ε_total.  The
+# module also emits σ_dp = ‖noise‖₂ / ‖g_clipped‖₂ so σ-federation
+# can down-weight contributions that carried mostly noise.
+# Deterministic: SplitMix64 RNG, seed-pinned by the caller.
+SIGMA_DP_INC  = -Isrc/sigma/pipeline
+SIGMA_DP_SRCS = src/sigma/pipeline/dp.c
+
+creation_os_sigma_dp: $(SIGMA_DP_SRCS) src/sigma/pipeline/dp_main.c
+	$(CC) $(CFLAGS) $(SIGMA_DP_INC) -o $@ \
+	    $(SIGMA_DP_SRCS) src/sigma/pipeline/dp_main.c $(LDFLAGS)
+
+check-sigma-dp: creation_os_sigma_dp
+	@bash benchmarks/sigma_pipeline/check_sigma_dp.sh
+	@echo "check-sigma-dp: OK (deterministic ε-budget + Laplace noise + σ_dp ∈ [0,1])"
+
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #
 # Length-prefixed framed binary with an FNV-based 512-bit MAC.
@@ -6612,6 +6633,7 @@ COS_NETWORK_SRCS = src/sigma/pipeline/mesh.c \
                    src/sigma/pipeline/split.c \
                    src/sigma/pipeline/marketplace.c \
                    src/sigma/pipeline/federation.c \
+                   src/sigma/pipeline/dp.c \
                    src/sigma/pipeline/protocol.c \
                    src/sigma/pipeline/protocol_ed25519.c \
                    third_party/ed25519/src/add_scalar.c \

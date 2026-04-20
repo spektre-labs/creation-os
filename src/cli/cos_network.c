@@ -40,6 +40,7 @@
 #include "marketplace.h"
 #include "federation.h"
 #include "protocol.h"
+#include "dp.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -388,6 +389,68 @@ static int cmd_keygen(int json, const char *seed_hex) {
     return 0;
 }
 
+static int cmd_dp_status(int json) {
+    /* PROD-1: σ-DP budget introspection.  We bootstrap a canonical
+     * DP state (ε=0.5/round, ε_total=10.0, clip=1.0, seed fixed),
+     * apply three rounds of representative gradients, and surface
+     * the budget + σ_dp trend.  The emitted shape is stable so
+     * Prometheus scrapers can reduce it to cos_dp_eps_spent /
+     * cos_dp_eps_remaining / cos_dp_sigma_impact labels. */
+    cos_sigma_dp_state_t st;
+    cos_sigma_dp_init(&st, /*ε=*/0.5f, /*δ=*/1e-6f,
+                           /*clip=*/1.0f, /*ε_total=*/10.0f,
+                           /*seed=*/0xC05D0D90ULL);
+
+    float rounds[3][4] = {
+        { 0.40f, -0.20f,  0.10f,  0.05f },
+        { 0.30f,  0.15f, -0.10f,  0.05f },
+        { 0.50f, -0.30f,  0.20f,  0.10f },
+    };
+    cos_sigma_dp_report_t rep[3];
+    for (int r = 0; r < 3; r++)
+        cos_sigma_dp_add_noise(&st, rounds[r], 4, &rep[r]);
+
+    float sigma_mean = (rep[0].sigma_dp + rep[1].sigma_dp + rep[2].sigma_dp) / 3.0f;
+    int   rounds_left = cos_sigma_dp_rounds_left(&st);
+    float pct_spent   = 100.0f * (st.epsilon_spent / st.epsilon_total);
+
+    if (json) {
+        printf("{\"command\":\"dp-status\","
+               "\"epsilon_per_round\":%.4f,"
+               "\"delta\":%.2e,"
+               "\"clip_norm\":%.4f,"
+               "\"epsilon_spent\":%.4f,"
+               "\"epsilon_total\":%.4f,"
+               "\"epsilon_remaining\":%.4f,"
+               "\"pct_spent\":%.1f,"
+               "\"rounds_applied\":%d,"
+               "\"rounds_left\":%d,"
+               "\"sigma_impact_mean\":%.4f,"
+               "\"sigma_impact_last\":%.4f}\n",
+               (double)st.epsilon,
+               (double)st.delta,
+               (double)st.clip_norm,
+               (double)st.epsilon_spent,
+               (double)st.epsilon_total,
+               (double)cos_sigma_dp_remaining(&st),
+               (double)pct_spent,
+               st.rounds,
+               rounds_left,
+               (double)sigma_mean,
+               (double)rep[2].sigma_dp);
+    } else {
+        printf("cos network dp-status:\n");
+        printf("  ε_spent        %.2f / %.2f  (%.0f%% used)\n",
+               (double)st.epsilon_spent, (double)st.epsilon_total, (double)pct_spent);
+        printf("  δ              %.2e\n", (double)st.delta);
+        printf("  clip_norm      %.2f\n", (double)st.clip_norm);
+        printf("  rounds applied %d, rounds left %d\n", st.rounds, rounds_left);
+        printf("  σ_impact       +%.4f (mean across last %d rounds)\n",
+               (double)sigma_mean, st.rounds);
+    }
+    return 0;
+}
+
 static int usage(int rc) {
     puts("usage: cos network <subcommand> [options]");
     puts("  join                        join the mesh (bootstrap peers)");
@@ -397,6 +460,7 @@ static int usage(int rc) {
     puts("  serve [--price <eur>]       advertise local capacity");
     puts("  query \"<question>\"          route a question (mesh → market → abstain)");
     puts("  federate                    run a σ-weighted Δweight aggregation");
+    puts("  dp-status                   differential-privacy ε-budget + σ_impact");
     puts("  unlearn \"<data>\"            broadcast a signed UNLEARN frame");
     puts("  --json                      emit JSON receipt");
     return rc;
@@ -441,8 +505,9 @@ int main(int argc, char **argv) {
     if (strcmp(sub, "status")   == 0) return cmd_status  (json);
     if (strcmp(sub, "serve")    == 0) return cmd_serve   (json, price);
     if (strcmp(sub, "query")    == 0) return cmd_query   (json, query_text);
-    if (strcmp(sub, "federate") == 0) return cmd_federate(json);
-    if (strcmp(sub, "unlearn")  == 0) return cmd_unlearn (json, unlearn_text);
+    if (strcmp(sub, "federate")  == 0) return cmd_federate (json);
+    if (strcmp(sub, "dp-status") == 0) return cmd_dp_status(json);
+    if (strcmp(sub, "unlearn")   == 0) return cmd_unlearn  (json, unlearn_text);
 
     fprintf(stderr, "cos network: unknown subcommand \"%s\"\n", sub);
     return usage(2);
