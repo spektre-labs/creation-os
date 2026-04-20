@@ -6066,8 +6066,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-synthetic check-sigma-evolution \
                       check-sigma-meta check-sigma-omega \
                       check-sigma-mesh check-sigma-split \
-                      check-sigma-marketplace
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace)"
+                      check-sigma-marketplace check-sigma-federation
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6521,6 +6521,26 @@ creation_os_sigma_marketplace: $(SIGMA_MKT_SRCS) \
 check-sigma-marketplace: creation_os_sigma_marketplace
 	@bash benchmarks/sigma_pipeline/check_sigma_marketplace.sh
 	@echo "check-sigma-marketplace: OK (σ-filtered select + SCSL ban + EWMA reputation + auto-ban)"
+
+# --- σ-pipeline: Federation (σ-weighted Δweight aggregation, D4) ---
+#
+# Federated learning over mesh: nodes train locally (data stays
+# put), only Δweights cross the wire.  The aggregator weights each
+# update by (1 − σ_node) · n_samples, filters out σ ≥ σ_reject,
+# and rejects poison updates whose L2 norm is more than
+# poison_max_scale × the cohort median.  If every update gets
+# filtered, the aggregator ABSTAINS and emits a zero Δ.
+SIGMA_FED_INC  = -Isrc/sigma/pipeline
+SIGMA_FED_SRCS = src/sigma/pipeline/federation.c
+
+creation_os_sigma_federation: $(SIGMA_FED_SRCS) \
+                              src/sigma/pipeline/federation_main.c
+	$(CC) $(CFLAGS) $(SIGMA_FED_INC) -o $@ \
+	    $(SIGMA_FED_SRCS) src/sigma/pipeline/federation_main.c $(LDFLAGS)
+
+check-sigma-federation: creation_os_sigma_federation
+	@bash benchmarks/sigma_pipeline/check_sigma_federation.sh
+	@echo "check-sigma-federation: OK (σ-weighted aggregate + σ-gate + poison guard + abstain)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
