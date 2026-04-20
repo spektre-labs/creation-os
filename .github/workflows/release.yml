@@ -19,7 +19,7 @@ jobs:
     name: macOS · universal (arm64 + x86_64)
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build universal binaries
         run: |
           set -eux
@@ -61,7 +61,7 @@ jobs:
             runner: ubuntu-24.04-arm
     runs-on: ${{ matrix.runner }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build
         run: |
           set -eux
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [binaries-linux]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: docker/setup-qemu-action@v3
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
