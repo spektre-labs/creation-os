@@ -93,6 +93,15 @@ shows that this threshold saves **89 %–95 %** of retrieval calls
 across the four families while keeping accuracy on the
 answered-direct subset ≥ the always-direct baseline.
 
+**MMLU subset (v111.2-mmlu, 1/5 subjects wired).**  `mmlu_abstract_algebra`
+n = 100 is measured end-to-end through the same σ-sidecar pipeline
+(overall accuracy 33 %, all σ-signals ≈ entropy; nothing passes
+Bonferroni at this sample size and base-model strength).  Full
+5-subject subset + table:
+[`benchmarks/v111/results/mmlu_subset.md`](benchmarks/v111/results/mmlu_subset.md),
+reproduction commands in
+[`docs/v111/THE_FRONTIER_MATRIX.md §11`](docs/v111/THE_FRONTIER_MATRIX.md#11-v1112-mmlu-subset-post-hoc-one-subject-wired).
+
 Methodology and signal definitions:
 [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md).
 Composition layers behind these numbers:

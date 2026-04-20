@@ -292,3 +292,49 @@ the pre-registered test split it saves **89 %–95 %** of retrieval
 calls across the four families while keeping accuracy on the
 answered-direct subset slightly above the always-direct baseline.
 Full table in `benchmarks/v111/results/adaptive_rag_demo.md`.
+
+## 11. v111.2 MMLU subset (post-hoc, one subject wired)
+
+MMLU was declared deferred in §4.1 of the pre-registered matrix
+because the full-57 run is multi-hour on M3.  v111.2 wires one subject
+end-to-end (`mmlu_abstract_algebra`, n = 100 questions, 4 candidates
+each) through the same v103 σ-sidecar pipeline.
+
+When lm-eval's post-processing step stalls on hosts with torch < 2.4
+(it prints "Disabling PyTorch …" and waits indefinitely on a
+subprocess that never emits), we reconstruct the lm-eval samples
+file from the sidecar + the locally-cached HF gold labels via
+`benchmarks/v111/synthesize_mmlu_lmeval.py`.  No log-likelihood is
+fabricated — the argmax-ll candidate is compared to the gold answer
+exactly as lm-eval would have.
+
+Measured (`benchmarks/v111/results/mmlu_subset.md`):
+
+| task | n | overall_acc | entropy AURCC | best σ ΔAURCC | Bonferroni |
+|---|---:|---:|---:|---:|:---:|
+| `mmlu_abstract_algebra` | 100 | 0.3300 | 0.6512 | `sigma_product` −0.0028 (p = 0.897) |  |
+
+Honest reading: at BitNet b1.58-2B-4T's ≈33 % accuracy on MMLU
+abstract_algebra, the σ signal carries no detectable advantage over
+entropy at n = 100.  This is not a σ failure — the base model is
+too weak on the subject for any selective-prediction signal to bite.
+The full 5-subject subset (~844 questions, ≈ 1 h wall-time) remains
+PENDING.
+
+### Reproduce (single subject)
+
+```bash
+bash benchmarks/v111/run_matrix.sh mmlu-micro                                           # ~3 min inference
+.venv-bitnet/bin/python benchmarks/v111/synthesize_mmlu_lmeval.py --task mmlu_abstract_algebra
+.venv-bitnet/bin/python benchmarks/v111/analyse_mmlu_subset.py
+```
+
+### Reproduce (5-subject subset; ~1 h)
+
+```bash
+bash benchmarks/v111/run_matrix.sh mmlu-subset   # abstract_algebra + college_physics + computer_security + high_school_mathematics + professional_medicine
+for subj in mmlu_abstract_algebra mmlu_college_physics mmlu_computer_security mmlu_high_school_mathematics mmlu_professional_medicine; do
+  .venv-bitnet/bin/python benchmarks/v111/synthesize_mmlu_lmeval.py --task "$subj"
+done
+.venv-bitnet/bin/python benchmarks/v111/analyse_mmlu_subset.py
+```

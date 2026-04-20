@@ -1,0 +1,49 @@
+{
+  "preregistered": false,
+  "bonferroni_N": 3,
+  "alpha_fw": 0.016666666666666666,
+  "n_boot": 2000,
+  "note": "MMLU was declared post-hoc in v111.1. This matrix is reported separately from the pre-registered four-family matrix and uses its own Bonferroni N.",
+  "tasks": [
+    {
+      "task": "mmlu_abstract_algebra",
+      "n": 100,
+      "overall_acc": 0.33,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.6511890011714233,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.649554836028053,
+          "delta_vs_entropy": -0.0010929202850947293,
+          "CI95_lo": -0.04655965542157725,
+          "CI95_hi": 0.042521791153812716,
+          "p_two_sided": 0.972,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.6478008677740847,
+          "delta_vs_entropy": -0.0028358121338486184,
+          "CI95_lo": -0.04741598590552676,
+          "CI95_hi": 0.04053511406942467,
+          "p_two_sided": 0.897,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0
+        }
+      ]
+    }
+  ]
+}

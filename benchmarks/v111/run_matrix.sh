@@ -75,6 +75,19 @@ case "$TARGET" in
         # 57 subtasks, 5-shot, very heavy — single-subject smoke
         generate_sidecar mmlu_high_school_psychology 500
         ;;
+    mmlu-subset)
+        # v111.2: five-subject MMLU subset, 0-shot by default.
+        # ~844 questions total × 4 candidates ≈ ~45 min on M3 at 0.8s/ll.
+        for subj in mmlu_abstract_algebra mmlu_college_physics \
+                    mmlu_computer_security mmlu_high_school_mathematics \
+                    mmlu_professional_medicine; do
+            generate_sidecar "$subj" 300
+        done
+        ;;
+    mmlu-micro)
+        # Single smallest subject for fast iteration: abstract_algebra has 100 qs.
+        generate_sidecar mmlu_abstract_algebra 100
+        ;;
     gsm8k)
         echo "v111: gsm8k requires a generate_until backend with σ logging."
         echo "     See docs/v111/THE_FRONTIER_MATRIX.md §4.2 for the repro command."
