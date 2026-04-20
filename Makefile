@@ -613,12 +613,19 @@ hardware-supreme: formal-rtl-lint yosys-elab rust-iron-test chisel-compile
 
 yosys-prove-agency:
 	@if command -v yosys >/dev/null 2>&1; then \
-		if yosys -qp 'help chformal' 2>&1 | grep -q -- '-lower'; then \
-			SCRIPT=prove_agency_comb_modern.ys; \
-		else \
-			SCRIPT=prove_agency_comb.ys; \
-		fi; \
-		cd hw/yosys && yosys -q "$$SCRIPT" && echo "yosys-prove-agency: OK"; \
+		cd hw/yosys && ( \
+			yosys -q prove_agency_comb_modern.ys >/tmp/yosys_prove_modern.log 2>&1 \
+				&& echo "yosys-prove-agency: OK (modern flow)" \
+		) || ( \
+			yosys -q prove_agency_comb.ys >/tmp/yosys_prove_classic.log 2>&1 \
+				&& echo "yosys-prove-agency: OK (classic flow)" \
+		) || ( \
+			echo "yosys-prove-agency: FAIL — modern log:" >&2; \
+			cat /tmp/yosys_prove_modern.log >&2; \
+			echo "--- classic log:" >&2; \
+			cat /tmp/yosys_prove_classic.log >&2; \
+			exit 1 \
+		); \
 	else \
 		echo "yosys-prove-agency: SKIP (apt/brew install yosys)"; \
 	fi
