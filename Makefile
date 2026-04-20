@@ -6059,8 +6059,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-sovereign check-codex \
                       check-sigma-pipeline-compose \
                       check-integration check-cos-cli \
-                      check-sigma-tool check-sigma-plan
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan)"
+                      check-sigma-tool check-sigma-plan \
+                      check-sigma-merge
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6256,6 +6257,24 @@ creation_os_sigma_plan: $(SIGMA_PL_SRCS) \
 check-sigma-plan: creation_os_sigma_plan
 	@bash benchmarks/sigma_pipeline/check_sigma_plan.sh
 	@echo "check-sigma-plan: OK (budget + add_step + execute + REPLAN + ABORT)"
+
+# --- σ-pipeline: Merge (σ-gated model merging, A3) ---
+#
+# LINEAR / SLERP / TIES / TASK_ARITH + an α-sweep {0, .25, .5, .75, 1}.
+# The caller brings two weight vectors and a σ oracle; σ-Merge returns
+# CONSTRUCTIVE iff σ_after < min(σ_a, σ_b).  Weight-format agnostic by
+# design — the primitive does not touch GGUF/MLX/BitNet itself.
+SIGMA_MG_INC  = -Isrc/sigma/pipeline
+SIGMA_MG_SRCS = src/sigma/pipeline/merge.c
+
+creation_os_sigma_merge: $(SIGMA_MG_SRCS) \
+                         src/sigma/pipeline/merge_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MG_INC) -o $@ \
+	    $(SIGMA_MG_SRCS) src/sigma/pipeline/merge_main.c $(LDFLAGS)
+
+check-sigma-merge: creation_os_sigma_merge
+	@bash benchmarks/sigma_pipeline/check_sigma_merge.sh
+	@echo "check-sigma-merge: OK (LINEAR + SLERP + TIES + TASK_ARITH + α-sweep + CONSTRUCTIVE gate)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
