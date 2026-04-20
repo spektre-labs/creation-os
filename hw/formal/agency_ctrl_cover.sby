@@ -10,8 +10,8 @@ smtbmc
 ../../rtl/cos_agency_iron_cover.sv
 
 [script]
-read_verilog -sv /src/cos_agency_iron_combo.sv
-read_verilog -sv /src/cos_agency_iron_cover.sv
+read_verilog -sv cos_agency_iron_combo.sv
+read_verilog -sv cos_agency_iron_cover.sv
 prep -top cos_agency_iron_cover
 flatten
 opt

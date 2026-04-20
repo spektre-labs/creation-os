@@ -1,7 +1,7 @@
-; SPDX-License-Identifier: AGPL-3.0-or-later
-; Combinational formal: prove immediate asserts on cos_agency_iron_formal (no SymbiYosys).
-; Run from repo creation-os root: make yosys-prove-agency
-; Or: cd hw/yosys && yosys -q prove_agency_comb.ys
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Combinational formal: prove immediate asserts on cos_agency_iron_formal (no SymbiYosys).
+# Run from repo creation-os root: make yosys-prove-agency
+# Or: cd hw/yosys && yosys -q prove_agency_comb.ys
 read_verilog -sv ../rtl/cos_agency_iron_combo.sv
 read_verilog -sv ../rtl/cos_agency_iron_formal.sv
 prep -top cos_agency_iron_formal

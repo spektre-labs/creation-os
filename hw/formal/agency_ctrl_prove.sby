@@ -9,8 +9,8 @@ smtbmc
 ../../rtl/cos_agency_iron_formal.sv
 
 [script]
-read_verilog -sv /src/cos_agency_iron_combo.sv
-read_verilog -sv /src/cos_agency_iron_formal.sv
+read_verilog -sv cos_agency_iron_combo.sv
+read_verilog -sv cos_agency_iron_formal.sv
 prep -top cos_agency_iron_formal
 flatten
 opt
