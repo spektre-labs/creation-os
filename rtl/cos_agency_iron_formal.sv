@@ -24,7 +24,7 @@ module cos_agency_iron_formal (
       .ctrl(ctrl)
   );
 
-  assign pc = 3'd($countones(trap_mask));
+  assign pc = 3'($countones(trap_mask));
   assign anchor_ov = trap_mask[6];
   assign stab = event_state_amp | (pc >= 3'd2) | anchor_ov;
 

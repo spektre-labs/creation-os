@@ -13,7 +13,7 @@ module cos_agency_iron_combo (
     input  wire       urgency_only,
     output wire [1:0] ctrl
 );
-  wire [2:0] pc = 3'd($countones(trap_mask));
+  wire [2:0] pc = 3'($countones(trap_mask));
   wire       anchor_ov = trap_mask[6];
   wire       stab      = event_state_amp | (pc >= 3'd2) | anchor_ov;
   wire       anytrap   = |trap_mask;
