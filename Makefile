@@ -6074,8 +6074,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-cos-c-dispatch check-repro-bundle \
                       check-sigma-truthfulqa check-mesh-2node \
                       check-lean-t3-discharged check-sigma-paper-latex \
-                      check-sigma-dp
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp)"
+                      check-sigma-dp check-sigma-ratelimit
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6569,6 +6569,27 @@ creation_os_sigma_dp: $(SIGMA_DP_SRCS) src/sigma/pipeline/dp_main.c
 check-sigma-dp: creation_os_sigma_dp
 	@bash benchmarks/sigma_pipeline/check_sigma_dp.sh
 	@echo "check-sigma-dp: OK (deterministic ε-budget + Laplace noise + σ_dp ∈ [0,1])"
+
+# --- σ-pipeline: Rate limiting + reputation (PROD-2) ---
+#
+# Reputation-weighted rate limiting on top of the D-series mesh.
+# Each peer carries r ∈ [0, 1]; decisions are (in priority order)
+# BLOCKED (r < r_ban, latched) ≻ THROTTLED_RATE (per-minute or
+# per-hour burst cap exceeded) ≻ THROTTLED_GIVE (free-rider:
+# answers_served / queries_sent < give_min after 10 queries) ≻
+# ALLOWED.  Reputation is σ-driven: peer returns an answer with
+# σ < σ_reject_peer → reputation grows; σ ≥ σ_reject_peer → drops.
+# No RNG, no wall clock — caller supplies monotonic ns.
+SIGMA_RL_INC  = -Isrc/sigma/pipeline
+SIGMA_RL_SRCS = src/sigma/pipeline/ratelimit.c
+
+creation_os_sigma_ratelimit: $(SIGMA_RL_SRCS) src/sigma/pipeline/ratelimit_main.c
+	$(CC) $(CFLAGS) $(SIGMA_RL_INC) -o $@ \
+	    $(SIGMA_RL_SRCS) src/sigma/pipeline/ratelimit_main.c $(LDFLAGS)
+
+check-sigma-ratelimit: creation_os_sigma_ratelimit
+	@bash benchmarks/sigma_pipeline/check_sigma_ratelimit.sh
+	@echo "check-sigma-ratelimit: OK (ALLOWED/THROTTLED_RATE/THROTTLED_GIVE/BLOCKED)"
 
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #
