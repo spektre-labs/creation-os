@@ -6059,8 +6059,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-sovereign check-codex \
                       check-sigma-pipeline-compose \
                       check-integration check-cos-cli \
-                      check-sigma-tool
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool)"
+                      check-sigma-tool check-sigma-plan
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6236,6 +6236,26 @@ creation_os_sigma_tool: $(SIGMA_TL_SRCS) \
 check-sigma-tool: creation_os_sigma_tool
 	@bash benchmarks/sigma_pipeline/check_sigma_tool.sh
 	@echo "check-sigma-tool: OK (registry + selector + gate + risk classes + executor)"
+
+# --- σ-pipeline: Plan (multi-step plan + budget, A2) ---
+#
+# Sequence of σ-Tool calls with a hard budget (max_steps,
+# max_cost_eur, max_risk).  Execute walks in order, stops on REPLAN
+# when σ_post exceeds tau_replan, ABORT on executor failure,
+# OVERBUDGET if realized cost overflows, or BLOCKED if the gate
+# refuses.  No plan can mortgage the cloud bill at 3 a.m.
+SIGMA_PL_INC  = -Isrc/sigma/pipeline
+SIGMA_PL_SRCS = src/sigma/pipeline/plan.c src/sigma/pipeline/tool.c \
+                src/sigma/pipeline/agent.c
+
+creation_os_sigma_plan: $(SIGMA_PL_SRCS) \
+                        src/sigma/pipeline/plan_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PL_INC) -o $@ \
+	    $(SIGMA_PL_SRCS) src/sigma/pipeline/plan_main.c $(LDFLAGS)
+
+check-sigma-plan: creation_os_sigma_plan
+	@bash benchmarks/sigma_pipeline/check_sigma_plan.sh
+	@echo "check-sigma-plan: OK (budget + add_step + execute + REPLAN + ABORT)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
