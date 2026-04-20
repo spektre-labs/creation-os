@@ -463,6 +463,7 @@ merge-gate:
 	@$(MAKE) check-v256
 	@$(MAKE) check-v257
 	@$(MAKE) check-v258
+	@$(MAKE) check-v259
 	@$(MAKE) check-v260
 	@$(MAKE) check-v261
 	@$(MAKE) check-v262
@@ -5977,6 +5978,30 @@ check-v258: check-v258-mission-anti-drift
 
 check-v254-v258: check-v254 check-v255 check-v256 check-v257 check-v258
 	@echo "check-v254-v258: OK (tutor + collaborate + wellness + locale + mission)"
+
+# --- v259 σ-measurement_t canonical primitive (12-byte gate struct + ns/call bench) ---
+#
+# v0 contracts: layout is exactly { header:u32, sigma:f32, tau:f32 }
+# at offsets 0/4/8 with sizeof==12 AND alignof==4; 4 canonical roundtrip
+# pairs encode/decode bit-identically with correct gate verdict; 3 gate
+# regimes form a total order (ALLOW < BOUNDARY < ABSTAIN); predicate is
+# stateless (256 identical calls produce identical outputs); 3
+# microbenches each run ≥ 1e6 iterations, stay under the 1 ms/call
+# budget, and report median < max AND min > 0 (real distribution, not
+# faked); σ_measurement == 0.0; FNV-1a chain replays byte-identically.
+V259_INC  = -Isrc/v259
+V259_SRCS = src/v259/sigma_measurement.c
+
+creation_os_v259_sigma_measurement: $(V259_SRCS) src/v259/main.c
+	$(CC) $(CFLAGS) $(V259_INC) -o $@ \
+	    $(V259_SRCS) src/v259/main.c $(LDFLAGS)
+
+check-v259-sigma-measurement-primitive: creation_os_v259_sigma_measurement
+	@bash benchmarks/v259/check_v259_sigma_measurement_primitive.sh
+	@echo "check-v259-sigma-measurement-primitive: OK (layout + roundtrip + gate + ns/call bench)"
+
+check-v259: check-v259-sigma-measurement-primitive
+	@echo "check-v259: OK (σ-measurement_t canonical primitive)"
 
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #

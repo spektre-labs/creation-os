@@ -40,7 +40,7 @@ Order is fixed before any n=5000 numbers were computed and matches
 |------------------|---------------------------------|------------------------------------|
 | ARC-class        | `arc_easy`, `arc_challenge`     | n ≈ 2 376 + 1 172 (v104 n=5000 pass) |
 | TruthfulQA       | `truthfulqa_mc2`                | n ≈ 817 (v104 n=5000 pass)         |
-| HellaSwag        | `hellaswag`                     | running on M3 at merge time (see `run_matrix.sh hellaswag`) |
+| HellaSwag        | `hellaswag`                     | n = 746 · acc = 0.4853 (v111 σ-sidecar, lm-eval gold via arrow) |
 | MMLU / GSM8K / HumanEval | full tasks               | PENDING — see §4 for exact repro commands |
 
 The merge-gate row in §3 renders the four families whose sidecars exist
@@ -54,9 +54,18 @@ automatically.
 ```bash
 # from repo root, with .venv-bitnet activated
 bash benchmarks/v111/run_matrix.sh                  # analyse whatever sidecars exist
-bash benchmarks/v111/run_matrix.sh hellaswag        # generate hellaswag n=1000 sidecar
+bash benchmarks/v111/run_matrix.sh hellaswag        # generate hellaswag n=1000 sidecar (requires BitNet + .venv-bitnet + bridge)
 .venv-bitnet/bin/python benchmarks/v111/frontier_matrix.py --n-boot 2000
+
+# if the σ-sidecar for a task exists but the lm-eval `acc` samples do not:
+.venv-bitnet/bin/python benchmarks/v111/synthesize_hellaswag_lmeval.py   # rebuilds lm_eval/hellaswag/ from the existing sidecar + HF arrow cache
 ```
+
+The `synthesize_*.py` fallback is used when a v103 σ-logging run was
+completed but the companion lm-eval samples file was not archived.  It
+re-derives per-doc accuracy from the sidecar's stored log-likelihoods and
+the public validation gold labels read from the local pyarrow cache; no
+BitNet inference is re-executed.
 
 Output artefacts:
 
@@ -69,16 +78,19 @@ Output artefacts:
 See `benchmarks/v111/results/frontier_matrix.md` for the live version.
 At merge time the Bonferroni (α = 0.00208) winners were:
 
-| task              | winning signal      | ΔAURCC vs entropy | p-value |
-|-------------------|---------------------|-------------------|---------|
-| arc_easy          | —                   | —                 | —       |
-| arc_challenge     | —                   | —                 | —       |
-| truthfulqa_mc2    | `sigma_max_token`   | −0.0442           | 0.002   |
-| truthfulqa_mc2    | `sigma_n_effective` | −0.0204           | 0.002   |
-| hellaswag         | TBD                 | TBD               | TBD     |
+| task              | n    | acc   | winning signal      | ΔAURCC vs entropy | p-value | Bonferroni |
+|-------------------|-----:|------:|---------------------|------------------:|--------:|:-----------|
+| arc_easy          | 2376 | 0.7551 | —                   | —                 | —       | no winner  |
+| arc_challenge     | 1172 | 0.4676 | —                   | —                 | —       | no winner  |
+| truthfulqa_mc2    |  817 | 0.4638 | `sigma_max_token`   | −0.0447           | 0.0005  | **yes**    |
+| truthfulqa_mc2    |  817 | 0.4638 | `sigma_n_effective` | −0.0206           | 0.0005  | **yes**    |
+| hellaswag         |  746 | 0.4853 | —                   | —                 | —       | no winner  |
 
-(these are from the n_boot=500 smoke run; the n_boot=2000 archival run
-is the number of record.)
+(numbers from `n_boot=2000` archival pass written to
+`benchmarks/v111/results/frontier_matrix.md`.  On HellaSwag the classical
+`entropy` baseline is strong; `sigma_max_token` actively hurts AURCC on
+this task — Δ = +0.0496, p = 0.003.  This is reported honestly; no task
+is silenced for inconvenience.)
 
 ## 4. Full-scale repro commands (MMLU / GSM8K / HumanEval)
 

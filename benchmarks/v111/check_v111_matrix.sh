@@ -81,7 +81,17 @@ if [ -f benchmarks/v104/n5000_results/samples_arc_challenge_sigma.jsonl ] &&
     "$PY" benchmarks/v111/frontier_matrix.py \
         --tasks arc_challenge,arc_easy,truthfulqa_mc2,hellaswag \
         --n-boot 500 >/dev/null
-    echo "check-v111-matrix: matrix build OK (3/4 tasks, hellaswag PENDING)"
+    # Count how many tasks actually got a measured row by reading the
+    # JSON that frontier_matrix.py just re-emitted.  hellaswag is now
+    # present whenever its σ-sidecar + lm_eval samples both exist
+    # (see `benchmarks/v111/synthesize_hellaswag_lmeval.py`).
+    TASKS_OK=$("$PY" -c "
+import json
+with open('benchmarks/v111/results/frontier_matrix.json') as f:
+    d = json.load(f)
+print(sum(1 for row in (d.get('tasks') or []) if (row.get('n') or 0) > 0))" \
+        2>/dev/null || echo 0)
+    echo "check-v111-matrix: matrix build OK (${TASKS_OK}/4 tasks measured; mmlu/gsm8k/humaneval PENDING)"
 else
     echo "check-v111-matrix: SKIP matrix build (v104 n5000 sidecars absent)"
 fi

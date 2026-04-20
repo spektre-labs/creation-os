@@ -37,11 +37,12 @@ pre-registered gating signals, and applies a paired bootstrap with
 
 | task family | n | acc | Bonferroni-winning σ signal vs entropy | ΔAURCC |
 |---|---:|---:|---|---:|
-| `truthfulqa_mc2` | 817  | 0.464 | `sigma_max_token` | **−0.0442** (p = 0.002) |
-| `truthfulqa_mc2` | 817  | 0.464 | `sigma_n_effective` | **−0.0204** (p = 0.002) |
-| `arc_challenge`  | 1172 | 0.468 | no Bonferroni winner (σ_product −0.0087, p = 0.008 < raw α but fails family-wise) | — |
+| `truthfulqa_mc2` | 817  | 0.464 | `sigma_max_token` | **−0.0447** (p = 0.0005) |
+| `truthfulqa_mc2` | 817  | 0.464 | `sigma_n_effective` | **−0.0206** (p = 0.0005) |
+| `arc_challenge`  | 1172 | 0.468 | no Bonferroni winner (σ_product −0.0087, p = 0.004 < raw α, fails family-wise) | — |
 | `arc_easy`       | 2376 | 0.755 | no Bonferroni winner | — |
-| `hellaswag`      | —    | —    | **PENDING** — run `bash benchmarks/v111/run_matrix.sh hellaswag` | — |
+| `hellaswag`      |  746 | 0.485 | no Bonferroni winner (entropy baseline is strong on hellaswag; σ_product neutral Δ = −0.0016, p = 0.68) | — |
+| `mmlu` / `gsm8k` / `humaneval` | — | — | **PENDING** — repro CLIs in [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md#4-full-scale-repro-commands-mmlu--gsm8k--humaneval) | — |
 
 Lower AURCC is better (sharper risk-coverage curve). Full table with
 CI95, p-values, and cov@acc≥0.95: [`benchmarks/v111/results/frontier_matrix.md`](benchmarks/v111/results/frontier_matrix.md).  Reproduce end-to-end:

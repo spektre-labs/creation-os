@@ -43,16 +43,24 @@ Baseline = `entropy` (channel 0 of σ profile). AURCC lower = better selective-p
 | `sigma_n_effective` | 0.5316 | -0.0204 | [-0.0305,-0.0105] | 0.0020 | 0.001 | 0.001 | **yes** |
 
 
-### hellaswag — PENDING
+### hellaswag — n=746 · acc=0.4853
 
-No sidecar found.  To populate this row run `bash benchmarks/v111/run_matrix.sh hellaswag` (needs BitNet weights + .venv-bitnet + lm-eval).
+| signal | AURCC ↓ | ΔAURCC vs entropy | CI95 | p | cov@acc≥0.90 | cov@acc≥0.95 | Bonferroni |
+|---|---:|---:|---|---:|---:|---:|:---:|
+| `entropy` | 0.3796 | +0.0000 | [+0.0000,+0.0000] | 2.0000 | 0.034 | 0.028 |  |
+| `sigma_mean` | 0.3877 | +0.0080 | [+0.0006,+0.0152] | 0.0240 | 0.031 | 0.019 |  |
+| `sigma_max_token` | 0.4288 | +0.0501 | [+0.0183,+0.0783] | 0.0020 | 0.007 | 0.007 | HURTS |
+| `sigma_product` | 0.3780 | -0.0013 | [-0.0089,+0.0057] | 0.6840 | 0.034 | 0.029 |  |
+| `sigma_tail_mass` | 0.3785 | -0.0008 | [-0.0154,+0.0133] | 0.9040 | 0.021 | 0.003 |  |
+| `sigma_n_effective` | 0.3866 | +0.0078 | [-0.0104,+0.0244] | 0.3680 | 0.015 | 0.009 |  |
+
 
 ### Cross-task best signal (Bonferroni wins count)
 
 | signal | Bonferroni wins | mean ΔAURCC | tasks beaten |
 |---|---:|---:|---|
-| `sigma_mean` | 0 | +0.0049 | — |
-| `sigma_max_token` | 1 | -0.0187 | truthfulqa_mc2 |
-| `sigma_product` | 0 | -0.0065 | — |
-| `sigma_tail_mass` | 0 | -0.0104 | — |
-| `sigma_n_effective` | 1 | -0.0094 | truthfulqa_mc2 |
+| `sigma_mean` | 0 | +0.0057 | — |
+| `sigma_max_token` | 1 | -0.0015 | truthfulqa_mc2 |
+| `sigma_product` | 0 | -0.0052 | — |
+| `sigma_tail_mass` | 0 | -0.0080 | — |
+| `sigma_n_effective` | 1 | -0.0051 | truthfulqa_mc2 |

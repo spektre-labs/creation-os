@@ -3,27 +3,27 @@
   "bonferroni_N": 24,
   "cross_task_summary": {
     "sigma_max_token": {
-      "mean_delta": -0.01867040477464988,
+      "mean_delta": -0.001488174132131918,
       "wins": [
         "truthfulqa_mc2"
       ]
     },
     "sigma_mean": {
-      "mean_delta": 0.004898194429320448,
+      "mean_delta": 0.0056703347621046285,
       "wins": []
     },
     "sigma_n_effective": {
-      "mean_delta": -0.00936450488051256,
+      "mean_delta": -0.005072475815618088,
       "wins": [
         "truthfulqa_mc2"
       ]
     },
     "sigma_product": {
-      "mean_delta": -0.006547035317659707,
+      "mean_delta": -0.005245390201360622,
       "wins": []
     },
     "sigma_tail_mass": {
-      "mean_delta": -0.010375794700908443,
+      "mean_delta": -0.007969611165974883,
       "wins": []
     }
   },
@@ -276,6 +276,86 @@
       ],
       "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results",
       "task": "truthfulqa_mc2"
+    },
+    {
+      "n": 746,
+      "overall_acc": 0.48525469168900803,
+      "rows": [
+        {
+          "AUACC": 0.6204099703360918,
+          "AURCC": 0.3795900296639082,
+          "CI95_hi": 0.0,
+          "CI95_lo": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.03351206434316354,
+          "coverage_at_acc95": 0.028150134048257374,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 2.0,
+          "signal": "entropy"
+        },
+        {
+          "AUACC": 0.612272461545118,
+          "AURCC": 0.387727538454882,
+          "CI95_hi": 0.015192582273783728,
+          "CI95_lo": 0.0006366106446410447,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.030831099195710455,
+          "coverage_at_acc95": 0.01876675603217158,
+          "delta_vs_entropy": 0.00798675576045717,
+          "p_two_sided": 0.024,
+          "signal": "sigma_mean"
+        },
+        {
+          "AUACC": 0.5711898371439084,
+          "AURCC": 0.4288101628560917,
+          "CI95_hi": 0.07831177660972094,
+          "CI95_lo": 0.018279333222954774,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.006702412868632708,
+          "coverage_at_acc95": 0.006702412868632708,
+          "delta_vs_entropy": 0.05005851779542197,
+          "p_two_sided": 0.002,
+          "signal": "sigma_max_token"
+        },
+        {
+          "AUACC": 0.621971225941038,
+          "AURCC": 0.37802877405896196,
+          "CI95_hi": 0.005673414501281893,
+          "CI95_lo": -0.008892296001426214,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.03351206434316354,
+          "coverage_at_acc95": 0.029490616621983913,
+          "delta_vs_entropy": -0.0013404548524633632,
+          "p_two_sided": 0.684,
+          "signal": "sigma_product"
+        },
+        {
+          "AUACC": 0.6215136280100535,
+          "AURCC": 0.37848637198994656,
+          "CI95_hi": 0.013312330092235591,
+          "CI95_lo": -0.015355717764571897,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.021447721179624665,
+          "coverage_at_acc95": 0.002680965147453083,
+          "delta_vs_entropy": -0.0007510605611742055,
+          "p_two_sided": 0.904,
+          "signal": "sigma_tail_mass"
+        },
+        {
+          "AUACC": 0.6133799702648546,
+          "AURCC": 0.3866200297351454,
+          "CI95_hi": 0.024351135181378103,
+          "CI95_lo": -0.010353392368454895,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.014745308310991957,
+          "coverage_at_acc95": 0.00938337801608579,
+          "delta_vs_entropy": 0.007803611379065327,
+          "p_two_sided": 0.368,
+          "signal": "sigma_n_effective"
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v111/results",
+      "task": "hellaswag"
     }
   ]
 }

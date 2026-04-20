@@ -136,6 +136,33 @@ clone_or_update() {
 build_and_test() {
   cd "$TARGET"
 
+  # ---- 60-second σ-measurement gate ----
+  # Before the full build, compile and run v259 — the canonical
+  # sigma_measurement_t primitive.  This proves σ is live in under a
+  # minute, end-to-end from "clone" to "real σ number on screen".
+  # (Full forty-kernel build + tests still follow below.)
+  step "Compiling the σ-measurement primitive (v259) — first σ in < 60 s"
+  if make -s creation_os_v259_sigma_measurement >/dev/null 2>&1; then
+    if ./creation_os_v259_sigma_measurement --self-test >/dev/null 2>&1; then
+      local first_sigma
+      first_sigma=$(./creation_os_v259_sigma_measurement 2>/dev/null \
+                    | python3 -c "import json,sys; d=json.load(sys.stdin); \
+print(f\"σ_measurement={d['sigma_measurement']:.6f}  \
+gate_ns≈{d['bench'][1]['mean_ns']:.2f}  \
+roundtrip_ns≈{d['bench'][0]['mean_ns']:.2f}\")" 2>/dev/null || true)
+      if [ -n "$first_sigma" ]; then
+        ok "first σ-measurement: $first_sigma"
+        ok "σ-gate operational — v259 primitive verified on this host"
+      else
+        warn "σ-gate ran but JSON parse failed — continuing with full build"
+      fi
+    else
+      warn "v259 self-test failed — continuing with full build (diagnose via: ./creation_os_v259_sigma_measurement --self-test)"
+    fi
+  else
+    warn "could not build v259 (likely missing python3 or an older compiler) — continuing"
+  fi
+
   step "Building the full forty-kernel stack + v106 σ-server (this is the only slow step — 2–5 minutes)"
   make -s cos >/dev/null
   ok "cos CLI built"
