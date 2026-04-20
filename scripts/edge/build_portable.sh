@@ -40,6 +40,7 @@ build_lib continual  src/sigma/pipeline/continual.c
 build_lib unlearn    src/sigma/pipeline/unlearn.c
 build_lib agent      src/sigma/pipeline/agent.c
 build_lib diagnostic src/sigma/pipeline/diagnostic.c
+build_lib sovereign  src/sigma/pipeline/sovereign.c
 
 # Link the tinyml demo — the one primitive actually useful on an
 # MCU — as a portable binary and run its self-test to prove it works
@@ -62,5 +63,5 @@ total=$(wc -c "$OUT"/*.o | tail -1 | awk '{print $1}')
 echo "      ----------------------------------------"
 printf "      %-28s %7s B\n" "total" "$total"
 
-echo "edge/build_portable: OK (13 σ-pipeline translation units build "
+echo "edge/build_portable: OK (14 σ-pipeline translation units build "
 echo "                         with -Os, portable ARM flags, no -march=native)"

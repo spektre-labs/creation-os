@@ -6055,8 +6055,29 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-tinyml check-edge-portability \
                       check-sigma-swarm check-sigma-live \
                       check-sigma-continual check-sigma-unlearn \
-                      check-sigma-agent check-sigma-diagnostic
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic primitives)"
+                      check-sigma-agent check-sigma-diagnostic \
+                      check-sigma-sovereign
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign primitives)"
+
+# --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
+#
+# Truthful ledger of where every pipeline call ran (local vs
+# cloud), how much it cost, and how many bytes left the device.
+# Verdict closes the loop: FULL (no cloud calls), HYBRID (cloud
+# calls present but fraction ≥ min_sovereign_fraction), DEPENDENT
+# (below the threshold).  Monthly cost projection makes "Creation
+# OS saves N% vs cloud-only" a number, not a slogan.
+SIGMA_SV_INC  = -Isrc/sigma/pipeline
+SIGMA_SV_SRCS = src/sigma/pipeline/sovereign.c
+
+creation_os_sigma_sovereign: $(SIGMA_SV_SRCS) \
+                             src/sigma/pipeline/sovereign_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SV_INC) -o $@ \
+	    $(SIGMA_SV_SRCS) src/sigma/pipeline/sovereign_main.c $(LDFLAGS)
+
+check-sigma-sovereign: creation_os_sigma_sovereign
+	@bash benchmarks/sigma_pipeline/check_sigma_sovereign.sh
+	@echo "check-sigma-sovereign: OK (zero-cloud accounting + monthly EUR projection)"
 
 # --- σ-pipeline: Diagnostic (explainable σ) ---
 #
