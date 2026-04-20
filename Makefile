@@ -6069,8 +6069,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-cos-network \
                       check-sigma-spike check-sigma-photonic \
-                      check-sigma-substrate check-sigma-formal
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal)"
+                      check-sigma-substrate check-sigma-formal \
+                      check-sigma-paper
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal + paper)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6673,6 +6674,25 @@ creation_os_sigma_formal: $(SIGMA_FRM_SRCS) \
 check-sigma-formal: creation_os_sigma_formal
 	@bash benchmarks/sigma_pipeline/check_sigma_formal.sh
 	@echo "check-sigma-formal: OK (T3 monotonicity + T4 commutativity + T5 encode/decode + T6 latency)"
+
+# --- σ-pipeline: Paper (deterministic arXiv Markdown generator, H5) ---
+#
+# H5 freezes the σ-gate thesis into one reproducible paper.
+# Every number (formal ledger T3–T6, substrate σ values, pipeline
+# savings) is pulled from the pinned spec; the paper cannot drift
+# from the code without the smoke test catching it.  Output is
+# byte-deterministic, so we pin a FNV-1a fingerprint.
+SIGMA_PAP_INC  = -Isrc/sigma/pipeline
+SIGMA_PAP_SRCS = src/sigma/pipeline/paper.c
+
+creation_os_sigma_paper: $(SIGMA_PAP_SRCS) \
+                          src/sigma/pipeline/paper_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PAP_INC) -o $@ \
+	    $(SIGMA_PAP_SRCS) src/sigma/pipeline/paper_main.c $(LDFLAGS)
+
+check-sigma-paper: creation_os_sigma_paper
+	@bash benchmarks/sigma_pipeline/check_sigma_paper.sh
+	@echo "check-sigma-paper: OK (9 sections + pinned ledger + fingerprint)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
