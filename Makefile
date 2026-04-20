@@ -504,7 +504,13 @@ merge-gate:
 	@$(MAKE) check-v298
 	@$(MAKE) check-v299
 	@$(MAKE) check-v300
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia + v294..v298 federated/immune/antifragile/clock/rosetta + v299..v300 knowledge-graph/complete)"
+	@$(MAKE) check-v301
+	@$(MAKE) check-v302
+	@$(MAKE) check-v303
+	@$(MAKE) check-v304
+	@$(MAKE) check-v305
+	@$(MAKE) check-v306
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia + v294..v298 federated/immune/antifragile/clock/rosetta + v299..v300 knowledge-graph/complete + v301..v306 zkp/green/governance/narrative/swarm/omega)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -7161,6 +7167,189 @@ check-v300: check-v300-completeness-audit
 
 check-v299-v300: check-v299 check-v300
 	@echo "check-v299-v300: OK (knowledge-graph + complete)"
+
+# --- v301 σ-ZKP (verifiable gate + ZK-inference + model integrity + SCSL crypto) ---
+#
+# v0 contracts: 3 canonical proofs (well_formed /
+# edge_case / forged) with σ_proof strictly increasing
+# AND `valid iff σ_proof ≤ τ_proof = 0.40` (both
+# branches) AND reveals_raw = false on every row;
+# 3 canonical roles (client / cloud / verifier) with
+# client + verifier hiding raw + weights (and verifier
+# also hiding answer) → zk_privacy_holds = true;
+# 3 integrity scenarios (advertised_served /
+# silent_downgrade / advertised_match) with
+# detected_mismatch iff σ_integrity > τ_integrity=0.50
+# (both branches) AND exactly 2 OK + 1 DETECTED;
+# 3 SCSL policy cases (allowed_a / allowed_b /
+# disallowed) with attested iff σ_policy ≤ 0.50 (both
+# branches) AND purpose_revealed = false on every row;
+# σ_zkp == 0.0; FNV-1a chain replays byte-identically.
+V301_INC  = -Isrc/v301
+V301_SRCS = src/v301/zkp.c
+
+creation_os_v301_zkp: $(V301_SRCS) src/v301/main.c
+	$(CC) $(CFLAGS) $(V301_INC) -o $@ \
+	    $(V301_SRCS) src/v301/main.c $(LDFLAGS)
+
+check-v301-zkp-verifiable-sigma: creation_os_v301_zkp
+	@bash benchmarks/v301/check_v301_zkp_verifiable_sigma.sh
+	@echo "check-v301-zkp-verifiable-sigma: OK (proof + role + integrity + scsl)"
+
+check-v301: check-v301-zkp-verifiable-sigma
+	@echo "check-v301: OK (σ-zkp kernel)"
+
+# --- v302 σ-Green (compute budget + carbon-aware + abstain savings + J/reliable_token) ---
+#
+# v0 contracts: 3 budget tiers (easy / medium / hard)
+# with σ_difficulty strictly ↑, energy_j strictly ↑,
+# 3 DISTINCT model tiers; 3 schedule rows (urgent_green
+# / low_urgency_brown / urgent_brown) with
+# processed = (urgency==HIGH OR grid==GREEN) on every
+# row AND both processed branches firing; 3 savings
+# rows (baseline / gated_light / gated_heavy) with
+# saved_ratio = abstained/total within 1e-3, saved_ratio
+# strictly ↑, energy_j strictly ↓; 3 J/reliable regimes
+# (unfiltered / soft / hard) with j_per_reliable =
+# energy_j / reliable_tokens within 1e-3 AND strictly ↓
+# across the 3 rows; σ_green == 0.0; FNV-1a chain
+# replays byte-identically.
+V302_INC  = -Isrc/v302
+V302_SRCS = src/v302/green.c
+
+creation_os_v302_green: $(V302_SRCS) src/v302/main.c
+	$(CC) $(CFLAGS) $(V302_INC) -o $@ \
+	    $(V302_SRCS) src/v302/main.c $(LDFLAGS)
+
+check-v302-green-energy-aware: creation_os_v302_green
+	@bash benchmarks/v302/check_v302_green_energy_aware.sh
+	@echo "check-v302-green-energy-aware: OK (budget + schedule + abstain + jpt)"
+
+check-v302: check-v302-green-energy-aware
+	@echo "check-v302: OK (σ-green kernel)"
+
+# --- v303 σ-Governance (decision σ + meeting σ + communication σ + institutional K(t)) ---
+#
+# v0 contracts: 3 decisions (strategy_matches /
+# partially_realised / ignored) with σ_decision
+# strictly ↑ AND 3 DISTINCT verdicts; 3 meetings
+# (perfect / quarter / noise) with σ_meeting ==
+# 1 − realised/made within 1e-3 AND σ strictly ↑;
+# 3 communication channels (clear / slightly_vague /
+# highly_vague) with σ strictly ↑ AND `clear iff σ ≤
+# τ_comm = 0.50` (both branches); 3 institutions
+# (healthy / warning / collapsing) with K = ρ·I_φ·F
+# within 1e-3 AND VIABLE iff K ≥ K_warn=0.20, WARNING
+# iff K_crit=0.127 ≤ K < K_warn, COLLAPSE iff K < K_crit
+# (all three branches fire); σ_gov == 0.0; FNV-1a chain
+# replays byte-identically.
+V303_INC  = -Isrc/v303
+V303_SRCS = src/v303/governance.c
+
+creation_os_v303_governance: $(V303_SRCS) src/v303/main.c
+	$(CC) $(CFLAGS) $(V303_INC) -o $@ \
+	    $(V303_SRCS) src/v303/main.c $(LDFLAGS)
+
+check-v303-governance-org-sigma: creation_os_v303_governance
+	@bash benchmarks/v303/check_v303_governance_org_sigma.sh
+	@echo "check-v303-governance-org-sigma: OK (decision + meeting + comm + kt)"
+
+check-v303: check-v303-governance-org-sigma
+	@echo "check-v303: OK (σ-governance kernel)"
+
+# --- v304 σ-Narrative (story coherence + argument + propaganda + self-narrative) ---
+#
+# v0 contracts: 3 stories (coherent / minor_tension /
+# contradictory) with σ_narrative strictly ↑ AND
+# `COHERENT iff σ ≤ τ_story = 0.40` (both branches)
+# AND exactly 2 COHERENT + 1 CONTRADICTORY; 3 argument
+# steps (modus_ponens / weak_induction / affirming_
+# consequent) with σ strictly ↑ AND `VALID iff σ ≤
+# τ_arg = 0.50` (both branches); 3 propaganda texts
+# (neutral / persuasive / manipulative) with
+# propaganda_score == emotion * logic_sigma within 1e-3
+# AND `FLAGGED iff score > τ_prop = 0.50` (both
+# branches); 3 self-stories (aligned / slight / denial)
+# with σ strictly ↑ AND `matches_facts iff σ ≤
+# τ_self = 0.50` (both branches); σ_narr == 0.0;
+# FNV-1a chain replays byte-identically.
+V304_INC  = -Isrc/v304
+V304_SRCS = src/v304/narrative.c
+
+creation_os_v304_narrative: $(V304_SRCS) src/v304/main.c
+	$(CC) $(CFLAGS) $(V304_INC) -o $@ \
+	    $(V304_SRCS) src/v304/main.c $(LDFLAGS)
+
+check-v304-narrative-coherence: creation_os_v304_narrative
+	@bash benchmarks/v304/check_v304_narrative_coherence.sh
+	@echo "check-v304-narrative-coherence: OK (story + arg + propaganda + self)"
+
+check-v304: check-v304-narrative-coherence
+	@echo "check-v304: OK (σ-narrative kernel)"
+
+# --- v305 σ-Swarm-Intelligence (wisdom of σ-crowds + diversity + emergent + proconductor) ---
+#
+# v0 contracts: 3 aggregators (best_single /
+# naive_average / sigma_weighted) with sigma_weighted
+# holding the strictly lowest σ AND strictly highest
+# accuracy AND the single WINS verdict; 3 crowds
+# (echo_chamber / balanced / chaos) with value =
+# diversity*(1 − ind_sigma) within 1e-3 AND `balanced`
+# holding the strictly highest value AND exactly 1 row
+# crossing τ_value = 0.30; 3 emergent rows (genuine /
+# weak / random) with σ strictly ↑ AND `keep iff σ ≤
+# τ_emergent = 0.50` (both branches); 4 proconductor
+# agents (claude / gpt / gemini / deepseek) with 4
+# DISTINCT names, every σ ≤ τ_conv = 0.25, every
+# direction identical, pc_convergent_ok = true;
+# σ_swarm == 0.0; FNV-1a chain replays byte-
+# identically.
+V305_INC  = -Isrc/v305
+V305_SRCS = src/v305/swarm.c
+
+creation_os_v305_swarm: $(V305_SRCS) src/v305/main.c
+	$(CC) $(CFLAGS) $(V305_INC) -o $@ \
+	    $(V305_SRCS) src/v305/main.c $(LDFLAGS)
+
+check-v305-swarm-intelligence-sigma: creation_os_v305_swarm
+	@bash benchmarks/v305/check_v305_swarm_intelligence_sigma.sh
+	@echo "check-v305-swarm-intelligence-sigma: OK (wisdom + diversity + emergent + proconductor)"
+
+check-v305: check-v305-swarm-intelligence-sigma
+	@echo "check-v305: OK (σ-swarm kernel)"
+
+# --- v306 σ-Omega (Ω loop + multi-scale + ½ operator + 1=1 invariant) -----
+#
+# v0 contracts: 4 loop steps (t=0..3) with σ strictly
+# ↓ AND ∫σ strictly ↑ AND K_eff ≥ K_crit = 0.127 on
+# every row (the Ω constraint is never violated);
+# 4 scales (token / answer / session / domain) with
+# 4 DISTINCT scale names AND 4 DISTINCT operators;
+# 3 ½-regime rows (signal / critical / noise) with σ
+# strictly ↑ AND σ_critical == 0.5 to machine
+# precision AND SIGNAL iff σ<0.5, NOISE iff σ>0.5,
+# CRITICAL iff σ==0.5 (all three branches fire); 3
+# invariant rows (kernel_count / architecture_claim /
+# axiom_one_equals_one) with declared == realized AND
+# holds on every row AND the_invariant_holds = true;
+# kernels_total == 306; σ_omega == 0.0; FNV-1a chain
+# replays byte-identically.
+V306_INC  = -Isrc/v306
+V306_SRCS = src/v306/omega.c
+
+creation_os_v306_omega: $(V306_SRCS) src/v306/main.c
+	$(CC) $(CFLAGS) $(V306_INC) -o $@ \
+	    $(V306_SRCS) src/v306/main.c $(LDFLAGS)
+
+check-v306-omega-operator: creation_os_v306_omega
+	@bash benchmarks/v306/check_v306_omega_operator.sh
+	@echo "check-v306-omega-operator: OK (loop + scale + half + invariant)"
+
+check-v306: check-v306-omega-operator
+	@echo "check-v306: OK (σ-omega kernel — 1=1)"
+
+check-v301-v306: check-v301 check-v302 check-v303 check-v304 check-v305 check-v306
+	@echo "check-v301-v306: OK (zkp + green + governance + narrative + swarm + omega)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

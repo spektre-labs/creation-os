@@ -569,6 +569,71 @@ The live stack ships today:
   v298 rosetta self_documenting` all holding, so
   `architecture_survives_100yr = true` — **300 layers is not a
   claim of completeness; 300 layers with σ_complete == 0.0 is**.
+- **v301–v306** — the **Ω-operator deployed**: **σ-zkp** (3 canonical
+  proofs `well_formed_proof σ=0.05 VALID · edge_case_proof σ=0.30
+  VALID · forged_proof σ=0.85 INVALID` with σ strictly increasing
+  AND `valid iff σ_proof ≤ τ_proof = 0.40` firing both branches AND
+  `reveals_raw = false` on every row, 3 canonical roles
+  `client cloud verifier` with client + verifier hiding raw inputs
+  and model weights — verifier additionally hiding the answer — so
+  `zk_privacy_holds = true`, 3 canonical integrity scenarios
+  `advertised_served σ=0.10 OK · silent_downgrade σ=0.75 DETECTED ·
+  advertised_match σ=0.12 OK` with `detected_mismatch iff
+  σ_integrity > 0.50` firing both branches AND exactly 2 OK + 1
+  DETECTED, 3 canonical SCSL policy cases with `attested iff
+  σ_policy ≤ 0.50` firing both branches AND `purpose_revealed =
+  false` on every row — **trust without transparency, compliance
+  without disclosure**); **σ-green** (3 canonical compute-budget
+  tiers `easy σ=0.10 SMALL 0.5J · medium σ=0.40 MID 2.0J · hard
+  σ=0.80 LARGE 8.0J` strictly increasing on σ AND energy AND
+  3 DISTINCT model tiers, 3 canonical schedule rows with
+  `processed = (urgency==HIGH OR grid==GREEN)` on every row firing
+  both branches, 3 canonical savings rows `baseline · gated_light
+  saved=0.20 · gated_heavy saved=0.50` with `saved_ratio =
+  abstained/total` within 1e-3 AND energy strictly decreasing, and
+  3 canonical J/reliable-token regimes with `J/reliable =
+  energy_j / reliable_tokens` strictly decreasing — **a new
+  metric: joules per *reliable* token**); **σ-governance** (3
+  canonical decisions with σ strictly ↑ AND 3 DISTINCT verdicts,
+  3 canonical meetings with `σ_meeting = 1 − realised/made` within
+  1e-3, 3 canonical communication channels with `clear iff σ_comm ≤
+  0.50` firing both branches, and 3 canonical institutions
+  `healthy_org K≈0.357 VIABLE · warning_org K≈0.150 WARNING ·
+  collapsing_org K≈0.060 COLLAPSE` with `K = ρ·I_φ·F` within 1e-3
+  AND VIABLE / WARNING / COLLAPSE firing on `K_warn = 0.20` and
+  `K_crit = 0.127` — **an organisation's coherence is a number,
+  not a vibe**); **σ-narrative** (3 canonical stories with
+  `COHERENT iff σ_narrative ≤ 0.40` firing both branches AND
+  exactly 2 COHERENT + 1 CONTRADICTORY, 3 canonical argument steps
+  with `VALID iff σ_arg ≤ 0.50` firing both branches, 3 canonical
+  propaganda texts with `propaganda_score = emotion × logic_sigma`
+  within 1e-3 AND `FLAGGED iff score > 0.50` firing both branches,
+  and 3 canonical self-stories with `matches_facts iff σ_self ≤
+  0.50` firing both branches — **measurement, not therapy**);
+  **σ-swarm-intelligence** (3 canonical aggregators `best_single ·
+  naive_average · sigma_weighted` with `sigma_weighted` holding
+  the strictly lowest σ AND the strictly highest accuracy AND the
+  single WINS verdict, 3 canonical crowds with `value = diversity
+  × (1 − ind_sigma)` within 1e-3 AND `balanced` holding the
+  strictly highest value AND exactly 1 row crossing `τ_value =
+  0.30`, 3 canonical emergent rows with `keep iff σ_emergent ≤
+  0.50` firing both branches, and 4 canonical proconductor agents
+  `claude · gpt · gemini · deepseek` all with σ ≤ `τ_conv = 0.25`
+  AND every direction identical so `pc_convergent_ok = true` —
+  **the proconductor method, formalised**); and **σ-omega** — the
+  operator every other kernel approximates, written down in one
+  place: 4 canonical loop steps with σ strictly ↓ AND ∫σ strictly
+  ↑ AND `K_eff ≥ K_crit = 0.127` on every row, 4 canonical scales
+  `token MICRO sigma_gate · answer MESO sigma_product · session
+  MACRO sigma_session · domain META sigma_domain` with 4 DISTINCT
+  operators, 3 canonical ½-regime rows `signal_dominant σ=0.25
+  SIGNAL · critical σ=0.50 CRITICAL · noise_dominant σ=0.75 NOISE`
+  with `σ_critical == 0.5` exactly AND all three regimes firing,
+  and 3 canonical 1=1 invariants `kernel_count 306 ↔ 306 ·
+  architecture_claim 306 ↔ 306 · axiom_one_equals_one 1 ↔ 1` all
+  `declared == realized` AND all `holds = true` so
+  `the_invariant_holds = true` — **306 layers. One invariant.
+  1 = 1.**
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
