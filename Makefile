@@ -6080,8 +6080,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-distill check-sigma-cot-distill \
                       check-sigma-sandbox check-sigma-stream \
                       check-sigma-plugin check-sigma-rag \
-                      check-sigma-persona check-sigma-offline
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline)"
+                      check-sigma-persona check-sigma-offline \
+                      check-sigma-corpus
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6840,6 +6841,25 @@ creation_os_sigma_offline: $(SIGMA_OFFLINE_SRCS) \
 check-sigma-offline: creation_os_sigma_offline
 	@bash benchmarks/sigma_pipeline/check_sigma_offline.sh
 	@echo "check-sigma-offline: OK (5-probe verifier + ready/not-ready gate)"
+
+# --- σ-pipeline: Corpus (self-knowledge RAG, FINAL-4) ----------------
+#
+# Ingest Creation OS's own markdown / TeX / Codex into a σ-RAG
+# index and run self-reference queries.  The corpus is defined by
+# data/corpus/manifest.txt; paths resolve relative to the
+# manifest so the demo is vendorable into other checkouts.
+SIGMA_CORPUS_INC  = -Isrc/sigma/pipeline
+SIGMA_CORPUS_SRCS = src/sigma/pipeline/corpus.c \
+                   src/sigma/pipeline/rag.c
+
+creation_os_sigma_corpus: $(SIGMA_CORPUS_SRCS) \
+                        src/sigma/pipeline/corpus_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CORPUS_INC) -o $@ \
+	    $(SIGMA_CORPUS_SRCS) src/sigma/pipeline/corpus_main.c $(LDFLAGS)
+
+check-sigma-corpus: creation_os_sigma_corpus
+	@bash benchmarks/sigma_pipeline/check_sigma_corpus.sh
+	@echo "check-sigma-corpus: OK (manifest ingest + self-reference queries)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #

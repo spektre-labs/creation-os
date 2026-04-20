@@ -1,0 +1,25 @@
+# Creation OS self-knowledge corpus — FINAL-4.
+#
+# Paths are resolved relative to this manifest.  Lines starting
+# with '#' are comments; blank lines are ignored.  Each file must
+# be UTF-8 text (markdown, plain text, or TeX source is fine).
+# The σ-Corpus ingester reads up to 1 MiB per file.
+#
+# This list is intentionally small and hand-curated: these are
+# the documents a committee reviewer would open when asked "what
+# is Creation OS, and what does it claim?".  The Zenodo release
+# ships 80 papers; the kernel scales linearly — point at a bigger
+# directory by generating a new manifest.txt.
+
+../../docs/papers/creation_os_v1.md
+../../docs/GLOSSARY.md
+../../docs/SIGMA_FULL_STACK.md
+../../docs/SIGMA_GUIDED_SPEC.md
+../../docs/WHAT_IS_REAL_v31.md
+../../docs/RESEARCH_AND_THESIS_ARCHITECTURE.md
+../../docs/HDC_VSA_ENGINEERING_SUPERIORITY.md
+../../docs/CLAIM_DISCIPLINE.md
+../../docs/RELEASE_v1_0.md
+../../docs/DOC_INDEX.md
+../../data/codex/atlantean_codex.txt
+../../data/codex/codex_seed.txt
