@@ -6062,8 +6062,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-tool check-sigma-plan \
                       check-sigma-merge check-sigma-grounding \
                       check-sigma-session check-cos-agent \
-                      check-sigma-selfplay
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay)"
+                      check-sigma-selfplay check-sigma-curriculum
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6354,6 +6354,26 @@ creation_os_sigma_selfplay: $(SIGMA_SP_SRCS) \
 check-sigma-selfplay: creation_os_sigma_selfplay
 	@bash benchmarks/sigma_pipeline/check_sigma_selfplay.sh
 	@echo "check-sigma-selfplay: OK (proposer + solver + σ-verifier + TOO_EASY/LEARNING/TOO_HARD bands + proconductor)"
+
+# --- σ-pipeline: Curriculum (progressive difficulty clock, S2) ---
+#
+# State machine over σ-Selfplay rounds: require `min_rounds`
+# consecutive successes (σ_a < τ) to promote; a single failure
+# resets the streak but never demotes.  Five-level canonical ladder
+# (FACTUAL → REASONING → MULTISTEP → CREATIVE → META).  Pair with
+# P6 TTT + P16 continual so the model walks the ladder on its own
+# generated data without catastrophic forgetting.
+SIGMA_CR_INC  = -Isrc/sigma/pipeline
+SIGMA_CR_SRCS = src/sigma/pipeline/curriculum.c
+
+creation_os_sigma_curriculum: $(SIGMA_CR_SRCS) \
+                              src/sigma/pipeline/curriculum_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CR_INC) -o $@ \
+	    $(SIGMA_CR_SRCS) src/sigma/pipeline/curriculum_main.c $(LDFLAGS)
+
+check-sigma-curriculum: creation_os_sigma_curriculum
+	@bash benchmarks/sigma_pipeline/check_sigma_curriculum.sh
+	@echo "check-sigma-curriculum: OK (promote / reset / max-cap + 5-level ladder + acceptance rate)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
