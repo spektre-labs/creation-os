@@ -1,5 +1,91 @@
 # Changelog
 
+## v1.1.0 — "Prometheus" — 2026-04-19
+
+Second tagged release of Creation OS.  Genesis delivered the
+structure (`assert(declared == realized)`); **Prometheus delivers
+the fire** — the ability for the structure to improve itself,
+safely, in production, from every interaction.
+
+v1.0 was the kernel.  v1.1 is the kernel in use:
+
+- every escalation from BitNet to a teacher is captured as free
+  training data (**σ-distill**);
+- the teacher's reasoning — not just the answer — is recorded
+  step by step with a σ per step (**σ-CoT-distill**), so the
+  student learns *when to rethink*, not just *what to answer*;
+- agent tool calls run inside a five-level σ-sandbox tied to P18
+  agent autonomy (**σ-sandbox**);
+- inference streams token by token with per-token σ and in-band
+  RETHINK markers (**σ-stream**);
+- third parties can extend the pipeline with new tools, new
+  substrates, new σ-signals, and Codex extensions without
+  recompiling the core (**σ-plugin**).
+
+### New kernels
+
+- **NEXT-1 — σ-distill** (`src/sigma/pipeline/distill.{c,h}`):
+  continuous σ-guided distillation from escalation pairs.  Ring
+  of ≤ 1024 pairs; σ_distill_value = clip(student_σ − teacher_σ,
+  [-1, 1]); filter on teacher_σ ≤ τ_teacher = 0.20; top-K
+  selection is deterministic by (−value, insertion_order).
+  Demo shows escalation rate dropping 84 % → 64 % under an
+  α_learn = 0.90 TTT-projection on top-5.
+- **NEXT-2 — σ-CoT-distill** (`src/sigma/pipeline/cot_distill.{c,h}`):
+  parses teacher chain-of-thought into steps with σ-per-step and
+  is_rethink flags.  σ_cot_value = mean(max(0, σ_step −
+  τ_confident)) aggregates the teacher's rethink pattern.
+  Reinforces P1 RETHINK: student rethinks *like* the teacher.
+- **NEXT-3 — σ-sandbox** (`src/sigma/pipeline/sandbox.{c,h}`):
+  risk-level isolated tool execution for A1 agent calls.  fork +
+  execvp with RLIMIT_CPU / RLIMIT_AS / RLIMIT_FSIZE, wall-clock
+  deadline (parent polls + SIGTERM → 200 ms grace → SIGKILL),
+  optional chroot, and on Linux unshare(CLONE_NEWNET).
+  Five-level risk lattice (0 calc / 1 read / 2 write / 3 shell /
+  4 irreversible) tied to P18 autonomy; risk 4 requires an
+  explicit user_consent receipt.
+- **NEXT-4 — σ-stream** (`src/sigma/pipeline/stream.{c,h}`):
+  substrate-agnostic per-token streaming driver.  Pulls tokens
+  from a caller generator, emits σ per token through a callback,
+  fires RETHINK markers in-band when σ ≥ τ_rethink.  Trace caps
+  at COS_STREAM_MAX_TOKENS / _MAX_TEXT with truncation flags;
+  geometric buffer growth on a 128-token grain.
+- **NEXT-5 — σ-plugin** (`src/sigma/pipeline/plugin.{c,h}`):
+  dlopen extensibility ABI with a single entry symbol
+  (`cos_sigma_plugin_entry`) and pinned `COS_SIGMA_PLUGIN_ABI = 1`.
+  Plugins register tools, substrates, σ-signals, and Codex
+  extensions; duplicate names rejected; registry capped at 32.
+  Demo plugin `libcos_plugin_demo.{dylib,so}` exercises the full
+  path end to end.
+
+### Release plumbing
+
+- `include/cos_version.h` bumped to 1.1.0 "Prometheus".
+- `cos --version` banner updated.
+- `check-cos-version-genesis` (the cross-source drift check)
+  continues to govern coherence between header, changelog, and
+  runtime banner — same name, now governing the Prometheus
+  tag as well.
+
+### Carried from Genesis
+
+All v1.0.0 Genesis kernels remain green.  `make merge-gate` +
+`make check-sigma-pipeline` now additionally cover the five NEXT
+kernels above.
+
+### Mythic note
+
+Genesis brought order: 20 σ-primitives, 4 substrates, 3/6
+formal proofs, 38 check targets — the structure.  Prometheus
+brings fire: every escalation makes BitNet stronger, every day
+drops the escalation rate, every week drops cost.  The
+asymptote is zero escalations at €0 / month — fully local,
+fully sovereign, fully self-improving.
+
+`assert(declared == realized); 1 == 1;`
+
+---
+
 ## v1.0.0 — "Genesis" — 2026-04-19
 
 First **tagged, production-grade** release of Creation OS.

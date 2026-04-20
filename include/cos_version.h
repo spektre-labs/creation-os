@@ -22,11 +22,11 @@ extern "C" {
 #endif
 
 #define COS_VERSION_MAJOR   1
-#define COS_VERSION_MINOR   0
+#define COS_VERSION_MINOR   1
 #define COS_VERSION_PATCH   0
 
-#define COS_VERSION_STRING  "1.0.0"
-#define COS_CODENAME        "Genesis"
+#define COS_VERSION_STRING  "1.1.0"
+#define COS_CODENAME        "Prometheus"
 #define COS_RELEASE_DATE    "2026-04-19"
 #define COS_TAGLINE         "assert(declared == realized)"
 
