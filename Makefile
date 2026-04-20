@@ -6076,8 +6076,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-lean-t3-discharged check-sigma-paper-latex \
                       check-sigma-dp check-sigma-ratelimit \
                       check-sigma-persist check-sigma-health \
-                      check-sigma-signal
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal)"
+                      check-sigma-signal check-cos-version-genesis
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6663,6 +6663,17 @@ creation_os_sigma_signal: $(SIGMA_SIGNAL_SRCS) src/sigma/pipeline/cos_signal_mai
 check-sigma-signal: creation_os_sigma_signal
 	@bash benchmarks/sigma_pipeline/check_sigma_signal.sh
 	@echo "check-sigma-signal: OK (self-test + simulate + persist + real-SIGTERM drain)"
+
+# --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
+#
+# Three sources of truth must never drift: include/cos_version.h
+# (compile-time macros), CHANGELOG.md (human changelog), and the
+# banner surfaced by `cos --version`.  check-cos-version-genesis
+# verifies all three agree and, on a tagged worktree, that the Git
+# tag matches v<COS_VERSION_STRING>.
+check-cos-version-genesis: cos
+	@bash benchmarks/sigma_pipeline/check_cos_version_genesis.sh
+	@echo "check-cos-version-genesis: OK (header == CHANGELOG == cos --version)"
 
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #
@@ -8666,8 +8677,8 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 # Single C binary, no deps beyond libc, NO_COLOR-respecting, isatty
 # auto-detect.  This is the "front door" for end users: `cos`,
 # `cos verify`, `cos chace`, `cos sigma`, `cos think <prompt>`.
-cos: cli/cos.c
-	$(CC) -O2 -Wall -std=c11 -o cos cli/cos.c
+cos: cli/cos.c include/cos_version.h
+	$(CC) -O2 -Wall -std=c11 -Iinclude -o cos cli/cos.c
 
 check-cos: cos
 	./cos --version

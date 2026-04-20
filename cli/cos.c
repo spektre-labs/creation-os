@@ -54,6 +54,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "cos_version.h"
+
 /* --------------------------------------------------------------------
  *  Colour & style — Apple SF-inspired terminal palette.
  *  Foreground 256-colour table, gracefully degraded under NO_COLOR.
@@ -2181,6 +2183,16 @@ static int cmd_help(const char *prog)
 
 static int cmd_version(void)
 {
+    /* PROD-6 Genesis banner — printed first regardless of which
+     * per-kernel binaries are present.  Users who only want the
+     * release identity can pipe `cos --version | head -4`. */
+    printf("%s\n", COS_VERSION_BANNER);
+    printf("  %d σ-primitives | %d check targets | %d substrates\n",
+           COS_SIGMA_PRIMITIVES, COS_CHECK_TARGETS, COS_SUBSTRATES);
+    printf("  %d/%d formal proofs discharged\n",
+           COS_FORMAL_PROOFS, COS_FORMAL_PROOFS_TOTAL);
+    printf("  %s\n\n", COS_TAGLINE);
+
     char v62[256] = {0}, v63[256] = {0}, v64[256] = {0}, v65[256] = {0}, v66[256] = {0}, v67[256] = {0}, v68[256] = {0}, v69[256] = {0}, v70[256] = {0}, v71[256] = {0}, v72[256] = {0}, v73[256] = {0}, v74[256] = {0}, v76[256] = {0}, v77[256] = {0}, v78[256] = {0}, v79[256] = {0}, v80[256] = {0}, v81[256] = {0}, v82[256] = {0}, v83[256] = {0}, v84[256] = {0}, v85[256] = {0}, v86[256] = {0}, v87[256] = {0}, v88[256] = {0}, v89[256] = {0}, v90[256] = {0}, v91[256] = {0}, v92[256] = {0}, v93[256] = {0}, v94[256] = {0}, v95[256] = {0}, v96[256] = {0}, v97[256] = {0}, v98[256] = {0}, v99[256] = {0}, v100[256] = {0};
     int have62 = (file_exists("creation_os_v62") &&
                   run_first_line("./creation_os_v62 --version",

@@ -1,6 +1,107 @@
 # Changelog
 
-## v1.0.0 — Creation OS v153 release (2026-04-18)
+## v1.0.0 — "Genesis" — 2026-04-19
+
+First **tagged, production-grade** release of Creation OS.
+`assert(declared == realized)` — every claim in this entry is
+covered by `make merge-gate` and `make check-sigma-pipeline`
+in the `v1.0.0` tag.
+
+Genesis consolidates the v1.0.0 draft below (the Creation OS v153
+release) plus two post-fix phases: **FIX-1 … FIX-8**
+(honesty and reproducibility) and **PROD-1 … PROD-6**
+(production readiness).
+
+### Kernel surface (carried from v1.0.0 draft)
+
+- **20 σ-primitives** (`P1 .. P20`) — the full family spanning
+  entropy, top-1, effective-support, margin, higher moments, and
+  top-p masses, composed into `σ_product` for a single governed
+  signal.
+- **5 product series** — I (Installer), A (Agent), S (SDK),
+  D (Distribution), H (Hardware / Formal).
+- **4 substrates** behind one vtable — digital, BitNet,
+  neuromorphic spike, photonic — all returning the same gate
+  verdict under the same σ contract.
+- **38 check targets** (series-level), all green on Apple M4 /
+  Apple clang with `-O2 -Wall -std=c11 -march=native`.
+
+### FIX phase — honesty + reproducibility
+
+- **FIX-1** — σ-Paper claim-discipline: every headline number in
+  `docs/papers/creation_os_v1.md` cross-references a `check-*`
+  target and an archived host fingerprint.
+- **FIX-2** — Ed25519-signed σ-Protocol wire format
+  (`src/sigma/pipeline/protocol_ed25519.{c,h}` vendoring
+  `orlp/ed25519`); FNV-1a MAC stub removed from network paths.
+- **FIX-3** — Pure-C `cos` front door: `prefer_c_else_py`
+  dispatcher routes `cos chat`, `cos benchmark`, `cos cost` to
+  native sibling binaries with Python fall-backs preserved.
+- **FIX-4** — Reproducibility bundle generator
+  (`scripts/repro_bundle.sh`) with `--quick` under 2 s.
+- **FIX-5** — TruthfulQA-MC2 50-question σ-pipeline receipt at
+  `benchmarks/pipeline/truthfulqa_results.{json,md}`.
+- **FIX-6** — Real two-node TCP mesh test (`cos-mesh-node`,
+  `benchmarks/sigma_pipeline/check_mesh_2node.sh`).
+- **FIX-7** — Lean 4 T3 / τ-anti-monotonicity / totality /
+  boundary-tiebreak theorems discharged over `LinearOrder α`
+  (`hw/formal/v259/Measurement.lean`); 5/6 `gateα_*` theorems
+  `sorry`-free (3/6 full float lifts remain delegated to
+  Frama-C Wp for NaN).
+- **FIX-8** — arXiv-ready LaTeX twin of the paper
+  (`docs/papers/creation_os_v1.tex`) with structural drift check.
+
+### PROD phase — production readiness
+
+- **PROD-1** — Differential privacy ε-budget for σ-federation
+  (`src/sigma/pipeline/dp.{c,h}`): Laplace-noised, L2-clipped
+  Δweight aggregation; `cos network dp-status` prints
+  ε_spent / ε_remaining / σ_impact.
+- **PROD-2** — Reputation-weighted rate limiting for the σ-mesh
+  (`src/sigma/pipeline/ratelimit.{c,h}`): decision lattice
+  BLOCKED ≻ THROTTLED_RATE ≻ THROTTLED_GIVE ≻ ALLOWED,
+  σ-driven reputation update, trusted peers earn 2× quota.
+- **PROD-3** — Persistent state via SQLite WAL
+  (`src/sigma/pipeline/persist.{c,h}`): five tables — meta,
+  engrams, live_state, cost_ledger, tau_calibration; schema
+  version pinned for painless migration.
+- **PROD-4** — Runtime health + monitoring endpoint — `cos-health`
+  sibling binary + `cos health` dispatch — single JSON with
+  HEALTHY / DEGRADED / UNHEALTHY grade for Prometheus or humans.
+- **PROD-5** — Graceful shutdown with state persistence
+  (`src/sigma/pipeline/cos_signal.{c,h}`): SIGINT / SIGTERM /
+  SIGHUP latched via async-signal-safe handler; shutdown hook
+  flushes final state to the σ-Persist SQLite file before exit.
+- **PROD-6** — Canonical version header
+  (`include/cos_version.h`), this changelog entry, and the
+  `cos --version` Genesis banner; `v1.0.0` Git tag.
+
+### Economics
+
+- **€4.27 / month** hybrid inference budget on the canonical
+  TruthfulQA-MC2 workload (local-only + σ-escalation to API).
+- **46.32 %** σ drop on covered-corpus QA after v152
+  distillation (deterministic 16-paper SFT fixture).
+- **Δ AURCC = −0.0442, p = 0.002** for the two σ channels
+  (`sigma_max_token`, `sigma_n_effective`) vs. entropy baseline
+  on TruthfulQA-MC2 (N = 24 Bonferroni family-wise corrections,
+  n = 817).
+
+### Known limitations
+
+- 3 of 6 formal proofs remain `sorry` on the `Float` lift (NaN
+  semantics); abstract-ordered discharges inside the same file
+  remove the open theorem modulo the NaN domain — see
+  `docs/v259/README.md`.
+- `cos` CLI Python fall-backs still ship for compatibility;
+  removal is gated on a green `check-cos-c-dispatch` in every
+  downstream deployment.
+- SQLite WAL persistence depends on `-lsqlite3`; bare hosts can
+  build with `-DCOS_NO_SQLITE` for a stubbed API.
+
+---
+
+## v1.0.0-pre — Creation OS v153 release (2026-04-18)
 
 Creation OS v1.0.0 — the gate-complete, documentation-complete
 release. 153 composable σ-governed kernels (v6 through v153;
