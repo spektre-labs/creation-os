@@ -6066,8 +6066,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-synthetic check-sigma-evolution \
                       check-sigma-meta check-sigma-omega \
                       check-sigma-mesh check-sigma-split \
-                      check-sigma-marketplace check-sigma-federation
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation)"
+                      check-sigma-marketplace check-sigma-federation \
+                      check-sigma-protocol
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6541,6 +6542,27 @@ creation_os_sigma_federation: $(SIGMA_FED_SRCS) \
 check-sigma-federation: creation_os_sigma_federation
 	@bash benchmarks/sigma_pipeline/check_sigma_federation.sh
 	@echo "check-sigma-federation: OK (σ-weighted aggregate + σ-gate + poison guard + abstain)"
+
+# --- σ-pipeline: Protocol (signed binary wire format, D5) ---
+#
+# Length-prefixed framed binary with an FNV-based 512-bit MAC.
+# 56-byte header (magic/type/version/sender_id/σ/timestamp/plen)
+# + N-byte payload + 64-byte signature.  decode() verifies magic,
+# version, reserved-zero, payload bounds, and MAC in constant
+# time; tamper or wrong-key → reject.  No HTTP / REST / GraphQL.
+# The signer is pluggable — swap for Ed25519 when upgrading from
+# LAN-only to WAN trust.
+SIGMA_PROTO_INC  = -Isrc/sigma/pipeline
+SIGMA_PROTO_SRCS = src/sigma/pipeline/protocol.c
+
+creation_os_sigma_protocol: $(SIGMA_PROTO_SRCS) \
+                            src/sigma/pipeline/protocol_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PROTO_INC) -o $@ \
+	    $(SIGMA_PROTO_SRCS) src/sigma/pipeline/protocol_main.c $(LDFLAGS)
+
+check-sigma-protocol: creation_os_sigma_protocol
+	@bash benchmarks/sigma_pipeline/check_sigma_protocol.sh
+	@echo "check-sigma-protocol: OK (encode/decode round-trip + 7 types + tamper/wrong-key reject)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
