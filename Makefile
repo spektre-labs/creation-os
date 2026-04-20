@@ -6061,8 +6061,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-integration check-cos-cli \
                       check-sigma-tool check-sigma-plan \
                       check-sigma-merge check-sigma-grounding \
-                      check-sigma-session check-cos-agent
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent)"
+                      check-sigma-session check-cos-agent \
+                      check-sigma-selfplay
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6333,6 +6334,26 @@ creation_os_sigma_session: $(SIGMA_SS_SRCS) \
 check-sigma-session: creation_os_sigma_session
 	@bash benchmarks/sigma_pipeline/check_sigma_session.sh
 	@echo "check-sigma-session: OK (append + σ-priority eviction + trend + drift + save/load round-trip)"
+
+# --- σ-pipeline: Selfplay (proposer/solver/σ-verifier, S1) ---
+#
+# One model, three roles: PROPOSER writes a question, SOLVER answers,
+# and the σ-gate is the VERIFIER.  σ_a labels the round TOO_EASY /
+# LEARNING / TOO_HARD and a proportional controller walks difficulty
+# toward the caller-supplied target — curriculum with no gradient.
+# A proconductor hook reruns the same question on a second solver
+# and flags the round OVERCONFIDENT when σ_self << σ_other.
+SIGMA_SP_INC  = -Isrc/sigma/pipeline
+SIGMA_SP_SRCS = src/sigma/pipeline/selfplay.c
+
+creation_os_sigma_selfplay: $(SIGMA_SP_SRCS) \
+                            src/sigma/pipeline/selfplay_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SP_INC) -o $@ \
+	    $(SIGMA_SP_SRCS) src/sigma/pipeline/selfplay_main.c $(LDFLAGS)
+
+check-sigma-selfplay: creation_os_sigma_selfplay
+	@bash benchmarks/sigma_pipeline/check_sigma_selfplay.sh
+	@echo "check-sigma-selfplay: OK (proposer + solver + σ-verifier + TOO_EASY/LEARNING/TOO_HARD bands + proconductor)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
