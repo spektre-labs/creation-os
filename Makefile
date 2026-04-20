@@ -6069,8 +6069,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-cos-network \
                       check-sigma-spike check-sigma-photonic \
-                      check-sigma-substrate
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate)"
+                      check-sigma-substrate check-sigma-formal
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6646,6 +6646,33 @@ creation_os_sigma_substrate: $(SIGMA_SUB_SRCS) \
 check-sigma-substrate: creation_os_sigma_substrate
 	@bash benchmarks/sigma_pipeline/check_sigma_substrate.sh
 	@echo "check-sigma-substrate: OK (vtable + digital + bitnet + spike + photonic equivalence)"
+
+# --- σ-pipeline: Formal (T3/T4/T5/T6 proof harness, H4) ---
+#
+# Runtime proof harness that discharges the four remaining
+# theorems from v259's ledger:
+#   T3 — gate monotonicity over τ_accept
+#   T4 — commutativity of independent gates
+#   T5 — encode / decode idempotence on the σ-Protocol wire
+#   T6 — per-call latency bound on the gate
+# Not a Lean-checked proof — but mechanically reproducible
+# witnesses with pinned counts and a pinned latency bound.  The
+# paper (H5) cites this ledger as the C-level evidence.
+SIGMA_FRM_INC  = -Isrc/sigma/pipeline
+SIGMA_FRM_SRCS = src/sigma/pipeline/formal.c \
+                 src/sigma/pipeline/substrate.c \
+                 src/sigma/pipeline/spike.c \
+                 src/sigma/pipeline/photonic.c \
+                 src/sigma/pipeline/protocol.c
+
+creation_os_sigma_formal: $(SIGMA_FRM_SRCS) \
+                          src/sigma/pipeline/formal_main.c
+	$(CC) $(CFLAGS) $(SIGMA_FRM_INC) -o $@ \
+	    $(SIGMA_FRM_SRCS) src/sigma/pipeline/formal_main.c $(LDFLAGS)
+
+check-sigma-formal: creation_os_sigma_formal
+	@bash benchmarks/sigma_pipeline/check_sigma_formal.sh
+	@echo "check-sigma-formal: OK (T3 monotonicity + T4 commutativity + T5 encode/decode + T6 latency)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
