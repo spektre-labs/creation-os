@@ -6136,8 +6136,18 @@ check-cost-measure: check-sigma-pipeline
 	@bash benchmarks/sigma_pipeline/check_cost_measure.sh
 	@echo "check-cost-measure: OK (headline savings + accuracy retained pinned)"
 
-check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure check-orchestrator
-	@echo "check-sigma-product: OK (reinforce + speculative + ttt + engram + generate_until + cos chat + cost + orchestrator)"
+check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure check-orchestrator check-pipeline-bench
+	@echo "check-sigma-product: OK (reinforce + speculative + ttt + engram + generate_until + cos chat + cost + orchestrator + pipeline-bench)"
+
+# --- End-to-end pipeline benchmark ---
+#
+# Drives the orchestrator over a 20-row deterministic fixture,
+# reports engram / local / api share, € cost saved, and accuracy
+# retained vs always-API.  This is P9: the headline numbers for the
+# whole product.
+check-pipeline-bench: check-orchestrator
+	@bash benchmarks/sigma_pipeline/check_pipeline_bench.sh
+	@echo "check-pipeline-bench: OK (hybrid retains ≥100% of API accuracy at ≥50% cost reduction on the demo fixture)"
 
 # --- Full pipeline orchestrator ---
 #
