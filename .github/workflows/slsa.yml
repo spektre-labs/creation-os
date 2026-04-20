@@ -34,7 +34,7 @@ jobs:
           sha=$(sha256sum creation_os_v61_hardened | awk '{print $1}')
           echo "digest=$sha" >> "$GITHUB_OUTPUT"
           echo "sha256: $sha"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: creation_os_v61_hardened
           path: creation_os_v61_hardened
