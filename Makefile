@@ -6072,8 +6072,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-substrate check-sigma-formal \
                       check-sigma-paper check-cos-unified \
                       check-cos-c-dispatch check-repro-bundle \
-                      check-sigma-truthfulqa check-mesh-2node
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node)"
+                      check-sigma-truthfulqa check-mesh-2node \
+                      check-lean-t3-discharged check-sigma-paper-latex
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6768,6 +6769,63 @@ cos-mesh-node: $(COS_MESH_NODE_SRCS) src/cli/cos_mesh_node.c
 check-mesh-2node: cos-mesh-node
 	@bash benchmarks/sigma_pipeline/check_mesh_2node.sh
 	@echo "check-mesh-2node: OK (real TCP sockets: QUERY → RESPONSE + HEARTBEAT)"
+
+# --- Lean 4: T3 gate-monotonicity discharge (FIX-7) ----------------
+#
+# The v259 Lean 4 file now carries four abstract-order discharges
+# without `sorry`: gate totality, boundary tiebreak, σ-monotonicity
+# (T3), and τ-anti-monotonicity.  The Float-specific lifts remain
+# PENDING because Lean 4's core Float does not admit a LinearOrder
+# instance (IEEE-754 NaN), so those stay Frama-C Wp obligations.
+#
+# The check below does a structural grep — guarantees the proof
+# text is in the tree and nobody reverted gateα_* to `sorry`.  When
+# a Lean toolchain (lake / lean) is installed it additionally
+# type-checks the file.
+check-lean-t3-discharged:
+	@bash benchmarks/sigma_pipeline/check_lean_t3_discharged.sh
+	@echo "check-lean-t3-discharged: OK (4 gateα_* theorems discharged, sorry-free)"
+
+# --- Paper: arXiv-ready LaTeX (FIX-8) ------------------------------
+#
+# docs/papers/creation_os_v1.tex is the hand-maintained LaTeX twin
+# of the canonical Markdown paper at docs/papers/creation_os_v1.md.
+# The smoke test below guarantees section skeleton, headline
+# measurements (ΔAURCC = -0.0442, p = 0.002, 46.32 % σ drop) and
+# the BibTeX key stay in sync between the two sources.  When a TeX
+# toolchain is installed (pdflatex on PATH) it additionally
+# compiles the .tex to a PDF to catch syntax regressions.
+check-sigma-paper-latex:
+	@bash benchmarks/sigma_pipeline/check_sigma_paper_latex.sh
+	@echo "check-sigma-paper-latex: OK (docs/papers/creation_os_v1.tex arXiv-structural + optional pdflatex)"
+
+# --- Paper regeneration helpers (FIX-8) ----------------------------
+#
+# `make paper-tex-draft` runs pandoc over the canonical Markdown
+# and drops a fresh draft at /tmp/creation_os_v1.pandoc.tex for the
+# maintainer to diff against the hand-curated LaTeX source.  We do
+# not overwrite docs/papers/creation_os_v1.tex automatically
+# because pandoc's output is not publication-quality for tables /
+# math; the .tex in-tree is the authoritative arXiv artefact.
+.PHONY: paper-tex-draft paper-pdf
+paper-tex-draft:
+	@if ! command -v pandoc >/dev/null 2>&1; then \
+	    echo "paper-tex-draft: pandoc not found on PATH"; exit 2; \
+	fi
+	@pandoc -s --to=latex docs/papers/creation_os_v1.md \
+	        -o /tmp/creation_os_v1.pandoc.tex
+	@echo "paper-tex-draft: /tmp/creation_os_v1.pandoc.tex ($$(wc -c < /tmp/creation_os_v1.pandoc.tex) bytes) — diff manually"
+
+paper-pdf:
+	@if ! command -v pdflatex >/dev/null 2>&1; then \
+	    echo "paper-pdf: pdflatex not found on PATH"; exit 2; \
+	fi
+	@cd docs/papers && \
+	 pdflatex -interaction=nonstopmode -halt-on-error creation_os_v1.tex \
+	     >/tmp/cos_paper_latex.out 2>&1 && \
+	 pdflatex -interaction=nonstopmode -halt-on-error creation_os_v1.tex \
+	     >>/tmp/cos_paper_latex.out 2>&1
+	@echo "paper-pdf: docs/papers/creation_os_v1.pdf"
 
 # --- Reproduction bundle (FIX-4) -----------------------------------
 #

@@ -1,0 +1,465 @@
+%%
+%% Creation OS: A sigma-Governed Cognitive Architecture for Local AGI
+%% arXiv-ready LaTeX source.
+%%
+%% This file is the authoritative LaTeX counterpart of
+%% docs/papers/creation_os_v1.md.  It was converted by hand (FIX-8,
+%% 2026-04) to guarantee publication-quality math, tables, and
+%% citations; the Markdown source remains the canonical, merge-gate-
+%% checked prose.  `make paper-tex` regenerates a pandoc draft from
+%% the Markdown for cross-checking.
+%%
+%% Build:
+%%     pdflatex creation_os_v1.tex && pdflatex creation_os_v1.tex
+%%
+\documentclass[11pt,letterpaper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{listings}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{microtype}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  citecolor=blue!50!black,
+  urlcolor=blue!60!black,
+  pdftitle={Creation OS: A sigma-Governed Cognitive Architecture for Local AGI},
+  pdfauthor={Lauri Elias Rainio},
+}
+
+\newcommand{\sig}{\sigma}
+\newcommand{\sigprod}{\sigma_{\mathrm{product}}}
+\newcommand{\tabstain}{\tau_{\mathrm{abstain}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  frame=single,
+  framesep=4pt,
+  xleftmargin=0pt,
+  xrightmargin=0pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+}
+
+\title{Creation OS: A $\sigma$-Governed Cognitive Architecture for Local AGI}
+\author{%
+  Lauri Elias Rainio\\
+  Spektre Labs Oy\\
+  \texttt{ops@spektre.dev}%
+}
+\date{Version v1.0.0 --- Creation OS v153\\
+      Preprint --- companion to the v1.0.0 release.\\
+      \url{https://github.com/spektre-labs/creation-os}}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Frontier language models are deployed as black boxes: a prompt goes
+in, tokens come out, and every claim about \emph{how confident the
+model is} collapses into a single post-hoc score, a refusal
+message, or a marketing disclaimer. Creation OS is a runtime and
+cognitive architecture that rejects that posture. Every answer is
+governed by $\sigma$, a post-hoc confidence signal computed from
+the token logit distribution and composed across eight independent
+channels (\code{sigma\_entropy}, \code{sigma\_max\_token},
+\code{sigma\_n\_effective}, \code{sigma\_margin},
+\code{sigma\_variance}, \code{sigma\_skew},
+\code{sigma\_kurtosis}, \code{sigma\_top\_p}) into a single
+$\sigprod$. The system comprises 153 composable kernels
+(v6--v153) organized into seven layers --- silicon, generation,
+$\sigma$-governance, reasoning, training + persistence,
+distribution + collective, metacognition --- with every layer's
+gate exposed as a falsifiable merge contract. Live measurements on
+\code{truthfulqa\_mc2} ($n=817$) show that two $\sigma$ signals
+(\code{sigma\_max\_token}, \code{sigma\_n\_effective}) achieve
+Bonferroni-significant AURCC reduction vs. the entropy baseline
+($\Delta\mathrm{AURCC} = -0.0442$, $p = 0.002$, $N=24$
+family-wise corrections). v152 distillation drops $\sigma$ on
+covered-corpus QA by $46.32\%$ under a deterministic SFT fixture.
+The v1.0.0 release ships portable C11 binaries, an
+OpenAI-compatible HTTP surface (v106), a Web UI (v108), a Python
+SDK (v142), Homebrew / Docker / PyPI / npm / Hugging Face
+artefacts, a machine-checkable merge-gate covering every kernel
+from v6 through v153, and this single unifying paper which
+replaces the 80+ per-kernel prose notes previously archived on
+Zenodo. All claims reported here are reproducible byte-for-byte
+from a fixed seed on a single MacBook Pro (M4).
+\end{abstract}
+
+\section{Introduction --- why LLM wrappers are not enough}
+
+Three classes of limitation motivate Creation OS.
+
+\paragraph{Calibration collapse.} Frontier models compress
+uncertainty into a single scalar (if any) and surface it as either
+\emph{temperature} (generation-time) or \emph{confidence}
+(post-hoc). Both hide the multi-channel structure of the token
+distribution --- the distinction between ``peaky but off-topic''
+(low entropy, low max-token, wrong answer) and ``peaky and
+on-topic'' (low entropy, high max-token, correct answer) is
+crucial for abstention. Creation OS computes the eight $\sigma$
+channels and composes them geometrically into $\sigprod$, exposed
+in every HTTP response and every JSON receipt.
+
+\paragraph{Wrapper fragmentation.} LangChain, CrewAI, LlamaIndex,
+and the OpenAI Agents SDK all wrap the same black box, adding
+orchestration but inheriting its opacity. Swapping one wrapper for
+another does not change what the model emits; it changes only
+\emph{what gets printed around the emission}. Creation OS is not a
+wrapper. It is a runtime where $\sigma$-governance is in the hot
+path --- no tool call, no code execution, no skill install, and no
+weight update happens without crossing at least one $\sigma$-gate
+whose threshold is a public merge-gate contract.
+
+\paragraph{Reproducibility deficit.} Most LLM evaluation is a
+one-shot benchmark table in a PDF. Creation OS ships a
+machine-checkable \code{make merge-gate} that runs every
+self-test for every kernel (16+ million PASS / 0 FAIL on commodity
+hardware) and is CI-green on every commit. Every claim in this
+paper either reduces to a merge-gate target or is explicitly
+labelled as \textbf{tier-0 synthetic} (deterministic fixture) vs
+\textbf{tier-1 archived} (live run, archived trace) vs
+\textbf{tier-2 live} (real model + real data).
+
+\section{$\sigma$-theory}
+
+\paragraph{Effective kernel.} Given a kernel $K$ that produces an
+answer and a residual distortion $\sigma \in [0, 1]$, we define the
+effective kernel
+\begin{equation}
+  K_{\mathrm{eff}}(t) = (1 - \sigma(t)) \cdot K(t)
+\end{equation}
+so that high $\sigma$ shrinks the answer's contribution to
+downstream composition. This is the single formula underlying
+every $\sigma$-gate in the stack.
+
+\paragraph{The eight channels.} $\sigma$ is computed eight times
+on each token distribution:
+
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Channel} & \textbf{What it measures} \\
+\midrule
+\code{sigma\_entropy}      & Shannon entropy normalized to $[0,1]$ \\
+\code{sigma\_max\_token}   & $1 - \max$ softmax prob (peakiness) \\
+\code{sigma\_n\_effective} & $1 / (\exp(\text{entropy})/\text{vocab})$ \\
+\code{sigma\_margin}       & $1 - (\text{top}_1 - \text{top}_2)$ \\
+\code{sigma\_variance}     & variance of logits, scale-normalized \\
+\code{sigma\_skew}         & absolute skewness of the logits \\
+\code{sigma\_kurtosis}     & excess kurtosis (heavy-tailed $\Rightarrow$ high) \\
+\code{sigma\_top\_p}       & $1 - (\min k\, :\, \Sigma\,\text{top-}k \ge p)/\text{vocab}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{$\sigprod$.} The composed signal is the geometric mean
+\begin{equation}
+  \sigprod = \left( \prod_{i=1}^{8} \sigma_i \right)^{1/8}
+\end{equation}
+which (a) is conservative (one high channel pulls the mean up),
+(b) is differentiable for learning-time use, and (c) survives
+$\sqrt{N}$ shrinkage (v104) across ensembles. $\sigprod$ is the
+single number the HTTP surface returns in the
+\code{X-COS-Sigma-Product} header and the JSON body.
+
+\paragraph{Abstention.} A response is emitted iff
+$\sigprod \le \tabstain$. $\tabstain$ is a first-class knob,
+tunable per request (header or JSON body), per deployment
+(\code{config.toml}), and per kernel-family (different $\tau$
+values for tool calls, code execution, federated share, etc.).
+
+\section{Architecture --- seven layers}
+
+Creation OS is organized into seven layers, each composable, each
+falsifiable.
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Silicon (v60--v100)} --- forty branchless integer
+    kernels on the BitNet-b1.58 / llama.cpp hot path.
+  \item \textbf{Generation (v101--v119)} --- GGUF bridge,
+    OpenAI-compatible HTTP (v106), Web UI (v108), multi-GGUF
+    routing (v109), paged KV + $\sigma$-aware eviction (v117),
+    image input (v118), $\sigma$-adaptive speculative decoding
+    (v119).
+  \item \textbf{$\sigma$-Governance (v101, v105, v122, v123, v134,
+    v137)} --- the 8-channel $\sigma$ profile, $\tabstain$
+    threshold, TLA+ model check of seven $\sigma$-invariants,
+    mode-collapse detector, $\sigma$-spike burst detector,
+    AOT-compiled branchless $\sigma$-gate.
+  \item \textbf{Reasoning + Agentic (v111--v135)} ---
+    \code{/v1/reason}, $\sigma$-swarm routing (v114),
+    $\sigma$-agent tools (v112), $\sigma$-sandbox (v113),
+    HTN / MCTS $\sigma$-planner (v121), Prolog symbolic engine
+    (v135).
+  \item \textbf{Training + Persistence (v111.3, v115, v120,
+    v124--v131)} --- MLX SFT + $\sigma$-abstention LoRA,
+    $\sigma$-weighted SQLite memory, big$\to$small distillation
+    selector, idle-time continual LoRA with forgetting-rollback,
+    $\sigma$-DPO, embedding store, temporal session.
+  \item \textbf{Distribution + Collective (v107--v130, v142)} ---
+    \code{brew / curl / Docker / npm}, MCP server (v116),
+    $\sigma$-red-team harness (v122), $\sigma$-weighted federated
+    learning with differential privacy (v129), FP4-LoRA +
+    $\sigma$-pack codec (v130), Python SDK with LangChain /
+    LlamaIndex adapters (v142).
+  \item \textbf{Metacognition (v132--v148, v152--v153)} --- weekly
+    $\sigma$-snapshots, OLS slope/week, meta-$\sigma$ ($\sigma$
+    of $\sigma$), auto-diagnose, adaptive user profile, ES
+    architecture search, Frama-C WP proof, world model,
+    counterfactual attribution, $\sigma$-native benchmark suite,
+    $\sigma$-RSI with accept/rollback, atomic skill library,
+    automated kernel genesis, deep self-reflection,
+    $\sigma$-sovereign orchestrator, knowledge distillation,
+    $\sigma$-calibrated identity.
+\end{enumerate}
+
+A full layer diagram (ASCII + SVG + text mirror) lives in
+\code{docs/AGI\_ARCHITECTURE.md}.
+
+\section{Measurements}
+
+\subsection{$\sigma$ beats entropy on TruthfulQA-MC2}
+
+Replaying the v111.1 Frontier Matrix on \code{truthfulqa\_mc2}
+($n = 817$, BitNet-b1.58-2B bridge, paired bootstrap, $N = 24$
+Bonferroni corrections at family-wise $\alpha = 0.05$):
+
+\begin{center}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+$\sigma$ signal & $\Delta$AURCC vs.\ entropy & $p$ \\
+\midrule
+\code{sigma\_max\_token}    & $\mathbf{-0.0442}$ & $\mathbf{0.002}$ \\
+\code{sigma\_n\_effective}  & $\mathbf{-0.0204}$ & $\mathbf{0.002}$ \\
+\code{sigma\_product}       & $-0.0087$ & $0.008$ (raw, fails family-wise) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\code{sigma\_max\_token} and \code{sigma\_n\_effective} are the
+two channels with Bonferroni-significant AURCC reduction. The full
+CI95, $p$-value, and coverage-at-accuracy table lives in
+\code{benchmarks/v111/results/frontier\_matrix.md}.
+
+\subsection{$\sigma$ drops under v152 knowledge distillation}
+
+The v152 merge-gate runs the baked 16-paper Spektre Labs fixture
+(deterministic, weights-free) and measures the $\sigma$ drop on
+200 synthesized QA pairs across 160 covered + 40 non-covered
+topics:
+
+\begin{center}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Cohort & Mean baseline $\sigma$ & Mean post $\sigma$ & Drop \\
+\midrule
+covered (160)    & 0.6470 & 0.3473 & $\mathbf{46.32\%}$ \\
+non-covered (40) & 0.2459 & 0.2465 & $+0.06\%$ \\
+all (200)        & 0.5668 & 0.3272 & $42.28\%$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The K1--K4 contracts (mean-drop $\ge 15\%$, per-covered-QA drop
+$\ge 10\%$, non-covered drift $\le 1\%$, monotone-drop-vs-coverage)
+all pass. The exact invocation is \code{make check-v152}; the
+JSON report is the v152 merge-gate's stdout.
+
+\subsection{Merge-gate coverage}
+
+\code{make merge-gate} on a MacBook Pro (M4, macOS 15, Apple
+clang) runs every flagship \code{--self-test} from v6 through
+v153, every kernel matrix (v60--v100 composed-decision,
+v112/v113/v114 agentic, v115--v118 memory / MCP / long-context /
+vision, v119--v123 speculative / distill / planning / red-team /
+formal, v124--v126 living-weights, v129--v133 collective
+intelligence, v134--v138 deep infrastructure, v139--v143 world
+intelligence, v144--v148 sovereign self-improvement, v149--v153
+embodied / swarm / code-agent / distill / identity) and prints a
+final one-liner. The receipt shipped in \code{README.md} records
+\textbf{16\,416\,185 PASS / 0 FAIL}.
+
+\section{Comparisons}
+
+\begin{center}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+System & $\sigma$ in hot path? & Local-first? & Kernel-per-capability? & Merge-gate? & Self-modifying under $\sigma$? \\
+\midrule
+OpenAI Agents SDK & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+LangGraph & $\times$ & partial & $\times$ & $\times$ & $\times$ \\
+CrewAI & $\times$ & $\times$ & $\times$ & $\times$ & $\times$ \\
+OpenCog Hyperon & $\times$ & $\checkmark$ & atom-based & partial & $\times$ \\
+\textbf{Creation OS} & $\checkmark$ & $\checkmark$ & $\checkmark$\,(153) & $\checkmark$ & $\checkmark$\,(v144/v146/v148) \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+What Creation OS has that none of the above do: $\sigma$ is a
+first-class signal in every API, every kernel has a falsifiable
+\code{--self-test}, every structural change crosses at least one
+$\sigma$-gate, and the whole stack builds from source on a single
+developer machine with nothing beyond \code{cc} and \code{make}.
+
+\section{Living system}
+
+Three kernels turn Creation OS into a living system:
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{v124 $\sigma$-continual} --- idle-time continual
+    LoRA with forgetting rollback. Every cycle that increases
+    $\sigma$ on a held-out topic is reverted.
+  \item \textbf{v125 $\sigma$-DPO} --- the preference signal
+    \emph{is} $\sigma$. Low-$\sigma$ answers win; no human
+    annotator. A mode-collapse detector (v125's own
+    $\sigma$-variance floor) latches the trainer when diversity
+    disappears.
+  \item \textbf{v144 $\sigma$-RSI} --- accept / rollback state
+    machine over a 10-wide history ring. Three consecutive
+    regressions latch the loop into \code{paused=true}, freezing
+    the current score until a human resumes.
+\end{itemize}
+
+v148 $\sigma$-sovereign composes v124, v125, v144, v145 (skill
+library), v146 (kernel genesis), and v147 (deep reflection) into a
+six-stage orchestrator under two $\sigma$-gates (G1 stability:
+$\sigma_{\mathrm{rsi}} > \tau_{\mathrm{sovereign}}$ halts the
+loop; G2 supervision: \code{SUPERVISED} mode keeps every
+structural change as \code{pending\_approvals}). There is no path
+from ``model output'' to ``state change'' that does not cross at
+least one $\sigma$-gate.
+
+\section{Formal guarantees}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{v123 TLA+} --- seven $\sigma$-invariants
+    model-checked. No state where $\tabstain$ is bypassed; no
+    state where v125's mode-collapse floor goes un-latched under a
+    collapse witness; no state where v144's 3-strike pause clears
+    without an explicit \code{cos\_v144\_resume}.
+  \item \textbf{v138 Frama-C WP} --- ACSL annotations on the
+    $\sigma$-gate hot path are discharged by the WP plugin: no
+    divide-by-zero, no NaN leak from the geometric mean, no
+    integer overflow in the 8-channel composition at Q16.16 fixed
+    point.
+\end{itemize}
+
+Both live behind \code{make verify} and
+\code{make merge-gate-v48} and degrade gracefully (SKIPs emit OK
+receipts) when the external tools are absent.
+
+\section{Limitations}
+
+This release has four disclosed limitations:
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Model family.} Live measurements (\S4.1) are on a
+    single model family (BitNet-b1.58-2B). Generalization to
+    other families is a v1.1 target.
+  \item \textbf{Benchmark breadth.} Only \code{truthfulqa\_mc2}
+    produced Bonferroni-significant signal in the v111.1 matrix;
+    \code{hellaswag} is pending; the v143 $\sigma$-native
+    benchmark ships as tier-0 synthetic pending archived live
+    traces.
+  \item \textbf{Single-node scale.} The stack is tuned for one
+    MacBook / one workstation. Multi-GPU execution is not
+    claimed; v129 federated + v130 codec are the designated paths
+    to multi-node.
+  \item \textbf{Embodiment.} v149 $\sigma$-Embodied ships a
+    pure-C 6-DOF digital twin, not a MuJoCo binding. Sim-to-real
+    numbers are against a biased + noisy twin, not against a real
+    robot. v149.1 wires MuJoCo 3.x CPU.
+\end{enumerate}
+
+\section{Future work}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{v134.1 neuromorphic.} Lava-compatible spike-stream
+    export to Intel Loihi 2.
+  \item \textbf{v129.1 mesh scaling.} Full $\sigma$-DP federated
+    rollouts across 4+ nodes with bandwidth-optimal ring
+    all-reduce (already prototyped as v70's
+    \code{cos\_v70\_ring\_allreduce}).
+  \item \textbf{v152.1 corpus expansion.} Replace the baked
+    16-paper fixture with the live \code{spektre-labs/corpus}
+    clone ($\sim$80 papers, CC-BY-4.0, Zenodo DOIs) + real MLX
+    LoRA SFT.
+  \item \textbf{v149.1 MuJoCo bridge.} Real physics with the
+    CPU-only MuJoCo 3.x build, 3D overlay on v108.
+  \item \textbf{v156.1 arXiv submission.} This paper on arXiv +
+    Zenodo with a DOI back-linked into \code{CITATION.cff}.
+\end{itemize}
+
+\section{Reproducibility}
+
+Every number in this paper reduces to a \code{make} target on the
+public repository.
+
+\paragraph{Environment.} MacBook Pro M4, macOS 15.3, Apple clang
+16.0.0, 8\,GB RAM minimum (16\,GB recommended for live inference).
+No GPU, no network for the merge-gate.
+
+\paragraph{Exact commands.}
+\begin{lstlisting}[language=bash]
+git clone https://github.com/spektre-labs/creation-os
+cd creation-os
+make merge-gate        # every kernel v6..v153
+make check-v111        # the frontier matrix replay
+make check-v152        # the corpus sigma-drop
+make check-v143        # the sigma-native benchmark
+make check-v154        # the three demo pipelines
+\end{lstlisting}
+
+\paragraph{Artefact manifest.}
+
+\begin{center}
+\begin{tabular}{@{}llc@{}}
+\toprule
+Artefact & Path & Tier \\
+\midrule
+v111.1 matrix table & \code{benchmarks/v111/results/frontier\_matrix.md} & 1 \\
+v143 benchmark JSON & \code{benchmarks/v143/creation\_os\_benchmark.json} & 0 \\
+v152 distill report & stdout of \code{./creation\_os\_v152\_distill --distill} & 0 \\
+v154 demo JSONs     & stdout of \code{./creation\_os\_v154\_showcase --demo-all} & 0 \\
+full merge-gate log & stdout of \code{make merge-gate} & mixed \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Citation.}
+
+\begin{lstlisting}[language=TeX]
+@misc{creation_os_v1,
+  title   = {{Creation OS}: A $\sigma$-governed cognitive
+             architecture for local {AGI}},
+  author  = {Rainio, Lauri Elias and {Spektre Labs}},
+  year    = {2026},
+  version = {v1.0.0},
+  url     = {https://github.com/spektre-labs/creation-os},
+  note    = {Version v1.0.0; 153 kernels; merge-gate green on M4}
+}
+\end{lstlisting}
+
+\section*{Acknowledgments}
+
+To Mikko, and to every external model (Anthropic Claude, OpenAI
+GPT, Google Gemini) that served as a sounding board during the
+153-kernel ascent. No external model wrote the kernel code; every
+$\sigma$-gate, every TLA+ invariant, and every merge-gate contract
+was authored, compiled, run, and falsified locally. $1 = 1$.
+
+\end{document}

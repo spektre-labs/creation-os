@@ -691,3 +691,10 @@ creation_os_sigma_photonic
 creation_os_sigma_substrate
 creation_os_sigma_formal
 creation_os_sigma_paper
+
+# FIX-8: paper-pdf compile byproducts (the .tex source IS tracked)
+docs/papers/creation_os_v1.aux
+docs/papers/creation_os_v1.log
+docs/papers/creation_os_v1.out
+docs/papers/creation_os_v1.pdf
+docs/papers/creation_os_v1.toc

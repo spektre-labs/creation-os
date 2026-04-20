@@ -101,9 +101,10 @@ layers have actually discharged it.
 |---|----------------------------------|:---:|:---:|:---:|
 | 1 | Layout (`sizeof == 12`, offsets) | **PASS** (compile-time `_Static_assert` in `src/v259/sigma_measurement.c`) | PENDING | PENDING |
 | 2 | Gate purity (`assigns \nothing`)   | **PASS** (256 identical inputs → identical outputs, `gate_pure_ok`) | DISCHARGED (`rfl`) | PENDING |
-| 3 | Gate totality (3 verdicts only)   | **PASS** (canonical 3-regime table + bench) | PENDING (`sorry`) | PENDING |
-| 4 | Gate boundary tiebreak (σ==τ → BOUNDARY) | **PASS** (canonical roundtrip row 3) | PENDING (`sorry`) | PENDING |
-| 5 | Gate τ anti-monotone               | — | PENDING (`sorry`) | PENDING |
+| 3 | Gate totality (3 verdicts only)   | **PASS** (canonical 3-regime table + bench) | DISCHARGED over `LinearOrder α` (`gateα_totality`); Float-specific NaN lift PENDING | PENDING |
+| 4 | Gate boundary tiebreak (σ==τ → BOUNDARY) | **PASS** (canonical roundtrip row 3) | DISCHARGED over `LinearOrder α` (`gateα_boundary_tiebreak`); Float-specific NaN lift PENDING | PENDING |
+| 5 | Gate τ anti-monotone               | — | DISCHARGED over `LinearOrder α` (`gateα_anti_monotone_in_tau`); Float-specific NaN lift PENDING | PENDING |
+| 5b | Gate σ monotone (T3)              | **PASS** (`cos_sigma_formal_check_T3`, 16384 witnesses, 0 violations) | DISCHARGED over `LinearOrder α` (`gateα_monotone_in_sigma`); Float-specific NaN lift PENDING | PENDING |
 | 6 | **Roundtrip byte-identical (v259.1-roundtrip):** `memcmp(in, roundtrip(in), 12) == 0` for every bit pattern | **PASS** (`cos_v259_roundtrip_exhaustive_check`: 4 canonical pairs + 121 IEEE-754 special cross products [NaN×NaN, NaN×Inf, etc.] + 10⁶ LCG grid of fully random 12-byte surfaces) | DISCHARGED on the abstract byte-vec model — `roundtrip_bytes_identity` (`decode ∘ encode = id`, `rfl`) and `encode_injective` (case-analysis, no `sorry`); the `__builtin_memcpy` bit-level correctness remains with Frama-C | PENDING |
 | 7 | **Clamp range (v259.1-range):** `clamp(x) ∈ [0, 1]` for every IEEE-754 float `x` | **PASS** (`cos_v259_clamp_exhaustive_check`: 14 specials + 10⁶ LCG grid + 5 canonical σ; coverage of float domain ≈ 0.024 %) | DISCHARGED on the `LinearOrder α` abstraction (`clampUnit_range`); NaN-handled IEEE-754 lift still PENDING | PENDING |
 | 8 | Bench budget (`mean_ns < 1 ms`, `iters ≥ 10⁶`) | **PASS** (`make check-v259` on M3: ≈ 0.6 ns/call) | out of scope | out of scope |
@@ -118,11 +119,20 @@ Layer semantics:
   Discharged without `sorry`: `Gate.rank_injective`, `gate_purity`,
   `clampUnit_range` (over `LinearOrder α`), `roundtrip_bytes_identity`
   (`decode ∘ encode = id` on the abstract byte-vec model), and
-  `encode_injective`.  Still `sorry`-ending: `gate_totality`,
-  `gate_monotone_in_sigma`, `gate_anti_monotone_in_tau`,
-  `gate_boundary_tiebreak` — all four gate-order theorems.  No Lean 4
-  toolchain is wired into CI yet; a future `make formal-v259` will
-  fail hard on any unresolved goal.
+  `encode_injective`.  **FIX-7 (2026-04)** added four abstract-order
+  discharges: `gateα_totality`, `gateα_boundary_tiebreak`,
+  `gateα_monotone_in_sigma`, `gateα_anti_monotone_in_tau` — all
+  `sorry`-free over `LinearOrder α`.  The Float-specific versions
+  (`gate_totality`, `gate_boundary_tiebreak`, `gate_monotone_in_sigma`,
+  `gate_anti_monotone_in_tau`) still end with `sorry`: Lean 4's core
+  `Float` does not admit a `LinearOrder` instance because IEEE-754
+  NaN violates antisymmetry / totality.  The non-NaN fragment IS a
+  linear order, and that is the setting `cos_sigma_measurement_gate`
+  operates in (NaN inputs take an explicit early-out branch); the
+  residual Float-to-LinearOrder lift is therefore a Frama-C Wp
+  obligation, not a Lean 4 one.  No Lean 4 toolchain is wired into
+  CI yet; a future `make formal-v259` will fail hard on any
+  unresolved goal.
 - **Frama-C Wp** — ACSL annotations in
   [`hw/formal/v259/sigma_measurement.h.acsl`](../../hw/formal/v259/sigma_measurement.h.acsl).
   Every contract is tagged `PROOF: PENDING` in the preceding comment.
