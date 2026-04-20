@@ -502,7 +502,9 @@ merge-gate:
 	@$(MAKE) check-v296
 	@$(MAKE) check-v297
 	@$(MAKE) check-v298
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia + v294..v298 federated/immune/antifragile/clock/rosetta)"
+	@$(MAKE) check-v299
+	@$(MAKE) check-v300
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia + v294..v298 federated/immune/antifragile/clock/rosetta + v299..v300 knowledge-graph/complete)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -7096,6 +7098,69 @@ check-v298: check-v298-rosetta-self-documenting
 
 check-v294-v298: check-v294 check-v295 check-v296 check-v297 check-v298
 	@echo "check-v294-v298: OK (federated + immune + antifragile + clock + rosetta)"
+
+# --- v299 σ-Knowledge-Graph (grounded retrieval + provenance + multi-hop + corpus) ---
+#
+# v0 contracts: 3 retrieval rows (known_fact /
+# partial_match / unknown) with σ_retrieval strictly
+# increasing AND `FROM_KG iff σ ≤ τ_kg = 0.40` (both
+# branches) AND exactly 2 FROM_KG + 1 FALLBACK_LLM;
+# 3 provenance rows with σ strictly increasing AND
+# `trusted iff σ ≤ τ_prov = 0.50` (both branches) AND
+# trusted rows carry a non-empty source_ref; 3 multi-
+# hop chains (1/3/5 hops) whose σ_total follows
+# `1 − (1 − σ_per_hop)^hops` within 1e-3 AND `warning
+# iff σ_total > 0.50` (both branches); 3 corpus
+# triplets (sigma/k_eff/one_equals_one) all well-formed
+# AND queryable; σ_kg==0.0; FNV-1a chain replays
+# byte-identically.
+V299_INC  = -Isrc/v299
+V299_SRCS = src/v299/knowledge_graph.c
+
+creation_os_v299_knowledge_graph: $(V299_SRCS) src/v299/main.c
+	$(CC) $(CFLAGS) $(V299_INC) -o $@ \
+	    $(V299_SRCS) src/v299/main.c $(LDFLAGS)
+
+check-v299-knowledge-graph-sigma: creation_os_v299_knowledge_graph
+	@bash benchmarks/v299/check_v299_knowledge_graph_sigma.sh
+	@echo "check-v299-knowledge-graph-sigma: OK (retrieval + provenance + hop + corpus)"
+
+check-v299: check-v299-knowledge-graph-sigma
+	@echo "check-v299: OK (σ-knowledge-graph kernel)"
+
+# --- v300 σ-Complete (cognitive audit + dependency graph + 1=1 self-test + pyramid) ---
+#
+# v0 contracts: kernels_total == 300; 15 cognitive
+# categories (v243 list) in canonical order with every
+# category covered AND representative_kernel in
+# [6, 300]; 3 dependency buckets (core_critical /
+# supporting / removable_duplicate) summing to 300
+# with `removable_duplicate == 0` AND
+# `core_critical == 7`; 4 repo-level 1=1 claims
+# (zero_deps / sigma_gated / deterministic /
+# monotonic_clock) with declared==realized and
+# σ_pair==0 on every row, σ_repo==0 < τ_repo=0.10;
+# 7 pyramid invariants (v287 granite / v288 oculus /
+# v289 ruin_value / v290 dougong / v293 hagia_sofia /
+# v297 clock / v298 rosetta) all holding with
+# architecture_survives_100yr=true; σ_complete==0.0;
+# FNV-1a chain replays byte-identically.
+V300_INC  = -Isrc/v300
+V300_SRCS = src/v300/complete.c
+
+creation_os_v300_complete: $(V300_SRCS) src/v300/main.c
+	$(CC) $(CFLAGS) $(V300_INC) -o $@ \
+	    $(V300_SRCS) src/v300/main.c $(LDFLAGS)
+
+check-v300-completeness-audit: creation_os_v300_complete
+	@bash benchmarks/v300/check_v300_completeness_audit.sh
+	@echo "check-v300-completeness-audit: OK (cog + dep + 1=1 + pyramid)"
+
+check-v300: check-v300-completeness-audit
+	@echo "check-v300: OK (σ-complete kernel)"
+
+check-v299-v300: check-v299 check-v300
+	@echo "check-v299-v300: OK (knowledge-graph + complete)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

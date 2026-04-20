@@ -533,6 +533,42 @@ The live stack ships today:
   `formal_expression_present = true` AND none `ages_out` —
   **no σ on the wire without a reason; if one language dies,
   two remain; the core definition is a formula, not an API**.
+- **v299–v300** — the **complete architecture**: σ-knowledge-graph
+  (3 canonical retrieval rows `known_fact σ=0.08 FROM_KG ·
+  partial_match σ=0.35 FROM_KG · unknown σ=0.85 FALLBACK_LLM`
+  with σ_retrieval strictly increasing AND `FROM_KG iff
+  σ_retrieval ≤ τ_kg = 0.40` firing both branches AND exactly
+  2 FROM_KG + 1 FALLBACK_LLM, 3 canonical provenance rows
+  `primary_source σ=0.05 trusted peer_reviewed · secondary_source
+  σ=0.25 trusted · rumor_source σ=0.80 REJECTED` with σ strictly
+  increasing AND `trusted iff σ_provenance ≤ τ_prov = 0.50`
+  firing both branches AND every trusted row carrying a
+  non-empty source reference, 3 canonical multi-hop chains
+  `1_hop σ_total=0.10 · 3_hop σ_total≈0.386 · 5_hop σ_total≈0.672
+  warning` composed via `σ_total = 1 − (1 − σ_per_hop)^hops`
+  within 1e-3 AND `warning iff σ_total > τ_warning = 0.50`
+  firing both branches, and 3 canonical corpus triplets
+  `(sigma, IS_SNR_OF, noise_signal_ratio) · (k_eff, DEPENDS_ON,
+  sigma) · (one_equals_one, EXPRESSES, self_consistency)` all
+  well-formed AND queryable — **a KG-backed answer plus σ is a
+  verifiable answer; long chains are not just slower, they are
+  noisier**), and **σ-complete** — `kernels_total = 300`, a 15-
+  category cognitive completeness audit (v243 taxonomy:
+  perception · memory · reasoning · planning · learning ·
+  language · action · metacognition · emotion · social · ethics
+  · creativity · self_model · embodiment · consciousness) all
+  `covered = true` with representatives in v6..v300, a 3-bucket
+  dependency graph `core_critical = 7 · supporting = 293 ·
+  removable_duplicate = 0` summing to 300, a 4-claim repo-level
+  1=1 self-test `zero_deps · sigma_gated · deterministic ·
+  monotonic_clock` with declared == realized on every row AND
+  `σ_repo = 0.0 < τ_repo = 0.10`, and a 7-invariant pyramid test
+  `v287 granite zero_deps · v288 oculus tunable_aperture · v289
+  ruin_value graceful_decay · v290 dougong modular_coupling ·
+  v293 hagia_sofia continuous_use · v297 clock time_invariant ·
+  v298 rosetta self_documenting` all holding, so
+  `architecture_survives_100yr = true` — **300 layers is not a
+  claim of completeness; 300 layers with σ_complete == 0.0 is**.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
