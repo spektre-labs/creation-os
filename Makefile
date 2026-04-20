@@ -6068,8 +6068,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-cos-network \
-                      check-sigma-spike check-sigma-photonic
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic)"
+                      check-sigma-spike check-sigma-photonic \
+                      check-sigma-substrate
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6624,6 +6625,27 @@ creation_os_sigma_photonic: $(SIGMA_PHT_SRCS) \
 check-sigma-photonic: creation_os_sigma_photonic
 	@bash benchmarks/sigma_pipeline/check_sigma_photonic.sh
 	@echo "check-sigma-photonic: OK (intensity ratio σ + dominant / uniform / MZI)"
+
+# --- σ-pipeline: Substrate (vtable unifying all backends, H3) ---
+#
+# One vtable (cos_sigma_substrate_t), four bundled backends
+# (digital / bitnet / spike / photonic).  Cross-substrate
+# equivalence check: the same activation vector reaches the same
+# ACCEPT/ABSTAIN bit everywhere for a given τ_accept.  This is the
+# runtime form of "design once, run anywhere".
+SIGMA_SUB_INC  = -Isrc/sigma/pipeline
+SIGMA_SUB_SRCS = src/sigma/pipeline/substrate.c \
+                 src/sigma/pipeline/spike.c \
+                 src/sigma/pipeline/photonic.c
+
+creation_os_sigma_substrate: $(SIGMA_SUB_SRCS) \
+                             src/sigma/pipeline/substrate_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SUB_INC) -o $@ \
+	    $(SIGMA_SUB_SRCS) src/sigma/pipeline/substrate_main.c $(LDFLAGS)
+
+check-sigma-substrate: creation_os_sigma_substrate
+	@bash benchmarks/sigma_pipeline/check_sigma_substrate.sh
+	@echo "check-sigma-substrate: OK (vtable + digital + bitnet + spike + photonic equivalence)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
