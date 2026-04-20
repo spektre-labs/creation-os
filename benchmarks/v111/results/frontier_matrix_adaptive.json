@@ -1,0 +1,221 @@
+{
+  "post_hoc": true,
+  "note": "Exploratory signals designed AFTER the pre-registered v111 matrix was analysed.  DO NOT merge into the pre-registered claim.",
+  "bonferroni_N": 12,
+  "alpha_bonferroni": 0.004166666666666667,
+  "n_boot": 2000,
+  "signals": [
+    "sigma_composite_max",
+    "sigma_composite_mean",
+    "sigma_task_adaptive"
+  ],
+  "tasks": [
+    {
+      "task": "arc_challenge",
+      "n": 1172,
+      "overall_acc": 0.46757679180887374,
+      "aurcc_entropy_baseline": 0.4671898290998176,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "post_hoc": true,
+          "AURCC": 0.4571979024195292,
+          "delta_vs_entropy": -0.010053826731106486,
+          "CI95_lo": -0.03189997349217494,
+          "CI95_hi": 0.010902369785946664,
+          "p_two_sided": 0.351,
+          "coverage_at_acc90": 0.0008532423208191126,
+          "coverage_at_acc95": 0.0008532423208191126,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "post_hoc": true,
+          "AURCC": 0.45624710178365263,
+          "delta_vs_entropy": -0.010858794356978244,
+          "CI95_lo": -0.026291063499552403,
+          "CI95_hi": 0.003782624095353071,
+          "p_two_sided": 0.157,
+          "coverage_at_acc90": 0.0017064846416382253,
+          "coverage_at_acc95": 0.0017064846416382253,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "post_hoc": true,
+          "AURCC": 0.4585077669414878,
+          "delta_vs_entropy": -0.008653858061929828,
+          "CI95_lo": -0.014328345600820969,
+          "CI95_hi": -0.002757541073401315,
+          "p_two_sided": 0.004,
+          "coverage_at_acc90": 0.002559726962457338,
+          "coverage_at_acc95": 0.002559726962457338,
+          "bonferroni_significant": true
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results"
+    },
+    {
+      "task": "arc_easy",
+      "n": 2376,
+      "overall_acc": 0.7550505050505051,
+      "aurcc_entropy_baseline": 0.1709981574516708,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "post_hoc": true,
+          "AURCC": 0.16905304228038096,
+          "delta_vs_entropy": -0.001806590686463629,
+          "CI95_lo": -0.012421933872703877,
+          "CI95_hi": 0.009149788753121696,
+          "p_two_sided": 0.755,
+          "coverage_at_acc90": 0.09553872053872053,
+          "coverage_at_acc95": 0.0281986531986532,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "post_hoc": true,
+          "AURCC": 0.1660773641690734,
+          "delta_vs_entropy": -0.0048301007383959645,
+          "CI95_lo": -0.011945888730848203,
+          "CI95_hi": 0.0023040006835106375,
+          "p_two_sided": 0.194,
+          "coverage_at_acc90": 0.14309764309764308,
+          "coverage_at_acc95": 0.037037037037037035,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "post_hoc": true,
+          "AURCC": 0.1709981574516708,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "coverage_at_acc90": 0.18686868686868688,
+          "coverage_at_acc95": 0.007154882154882155,
+          "bonferroni_significant": false
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results"
+    },
+    {
+      "task": "truthfulqa_mc2",
+      "n": 817,
+      "overall_acc": 0.463766074277822,
+      "aurcc_entropy_baseline": 0.5527658197610912,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "post_hoc": true,
+          "AURCC": 0.5080184073753832,
+          "delta_vs_entropy": -0.0447369116044485,
+          "CI95_lo": -0.0708384171825226,
+          "CI95_hi": -0.018944050823010428,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0012239902080783353,
+          "coverage_at_acc95": 0.0012239902080783353,
+          "bonferroni_significant": true
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "post_hoc": true,
+          "AURCC": 0.5150509450179331,
+          "delta_vs_entropy": -0.037599728657712085,
+          "CI95_lo": -0.05731387794166798,
+          "CI95_hi": -0.01830575676372237,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0012239902080783353,
+          "coverage_at_acc95": 0.0012239902080783353,
+          "bonferroni_significant": true
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "post_hoc": true,
+          "AURCC": 0.5080184073753832,
+          "delta_vs_entropy": -0.0447369116044485,
+          "CI95_lo": -0.0708384171825226,
+          "CI95_hi": -0.018944050823010428,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0012239902080783353,
+          "coverage_at_acc95": 0.0012239902080783353,
+          "bonferroni_significant": true
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v104/n5000_results"
+    },
+    {
+      "task": "hellaswag",
+      "n": 746,
+      "overall_acc": 0.48525469168900803,
+      "aurcc_entropy_baseline": 0.3795900296639082,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "post_hoc": true,
+          "AURCC": 0.3983431047649931,
+          "delta_vs_entropy": 0.018718499780457344,
+          "CI95_lo": -0.0009392703724543372,
+          "CI95_hi": 0.037531085054512525,
+          "p_two_sided": 0.057,
+          "coverage_at_acc90": 0.013404825737265416,
+          "coverage_at_acc95": 0.00938337801608579,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "post_hoc": true,
+          "AURCC": 0.3921171176058213,
+          "delta_vs_entropy": 0.012625780808194296,
+          "CI95_lo": -0.003821018809381682,
+          "CI95_hi": 0.02859261759391979,
+          "p_two_sided": 0.135,
+          "coverage_at_acc90": 0.01742627345844504,
+          "coverage_at_acc95": 0.010723860589812333,
+          "bonferroni_significant": false
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "post_hoc": true,
+          "AURCC": 0.3795900296639082,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "coverage_at_acc90": 0.03351206434316354,
+          "coverage_at_acc95": 0.028150134048257374,
+          "bonferroni_significant": false
+        }
+      ],
+      "sidecar_root": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/v111/results"
+    }
+  ],
+  "cross_task_summary": {
+    "sigma_composite_max": {
+      "wins": 1,
+      "delta_sum": -0.037878829241561274,
+      "n": 4,
+      "tasks": [
+        "truthfulqa_mc2"
+      ]
+    },
+    "sigma_composite_mean": {
+      "wins": 1,
+      "delta_sum": -0.040662842944892,
+      "n": 4,
+      "tasks": [
+        "truthfulqa_mc2"
+      ]
+    },
+    "sigma_task_adaptive": {
+      "wins": 2,
+      "delta_sum": -0.05339076966637833,
+      "n": 4,
+      "tasks": [
+        "arc_challenge",
+        "truthfulqa_mc2"
+      ]
+    }
+  }
+}

@@ -1,0 +1,189 @@
+{
+  "preregistered": true,
+  "lock_signals_sha256": "bb2ff2210be2e00c69b247c6e08cac163e8e7dda4b82d8ba0d031662ef8cccf0",
+  "bonferroni_N": 12,
+  "alpha_fw": 0.004166666666666667,
+  "any_winner": true,
+  "tasks": [
+    {
+      "task": "arc_challenge",
+      "n_cal": 586,
+      "n_test": 586,
+      "overall_acc_test": 0.4539249146757679,
+      "aurcc_entropy_test": 0.4804696338391182,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "AURCC_test": 0.48297043165086545,
+          "delta_vs_entropy_test": 0.0022487819346516304,
+          "CI95_lo": -0.032591446998036566,
+          "CI95_hi": 0.03619197981859085,
+          "p_two_sided": 0.901,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC_test": 0.478077446966274,
+          "delta_vs_entropy_test": -0.002503558007165883,
+          "CI95_lo": -0.0258622454788191,
+          "CI95_hi": 0.021186888022039607,
+          "p_two_sided": 0.844,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "AURCC_test": 0.47363265227913626,
+          "delta_vs_entropy_test": -0.007185732679345412,
+          "CI95_lo": -0.016925108650990284,
+          "CI95_hi": 0.002553979473196022,
+          "p_two_sided": 0.145,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": false,
+          "preregistered": true
+        }
+      ]
+    },
+    {
+      "task": "arc_easy",
+      "n_cal": 1188,
+      "n_test": 1188,
+      "overall_acc_test": 0.7474747474747475,
+      "aurcc_entropy_test": 0.17784804398375634,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "AURCC_test": 0.1797704455166351,
+          "delta_vs_entropy_test": 0.0020565835414640536,
+          "CI95_lo": -0.01414280862323758,
+          "CI95_hi": 0.017892750666553575,
+          "p_two_sided": 0.797,
+          "coverage_at_acc90": 0.0765993265993266,
+          "coverage_at_acc95": 0.031144781144781145,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC_test": 0.17559580162041624,
+          "delta_vs_entropy_test": -0.002180283216251588,
+          "CI95_lo": -0.01285676387689677,
+          "CI95_hi": 0.008501541691433079,
+          "p_two_sided": 0.687,
+          "coverage_at_acc90": 0.11784511784511785,
+          "coverage_at_acc95": 0.020202020202020204,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "AURCC_test": 0.17784804398375634,
+          "delta_vs_entropy_test": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "coverage_at_acc90": 0.17929292929292928,
+          "coverage_at_acc95": 0.009259259259259259,
+          "bonferroni_significant": false,
+          "preregistered": true
+        }
+      ]
+    },
+    {
+      "task": "truthfulqa_mc2",
+      "n_cal": 408,
+      "n_test": 409,
+      "overall_acc_test": 0.453433161381408,
+      "aurcc_entropy_test": 0.5575753145529045,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "AURCC_test": 0.48970985700504865,
+          "delta_vs_entropy_test": -0.06814219782600739,
+          "CI95_lo": -0.1067772688012864,
+          "CI95_hi": -0.03131568521889444,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": true,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC_test": 0.5025491852504499,
+          "delta_vs_entropy_test": -0.05486271292937127,
+          "CI95_lo": -0.0829076148195731,
+          "CI95_hi": -0.029262000352757833,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": true,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "AURCC_test": 0.48970985700504865,
+          "delta_vs_entropy_test": -0.06814219782600739,
+          "CI95_lo": -0.1067772688012864,
+          "CI95_hi": -0.03131568521889444,
+          "p_two_sided": 0.0005,
+          "coverage_at_acc90": 0.0,
+          "coverage_at_acc95": 0.0,
+          "bonferroni_significant": true,
+          "preregistered": true
+        }
+      ]
+    },
+    {
+      "task": "hellaswag",
+      "n_cal": 373,
+      "n_test": 373,
+      "overall_acc_test": 0.4691689008042895,
+      "aurcc_entropy_test": 0.411406594391302,
+      "rows": [
+        {
+          "signal": "sigma_composite_max",
+          "AURCC_test": 0.4209236461306555,
+          "delta_vs_entropy_test": 0.009507732322296803,
+          "CI95_lo": -0.022057807541399965,
+          "CI95_hi": 0.04077768691961081,
+          "p_two_sided": 0.562,
+          "coverage_at_acc90": 0.00804289544235925,
+          "coverage_at_acc95": 0.00804289544235925,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC_test": 0.41634014293299887,
+          "delta_vs_entropy_test": 0.004917869509439888,
+          "CI95_lo": -0.02162838563989239,
+          "CI95_hi": 0.031034348098329445,
+          "p_two_sided": 0.699,
+          "coverage_at_acc90": 0.00804289544235925,
+          "coverage_at_acc95": 0.00804289544235925,
+          "bonferroni_significant": false,
+          "preregistered": true
+        },
+        {
+          "signal": "sigma_task_adaptive",
+          "AURCC_test": 0.411406594391302,
+          "delta_vs_entropy_test": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "coverage_at_acc90": 0.02680965147453083,
+          "coverage_at_acc95": 0.013404825737265416,
+          "bonferroni_significant": false,
+          "preregistered": true
+        }
+      ]
+    }
+  ]
+}

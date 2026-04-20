@@ -52,6 +52,47 @@ bash benchmarks/v111/run_matrix.sh               # all four tasks
 bash benchmarks/v111/check_v111_matrix.sh        # CI-safe smoke
 ```
 
+**Selective-prediction curves** for all four task families (entropy ·
+σ_max_token · σ_product · post-hoc σ_composite_max · σ_task_adaptive):
+
+![v111 selective-prediction curves](docs/v111/selective_prediction_curves.png)
+
+Regenerate: `.venv-bitnet/bin/python benchmarks/v111/plot_selective_prediction.py`.
+
+**Post-hoc exploration (v111.2, not pre-registered).**  A second matrix
+evaluates three composite / task-routed signals with a separate
+Bonferroni N = 12.  `sigma_task_adaptive` picks up **2 Bonferroni wins**
+(arc_challenge + truthfulqa_mc2), one more than any single
+pre-registered signal — but only conditional on a task classifier, which
+does not ship today.  Full table:
+[`benchmarks/v111/results/frontier_matrix_adaptive.md`](benchmarks/v111/results/frontier_matrix_adaptive.md).
+This is reported **alongside** the pre-registered matrix, never in
+place of it (see §7 in [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md#7-v1112-post-hoc-exploration-composite--task-adaptive-σ)).
+
+**Pre-registered replication (v111.2-prereg).**  The same adaptive /
+composite signals were then locked in
+[`benchmarks/v111/PREREGISTRATION_ADAPTIVE.md`](benchmarks/v111/PREREGISTRATION_ADAPTIVE.md)
+and re-scored on a 50 % test split held out under a fixed seed
+(`0xC05A1A2A`).  On the test split, H₀ is **rejected** for TruthfulQA
+at p ≈ 0.0005 for all three adaptive signals (ΔAURCC up to −0.0681,
+Bonferroni N = 12 at α_fw = 0.00417).  On ARC-challenge the direction
+is preserved but under-powered at half-data, and is honestly reported
+as **not replicated**.  Full table:
+[`benchmarks/v111/results/frontier_matrix_prereg.md`](benchmarks/v111/results/frontier_matrix_prereg.md).
+
+**Conformal coverage guarantee (v111.2-conformal).**  The same lock
+file yields per-task Vovk–Gammerman thresholds τ_c at α = 0.05 on the
+50 % calibration split.  On exchangeable draws, the subset
+`σ ≤ τ_c` retains accuracy ≥ 1 − α in finite-sample expectation — a
+finite-sample, distribution-free bound that AURCC alone cannot
+provide.  Thresholds + caveats:
+[`docs/v111/CONFORMAL_GUARANTEE.md`](docs/v111/CONFORMAL_GUARANTEE.md).
+A fixture-based σ-gated RAG demo at
+[`benchmarks/v111/results/adaptive_rag_demo.md`](benchmarks/v111/results/adaptive_rag_demo.md)
+shows that this threshold saves **89 %–95 %** of retrieval calls
+across the four families while keeping accuracy on the
+answered-direct subset ≥ the always-direct baseline.
+
 Methodology and signal definitions:
 [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md).
 Composition layers behind these numbers:

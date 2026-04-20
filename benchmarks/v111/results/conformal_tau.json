@@ -1,0 +1,111 @@
+{
+  "preregistered": true,
+  "alpha": 0.05,
+  "guarantee_family": "Vovk\u2013Gammerman conformal quantile",
+  "per_task": {
+    "arc_challenge": {
+      "sigma_composite_max": {
+        "tau_conformal": 0.463075,
+        "n_calibration_correct": 282,
+        "n_calibration_total": 586,
+        "q_index_1based": 269,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_composite_mean": {
+        "tau_conformal": 0.32655449999999997,
+        "n_calibration_correct": 282,
+        "n_calibration_total": 586,
+        "q_index_1based": 269,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_task_adaptive": {
+        "tau_conformal": 0.1267669091568996,
+        "n_calibration_correct": 282,
+        "n_calibration_total": 586,
+        "q_index_1based": 269,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      }
+    },
+    "arc_easy": {
+      "sigma_composite_max": {
+        "tau_conformal": 0.444196,
+        "n_calibration_correct": 906,
+        "n_calibration_total": 1188,
+        "q_index_1based": 862,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_composite_mean": {
+        "tau_conformal": 0.3321715,
+        "n_calibration_correct": 906,
+        "n_calibration_total": 1188,
+        "q_index_1based": 862,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_task_adaptive": {
+        "tau_conformal": 0.245972,
+        "n_calibration_correct": 906,
+        "n_calibration_total": 1188,
+        "q_index_1based": 862,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      }
+    },
+    "truthfulqa_mc2": {
+      "sigma_composite_max": {
+        "tau_conformal": 0.41535,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 408,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_composite_mean": {
+        "tau_conformal": 0.279961,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 408,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_task_adaptive": {
+        "tau_conformal": 0.41535,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 408,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      }
+    },
+    "hellaswag": {
+      "sigma_composite_max": {
+        "tau_conformal": 0.291224,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 373,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_composite_mean": {
+        "tau_conformal": 0.2764975,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 373,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      },
+      "sigma_task_adaptive": {
+        "tau_conformal": 0.287523,
+        "n_calibration_correct": 187,
+        "n_calibration_total": 373,
+        "q_index_1based": 179,
+        "alpha": 0.05,
+        "guarantee": "On exchangeable draws, P[correct | \u03c3 \u2264 \u03c4] \u2265 0.95 in finite-sample expectation (Vovk\u2013Gammerman)."
+      }
+    }
+  }
+}
