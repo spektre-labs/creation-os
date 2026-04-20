@@ -28,6 +28,7 @@ from sigma_pipeline.speculative import (                           # noqa: E402
 )
 from sigma_pipeline import ttt as pttt                             # noqa: E402
 from sigma_pipeline.engram import fnv1a_64                          # noqa: E402
+from sigma_pipeline import moe as pmoe                              # noqa: E402
 
 
 def _run_binary(name: str) -> dict:
@@ -139,6 +140,32 @@ def main() -> int:
               f"vs Py={did_reset == 1}")
         failures += 1
 
+    # MoE parity: run the canonical (σ, logits) sweep through the
+    # Python mirror and assert agreement with the C binary's demo.
+    mo = _run_binary("creation_os_sigma_moe")
+    assert mo["pass"] is True, f"C moe self_test failed: {mo}"
+    logits = [0.10, 0.90, 0.30, 0.70]
+    sigmas = [0.05, 0.20, 0.40, 0.80]
+    for i, (s, c_row) in enumerate(zip(sigmas, mo["demo"])):
+        py = pmoe.route(s, logits)
+        if py.expert_id != c_row["expert_id"] or \
+           py.width.label != c_row["width"] or \
+           abs(py.width_frac - c_row["width_frac"]) > 1e-6:
+            print(f"FAIL moe row {i} "
+                  f"C={c_row} vs Py={py}")
+            failures += 1
+    py_acts = [pmoe.route(s, logits) for s in sigmas]
+    if abs(pmoe.compute_saved(py_acts) - mo["compute_saved"]) > 1e-6:
+        print(f"FAIL moe compute_saved "
+              f"C={mo['compute_saved']} Py={pmoe.compute_saved(py_acts)}")
+        failures += 1
+    py_topk = pmoe.top_k_route(0.05, logits, 2)
+    c_topk = mo["top_k"]
+    if [a.expert_id for a in py_topk] != c_topk["experts"]:
+        print(f"FAIL moe top-k C={c_topk['experts']} "
+              f"Py={[a.expert_id for a in py_topk]}")
+        failures += 1
+
     # Engram parity: FNV-1a-64 must match byte-for-byte on the four
     # canonical strings the C binary publishes.
     eg = _run_binary("creation_os_sigma_engram")
@@ -157,7 +184,8 @@ def main() -> int:
         return 1
     print("sigma-parity: OK — C ↔ Python decision parity on 18 canonical "
           "rows + cost-savings formula match (Δ<1e-4) + TTT 4-step demo "
-          "match (Δ<1e-4) + Engram FNV-1a-64 byte-identical on 4 strings")
+          "match (Δ<1e-4) + Engram FNV-1a-64 byte-identical on 4 strings "
+          "+ MoE 4-row width-gate + top-k + compute_saved match (Δ<1e-6)")
     return 0
 
 

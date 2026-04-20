@@ -6050,8 +6050,30 @@ check-sigma-speculative: creation_os_sigma_speculative
 	@echo "check-sigma-speculative: OK (2-state route + peak update + segment + cost model)"
 
 check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
-                      check-sigma-ttt check-sigma-engram
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram primitives)"
+                      check-sigma-ttt check-sigma-engram \
+                      check-sigma-moe
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe primitives)"
+
+# --- σ-pipeline: MoE (σ-gated expert routing + dynamic width) ---
+#
+# Live v280 kernel.  Top-1 / top-K expert routing with a 4-step width
+# gate (Q / H / TQ / F at σ ∈ [0.15, 0.30, 0.50]) — MoSE (arxiv
+# 2602.06154) conventions adapted to σ.  Self-test covers (a) width
+# gate on all four branches, (b) strict monotonicity across a 101-
+# point σ sweep, (c) NaN / all-NaN / zero-experts degenerate safety,
+# (d) top-K ordering + width inheritance + K-clamp semantics, (e)
+# compute_saved arithmetic (0.375 for the canonical 4-row trace),
+# (f) 10^4 LCG stress comparing against an independent argmax.
+SIGMA_MOE_INC  = -Isrc/sigma/pipeline
+SIGMA_MOE_SRCS = src/sigma/pipeline/moe.c
+
+creation_os_sigma_moe: $(SIGMA_MOE_SRCS) src/sigma/pipeline/moe_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MOE_INC) -o $@ \
+	    $(SIGMA_MOE_SRCS) src/sigma/pipeline/moe_main.c $(LDFLAGS)
+
+check-sigma-moe: creation_os_sigma_moe
+	@bash benchmarks/sigma_pipeline/check_sigma_moe.sh
+	@echo "check-sigma-moe: OK (σ-gated expert routing + dynamic width)"
 
 # --- σ-pipeline: Engram (O(1) σ-aware cache) ---
 #

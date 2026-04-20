@@ -18,6 +18,7 @@ __all__ = [
     "speculative",
     "ttt",
     "engram",
+    "moe",
     "backends",
     "generate_until",
     "orchestrator",
