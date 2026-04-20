@@ -1,5 +1,117 @@
 # Changelog
 
+## v1.3.0 — "Hermes" — 2026-04-19
+
+Fourth tagged release of Creation OS.  Genesis shipped the
+structure; Prometheus lit the fire; Athena brought wisdom;
+**Hermes is the messenger** — the system now learns from each
+node, coordinates teams of specialists, and shares what it learns
+across the mesh without ever shipping the training data.
+
+v1.0 was the kernel.  v1.1 was the kernel in use.  v1.2 was the
+kernel that understands.  v1.3 is the kernel that travels:
+
+- on-device rank-r LoRA with σ-guided acceptance so a node
+  permanently personalises without ever touching the cloud
+  (**σ-LoRA**);
+- a typed coordinator + worker team with plan-then-delegate and
+  σ-gated retries so one goal can fan out across five agents and
+  close deterministically (**σ-team**);
+- one benchmark command replaces five: weighted σ, cost, and
+  escalation in a single row-based table with a regression gate
+  that CI can hard-block on (**σ-suite**);
+- `.cos` adapter containers with a fixed-layout header and a
+  32-byte MAC so trained LoRAs survive wire transfer intact —
+  tamper a byte and the reader refuses to load it
+  (**σ-export**);
+- a production watchdog that folds every turn into σ_1h / σ_24h /
+  σ_7d rolling windows, fits a per-day slope, and emits a
+  structured auto-heal plan (`run_omega` / `train_lora` /
+  `notify_human`) when quality slides (**σ-watchdog**).
+
+### New kernels
+
+- **HERMES-1 — σ-LoRA** (`src/sigma/pipeline/lora.{c,h}`):
+  rank-r adapter `ΔW = (α/r)·B·A` trained via SGD with MSE loss;
+  deterministic LCG init, σ_before/σ_after bookkeeping, and a
+  `cos_lora_registry_t` that routes roles → adapters and falls
+  back to the frozen base when no binding exists.  Bounded RAM
+  (≤ 1024 × 1024 × 64 ⇒ one page-aligned adapter).
+- **HERMES-2 — σ-team** (`src/sigma/pipeline/team.{c,h}`):
+  plan-then-delegate orchestrator over a five-role agent roster
+  (researcher / coordinator / coder / reviewer / writer).
+  Tie-break by lex-id ⇒ deterministic assignments; σ > τ_retry
+  → next candidate; σ > τ_abort → escalation.  Missing role →
+  step escalated, whole run returns `COS_TEAM_FAIL`.
+- **HERMES-3 — σ-suite** (`src/sigma/pipeline/bench_suite.{c,h}`):
+  aggregate accuracy / accuracy_accepted / coverage / σ_mean /
+  cost_eur / rethink_rate / escalation_rate across every listed
+  benchmark plus a weighted σ and total €.  Line-based
+  "COS_BENCH_V1" baseline format is human-diffable; compare gate
+  returns `COS_BENCH_REGRESSION` (-4) when any metric moves the
+  wrong way by more than τ.
+- **HERMES-4 — σ-export** (`src/sigma/pipeline/lora_export.{c,h}`):
+  fixed-layout `.cos` container (magic / version / name / desc /
+  trained_by / dims / α / benchmark σ / seed / created / A / B),
+  little-endian on disk, with a 32-byte interleaved-FNV MAC over
+  the whole payload.  `cos_lora_export_peek` gives metadata
+  without allocating; `cos_lora_export_read` rejects any tampered
+  file with `COS_LORA_EXPORT_ERR_MAC` (-6).
+- **HERMES-5 — σ-watchdog** (`src/sigma/pipeline/watchdog.{c,h}`):
+  4 096-slot ring of production turns, 1 h / 24 h / 7 d rolling
+  σ_mean, per-day OLS slope with sign flipped to "up = bad", and
+  a half-vs-half escalation trend on the same convention.  A
+  1e-4/day epsilon kills float-rounding false positives on flat
+  traces.  Auto-heal mapping: σ↑ → run_omega, escal↑ → train_lora,
+  both → notify_human.
+
+### CLI (scaffold)
+
+All five new kernels ship a standalone `creation_os_sigma_*`
+demo binary with a stable JSON envelope so the `cos` tool can
+grow `cos lora`, `cos team`, `cos benchmark`, and
+`cos watchdog` subcommands incrementally without churning the
+kernel surface.
+
+### Check targets (43 → 48)
+
+`check-sigma-lora`, `check-sigma-team`, `check-sigma-suite`,
+`check-sigma-lora-export`, `check-sigma-watchdog` — each
+deterministic, each invoked by `check-sigma-pipeline`.
+
+### Version metadata
+
+`include/cos_version.h`: 1.2.0 → 1.3.0, codename "Athena" →
+"Hermes", `COS_CHECK_TARGETS` 43 → 48.
+
+### Carried from v1.2 "Athena"
+
+- σ-RAG / σ-persona / σ-offline / σ-corpus / σ-voice.
+- 80-paper Zenodo corpus indexable with `cos corpus ingest`.
+
+### Carried from v1.1 "Prometheus"
+
+- σ-distill continuous distillation, σ-cot-distill structured
+  chain-of-thought capture, σ-sandbox hardening, σ-stream live
+  inference, σ-plugin ABI.
+
+### Carried from v1.0 "Genesis"
+
+- 20 σ-primitives, four substrates (CPU / GPU / NPU / WASM),
+  three discharged formal proofs (3/6), `make merge-gate`,
+  `make bench`, Lean 4 proofs in `formal/`.
+
+### Philosophy
+
+Hermes is the god of crossings — between worlds, between people,
+between minds.  v1.3 is Creation OS crossing from "one node that
+learns" to "many nodes that learn from each other, on their own
+terms, without pooling data."  σ keeps every crossing honest.
+
+`assert(declared == realized);` still holds — now across the wire.
+
+---
+
 ## v1.2.0 — "Athena" — 2026-04-19
 
 Third tagged release of Creation OS.  Genesis shipped the
