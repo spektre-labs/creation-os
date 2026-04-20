@@ -6060,8 +6060,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-pipeline-compose \
                       check-integration check-cos-cli \
                       check-sigma-tool check-sigma-plan \
-                      check-sigma-merge
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge)"
+                      check-sigma-merge check-sigma-grounding
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6275,6 +6275,25 @@ creation_os_sigma_merge: $(SIGMA_MG_SRCS) \
 check-sigma-merge: creation_os_sigma_merge
 	@bash benchmarks/sigma_pipeline/check_sigma_merge.sh
 	@echo "check-sigma-merge: OK (LINEAR + SLERP + TIES + TASK_ARITH + α-sweep + CONSTRUCTIVE gate)"
+
+# --- σ-pipeline: Grounding (claim verification + FNV provenance, A4) ---
+#
+# Every sentence a model emits is treated as a `claim` and matched
+# against a caller-supplied source table.  Verdicts: GROUNDED,
+# UNSUPPORTED, CONFLICTED, SKIPPED.  Sources are identified by
+# FNV-1a-64 hashes so v299 knowledge-graph / audit layers can cite
+# "this claim came from source #0xABCD…" without keeping a pointer.
+SIGMA_GR_INC  = -Isrc/sigma/pipeline
+SIGMA_GR_SRCS = src/sigma/pipeline/grounding.c
+
+creation_os_sigma_grounding: $(SIGMA_GR_SRCS) \
+                             src/sigma/pipeline/grounding_main.c
+	$(CC) $(CFLAGS) $(SIGMA_GR_INC) -o $@ \
+	    $(SIGMA_GR_SRCS) src/sigma/pipeline/grounding_main.c $(LDFLAGS)
+
+check-sigma-grounding: creation_os_sigma_grounding
+	@bash benchmarks/sigma_pipeline/check_sigma_grounding.sh
+	@echo "check-sigma-grounding: OK (GROUNDED + UNSUPPORTED + CONFLICTED + SKIPPED + FNV provenance)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
