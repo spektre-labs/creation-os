@@ -6068,8 +6068,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-cos-network \
-                      check-sigma-spike
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike)"
+                      check-sigma-spike check-sigma-photonic
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6606,6 +6606,24 @@ creation_os_sigma_spike: $(SIGMA_SPK_SRCS) \
 check-sigma-spike: creation_os_sigma_spike
 	@bash benchmarks/sigma_pipeline/check_sigma_spike.sh
 	@echo "check-sigma-spike: OK (LIF step + σ mapping + digital equivalence + population σ)"
+
+# --- σ-pipeline: Photonic (optical intensity → σ-gate, H2) ---
+#
+# σ_photo = 1 − I_max / Σ I_k.  Dominant-channel optical signal
+# collapses σ → 0 (ACCEPT); uniform spread pushes σ → 1
+# (ABSTAIN).  Mach-Zehnder intensity simulator feeds the same
+# reduction with V·cos(Δφ) interference on N arms.
+SIGMA_PHT_INC  = -Isrc/sigma/pipeline
+SIGMA_PHT_SRCS = src/sigma/pipeline/photonic.c
+
+creation_os_sigma_photonic: $(SIGMA_PHT_SRCS) \
+                            src/sigma/pipeline/photonic_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PHT_INC) -o $@ \
+	    $(SIGMA_PHT_SRCS) src/sigma/pipeline/photonic_main.c $(LDFLAGS)
+
+check-sigma-photonic: creation_os_sigma_photonic
+	@bash benchmarks/sigma_pipeline/check_sigma_photonic.sh
+	@echo "check-sigma-photonic: OK (intensity ratio σ + dominant / uniform / MZI)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
