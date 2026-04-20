@@ -6077,7 +6077,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-dp check-sigma-ratelimit \
                       check-sigma-persist check-sigma-health \
                       check-sigma-signal check-cos-version-genesis \
-                      check-sigma-distill
+                      check-sigma-distill check-sigma-cot-distill
 	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
@@ -6682,6 +6682,24 @@ creation_os_sigma_distill: $(SIGMA_DISTILL_SRCS) \
 check-sigma-distill: creation_os_sigma_distill
 	@bash benchmarks/sigma_pipeline/check_sigma_distill.sh
 	@echo "check-sigma-distill: OK (25-pair stream, σ-sorted top-K, escalation ↓)"
+
+# --- σ-pipeline: CoT-distill (chain-of-thought distillation, NEXT-2) ---
+#
+# σ-distill teaches *what* to answer; σ-CoT-distill teaches *how to
+# think*.  Parses teacher chain-of-thought into steps, σ-per-step,
+# and RETHINK-points.  Reinforces P1 RETHINK: the student doesn't
+# rethink at random — it rethinks where the teacher rethought.
+SIGMA_COT_INC  = -Isrc/sigma/pipeline
+SIGMA_COT_SRCS = src/sigma/pipeline/cot_distill.c
+
+creation_os_sigma_cot_distill: $(SIGMA_COT_SRCS) \
+                              src/sigma/pipeline/cot_distill_main.c
+	$(CC) $(CFLAGS) $(SIGMA_COT_INC) -o $@ \
+	    $(SIGMA_COT_SRCS) src/sigma/pipeline/cot_distill_main.c $(LDFLAGS)
+
+check-sigma-cot-distill: creation_os_sigma_cot_distill
+	@bash benchmarks/sigma_pipeline/check_sigma_cot_distill.sh
+	@echo "check-sigma-cot-distill: OK (per-step σ parsed, rethink points identified)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #

@@ -704,3 +704,4 @@ creation_os_sigma_persist
 cos-health
 creation_os_sigma_signal
 creation_os_sigma_distill
+creation_os_sigma_cot_distill
