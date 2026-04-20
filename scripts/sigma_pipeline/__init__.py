@@ -20,6 +20,7 @@ __all__ = [
     "engram",
     "moe",
     "multimodal",
+    "tinyml",
     "backends",
     "generate_until",
     "orchestrator",

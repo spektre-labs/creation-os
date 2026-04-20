@@ -6051,8 +6051,35 @@ check-sigma-speculative: creation_os_sigma_speculative
 
 check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-ttt check-sigma-engram \
-                      check-sigma-moe check-sigma-multimodal
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal primitives)"
+                      check-sigma-moe check-sigma-multimodal \
+                      check-sigma-tinyml check-edge-portability
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge primitives)"
+
+# --- σ-pipeline: TinyML + edge portability (v270–v274) ---
+#
+# Streaming anomaly σ in 12 bytes of RAM per sensor channel.  Same
+# Welford online update used in scientific streaming analytics — but
+# at a size that fits on an ESP32 alongside 100 other sensor channels.
+# Useful where no LLM fits (ESP32, ATtiny) but you still want σ-gated
+# "is this reading trustworthy?" decisions on raw sensor data.
+SIGMA_TINY_INC  = -Isrc/sigma/pipeline
+SIGMA_TINY_SRCS = src/sigma/pipeline/tinyml.c
+
+creation_os_sigma_tinyml: $(SIGMA_TINY_SRCS) \
+                          src/sigma/pipeline/tinyml_main.c
+	$(CC) $(CFLAGS) $(SIGMA_TINY_INC) -o $@ \
+	    $(SIGMA_TINY_SRCS) src/sigma/pipeline/tinyml_main.c $(LDFLAGS)
+
+check-sigma-tinyml: creation_os_sigma_tinyml
+	@bash benchmarks/sigma_pipeline/check_sigma_tinyml.sh
+	@echo "check-sigma-tinyml: OK (12-byte state + Welford σ + spike detection)"
+
+# Edge portability: the same σ primitives must build with portable
+# -Os flags (no -march=native) — the contract for Pi 5, iPhone, and
+# bare-metal ARM cross-toolchains.
+check-edge-portability:
+	@bash benchmarks/sigma_pipeline/check_edge_portability.sh
+	@echo "check-edge-portability: OK (σ primitives build with -Os; no -march=native)"
 
 # --- σ-pipeline: Multimodal (modality-aware σ) ---
 #
