@@ -6076,7 +6076,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-lean-t3-discharged check-sigma-paper-latex \
                       check-sigma-dp check-sigma-ratelimit \
                       check-sigma-persist check-sigma-health \
-                      check-sigma-signal check-cos-version-genesis
+                      check-sigma-signal check-cos-version-genesis \
+                      check-sigma-distill
 	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
@@ -6663,6 +6664,24 @@ creation_os_sigma_signal: $(SIGMA_SIGNAL_SRCS) src/sigma/pipeline/cos_signal_mai
 check-sigma-signal: creation_os_sigma_signal
 	@bash benchmarks/sigma_pipeline/check_sigma_signal.sh
 	@echo "check-sigma-signal: OK (self-test + simulate + persist + real-SIGTERM drain)"
+
+# --- σ-pipeline: Distill (continuous σ-guided distillation, NEXT-1) ---
+#
+# Captures (input, student_answer, student_σ, teacher_answer, teacher_σ)
+# from every escalation, scores σ_distill_value = student_σ − teacher_σ,
+# filters on teacher_σ ≤ τ_teacher, and returns top-K pairs for TTT /
+# P6 fast-weight updates.  In-memory ring of ≤ 1024 pairs; no deps.
+SIGMA_DISTILL_INC  = -Isrc/sigma/pipeline
+SIGMA_DISTILL_SRCS = src/sigma/pipeline/distill.c
+
+creation_os_sigma_distill: $(SIGMA_DISTILL_SRCS) \
+                          src/sigma/pipeline/distill_main.c
+	$(CC) $(CFLAGS) $(SIGMA_DISTILL_INC) -o $@ \
+	    $(SIGMA_DISTILL_SRCS) src/sigma/pipeline/distill_main.c $(LDFLAGS)
+
+check-sigma-distill: creation_os_sigma_distill
+	@bash benchmarks/sigma_pipeline/check_sigma_distill.sh
+	@echo "check-sigma-distill: OK (25-pair stream, σ-sorted top-K, escalation ↓)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
