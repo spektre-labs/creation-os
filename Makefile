@@ -6081,8 +6081,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-sandbox check-sigma-stream \
                       check-sigma-plugin check-sigma-rag \
                       check-sigma-persona check-sigma-offline \
-                      check-sigma-corpus
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus)"
+                      check-sigma-corpus check-sigma-voice
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6860,6 +6860,27 @@ creation_os_sigma_corpus: $(SIGMA_CORPUS_SRCS) \
 check-sigma-corpus: creation_os_sigma_corpus
 	@bash benchmarks/sigma_pipeline/check_sigma_corpus.sh
 	@echo "check-sigma-corpus: OK (manifest ingest + self-reference queries)"
+
+# --- σ-pipeline: Voice (local speech interface, FINAL-5) -------------
+#
+# Two-backend driver with σ-gated STT admit + σ-gated TTS synth:
+#   sim     — scripted, deterministic (used by the check)
+#   native  — execs whisper.cpp / piper when present, otherwise
+#             reports unavailable and falls back to the sim path
+#
+# No cloud speech API is called.  The driver owns the σ decisions;
+# the backend only does the heavy lifting.
+SIGMA_VOICE_INC  = -Isrc/sigma/pipeline
+SIGMA_VOICE_SRCS = src/sigma/pipeline/voice.c
+
+creation_os_sigma_voice: $(SIGMA_VOICE_SRCS) \
+                        src/sigma/pipeline/voice_main.c
+	$(CC) $(CFLAGS) $(SIGMA_VOICE_INC) -o $@ \
+	    $(SIGMA_VOICE_SRCS) src/sigma/pipeline/voice_main.c $(LDFLAGS)
+
+check-sigma-voice: creation_os_sigma_voice
+	@bash benchmarks/sigma_pipeline/check_sigma_voice.sh
+	@echo "check-sigma-voice: OK (stt gate + respond + tts gate + native probe)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
