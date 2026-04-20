@@ -6063,8 +6063,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-merge check-sigma-grounding \
                       check-sigma-session check-cos-agent \
                       check-sigma-selfplay check-sigma-curriculum \
-                      check-sigma-synthetic
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic)"
+                      check-sigma-synthetic check-sigma-evolution
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6396,6 +6396,26 @@ creation_os_sigma_synthetic: $(SIGMA_SY_SRCS) \
 check-sigma-synthetic: creation_os_sigma_synthetic
 	@bash benchmarks/sigma_pipeline/check_sigma_synthetic.sh
 	@echo "check-sigma-synthetic: OK (quality gate + anchor mix + diversity-based collapse guard)"
+
+# --- σ-pipeline: Evolution (genetic search over pipeline params, S4) ---
+#
+# Genetic loop over σ-pipeline GATE parameters (τ_accept, τ_rethink,
+# ttt_lr, max_rethink, codex_weight, engram_ttl), NOT model weights.
+# Fitness = accuracy² · (1/cost) · (1/latency); σ-guard refuses
+# mutants whose sigma_bench regresses past `sigma_slack` above the
+# generation's best.  Deterministic LCG so smoke tests pin the
+# trajectory.
+SIGMA_EV_INC  = -Isrc/sigma/pipeline
+SIGMA_EV_SRCS = src/sigma/pipeline/evolution.c
+
+creation_os_sigma_evolution: $(SIGMA_EV_SRCS) \
+                             src/sigma/pipeline/evolution_main.c
+	$(CC) $(CFLAGS) $(SIGMA_EV_INC) -o $@ \
+	    $(SIGMA_EV_SRCS) src/sigma/pipeline/evolution_main.c $(LDFLAGS)
+
+check-sigma-evolution: creation_os_sigma_evolution
+	@bash benchmarks/sigma_pipeline/check_sigma_evolution.sh
+	@echo "check-sigma-evolution: OK (genome clamp + fitness ordering + run improves seed + τ_accept converges toward optimum)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
