@@ -6079,8 +6079,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-signal check-cos-version-genesis \
                       check-sigma-distill check-sigma-cot-distill \
                       check-sigma-sandbox check-sigma-stream \
-                      check-sigma-plugin
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
+                      check-sigma-plugin check-sigma-rag
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6783,6 +6783,26 @@ creation_os_sigma_plugin: $(SIGMA_PLUGIN_SRCS) \
 check-sigma-plugin: creation_os_sigma_plugin
 	@bash benchmarks/sigma_pipeline/check_sigma_plugin.sh
 	@echo "check-sigma-plugin: OK (static register + dlopen demo + tool + σ-signal)"
+
+# --- σ-pipeline: RAG (local retrieval-augmented generation, FINAL-1) ---
+#
+# Deterministic, zero-dependency retrieval-augmented generation.
+# The embedder is hashed-n-gram bag-of-words projected onto a
+# 128-dimensional unit vector; cosine similarity drives ranking
+# and σ_retrieval = clip01(1 - cosine) drives σ-filtering.  The
+# corpus is chunked on word boundaries and never leaves disk.
+# A real MiniLM / BGE / Jina embedder plugs in through σ-Plugin.
+SIGMA_RAG_INC  = -Isrc/sigma/pipeline
+SIGMA_RAG_SRCS = src/sigma/pipeline/rag.c
+
+creation_os_sigma_rag: $(SIGMA_RAG_SRCS) \
+                      src/sigma/pipeline/rag_main.c
+	$(CC) $(CFLAGS) $(SIGMA_RAG_INC) -o $@ \
+	    $(SIGMA_RAG_SRCS) src/sigma/pipeline/rag_main.c $(LDFLAGS)
+
+check-sigma-rag: creation_os_sigma_rag
+	@bash benchmarks/sigma_pipeline/check_sigma_rag.sh
+	@echo "check-sigma-rag: OK (embed + chunk + σ-filter + top-k stable)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
