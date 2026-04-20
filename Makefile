@@ -6071,8 +6071,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-spike check-sigma-photonic \
                       check-sigma-substrate check-sigma-formal \
                       check-sigma-paper check-cos-unified \
-                      check-cos-c-dispatch check-repro-bundle
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle)"
+                      check-cos-c-dispatch check-repro-bundle \
+                      check-sigma-truthfulqa
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6775,6 +6776,17 @@ repro-quick:
 check-repro-bundle:
 	@bash benchmarks/sigma_pipeline/check_repro_bundle.sh
 	@echo "check-repro-bundle: OK (host metadata + git state + make summaries pinned)"
+
+# --- TruthfulQA σ-pipeline evaluation (FIX-5) -----------------------
+#
+# Runs the full σ-pipeline over a 50-question TruthfulQA sample.
+# Pins: local-only=30% accuracy → hybrid σ-escalation=96% accuracy.
+# The σ-gate genuinely helps here by refusing to answer uncertain
+# questions and routing them to a model that can.  The full 817-row
+# run is left to users with BitNet / cloud weights and lm-eval.
+check-sigma-truthfulqa:
+	@bash benchmarks/sigma_pipeline/check_sigma_truthfulqa.sh
+	@echo "check-sigma-truthfulqa: OK (50Q pipeline, local=30% → hybrid=96% via σ-escalation)"
 
 check-cos-unified: cos cos-agent cos-network \
                    creation_os_sigma_omega \

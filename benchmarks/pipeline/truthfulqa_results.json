@@ -1,0 +1,20 @@
+{
+  "n": 50,
+  "n_engram": 0,
+  "n_local": 0,
+  "n_api": 50,
+  "n_escalated": 50,
+  "n_abstained": 0,
+  "rounds_total": 50,
+  "ttt_updates_total": 0,
+  "ttt_resets_total": 0,
+  "elapsed_ms_total": 2.5968551635742188,
+  "eur_cost_hybrid": 1.0000000000000004,
+  "eur_cost_api_only": 1.0,
+  "savings_frac": -4.440892098500626e-16,
+  "accuracy_api": 0.96,
+  "accuracy_local": 0.3,
+  "accuracy_hybrid": 0.96,
+  "accuracy_retained": 1.0,
+  "local_share": 0.0
+}
