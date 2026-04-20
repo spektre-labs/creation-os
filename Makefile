@@ -6078,7 +6078,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-persist check-sigma-health \
                       check-sigma-signal check-cos-version-genesis \
                       check-sigma-distill check-sigma-cot-distill \
-                      check-sigma-sandbox
+                      check-sigma-sandbox check-sigma-stream
 	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
@@ -6720,6 +6720,24 @@ creation_os_sigma_sandbox: $(SIGMA_SANDBOX_SRCS) \
 check-sigma-sandbox: creation_os_sigma_sandbox
 	@bash benchmarks/sigma_pipeline/check_sigma_sandbox.sh
 	@echo "check-sigma-sandbox: OK (risk-0 echo + risk-3 timeout + disallowed + consent gate)"
+
+# --- σ-pipeline: Stream (per-token σ streaming, NEXT-4) ---
+#
+# Substrate-agnostic driver that pulls one token at a time from a
+# caller-supplied generator, emits per-token σ via a callback, and
+# fires RETHINK markers in-band when σ ≥ τ_rethink.  Drives
+# `cos chat --stream`.
+SIGMA_STREAM_INC  = -Isrc/sigma/pipeline
+SIGMA_STREAM_SRCS = src/sigma/pipeline/stream.c
+
+creation_os_sigma_stream: $(SIGMA_STREAM_SRCS) \
+                         src/sigma/pipeline/stream_main.c
+	$(CC) $(CFLAGS) $(SIGMA_STREAM_INC) -o $@ \
+	    $(SIGMA_STREAM_SRCS) src/sigma/pipeline/stream_main.c $(LDFLAGS)
+
+check-sigma-stream: creation_os_sigma_stream
+	@bash benchmarks/sigma_pipeline/check_sigma_stream.sh
+	@echo "check-sigma-stream: OK (per-token σ streamed, rethink at σ ≥ τ)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
