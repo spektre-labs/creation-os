@@ -6064,8 +6064,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-session check-cos-agent \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
-                      check-sigma-meta
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta)"
+                      check-sigma-meta check-sigma-omega
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6437,6 +6437,26 @@ creation_os_sigma_meta: $(SIGMA_MT_SRCS) \
 check-sigma-meta: creation_os_sigma_meta
 	@bash benchmarks/sigma_pipeline/check_sigma_meta.sh
 	@echo "check-sigma-meta: OK (bucket + mean + slope + competence flags + recommend_focus)"
+
+# --- σ-pipeline: Omega (recursive self-improvement loop, S6) ---
+#
+# The v306 thesis statement Ω = argmin ∫σ dt s.t. K ≥ K_crit as a
+# runnable loop.  Composes the S-series (self-play, TTT, evolve,
+# meta) via caller-supplied hook callbacks so σ-Omega stays the
+# conductor, not the soloist.  Per iteration: sub-loops → benchmark
+# → best-snapshot if improved → K_eff check → rollback if unsafe.
+# Deterministic smoke pins the trajectory on a stub runtime.
+SIGMA_OM_INC  = -Isrc/sigma/pipeline
+SIGMA_OM_SRCS = src/sigma/pipeline/omega.c
+
+creation_os_sigma_omega: $(SIGMA_OM_SRCS) \
+                         src/sigma/pipeline/omega_main.c
+	$(CC) $(CFLAGS) $(SIGMA_OM_INC) -o $@ \
+	    $(SIGMA_OM_SRCS) src/sigma/pipeline/omega_main.c $(LDFLAGS)
+
+check-sigma-omega: creation_os_sigma_omega
+	@bash benchmarks/sigma_pipeline/check_sigma_omega.sh
+	@echo "check-sigma-omega: OK (Ω loop + ∫σ tracking + best snapshot + K_eff rollback)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
