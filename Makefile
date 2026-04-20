@@ -6054,8 +6054,27 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-moe check-sigma-multimodal \
                       check-sigma-tinyml check-edge-portability \
                       check-sigma-swarm check-sigma-live \
-                      check-sigma-continual check-sigma-unlearn
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn primitives)"
+                      check-sigma-continual check-sigma-unlearn \
+                      check-sigma-agent
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent primitives)"
+
+# --- σ-pipeline: Agent (OODA + σ-modulated autonomy gate) ---
+#
+# OBSERVE → ORIENT → DECIDE → ACT → REFLECT, with the gate scaling
+# the agent's effective autonomy by (1 − σ).  Read/write/network/
+# irreversible action classes carry rising autonomy thresholds so
+# uncertainty automatically downgrades ALLOW → CONFIRM → BLOCK.
+SIGMA_AG_INC  = -Isrc/sigma/pipeline
+SIGMA_AG_SRCS = src/sigma/pipeline/agent.c
+
+creation_os_sigma_agent: $(SIGMA_AG_SRCS) \
+                         src/sigma/pipeline/agent_main.c
+	$(CC) $(CFLAGS) $(SIGMA_AG_INC) -o $@ \
+	    $(SIGMA_AG_SRCS) src/sigma/pipeline/agent_main.c $(LDFLAGS)
+
+check-sigma-agent: creation_os_sigma_agent
+	@bash benchmarks/sigma_pipeline/check_sigma_agent.sh
+	@echo "check-sigma-agent: OK (OODA loop + σ-modulated autonomy gate)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
