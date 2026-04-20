@@ -6067,8 +6067,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-meta check-sigma-omega \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
-                      check-sigma-protocol
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol)"
+                      check-sigma-protocol check-cos-network
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6563,6 +6563,27 @@ creation_os_sigma_protocol: $(SIGMA_PROTO_SRCS) \
 check-sigma-protocol: creation_os_sigma_protocol
 	@bash benchmarks/sigma_pipeline/check_sigma_protocol.sh
 	@echo "check-sigma-protocol: OK (encode/decode round-trip + 7 types + tamper/wrong-key reject)"
+
+# --- cos network CLI (D6) — distributed CLI composing the D-series ---
+#
+# Subcommands: join / list / status / serve / query / federate /
+# unlearn.  Each operates on the canonical bootstrapped state
+# (4 mesh peers + 3 market providers + 3-node federation) and
+# emits a pinnable JSON receipt with --json.
+COS_NETWORK_INC  = -Isrc/sigma/pipeline
+COS_NETWORK_SRCS = src/sigma/pipeline/mesh.c \
+                   src/sigma/pipeline/split.c \
+                   src/sigma/pipeline/marketplace.c \
+                   src/sigma/pipeline/federation.c \
+                   src/sigma/pipeline/protocol.c
+
+cos-network: $(COS_NETWORK_SRCS) src/cli/cos_network.c
+	$(CC) $(CFLAGS) $(COS_NETWORK_INC) -o $@ \
+	    $(COS_NETWORK_SRCS) src/cli/cos_network.c $(LDFLAGS)
+
+check-cos-network: cos-network
+	@bash benchmarks/sigma_pipeline/check_cos_network.sh
+	@echo "check-cos-network: OK (join + list + status + serve + query + federate + unlearn)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
