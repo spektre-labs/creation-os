@@ -461,6 +461,78 @@ The live stack ships today:
   `repurposed` carries `new_domain_found = true` — **continuous
   use is the best defence; a single kernel serves LLMs, sensors,
   and organizations in three rooms of the same building**.
+- **v294–v298** — the **immortal-architecture layer**: σ-federated
+  (3 canonical devices `device_a σ=0.10 · device_b σ=0.30 ·
+  device_c σ=0.80` where `accepted iff σ_device ≤ τ_device = 0.40`
+  firing both branches AND accepted weights sum to `1.0 ± 1e-3`
+  AND weights strictly decreasing with σ across ACCEPTED rows,
+  3 canonical DP regimes `too_low_noise ε=10.0 σ=0.05 PRIVACY_RISK ·
+  optimal_noise ε=1.0 σ=0.20 OPTIMAL · too_high_noise ε=0.1 σ=0.75
+  SIGNAL_DESTROYED` with σ strictly increasing as ε strictly
+  decreasing AND exactly 1 OPTIMAL, 3 canonical non-IID rows
+  `similar_data → GLOBAL_MODEL · slightly_different → HYBRID ·
+  very_different → PERSONALIZED` with three routing branches
+  firing on `δ_global = 0.20` AND `δ_personal = 0.60`, and
+  3 canonical mesh edges `a→b trusted · b→c trusted · a→z
+  rejected` with `trusted iff σ_neighbor ≤ τ_mesh = 0.30` AND
+  `central_server = false` AND `single_point_of_failure = false`
+  — **FedAvg weighted by σ; a high-σ device does not pull the
+  global model; the mesh learns without a cloud**), σ-immune
+  (3 canonical innate patterns `sql_injection · prompt_injection
+  · obvious_malware` all `σ_raw ≥ τ_innate = 0.70` AND blocked
+  AND `requires_training = false` AND `response_tier = INSTANT`,
+  3 canonical adaptive rows `novel_attack_first_seen ·
+  same_attack_second_seen · related_variant_seen` all `learned =
+  true` AND exactly 1 `faster_on_repeat = true` AND exactly 1
+  `cross_recognized = true`, 3 canonical memory rows
+  `pattern_A_first_logged · pattern_A_reencountered ·
+  pattern_B_new_logged` where `recognised iff tier = FAST` AND
+  exactly 1 recognised, and 3 canonical autoimmune scenarios
+  `tau_too_tight AUTOIMMUNE · tau_balanced HEALTHY · tau_too_loose
+  IMMUNODEFICIENT` with τ strictly increasing AND 3 DISTINCT
+  verdicts AND `HEALTHY iff τ ∈ [0.10, 0.60] AND fpr ≤
+  fpr_budget = 0.10` — **innate + adaptive + memory, with
+  autoimmunity and immunodeficiency named as failure modes the
+  gate refuses to enter**), σ-antifragile (3 canonical stress
+  cycles `cycle_1 stress=1.0 σ=0.50 · cycle_2 stress=2.0 σ=0.35
+  · cycle_3 stress=3.0 σ=0.25` with stress strictly increasing
+  AND σ strictly DECREASING, 3 canonical volatility regimes
+  `unstable · stable · antifragile` with 3 DISTINCT
+  classifications AND `ANTIFRAGILE iff σ_std > std_stability =
+  0.03 AND trend = DECREASING`, 3 canonical vaccine rows
+  `dose_small · dose_medium · real_attack` with noise strictly
+  increasing AND all survived AND exactly 2 vaccines AND exactly
+  1 real attack survived `because_trained = true`, and 3
+  canonical barbell allocations `safe_mode share=0.90 τ=0.15
+  kept · experimental_mode share=0.10 τ=0.70 kept ·
+  middle_compromise share=0.00 τ=0.40 REJECTED` with `share_safe
+  + share_exp = 1.0` AND `share_middle = 0.0` AND `τ_safe <
+  τ_exp` — **stress is fuel, not damage; the middle compromise
+  is not kept**), σ-clock (3 canonical expiry rows
+  `hardcoded_date · valid_until_2030 · api_version_expiry` all
+  `present_in_kernel = false` AND `forbidden = true`, 3 canonical
+  time sources `CLOCK_MONOTONIC ALLOW · CLOCK_REALTIME FORBID ·
+  wallclock_local FORBID` with exactly 1 ALLOW AND exactly 2
+  FORBID, 3 canonical log properties `relative_sequence ·
+  unix_epoch_absent · y2038_safe` all `holds = true`, and 3
+  canonical protocol forward-compat properties
+  `no_version_field_on_struct · old_reader_ignores_new_fields ·
+  append_only_field_semantics` all `holds = true` — **the kernel
+  does not read a calendar; the same σ-gate works in 2026 and
+  2126**), and **σ-rosetta** — 3 canonical σ emissions across
+  3 DISTINCT domains `LLM · SENSOR · ORG` all with
+  `reason_present = true` AND `reason_length ≥ 20`, 3 canonical
+  language bindings `C REFERENCE · Python ADOPTION · Rust SAFETY`
+  with 3 DISTINCT roles AND all `maintained = true` AND all
+  `semantic_match_to_c = true`, 3 canonical log formats
+  `binary · csv · json` all `machine_readable = true` AND
+  exactly 2 `human_readable_forever = true` (csv + json) AND
+  exactly 1 not (binary), and 3 canonical mathematical
+  invariants `sigma_definition σ=noise/(signal+noise) ·
+  pythagoras_2500_yr · arithmetic_invariant` all
+  `formal_expression_present = true` AND none `ages_out` —
+  **no σ on the wire without a reason; if one language dies,
+  two remain; the core definition is a formula, not an API**.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a

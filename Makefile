@@ -497,7 +497,12 @@ merge-gate:
 	@$(MAKE) check-v291
 	@$(MAKE) check-v292
 	@$(MAKE) check-v293
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia)"
+	@$(MAKE) check-v294
+	@$(MAKE) check-v295
+	@$(MAKE) check-v296
+	@$(MAKE) check-v297
+	@$(MAKE) check-v298
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia + v294..v298 federated/immune/antifragile/clock/rosetta)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6934,6 +6939,163 @@ check-v293: check-v293-hagia-sofia-continuous-use
 
 check-v287-v293: check-v287 check-v288 check-v289 check-v290 check-v291 check-v292 check-v293
 	@echo "check-v287-v293: OK (granite + oculus + ruin-value + dougong + parthenon + leanstral + hagia-sofia)"
+
+# --- v294 σ-Federated (σ-gated federated learning) ---
+#
+# v0 contracts: exactly 3 canonical devices
+# (device_a/device_b/device_c); accepted iff
+# σ_device ≤ τ_device=0.40 (both branches fire);
+# accepted weights sum to 1.0 ± 1e-3; weights
+# strictly decreasing with σ across ACCEPTED rows;
+# exactly 3 DP regimes (too_low_noise/optimal_noise/
+# too_high_noise) with σ strictly increasing as ε
+# strictly decreasing AND exactly 1 OPTIMAL;
+# exactly 3 non-IID rows (similar_data/
+# slightly_different/very_different); σ_dist
+# strictly increasing; GLOBAL_MODEL iff σ_dist<0.20,
+# PERSONALIZED iff σ_dist>0.60, HYBRID otherwise;
+# exactly 3 mesh edges (a->b/b->c/a->z); trusted iff
+# σ_neighbor ≤ τ_mesh=0.30 (both branches fire);
+# central_server=false; σ_fed==0.0; FNV-1a chain
+# replays byte-identically.
+V294_INC  = -Isrc/v294
+V294_SRCS = src/v294/federated.c
+
+creation_os_v294_federated: $(V294_SRCS) src/v294/main.c
+	$(CC) $(CFLAGS) $(V294_INC) -o $@ \
+	    $(V294_SRCS) src/v294/main.c $(LDFLAGS)
+
+check-v294-federated-sigma-gated: creation_os_v294_federated
+	@bash benchmarks/v294/check_v294_federated_sigma_gated.sh
+	@echo "check-v294-federated-sigma-gated: OK (devices + dp + niid + mesh)"
+
+check-v294: check-v294-federated-sigma-gated
+	@echo "check-v294: OK (σ-federated kernel)"
+
+# --- v295 σ-Immune (innate + adaptive + memory + autoimmune prevention) ---
+#
+# v0 contracts: exactly 3 innate patterns
+# (sql_injection/prompt_injection/obvious_malware);
+# σ_raw ≥ τ_innate=0.70; all blocked; none require
+# training; all response_tier=INSTANT; exactly 3
+# adaptive rows (novel_attack_first_seen/
+# same_attack_second_seen/related_variant_seen); all
+# learned; exactly 1 faster_on_repeat AND exactly 1
+# cross_recognized; exactly 3 memory rows
+# (pattern_A_first_logged/pattern_A_reencountered/
+# pattern_B_new_logged); recognised iff tier==FAST;
+# exactly 1 recognised; exactly 3 autoimmune
+# scenarios (tau_too_tight/tau_balanced/
+# tau_too_loose); τ strictly increasing; 3 DISTINCT
+# verdicts (AUTOIMMUNE/HEALTHY/IMMUNODEFICIENT);
+# HEALTHY iff τ∈[0.10,0.60] AND fpr≤0.10;
+# σ_immune==0.0; FNV-1a chain replays byte-identically.
+V295_INC  = -Isrc/v295
+V295_SRCS = src/v295/immune.c
+
+creation_os_v295_immune: $(V295_SRCS) src/v295/main.c
+	$(CC) $(CFLAGS) $(V295_INC) -o $@ \
+	    $(V295_SRCS) src/v295/main.c $(LDFLAGS)
+
+check-v295-immune-innate-adaptive: creation_os_v295_immune
+	@bash benchmarks/v295/check_v295_immune_innate_adaptive.sh
+	@echo "check-v295-immune-innate-adaptive: OK (innate + adaptive + memory + autoimmune)"
+
+check-v295: check-v295-immune-innate-adaptive
+	@echo "check-v295: OK (σ-immune kernel)"
+
+# --- v296 σ-Antifragile (stress + volatility + vaccine + barbell) ---
+#
+# v0 contracts: exactly 3 stress cycles
+# (cycle_1/2/3); stress_level strictly increasing
+# AND sigma_after strictly DECREASING (antifragile,
+# not merely robust); exactly 3 volatility regimes
+# (unstable/stable/antifragile) with 3 DISTINCT
+# classifications; ANTIFRAGILE iff σ_std>0.03 AND
+# trend=DECREASING; STABLE iff σ_std≤0.03;
+# UNSTABLE iff σ_std>0.15 AND trend=NONE;
+# exactly 3 vaccine rows (dose_small/dose_medium/
+# real_attack); noise strictly increasing; all
+# survived; exactly 2 vaccines AND exactly 1 real
+# attack survived because_trained=true; exactly 3
+# barbell allocations (safe_mode/experimental_mode/
+# middle_compromise); safe+exp=1.0; middle=0.0;
+# τ_safe<τ_exp; extremes kept, middle rejected;
+# σ_antifragile==0.0; FNV-1a chain replays
+# byte-identically.
+V296_INC  = -Isrc/v296
+V296_SRCS = src/v296/antifragile.c
+
+creation_os_v296_antifragile: $(V296_SRCS) src/v296/main.c
+	$(CC) $(CFLAGS) $(V296_INC) -o $@ \
+	    $(V296_SRCS) src/v296/main.c $(LDFLAGS)
+
+check-v296-antifragile-stress-adaptation: creation_os_v296_antifragile
+	@bash benchmarks/v296/check_v296_antifragile_stress_adaptation.sh
+	@echo "check-v296-antifragile-stress-adaptation: OK (stress + volatility + vaccine + barbell)"
+
+check-v296: check-v296-antifragile-stress-adaptation
+	@echo "check-v296: OK (σ-antifragile kernel)"
+
+# --- v297 σ-Clock (no expiry + monotonic + epoch-free + version-free) ---
+#
+# v0 contracts: exactly 3 expiry rows
+# (hardcoded_date/valid_until_2030/api_version_expiry);
+# all forbidden AND all absent from kernel; exactly
+# 3 time sources (CLOCK_MONOTONIC/CLOCK_REALTIME/
+# wallclock_local); exactly 1 ALLOW (monotonic) AND
+# exactly 2 FORBID (wallclock sources); exactly 3
+# log properties (relative_sequence/unix_epoch_absent/
+# y2038_safe) all holds=true; exactly 3 protocol
+# forward-compat properties (no_version_field_on_struct/
+# old_reader_ignores_new_fields/
+# append_only_field_semantics) all holds=true;
+# σ_clock==0.0; FNV-1a chain replays byte-identically.
+V297_INC  = -Isrc/v297
+V297_SRCS = src/v297/clock.c
+
+creation_os_v297_clock: $(V297_SRCS) src/v297/main.c
+	$(CC) $(CFLAGS) $(V297_INC) -o $@ \
+	    $(V297_SRCS) src/v297/main.c $(LDFLAGS)
+
+check-v297-clock-time-invariant: creation_os_v297_clock
+	@bash benchmarks/v297/check_v297_clock_time_invariant.sh
+	@echo "check-v297-clock-time-invariant: OK (expiry + time + log + proto)"
+
+check-v297: check-v297-clock-time-invariant
+	@echo "check-v297: OK (σ-clock kernel)"
+
+# --- v298 σ-Rosetta (self-documenting + multi-language + human-readable + math) ---
+#
+# v0 contracts: exactly 3 σ emissions with 3
+# DISTINCT domains (LLM/SENSOR/ORG); reason_present
+# AND reason_length ≥ 20 on every row; exactly 3
+# language bindings (C REFERENCE / Python ADOPTION /
+# Rust SAFETY); 3 DISTINCT roles; all maintained AND
+# all semantic_match_to_c; exactly 3 log formats
+# (binary/csv/json); all machine_readable; exactly 2
+# human_readable_forever (csv, json) AND exactly 1
+# not (binary); exactly 3 mathematical invariants
+# (sigma_definition/pythagoras_2500_yr/
+# arithmetic_invariant) all formal_expression_present
+# AND none age_out; σ_rosetta==0.0; FNV-1a chain
+# replays byte-identically.
+V298_INC  = -Isrc/v298
+V298_SRCS = src/v298/rosetta.c
+
+creation_os_v298_rosetta: $(V298_SRCS) src/v298/main.c
+	$(CC) $(CFLAGS) $(V298_INC) -o $@ \
+	    $(V298_SRCS) src/v298/main.c $(LDFLAGS)
+
+check-v298-rosetta-self-documenting: creation_os_v298_rosetta
+	@bash benchmarks/v298/check_v298_rosetta_self_documenting.sh
+	@echo "check-v298-rosetta-self-documenting: OK (emit + spec + fmt + math)"
+
+check-v298: check-v298-rosetta-self-documenting
+	@echo "check-v298: OK (σ-rosetta kernel)"
+
+check-v294-v298: check-v294 check-v295 check-v296 check-v297 check-v298
+	@echo "check-v294-v298: OK (federated + immune + antifragile + clock + rosetta)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #
