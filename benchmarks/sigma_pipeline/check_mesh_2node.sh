@@ -28,7 +28,25 @@ PORT_B=${COS_MESH_PORT_B:-37019}
 
 LOG_A=$(mktemp)
 LOG_B=$(mktemp)
-trap 'rm -f "$LOG_A" "$LOG_B"; kill 0 2>/dev/null || true' EXIT
+PID_A=""
+PID_B=""
+
+# CLOSE-5: robust lifecycle — kill *only* our own child processes
+# (never `kill 0`, which would SIGTERM the parent `make` too), then
+# `wait` away their zombies and clean up the temp logs.  Every exit
+# path (success, assertion failure, signal) converges here.
+cleanup() {
+    local rc=$?
+    if [[ -n "$PID_A" ]]; then kill "$PID_A" 2>/dev/null || true; fi
+    if [[ -n "$PID_B" ]]; then kill "$PID_B" 2>/dev/null || true; fi
+    if [[ -n "$PID_A" ]]; then wait "$PID_A" 2>/dev/null || true; fi
+    if [[ -n "$PID_B" ]]; then wait "$PID_B" 2>/dev/null || true; fi
+    rm -f "$LOG_A" "$LOG_B"
+    return "$rc"
+}
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 # -- launch node A (listener only), then node B (listener + outbound
 #    QUERY to A).  Each has a 1500 ms duration — the whole test takes
@@ -47,7 +65,13 @@ sleep 0.2
     >"$LOG_B" 2>&1 &
 PID_B=$!
 
-wait "$PID_A" "$PID_B"
+# Wait for both to finish on their own (--duration-ms bounds the
+# run); ignore their exit status because we gate on the assertions
+# below.
+wait "$PID_A" 2>/dev/null || true
+wait "$PID_B" 2>/dev/null || true
+PID_A=""
+PID_B=""
 
 echo "=== node A (port $PORT_A) log ==="
 cat "$LOG_A"
