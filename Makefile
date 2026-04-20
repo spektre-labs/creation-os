@@ -6062,8 +6062,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-tool check-sigma-plan \
                       check-sigma-merge check-sigma-grounding \
                       check-sigma-session check-cos-agent \
-                      check-sigma-selfplay check-sigma-curriculum
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum)"
+                      check-sigma-selfplay check-sigma-curriculum \
+                      check-sigma-synthetic
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6374,6 +6375,27 @@ creation_os_sigma_curriculum: $(SIGMA_CR_SRCS) \
 check-sigma-curriculum: creation_os_sigma_curriculum
 	@bash benchmarks/sigma_pipeline/check_sigma_curriculum.sh
 	@echo "check-sigma-curriculum: OK (promote / reset / max-cap + 5-level ladder + acceptance rate)"
+
+# --- σ-pipeline: Synthetic (quality-filtered data + collapse guard, S3) ---
+#
+# Rejection-sampled synthetic pair generation with hard collapse
+# protection (Shumailov 2024).  Accept iff σ_a < τ_quality; stop
+# if σ_diversity = unique_prefixes/N falls below τ_diversity; hold
+# the caller-requested real-anchor ratio exactly by capping the
+# synthetic slot count at n_target − ceil(anchor · n_target).
+# No silent drift — the run either hits the target or stamps
+# `collapsed=1` and walks away.
+SIGMA_SY_INC  = -Isrc/sigma/pipeline
+SIGMA_SY_SRCS = src/sigma/pipeline/synthetic.c
+
+creation_os_sigma_synthetic: $(SIGMA_SY_SRCS) \
+                             src/sigma/pipeline/synthetic_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SY_INC) -o $@ \
+	    $(SIGMA_SY_SRCS) src/sigma/pipeline/synthetic_main.c $(LDFLAGS)
+
+check-sigma-synthetic: creation_os_sigma_synthetic
+	@bash benchmarks/sigma_pipeline/check_sigma_synthetic.sh
+	@echo "check-sigma-synthetic: OK (quality gate + anchor mix + diversity-based collapse guard)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
