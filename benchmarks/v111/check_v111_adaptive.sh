@@ -22,12 +22,25 @@ cd "$ROOT"
 
 PY="${COS_V111_PY:-.venv-bitnet/bin/python}"
 if [ ! -x "$PY" ]; then
-    PY="$(command -v python3)"
+    PY="$(command -v python3 || true)"
+fi
+if [ -z "${PY:-}" ] || ! "$PY" -c 'import sys; sys.exit(0 if sys.version_info >= (3,9) else 1)' 2>/dev/null; then
+    echo "check-v111-adaptive: SKIP (no suitable python3 interpreter)"
+    exit 0
 fi
 
 OUT_MD="benchmarks/v111/results/frontier_matrix_adaptive.md"
 OUT_JSON="benchmarks/v111/results/frontier_matrix_adaptive.json"
 OUT_PNG="docs/v111/selective_prediction_curves.png"
+
+# plot_selective_prediction.py hard-depends on matplotlib.  It is an
+# optional post-hoc artefact (not part of the pre-registered matrix), so
+# we SKIP cleanly on hosts without it rather than failing the gate on an
+# optional plotting dependency.
+if ! "$PY" -c 'import matplotlib' 2>/dev/null; then
+    echo "check-v111-adaptive: SKIP (matplotlib not installed; post-hoc plotting is optional)"
+    exit 0
+fi
 
 echo "v111.2 adaptive: regenerating matrix and curves (post-hoc, not pre-registered) ..."
 "$PY" benchmarks/v111/adaptive_matrix.py >/dev/null
