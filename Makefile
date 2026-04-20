@@ -6136,8 +6136,16 @@ check-cost-measure: check-sigma-pipeline
 	@bash benchmarks/sigma_pipeline/check_cost_measure.sh
 	@echo "check-cost-measure: OK (headline savings + accuracy retained pinned)"
 
-check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure
-	@echo "check-sigma-product: OK (reinforce + speculative + generate_until + cos chat + cost)"
+check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure check-orchestrator
+	@echo "check-sigma-product: OK (reinforce + speculative + ttt + engram + generate_until + cos chat + cost + orchestrator)"
+
+# --- Full pipeline orchestrator ---
+#
+# Engram → BitNet → σ-gate → RETHINK → TTT → Escalate → Engram-store,
+# driven by the deterministic stub backend so CI needs no LLM.
+check-orchestrator: check-sigma-pipeline check-sigma-generate-until
+	@bash benchmarks/sigma_pipeline/check_orchestrator.sh
+	@echo "check-orchestrator: OK (6-step pipeline end-to-end + engram hit/miss paths)"
 
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #

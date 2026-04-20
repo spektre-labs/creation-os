@@ -16,6 +16,9 @@ decision semantics (see ``tests/test_parity.py`` once wired).
 __all__ = [
     "reinforce",
     "speculative",
+    "ttt",
+    "engram",
     "backends",
     "generate_until",
+    "orchestrator",
 ]
