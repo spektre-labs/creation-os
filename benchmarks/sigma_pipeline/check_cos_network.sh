@@ -80,4 +80,16 @@ if [ "$RC" -ne 2 ]; then
   exit 1
 fi
 
-echo "check-cos-network: join/list/status/serve/query/federate/unlearn all green"
+# keygen (deterministic) -------------------------------------
+OUT=$("$BIN" keygen --seed 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f --json)
+echo "[keygen] $OUT"
+grep -q '"command":"keygen"'                              <<<"$OUT" || { echo "FAIL keygen command"; exit 1; }
+grep -q '"algorithm":"ed25519"'                           <<<"$OUT" || { echo "FAIL keygen algorithm"; exit 1; }
+grep -q '"deterministic":true'                            <<<"$OUT" || { echo "FAIL keygen determinism"; exit 1; }
+grep -q '"persisted":false'                               <<<"$OUT" || { echo "FAIL keygen persisted flag"; exit 1; }
+grep -q '"pub_len":32'                                    <<<"$OUT" || { echo "FAIL keygen pub_len"; exit 1; }
+grep -q '"priv_len":64'                                   <<<"$OUT" || { echo "FAIL keygen priv_len"; exit 1; }
+grep -q '"pub":"03a107bff3ce10be1d70dd18e74bc09967e4d6309ba50d5f1ddc8664125531b8"' <<<"$OUT" \
+  || { echo "FAIL keygen pub pinning"; exit 1; }
+
+echo "check-cos-network: join/keygen/list/status/serve/query/federate/unlearn all green"

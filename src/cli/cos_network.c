@@ -44,6 +44,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 
 /* ---- canonical bootstrapped state ---- */
 
@@ -299,9 +300,98 @@ static int cmd_unlearn(int json, const char *data) {
     return 0;
 }
 
+static int cmd_keygen(int json, const char *seed_hex) {
+    /* Generate (or re-derive) an Ed25519 keypair for this node's
+     * σ-Protocol signer.  Default path: ~/.cos/node_{key,pub}.
+     * If --seed <hex64> is supplied, the keypair is derived
+     * deterministically from that 32-byte seed (reproducible
+     * across runs and hosts).  Otherwise /dev/urandom is used. */
+    uint8_t pub[COS_ED25519_PUB_LEN], priv[COS_ED25519_PRIV_LEN];
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    int deterministic = 0;
+    int rc = 0;
+
+    if (seed_hex) {
+        if (strlen(seed_hex) != (size_t)(COS_ED25519_SEED_LEN * 2)) {
+            fprintf(stderr, "cos network keygen: --seed requires 64 hex chars\n");
+            return 2;
+        }
+        for (int i = 0; i < COS_ED25519_SEED_LEN; ++i) {
+            unsigned v;
+            if (sscanf(seed_hex + 2 * i, "%2x", &v) != 1) {
+                fprintf(stderr, "cos network keygen: bad hex at byte %d\n", i);
+                return 2;
+            }
+            seed[i] = (uint8_t)v;
+        }
+        rc = cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+        deterministic = 1;
+    } else {
+        rc = cos_sigma_proto_ed25519_keypair(pub, priv);
+    }
+    if (rc != 0) {
+        fprintf(stderr, "cos network keygen: keypair generation failed rc=%d\n", rc);
+        return 1;
+    }
+
+    /* Persist to ~/.cos/ unless we are in deterministic mode for
+     * JSON-only self-tests (where we explicitly don't want to
+     * touch the user's real keyring). */
+    const char *home = getenv("HOME");
+    char keydir[512], privpath[512], pubpath[512];
+    int wrote = 0;
+    if (home && !deterministic) {
+        snprintf(keydir,   sizeof keydir,   "%s/.cos", home);
+        snprintf(privpath, sizeof privpath, "%s/.cos/node_key", home);
+        snprintf(pubpath,  sizeof pubpath,  "%s/.cos/node_pub", home);
+        /* mkdir -p best-effort; we keep persistence optional. */
+        #ifdef _WIN32
+        #include <direct.h>
+        (void)_mkdir(keydir);
+        #else
+        #include <sys/stat.h>
+        mkdir(keydir, 0700);
+        #endif
+        FILE *fp = fopen(privpath, "wb");
+        FILE *fq = fopen(pubpath,  "wb");
+        if (fp && fq) {
+            fwrite(priv, 1, sizeof priv, fp);
+            fwrite(pub,  1, sizeof pub,  fq);
+            wrote = 1;
+        }
+        if (fp) fclose(fp);
+        if (fq) fclose(fq);
+    }
+
+    if (json) {
+        printf("{\"command\":\"keygen\",\"algorithm\":\"ed25519\","
+               "\"deterministic\":%s,\"persisted\":%s,"
+               "\"pub_len\":%d,\"priv_len\":%d,\"pub\":\"",
+               deterministic ? "true" : "false",
+               wrote         ? "true" : "false",
+               COS_ED25519_PUB_LEN, COS_ED25519_PRIV_LEN);
+        for (int i = 0; i < COS_ED25519_PUB_LEN; ++i) printf("%02x", pub[i]);
+        printf("\"}\n");
+    } else {
+        printf("cos network keygen: Ed25519 keypair generated (%s)\n",
+               deterministic ? "deterministic from --seed" : "from /dev/urandom");
+        if (wrote) {
+            printf("  private: %s\n", privpath);
+            printf("  public : %s\n", pubpath);
+        } else if (deterministic) {
+            printf("  (deterministic mode — keys not persisted)\n");
+        }
+        printf("  pub: ");
+        for (int i = 0; i < COS_ED25519_PUB_LEN; ++i) printf("%02x", pub[i]);
+        printf("\n");
+    }
+    return 0;
+}
+
 static int usage(int rc) {
     puts("usage: cos network <subcommand> [options]");
     puts("  join                        join the mesh (bootstrap peers)");
+    puts("  keygen [--seed <hex64>]     generate an Ed25519 σ-Protocol keypair");
     puts("  list                        list mesh peers");
     puts("  status                      σ per peer + marketplace spend");
     puts("  serve [--price <eur>]       advertise local capacity");
@@ -322,11 +412,16 @@ int main(int argc, char **argv) {
     const char *sub = argv[1];
     const char *query_text = NULL;
     const char *unlearn_text = NULL;
+    const char *seed_hex = NULL;
 
     for (int i = 2; i < argc; ++i) {
         if (strcmp(argv[i], "--json") == 0) { json = 1; continue; }
         if (strcmp(argv[i], "--price") == 0 && i + 1 < argc) {
             price = strtod(argv[++i], NULL);
+            continue;
+        }
+        if (strcmp(argv[i], "--seed") == 0 && i + 1 < argc) {
+            seed_hex = argv[++i];
             continue;
         }
         /* Positional argument for query / unlearn. */
@@ -341,6 +436,7 @@ int main(int argc, char **argv) {
     }
 
     if (strcmp(sub, "join")     == 0) return cmd_join    (json);
+    if (strcmp(sub, "keygen")   == 0) return cmd_keygen  (json, seed_hex);
     if (strcmp(sub, "list")     == 0) return cmd_list    (json);
     if (strcmp(sub, "status")   == 0) return cmd_status  (json);
     if (strcmp(sub, "serve")    == 0) return cmd_serve   (json, price);

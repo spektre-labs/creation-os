@@ -6067,11 +6067,11 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-meta check-sigma-omega \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
-                      check-sigma-protocol check-cos-network \
+                      check-sigma-protocol check-sigma-ed25519 check-cos-network \
                       check-sigma-spike check-sigma-photonic \
                       check-sigma-substrate check-sigma-formal \
                       check-sigma-paper check-cos-unified
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal + paper + cos-unified)"
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6567,18 +6567,60 @@ check-sigma-protocol: creation_os_sigma_protocol
 	@bash benchmarks/sigma_pipeline/check_sigma_protocol.sh
 	@echo "check-sigma-protocol: OK (encode/decode round-trip + 7 types + tamper/wrong-key reject)"
 
+# --- σ-protocol Ed25519 (real asymmetric crypto via vendored orlp) ---
+#
+# Drops FNV-1a stub down to LAN-only shared-secret mode; Ed25519
+# becomes the production signer for WAN trust.  Key packing
+# convention: sign-key = private(64) || public(32) (96 B),
+# verify-key = public(32) (32 B).  64-byte signature fills the
+# σ-Protocol wire frame's sig slot byte-for-byte.  Vendored source
+# lives under third_party/ed25519/ (orlp/ed25519, zlib license).
+SIGMA_ED25519_INC  = -Isrc/sigma/pipeline -Ithird_party/ed25519/src
+SIGMA_ED25519_SRCS = src/sigma/pipeline/protocol.c \
+                     src/sigma/pipeline/protocol_ed25519.c \
+                     third_party/ed25519/src/add_scalar.c \
+                     third_party/ed25519/src/fe.c \
+                     third_party/ed25519/src/ge.c \
+                     third_party/ed25519/src/key_exchange.c \
+                     third_party/ed25519/src/keypair.c \
+                     third_party/ed25519/src/sc.c \
+                     third_party/ed25519/src/seed.c \
+                     third_party/ed25519/src/sha512.c \
+                     third_party/ed25519/src/sign.c \
+                     third_party/ed25519/src/verify.c
+
+creation_os_sigma_ed25519: $(SIGMA_ED25519_SRCS) \
+                           src/sigma/pipeline/protocol_ed25519_main.c
+	$(CC) $(CFLAGS) $(SIGMA_ED25519_INC) -o $@ \
+	    $(SIGMA_ED25519_SRCS) src/sigma/pipeline/protocol_ed25519_main.c $(LDFLAGS)
+
+check-sigma-ed25519: creation_os_sigma_ed25519
+	@bash benchmarks/sigma_pipeline/check_sigma_ed25519.sh
+	@echo "check-sigma-ed25519: OK (keypair_from_seed + sign/verify + tamper/wrongkey reject)"
+
 # --- cos network CLI (D6) — distributed CLI composing the D-series ---
 #
 # Subcommands: join / list / status / serve / query / federate /
 # unlearn.  Each operates on the canonical bootstrapped state
 # (4 mesh peers + 3 market providers + 3-node federation) and
 # emits a pinnable JSON receipt with --json.
-COS_NETWORK_INC  = -Isrc/sigma/pipeline
+COS_NETWORK_INC  = -Isrc/sigma/pipeline -Ithird_party/ed25519/src
 COS_NETWORK_SRCS = src/sigma/pipeline/mesh.c \
                    src/sigma/pipeline/split.c \
                    src/sigma/pipeline/marketplace.c \
                    src/sigma/pipeline/federation.c \
-                   src/sigma/pipeline/protocol.c
+                   src/sigma/pipeline/protocol.c \
+                   src/sigma/pipeline/protocol_ed25519.c \
+                   third_party/ed25519/src/add_scalar.c \
+                   third_party/ed25519/src/fe.c \
+                   third_party/ed25519/src/ge.c \
+                   third_party/ed25519/src/key_exchange.c \
+                   third_party/ed25519/src/keypair.c \
+                   third_party/ed25519/src/sc.c \
+                   third_party/ed25519/src/seed.c \
+                   third_party/ed25519/src/sha512.c \
+                   third_party/ed25519/src/sign.c \
+                   third_party/ed25519/src/verify.c
 
 cos-network: $(COS_NETWORK_SRCS) src/cli/cos_network.c
 	$(CC) $(CFLAGS) $(COS_NETWORK_INC) -o $@ \

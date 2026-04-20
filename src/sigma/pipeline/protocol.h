@@ -106,6 +106,46 @@ int  cos_sigma_proto_default_verify(const uint8_t *data, size_t n,
                                     const uint8_t *key,  size_t key_len,
                                     const uint8_t *sig);
 
+/* ----- Ed25519 signer (vendored orlp/ed25519, zlib license) -----
+ *
+ *   key packing convention for the σ-protocol signer contract:
+ *
+ *     sign():   key = private(64) || public(32)  → key_len must be 96
+ *     verify(): key = public(32)                 → key_len must be 32
+ *
+ *   Signature is the native Ed25519 64-byte signature and fills the
+ *   COS_MSG_SIG_LEN slot byte-for-byte (no framing).
+ *
+ *   Keypair generation is deterministic given a 32-byte seed; use
+ *   cos_sigma_proto_ed25519_keypair_from_seed() for reproducible
+ *   test keys and cos_sigma_proto_ed25519_keypair() for OS-random
+ *   production keys (reads /dev/urandom on POSIX).
+ */
+#define COS_ED25519_SEED_LEN    32
+#define COS_ED25519_PUB_LEN     32
+#define COS_ED25519_PRIV_LEN    64
+#define COS_ED25519_SIG_LEN     COS_MSG_SIG_LEN
+
+void cos_sigma_proto_ed25519_sign  (const uint8_t *data, size_t n,
+                                    const uint8_t *key,  size_t key_len,
+                                    uint8_t *sig);
+int  cos_sigma_proto_ed25519_verify(const uint8_t *data, size_t n,
+                                    const uint8_t *key,  size_t key_len,
+                                    const uint8_t *sig);
+
+/* Deterministic keypair from a caller-provided 32-byte seed.
+ * Returns 0 on success, <0 on bad arguments. */
+int  cos_sigma_proto_ed25519_keypair_from_seed(const uint8_t *seed,
+                                               uint8_t *out_pub,
+                                               uint8_t *out_priv);
+
+/* Keypair from OS RNG (/dev/urandom on POSIX).  Returns 0 on
+ * success, <0 if the RNG is unavailable.  For production use. */
+int  cos_sigma_proto_ed25519_keypair(uint8_t *out_pub,
+                                     uint8_t *out_priv);
+
+int  cos_sigma_proto_ed25519_self_test(void);
+
 /* Encode `msg` into `out` using the default signer (or caller's
  * override if set).  Returns total bytes written (>0) on success,
  * <0 on argument error or insufficient capacity. */
