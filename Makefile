@@ -6136,8 +6136,18 @@ check-cost-measure: check-sigma-pipeline
 	@bash benchmarks/sigma_pipeline/check_cost_measure.sh
 	@echo "check-cost-measure: OK (headline savings + accuracy retained pinned)"
 
-check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure check-orchestrator check-pipeline-bench
-	@echo "check-sigma-product: OK (reinforce + speculative + ttt + engram + generate_until + cos chat + cost + orchestrator + pipeline-bench)"
+check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure check-orchestrator check-pipeline-bench check-installer
+	@echo "check-sigma-product: OK (reinforce + speculative + ttt + engram + generate_until + cos chat + cost + orchestrator + pipeline-bench + installer)"
+
+# --- Installer v2 (curl|sh + cos benchmark + cos cost) ---
+#
+# Smoke-tests scripts/install.sh syntax and the cos subcommands the
+# installer advertises (chat, benchmark, cost).  Does NOT actually
+# clone or touch /usr/local/bin — just verifies the pieces an
+# end-user will exercise in the first minute after the install.
+check-installer: cos check-sigma-pipeline
+	@bash benchmarks/sigma_pipeline/check_installer.sh
+	@echo "check-installer: OK (install.sh syntax + cos {status,benchmark,cost})"
 
 # --- End-to-end pipeline benchmark ---
 #

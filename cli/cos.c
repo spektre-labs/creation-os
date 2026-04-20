@@ -234,6 +234,10 @@ static void status_quickstart(void)
                 C_GREY, C_RESET);
     bullet_line("cos chat       %sσ-gated REPL (reinforce + speculative + generate_until)%s",
                 C_GREY, C_RESET);
+    bullet_line("cos benchmark  %send-to-end pipeline bench (engram + BitNet + σ + TTT + API)%s",
+                C_GREY, C_RESET);
+    bullet_line("cos cost       %show many € did σ-gating save (vs always-API)%s",
+                C_GREY, C_RESET);
     bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
                 C_GREY, C_RESET);
     bullet_line("make help      %sfull Make target list%s", C_GREY, C_RESET);
@@ -474,17 +478,17 @@ static int sh_quote(const char *s, char *out, size_t cap)
     return 0;
 }
 
-static int cmd_chat(int argc, char **argv)
+static int run_py_module(const char *module, int argc, char **argv)
 {
     char cmd[8192];
     size_t off = 0;
     const char *py = file_exists(".venv-bitnet/bin/python")
                         ? ".venv-bitnet/bin/python" : "python3";
     int k = snprintf(cmd + off, sizeof cmd - off,
-                     "PYTHONPATH=scripts%s%s %s -m sigma_pipeline.cos_chat",
+                     "PYTHONPATH=scripts%s%s %s -m %s",
                      getenv("PYTHONPATH") ? ":" : "",
                      getenv("PYTHONPATH") ? getenv("PYTHONPATH") : "",
-                     py);
+                     py, module);
     if (k <= 0 || (size_t)k >= sizeof cmd - off) return 70;
     off += (size_t)k;
     char quoted[2048];
@@ -495,6 +499,28 @@ static int cmd_chat(int argc, char **argv)
         off += (size_t)k;
     }
     return run_cmd(cmd);
+}
+
+static int cmd_chat(int argc, char **argv)
+{
+    return run_py_module("sigma_pipeline.cos_chat", argc, argv);
+}
+
+/* --------------------------------------------------------------------
+ *  cos benchmark — end-to-end pipeline benchmark over a JSONL fixture
+ *                  (or built-in demo), with markdown + JSON output.
+ * -------------------------------------------------------------------- */
+static int cmd_benchmark(int argc, char **argv)
+{
+    return run_py_module("sigma_pipeline.pipeline_bench", argc, argv);
+}
+
+/* --------------------------------------------------------------------
+ *  cos cost — cost-savings driver: how many € did σ-gating save?
+ * -------------------------------------------------------------------- */
+static int cmd_cost(int argc, char **argv)
+{
+    return run_py_module("sigma_pipeline.cost_measure", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -1947,6 +1973,12 @@ static int cmd_help(const char *prog)
            C_BOLD, "sigma", C_RESET, bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet(), bullet());
     printf("  %s%-12s%s  reasoning fabric demo + composed decision\n",
            C_BOLD, "think", C_RESET);
+    printf("  %s%-12s%s  σ-gated chat REPL (reinforce + speculative + generate_until + TTT + engram)\n",
+           C_BOLD, "chat", C_RESET);
+    printf("  %s%-12s%s  end-to-end pipeline benchmark (accuracy / cost / latency)\n",
+           C_BOLD, "benchmark", C_RESET);
+    printf("  %s%-12s%s  cost-savings driver (€saved vs always-API)\n",
+           C_BOLD, "cost", C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
            C_BOLD, "seal",   C_RESET);
     printf("  %s%-12s%s  verify and open a sealed envelope\n",
@@ -2407,8 +2439,10 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "verify")  == 0) return cmd_verify();
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
-    if (strcmp(argv[1], "think")   == 0) return cmd_think(argc - 2, argv + 2);
-    if (strcmp(argv[1], "chat")    == 0) return cmd_chat(argc - 2, argv + 2);
+    if (strcmp(argv[1], "think")     == 0) return cmd_think(argc - 2, argv + 2);
+    if (strcmp(argv[1], "chat")      == 0) return cmd_chat(argc - 2, argv + 2);
+    if (strcmp(argv[1], "benchmark") == 0) return cmd_benchmark(argc - 2, argv + 2);
+    if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
     if (strcmp(argv[1], "seal")    == 0) return cmd_seal_unseal(1, argc - 2, argv + 2);
     if (strcmp(argv[1], "unseal")  == 0) return cmd_seal_unseal(0, argc - 2, argv + 2);
     if (strcmp(argv[1], "mcts")    == 0) return cmd_mcts();
