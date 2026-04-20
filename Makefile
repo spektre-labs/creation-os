@@ -6075,8 +6075,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-truthfulqa check-mesh-2node \
                       check-lean-t3-discharged check-sigma-paper-latex \
                       check-sigma-dp check-sigma-ratelimit \
-                      check-sigma-persist
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist)"
+                      check-sigma-persist check-sigma-health
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6616,6 +6616,29 @@ creation_os_sigma_persist: $(SIGMA_PERSIST_SRCS) src/sigma/pipeline/persist_main
 check-sigma-persist: creation_os_sigma_persist
 	@bash benchmarks/sigma_pipeline/check_sigma_persist.sh
 	@echo "check-sigma-persist: OK (SQLite WAL + schema v1 + upsert/append/roundtrip)"
+
+# --- cos-health: runtime health snapshot (PROD-4) --------------------
+#
+# cos-health collapses static (# σ-primitives, # substrates, # proofs
+# discharged) + dynamic (engrams, τ, cost) facets into a single JSON /
+# human report.  The --state <path> flag pulls dynamic numbers from a
+# σ-Persist SQLite file.  Grading: HEALTHY / DEGRADED / UNHEALTHY
+# based on pipeline-ok %, σ_mean, and cost_today.  `cos health`
+# dispatches to this sibling when ./cos-health exists, and falls
+# back to `cos doctor` otherwise (no regression on old installs).
+COS_HEALTH_INC   = -Isrc/sigma/pipeline
+COS_HEALTH_SRCS  = src/sigma/pipeline/health.c \
+                   src/sigma/pipeline/persist.c
+COS_HEALTH_LIBS  = -lsqlite3
+
+cos-health: $(COS_HEALTH_SRCS) src/sigma/pipeline/health_main.c
+	$(CC) $(CFLAGS) $(COS_HEALTH_INC) -o $@ \
+	    $(COS_HEALTH_SRCS) src/sigma/pipeline/health_main.c \
+	    $(COS_HEALTH_LIBS) $(LDFLAGS)
+
+check-sigma-health: cos-health cos
+	@bash benchmarks/sigma_pipeline/check_sigma_health.sh
+	@echo "check-sigma-health: OK (cos-health sibling + cos health dispatch + grading)"
 
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #

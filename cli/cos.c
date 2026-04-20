@@ -599,6 +599,21 @@ static int cmd_omega  (int argc, char **argv) { return exec_sibling("creation_os
 static int cmd_formal (int argc, char **argv) { return exec_sibling("creation_os_sigma_formal", argc, argv); }
 static int cmd_paper  (int argc, char **argv) { return exec_sibling("creation_os_sigma_paper",  argc, argv); }
 
+/* cos health — runtime health snapshot (PROD-4).  Falls back to
+ * the classic repo-health `cmd_doctor` if `./cos-health` hasn't
+ * been built yet, so the command never loses a home. */
+static int cmd_doctor(void);
+static int cmd_health(int argc, char **argv)
+{
+    char path[512];
+    if (snprintf(path, sizeof path, "./cos-health") > 0 &&
+        file_exists(path))
+    {
+        return exec_sibling("cos-health", argc, argv);
+    }
+    return cmd_doctor();
+}
+
 /* cos sigma-meta — deterministic σ-meta summary (H6).
  *
  * Reports: invariant, formal ledger witness counts and p99
@@ -2565,8 +2580,8 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "demo")     == 0 ||
         strcmp(argv[1], "showcase") == 0 ||
         strcmp(argv[1], "tour")     == 0) return cmd_demo();
-    if (strcmp(argv[1], "doctor")  == 0 ||
-        strcmp(argv[1], "health")  == 0) return cmd_doctor();
+    if (strcmp(argv[1], "doctor")  == 0) return cmd_doctor();
+    if (strcmp(argv[1], "health")  == 0) return cmd_health(argc - 2, argv + 2);
     if (strcmp(argv[1], "verify")  == 0) return cmd_verify();
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
