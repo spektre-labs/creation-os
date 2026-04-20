@@ -7,10 +7,5 @@ read_verilog -sv ../../rtl/cos_agency_iron_formal.sv
 prep -top cos_agency_iron_formal
 flatten
 opt
-# OSS-CAD-Suite Yosys (2024+) lowers immediate asserts to `$check` cells;
-# the classic `sat` command only understands `$assert`.  Explicitly lower
-# `$check` → `$assert` before invoking the SAT engine.
-chformal -lower
-opt
 check
 sat -prove-asserts -verify -timeout 120

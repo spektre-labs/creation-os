@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Combinational formal: prove immediate asserts on cos_agency_iron_formal.
+# Modern-Yosys (>= 0.42) variant: `read_verilog` lowers SystemVerilog
+# immediate asserts to `$check` cells, which the classic `sat` command
+# cannot model.  `chformal -lower` rewrites those back to `$assert` so
+# the SAT engine can prove them.
+# Run from repo creation-os root: make yosys-prove-agency
+# Or: cd hw/yosys && yosys -q prove_agency_comb_modern.ys
+read_verilog -sv ../../rtl/cos_agency_iron_combo.sv
+read_verilog -sv ../../rtl/cos_agency_iron_formal.sv
+prep -top cos_agency_iron_formal
+flatten
+opt
+chformal -lower
+opt
+check
+sat -prove-asserts -verify -timeout 120
