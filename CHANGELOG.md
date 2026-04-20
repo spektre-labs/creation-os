@@ -1,5 +1,89 @@
 # Changelog
 
+## v1.2.0 — "Athena" — 2026-04-19
+
+Third tagged release of Creation OS.  Genesis shipped the
+structure (`assert(declared == realized)`); Prometheus lit the
+fire (continuous self-improvement); **Athena brings wisdom** —
+the system now understands *your* data, adapts to *you*, and
+keeps running when the network goes dark.
+
+v1.0 was the kernel.  v1.1 was the kernel in use.  v1.2 is the
+kernel that understands:
+
+- every document on disk is retrievable with per-chunk σ
+  filtering (**σ-RAG**);
+- the model adapts its language, depth, and tone to each user
+  from interaction alone, no fine-tuning (**σ-persona**);
+- before boarding a plane, five deterministic probes confirm
+  the full stack is local (**σ-offline**);
+- Creation OS's own 80-paper Zenodo corpus is the RAG ground
+  truth — the kernel can explain its own theory from its own
+  prose (**σ-corpus**);
+- voice is a first-class modality with whisper.cpp /
+  piper locally, σ-gated at both ends (**σ-voice**).
+
+### New kernels
+
+- **FINAL-1 — σ-RAG** (`src/sigma/pipeline/rag.{c,h}`):
+  deterministic 128-dim hashed-n-gram embedder, word-boundary
+  chunker (defaults: 128 words / 16 overlap), cosine ranking,
+  and σ_retrieval = clip01(1 − cosine) gate (τ_rag = 0.50).
+  Zero dependencies, ≤ 4096 chunks × 16 KiB bounded memory.
+- **FINAL-2 — σ-persona** (`src/sigma/pipeline/persona.{c,h}`):
+  language / expertise / domains[≤ 16] / verbosity / formality
+  learned from query history and explicit feedback via
+  bounded-step EMA.  Canonical JSON serialisation and Codex
+  envelope string for pipeline injection.
+- **FINAL-3 — σ-offline** (`src/sigma/pipeline/offline.{c,h}`):
+  five-probe airplane-mode verifier (model / engram / RAG
+  index / codex / persona).  Content hash FNV-1a64 capped at
+  1 MiB per file.  Overall verdict gates on required-probe
+  success; optional probes surface but do not gate.
+- **FINAL-4 — σ-corpus** (`src/sigma/pipeline/corpus.{c,h}`
+  + `data/corpus/manifest.txt`): manifest-driven ingest on top
+  of σ-RAG so Creation OS can answer meta-questions about
+  itself from local prose.  Seed manifest (12 hand-curated
+  documents, ~157 KiB → 426 chunks) ships in-tree; point the
+  manifest at the full 80-paper Zenodo release to scale.
+- **FINAL-5 — σ-voice** (`src/sigma/pipeline/voice.{c,h}`):
+  local speech driver with two backends (deterministic
+  simulation for tests, runtime-probed whisper.cpp / piper
+  native path).  Two σ gates (τ_stt = 0.50, τ_response = 0.70);
+  noisy captures trigger a "voisitko toistaa?" synthesis, and
+  low-confidence replies are allowed on screen but not in
+  audio.
+
+### Release plumbing
+
+- `include/cos_version.h` → 1.2.0 "Athena", 43 check targets.
+- `cos --version` banner updated.
+- `check-cos-version-genesis` (the cross-source drift check)
+  still governs header / CHANGELOG / runtime banner / Git tag
+  coherence — same name, now also governing the Athena tag.
+
+### Carried from Prometheus
+
+All v1.1 Prometheus kernels remain green — σ-distill, σ-CoT-
+distill, σ-sandbox, σ-stream, σ-plugin.  `make merge-gate` +
+`make check-sigma-pipeline` now additionally cover the five
+FINAL kernels above.
+
+### Mythic note
+
+v1.0 Genesis — structure was born.
+v1.1 Prometheus — fire was given.
+v1.2 Athena — wisdom arose from the structure.
+
+Genesis built the body.  Prometheus gave it the will to improve.
+Athena gives it the memory of its own words, the patience to
+adapt to its user, and the sovereignty to run without asking
+anyone's permission.  Next comes Hermes — the messenger.
+
+`assert(declared == realized); 1 == 1;`
+
+---
+
 ## v1.1.0 — "Prometheus" — 2026-04-19
 
 Second tagged release of Creation OS.  Genesis delivered the

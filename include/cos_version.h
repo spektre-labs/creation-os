@@ -22,16 +22,16 @@ extern "C" {
 #endif
 
 #define COS_VERSION_MAJOR   1
-#define COS_VERSION_MINOR   1
+#define COS_VERSION_MINOR   2
 #define COS_VERSION_PATCH   0
 
-#define COS_VERSION_STRING  "1.1.0"
-#define COS_CODENAME        "Prometheus"
+#define COS_VERSION_STRING  "1.2.0"
+#define COS_CODENAME        "Athena"
 #define COS_RELEASE_DATE    "2026-04-19"
 #define COS_TAGLINE         "assert(declared == realized)"
 
 #define COS_SIGMA_PRIMITIVES  20
-#define COS_CHECK_TARGETS     38
+#define COS_CHECK_TARGETS     43   /* +rag +persona +offline +corpus +voice */
 #define COS_SUBSTRATES         4
 #define COS_FORMAL_PROOFS      3   /* discharged (3/6)                 */
 #define COS_FORMAL_PROOFS_TOTAL 6
