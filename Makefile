@@ -6065,8 +6065,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
                       check-sigma-meta check-sigma-omega \
-                      check-sigma-mesh
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh)"
+                      check-sigma-mesh check-sigma-split
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6480,6 +6480,26 @@ creation_os_sigma_mesh: $(SIGMA_MS_SRCS) \
 check-sigma-mesh: creation_os_sigma_mesh
 	@bash benchmarks/sigma_pipeline/check_sigma_mesh.sh
 	@echo "check-sigma-mesh: OK (register + σ-weighted routing + EWMA reputation + abstain)"
+
+# --- σ-pipeline: Split (distributed layer inference + early exit, D2) ---
+#
+# Partition a forward pass into contiguous layer ranges pinned to
+# peers (stage 0 → node A, stage 1 → node B, …).  After each stage
+# the peer stamps a σ_layer; if σ < τ_exit at or after min_stages,
+# the pipeline short-circuits and the remaining stages never run.
+# That is σ-gated early exit: the same mechanism SpecDec uses for
+# drafts, now applied to the pipeline depth dimension.
+SIGMA_SP_INC  = -Isrc/sigma/pipeline
+SIGMA_SP_SRCS = src/sigma/pipeline/split.c
+
+creation_os_sigma_split: $(SIGMA_SP_SRCS) \
+                         src/sigma/pipeline/split_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SP_INC) -o $@ \
+	    $(SIGMA_SP_SRCS) src/sigma/pipeline/split_main.c $(LDFLAGS)
+
+check-sigma-split: creation_os_sigma_split
+	@bash benchmarks/sigma_pipeline/check_sigma_split.sh
+	@echo "check-sigma-split: OK (contiguous assignment + full path + σ early exit + transport error)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
