@@ -6065,8 +6065,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
                       check-sigma-meta check-sigma-omega \
-                      check-sigma-mesh check-sigma-split
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split)"
+                      check-sigma-mesh check-sigma-split \
+                      check-sigma-marketplace
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6500,6 +6501,26 @@ creation_os_sigma_split: $(SIGMA_SP_SRCS) \
 check-sigma-split: creation_os_sigma_split
 	@bash benchmarks/sigma_pipeline/check_sigma_split.sh
 	@echo "check-sigma-split: OK (contiguous assignment + full path + σ early exit + transport error)"
+
+# --- σ-pipeline: Marketplace (pay-per-query + SCSL reputation, D3) ---
+#
+# Providers register with a price, expected σ and latency, and an
+# SCSL acknowledgement.  select() returns the cheapest provider
+# that clears a σ/latency/price budget; report() folds observed
+# σ_result + latency into EWMA reputation and auto-bans providers
+# whose failure rate + σ stay above sigma_ban_floor.  SCSL refusal
+# is a hard filter: a cheaper rogue provider never wins.
+SIGMA_MKT_INC  = -Isrc/sigma/pipeline
+SIGMA_MKT_SRCS = src/sigma/pipeline/marketplace.c
+
+creation_os_sigma_marketplace: $(SIGMA_MKT_SRCS) \
+                               src/sigma/pipeline/marketplace_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MKT_INC) -o $@ \
+	    $(SIGMA_MKT_SRCS) src/sigma/pipeline/marketplace_main.c $(LDFLAGS)
+
+check-sigma-marketplace: creation_os_sigma_marketplace
+	@bash benchmarks/sigma_pipeline/check_sigma_marketplace.sh
+	@echo "check-sigma-marketplace: OK (σ-filtered select + SCSL ban + EWMA reputation + auto-ban)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
