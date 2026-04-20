@@ -6058,8 +6058,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-agent check-sigma-diagnostic \
                       check-sigma-sovereign check-codex \
                       check-sigma-pipeline-compose \
-                      check-integration check-cos-cli
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs)"
+                      check-integration check-cos-cli \
+                      check-sigma-tool
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6217,6 +6218,24 @@ creation_os_sigma_agent: $(SIGMA_AG_SRCS) \
 check-sigma-agent: creation_os_sigma_agent
 	@bash benchmarks/sigma_pipeline/check_sigma_agent.sh
 	@echo "check-sigma-agent: OK (OODA loop + σ-modulated autonomy gate)"
+
+# --- σ-pipeline: Tool (tool calling + risk-class dispatch, A1) ---
+#
+# Registry + selector + σ-gated executor sitting on top of the σ-Agent
+# autonomy rule.  Five risk classes map to agent action classes;
+# IRREVERSIBLE always requires CONFIRM minimum so the agent can never
+# `rm -rf /` by accident even when its σ is zero.
+SIGMA_TL_INC  = -Isrc/sigma/pipeline
+SIGMA_TL_SRCS = src/sigma/pipeline/tool.c src/sigma/pipeline/agent.c
+
+creation_os_sigma_tool: $(SIGMA_TL_SRCS) \
+                        src/sigma/pipeline/tool_main.c
+	$(CC) $(CFLAGS) $(SIGMA_TL_INC) -o $@ \
+	    $(SIGMA_TL_SRCS) src/sigma/pipeline/tool_main.c $(LDFLAGS)
+
+check-sigma-tool: creation_os_sigma_tool
+	@bash benchmarks/sigma_pipeline/check_sigma_tool.sh
+	@echo "check-sigma-tool: OK (registry + selector + gate + risk classes + executor)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
