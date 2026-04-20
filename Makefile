@@ -6064,8 +6064,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-session check-cos-agent \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
-                      check-sigma-meta check-sigma-omega
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega)"
+                      check-sigma-meta check-sigma-omega \
+                      check-sigma-mesh
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6457,6 +6458,28 @@ creation_os_sigma_omega: $(SIGMA_OM_SRCS) \
 check-sigma-omega: creation_os_sigma_omega
 	@bash benchmarks/sigma_pipeline/check_sigma_omega.sh
 	@echo "check-sigma-omega: OK (Ω loop + ∫σ tracking + best snapshot + K_eff rollback)"
+
+# --- σ-pipeline: Mesh (peer-to-peer routing + σ-reputation, D1) ---
+#
+# Node registry (id, address, σ_capability EWMA, latency EWMA,
+# availability).  route() scores peers by
+#   w_sigma · σ_capability  +  w_latency · (latency_ms / norm)
+# with a self-preference bonus when local σ clears τ_local.  Peers
+# over τ_abstain are filtered out; route() returns NULL to signal
+# ABSTAIN when no peer is trustworthy enough.  report() updates σ
+# and latency via EWMA α so a malicious peer converges to σ ≈ 1
+# and is quarantined.
+SIGMA_MS_INC  = -Isrc/sigma/pipeline
+SIGMA_MS_SRCS = src/sigma/pipeline/mesh.c
+
+creation_os_sigma_mesh: $(SIGMA_MS_SRCS) \
+                        src/sigma/pipeline/mesh_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MS_INC) -o $@ \
+	    $(SIGMA_MS_SRCS) src/sigma/pipeline/mesh_main.c $(LDFLAGS)
+
+check-sigma-mesh: creation_os_sigma_mesh
+	@bash benchmarks/sigma_pipeline/check_sigma_mesh.sh
+	@echo "check-sigma-mesh: OK (register + σ-weighted routing + EWMA reputation + abstain)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
