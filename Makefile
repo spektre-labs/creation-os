@@ -6053,8 +6053,28 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-ttt check-sigma-engram \
                       check-sigma-moe check-sigma-multimodal \
                       check-sigma-tinyml check-edge-portability \
-                      check-sigma-swarm
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm primitives)"
+                      check-sigma-swarm check-sigma-live
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live primitives)"
+
+# --- σ-pipeline: Live (feedback-driven τ adaptation, v278 live) ---
+#
+# τ_accept / τ_rethink start at install-time seeds.  Every user
+# feedback (σ, correct?) slides them toward the empirical
+# correctness-vs-σ boundary observed in a ring-buffer window of
+# the last N observations.  Conformal-inspired: sort the window by
+# σ ascending, track cumulative correctness, pick the largest σ
+# at which cumulative accuracy ≥ target_accept (default 0.95).
+SIGMA_LIVE_INC  = -Isrc/sigma/pipeline
+SIGMA_LIVE_SRCS = src/sigma/pipeline/live.c
+
+creation_os_sigma_live: $(SIGMA_LIVE_SRCS) \
+                        src/sigma/pipeline/live_main.c
+	$(CC) $(CFLAGS) $(SIGMA_LIVE_INC) -o $@ \
+	    $(SIGMA_LIVE_SRCS) src/sigma/pipeline/live_main.c $(LDFLAGS)
+
+check-sigma-live: creation_os_sigma_live
+	@bash benchmarks/sigma_pipeline/check_sigma_live.sh
+	@echo "check-sigma-live: OK (ring-buffer window + sorted-sweep τ adapt)"
 
 # --- σ-pipeline: Swarm (σ-weighted consensus across N models) ---
 #

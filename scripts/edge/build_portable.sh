@@ -35,6 +35,7 @@ build_lib moe        src/sigma/pipeline/moe.c
 build_lib multimodal src/sigma/pipeline/multimodal.c
 build_lib tinyml     src/sigma/pipeline/tinyml.c
 build_lib swarm      src/sigma/pipeline/swarm.c
+build_lib live       src/sigma/pipeline/live.c
 
 # Link the tinyml demo — the one primitive actually useful on an
 # MCU — as a portable binary and run its self-test to prove it works
@@ -57,5 +58,5 @@ total=$(wc -c "$OUT"/*.o | tail -1 | awk '{print $1}')
 echo "      ----------------------------------------"
 printf "      %-28s %7s B\n" "total" "$total"
 
-echo "edge/build_portable: OK (8 σ-pipeline translation units build "
+echo "edge/build_portable: OK (9 σ-pipeline translation units build "
 echo "                         with -Os, portable ARM flags, no -march=native)"
