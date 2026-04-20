@@ -6056,8 +6056,26 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-swarm check-sigma-live \
                       check-sigma-continual check-sigma-unlearn \
                       check-sigma-agent check-sigma-diagnostic \
-                      check-sigma-sovereign
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign primitives)"
+                      check-sigma-sovereign check-codex
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex primitives)"
+
+# --- Atlantean Codex: soul of the pipeline (I0) ---
+#
+# Loads data/codex/atlantean_codex.txt and data/codex/codex_seed.txt
+# into caller-owned buffers, exposes byte count / chapter count /
+# FNV-1a-64 hash / invariant check.  Not a σ-gate; a system prompt
+# for every downstream module (chat, benchmark, orchestrator).
+SIGMA_CODEX_INC  = -Isrc/sigma/pipeline
+SIGMA_CODEX_SRCS = src/sigma/pipeline/codex.c
+
+creation_os_sigma_codex: $(SIGMA_CODEX_SRCS) \
+                        src/sigma/pipeline/codex_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CODEX_INC) -o $@ \
+	    $(SIGMA_CODEX_SRCS) src/sigma/pipeline/codex_main.c $(LDFLAGS)
+
+check-codex: creation_os_sigma_codex
+	@bash benchmarks/sigma_pipeline/check_sigma_codex.sh
+	@echo "check-codex: OK (Codex + seed load; chapters ≥ 33; 1=1 present; hash stable)"
 
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
 #

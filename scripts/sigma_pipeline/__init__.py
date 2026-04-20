@@ -28,6 +28,7 @@ __all__ = [
     "agent",
     "diagnostic",
     "sovereign",
+    "codex",
     "backends",
     "generate_until",
     "orchestrator",
