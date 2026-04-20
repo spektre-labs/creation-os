@@ -12,7 +12,90 @@
       "n_retrieve": 41,
       "retrievals_saved_pct": 93.00341296928327,
       "accuracy_on_direct_only": 0.46238532110091746,
-      "accuracy_always_direct": 0.4539249146757679
+      "accuracy_always_direct": 0.4539249146757679,
+      "retrieval_oracle_acc_assumed": 1.0,
+      "strategies": {
+        "always_retrieve": {
+          "calls": 586,
+          "call_fraction": 1.0,
+          "accuracy": 1.0,
+          "accuracy_per_call": 1.0
+        },
+        "never_retrieve": {
+          "calls": 0,
+          "call_fraction": 0.0,
+          "accuracy": 0.4539249146757679,
+          "accuracy_per_call": NaN
+        },
+        "sigma_gated": {
+          "calls": 41,
+          "call_fraction": 0.06996587030716724,
+          "accuracy": 0.5,
+          "accuracy_per_call": 7.146341463414634
+        }
+      },
+      "sensitivity_sweep": {
+        "oracle_acc_1.0": {
+          "always_retrieve": {
+            "calls": 586,
+            "call_fraction": 1.0,
+            "accuracy": 1.0,
+            "accuracy_per_call": 1.0
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4539249146757679,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 41,
+            "call_fraction": 0.06996587030716724,
+            "accuracy": 0.5,
+            "accuracy_per_call": 7.146341463414634
+          }
+        },
+        "oracle_acc_0.8": {
+          "always_retrieve": {
+            "calls": 586,
+            "call_fraction": 1.0,
+            "accuracy": 0.8,
+            "accuracy_per_call": 0.8
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4539249146757679,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 41,
+            "call_fraction": 0.06996587030716724,
+            "accuracy": 0.4860068259385666,
+            "accuracy_per_call": 6.946341463414634
+          }
+        },
+        "oracle_acc_0.6": {
+          "always_retrieve": {
+            "calls": 586,
+            "call_fraction": 1.0,
+            "accuracy": 0.6,
+            "accuracy_per_call": 0.6
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4539249146757679,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 41,
+            "call_fraction": 0.06996587030716724,
+            "accuracy": 0.4720136518771331,
+            "accuracy_per_call": 6.746341463414635
+          }
+        }
+      }
     },
     "arc_easy": {
       "signal_used": "entropy",
@@ -23,7 +106,90 @@
       "n_retrieve": 61,
       "retrievals_saved_pct": 94.86531986531986,
       "accuracy_on_direct_only": 0.748890860692103,
-      "accuracy_always_direct": 0.7474747474747475
+      "accuracy_always_direct": 0.7474747474747475,
+      "retrieval_oracle_acc_assumed": 1.0,
+      "strategies": {
+        "always_retrieve": {
+          "calls": 1188,
+          "call_fraction": 1.0,
+          "accuracy": 1.0,
+          "accuracy_per_call": 1.0
+        },
+        "never_retrieve": {
+          "calls": 0,
+          "call_fraction": 0.0,
+          "accuracy": 0.7474747474747475,
+          "accuracy_per_call": NaN
+        },
+        "sigma_gated": {
+          "calls": 61,
+          "call_fraction": 0.05134680134680135,
+          "accuracy": 0.7617845117845118,
+          "accuracy_per_call": 14.836065573770492
+        }
+      },
+      "sensitivity_sweep": {
+        "oracle_acc_1.0": {
+          "always_retrieve": {
+            "calls": 1188,
+            "call_fraction": 1.0,
+            "accuracy": 1.0,
+            "accuracy_per_call": 1.0
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.7474747474747475,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 61,
+            "call_fraction": 0.05134680134680135,
+            "accuracy": 0.7617845117845118,
+            "accuracy_per_call": 14.836065573770492
+          }
+        },
+        "oracle_acc_0.8": {
+          "always_retrieve": {
+            "calls": 1188,
+            "call_fraction": 1.0,
+            "accuracy": 0.8,
+            "accuracy_per_call": 0.8
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.7474747474747475,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 61,
+            "call_fraction": 0.05134680134680135,
+            "accuracy": 0.7515151515151515,
+            "accuracy_per_call": 14.636065573770491
+          }
+        },
+        "oracle_acc_0.6": {
+          "always_retrieve": {
+            "calls": 1188,
+            "call_fraction": 1.0,
+            "accuracy": 0.6,
+            "accuracy_per_call": 0.6
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.7474747474747475,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 61,
+            "call_fraction": 0.05134680134680135,
+            "accuracy": 0.7412457912457913,
+            "accuracy_per_call": 14.436065573770492
+          }
+        }
+      }
     },
     "truthfulqa_mc2": {
       "signal_used": "sigma_max_token",
@@ -34,7 +200,90 @@
       "n_retrieve": 44,
       "retrievals_saved_pct": 89.24205378973105,
       "accuracy_on_direct_only": 0.4684931506849315,
-      "accuracy_always_direct": 0.44987775061124696
+      "accuracy_always_direct": 0.44987775061124696,
+      "retrieval_oracle_acc_assumed": 1.0,
+      "strategies": {
+        "always_retrieve": {
+          "calls": 409,
+          "call_fraction": 1.0,
+          "accuracy": 1.0,
+          "accuracy_per_call": 1.0
+        },
+        "never_retrieve": {
+          "calls": 0,
+          "call_fraction": 0.0,
+          "accuracy": 0.44987775061124696,
+          "accuracy_per_call": NaN
+        },
+        "sigma_gated": {
+          "calls": 44,
+          "call_fraction": 0.10757946210268948,
+          "accuracy": 0.5256723716381418,
+          "accuracy_per_call": 4.886363636363637
+        }
+      },
+      "sensitivity_sweep": {
+        "oracle_acc_1.0": {
+          "always_retrieve": {
+            "calls": 409,
+            "call_fraction": 1.0,
+            "accuracy": 1.0,
+            "accuracy_per_call": 1.0
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.44987775061124696,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 44,
+            "call_fraction": 0.10757946210268948,
+            "accuracy": 0.5256723716381418,
+            "accuracy_per_call": 4.886363636363637
+          }
+        },
+        "oracle_acc_0.8": {
+          "always_retrieve": {
+            "calls": 409,
+            "call_fraction": 1.0,
+            "accuracy": 0.8,
+            "accuracy_per_call": 0.8000000000000002
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.44987775061124696,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 44,
+            "call_fraction": 0.10757946210268948,
+            "accuracy": 0.5041564792176039,
+            "accuracy_per_call": 4.6863636363636365
+          }
+        },
+        "oracle_acc_0.6": {
+          "always_retrieve": {
+            "calls": 409,
+            "call_fraction": 1.0,
+            "accuracy": 0.6,
+            "accuracy_per_call": 0.6
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.44987775061124696,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 44,
+            "call_fraction": 0.10757946210268948,
+            "accuracy": 0.482640586797066,
+            "accuracy_per_call": 4.486363636363636
+          }
+        }
+      }
     },
     "hellaswag": {
       "signal_used": "entropy",
@@ -45,7 +294,90 @@
       "n_retrieve": 18,
       "retrievals_saved_pct": 95.17426273458445,
       "accuracy_on_direct_only": 0.48169014084507045,
-      "accuracy_always_direct": 0.4691689008042895
+      "accuracy_always_direct": 0.4691689008042895,
+      "retrieval_oracle_acc_assumed": 1.0,
+      "strategies": {
+        "always_retrieve": {
+          "calls": 373,
+          "call_fraction": 1.0,
+          "accuracy": 1.0,
+          "accuracy_per_call": 1.0
+        },
+        "never_retrieve": {
+          "calls": 0,
+          "call_fraction": 0.0,
+          "accuracy": 0.4691689008042895,
+          "accuracy_per_call": NaN
+        },
+        "sigma_gated": {
+          "calls": 18,
+          "call_fraction": 0.04825737265415549,
+          "accuracy": 0.5067024128686327,
+          "accuracy_per_call": 10.5
+        }
+      },
+      "sensitivity_sweep": {
+        "oracle_acc_1.0": {
+          "always_retrieve": {
+            "calls": 373,
+            "call_fraction": 1.0,
+            "accuracy": 1.0,
+            "accuracy_per_call": 1.0
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4691689008042895,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 18,
+            "call_fraction": 0.04825737265415549,
+            "accuracy": 0.5067024128686327,
+            "accuracy_per_call": 10.5
+          }
+        },
+        "oracle_acc_0.8": {
+          "always_retrieve": {
+            "calls": 373,
+            "call_fraction": 1.0,
+            "accuracy": 0.8,
+            "accuracy_per_call": 0.8
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4691689008042895,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 18,
+            "call_fraction": 0.04825737265415549,
+            "accuracy": 0.4970509383378016,
+            "accuracy_per_call": 10.3
+          }
+        },
+        "oracle_acc_0.6": {
+          "always_retrieve": {
+            "calls": 373,
+            "call_fraction": 1.0,
+            "accuracy": 0.6,
+            "accuracy_per_call": 0.6
+          },
+          "never_retrieve": {
+            "calls": 0,
+            "call_fraction": 0.0,
+            "accuracy": 0.4691689008042895,
+            "accuracy_per_call": NaN
+          },
+          "sigma_gated": {
+            "calls": 18,
+            "call_fraction": 0.04825737265415549,
+            "accuracy": 0.4873994638069705,
+            "accuracy_per_call": 10.100000000000001
+          }
+        }
+      }
     }
   }
 }

@@ -88,6 +88,19 @@ case "$TARGET" in
         # Single smallest subject for fast iteration: abstract_algebra has 100 qs.
         generate_sidecar mmlu_abstract_algebra 100
         ;;
+    mmlu-discovery-single:*)
+        # v111.2 discovery helper: "mmlu-discovery-single:<task>:<limit>".
+        # Used by benchmarks/v111/mmlu_subject_discovery.py to sweep a
+        # curated candidate list one subject at a time.
+        _rest="${TARGET#mmlu-discovery-single:}"
+        _task="${_rest%%:*}"
+        _limit="${_rest#*:}"
+        if [ -z "$_task" ] || [ -z "$_limit" ] || [ "$_task" = "$_rest" ]; then
+            echo "run_matrix.sh: bad discovery target '$TARGET' (want mmlu-discovery-single:<task>:<limit>)"
+            exit 2
+        fi
+        generate_sidecar "$_task" "$_limit"
+        ;;
     gsm8k)
         echo "v111: gsm8k requires a generate_until backend with σ logging."
         echo "     See docs/v111/THE_FRONTIER_MATRIX.md §4.2 for the repro command."

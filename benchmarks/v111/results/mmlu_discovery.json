@@ -1,0 +1,88 @@
+{
+  "timestamp": "2026-04-20T14:34:19.804619+00:00",
+  "candidate_list_source": "bitnet-paper-2504.12285 + hendrycks-2009.03300",
+  "limit_per_subject": 100,
+  "accuracy_floor": 0.4,
+  "random_accuracy": 0.25,
+  "subjects": [
+    {
+      "task": "mmlu_marketing",
+      "rationale": "easy: Hendrycks 2020 Table 3 easy-cluster",
+      "n": 100,
+      "acc": 0.77,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_sociology",
+      "rationale": "easy: Hendrycks 2020 Table 3 easy-cluster",
+      "n": 100,
+      "acc": 0.7,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_high_school_psychology",
+      "rationale": "easy: factual + large n",
+      "n": 92,
+      "acc": 0.782608695652174,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_nutrition",
+      "rationale": "easy: health facts, 2B paper avg-above",
+      "n": 100,
+      "acc": 0.61,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_us_foreign_policy",
+      "rationale": "easy: Hendrycks 2020 easy-cluster",
+      "n": 63,
+      "acc": 0.7619047619047619,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_global_facts",
+      "rationale": "easy: Hendrycks 2020 easy-cluster",
+      "n": 64,
+      "acc": 0.34375,
+      "passed_40_floor": false
+    },
+    {
+      "task": "mmlu_high_school_government_and_politics",
+      "rationale": "medium: factual, widely used in leaderboards",
+      "n": 55,
+      "acc": 0.7090909090909091,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_human_sexuality",
+      "rationale": "medium: 131-q factual set, 2B avg-above",
+      "n": 94,
+      "acc": 0.6595744680851063,
+      "passed_40_floor": true
+    },
+    {
+      "task": "mmlu_high_school_mathematics",
+      "rationale": "hard-control: should fall below 40% floor",
+      "n": 89,
+      "acc": 0.29213483146067415,
+      "passed_40_floor": false
+    },
+    {
+      "task": "mmlu_abstract_algebra",
+      "rationale": "hard-control: already measured 0.33 in v111.2",
+      "n": 100,
+      "acc": 0.33,
+      "passed_40_floor": false
+    }
+  ],
+  "sigma_analysis_eligible": [
+    "mmlu_marketing",
+    "mmlu_sociology",
+    "mmlu_high_school_psychology",
+    "mmlu_nutrition",
+    "mmlu_us_foreign_policy",
+    "mmlu_high_school_government_and_politics",
+    "mmlu_human_sexuality"
+  ]
+}

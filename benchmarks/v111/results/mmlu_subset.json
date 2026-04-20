@@ -1,47 +1,441 @@
 {
   "preregistered": false,
-  "bonferroni_N": 3,
-  "alpha_fw": 0.016666666666666666,
+  "bonferroni_N": 28,
+  "alpha_fw": 0.0017857142857142859,
   "n_boot": 2000,
   "note": "MMLU was declared post-hoc in v111.1. This matrix is reported separately from the pre-registered four-family matrix and uses its own Bonferroni N.",
   "tasks": [
     {
-      "task": "mmlu_abstract_algebra",
+      "task": "mmlu_marketing",
       "n": 100,
-      "overall_acc": 0.33,
+      "overall_acc": 0.77,
       "rows": [
         {
           "signal": "entropy",
-          "AURCC": 0.6511890011714233,
+          "AURCC": 0.09057958472098149,
           "delta_vs_entropy": 0.0,
           "p_two_sided": 1.0,
           "CI95_lo": 0.0,
           "CI95_hi": 0.0,
           "bonferroni_significant": false,
-          "coverage_at_acc90": 0.0,
-          "coverage_at_acc95": 0.0
+          "coverage_at_acc90": 0.56,
+          "coverage_at_acc95": 0.46
         },
         {
           "signal": "sigma_max_token",
-          "AURCC": 0.649554836028053,
-          "delta_vs_entropy": -0.0010929202850947293,
-          "CI95_lo": -0.04655965542157725,
-          "CI95_hi": 0.042521791153812716,
-          "p_two_sided": 0.972,
+          "AURCC": 0.0971408924520614,
+          "delta_vs_entropy": 0.006529507203817663,
+          "CI95_lo": -0.0017364584022792062,
+          "CI95_hi": 0.01643518663982102,
+          "p_two_sided": 0.136,
           "bonferroni_significant": false,
-          "coverage_at_acc90": 0.0,
-          "coverage_at_acc95": 0.0
+          "coverage_at_acc90": 0.51,
+          "coverage_at_acc95": 0.4
         },
         {
           "signal": "sigma_product",
-          "AURCC": 0.6478008677740847,
-          "delta_vs_entropy": -0.0028358121338486184,
-          "CI95_lo": -0.04741598590552676,
-          "CI95_hi": 0.04053511406942467,
-          "p_two_sided": 0.897,
+          "AURCC": 0.09692846781812513,
+          "delta_vs_entropy": 0.006329784199578492,
+          "CI95_lo": -0.0017919679073612055,
+          "CI95_hi": 0.016743238748615413,
+          "p_two_sided": 0.147,
           "bonferroni_significant": false,
-          "coverage_at_acc90": 0.0,
-          "coverage_at_acc95": 0.0
+          "coverage_at_acc90": 0.51,
+          "coverage_at_acc95": 0.38
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.09057958472098149,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.56,
+          "coverage_at_acc95": 0.46
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.09150967162148627,
+          "delta_vs_entropy": 0.0009298734099531869,
+          "CI95_lo": -0.002434634405059255,
+          "CI95_hi": 0.005060812154123795,
+          "p_two_sided": 0.621,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.56,
+          "coverage_at_acc95": 0.46
+        }
+      ]
+    },
+    {
+      "task": "mmlu_sociology",
+      "n": 100,
+      "overall_acc": 0.7,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.15825005346935597,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.35,
+          "coverage_at_acc95": 0.24
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.16131577832605137,
+          "delta_vs_entropy": 0.003053979286926612,
+          "CI95_lo": -0.007592559728437531,
+          "CI95_hi": 0.013495828111938307,
+          "p_two_sided": 0.552,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.33,
+          "coverage_at_acc95": 0.23
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.16111421229545594,
+          "delta_vs_entropy": 0.00287424534833666,
+          "CI95_lo": -0.007499511810129006,
+          "CI95_hi": 0.012872504573337384,
+          "p_two_sided": 0.563,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.34,
+          "coverage_at_acc95": 0.23
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.15825005346935597,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.35,
+          "coverage_at_acc95": 0.24
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.1587337734475936,
+          "delta_vs_entropy": 0.00047969769172427406,
+          "CI95_lo": -0.003067312744552575,
+          "CI95_hi": 0.00371759644587627,
+          "p_two_sided": 0.733,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.34,
+          "coverage_at_acc95": 0.24
+        }
+      ]
+    },
+    {
+      "task": "mmlu_high_school_psychology",
+      "n": 92,
+      "overall_acc": 0.782608695652174,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.0923166697765954,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5108695652173914,
+          "coverage_at_acc95": 0.391304347826087
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.0959991981353709,
+          "delta_vs_entropy": 0.0036955645182312436,
+          "CI95_lo": -0.002796785725512639,
+          "CI95_hi": 0.011004018440418914,
+          "p_two_sided": 0.266,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.4891304347826087,
+          "coverage_at_acc95": 0.391304347826087
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.09582388256734847,
+          "delta_vs_entropy": 0.003515962919273251,
+          "CI95_lo": -0.0028890817064388674,
+          "CI95_hi": 0.010537492374351587,
+          "p_two_sided": 0.281,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.4891304347826087,
+          "coverage_at_acc95": 0.391304347826087
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.0923166697765954,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5108695652173914,
+          "coverage_at_acc95": 0.391304347826087
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.09353743719888667,
+          "delta_vs_entropy": 0.001203102200530902,
+          "CI95_lo": -0.001751039249300465,
+          "CI95_hi": 0.004605209058950288,
+          "p_two_sided": 0.464,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5108695652173914,
+          "coverage_at_acc95": 0.391304347826087
+        }
+      ]
+    },
+    {
+      "task": "mmlu_nutrition",
+      "n": 100,
+      "overall_acc": 0.61,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.2413384251589943,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.23,
+          "coverage_at_acc95": 0.07
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.2524167114615041,
+          "delta_vs_entropy": 0.01114036984357158,
+          "CI95_lo": -0.00442266962010035,
+          "CI95_hi": 0.028425632782111743,
+          "p_two_sided": 0.165,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.22,
+          "coverage_at_acc95": 0.06
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.2523903436302582,
+          "delta_vs_entropy": 0.011098177160797695,
+          "CI95_lo": -0.0048632153639497355,
+          "CI95_hi": 0.028574274757528217,
+          "p_two_sided": 0.169,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.22,
+          "coverage_at_acc95": 0.06
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.2413384251589943,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.23,
+          "coverage_at_acc95": 0.07
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.2450250430899182,
+          "delta_vs_entropy": 0.0036687678179513016,
+          "CI95_lo": -0.004084973361222155,
+          "CI95_hi": 0.011809560894218807,
+          "p_two_sided": 0.256,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.23,
+          "coverage_at_acc95": 0.07
+        }
+      ]
+    },
+    {
+      "task": "mmlu_us_foreign_policy",
+      "n": 63,
+      "overall_acc": 0.7619047619047619,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.07740935380034457,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.6349206349206349,
+          "coverage_at_acc95": 0.5079365079365079
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.07817608987351425,
+          "delta_vs_entropy": 0.0008686413265217737,
+          "CI95_lo": -0.008635441984801734,
+          "CI95_hi": 0.009996298337096574,
+          "p_two_sided": 0.821,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.6666666666666666,
+          "coverage_at_acc95": 0.49206349206349204
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.07716936746848677,
+          "delta_vs_entropy": -0.00016690740850680325,
+          "CI95_lo": -0.009563816807282417,
+          "CI95_hi": 0.00862690322893285,
+          "p_two_sided": 0.963,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.6666666666666666,
+          "coverage_at_acc95": 0.49206349206349204
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.07740935380034457,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.6349206349206349,
+          "coverage_at_acc95": 0.5079365079365079
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.07698505869489407,
+          "delta_vs_entropy": -0.00046697404374797637,
+          "CI95_lo": -0.004957528666177741,
+          "CI95_hi": 0.0034928431328699605,
+          "p_two_sided": 0.815,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.6507936507936508,
+          "coverage_at_acc95": 0.5079365079365079
+        }
+      ]
+    },
+    {
+      "task": "mmlu_high_school_government_and_politics",
+      "n": 55,
+      "overall_acc": 0.7090909090909091,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.0999849230224007,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5636363636363636,
+          "coverage_at_acc95": 0.41818181818181815
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.10762791982247567,
+          "delta_vs_entropy": 0.007649298751565656,
+          "CI95_lo": -0.005310500292108153,
+          "CI95_hi": 0.024339333428663623,
+          "p_two_sided": 0.303,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5818181818181818,
+          "coverage_at_acc95": 0.4
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.10683740598848357,
+          "delta_vs_entropy": 0.006858224133316433,
+          "CI95_lo": -0.0057495090031372265,
+          "CI95_hi": 0.022575777478211045,
+          "p_two_sided": 0.333,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5818181818181818,
+          "coverage_at_acc95": 0.41818181818181815
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.0999849230224007,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5636363636363636,
+          "coverage_at_acc95": 0.41818181818181815
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.10347107675227628,
+          "delta_vs_entropy": 0.0034878850238340116,
+          "CI95_lo": -0.0013727957186936979,
+          "CI95_hi": 0.011024181403621797,
+          "p_two_sided": 0.21,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.5636363636363636,
+          "coverage_at_acc95": 0.41818181818181815
+        }
+      ]
+    },
+    {
+      "task": "mmlu_human_sexuality",
+      "n": 94,
+      "overall_acc": 0.6595744680851063,
+      "rows": [
+        {
+          "signal": "entropy",
+          "AURCC": 0.1703969967638502,
+          "delta_vs_entropy": 0.0,
+          "p_two_sided": 1.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.3829787234042553,
+          "coverage_at_acc95": 0.22340425531914893
+        },
+        {
+          "signal": "sigma_max_token",
+          "AURCC": 0.18618350178708234,
+          "delta_vs_entropy": 0.015161875922610006,
+          "CI95_lo": -0.0053542477458971005,
+          "CI95_hi": 0.047011282755026085,
+          "p_two_sided": 0.229,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.3404255319148936,
+          "coverage_at_acc95": 0.02127659574468085
+        },
+        {
+          "signal": "sigma_product",
+          "AURCC": 0.18600910346130628,
+          "delta_vs_entropy": 0.014995317781264086,
+          "CI95_lo": -0.005662365237451034,
+          "CI95_hi": 0.046597575009767106,
+          "p_two_sided": 0.241,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.3404255319148936,
+          "coverage_at_acc95": 0.02127659574468085
+        },
+        {
+          "signal": "sigma_composite_max",
+          "AURCC": 0.1703969967638502,
+          "delta_vs_entropy": 0.0,
+          "CI95_lo": 0.0,
+          "CI95_hi": 0.0,
+          "p_two_sided": 2.0,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.3829787234042553,
+          "coverage_at_acc95": 0.22340425531914893
+        },
+        {
+          "signal": "sigma_composite_mean",
+          "AURCC": 0.1697926524603425,
+          "delta_vs_entropy": -0.0006009628907850274,
+          "CI95_lo": -0.004608558778277733,
+          "CI95_hi": 0.0031365291061762057,
+          "p_two_sided": 0.727,
+          "bonferroni_significant": false,
+          "coverage_at_acc90": 0.3829787234042553,
+          "coverage_at_acc95": 0.22340425531914893
         }
       ]
     }

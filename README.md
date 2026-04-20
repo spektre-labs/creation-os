@@ -30,19 +30,21 @@ Forty branchless integer kernels · one composed verdict · <strong>1 = 1</stron
 ### Measured results — v111.1 Frontier parity matrix
 
 `σ` is not rhetoric. It is a **post-hoc gating signal** that beats the
-entropy baseline on live benchmarks.  The v111.1 matrix replays four
-standard task families through the BitNet-b1.58-2B bridge, scores six
-pre-registered gating signals, and applies a paired bootstrap with
-**Bonferroni N = 24** at family-wise α = 0.05.
+entropy baseline on specific, pre-registered task families.  It is also
+**explicitly not** a universal calibration signal: on HellaSwag it does
+not dominate entropy, and on MMLU subjects where the base model is at
+random accuracy there is no uncertainty structure to exploit in the
+first place.  The status table below is the single source of truth —
+every claim elsewhere in this README cites a row in it.
 
-| task family | n | acc | Bonferroni-winning σ signal vs entropy | ΔAURCC |
-|---|---:|---:|---|---:|
-| `truthfulqa_mc2` | 817  | 0.464 | `sigma_max_token` | **−0.0447** (p = 0.0005) |
-| `truthfulqa_mc2` | 817  | 0.464 | `sigma_n_effective` | **−0.0206** (p = 0.0005) |
-| `arc_challenge`  | 1172 | 0.468 | no Bonferroni winner (σ_product −0.0087, p = 0.004 < raw α, fails family-wise) | — |
-| `arc_easy`       | 2376 | 0.755 | no Bonferroni winner | — |
-| `hellaswag`      |  746 | 0.485 | no Bonferroni winner (entropy baseline is strong on hellaswag; σ_product neutral Δ = −0.0016, p = 0.68) | — |
-| `mmlu` / `gsm8k` / `humaneval` | — | — | **PENDING** — repro CLIs in [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md#4-full-scale-repro-commands-mmlu--gsm8k--humaneval) | — |
+| family | task | status at α_fw = 0.05 | signal | ΔAURCC | n |
+|---|---|:---:|---|---:|---:|
+| **PRE-REGISTERED** | `truthfulqa_mc2` | **win** (v111.1, Bonf N=24) | `sigma_max_token` | −0.0447 (p = 0.0005) | 817 |
+| **PRE-REGISTERED** | `truthfulqa_mc2` | **win** (v111.2-prereg test split, Bonf N=12) | `sigma_task_adaptive` | −0.0681 (p ≈ 0.0005) | 409 |
+| POST-HOC | `arc_challenge` | directional, **not replicated** at α_fw on 50 % test split | `sigma_product` | −0.0087 (full-data p = 0.004; test-split p = 0.145) | 1172 / 586 |
+| NEGATIVE | `hellaswag` | σ not dominant | — (entropy-baseline-best) | `σ_product` Δ = −0.0016, p = 0.68 | 746 |
+| NEGATIVE | `mmlu_*` (7 eligible / 10 candidates) | σ not dominant — **0 / 28** Bonf-significant cells (N = 4 signals × 7 subjects, α_fw = 0.00179) | — (entropy-baseline-best) | best σ Δ = +0.0000 (no-op composite), worst Δ = +0.0152 | 605 (sum over subjects) |
+| PENDING | `gsm8k` / `humaneval` | requires `generate_until` + sandbox | — | — | — |
 
 Lower AURCC is better (sharper risk-coverage curve). Full table with
 CI95, p-values, and cov@acc≥0.95: [`benchmarks/v111/results/frontier_matrix.md`](benchmarks/v111/results/frontier_matrix.md).  Reproduce end-to-end:
@@ -82,25 +84,57 @@ as **not replicated**.  Full table:
 
 **Conformal coverage guarantee (v111.2-conformal).**  The same lock
 file yields per-task Vovk–Gammerman thresholds τ_c at α = 0.05 on the
-50 % calibration split.  On exchangeable draws, the subset
-`σ ≤ τ_c` retains accuracy ≥ 1 − α in finite-sample expectation — a
-finite-sample, distribution-free bound that AURCC alone cannot
-provide.  Thresholds + caveats:
+50 % calibration split.  On exchangeable draws from the calibration
+distribution, the subset `σ ≤ τ_c` retains accuracy ≥ 1 − α in
+finite-sample expectation — a finite-sample, distribution-free bound
+that AURCC alone cannot provide.  This is **not** an
+out-of-distribution guarantee: on distribution shift the conformal
+bound reverts to empirical AURCC behaviour.  Thresholds + caveats:
 [`docs/v111/CONFORMAL_GUARANTEE.md`](docs/v111/CONFORMAL_GUARANTEE.md).
 A fixture-based σ-gated RAG demo at
 [`benchmarks/v111/results/adaptive_rag_demo.md`](benchmarks/v111/results/adaptive_rag_demo.md)
-shows that this threshold saves **89 %–95 %** of retrieval calls
-across the four families while keeping accuracy on the
-answered-direct subset ≥ the always-direct baseline.
+compares `always_retrieve` / `never_retrieve` / `sigma_gated` side by
+side — with σ-gating achieving **5–15× more correct answers per
+retrieval call** than always-retrieve (call fraction 5 %–11 %,
+accuracy within ±0.01 of always-retrieve on direct answers).
 
-**MMLU subset (v111.2-mmlu, 1/5 subjects wired).**  `mmlu_abstract_algebra`
-n = 100 is measured end-to-end through the same σ-sidecar pipeline
-(overall accuracy 33 %, all σ-signals ≈ entropy; nothing passes
-Bonferroni at this sample size and base-model strength).  Full
-5-subject subset + table:
-[`benchmarks/v111/results/mmlu_subset.md`](benchmarks/v111/results/mmlu_subset.md),
-reproduction commands in
-[`docs/v111/THE_FRONTIER_MATRIX.md §11`](docs/v111/THE_FRONTIER_MATRIX.md#11-v1112-mmlu-subset-post-hoc-one-subject-wired).
+**MMLU subset (v111.2-mmlu, iteration-3 discovery).**  Iteration 2
+measured `mmlu_abstract_algebra` at accuracy ≈ 0.33 on BitNet-2B — at
+or below random (0.25) on a 4-choice task — confirming that selective
+prediction cannot improve a model that does not know the task.
+Iteration 3 therefore inverts the order: a floor-check discovery sweep
+([`mmlu_subject_discovery.py`](benchmarks/v111/mmlu_subject_discovery.py))
+runs BitNet on a curated candidate list of 10 MMLU subjects (seeded
+from the BitNet paper and the MMLU difficulty literature, not from our
+own data) and emits `sigma_analysis_eligible = [subjects with
+acc > 0.40]`.  Only those subjects feed the σ-AURCC + Bonferroni matrix
+in [`analyse_mmlu_subset.py`](benchmarks/v111/analyse_mmlu_subset.py)
+at Bonferroni pool N = 4 non-entropy signals × N_eligible subjects.
+Subjects that fail the floor are **honestly excluded**, not weighted
+into the σ-gate's denominator: the claim is "σ-gating works where the
+base model has non-trivial accuracy", not "σ-gating works universally".
+See
+[`benchmarks/v111/results/mmlu_discovery.md`](benchmarks/v111/results/mmlu_discovery.md)
+for the measured floor status and
+[`benchmarks/v111/results/mmlu_subset.md`](benchmarks/v111/results/mmlu_subset.md)
+for the eligible-subjects σ matrix.
+
+**Iteration-3 MMLU result (measured):** **7 / 10** candidate subjects
+cleared the 0.40 accuracy floor; `mmlu_global_facts` (0.344),
+`mmlu_abstract_algebra` (0.330), and `mmlu_high_school_mathematics`
+(0.292) were excluded as predicted.  On the 7 eligible subjects the
+full σ-matrix at Bonferroni pool **N = 28** (α_fw = 0.00179) yields
+**0 / 28 Bonferroni-significant σ wins** — entropy is the best signal
+on every subject, and every σ-signal has a positive ΔAURCC (slightly
+worse than entropy) inside the bootstrap CI.  This is the same regime
+as the HellaSwag negative result: on log-likelihood-style factual
+questions where entropy already captures the calibration structure,
+σ-gating does not add useful information.  The σ-gate's
+Bonferroni-significant domain is therefore bounded to TruthfulQA-style
+factual-confidence tasks (labels designed to probe model-held
+falsehoods), not general MMLU-style knowledge-QA — this is a
+**domain-scoping finding**, and it is reported **as a negative result**
+in the status table above.
 
 Methodology and signal definitions:
 [`docs/v111/THE_FRONTIER_MATRIX.md`](docs/v111/THE_FRONTIER_MATRIX.md).

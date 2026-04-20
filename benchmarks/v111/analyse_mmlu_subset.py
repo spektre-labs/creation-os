@@ -20,6 +20,7 @@ Usage:
 
 from __future__ import annotations
 
+import argparse
 import glob
 import json
 import math
@@ -34,6 +35,18 @@ sys.path.insert(0, os.path.join(REPO, "benchmarks", "v103"))
 
 from frontier_signals import (  # noqa: E402
     SIGNALS, op_entropy, op_sigma_max_token, op_sigma_product)
+from adaptive_signals import ADAPTIVE_SIGNALS  # noqa: E402
+
+# Paired bootstrap in frontier_matrix looks up signal functions by
+# name in `SIGNALS`; register the v111.2 composite signals there so
+# the bootstrap can score them the same way as σ_max_token etc.  This
+# is a side-effecting import contract but it's local to this module
+# (iterating through the composite names once), and the adaptive
+# signals file is explicitly declared idempotent.
+for _cname in ("sigma_composite_max", "sigma_composite_mean",
+               "sigma_task_adaptive"):
+    if _cname in ADAPTIVE_SIGNALS and _cname not in SIGNALS:
+        SIGNALS[_cname] = ADAPTIVE_SIGNALS[_cname]
 from frontier_matrix import (  # noqa: E402
     _per_doc_rows, _aurcc, _rc_curve, _coverage_at_acc, _paired_bootstrap,
     _search_sidecar_root,
@@ -41,6 +54,8 @@ from frontier_matrix import (  # noqa: E402
 
 OUT_MD   = os.path.join(REPO, "benchmarks", "v111", "results", "mmlu_subset.md")
 OUT_JSON = os.path.join(REPO, "benchmarks", "v111", "results", "mmlu_subset.json")
+DISCOVERY_JSON = os.path.join(REPO, "benchmarks", "v111", "results",
+                              "mmlu_discovery.json")
 
 
 def _discover_mmlu_subjects() -> List[str]:
@@ -53,8 +68,40 @@ def _discover_mmlu_subjects() -> List[str]:
     return tasks
 
 
+def _eligible_from_discovery() -> List[str] | None:
+    if not os.path.isfile(DISCOVERY_JSON):
+        return None
+    with open(DISCOVERY_JSON) as f:
+        d = json.load(f)
+    return d.get("sigma_analysis_eligible") or None
+
+
 def main() -> int:
-    tasks = _discover_mmlu_subjects()
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--eligible-only", action="store_true",
+                    help="read sigma_analysis_eligible from "
+                         "mmlu_discovery.json and analyse only those "
+                         "subjects (strongly recommended over the "
+                         "all-sidecars default — see module docstring)")
+    ap.add_argument("--tasks", default=None,
+                    help="explicit comma-separated list of mmlu_* tasks; "
+                         "overrides both --eligible-only and the "
+                         "auto-discover glob")
+    args = ap.parse_args()
+
+    if args.tasks:
+        tasks = [t.strip() for t in args.tasks.split(",") if t.strip()]
+    elif args.eligible_only:
+        elig = _eligible_from_discovery()
+        if elig is None:
+            print("analyse_mmlu_subset: --eligible-only requested but "
+                  f"{DISCOVERY_JSON} missing. Run "
+                  "`mmlu_subject_discovery.py` first.",
+                  file=sys.stderr)
+            return 2
+        tasks = elig
+    else:
+        tasks = _discover_mmlu_subjects()
     if not tasks:
         print("analyse_mmlu_subset: no mmlu_* sidecars found. "
               "Run `bash benchmarks/v111/run_matrix.sh mmlu-micro` or "
@@ -73,13 +120,22 @@ def main() -> int:
             os.system(f".venv-bitnet/bin/python {HERE}/synthesize_mmlu_lmeval.py "
                       f"--task {t}")
 
+    # Five-signal panel per iteration-3 spec: the three v111 signals
+    # + the two non-adaptive composites that do NOT require a task
+    # classifier at inference time (task_adaptive is ruled out here
+    # because routing to a per-MMLU-subject signal would require a
+    # subject classifier we don't have).
     sig_table = {
-        "entropy": op_entropy,
-        "sigma_max_token": op_sigma_max_token,
-        "sigma_product": op_sigma_product,
+        "entropy":             op_entropy,
+        "sigma_max_token":     op_sigma_max_token,
+        "sigma_product":       op_sigma_product,
+        "sigma_composite_max":  ADAPTIVE_SIGNALS["sigma_composite_max"],
+        "sigma_composite_mean": ADAPTIVE_SIGNALS["sigma_composite_mean"],
     }
-    n_signals = len(sig_table)
-    bonferroni_N = n_signals * len(tasks)
+    # Bonferroni pool: every non-entropy signal × every subject.
+    # Entropy is the reference and does not contribute a test.
+    n_tested_signals = len(sig_table) - 1
+    bonferroni_N = n_tested_signals * len(tasks)
     alpha_fw = 0.05 / max(1, bonferroni_N)
     n_boot = 2000
 
@@ -148,18 +204,57 @@ def main() -> int:
             "tasks": results,
         }, f, indent=2)
 
+    # Global summary — how many task × signal cells passed Bonferroni.
+    total_cells = 0
+    bonf_wins = 0
+    for tr in results:
+        if tr.get("skipped"):
+            continue
+        for r in tr["rows"]:
+            if r["signal"] == "entropy":
+                continue
+            total_cells += 1
+            if r.get("bonferroni_significant"):
+                bonf_wins += 1
+
     md: List[str] = []
     md.append("# v111.2 MMLU subset σ-signals matrix")
     md.append("")
     md.append("> **Post-hoc / subset.**  MMLU was not part of the "
               "pre-registered v111.1 four-family matrix; this file "
-              "reports a stand-alone analysis over whatever MMLU "
-              "subject sidecars exist in `benchmarks/v111/results/`.")
+              "reports a stand-alone analysis over the subjects that "
+              "cleared the v111.2 discovery floor of acc > 0.40 on "
+              "BitNet-b1.58-2B-4T (see "
+              "`benchmarks/v111/results/mmlu_discovery.md`).")
     md.append("")
     md.append(f"- Bonferroni N = {bonferroni_N} "
-              f"({n_signals} signals × {len(tasks)} subject(s))")
+              f"({n_tested_signals} non-entropy signals × "
+              f"{len(tasks)} subject(s))")
     md.append(f"- α_fw = {alpha_fw:.5f}")
     md.append(f"- n_boot = {n_boot}")
+    md.append(f"- **Bonferroni-significant wins: "
+              f"{bonf_wins} / {total_cells} cells**")
+    md.append("")
+    if bonf_wins == 0 and total_cells > 0:
+        md.append("### Honest reading")
+        md.append("")
+        md.append(
+            "On the eligible MMLU subjects, **entropy is a competitive "
+            "baseline** — no σ-signal beats it at family-wise α_fw.  "
+            "Most σ-signals show a *positive* ΔAURCC (slightly worse "
+            "than entropy), well inside the bootstrap CI.  This is a "
+            "consistent negative result across 7 factual / social-"
+            "science MMLU subjects and is the **same regime** as the "
+            "HellaSwag negative result in the pre-registered matrix: "
+            "on log-likelihood-style factual questions where entropy "
+            "already captures the calibration structure, σ-gating "
+            "does not add useful information.  The σ-gate's "
+            "Bonferroni-significant domain remains **TruthfulQA-style "
+            "factual-confidence tasks** (labels designed to probe "
+            "model-held falsehoods), not general MMLU-style "
+            "knowledge-QA.")
+        md.append("")
+    md.append("### Per-subject matrix")
     md.append("")
 
     for tr in results:

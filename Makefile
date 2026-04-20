@@ -2714,11 +2714,14 @@ check-v111-adaptive:
 check-v111-prereg-adaptive:
 	@bash benchmarks/v111/check_v111_prereg_adaptive.sh
 
+check-v111-mmlu-discovery:
+	@bash benchmarks/v111/check_v111_mmlu_discovery.sh
+
 check-v111-sft-smoke:
 	@bash training/v111/check_v111_sft_smoke.sh
 
-check-v111: check-v111-matrix check-v111-adaptive check-v111-prereg-adaptive check-v111-reason check-v111-sft-smoke
-	@echo "check-v111: OK (v111.1 matrix + v111.2 adaptive/post-hoc + v111.2 prereg + v111.2 reason + v111.3 SFT smoke)"
+check-v111: check-v111-matrix check-v111-adaptive check-v111-prereg-adaptive check-v111-mmlu-discovery check-v111-reason check-v111-sft-smoke
+	@echo "check-v111: OK (v111.1 matrix + v111.2 adaptive/post-hoc + v111.2 prereg + v111.2 mmlu-discovery + v111.2 reason + v111.3 SFT smoke)"
 
 bench-v111-hellaswag: standalone-v101-real
 	@bash benchmarks/v111/run_matrix.sh hellaswag
