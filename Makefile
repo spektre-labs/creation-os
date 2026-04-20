@@ -6072,8 +6072,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-substrate check-sigma-formal \
                       check-sigma-paper check-cos-unified \
                       check-cos-c-dispatch check-repro-bundle \
-                      check-sigma-truthfulqa
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa)"
+                      check-sigma-truthfulqa check-mesh-2node
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6750,6 +6750,24 @@ check-sigma-paper: creation_os_sigma_paper
 check-cos-c-dispatch: cos cos-chat cos-benchmark cos-cost
 	@bash benchmarks/sigma_pipeline/check_cos_c_dispatch.sh
 	@echo "check-cos-c-dispatch: OK (cos chat|benchmark|cost prefer native C binaries)"
+
+# --- 2-node TCP mesh integration (FIX-6) ---------------------------
+#
+# Spawns two cos-mesh-node processes on 127.0.0.1:7001 and
+# 127.0.0.1:7002, exchanges real σ-Protocol frames over real TCP
+# sockets, and verifies QUERY→RESPONSE + HEARTBEAT flow.  The
+# protocol tested here is the same one that runs on WAN between
+# production mesh peers.
+COS_MESH_NODE_INC  = -Isrc/sigma/pipeline
+COS_MESH_NODE_SRCS = src/sigma/pipeline/protocol.c
+
+cos-mesh-node: $(COS_MESH_NODE_SRCS) src/cli/cos_mesh_node.c
+	$(CC) $(CFLAGS) $(COS_MESH_NODE_INC) -o $@ \
+	    $(COS_MESH_NODE_SRCS) src/cli/cos_mesh_node.c $(LDFLAGS)
+
+check-mesh-2node: cos-mesh-node
+	@bash benchmarks/sigma_pipeline/check_mesh_2node.sh
+	@echo "check-mesh-2node: OK (real TCP sockets: QUERY → RESPONSE + HEARTBEAT)"
 
 # --- Reproduction bundle (FIX-4) -----------------------------------
 #

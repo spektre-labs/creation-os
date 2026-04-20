@@ -682,6 +682,7 @@ creation_os_sigma_marketplace
 creation_os_sigma_federation
 creation_os_sigma_protocol
 creation_os_sigma_ed25519
+cos-mesh-node
 repro_bundle.txt
 repro_bundle.json
 cos-network
