@@ -18,7 +18,7 @@
  * and free of filesystem scans.) */
 #define COS_HEALTH_SIGMA_PRIMITIVES       20   /* P1..P20          */
 #define COS_HEALTH_SUBSTRATES              4   /* digital + bitnet + spike + photonic */
-#define COS_HEALTH_FORMAL_DISCHARGED       3   /* T3 + 2 sibling gate-order theorems */
+#define COS_HEALTH_FORMAL_DISCHARGED       6   /* T1..T6, Lean 4 core, zero sorry */
 #define COS_HEALTH_FORMAL_TOTAL            6
 
 int cos_sigma_health_init_defaults(cos_health_report_t *r) {

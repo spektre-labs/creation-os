@@ -31,7 +31,7 @@ for fact in \
     '"pipeline_ok_pct":100' \
     '"sigma_primitives":20' \
     '"substrates":4' \
-    '"formal_proofs_discharged":3' \
+    '"formal_proofs_discharged":6' \
     '"formal_proofs_total":6'
 do
     grep -q -F "$fact" <<<"$OUT" \

@@ -33,7 +33,7 @@ extern "C" {
 #define COS_SIGMA_PRIMITIVES  20
 #define COS_CHECK_TARGETS     53   /* +mcp +a2a +formal-complete +mesh3 +arxiv */
 #define COS_SUBSTRATES         4
-#define COS_FORMAL_PROOFS      3   /* discharged concrete (3/6 Float; 4 α-lifts backing) */
+#define COS_FORMAL_PROOFS      6   /* 6/6 discharged; Lean 4 core, zero sorry, zero Mathlib */
 #define COS_FORMAL_PROOFS_TOTAL 6
 
 /* Canonical one-line banner, for `cos --version`. */

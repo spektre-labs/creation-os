@@ -290,9 +290,20 @@ int cos_formal_complete_self_test(void) {
         "include/cos_version.h",
         &r);
     if (rc != 0)                          return -1;
-    if (r.n_theorems < 8)                 return -2;
-    if (r.discharged_abstract < 3)        return -3;
-    if (r.pending < 3)                    return -4;
+
+    /* v2.0 Omega CLOSE-1 state:
+     *   All T1..T6 theorems are discharged over core Lean 4 (Nat);
+     *   the Float fragment is delegated to sigma_measurement.h.acsl
+     *   (Frama-C Wp).  Post-CLOSE invariants:
+     *     * at least 6 theorems in the Lean file,
+     *     * at least 6 concrete discharges (T1..T6),
+     *     * zero `sorry` pending — we have stopped underclaiming,
+     *     * the α-family is optional (may be 0 now that we dropped
+     *       the Mathlib-dependent LinearOrder lifts).
+     */
+    if (r.n_theorems < 6)                 return -2;
+    if (r.discharged_concrete < 6)        return -3;
+    if (r.pending != 0)                   return -4;
     if (r.header_proofs_total != 6)       return -5;
     if (!r.ledger_matches_truth)          return -6;
     if (r.acsl_requires < 3)              return -7;

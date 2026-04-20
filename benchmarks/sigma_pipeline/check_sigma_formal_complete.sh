@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 #
-# OMEGA-3 smoke test: σ-formal-complete ledger coherence.
+# OMEGA-3 / CLOSE-1 smoke test: σ-formal-complete ledger coherence.
 #
 # Honest invariants (no toolchain runs here — we parse the
 # artefacts and cross-check the banner):
 #   self_test == 0
-#   lean.n_theorems >= 12      (v259 Measurement.lean is scaffolded)
-#   lean.discharged_concrete >= 2
-#   lean.discharged_abstract >= 3   (T2α / T3α / T4α / T5α family)
-#   lean.pending >= 3          (Float-specific theorems still carry sorry
-#                              until a Lean4 + Mathlib Float story or Frama-C
-#                              Wp discharges them — this is the honest state)
+#   lean.n_theorems >= 6       (T1..T6 at minimum; currently 11)
+#   lean.discharged_concrete >= 6   (T1..T6, all discharged over Nat)
+#   lean.pending == 0          (zero `sorry` in Measurement.lean)
 #   acsl.requires >= 3
 #   acsl.ensures  >= 5
+#   ledger.header_proofs == 6
 #   ledger.header_proofs_total == 6
 #   ledger.ledger_matches_truth == true
 #   ledger.header_proofs <= ledger.effective_discharged
@@ -49,25 +47,26 @@ assert doc["self_test"] == 0, doc
 assert doc["scan_rc"] == 0, doc
 
 lean = doc["lean"]
-assert lean["n_theorems"] >= 12, lean
-assert lean["discharged_concrete"] >= 2, lean
-assert lean["discharged_abstract"] >= 3, lean
-assert lean["pending"] >= 3, lean
+assert lean["n_theorems"] >= 6, lean
+assert lean["discharged_concrete"] >= 6, lean
+assert lean["pending"] == 0, lean
 assert lean["discharged_concrete"] + lean["discharged_abstract"] + lean["pending"] == lean["n_theorems"], lean
 
-# Make sure the α-family (LinearOrder lifts) is present.
-alpha_names = [t["name"] for t in lean["entries"] if t["abstract"]]
-assert any("monotone_in_sigma" in n for n in alpha_names), alpha_names
-assert any("anti_monotone_in_tau" in n for n in alpha_names), alpha_names
-assert any("boundary_tiebreak" in n for n in alpha_names), alpha_names
-
-# The Float-specific (non-α) theorems still carry `sorry` — that
-# is the honest current state.  If any of these flip to
-# discharged_concrete, COS_FORMAL_PROOFS must bump accordingly.
-pending_names = [t["name"] for t in lean["entries"] if t["kind"] == "pending"]
-for expected in ("gate_totality", "gate_monotone_in_sigma",
-                 "gate_anti_monotone_in_tau", "gate_boundary_tiebreak"):
-    assert expected in pending_names, (expected, pending_names)
+# Post-CLOSE-1: the canonical T1..T6 theorems must be present and
+# discharged (non-pending).  Any regression that re-introduces a
+# `sorry` on these would flip the kind to "pending" and fail the
+# pending == 0 invariant above.
+expected_theorems = {
+    "gate_totality",
+    "gate_monotone_in_sigma",
+    "gate_anti_monotone_in_tau_a",
+    "gate_anti_monotone_in_tau_r",
+    "gate_boundary_at_tau_a",
+    "gate_boundary_at_tau_r",
+}
+present = {t["name"] for t in lean["entries"]}
+missing = expected_theorems - present
+assert not missing, f"missing T1..T6 theorems: {missing}"
 
 acsl = doc["acsl"]
 assert acsl["requires"] >= 3, acsl
@@ -75,6 +74,7 @@ assert acsl["ensures"]  >= 5, acsl
 assert acsl["file_bytes"] > 1000, acsl
 
 ledger = doc["ledger"]
+assert ledger["header_proofs"] == 6, ledger
 assert ledger["header_proofs_total"] == 6, ledger
 assert ledger["ledger_matches_truth"] is True, ledger
 assert 0 <= ledger["header_proofs"] <= ledger["effective_discharged"], ledger
@@ -83,7 +83,7 @@ print("check_sigma_formal_complete: PASS", {
     "theorems":            lean["n_theorems"],
     "concrete":            lean["discharged_concrete"],
     "abstract":            lean["discharged_abstract"],
-    "pending_float_sorry": lean["pending"],
+    "pending_sorry":       lean["pending"],
     "banner":              f'{ledger["header_proofs"]}/{ledger["header_proofs_total"]}',
 })
 PY

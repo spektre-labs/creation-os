@@ -725,3 +725,7 @@ creation_os_sigma_a2a
 creation_os_sigma_formal_complete
 creation_os_sigma_mesh3
 creation_os_sigma_arxiv
+
+# Lean 4 / Lake build artefacts (hw/formal/v259/)
+hw/formal/**/.lake/
+hw/formal/**/lake-manifest.json

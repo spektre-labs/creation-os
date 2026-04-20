@@ -9,7 +9,7 @@
  *                                 (for CI / watchdogs)
  *
  * Determinism: the baked defaults (20 primitives, 38 checks,
- * 4 substrates, 3/6 proofs) are compile-time constants, so a run
+ * 4 substrates, 6/6 proofs) are compile-time constants, so a run
  * without --state produces the same JSON on every host.
  */
 
