@@ -6056,8 +6056,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-swarm check-sigma-live \
                       check-sigma-continual check-sigma-unlearn \
                       check-sigma-agent check-sigma-diagnostic \
-                      check-sigma-sovereign check-codex
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex primitives)"
+                      check-sigma-sovereign check-codex \
+                      check-sigma-pipeline-compose
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6076,6 +6077,31 @@ creation_os_sigma_codex: $(SIGMA_CODEX_SRCS) \
 check-codex: creation_os_sigma_codex
 	@bash benchmarks/sigma_pipeline/check_sigma_codex.sh
 	@echo "check-codex: OK (Codex + seed load; chapters ≥ 33; 1=1 present; hash stable)"
+
+# --- σ-pipeline: end-to-end composition (I1) ---
+#
+# Orchestrator that wires all 15 σ-primitives (P1…P20 + Codex I0)
+# into one turn-handler.  Text generation is injected via a
+# callback so integration tests can drive every branch (ACCEPT,
+# RETHINK, ABSTAIN, engram HIT, escalate, LOCAL_ONLY).  The demo
+# binary exercises engram HIT + mid-σ plateau + cloud escalate and
+# prints a pinnable JSON summary.
+SIGMA_PIPELINE_INC  = -Isrc/sigma/pipeline
+SIGMA_PIPELINE_SRCS = src/sigma/pipeline/pipeline.c \
+                      src/sigma/pipeline/codex.c \
+                      src/sigma/pipeline/engram.c \
+                      src/sigma/pipeline/reinforce.c \
+                      src/sigma/pipeline/sovereign.c \
+                      src/sigma/pipeline/agent.c
+
+creation_os_sigma_pipeline: $(SIGMA_PIPELINE_SRCS) \
+                            src/sigma/pipeline/pipeline_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PIPELINE_INC) -o $@ \
+	    $(SIGMA_PIPELINE_SRCS) src/sigma/pipeline/pipeline_main.c $(LDFLAGS)
+
+check-sigma-pipeline-compose: creation_os_sigma_pipeline
+	@bash benchmarks/sigma_pipeline/check_sigma_pipeline_compose.sh
+	@echo "check-sigma-pipeline-compose: OK (end-to-end: engram HIT + RETHINK + escalate)"
 
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
 #
