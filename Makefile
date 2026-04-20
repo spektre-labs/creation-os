@@ -490,7 +490,14 @@ merge-gate:
 	@$(MAKE) check-v284
 	@$(MAKE) check-v285
 	@$(MAKE) check-v286
-	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability)"
+	@$(MAKE) check-v287
+	@$(MAKE) check-v288
+	@$(MAKE) check-v289
+	@$(MAKE) check-v290
+	@$(MAKE) check-v291
+	@$(MAKE) check-v292
+	@$(MAKE) check-v293
+	@echo "merge-gate: OK (portable + v6..v29 + v101..v106 + v60..v100 + v111 + v106 curl loopback + v107 installer + v108 UI + v109 multi-GGUF + v112/v113/v114 agentic stack + v115/v116/v117/v118 memory/MCP/long-context/vision + v119/v120/v121/v122/v123 speculative/distill/planning/red-team/formal + v124/v125/v126 living-weights + v129..v133 collective intelligence + v134..v138 deep infrastructure + v139..v143 world intelligence + v144..v148 sovereign self-improvement + v149..v153 embodied/swarm/code-agent/distill/identity + v154..v158 showcase/publish/paper/community/v1.0-release + v159..v163 self-healing/composable + v164..v168 plugin/edge/stream/governance/marketplace + v169..v173 ontology/transfer/collab/narrative/teach + v174..v178 flywheel/debate-train/simulator/compress/consensus + v179..v183 interpret/steer/audit/privacy/governance-theory + v184..v188 VLA/fusion/grow/calibration/alignment + v189..v193 TTC/latent-reason/constitutional/emergent/coherence + v194..v198 horizon/recover/habit/ToM/moral + v199..v203 law/market/diplomacy/culture/civilization + v204..v208 hypothesis/experiment/theorem/design/manufacture + v209..v213 containment/guardian/sandbox-formal/transparency/trust-chain + v214..v218 swarm-evolve/stigmergy/quorum/ecosystem/consciousness-meter + v219..v223 create/simulate/language/emotion/meta-cognition + v224..v228 tensor/fractal/attention/entropy/unified + v229..v233 seed/fork/immortal/lineage/legacy + v234..v238 presence/locus/autobiography/boundary/sovereignty + v239..v243 runtime/pipeline/api/kernel-os/complete + v244..v248 package/observe/harden/benchmark-suite/release + v249..v253 mcp/a2a/marketplace/teach/ecosystem-hub + v254..v258 tutor/collaborate/wellness/locale/mission + v260..v264 engram/airllm/hybrid/mesh-engram/sovereign-stack + v265..v269 speculative/flash/mamba/continuous-batch/compile-v2 + v270..v274 tinyml/swarm-edge/digital-twin/robotics/industrial + v275..v278 ttt/deltanet/distill-runtime/rsi + v279..v282 jepa/moe/jamba/agent + v283..v286 constitutional/multi-agent/eu-ai-act/interpretability + v287..v293 granite/oculus/ruin-value/dougong/parthenon/leanstral/hagia-sofia)"
 
 # Meta-target: every composed-decision kernel v60..v100 (v75 intentionally skipped).
 check-v60-v100:
@@ -6714,6 +6721,219 @@ check-v286: check-v286-interpretability-decomposition
 
 check-v283-v286: check-v283 check-v284 check-v285 check-v286
 	@echo "check-v283-v286: OK (constitutional + multi-agent + eu-ai-act + interpretability)"
+
+# --- v287 σ-Granite (zero-dep, C99, platform-agnostic) ---
+#
+# v0 contracts: exactly 6 dependency rows canonical
+# (libc/posix/pthreads ALLOW with in_kernel=true;
+# npm/pip/cargo FORBID with in_kernel=false); exactly
+# 3 language standards canonical (C89/C99 allowed,
+# C++ forbidden); exactly 5 platform rows canonical
+# (linux/macos/bare_metal/rtos/cortex_m) each
+# kernel_works AND ifdef_only_at_edges on EVERY row;
+# exactly 3 vendoring rows canonical (vendored_copy
+# allowed; external_linkage AND supply_chain_trust
+# forbidden); σ_granite==0.0; FNV-1a chain replays
+# byte-identically.
+V287_INC  = -Isrc/v287
+V287_SRCS = src/v287/granite.c
+
+creation_os_v287_granite: $(V287_SRCS) src/v287/main.c
+	$(CC) $(CFLAGS) $(V287_INC) -o $@ \
+	    $(V287_SRCS) src/v287/main.c $(LDFLAGS)
+
+check-v287-granite-zero-deps: creation_os_v287_granite
+	@bash benchmarks/v287/check_v287_granite_zero_deps.sh
+	@echo "check-v287-granite-zero-deps: OK (deps + std + platform + vendor)"
+
+check-v287: check-v287-granite-zero-deps
+	@echo "check-v287: OK (σ-granite kernel)"
+
+# --- v288 σ-Oculus (tunable aperture) ---
+#
+# v0 contracts: exactly 3 cascade rows canonical
+# (medical TIGHT 0.10 / code NORMAL 0.30 / creative
+# OPEN 0.60) with 3 DISTINCT widths AND τ strictly
+# increasing; exactly 3 extreme fixtures (closed
+# useless/not dangerous, open dangerous/not useless,
+# optimal neither); exactly 3 adaptive self-tuning
+# steps with error_rate strictly decreasing AND
+# action TIGHTEN iff error>threshold_error=0.05 else
+# STABLE (both branches fire) AND τ_{n+1}<τ_n on
+# every TIGHTEN; exactly 3 transparency fields
+# (tau_declared/sigma_measured/decision_visible) all
+# reported; σ_oculus==0.0; FNV-1a chain replays
+# byte-identically.
+V288_INC  = -Isrc/v288
+V288_SRCS = src/v288/oculus.c
+
+creation_os_v288_oculus: $(V288_SRCS) src/v288/main.c
+	$(CC) $(CFLAGS) $(V288_INC) -o $@ \
+	    $(V288_SRCS) src/v288/main.c $(LDFLAGS)
+
+check-v288-oculus-tunable-aperture: creation_os_v288_oculus
+	@bash benchmarks/v288/check_v288_oculus_tunable_aperture.sh
+	@echo "check-v288-oculus-tunable-aperture: OK (cascade + extreme + adaptive + transparent)"
+
+check-v288: check-v288-oculus-tunable-aperture
+	@echo "check-v288: OK (σ-oculus kernel)"
+
+# --- v289 σ-Ruin-Value (graceful degradation) ---
+#
+# v0 contracts: exactly 4 kernel-removal rows
+# canonical (v267_mamba→transformer, v260_engram→
+# local_memory, v275_ttt→frozen_weights, v262_hybrid
+# →direct_kernel) all survivor_still_works AND
+# distinct; exactly 4 cascade tiers canonical
+# (hybrid_engine/transformer_only/bitnet_plus_sigma/
+# pure_sigma_gate) with tier_id permutation [1..4],
+# all standalone_viable, resource_cost strictly
+# monotonically decreasing; exactly 3 preservation
+# rows (sigma_log_persisted/atomic_write_wal/
+# last_measurement_recoverable) all guaranteed;
+# exactly 3 rebuild steps (read_sigma_log→
+# restore_last_state→resume_not_restart) with
+# step_order permutation [1,2,3] all possible;
+# seed_kernels_required==5; σ_ruin==0.0; FNV-1a
+# chain replays byte-identically.
+V289_INC  = -Isrc/v289
+V289_SRCS = src/v289/ruin_value.c
+
+creation_os_v289_ruin_value: $(V289_SRCS) src/v289/main.c
+	$(CC) $(CFLAGS) $(V289_INC) -o $@ \
+	    $(V289_SRCS) src/v289/main.c $(LDFLAGS)
+
+check-v289-ruin-value-graceful-degradation: creation_os_v289_ruin_value
+	@bash benchmarks/v289/check_v289_ruin_value_graceful_degradation.sh
+	@echo "check-v289-ruin-value-graceful-degradation: OK (removal + cascade + preserve + rebuild)"
+
+check-v289: check-v289-ruin-value-graceful-degradation
+	@echo "check-v289: OK (σ-ruin-value kernel)"
+
+# --- v290 σ-Dougong (modular flexibility) ---
+#
+# v0 contracts: exactly 4 coupling rows canonical
+# (v267_mamba→v262_hybrid, v260_engram→v206_ghosts,
+# v275_ttt→v272_agentic_rl, v286_interp→v269_stopping)
+# with channel=="sigma_measurement_t" AND no
+# direct_call on EVERY row; exactly 3 hot-swap rows
+# (v267_mamba→v276_deltanet long_context,
+# v216_quorum→v214_swarm agent_consensus,
+# v232_sqlite→v224_snapshot state_persistence) with
+# downtime_ms==0 AND config_unchanged on EVERY row;
+# exactly 3 seismic scenarios canonical (spike_small
+# 0.40 / spike_medium 0.60 / spike_large 0.78) all
+# distributed AND max_sigma_load<=load_budget=0.80;
+# exactly 3 chaos rows (kill_random_kernel→survived,
+# overload_single_kernel→load_distributed,
+# network_partition→degraded_but_alive) with
+# distinct outcomes AND all passed; σ_dougong==0.0;
+# FNV-1a chain replays byte-identically.
+V290_INC  = -Isrc/v290
+V290_SRCS = src/v290/dougong.c
+
+creation_os_v290_dougong: $(V290_SRCS) src/v290/main.c
+	$(CC) $(CFLAGS) $(V290_INC) -o $@ \
+	    $(V290_SRCS) src/v290/main.c $(LDFLAGS)
+
+check-v290-dougong-modular-flexibility: creation_os_v290_dougong
+	@bash benchmarks/v290/check_v290_dougong_modular_flexibility.sh
+	@echo "check-v290-dougong-modular-flexibility: OK (coupling + swap + seismic + chaos)"
+
+check-v290: check-v290-dougong-modular-flexibility
+	@echo "check-v290: OK (σ-dougong kernel)"
+
+# --- v291 σ-Parthenon (calibration + entasis) ---
+#
+# v0 contracts: exactly 3 calibration rows canonical
+# (medical ABSTAIN / code CAUTIOUS / creative SAFE)
+# at shared sigma_sample=0.30 with 3 DISTINCT
+# verdicts; exactly 3 perception rows (σ=0.05
+# ratio=20, σ=0.15 ratio=7, σ=0.50 ratio=2) with
+# ratio_denominator==round(1/σ) AND explanation_
+# present on EVERY row; exactly 3 bias rows
+# (overconfident +0.10, underconfident −0.10,
+# calibrated 0.00) with sigma_corrected ==
+# sigma_raw + bias_offset AND polarity signs matching
+# labels AND residual_bias<=bias_budget=0.02 on
+# EVERY row; exactly 3 entasis rows with
+# sigma_clamped == clamp(sigma_in, lower=0.02,
+# upper=0.98); σ_parthenon==0.0; FNV-1a chain
+# replays byte-identically.
+V291_INC  = -Isrc/v291
+V291_SRCS = src/v291/parthenon.c
+
+creation_os_v291_parthenon: $(V291_SRCS) src/v291/main.c
+	$(CC) $(CFLAGS) $(V291_INC) -o $@ \
+	    $(V291_SRCS) src/v291/main.c $(LDFLAGS)
+
+check-v291-parthenon-calibration: creation_os_v291_parthenon
+	@bash benchmarks/v291/check_v291_parthenon_calibration.sh
+	@echo "check-v291-parthenon-calibration: OK (calib + percept + bias + entasis)"
+
+check-v291: check-v291-parthenon-calibration
+	@echo "check-v291: OK (σ-parthenon kernel)"
+
+# --- v292 σ-Leanstral (formal verification) ---
+#
+# v0 contracts: exactly 3 gate theorems canonical
+# (gate_determinism/gate_range/gate_threshold_
+# monotone) all lean4_proved; exactly 4 σ invariants
+# canonical (sigma_in_unit_interval/
+# sigma_zero_k_eff_full/sigma_one_k_eff_zero/
+# sigma_monotone_confidence_loss) all holds; exactly
+# 3 Leanstral cost rows canonical (leanstral $36 <
+# claude $549 < bug_in_prod $10000) strictly
+# monotonically increasing; exactly 3 formal-layer
+# rows canonical (frama_c_v138 C_CONTRACTS /
+# lean4_v207 THEOREM_PROOFS / leanstral_v292
+# AI_ASSISTED_PROOFS) with 3 DISTINCT layers AND all
+# enabled; σ_leanstral==0.0; FNV-1a chain replays
+# byte-identically.
+V292_INC  = -Isrc/v292
+V292_SRCS = src/v292/leanstral.c
+
+creation_os_v292_leanstral: $(V292_SRCS) src/v292/main.c
+	$(CC) $(CFLAGS) $(V292_INC) -o $@ \
+	    $(V292_SRCS) src/v292/main.c $(LDFLAGS)
+
+check-v292-leanstral-formal-verification: creation_os_v292_leanstral
+	@bash benchmarks/v292/check_v292_leanstral_formal_verification.sh
+	@echo "check-v292-leanstral-formal-verification: OK (theorems + invariants + cost + layers)"
+
+check-v292: check-v292-leanstral-formal-verification
+	@echo "check-v292: OK (σ-leanstral kernel)"
+
+# --- v293 σ-Hagia-Sofia (continuous use = longevity) ---
+#
+# v0 contracts: exactly 3 adoption metrics canonical
+# (daily_users/api_calls/sigma_evaluations) all
+# tracked; exactly 3 multi-purpose domains canonical
+# (llm/sensor/organization) all sigma_gate_
+# applicable; exactly 3 community longevity rows
+# canonical (open_source_agpl/community_maintainable/
+# vendor_independent) all hold; exactly 3 lifecycle
+# phases canonical (active_original_purpose/
+# declining_usage/repurposed) all alive AND
+# declining_usage carries warning_issued AND
+# repurposed carries new_domain_found; σ_hagia==0.0;
+# FNV-1a chain replays byte-identically.
+V293_INC  = -Isrc/v293
+V293_SRCS = src/v293/hagia_sofia.c
+
+creation_os_v293_hagia_sofia: $(V293_SRCS) src/v293/main.c
+	$(CC) $(CFLAGS) $(V293_INC) -o $@ \
+	    $(V293_SRCS) src/v293/main.c $(LDFLAGS)
+
+check-v293-hagia-sofia-continuous-use: creation_os_v293_hagia_sofia
+	@bash benchmarks/v293/check_v293_hagia_sofia_continuous_use.sh
+	@echo "check-v293-hagia-sofia-continuous-use: OK (adoption + domain + community + lifecycle)"
+
+check-v293: check-v293-hagia-sofia-continuous-use
+	@echo "check-v293: OK (σ-hagia-sofia kernel)"
+
+check-v287-v293: check-v287 check-v288 check-v289 check-v290 check-v291 check-v292 check-v293
+	@echo "check-v287-v293: OK (granite + oculus + ruin-value + dougong + parthenon + leanstral + hagia-sofia)"
 
 # --- License Attestation Kernel (SCSL-1.0 §11) -------------------
 #

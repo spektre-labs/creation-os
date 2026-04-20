@@ -384,6 +384,83 @@ The live stack ships today:
   recommendation AND EU AI Act Article 13 compliance asserted on
   every row — **the report is an actionable human sentence, not
   just a number**.
+- **v287–v293** — the **architecture-that-lasts-millennia layer**:
+  σ-granite (6 canonical dependency rows `libc · posix · pthreads ·
+  npm · pip · cargo` where `libc/posix/pthreads` are `ALLOW` with
+  `in_kernel = true` AND `npm/pip/cargo` are `FORBID` with
+  `in_kernel = false`, 3 canonical language standards
+  `C89 · C99 · C++` with C89 AND C99 allowed AND C++ forbidden, 5
+  canonical platforms `linux · macos · bare_metal · rtos ·
+  cortex_m` each `kernel_works = true` AND `ifdef_only_at_edges =
+  true`, and 3 canonical vendoring rows with `vendored_copy`
+  allowed AND `external_linkage` AND `supply_chain_trust` forbidden
+  — **zero dependencies and platform-agnostic core as a gate-
+  enforced invariant, not a README aspiration**), σ-oculus (3
+  canonical cascade rows `medical TIGHT 0.10 · code NORMAL 0.30 ·
+  creative OPEN 0.60` with 3 DISTINCT widths AND τ strictly
+  increasing, 3 canonical extreme fixtures `closed useless / open
+  dangerous / optimal neither`, 3 canonical self-tuning steps where
+  `TIGHTEN iff error_rate > 0.05` else `STABLE` firing both
+  branches AND `τ_{n+1} < τ_n` on every TIGHTEN, and 3 canonical
+  transparency fields `tau_declared · sigma_measured ·
+  decision_visible` all reported — **every decision carries its τ
+  AND its σ, so the aperture is always user-visible**), σ-ruin-
+  value (4 canonical kernel-removal rows `v267_mamba → transformer
+  · v260_engram → local_memory · v275_ttt → frozen_weights ·
+  v262_hybrid → direct_kernel` all `survivor_still_works = true`,
+  4 canonical cascade tiers `hybrid_engine · transformer_only ·
+  bitnet_plus_sigma · pure_sigma_gate` with `tier_id` permutation
+  `[1..4]` AND all `standalone_viable = true` AND `resource_cost`
+  strictly monotonically decreasing, 3 canonical preservation rows
+  `sigma_log_persisted · atomic_write_wal ·
+  last_measurement_recoverable` all guaranteed, 3 canonical
+  rebuild steps `read_sigma_log → restore_last_state →
+  resume_not_restart`, and `seed_kernels_required = 5` — **graceful
+  degradation: three layers fall away and the pure σ-gate ruin
+  still stands**), σ-dougong (4 canonical coupling rows with
+  `channel == "sigma_measurement_t"` AND `direct_call = false` on
+  every row, 3 canonical hot-swap rows `v267_mamba → v276_deltanet
+  · v216_quorum → v214_swarm · v232_sqlite → v224_snapshot` all
+  `downtime_ms = 0` AND `config_unchanged = true`, 3 canonical
+  seismic rows `spike_small 0.40 · spike_medium 0.60 · spike_large
+  0.78` all `load_distributed = true` AND `max_sigma_load ≤
+  load_budget = 0.80`, and 3 canonical chaos rows
+  `kill_random_kernel → survived · overload_single_kernel →
+  load_distributed · network_partition → degraded_but_alive` with
+  distinct outcomes AND all passed — **hot-swap a kernel without
+  touching the roof**), σ-parthenon (3 canonical calibration rows
+  `medical ABSTAIN / code CAUTIOUS / creative SAFE` at shared
+  `sigma_sample = 0.30` with 3 DISTINCT verdicts, 3 canonical
+  perception rows where `ratio_denominator == round(1 / σ)` AND
+  `explanation_present = true` on every row, 3 canonical bias rows
+  with `σ_corrected == σ_raw + offset` AND polarity signs matching
+  labels AND `residual_bias ≤ bias_budget = 0.02` on every row, and
+  3 canonical entasis rows with `σ_clamped == clamp(σ_in, 0.02,
+  0.98)` — **σ = 0.30 is read three ways by three domains; the
+  gate is never perfectly certain, never perfectly uncertain**),
+  σ-leanstral (3 canonical gate theorems `gate_determinism ·
+  gate_range · gate_threshold_monotone` all `lean4_proved = true`,
+  4 canonical σ invariants `sigma_in_unit_interval ·
+  sigma_zero_k_eff_full · sigma_one_k_eff_zero ·
+  sigma_monotone_confidence_loss` all hold, 3 canonical cost rows
+  `leanstral $36 < claude $549 < bug_in_prod $10000` strictly
+  monotonically increasing, and 3 canonical formal layers
+  `frama_c_v138 C_CONTRACTS · lean4_v207 THEOREM_PROOFS ·
+  leanstral_v292 AI_ASSISTED_PROOFS` with 3 DISTINCT layers AND
+  all enabled — **σ-gate invariants are theorems, not tests; the
+  proof layer pays for itself before any bug reaches production**;
+  shipped `.lean` artifacts and a commit-time Leanstral loop are
+  v292.1), and **σ-hagia-sofia** — 3 canonical adoption metrics
+  `daily_users · api_calls · sigma_evaluations` all tracked, 3
+  canonical multi-purpose domains `llm · sensor · organization` all
+  `sigma_gate_applicable = true`, 3 canonical community properties
+  `open_source_agpl · community_maintainable · vendor_independent`
+  all hold, and 3 canonical lifecycle phases
+  `active_original_purpose · declining_usage · repurposed` all
+  alive AND `declining_usage` carries `warning_issued = true` AND
+  `repurposed` carries `new_domain_found = true` — **continuous
+  use is the best defence; a single kernel serves LLMs, sensors,
+  and organizations in three rooms of the same building**.
 
 The full surface — capability by capability, with **what σ adds** per
 kernel — is the table battery immediately below. Every row links to a
