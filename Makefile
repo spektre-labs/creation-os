@@ -6053,8 +6053,29 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-ttt check-sigma-engram \
                       check-sigma-moe check-sigma-multimodal \
                       check-sigma-tinyml check-edge-portability \
-                      check-sigma-swarm check-sigma-live
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live primitives)"
+                      check-sigma-swarm check-sigma-live \
+                      check-sigma-continual
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual primitives)"
+
+# --- σ-pipeline: Continual (freeze mask, v278 ATLAS/SSU live) ---
+#
+# Fisher-information-style importance accumulator + σ-gated freeze
+# mask.  Before a TTT update lands, zero the gradient on any
+# parameter whose importance has exceeded the freeze threshold —
+# that is, any parameter the model has demonstrated is critical to
+# retained knowledge.  Old weights stay pinned; free weights keep
+# adapting.  Catastrophic forgetting, prevented in 30 lines of C.
+SIGMA_CONT_INC  = -Isrc/sigma/pipeline
+SIGMA_CONT_SRCS = src/sigma/pipeline/continual.c
+
+creation_os_sigma_continual: $(SIGMA_CONT_SRCS) \
+                             src/sigma/pipeline/continual_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CONT_INC) -o $@ \
+	    $(SIGMA_CONT_SRCS) src/sigma/pipeline/continual_main.c $(LDFLAGS)
+
+check-sigma-continual: creation_os_sigma_continual
+	@bash benchmarks/sigma_pipeline/check_sigma_continual.sh
+	@echo "check-sigma-continual: OK (Fisher importance + σ-gated freeze mask)"
 
 # --- σ-pipeline: Live (feedback-driven τ adaptation, v278 live) ---
 #

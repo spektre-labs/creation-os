@@ -23,6 +23,7 @@ __all__ = [
     "tinyml",
     "swarm",
     "live",
+    "continual",
     "backends",
     "generate_until",
     "orchestrator",

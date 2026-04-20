@@ -653,3 +653,4 @@ creation_os_sigma_tinyml
 build/
 creation_os_sigma_swarm
 creation_os_sigma_live
+creation_os_sigma_continual
