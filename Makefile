@@ -6063,8 +6063,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-merge check-sigma-grounding \
                       check-sigma-session check-cos-agent \
                       check-sigma-selfplay check-sigma-curriculum \
-                      check-sigma-synthetic check-sigma-evolution
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution)"
+                      check-sigma-synthetic check-sigma-evolution \
+                      check-sigma-meta
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6416,6 +6417,26 @@ creation_os_sigma_evolution: $(SIGMA_EV_SRCS) \
 check-sigma-evolution: creation_os_sigma_evolution
 	@bash benchmarks/sigma_pipeline/check_sigma_evolution.sh
 	@echo "check-sigma-evolution: OK (genome clamp + fitness ordering + run improves seed + τ_accept converges toward optimum)"
+
+# --- σ-pipeline: Meta (domain-level competence awareness, S5) ---
+#
+# "I know what I don't know" as a data structure: per-domain
+# buckets of σ samples, mean + slope + competence flag
+# (STRONG/MODERATE/WEAK/LIMITED) and a trend classifier
+# (LEARNING/STABLE/DRIFTING).  recommend_focus() returns the
+# weakest bucket so S1/S2 can target it; pair with S3 to generate
+# new data in that domain and P6 TTT to train on it.
+SIGMA_MT_INC  = -Isrc/sigma/pipeline
+SIGMA_MT_SRCS = src/sigma/pipeline/meta.c
+
+creation_os_sigma_meta: $(SIGMA_MT_SRCS) \
+                        src/sigma/pipeline/meta_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MT_INC) -o $@ \
+	    $(SIGMA_MT_SRCS) src/sigma/pipeline/meta_main.c $(LDFLAGS)
+
+check-sigma-meta: creation_os_sigma_meta
+	@bash benchmarks/sigma_pipeline/check_sigma_meta.sh
+	@echo "check-sigma-meta: OK (bucket + mean + slope + competence flags + recommend_focus)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
