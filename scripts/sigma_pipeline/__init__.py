@@ -26,6 +26,7 @@ __all__ = [
     "continual",
     "unlearn",
     "agent",
+    "diagnostic",
     "backends",
     "generate_until",
     "orchestrator",

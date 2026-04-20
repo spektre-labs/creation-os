@@ -16,7 +16,7 @@ bash scripts/edge/build_portable.sh > build/edge.log 2>&1 || {
 }
 
 # Every σ primitive translation unit must be present.
-for name in reinforce speculative ttt engram moe multimodal tinyml swarm live continual unlearn agent; do
+for name in reinforce speculative ttt engram moe multimodal tinyml swarm live continual unlearn agent diagnostic; do
   [[ -s build/edge/"$name".o ]] || {
     echo "missing build/edge/$name.o" >&2
     exit 3
@@ -46,4 +46,4 @@ tiny_sz=$(wc -c < build/edge/creation_os_sigma_tinyml | tr -d ' ')
   exit 7
 }
 
-echo "check-edge-portability: PASS (12 σ primitives + tinyml demo build with -Os, no -march=native; tinyml binary ${tiny_sz} B)"
+echo "check-edge-portability: PASS (13 σ primitives + tinyml demo build with -Os, no -march=native; tinyml binary ${tiny_sz} B)"

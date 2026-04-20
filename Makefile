@@ -6055,8 +6055,26 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-tinyml check-edge-portability \
                       check-sigma-swarm check-sigma-live \
                       check-sigma-continual check-sigma-unlearn \
-                      check-sigma-agent
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent primitives)"
+                      check-sigma-agent check-sigma-diagnostic
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic primitives)"
+
+# --- σ-pipeline: Diagnostic (explainable σ) ---
+#
+# Decompose the next-token σ into entropy / gap / max-prob factors,
+# expose a top-3 distribution and a counterfactual ("what would σ
+# be if p_top1 were lifted to 0.9?") so the chat layer can surface
+# WHY the model is uncertain, not just THAT it is.
+SIGMA_DG_INC  = -Isrc/sigma/pipeline
+SIGMA_DG_SRCS = src/sigma/pipeline/diagnostic.c
+
+creation_os_sigma_diagnostic: $(SIGMA_DG_SRCS) \
+                              src/sigma/pipeline/diagnostic_main.c
+	$(CC) $(CFLAGS) $(SIGMA_DG_INC) -o $@ \
+	    $(SIGMA_DG_SRCS) src/sigma/pipeline/diagnostic_main.c $(LDFLAGS)
+
+check-sigma-diagnostic: creation_os_sigma_diagnostic
+	@bash benchmarks/sigma_pipeline/check_sigma_diagnostic.sh
+	@echo "check-sigma-diagnostic: OK (entropy / gap / max-prob factor decomposition + counterfactual)"
 
 # --- σ-pipeline: Agent (OODA + σ-modulated autonomy gate) ---
 #
