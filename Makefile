@@ -6067,8 +6067,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-meta check-sigma-omega \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
-                      check-sigma-protocol check-cos-network
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network)"
+                      check-sigma-protocol check-cos-network \
+                      check-sigma-spike
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6584,6 +6585,27 @@ cos-network: $(COS_NETWORK_SRCS) src/cli/cos_network.c
 check-cos-network: cos-network
 	@bash benchmarks/sigma_pipeline/check_cos_network.sh
 	@echo "check-cos-network: OK (join + list + status + serve + query + federate + unlearn)"
+
+# --- σ-pipeline: Spike (neuromorphic LIF σ-gate, H1) ---
+#
+# σ-gate rendered as leaky integrate-and-fire: V[t+1] = decay·V[t]
+# + input ; if V ≥ V_th → spike (ACCEPT) and reset, else silent
+# (ABSTAIN).  σ_neuron = 1 − V/V_th encodes distance-to-accept,
+# so the same semantics as the digital gate map bit-for-bit onto
+# a neuromorphic substrate.  Population σ = 1 − rate/rate_max
+# gives a group-level reliability estimate with no arithmetic on
+# silent neurons (event-driven, energy-sparse).
+SIGMA_SPK_INC  = -Isrc/sigma/pipeline
+SIGMA_SPK_SRCS = src/sigma/pipeline/spike.c
+
+creation_os_sigma_spike: $(SIGMA_SPK_SRCS) \
+                        src/sigma/pipeline/spike_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SPK_INC) -o $@ \
+	    $(SIGMA_SPK_SRCS) src/sigma/pipeline/spike_main.c $(LDFLAGS)
+
+check-sigma-spike: creation_os_sigma_spike
+	@bash benchmarks/sigma_pipeline/check_sigma_spike.sh
+	@echo "check-sigma-spike: OK (LIF step + σ mapping + digital equivalence + population σ)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
