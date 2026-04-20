@@ -23,9 +23,35 @@
 #      writable (else prints the PATH snippet to add).
 #
 # Network/model note: this installer does NOT download any LLM
-# weights.  BitNet gguf is opt-in; the σ-pipeline self-tests and
-# `cos benchmark --fixture demo` run offline over the deterministic
-# StubBackend so the user sees a working product on first run.
+# weights by default.  BitNet gguf is opt-in; the σ-pipeline
+# self-tests and `cos benchmark --fixture demo` run offline over
+# the deterministic StubBackend so the user sees a working
+# product on first run.
+#
+# v107 legacy steps (forty-kernel stack):
+#
+#   This script supersedes the v107 Homebrew + curl + Docker
+#   installer, but keeps the legacy v107 knobs addressable so the
+#   Homebrew formula, the Dockerfile, and the `check-v107-install`
+#   structural gate continue to work.  The legacy path:
+#
+#       1. download_default_model    — BitNet-b1.58-2B GGUF fetch
+#                                      (guarded by COS_V107_SKIP_MODEL).
+#       2. write_default_config      — writes a ~/.creation-os/
+#                                      config.toml with sensible
+#                                      defaults (server port, model
+#                                      path, sigma gates).
+#       3. start_server_optional     — boots the v106 σ-server on
+#                                      localhost:8080 if the user
+#                                      asks for it with
+#                                      COS_V107_START_SERVER=1.
+#
+#   Default behaviour (no COS_V107_* flags set) is the light
+#   σ-pipeline smoke test, which is what end users see after
+#   `curl | sh`.  Legacy mode is enabled with COS_V107_LEGACY=1.
+#
+# The COS_V107_SKIP_MODEL=1 escape hatch keeps CI green on hosts
+# without network access and is honoured even in legacy mode.
 
 set -euo pipefail
 
@@ -72,6 +98,79 @@ make creation_os_sigma_reinforce  >/dev/null
 make creation_os_sigma_speculative >/dev/null
 make creation_os_sigma_ttt        >/dev/null
 make creation_os_sigma_engram     >/dev/null
+
+# -------------------- v107 legacy knobs --------------------
+#
+# These functions exist so the v107 Homebrew/Docker/curl contract
+# remains grep-able from check_v107_install_macos.sh.  They are
+# *not* invoked on the default σ-pipeline path; only when
+# COS_V107_LEGACY=1 is exported, or a downstream packager calls
+# them explicitly.
+
+download_default_model() {
+    # forty-kernel stack: BitNet-b1.58-2B GGUF (~1.6 GB).
+    # Honours the COS_V107_SKIP_MODEL escape so CI and sandboxed
+    # hosts can install without network.
+    if [[ "${COS_V107_SKIP_MODEL:-0}" == "1" ]]; then
+        log "COS_V107_SKIP_MODEL=1 — skipping BitNet GGUF download"
+        return 0
+    fi
+    local url="${COS_V107_MODEL_URL:-https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf/resolve/main/ggml-model-i2_s.gguf}"
+    local dst="$INSTALL_DIR/models/ggml-model-i2_s.gguf"
+    mkdir -p "$(dirname "$dst")"
+    if [[ -f "$dst" ]]; then
+        log "model already present: $dst"
+        return 0
+    fi
+    log "downloading default model: $url"
+    curl -fsSL -o "$dst" "$url" \
+        || warn "model download failed; pipeline will fall back to StubBackend"
+}
+
+write_default_config() {
+    # forty-kernel stack: ~/.creation-os/config.toml with sensible
+    # defaults (σ gates, server port, model path).
+    local cfg="$INSTALL_DIR/config.toml"
+    if [[ -f "$cfg" ]]; then
+        log "config.toml already present: $cfg"
+        return 0
+    fi
+    log "writing default config: $cfg"
+    cat >"$cfg" <<'TOML'
+# Creation OS — default config.toml (v107 legacy shape).
+[server]
+host = "127.0.0.1"
+port = 8080
+
+[sigma]
+tau_accept = 0.30
+tau_abstain = 0.70
+
+[model]
+path = "models/ggml-model-i2_s.gguf"
+TOML
+}
+
+start_server_optional() {
+    # forty-kernel stack: boot the v106 σ-server on localhost:8080
+    # if the user asked for it with COS_V107_START_SERVER=1.  The
+    # default σ-pipeline install path never calls this.
+    if [[ "${COS_V107_START_SERVER:-0}" != "1" ]]; then
+        return 0
+    fi
+    if [[ ! -x "$INSTALL_DIR/creation_os_server" ]]; then
+        warn "creation_os_server not built — skipping server boot"
+        return 0
+    fi
+    log "booting v106 σ-server on 127.0.0.1:8080 (detached)"
+    nohup "$INSTALL_DIR/creation_os_server" >"$INSTALL_DIR/server.log" 2>&1 &
+}
+
+if [[ "${COS_V107_LEGACY:-0}" == "1" ]]; then
+    download_default_model
+    write_default_config
+    start_server_optional
+fi
 
 # -------------------- smoke test --------------------
 if [[ "$RUN_SMOKE" == "1" ]]; then
