@@ -6049,8 +6049,28 @@ check-sigma-speculative: creation_os_sigma_speculative
 	@bash benchmarks/sigma_pipeline/check_sigma_speculative.sh
 	@echo "check-sigma-speculative: OK (2-state route + peak update + segment + cost model)"
 
-check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative
-	@echo "check-sigma-pipeline: OK (reinforce + speculative primitives)"
+check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative check-sigma-ttt
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt primitives)"
+
+# --- σ-pipeline: TTT (σ-gated test-time training) ---
+#
+# Live v275.1 kernel.  Pure-C float arithmetic over caller-owned
+# fast/slow weight buffers with a σ-gated admission rule, a drift
+# (||fast−slow||/||slow||) cap, and a hard reset when drift exceeds the
+# cap (Gödel-aware runaway guard).  Self-test: arg-validation errors +
+# gate semantics (σ < τ → skip, σ ≥ τ → update, NaN σ / NaN grad safely
+# skipped) + drift + reset idempotence + 10^4-point LCG stability
+# sweep (fast[] stays finite, drift ≤ 2·τ_drift).
+SIGMA_TTT_INC  = -Isrc/sigma/pipeline
+SIGMA_TTT_SRCS = src/sigma/pipeline/ttt.c
+
+creation_os_sigma_ttt: $(SIGMA_TTT_SRCS) src/sigma/pipeline/ttt_main.c
+	$(CC) $(CFLAGS) $(SIGMA_TTT_INC) -o $@ \
+	    $(SIGMA_TTT_SRCS) src/sigma/pipeline/ttt_main.c $(LDFLAGS)
+
+check-sigma-ttt: creation_os_sigma_ttt
+	@bash benchmarks/sigma_pipeline/check_sigma_ttt.sh
+	@echo "check-sigma-ttt: OK (σ-gated update + drift bound + Gödel reset)"
 
 # --- v103.1: generate_until with per-token σ-logging ---
 #

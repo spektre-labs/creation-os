@@ -26,6 +26,7 @@ from sigma_pipeline.reinforce import Action, reinforce            # noqa: E402
 from sigma_pipeline.speculative import (                           # noqa: E402
     Route, cost_savings, route,
 )
+from sigma_pipeline import ttt as pttt                             # noqa: E402
 
 
 def _run_binary(name: str) -> dict:
@@ -102,11 +103,47 @@ def main() -> int:
         print(f"FAIL cost_savings C={c_sav:.6f} vs Py={py_sav:.6f}")
         failures += 1
 
+    # TTT parity: replay the same 4-step canonical demo through the
+    # Python mirror and compare against the C binary's reported drift
+    # and step counters.
+    t = _run_binary("creation_os_sigma_ttt")
+    assert t["pass"] is True, f"C ttt self_test failed: {t}"
+    demo = t["demo"]
+    st = pttt.TTTState.init(
+        slow=[1.0] * demo["n"], lr=demo["lr"],
+        tau_sigma=demo["tau_sigma"], tau_drift=demo["tau_drift"],
+    )
+    grad = [1.0] * demo["n"]
+    pttt.step(st, 0.10, grad)   # skip
+    pttt.step(st, 0.90, grad)   # update
+    pttt.step(st, 0.90, grad)   # update
+    pttt.step(st, 0.90, grad)   # update
+    py_drift = pttt.drift(st)
+    did_reset = pttt.reset_if_drift(st)
+
+    if st.n_steps_total != demo["n_steps_total"]:
+        print(f"FAIL ttt n_steps_total "
+              f"C={demo['n_steps_total']} vs Py={st.n_steps_total}")
+        failures += 1
+    if st.n_steps_updated != demo["n_steps_updated"]:
+        print(f"FAIL ttt n_steps_updated "
+              f"C={demo['n_steps_updated']} vs Py={st.n_steps_updated}")
+        failures += 1
+    if abs(py_drift - demo["drift_pre_reset"]) > 1e-4:
+        print(f"FAIL ttt drift C={demo['drift_pre_reset']:.6f} "
+              f"vs Py={py_drift:.6f}")
+        failures += 1
+    if (did_reset == 1) != bool(demo["did_reset"]):
+        print(f"FAIL ttt did_reset C={demo['did_reset']} "
+              f"vs Py={did_reset == 1}")
+        failures += 1
+
     if failures:
         print(f"sigma-parity: {failures} divergence(s)")
         return 1
     print("sigma-parity: OK — C ↔ Python decision parity on 18 canonical "
-          "rows + cost-savings formula match (Δ<1e-4)")
+          "rows + cost-savings formula match (Δ<1e-4) + TTT 4-step demo "
+          "(drift, counters, reset) match (Δ<1e-4)")
     return 0
 
 
