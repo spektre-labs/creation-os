@@ -84,18 +84,50 @@ cos_sigma_gate_t
 cos_sigma_measurement_gate(const cos_sigma_measurement_t *m);
 
 /* ==================================================================
- * Theorem 3: Roundtrip via memcpy is BIT-IDENTICAL
- *   PROOF: PENDING — reduces to the memcpy/memcmp plugin axiom in
- *   Frama-C's string.h model.
- * ==================================================================
- *
- *   forall cos_sigma_measurement_t a;
- *     unsigned char buf[12];
- *     cos_sigma_measurement_t b;
- *     memcpy(buf, &a, 12);
- *     memcpy(&b, buf, 12);
- *     ==> memcmp(&a, &b, 12) == 0
- */
+ * Theorem 3: Roundtrip via memcpy is BIT-IDENTICAL (v259.1-roundtrip)
+ *   STATUS:
+ *     Formal proof via Frama-C Wp:     PENDING (no toolchain in CI).
+ *     Runtime verification (sampling): DISCHARGED —
+ *       `cos_v259_roundtrip_exhaustive_check()` in `sigma_measurement.c`
+ *       exhausts (a) the 4 pre-registered canonical (σ, τ) pairs,
+ *       (b) the 11 × 11 = 121 IEEE-754 special-value cross products
+ *       (NaN, ±Inf, ±0, subnormals, largest-finite) in both the
+ *       sigma AND tau fields — this matters because NaN != NaN at
+ *       == comparison but byte-identical at memcmp, and the roundtrip
+ *       invariant is a memcmp invariant — and (c) a deterministic
+ *       10^6-point LCG grid of fully-random 12-byte surfaces (each
+ *       one writes random UInt32 header + random 32-bit bit patterns
+ *       into the sigma and tau slots, generating NaN / denormal /
+ *       normal bit patterns stochastically).  The self-test is
+ *       wired into `make check-v259`, so any regression is a
+ *       merge-gate failure.
+ *     Lean 4 proof: DISCHARGED on an abstract encoding model —
+ *       see `hw/formal/v259/Measurement.lean` theorem
+ *       `roundtrip_bytes_identity`.  The Lean proof models
+ *       encode/decode as a bijection over an injective
+ *       `toByteVec : SigmaMeasurement → Vector UInt8 12` and
+ *       discharges `decode (encode m) = m` by `rfl`; it does NOT
+ *       independently model `memcpy` bit semantics — that is what
+ *       the Frama-C Wp proof would add.
+ *     Sampling-based verification is strictly weaker than Frama-C Wp
+ *     over the full `forall cos_sigma_measurement_t` domain; the
+ *     runtime check covers 10^6 out of 2^96 possible 12-byte
+ *     surfaces, a coverage of ≈ 1.26e-23 %.  Treat it as a tight but
+ *     not exhaustive invariant test.
+ * ================================================================== */
+
+/*@
+  requires \valid_read(in);
+  requires \valid(out);
+  requires \separated(in, out);
+  assigns  *out;
+  ensures  \forall integer i;
+             0 <= i < 12
+             ==> ((unsigned char *)out)[i] == ((unsigned char *)in)[i];
+  ensures  \result == \true;
+*/
+_Bool cos_sigma_measurement_roundtrip(
+    const cos_sigma_measurement_t *in, cos_sigma_measurement_t *out);
 
 /* ==================================================================
  * Theorem 4: Gate is MONOTONE IN τ

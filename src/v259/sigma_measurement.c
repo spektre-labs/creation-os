@@ -452,6 +452,92 @@ static int cos_v259_clamp_exhaustive_check(void) {
     return 0;
 }
 
+/* --- v259.1-roundtrip: exhaustive byte-identical invariant -------------- */
+
+/* Verifies `cos_sigma_measurement_roundtrip(in, out) == true` AND
+ * `memcmp(in, out, 12) == 0` for:
+ *   (a) the 4 canonical pre-registered (σ, τ) pairs used in the v0
+ *       manifest (0.0, 0.2, 0.5, 0.8 × τ=0.5),
+ *   (b) IEEE-754 special-value σ/τ fields (NaN, ±Inf, ±0, subnormals,
+ *       largest-finite) so that the raw-byte roundtrip invariant
+ *       survives through every float pathology where ==-based
+ *       comparison would lie,
+ *   (c) a deterministic LCG grid of 1 000 000 samples, each one
+ *       writing a random 32-bit `header`, random 32-bit-pattern
+ *       `sigma`, random 32-bit-pattern `tau` into the 12-byte
+ *       surface and asserting byte-identical roundtrip.
+ *
+ * Returns 0 on full pass; a positive code identifying the failing
+ * input class otherwise.  Complements `cos_v259_clamp_exhaustive_check`:
+ * clamp proves the RANGE invariant, roundtrip proves the ENCODING
+ * invariant; together they are the two v259 primitive surfaces the
+ * rest of the stack actually calls.
+ *
+ * NOTE: this is a RUNTIME invariant check by exhaustive sampling; it
+ * is NOT a formal proof.  See `hw/formal/v259/sigma_measurement.h.acsl`
+ * theorem 3 for the Frama-C Wp-pending statement and
+ * `hw/formal/v259/Measurement.lean` `roundtrip_bytes_identity` for the
+ * Lean 4 discharge. */
+static int cos_v259_roundtrip_exhaustive_check(void) {
+    /* (a) canonical pairs */
+    const float a_sig[4] = {0.00f, 0.20f, 0.50f, 0.80f};
+    const float a_tau[4] = {0.50f, 0.50f, 0.50f, 0.50f};
+    for (int i = 0; i < 4; ++i) {
+        cos_sigma_measurement_t m = { 0x01010000u, a_sig[i], a_tau[i] };
+        cos_sigma_measurement_t r;
+        if (!cos_sigma_measurement_roundtrip(&m, &r))   return 400 + i;
+        if (memcmp(&m, &r, sizeof m) != 0)              return 410 + i;
+    }
+
+    /* (b) IEEE-754 specials across both sigma AND tau fields.
+     * We do NOT compare floats with == because NaN != NaN; we compare
+     * the raw bytes via memcmp.  That is the correct roundtrip
+     * invariant for a primitive whose whole purpose is verbatim byte
+     * transport over a wire. */
+    const float specials[] = {
+         0.0f, -0.0f, 1.0f, -1.0f,
+         1e-38f, -1e-38f,
+         3.4e+38f, -3.4e+38f,
+         (float)(1.0 / 0.0),      /* +Inf */
+        -(float)(1.0 / 0.0),      /* -Inf */
+         (float)(0.0 / 0.0),      /* NaN  */
+    };
+    const size_t n_spec = sizeof(specials) / sizeof(specials[0]);
+    for (size_t i = 0; i < n_spec; ++i) {
+        for (size_t j = 0; j < n_spec; ++j) {
+            cos_sigma_measurement_t m;
+            m.header = 0xDEADBEEFu ^ (uint32_t)(i * 31 + j);
+            m.sigma  = specials[i];
+            m.tau    = specials[j];
+            cos_sigma_measurement_t r;
+            if (!cos_sigma_measurement_roundtrip(&m, &r)) return 420;
+            if (memcmp(&m, &r, sizeof m) != 0)            return 421;
+        }
+    }
+
+    /* (c) deterministic LCG grid: 1 000 000 samples of fully random
+     * 12-byte surfaces (including completely random bit patterns that
+     * represent NaN, denormals, etc. in the sigma/tau slots).
+     * LCG parameters from Numerical Recipes; pure and reproducible. */
+    uint32_t state = 0xA1B2C3D4u;
+    for (size_t k = 0; k < 1000000u; ++k) {
+        state = state * 1664525u + 1013904223u;
+        cos_sigma_measurement_t m;
+        union { uint32_t u; float f; } vs, vt;
+        m.header = state;
+        state = state * 1664525u + 1013904223u;
+        vs.u = state;  m.sigma = vs.f;
+        state = state * 1664525u + 1013904223u;
+        vt.u = state;  m.tau   = vt.f;
+
+        cos_sigma_measurement_t r;
+        if (!cos_sigma_measurement_roundtrip(&m, &r))   return 430;
+        if (memcmp(&m, &r, sizeof m) != 0)              return 431;
+    }
+
+    return 0;
+}
+
 /* --- self-test --------------------------------------------------------- */
 
 int cos_v259_self_test(void) {
@@ -492,6 +578,12 @@ int cos_v259_self_test(void) {
      * (runtime sampling, NOT a formal proof). */
     int rc = cos_v259_clamp_exhaustive_check();
     if (rc != 0) return 100 + rc;
+
+    /* v259.1-roundtrip: exhaustive byte-identical roundtrip invariant
+     * (runtime sampling, NOT a formal proof).  Complements the
+     * clamp check — clamp proves range, roundtrip proves encoding. */
+    int rc_rt = cos_v259_roundtrip_exhaustive_check();
+    if (rc_rt != 0) return 500 + rc_rt;
 
     return 0;
 }

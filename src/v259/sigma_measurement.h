@@ -160,6 +160,49 @@ cos_sigma_measurement_clamp(float x) {
     return x;
 }
 
+/* v259.1-roundtrip — named encode / decode / roundtrip helpers.
+ *
+ * These exist to (a) give the ACSL annotation a concrete symbol to
+ * attach to, and (b) let the runtime exhaustive checker verify the
+ * round-trip invariant over arbitrary bit patterns (not just the 4
+ * canonical σ/τ pairs).
+ *
+ *   encode(m, buf)   copies the 12 bytes of `*m` into `buf`.
+ *   decode(buf, m)   copies the 12 bytes of `buf` into `*m`.
+ *   roundtrip(in, out)
+ *                    encode(in, scratch) followed by decode(scratch, out);
+ *                    postcondition: memcmp(in, out, 12) == 0.
+ *
+ * Purity: `memcpy` is the only side effect, restricted to the
+ * explicitly named 12-byte buffer.  Thread-safe (no global state). */
+static inline void
+cos_sigma_measurement_encode(const cos_sigma_measurement_t *m,
+                             uint8_t buf[12]) {
+    __builtin_memcpy(buf, m, 12);
+}
+
+static inline void
+cos_sigma_measurement_decode(const uint8_t buf[12],
+                             cos_sigma_measurement_t *m) {
+    __builtin_memcpy(m, buf, 12);
+}
+
+static inline bool
+cos_sigma_measurement_roundtrip(const cos_sigma_measurement_t *in,
+                                cos_sigma_measurement_t *out) {
+    uint8_t buf[12];
+    cos_sigma_measurement_encode(in, buf);
+    cos_sigma_measurement_decode(buf, out);
+    /* Byte-identical comparison over the full 12-byte surface.
+     * We do NOT use (in == out) struct comparison because the struct
+     * may carry NaN floats, and NaN != NaN in IEEE-754; the raw byte
+     * comparison is the correct roundtrip invariant. */
+    const uint8_t *a = (const uint8_t *)in;
+    const uint8_t *b = (const uint8_t *)out;
+    for (int i = 0; i < 12; ++i) if (a[i] != b[i]) return false;
+    return true;
+}
+
 /* --------- v0 manifest types ----------------------------------------- */
 
 typedef struct {

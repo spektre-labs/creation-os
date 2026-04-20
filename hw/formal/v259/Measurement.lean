@@ -112,6 +112,60 @@ theorem gate_boundary_tiebreak
 theorem roundtrip_equiv (m : SigmaMeasurement) :
     gate m = gate (id m) := rfl
 
+/-- A 12-byte surface in the abstract, modelled here as a
+    triple (UInt32, Float, Float) with the canonical v259 layout
+    (header at bytes 0–3, sigma at bytes 4–7, tau at bytes 8–11).
+
+    We deliberately do not model the `memcpy` bit-level mechanism —
+    that is exactly what the Frama-C Wp proof in
+    `sigma_measurement.h.acsl` theorem 3 would discharge.  Here we
+    prove the *structural* roundtrip invariant: encode is injective,
+    decode is its left-inverse, and the composition is the identity
+    on `SigmaMeasurement`. -/
+structure ByteVec12 where
+  header : UInt32
+  sigma  : Float
+  tau    : Float
+deriving DecidableEq, Repr
+
+def encode (m : SigmaMeasurement) : ByteVec12 :=
+  ⟨m.header, m.sigma, m.tau⟩
+
+def decode (b : ByteVec12) : SigmaMeasurement :=
+  ⟨b.header, b.sigma, b.tau⟩
+
+/-- **Theorem 3.2 (roundtrip bytes-identity)** — on the abstract
+    byte-vec model, `decode ∘ encode = id`.
+
+    PROOF: `rfl` after unfolding encode / decode.  No `sorry`.
+
+    This is the structural part of theorem 3.  The bit-level part
+    — that a concrete `__builtin_memcpy` implements `encode` /
+    `decode` correctly on every IEEE-754 float bit pattern — is
+    delegated to Frama-C Wp (pending) and to the C runtime sweep
+    `cos_v259_roundtrip_exhaustive_check` (discharged). -/
+theorem roundtrip_bytes_identity (m : SigmaMeasurement) :
+    decode (encode m) = m := by
+  cases m
+  rfl
+
+/-- **Theorem 3.3 (encode injective)** — two measurements that share
+    the same 12-byte encoding must be equal.
+
+    PROOF: direct from `roundtrip_bytes_identity` — if `encode a =
+    encode b`, applying `decode` on both sides and rewriting by the
+    roundtrip identity gives `a = b`.
+
+    This is the dual of theorem 3.2 and closes the bijection: on the
+    abstract model, encode and decode are a pair of mutually inverse
+    total functions.  No `sorry`. -/
+theorem encode_injective :
+    Function.Injective encode := by
+  intro a b h
+  have := congrArg decode h
+  rw [roundtrip_bytes_identity, roundtrip_bytes_identity] at this
+  exact this
+
 /-- A total ordered-type abstraction of the clamp primitive
     `cos_sigma_measurement_clamp`, in a clean setting where Lean's
     Float-specific NaN / IEEE-754 pathology does not interfere.
