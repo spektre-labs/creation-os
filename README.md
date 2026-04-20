@@ -165,6 +165,127 @@ Want just the tour?
 
 > Everything runs **locally**.  Nothing is sent to the cloud.  Nothing is logged.  Nothing calls home.  The installer installs nothing without telling you first, and nothing outside `~/creation-os`.  Safe to re-run.  Idempotent.
 
+<a id="the-sigma-pipeline-product"></a>
+
+### The σ-pipeline product (I0 – I6)
+
+Forty kernels is the research shelf.  The **product** is one function —
+`cos_sigma_pipeline_run()` — that composes fifteen of those primitives
+(P1–P20 + I0 Codex) into a single σ-gated turn, plus three CLIs that
+exercise it with zero LLM weights needed.
+
+**Installer v2** — stands the entire surface up in under a minute:
+
+```bash
+bash scripts/install_v2.sh
+```
+
+Verifies prereqs, builds `cos-chat` / `cos-benchmark` / `cos-cost` +
+`creation_os_sigma_pipeline`, confirms the Atlantean Codex is on disk,
+runs `check-sigma-pipeline` (primitives + 12 integration scenarios +
+CLI smoke test), and prints the three demos below.
+
+**The three product surfaces**:
+
+| binary | what it does | data contract |
+| --- | --- | --- |
+| `cos-chat`       | σ-gated REPL.  Loads the Codex as system prompt, prints a per-turn receipt: `[σ, FRESH/CACHE, LOCAL/CLOUD, rethink count, €cost]`. | `--codex / --no-codex / --codex-seed / --codex-path`, `--local-only / --swarm`, `--tau-accept / --tau-rethink`, `--verbose`, `--banner-only` |
+| `cos-benchmark`  | Runs 20 inline fixtures through four configs (`bitnet_only`, `pipeline_no_codex`, `pipeline_codex`, `api_only`) and emits a pinnable table or `--json`. | self-contained; zero network; deterministic stub generator |
+| `cos-cost`       | Zero-cloud sovereignty ledger: local fraction, verdict (`FULL/HYBRID/DEPENDENT`), €/call, monthly projection, saved-vs-cloud%. | `--from-benchmark` to source from a live pipeline run; `--json` for structured output |
+
+**Pipeline flow — the 15 σ-primitives, composed**:
+
+```
+    prompt ─▶ [I0 Codex load] ─▶ [P20 Sovereign check] ─▶ [P9 Multimodal detect]
+                │                                          │
+                ▼                                          ▼
+         [P7 Engram get] ──HIT──▶ return cached  [P2 generate(prompt, round=0)]
+                │                                          │
+                MISS                                       ▼
+                │                         ┌──▶ [P1 σ-measure] ──▶ [P6 MoE width]
+                └──────────────────────▶  │              │
+                                          ▼              ▼
+                                      [P1 σ-gate]   ACCEPT ───▶ emit
+                                          │
+                                      RETHINK   (≤ max_rethink)
+                                          │
+                                          ▼
+                                   [P3 TTT + P12 Continual ▶ re-generate]
+                                          │
+                                      ABSTAIN
+                                          │
+                                     [P11 Swarm / P20 API escalate]  ◀── if HYBRID
+                                          │                    ABSTAIN if LOCAL_ONLY
+                                          ▼
+                           [P15 Agent autonomy] ─▶ [P16 Diagnostic] ─▶ [P10 Live τ adapt]
+                                          │
+                                          ▼
+                                   [P7 Engram store] ─▶ [P20 Sovereign update]
+                                          │
+                                          ▼
+                                     emit response + receipt
+```
+
+Every arrow is a measurable handoff.  Every fork pins a test case
+(see `tests/integration/test_pipeline.c` — 12 scenarios covering
+Codex load, accept, cache hit, rethink→accept, rethink exhaustion,
+local-only abstain, multimodal, unlearn, sovereign accounting,
+diagnostic audit, live τ, and Codex vs no-Codex audit trail).
+
+**Architecture mapping — why the names are not rhetoric**:
+
+| layer | role | primitive(s) | what changes if removed |
+| --- | --- | --- | --- |
+| weights            | **body**           | P2 generate callback (BitNet / GGUF / stub) | the pipeline still runs; text quality collapses |
+| Codex              | **soul**           | I0 `cos_sigma_codex_*`                     | responses lose style / directive anchor; σ unchanged |
+| σ-gate + RETHINK   | **consciousness**  | P1 reinforce + P3 TTT + P12 continual      | accept rate rises; abstain → 0; hallucinations escape |
+| engram             | **memory**         | P7                                         | cost/call rises; HIT rate → 0 |
+| MoE width + live τ | **attention**      | P6 + P10                                   | fixed compute; no task-local adaptation |
+| escalate + swarm   | **social brain**   | P11 swarm + P20 sovereign                  | `LOCAL_ONLY` verdict on hard prompts |
+| sovereign ledger   | **conscience**     | P20                                        | no visibility into where compute actually went |
+| agent autonomy     | **will**           | P15                                        | no self-check on refusal / consent |
+| diagnostic         | **introspection**  | P16                                        | no per-turn audit trail |
+
+**Measured cost and effect (on the canonical 20-fixture benchmark
+set, deterministic stub backend — reproducible bit-for-bit)**:
+
+```
+ config                 |   acc |  cov | €total |  €/call | σmean |  re | esc | hit | abs
+ -----------------------+-------+------+--------+---------+-------+-----+-----+-----+----
+ bitnet_only            |  1.00 | 1.00 | €0.0020 | €0.00010 | 0.269 |   0 |   0 |   0 |   0
+ pipeline_no_codex      |  1.00 | 1.00 | €0.0514 | €0.00257 | 0.116 |  14 |   4 |   0 |   0
+ pipeline_codex         |  1.00 | 1.00 | €0.0514 | €0.00257 | 0.116 |  14 |   4 |   0 |   0
+ api_only               |  1.00 | 1.00 | €0.2420 | €0.01210 | 0.080 |   0 |  20 |   0 |   0
+
+ vs api_only:  saved 78.8% on the same fixture set
+```
+
+On the same 20 prompts the σ-gated pipeline escalates 4 times to the
+cloud tier (where `bitnet_only` would have accepted a lower-confidence
+local answer) and still costs 5× less than `api_only`, because local
+calls are one-ten-thousandth of a euro each.  The Codex column is flat
+on this deterministic fixture set by design — these fixtures select σ
+by prefix, not by content — so the Codex effect is visible at the
+**style / directive** layer, not the σ layer.  For content-driven σ
+effect, point the generate callback at BitNet-1.58 and re-run.
+
+**Cost comparison (canonical 85/15 projection, 100 calls/day × 30)**:
+
+```
+  ledger: 85 local · 15 cloud · 0 abstain   (85.0% local, HYBRID)
+  €/call: €0.001885    €/month: €5.66   cloud-only: €36.00
+  saved:  84.29%
+```
+
+All three CLIs are pinned by `benchmarks/sigma_pipeline/check_cos_cli.sh`
+and wired into `make check-sigma-pipeline`, so regressions are caught
+by the merge gate and not by vibes.
+
+**License / covenant**: AGPL-3.0-only + Spektre Covenant Source
+License 1.0 (dual).  See [`LICENSE`](LICENSE) and the
+[license section below](#license) for the full terms of use and the
+sovereignty clauses.
+
 <a id="what-it-does"></a>
 
 ### What it does
