@@ -6077,7 +6077,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-dp check-sigma-ratelimit \
                       check-sigma-persist check-sigma-health \
                       check-sigma-signal check-cos-version-genesis \
-                      check-sigma-distill check-sigma-cot-distill
+                      check-sigma-distill check-sigma-cot-distill \
+                      check-sigma-sandbox
 	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
@@ -6700,6 +6701,25 @@ creation_os_sigma_cot_distill: $(SIGMA_COT_SRCS) \
 check-sigma-cot-distill: creation_os_sigma_cot_distill
 	@bash benchmarks/sigma_pipeline/check_sigma_cot_distill.sh
 	@echo "check-sigma-cot-distill: OK (per-step σ parsed, rethink points identified)"
+
+# --- σ-pipeline: Sandbox (risk-level isolated execution, NEXT-3) ---
+#
+# A1 tool calling may run shell commands.  In production, every
+# command runs inside a σ-Sandbox with an allowlist, rlimits
+# (CPU / AS / FSIZE), a wall-clock deadline, and — on Linux —
+# network-namespace isolation.  Risk level is coupled to P18
+# agent autonomy.
+SIGMA_SANDBOX_INC  = -Isrc/sigma/pipeline
+SIGMA_SANDBOX_SRCS = src/sigma/pipeline/sandbox.c
+
+creation_os_sigma_sandbox: $(SIGMA_SANDBOX_SRCS) \
+                          src/sigma/pipeline/sandbox_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SANDBOX_INC) -o $@ \
+	    $(SIGMA_SANDBOX_SRCS) src/sigma/pipeline/sandbox_main.c $(LDFLAGS)
+
+check-sigma-sandbox: creation_os_sigma_sandbox
+	@bash benchmarks/sigma_pipeline/check_sigma_sandbox.sh
+	@echo "check-sigma-sandbox: OK (risk-0 echo + risk-3 timeout + disallowed + consent gate)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
