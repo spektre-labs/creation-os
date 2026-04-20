@@ -847,7 +847,8 @@ formal-rtl-sim: $(RTL_SV)
 		verilator --binary $(VERILATOR_LINT_FLAGS) -Wno-STMTDLY --top-module cos_silicon_chip_tb \
 			-Mdir .build/vrtl \
 			rtl/cos_silicon_chip_tb.sv rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv \
-			rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv && \
+			rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv \
+			rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv && \
 		./.build/vrtl/Vcos_silicon_chip_tb && echo "formal-rtl-sim: OK"; \
 	else \
 		echo "formal-rtl-sim: SKIP (verilator not in PATH)"; \
