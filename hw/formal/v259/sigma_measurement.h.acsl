@@ -1,0 +1,158 @@
+/*
+ * v259.1 — Frama-C / ACSL annotations for sigma_measurement_t.
+ *
+ * This file is the ACSL-annotated companion to
+ * `src/v259/sigma_measurement.h`.  The annotations below state the
+ * contracts that the Creation OS σ-primitive is expected to satisfy.
+ *
+ * CLAIM DISCIPLINE
+ * ----------------
+ * This file is SCAFFOLDING, not a discharged proof.
+ *
+ *   * None of the `//@ requires / ensures / assigns` clauses below
+ *     have been checked by Frama-C Wp in this tree yet.
+ *   * The file exists so that the v259 contract can be stated in a
+ *     machine-checkable form, and so that a CI job which invokes
+ *     `frama-c -wp hw/formal/v259/sigma_measurement.h.acsl` can later
+ *     fail-hard if any of them regress.
+ *   * Until that CI job exists, every theorem carries an explicit
+ *     `PROOF: PENDING` tag in the comment preceding it.
+ *   * The C self-test in `src/v259/sigma_measurement.c` is the ONLY
+ *     enforcement today.
+ *
+ * Running the annotations (once Frama-C + Wp is installed)
+ * --------------------------------------------------------
+ *     frama-c \
+ *       -cpp-extra-args="-Isrc/v259" \
+ *       -wp -wp-rte -wp-timeout 30 \
+ *       hw/formal/v259/sigma_measurement.h.acsl \
+ *       src/v259/sigma_measurement.c
+ *
+ * A successful run should emit "Proved" for every contract below and
+ * "Unknown / Timeout" for nothing.  Any regression is a merge-gate
+ * failure at that time.
+ */
+
+#include <stdint.h>
+#include <stdbool.h>
+
+typedef struct {
+    uint32_t header;
+    float    sigma;
+    float    tau;
+} cos_sigma_measurement_t;
+
+typedef enum {
+    COS_SIGMA_GATE_ALLOW    = 0,
+    COS_SIGMA_GATE_BOUNDARY = 1,
+    COS_SIGMA_GATE_ABSTAIN  = 2,
+} cos_sigma_gate_t;
+
+/* ==================================================================
+ * Theorem 1: Layout
+ *   PROOF: PENDING (trivial; Frama-C `axiomatic` + sizeof/alignof).
+ * ==================================================================
+ *
+ *   sizeof  (cos_sigma_measurement_t) == 12
+ *   alignof (cos_sigma_measurement_t) == 4
+ *   offsetof(cos_sigma_measurement_t, header) == 0
+ *   offsetof(cos_sigma_measurement_t, sigma ) == 4
+ *   offsetof(cos_sigma_measurement_t, tau   ) == 8
+ */
+
+/* ==================================================================
+ * Theorem 2: Gate is a PURE FUNCTION
+ *   PROOF: PENDING (Wp: assigns \nothing + no reads of mutable globals).
+ * ================================================================== */
+
+/*@
+  requires \valid_read(m);
+  assigns  \nothing;
+
+  // Totality — exactly one branch fires on every well-formed input.
+  ensures
+    (m->sigma <  m->tau  &&  \result == COS_SIGMA_GATE_ALLOW)    ||
+    (m->sigma == m->tau  &&  \result == COS_SIGMA_GATE_BOUNDARY) ||
+    (m->sigma >  m->tau  &&  \result == COS_SIGMA_GATE_ABSTAIN);
+
+  // Output is a total order: ALLOW (0) < BOUNDARY (1) < ABSTAIN (2).
+  ensures \result == COS_SIGMA_GATE_ALLOW
+       || \result == COS_SIGMA_GATE_BOUNDARY
+       || \result == COS_SIGMA_GATE_ABSTAIN;
+*/
+cos_sigma_gate_t
+cos_sigma_measurement_gate(const cos_sigma_measurement_t *m);
+
+/* ==================================================================
+ * Theorem 3: Roundtrip via memcpy is BIT-IDENTICAL
+ *   PROOF: PENDING — reduces to the memcpy/memcmp plugin axiom in
+ *   Frama-C's string.h model.
+ * ==================================================================
+ *
+ *   forall cos_sigma_measurement_t a;
+ *     unsigned char buf[12];
+ *     cos_sigma_measurement_t b;
+ *     memcpy(buf, &a, 12);
+ *     memcpy(&b, buf, 12);
+ *     ==> memcmp(&a, &b, 12) == 0
+ */
+
+/* ==================================================================
+ * Theorem 4: Gate is MONOTONE IN τ
+ *   PROOF: PENDING — single-step induction on the τ ordering.
+ * ==================================================================
+ *
+ *   forall cos_sigma_measurement_t m1, m2;
+ *     m1.sigma == m2.sigma && m1.tau <= m2.tau
+ *     ==> rank(gate(m1)) >= rank(gate(m2))
+ *
+ *   where rank : {ALLOW, BOUNDARY, ABSTAIN} -> {0,1,2} is identity.
+ *   Intuition: raising τ (being *more* permissive) can only move a
+ *   verdict toward ALLOW — it can never tip ALLOW → ABSTAIN.
+ */
+
+/* ==================================================================
+ * Theorem 5: σ-range containment is not REQUIRED by the gate
+ *   PROOF: PENDING.  We DELIBERATELY do not require σ ∈ [0,1] at the
+ *   C level so that out-of-range telemetry (e.g. numeric error upstream)
+ *   still gets a classifiable gate verdict rather than undefined
+ *   behaviour.  The invariant σ ∈ [0,1] is enforced at the *producer*
+ *   (v101 channel aggregator), not at the gate primitive.
+ * ================================================================== */
+
+/* ==================================================================
+ * Theorem 6: Mean-ns benchmark budget
+ *   PROOF: PENDING, and *outside Frama-C scope* — this is a runtime
+ *   microbenchmark contract enforced by
+ *   `benchmarks/v259/check_v259_sigma_measurement_primitive.sh`.
+ *   Recorded here so the complete contract is in one place.
+ * ==================================================================
+ *
+ *   forall workload w in {encode_decode, gate_allow, gate_abstain};
+ *     iters(w) >= 1_000_000  AND  mean_ns(w) < 1_000_000.0
+ */
+
+/* ==================================================================
+ * Theorem 7: Clamp range postcondition (v259.1-range)
+ *   STATUS:
+ *     Formal proof via Frama-C Wp:     PENDING (no toolchain in CI).
+ *     Runtime verification (sampling): DISCHARGED —
+ *       `cos_v259_clamp_exhaustive_check()` in `sigma_measurement.c`
+ *       exhausts (a) every IEEE-754 special we care about (NaN, ±Inf,
+ *       ±0, denormals), (b) a deterministic 10^6-point LCG grid of
+ *       32-bit float bit-patterns, and (c) the pre-registered
+ *       canonical σ values, asserting 0.0 ≤ y ≤ 1.0 on every sample.
+ *       The self-test is wired into `make check-v259`, so any
+ *       regression is a merge-gate failure.
+ *     Sampling-based verification is strictly weaker than a formal
+ *     proof over the ENTIRE IEEE-754 float domain; the runtime check
+ *     covers 2^20 inputs out of 2^32, a coverage of ≈ 0.024 %.
+ *     Treat it as a tight but not exhaustive invariant test.
+ * ================================================================== */
+
+/*@
+  assigns  \nothing;
+  ensures  \is_finite(\result);
+  ensures  0.0f <= \result <= 1.0f;
+*/
+float cos_sigma_measurement_clamp(float x);

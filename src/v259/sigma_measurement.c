@@ -397,6 +397,61 @@ size_t cos_v259_to_json(const cos_v259_state_t *s, char *buf, size_t cap) {
     return (size_t)w;
 }
 
+/* --- v259.1-range: exhaustive clamp invariant --------------------------- */
+
+/* Verifies `cos_sigma_measurement_clamp(x) ∈ [0, 1]` for:
+ *   (a) every IEEE-754 special value we care about (NaN, ±Inf, ±0,
+ *       DBL_MIN-as-float, subnormal-min, denormal, largest-finite),
+ *   (b) a deterministic grid of 1 000 000 float inputs drawn from a
+ *       linear-congruential seed so the check is reproducible on every
+ *       run, and
+ *   (c) the five pre-registered canonical σ values used by the
+ *       roundtrip table (0.0, 0.2, 0.5, 0.8, 1.0).
+ *
+ * Returns 0 on full pass; a positive code identifying the failing
+ * input class otherwise.  Called from `cos_v259_self_test` after all
+ * other invariants are confirmed.
+ *
+ * NOTE: this is a RUNTIME invariant check by exhaustive sampling; it
+ * is NOT a formal proof.  See `hw/formal/v259/sigma_measurement.h.acsl`
+ * and `hw/formal/v259/Measurement.lean` for the formal-proof
+ * scaffolding (PENDING a toolchain). */
+static int cos_v259_clamp_exhaustive_check(void) {
+    const float specials[] = {
+        0.0f, -0.0f, 1.0f, -1.0f,
+        0.5f, 0.999999f, 1.000001f,
+         1e-38f, -1e-38f,
+         3.4e+38f, -3.4e+38f,
+         (float)(1.0 / 0.0),      /* +Inf */
+        -(float)(1.0 / 0.0),      /* -Inf */
+         (float)(0.0 / 0.0),      /* NaN  */
+    };
+    const size_t n_spec = sizeof(specials) / sizeof(specials[0]);
+    for (size_t i = 0; i < n_spec; ++i) {
+        float y = cos_sigma_measurement_clamp(specials[i]);
+        if (!(y >= 0.0f && y <= 1.0f)) return 100 + (int)i;
+    }
+
+    /* Deterministic grid: a linear congruential generator over
+     * IEEE-754 float bit patterns interpreted as-float.  1M samples. */
+    uint32_t state = 0x13579BDFu;
+    for (size_t i = 0; i < 1000000u; ++i) {
+        state = state * 1664525u + 1013904223u;
+        union { uint32_t u; float f; } v;
+        v.u = state;
+        float y = cos_sigma_measurement_clamp(v.f);
+        if (!(y >= 0.0f && y <= 1.0f)) return 200;
+    }
+
+    /* Canonical σ from the pre-registered roundtrip table. */
+    const float canon[] = {0.0f, 0.2f, 0.5f, 0.8f, 1.0f};
+    for (size_t i = 0; i < sizeof(canon) / sizeof(canon[0]); ++i) {
+        float y = cos_sigma_measurement_clamp(canon[i]);
+        if (y != canon[i]) return 300 + (int)i;   /* identity on valid */
+    }
+    return 0;
+}
+
 /* --- self-test --------------------------------------------------------- */
 
 int cos_v259_self_test(void) {
@@ -432,6 +487,11 @@ int cos_v259_self_test(void) {
     if (n == 0 || n >= sizeof buf)               return 17;
     if (!strstr(buf, "\"kernel\":\"v259_sigma_measurement\""))
         return 18;
+
+    /* v259.1-range: exhaustive clamp invariant
+     * (runtime sampling, NOT a formal proof). */
+    int rc = cos_v259_clamp_exhaustive_check();
+    if (rc != 0) return 100 + rc;
 
     return 0;
 }

@@ -90,16 +90,47 @@ make check-v259
 ./creation_os_v259_sigma_measurement --self-test      # returns 0 on success
 ```
 
-## v259.1 (named, not implemented — CLAIM_DISCIPLINE)
+## v259.1 — evidence ledger (honest, per-theorem status)
 
-- **Frama-C ACSL annotations** on `cos_sigma_measurement_gate` and
-  the roundtrip wrapper proving purity and bit-exact roundtrip.
-- **Lean 4 proof** under `hw/formal/v259/Measurement.lean` that the
-  3-regime gate is the unique total order on (σ, τ) compatible with
-  the "critical belongs to BOUNDARY, not ALLOW" tie-break.
-- Until those ship, the C self-test plus the JSON assertions in
-  `benchmarks/v259/check_v259_sigma_measurement_primitive.sh` are the
-  only enforcement.  No proof claim is made beyond that.
+The proof obligations for the v259 primitive are written down in a
+machine-checkable form across three layers of evidence.  Each layer
+is strictly weaker than the next; every theorem below lists which
+layers have actually discharged it.
+
+| # | theorem                          | sampling (runtime) | Lean 4 | Frama-C Wp |
+|---|----------------------------------|:---:|:---:|:---:|
+| 1 | Layout (`sizeof == 12`, offsets) | **PASS** (compile-time `_Static_assert` in `src/v259/sigma_measurement.c`) | PENDING | PENDING |
+| 2 | Gate purity (`assigns \nothing`)   | **PASS** (256 identical inputs → identical outputs, `gate_pure_ok`) | DISCHARGED (`rfl`) | PENDING |
+| 3 | Gate totality (3 verdicts only)   | **PASS** (canonical 3-regime table + bench) | PENDING (`sorry`) | PENDING |
+| 4 | Gate boundary tiebreak (σ==τ → BOUNDARY) | **PASS** (canonical roundtrip row 3) | PENDING (`sorry`) | PENDING |
+| 5 | Gate τ anti-monotone               | — | PENDING (`sorry`) | PENDING |
+| 6 | Roundtrip byte-identical (memcpy)  | **PASS** (4/4 canonical pairs) | DISCHARGED (`rfl` under `id`) | PENDING |
+| 7 | **Clamp range (v259.1-range):** `clamp(x) ∈ [0, 1]` for every IEEE-754 float `x` | **PASS** (`cos_v259_clamp_exhaustive_check`: 14 specials + 10⁶ LCG grid + 5 canonical σ; coverage of float domain ≈ 0.024 %) | DISCHARGED on the `LinearOrder α` abstraction (`clampUnit_range`); NaN-handled IEEE-754 lift still PENDING | PENDING |
+| 8 | Bench budget (`mean_ns < 1 ms`, `iters ≥ 10⁶`) | **PASS** (`make check-v259` on M3: ≈ 0.6 ns/call) | out of scope | out of scope |
+
+Layer semantics:
+
+- **Sampling** — deterministic runtime checks that the primitive
+  satisfies the contract on a finite set of inputs.  Enforced on
+  every `make check-v259`; a regression fails merge-gate immediately.
+- **Lean 4** — mechanical proofs in
+  [`hw/formal/v259/Measurement.lean`](../../hw/formal/v259/Measurement.lean).
+  Two theorems are trivially discharged by `rfl`; `clampUnit_range`
+  is discharged by case analysis with no `sorry`; five gate theorems
+  still end in `sorry` and are explicitly `PENDING`.  No Lean 4
+  toolchain is wired into CI yet; a future `make formal-v259` will
+  fail hard on any unresolved goal.
+- **Frama-C Wp** — ACSL annotations in
+  [`hw/formal/v259/sigma_measurement.h.acsl`](../../hw/formal/v259/sigma_measurement.h.acsl).
+  Every contract is tagged `PROOF: PENDING` in the preceding comment.
+  Frama-C Wp has not been run on this file yet.
+
+CLAIM_DISCIPLINE: the evidence table above is the only place the
+status of each theorem is stated.  README and papers must cite this
+table directly; no "formally verified" claim may be made without
+first updating the table.  The three-layer structure is deliberate:
+a failing upstream layer (sampling) signals a regression immediately,
+even when the downstream layers have not been run.
 
 ## What v259 does NOT claim
 

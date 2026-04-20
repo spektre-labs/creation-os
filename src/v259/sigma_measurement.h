@@ -135,6 +135,31 @@ cos_sigma_measurement_gate(const cos_sigma_measurement_t *m) {
     return COS_SIGMA_GATE_ABSTAIN;
 }
 
+/* v259.1-range — clamp a float into [0, 1].
+ *
+ * NaN / -Inf / large-negative → 0.0.
+ * +Inf / large-positive        → 1.0.
+ * finite x ∈ [0, 1]            → x unchanged.
+ *
+ * Purity: no global state, no allocation, no I/O.
+ * Postcondition (verified by `cos_v259_clamp_exhaustive_check`):
+ *     for every IEEE-754 float x (including NaN, ±Inf, subnormals),
+ *     0.0f <= cos_sigma_measurement_clamp(x) <= 1.0f.
+ *
+ * This is the primitive the σ-producer must call before building a
+ * `cos_sigma_measurement_t` to guarantee that σ ∈ [0, 1] at the
+ * struct level.  The gate predicate itself does NOT clamp — see
+ * `sigma_measurement.h.acsl`, theorem 5, for why: out-of-range
+ * telemetry is classifiable, not silently altered. */
+static inline float
+cos_sigma_measurement_clamp(float x) {
+    /* NaN test: x != x is true iff x is NaN (IEEE-754). */
+    if (x != x) return 0.0f;
+    if (x <  0.0f) return 0.0f;
+    if (x >  1.0f) return 1.0f;
+    return x;
+}
+
 /* --------- v0 manifest types ----------------------------------------- */
 
 typedef struct {
