@@ -6084,8 +6084,10 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-corpus check-sigma-voice \
                       check-sigma-lora check-sigma-team \
                       check-sigma-suite check-sigma-lora-export \
-                      check-sigma-watchdog
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog)"
+                      check-sigma-watchdog check-sigma-mcp \
+                      check-sigma-a2a check-sigma-formal-complete \
+                      check-sigma-mesh3 check-sigma-arxiv
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6973,6 +6975,100 @@ creation_os_sigma_watchdog: $(SIGMA_WATCHDOG_SRCS) \
 check-sigma-watchdog: creation_os_sigma_watchdog
 	@bash benchmarks/sigma_pipeline/check_sigma_watchdog.sh
 	@echo "check-sigma-watchdog: OK (windows + trend + alert + auto-heal)"
+
+# --- σ-pipeline: MCP server + client (OMEGA-1) -----------------------
+#
+# JSON-RPC 2.0 over stdio matching the 2026 MCP spec.  Exposes three
+# tools (sigma_measure, sigma_gate, sigma_diagnostic) so any external
+# MCP client can call σ-primitives, and ships a client-side σ-gate
+# that evaluates (tool, args, result) before admitting the payload
+# into the local pipeline — the known defence against tool-side
+# prompt injection.
+SIGMA_MCP_INC  = -Isrc/sigma/pipeline
+SIGMA_MCP_SRCS = src/sigma/pipeline/mcp.c
+
+creation_os_sigma_mcp: $(SIGMA_MCP_SRCS) \
+                      src/sigma/pipeline/mcp_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MCP_INC) -o $@ \
+	    $(SIGMA_MCP_SRCS) src/sigma/pipeline/mcp_main.c $(LDFLAGS)
+
+check-sigma-mcp: creation_os_sigma_mcp
+	@bash benchmarks/sigma_pipeline/check_sigma_mcp.sh
+	@echo "check-sigma-mcp: OK (initialize + tools + σ-gate + inject reject)"
+
+# --- σ-pipeline: A2A agent-to-agent (OMEGA-2) ------------------------
+#
+# Agent-card advertise + σ-trust tracking per peer.  Trust scores
+# move via EMA on request outcomes; peers whose σ_trust exceeds
+# τ_blocklist stop receiving traffic.  Mesh-level analogue of D1.
+SIGMA_A2A_INC  = -Isrc/sigma/pipeline
+SIGMA_A2A_SRCS = src/sigma/pipeline/a2a.c
+
+creation_os_sigma_a2a: $(SIGMA_A2A_SRCS) \
+                      src/sigma/pipeline/a2a_main.c
+	$(CC) $(CFLAGS) $(SIGMA_A2A_INC) -o $@ \
+	    $(SIGMA_A2A_SRCS) src/sigma/pipeline/a2a_main.c $(LDFLAGS)
+
+check-sigma-a2a: creation_os_sigma_a2a
+	@bash benchmarks/sigma_pipeline/check_sigma_a2a.sh
+	@echo "check-sigma-a2a: OK (agent-cards + σ-trust + blocklist)"
+
+# --- σ-pipeline: formal-complete status (OMEGA-3) --------------------
+#
+# Reports the truthful state of the six formal theorems in
+# hw/formal/v259/ (Lean 4 + Frama-C WP).  Reads the evidence
+# manifest at docs/v259/formal_status.json and emits a canonical
+# JSON report so CI can assert the claim in cos --version
+# ("X/6 formal proofs discharged") stays in sync with the ledger.
+SIGMA_FORMAL_INC  = -Isrc/sigma/pipeline
+SIGMA_FORMAL_SRCS = src/sigma/pipeline/formal_complete.c
+
+creation_os_sigma_formal_complete: $(SIGMA_FORMAL_SRCS) \
+                                  src/sigma/pipeline/formal_complete_main.c
+	$(CC) $(CFLAGS) $(SIGMA_FORMAL_INC) -o $@ \
+	    $(SIGMA_FORMAL_SRCS) src/sigma/pipeline/formal_complete_main.c $(LDFLAGS)
+
+check-sigma-formal-complete: creation_os_sigma_formal_complete
+	@bash benchmarks/sigma_pipeline/check_sigma_formal_complete.sh
+	@echo "check-sigma-formal-complete: OK (ledger coherent with cos --version)"
+
+# --- σ-pipeline: multi-host live mesh (OMEGA-4) ----------------------
+#
+# In-process 3-node simulation of the Tailscale mesh contract:
+# message bus between A (coordinator, M3 Air), B (leaf, RPi5), and
+# C (federator, cloud VM).  Ed25519-style signed envelopes,
+# σ-gated escalation, DP-noise federation update.  Deterministic
+# end-to-end so CI can pin the trace; the `cos network` CLI keeps
+# the same protocol over real sockets when available.
+SIGMA_MESH_INC  = -Isrc/sigma/pipeline
+SIGMA_MESH_SRCS = src/sigma/pipeline/mesh3.c
+
+creation_os_sigma_mesh3: $(SIGMA_MESH_SRCS) \
+                       src/sigma/pipeline/mesh3_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MESH_INC) -o $@ \
+	    $(SIGMA_MESH_SRCS) src/sigma/pipeline/mesh3_main.c $(LDFLAGS)
+
+check-sigma-mesh3: creation_os_sigma_mesh3
+	@bash benchmarks/sigma_pipeline/check_sigma_mesh3.sh
+	@echo "check-sigma-mesh3: OK (3-node query/escalate/federate + signed msgs)"
+
+# --- σ-pipeline: arXiv submission manifest (OMEGA-5) -----------------
+#
+# Produces the canonical submission manifest for the paper
+# (title, authors, ORCID, affiliation, category, DOI placeholder,
+# anchor-file SHA-256s) and a JSON envelope CI can diff.  No
+# network; submission itself is a manual, human-owned step.
+SIGMA_ARXIV_INC  = -Isrc/sigma/pipeline
+SIGMA_ARXIV_SRCS = src/sigma/pipeline/arxiv.c
+
+creation_os_sigma_arxiv: $(SIGMA_ARXIV_SRCS) \
+                       src/sigma/pipeline/arxiv_main.c
+	$(CC) $(CFLAGS) $(SIGMA_ARXIV_INC) -o $@ \
+	    $(SIGMA_ARXIV_SRCS) src/sigma/pipeline/arxiv_main.c $(LDFLAGS)
+
+check-sigma-arxiv: creation_os_sigma_arxiv
+	@bash benchmarks/sigma_pipeline/check_sigma_arxiv.sh
+	@echo "check-sigma-arxiv: OK (manifest stable + anchors present)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
