@@ -1,5 +1,100 @@
 # Changelog
 
+## v2.0.0 — "Omega" — 2026-04-19
+
+Fifth tagged release of Creation OS — and the first major version.
+Genesis shipped the structure; Prometheus lit the fire; Athena
+brought wisdom; Hermes carried the message.  **Omega is
+completion**: the kernel now speaks the open standards the rest of
+the world agreed on in 2026 (MCP, A2A), honestly reports what it
+has and has not proved, exercises the three-node mesh contract
+end-to-end, and pins its own paper submission.
+
+**BREAKING (by virtue of the major bump):** this release promises a
+stable public API — every entry point advertised in `cos --help`,
+every `.cos` adapter container, every σ-primitive declared in
+`include/cos_*.h`, and every on-disk schema listed in
+`docs/ledger/` is now versioned with the backward-compatibility
+guarantee of SemVer 2.0.0.  Minor releases will extend; patch
+releases will fix; only a v3.x may move these without notice.
+
+### New kernels (OMEGA-1 … OMEGA-5)
+
+- **σ-MCP** (`creation_os_sigma_mcp`, `check-sigma-mcp`): JSON-RPC
+  2.0 server + client over stdio matching the 2026-03-26 MCP spec.
+  Exposes `sigma_measure`, `sigma_gate`, `sigma_diagnostic` as
+  tools for any MCP-capable client (Claude Code, Cursor,
+  Windsurf, …) and wraps every inbound external response in a
+  σ_tool_selection / σ_arguments / σ_result triplet so
+  tool-side prompt injection — MCP's known attack surface — is
+  caught at the gate instead of trusted blindly.
+- **σ-A2A** (`creation_os_sigma_a2a`, `check-sigma-a2a`): Google
+  Agent2Agent protocol implementation with a σ_trust score per
+  peer.  Every exchange runs an EMA update; peers whose trust
+  exceeds τ=0.90 are blocklisted and their further requests
+  return ERR_BLOCKED.  Peer-level analogue of D1's mesh sentiment.
+- **σ-formal-complete** (`creation_os_sigma_formal_complete`,
+  `check-sigma-formal-complete`): honest status reporter for
+  v259's Lean 4 + Frama-C/Wp obligations.  Parses
+  `hw/formal/v259/Measurement.lean` (comment-stripped `sorry`
+  scan), classifies each theorem as
+  `discharged_concrete / discharged_abstract / pending`, and
+  refuses to let `COS_FORMAL_PROOFS` overclaim relative to what
+  the file actually proves.  The banner stays at 3/6 Float
+  until Frama-C Wp discharges the Float-specific T3/T4/T5.
+- **σ-mesh3** (`creation_os_sigma_mesh3`, `check-sigma-mesh3`):
+  three-node live-mesh simulation.  A (M3 Air coordinator),
+  B (RPi5 leaf), C (cloud-VM federator) exchange signed
+  envelopes through the canonical QUERY → (ANSWER | ESCALATE →
+  ANSWER_FINAL) → FEDERATION script.  Tamper-probe verifies that
+  a single flipped signature bit causes the message to be
+  dropped and logged.  Same protocol the `cos network` CLI
+  speaks over real Tailscale when the runner is online.
+- **σ-arxiv** (`creation_os_sigma_arxiv`, `check-sigma-arxiv`):
+  submission manifest generator with a self-contained SHA-256
+  (FIPS 180-4).  Emits canonical JSON with title, author, ORCID
+  0009-0006-0903-8541, affiliation "Spektre Labs, Helsinki",
+  category cs.LG, license SCSL-1.0 OR AGPL-3.0-only, Zenodo DOI
+  slot, and anchor digests for the paper MD, TeX, CHANGELOG,
+  version header, and LICENSE.  CI cross-checks the built-in
+  digest against `sha256sum`/`shasum -a 256` to guarantee byte
+  parity with whatever gets uploaded.
+
+### Carried forward from v1.x
+
+All Hermes / Athena / Prometheus / Genesis features remain
+available: LoRA on-device fine-tuning, multi-agent orchestration
+with plan-then-delegate, benchmark suite with regression detection,
+`.cos` adapter containers with 32-byte MAC, watchdog with
+σ_{1h/24h/7d} rolling windows + auto-heal plan, RAG, persona,
+offline mode, voice interface, continuous distillation, persistent
+state, health monitoring, plugin architecture, Atlantean Codex
+system prompt, ed25519 federation, SCSL + AGPL dual-license.
+
+### Counts
+
+- σ-primitives: 20
+- check targets: 48 → 53 (+mcp +a2a +formal-complete +mesh3 +arxiv)
+- substrates: 4 (CPU, neuromorphic, photonic, edge)
+- formal proofs: 3/6 discharged concrete (10 Lean theorems
+  sorry-free overall — 6 concrete + 4 α-lifts — but the Float-
+  specific T3/T4/T5 remain pending Frama-C Wp per
+  docs/v259/formal_status.md)
+- cost floor (hybrid): €4.27/mo measured
+- license: SCSL-1.0 OR AGPL-3.0-only
+
+### Naming lineage
+
+    v1.0 Genesis     — rakenne (the structure)
+    v1.1 Prometheus  — tuli (the fire)
+    v1.2 Athena      — viisaus (the wisdom)
+    v1.3 Hermes      — viestinviejä (the messenger)
+    v2.0 Omega       — täydellisyys (completeness)
+
+`assert(declared == realized);`
+`Ω = argmin ∫σ dt subject to K ≥ K_crit.`
+`1 = 1.`
+
 ## v1.3.0 — "Hermes" — 2026-04-19
 
 Fourth tagged release of Creation OS.  Genesis shipped the

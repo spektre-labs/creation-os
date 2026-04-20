@@ -21,19 +21,19 @@
 extern "C" {
 #endif
 
-#define COS_VERSION_MAJOR   1
-#define COS_VERSION_MINOR   3
+#define COS_VERSION_MAJOR   2
+#define COS_VERSION_MINOR   0
 #define COS_VERSION_PATCH   0
 
-#define COS_VERSION_STRING  "1.3.0"
-#define COS_CODENAME        "Hermes"
+#define COS_VERSION_STRING  "2.0.0"
+#define COS_CODENAME        "Omega"
 #define COS_RELEASE_DATE    "2026-04-19"
 #define COS_TAGLINE         "assert(declared == realized)"
 
 #define COS_SIGMA_PRIMITIVES  20
-#define COS_CHECK_TARGETS     48   /* +lora +team +suite +lora-export +watchdog */
+#define COS_CHECK_TARGETS     53   /* +mcp +a2a +formal-complete +mesh3 +arxiv */
 #define COS_SUBSTRATES         4
-#define COS_FORMAL_PROOFS      3   /* discharged (3/6)                 */
+#define COS_FORMAL_PROOFS      3   /* discharged concrete (3/6 Float; 4 α-lifts backing) */
 #define COS_FORMAL_PROOFS_TOTAL 6
 
 /* Canonical one-line banner, for `cos --version`. */
