@@ -6070,8 +6070,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-protocol check-cos-network \
                       check-sigma-spike check-sigma-photonic \
                       check-sigma-substrate check-sigma-formal \
-                      check-sigma-paper
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal + paper)"
+                      check-sigma-paper check-cos-unified
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + cos-network + spike + photonic + substrate + formal + paper + cos-unified)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6693,6 +6693,22 @@ creation_os_sigma_paper: $(SIGMA_PAP_SRCS) \
 check-sigma-paper: creation_os_sigma_paper
 	@bash benchmarks/sigma_pipeline/check_sigma_paper.sh
 	@echo "check-sigma-paper: OK (9 sections + pinned ledger + fingerprint)"
+
+# --- cos (H6): unified dispatcher for chat / agent / omega / network
+#              / benchmark / cost / formal / paper / sigma-meta ---
+#
+# The front-door `cos` binary gains six new subcommands in H6:
+# agent (A6), network (D6), omega (S6), formal (H4), paper (H5),
+# and sigma-meta.  The first five fork/exec sibling binaries that
+# already exist in this repository so we don't re-link the whole
+# stack.  `sigma-meta` is a deterministic σ-meta JSON summary
+# emitted inline — no I/O, byte-pinnable in the smoke test.
+check-cos-unified: cos cos-agent cos-network \
+                   creation_os_sigma_omega \
+                   creation_os_sigma_formal \
+                   creation_os_sigma_paper
+	@bash benchmarks/sigma_pipeline/check_cos_unified.sh
+	@echo "check-cos-unified: OK (cos chat|agent|omega|network|formal|paper|sigma-meta)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
