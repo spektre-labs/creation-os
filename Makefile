@@ -6061,8 +6061,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-integration check-cos-cli \
                       check-sigma-tool check-sigma-plan \
                       check-sigma-merge check-sigma-grounding \
-                      check-sigma-session
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session)"
+                      check-sigma-session check-cos-agent
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6160,6 +6160,25 @@ cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
 cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
 	    $(COS_CLI_SRCS) src/cli/cos_cost.c $(LDFLAGS)
+
+# --- cos agent (A6): autonomous task execution -------------------
+#
+# Thin CLI over σ-Tool + σ-Plan + σ-Agent.  Task prefixes
+# (list-and-count:, read:, fetch:, rm:, noisy:, fail:) compile into
+# concrete plans; --dry-run prints the plan, --local-only rejects
+# NETWORK tools, --approve-each promotes CONFIRM → ALLOW, --json
+# emits a pinnable receipt.
+COS_AGENT_SRCS = src/sigma/pipeline/plan.c \
+                 src/sigma/pipeline/tool.c \
+                 src/sigma/pipeline/agent.c
+
+cos-agent: $(COS_AGENT_SRCS) src/cli/cos_agent.c
+	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/cli -o $@ \
+	    $(COS_AGENT_SRCS) src/cli/cos_agent.c $(LDFLAGS)
+
+check-cos-agent: cos-agent
+	@bash benchmarks/sigma_pipeline/check_cos_agent.sh
+	@echo "check-cos-agent: OK (plan compile + gate ALLOW/CONFIRM/BLOCK + budget + flags)"
 
 check-cos-cli: cos-chat cos-benchmark cos-cost
 	@bash benchmarks/sigma_pipeline/check_cos_cli.sh

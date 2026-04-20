@@ -81,13 +81,17 @@ cos_sigma_plan_execute(cos_plan_t *plan,
         const char *text = NULL;
         int rc = cos_sigma_tool_call(&s->call, agent, executor,
                                      executor_ctx, confirm_all, &text);
-        if (rc == -1) {
+        /* Gate-level stops key off the decision that cos_sigma_tool_call
+         * stamps on the call record; this keeps executor-rc collisions
+         * (rc == -1 is a perfectly reasonable executor failure) from
+         * being misreported as gate BLOCKs.                         */
+        if (s->call.decision == COS_AGENT_BLOCK) {
             plan->status    = COS_PLAN_BLOCKED;
             plan->replan_at = i;
             if (out_texts) out_texts[i] = NULL;
             return COS_PLAN_BLOCKED;
         }
-        if (rc == -2) {
+        if (s->call.decision == COS_AGENT_CONFIRM && rc == -2) {
             plan->status    = COS_PLAN_BLOCKED;
             plan->replan_at = i;
             if (out_texts) out_texts[i] = NULL;
