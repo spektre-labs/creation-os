@@ -87,13 +87,22 @@ int cos_sigma_formal_check_T4(cos_formal_result_t *out) {
 
 /* ----------- T5: encode/decode idempotence ----------- */
 
-#define T5_KEY    ((const uint8_t *)"cos-h4-formal")
-#define T5_KEYLEN (13)
 #define T5_BUFCAP 2048
 
 static int t5_roundtrip_one(cos_msg_type_t type, const uint8_t *payload,
                             uint32_t payload_len)
 {
+    /* Deterministic Ed25519 keypair (CLOSE-3 default signer). */
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)('f' + i);
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+    uint8_t sk[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN];
+    memcpy(sk, priv, COS_ED25519_PRIV_LEN);
+    memcpy(sk + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+
     cos_msg_t m = {0};
     m.type          = type;
     m.sender_sigma  = 0.42f;
@@ -103,22 +112,19 @@ static int t5_roundtrip_one(cos_msg_type_t type, const uint8_t *payload,
     m.payload_len   = payload_len;
 
     uint8_t f1[T5_BUFCAP]; size_t n1 = 0;
-    if (cos_sigma_proto_encode(&m, T5_KEY, T5_KEYLEN, f1, sizeof f1, &n1) != 0) return -1;
+    if (cos_sigma_proto_encode(&m, sk, sizeof sk, f1, sizeof f1, &n1) != 0) return -1;
 
     cos_msg_t dec1 = {0};
-    if (cos_sigma_proto_decode(f1, n1, T5_KEY, T5_KEYLEN, &dec1) != 0) return -2;
+    if (cos_sigma_proto_decode(f1, n1, pub, COS_ED25519_PUB_LEN, &dec1) != 0) return -2;
 
     cos_msg_t m2 = dec1;
     uint8_t f2[T5_BUFCAP]; size_t n2 = 0;
-    if (cos_sigma_proto_encode(&m2, T5_KEY, T5_KEYLEN, f2, sizeof f2, &n2) != 0) return -3;
+    if (cos_sigma_proto_encode(&m2, sk, sizeof sk, f2, sizeof f2, &n2) != 0) return -3;
 
     cos_msg_t dec2 = {0};
-    if (cos_sigma_proto_decode(f2, n2, T5_KEY, T5_KEYLEN, &dec2) != 0) return -4;
+    if (cos_sigma_proto_decode(f2, n2, pub, COS_ED25519_PUB_LEN, &dec2) != 0) return -4;
 
-    /* Idempotence: dec2 is bit-for-bit the same observable as
-     * dec1.  We compare the canonical fields + the payload
-     * contents (the payload pointer itself aliases a different
-     * buffer by design).                                       */
+    /* Idempotence: dec2 is bit-for-bit the same observable as dec1. */
     if (dec1.type          != dec2.type)          return -5;
     if (dec1.payload_len   != dec2.payload_len)   return -6;
     if (dec1.sender_sigma  != dec2.sender_sigma)  return -7;
@@ -126,8 +132,8 @@ static int t5_roundtrip_one(cos_msg_type_t type, const uint8_t *payload,
     if (memcmp(dec1.sender_id, dec2.sender_id, sizeof dec1.sender_id) != 0) return -9;
     if (dec1.payload_len > 0
         && memcmp(dec1.payload, dec2.payload, dec1.payload_len) != 0) return -10;
-    /* And the frames themselves are identical modulo the signer
-     * being deterministic (FNV-1a MAC). */
+    /* Ed25519 deterministic signatures (SHA-512 nonce, no randomness)
+     * mean the two frames are byte-identical. */
     if (n1 != n2)            return -11;
     if (memcmp(f1, f2, n1))  return -12;
     return 0;

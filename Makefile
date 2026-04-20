@@ -6533,13 +6533,13 @@ check-sigma-mesh: creation_os_sigma_mesh
 # the pipeline short-circuits and the remaining stages never run.
 # That is σ-gated early exit: the same mechanism SpecDec uses for
 # drafts, now applied to the pipeline depth dimension.
-SIGMA_SP_INC  = -Isrc/sigma/pipeline
-SIGMA_SP_SRCS = src/sigma/pipeline/split.c
+SIGMA_SPLIT_INC  = -Isrc/sigma/pipeline
+SIGMA_SPLIT_SRCS = src/sigma/pipeline/split.c
 
-creation_os_sigma_split: $(SIGMA_SP_SRCS) \
+creation_os_sigma_split: $(SIGMA_SPLIT_SRCS) \
                          src/sigma/pipeline/split_main.c
-	$(CC) $(CFLAGS) $(SIGMA_SP_INC) -o $@ \
-	    $(SIGMA_SP_SRCS) src/sigma/pipeline/split_main.c $(LDFLAGS)
+	$(CC) $(CFLAGS) $(SIGMA_SPLIT_INC) -o $@ \
+	    $(SIGMA_SPLIT_SRCS) src/sigma/pipeline/split_main.c $(LDFLAGS)
 
 check-sigma-split: creation_os_sigma_split
 	@bash benchmarks/sigma_pipeline/check_sigma_split.sh
@@ -7063,8 +7063,8 @@ check-sigma-formal-complete: creation_os_sigma_formal_complete
 # σ-gated escalation, DP-noise federation update.  Deterministic
 # end-to-end so CI can pin the trace; the `cos network` CLI keeps
 # the same protocol over real sockets when available.
-SIGMA_MESH_INC  = -Isrc/sigma/pipeline
-SIGMA_MESH_SRCS = src/sigma/pipeline/mesh3.c
+SIGMA_MESH_INC  = -Isrc/sigma/pipeline $(SIGMA_PROTO_INC)
+SIGMA_MESH_SRCS = src/sigma/pipeline/mesh3.c $(SIGMA_PROTO_SRCS)
 
 creation_os_sigma_mesh3: $(SIGMA_MESH_SRCS) \
                        src/sigma/pipeline/mesh3_main.c
@@ -7113,8 +7113,23 @@ check-cos-version-genesis: cos
 # time; tamper or wrong-key → reject.  No HTTP / REST / GraphQL.
 # The signer is pluggable — swap for Ed25519 when upgrading from
 # LAN-only to WAN trust.
-SIGMA_PROTO_INC  = -Isrc/sigma/pipeline
-SIGMA_PROTO_SRCS = src/sigma/pipeline/protocol.c
+# CLOSE-3 (v2.0 Omega): protocol.c's default signer is now Ed25519.
+# The full vendored orlp/ed25519 stack + protocol_ed25519.c (signer
+# shim) are always linked whenever protocol.c is linked, so every
+# caller automatically gets asymmetric signatures.
+SIGMA_PROTO_INC  = -Isrc/sigma/pipeline -Ithird_party/ed25519/src
+SIGMA_PROTO_SRCS = src/sigma/pipeline/protocol.c \
+                   src/sigma/pipeline/protocol_ed25519.c \
+                   third_party/ed25519/src/add_scalar.c \
+                   third_party/ed25519/src/fe.c \
+                   third_party/ed25519/src/ge.c \
+                   third_party/ed25519/src/key_exchange.c \
+                   third_party/ed25519/src/keypair.c \
+                   third_party/ed25519/src/sc.c \
+                   third_party/ed25519/src/seed.c \
+                   third_party/ed25519/src/sha512.c \
+                   third_party/ed25519/src/sign.c \
+                   third_party/ed25519/src/verify.c
 
 creation_os_sigma_protocol: $(SIGMA_PROTO_SRCS) \
                             src/sigma/pipeline/protocol_main.c
@@ -7123,29 +7138,17 @@ creation_os_sigma_protocol: $(SIGMA_PROTO_SRCS) \
 
 check-sigma-protocol: creation_os_sigma_protocol
 	@bash benchmarks/sigma_pipeline/check_sigma_protocol.sh
-	@echo "check-sigma-protocol: OK (encode/decode round-trip + 7 types + tamper/wrong-key reject)"
+	@echo "check-sigma-protocol: OK (Ed25519 default signer + encode/decode round-trip + 7 types + tamper/wrong-key reject)"
 
-# --- σ-protocol Ed25519 (real asymmetric crypto via vendored orlp) ---
+# --- σ-protocol Ed25519 (dedicated self-test of the signer shim) ---
 #
-# Drops FNV-1a stub down to LAN-only shared-secret mode; Ed25519
-# becomes the production signer for WAN trust.  Key packing
-# convention: sign-key = private(64) || public(32) (96 B),
-# verify-key = public(32) (32 B).  64-byte signature fills the
-# σ-Protocol wire frame's sig slot byte-for-byte.  Vendored source
-# lives under third_party/ed25519/ (orlp/ed25519, zlib license).
-SIGMA_ED25519_INC  = -Isrc/sigma/pipeline -Ithird_party/ed25519/src
-SIGMA_ED25519_SRCS = src/sigma/pipeline/protocol.c \
-                     src/sigma/pipeline/protocol_ed25519.c \
-                     third_party/ed25519/src/add_scalar.c \
-                     third_party/ed25519/src/fe.c \
-                     third_party/ed25519/src/ge.c \
-                     third_party/ed25519/src/key_exchange.c \
-                     third_party/ed25519/src/keypair.c \
-                     third_party/ed25519/src/sc.c \
-                     third_party/ed25519/src/seed.c \
-                     third_party/ed25519/src/sha512.c \
-                     third_party/ed25519/src/sign.c \
-                     third_party/ed25519/src/verify.c
+# protocol.c already pulls in Ed25519 via SIGMA_PROTO_SRCS; this
+# target keeps a *separate* binary whose main() exercises only the
+# Ed25519 signer wrapper (keypair_from_seed / sign / verify /
+# tamper / wrong-key) so the check-sigma-ed25519 gate isolates
+# the crypto layer from the wire codec layer.
+SIGMA_ED25519_INC  = $(SIGMA_PROTO_INC)
+SIGMA_ED25519_SRCS = $(SIGMA_PROTO_SRCS)
 
 creation_os_sigma_ed25519: $(SIGMA_ED25519_SRCS) \
                            src/sigma/pipeline/protocol_ed25519_main.c
@@ -7162,24 +7165,13 @@ check-sigma-ed25519: creation_os_sigma_ed25519
 # unlearn.  Each operates on the canonical bootstrapped state
 # (4 mesh peers + 3 market providers + 3-node federation) and
 # emits a pinnable JSON receipt with --json.
-COS_NETWORK_INC  = -Isrc/sigma/pipeline -Ithird_party/ed25519/src
+COS_NETWORK_INC  = $(SIGMA_PROTO_INC)
 COS_NETWORK_SRCS = src/sigma/pipeline/mesh.c \
                    src/sigma/pipeline/split.c \
                    src/sigma/pipeline/marketplace.c \
                    src/sigma/pipeline/federation.c \
                    src/sigma/pipeline/dp.c \
-                   src/sigma/pipeline/protocol.c \
-                   src/sigma/pipeline/protocol_ed25519.c \
-                   third_party/ed25519/src/add_scalar.c \
-                   third_party/ed25519/src/fe.c \
-                   third_party/ed25519/src/ge.c \
-                   third_party/ed25519/src/key_exchange.c \
-                   third_party/ed25519/src/keypair.c \
-                   third_party/ed25519/src/sc.c \
-                   third_party/ed25519/src/seed.c \
-                   third_party/ed25519/src/sha512.c \
-                   third_party/ed25519/src/sign.c \
-                   third_party/ed25519/src/verify.c
+                   $(SIGMA_PROTO_SRCS)
 
 cos-network: $(COS_NETWORK_SRCS) src/cli/cos_network.c
 	$(CC) $(CFLAGS) $(COS_NETWORK_INC) -o $@ \
@@ -7260,12 +7252,12 @@ check-sigma-substrate: creation_os_sigma_substrate
 # Not a Lean-checked proof — but mechanically reproducible
 # witnesses with pinned counts and a pinned latency bound.  The
 # paper (H5) cites this ledger as the C-level evidence.
-SIGMA_FRM_INC  = -Isrc/sigma/pipeline
+SIGMA_FRM_INC  = $(SIGMA_PROTO_INC)
 SIGMA_FRM_SRCS = src/sigma/pipeline/formal.c \
                  src/sigma/pipeline/substrate.c \
                  src/sigma/pipeline/spike.c \
                  src/sigma/pipeline/photonic.c \
-                 src/sigma/pipeline/protocol.c
+                 $(SIGMA_PROTO_SRCS)
 
 creation_os_sigma_formal: $(SIGMA_FRM_SRCS) \
                           src/sigma/pipeline/formal_main.c
@@ -7315,8 +7307,8 @@ check-cos-c-dispatch: cos cos-chat cos-benchmark cos-cost
 # sockets, and verifies QUERY→RESPONSE + HEARTBEAT flow.  The
 # protocol tested here is the same one that runs on WAN between
 # production mesh peers.
-COS_MESH_NODE_INC  = -Isrc/sigma/pipeline
-COS_MESH_NODE_SRCS = src/sigma/pipeline/protocol.c
+COS_MESH_NODE_INC  = $(SIGMA_PROTO_INC)
+COS_MESH_NODE_SRCS = $(SIGMA_PROTO_SRCS)
 
 cos-mesh-node: $(COS_MESH_NODE_SRCS) src/cli/cos_mesh_node.c
 	$(CC) $(CFLAGS) $(COS_MESH_NODE_INC) -o $@ \

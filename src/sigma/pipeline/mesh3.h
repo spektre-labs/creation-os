@@ -9,10 +9,12 @@
  *     C  (Linux VM, cloud)       — federator, holds the DP aggregate
  *
  * Every message rides a deterministic envelope:
- *     from, to, kind, payload, signature (FNV-1a64 of a fixed
- *     per-node secret interleaved with the payload — the
- *     production code substitutes Ed25519 at the network layer
- *     but the contract is the same: reject on verify() == false).
+ *     from, to, kind, payload, signature (Ed25519 over the
+ *     canonical envelope; per-node keypairs are derived from
+ *     fixed 32-byte seeds so the trace is reproducible across
+ *     hosts).  Verify() rejects tampered bytes, wrong signer,
+ *     and unknown keys.  Same contract as the WAN path in
+ *     cos-mesh-node; no shared-secret MAC anywhere.
  *
  * The kernel runs the canonical script:
  *   1.  A → B  query           (σ measured locally at B)
@@ -35,6 +37,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "protocol.h"   /* Ed25519 keypair + signature sizes */
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,6 +48,7 @@ extern "C" {
 #define COS_MESH3_PAYLOAD_MAX      192
 #define COS_MESH3_MAX_MESSAGES      32
 #define COS_MESH3_DP_DIM             8
+#define COS_MESH3_SIG_LEN           COS_ED25519_SIG_LEN
 
 enum cos_mesh3_kind {
     COS_MESH3_QUERY        = 1,
@@ -59,7 +64,7 @@ typedef struct {
     int         kind;
     char        payload[COS_MESH3_PAYLOAD_MAX];
     float       sigma;
-    uint64_t    signature;
+    uint8_t     signature[COS_MESH3_SIG_LEN];
     int         verified;
     int         dropped;    /* dropped because signature failed  */
 } cos_mesh3_msg_t;
@@ -67,7 +72,10 @@ typedef struct {
 typedef struct {
     char     name[COS_MESH3_NAME_MAX];
     char     role[COS_MESH3_NAME_MAX];
-    uint64_t secret;        /* per-node signing key (Ed25519 stand-in) */
+    /* Ed25519 keypair derived from a fixed per-node seed.  sign_key
+     * = priv(64) || pub(32), verify_key = pub(32). */
+    uint8_t  sign_key[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN];
+    uint8_t  verify_key[COS_ED25519_PUB_LEN];
     float    local_sigma_mean;
     int      queries_seen;
     int      answers_given;

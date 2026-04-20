@@ -69,14 +69,20 @@ int main(void) {
     printf("  \"messages\": [\n");
     for (int i = 0; i < m.n_messages; i++) {
         const cos_mesh3_msg_t *msg = &m.log[i];
+        /* Ed25519 sig is 64 bytes; show the first 8 as a stable
+         * fingerprint in the JSON trace.  Full sig remains
+         * in-memory for verify(). */
+        unsigned long long sig_hi = 0;
+        for (int b = 0; b < 8; ++b)
+            sig_hi = (sig_hi << 8) | msg->signature[b];
         printf("    { \"i\": %d, \"from\": %d, \"to\": %d, \"kind\": \"%s\","
                " \"sigma\": %.4f, \"verified\": %s, \"dropped\": %s,"
-               " \"sig_hi32\": \"0x%08llx\", \"payload\": \"",
+               " \"sig_hi64\": \"0x%016llx\", \"payload\": \"",
                i, msg->from, msg->to, kind_str(msg->kind),
                (double)msg->sigma,
                msg->verified ? "true" : "false",
                msg->dropped ? "true" : "false",
-               (unsigned long long)((msg->signature >> 32) & 0xFFFFFFFFULL));
+               sig_hi);
         esc(msg->payload);
         printf("\" }%s\n", i + 1 == m.n_messages ? "" : ",");
     }

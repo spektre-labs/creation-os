@@ -7,10 +7,11 @@
  *   1. No HTTP, no REST, no GraphQL — just length-prefixed framed
  *      binary.  v287 granite: zero external dependencies.
  *   2. Every message is signed; unsigned messages are not
- *      admissible.  The signature is pluggable (caller supplies a
- *      signer / verifier), with a deterministic 512-bit FNV-based
- *      stub shipped for self-tests and LAN-only deployments.
- *      Ed25519 can be slotted in by exposing the same interface.
+ *      admissible.  The default signer is Ed25519 (vendored
+ *      orlp/ed25519, zlib license, third_party/ed25519/).
+ *      CLOSE-3 removed the earlier FNV-1a shared-secret stub —
+ *      `cos_sigma_proto_default_sign/verify` are now thin
+ *      forwarders onto the Ed25519 path.
  *   3. σ is first-class metadata: every message carries the
  *      sender's σ estimate for its own payload, so the receiver
  *      can gate before decoding.
@@ -32,14 +33,11 @@
  *
  * Total: 56 + N + 64 bytes.  COS_MSG_MAX_PAYLOAD guards N.
  *
- * Security model (v0):
- *   · The signer is a shared-secret HMAC-style MAC.  It is
- *     tamper-evident for bytewise flipping, unknown-key replay,
- *     wrong-sender spoofing with an honest MAC, and payload
- *     truncation.  It is NOT a substitute for asymmetric
- *     signatures — when you ship SCSL-commercial nodes, swap
- *     the signer for Ed25519 by calling cos_sigma_proto_set_
- *     signer() before handshake.
+ * Security model (v2.0 Omega):
+ *   · Default signer is Ed25519 asymmetric (32-byte public key,
+ *     64-byte private key, 64-byte signature that fills the
+ *     sig slot byte-for-byte).  Tamper, wrong-key, and key-length
+ *     mismatches all cause verify() → 0.
  *   · decode() verifies magic, version, reserved, payload_len
  *     bounds, and signature.  Any failure → return <0 and leave
  *     out_* untouched.

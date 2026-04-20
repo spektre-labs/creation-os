@@ -49,9 +49,25 @@
 #include <time.h>
 #include <unistd.h>
 
-/* Fixed shared secret for the smoke test.  Production nodes use
- * Ed25519 via cos_sigma_proto_ed25519_{sign,verify}. */
-static const uint8_t MESH_KEY[] = "creation-os-mesh-test-key";
+/* Deterministic Ed25519 keypair for the two-node smoke test.  Both
+ * nodes derive the same keypair from a fixed 32-byte seed so the
+ * CLOSE-3 default-signer (protocol.c → protocol_ed25519.c) accepts
+ * their frames without any key exchange handshake.  Production
+ * nodes use per-node keypairs over the same contract. */
+static uint8_t MESH_SIGN_KEY[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN];
+static uint8_t MESH_VERIFY_KEY[COS_ED25519_PUB_LEN];
+
+static void init_mesh_keys(void) {
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)('m' + i);
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+    memcpy(MESH_SIGN_KEY, priv, COS_ED25519_PRIV_LEN);
+    memcpy(MESH_SIGN_KEY + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+    memcpy(MESH_VERIFY_KEY, pub, COS_ED25519_PUB_LEN);
+}
 
 static uint64_t now_ns(void) {
     struct timespec ts;
@@ -136,7 +152,7 @@ static int send_frame_to_peer(const char *peer, cos_msg_type_t type,
 
     uint8_t buf[4096];
     size_t w = 0;
-    if (cos_sigma_proto_encode(&tx, MESH_KEY, sizeof MESH_KEY - 1,
+    if (cos_sigma_proto_encode(&tx, MESH_SIGN_KEY, sizeof MESH_SIGN_KEY,
                                buf, sizeof buf, &w) != 0) {
         close(s); return -1;
     }
@@ -151,7 +167,7 @@ static int send_frame_to_peer(const char *peer, cos_msg_type_t type,
         if (got > 0) {
             cos_msg_t rx;
             if (cos_sigma_proto_decode(rbuf, (size_t)got,
-                                       MESH_KEY, sizeof MESH_KEY - 1,
+                                       MESH_VERIFY_KEY, sizeof MESH_VERIFY_KEY,
                                        &rx) == 0) {
                 emit_event(role, our_port, "recv_response",
                            cos_sigma_proto_type_name(rx.type));
@@ -188,6 +204,8 @@ int main(int argc, char **argv) {
         fprintf(stderr, "cos-mesh-node: --port required\n");
         return 2;
     }
+
+    init_mesh_keys();
 
     /* Listener. */
     int listen_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -232,7 +250,7 @@ int main(int argc, char **argv) {
         if (got <= 0) { close(conn); continue; }
         cos_msg_t rx;
         int rc = cos_sigma_proto_decode(buf, (size_t)got,
-                                        MESH_KEY, sizeof MESH_KEY - 1, &rx);
+                                        MESH_VERIFY_KEY, sizeof MESH_VERIFY_KEY, &rx);
         if (rc == 0) {
             ++n_recv;
             emit_event(role, port, "recv_ok",
@@ -246,7 +264,7 @@ int main(int argc, char **argv) {
                 tx.payload      = (const uint8_t*)"pong";
                 tx.payload_len  = 4;
                 uint8_t reply[512]; size_t w = 0;
-                if (cos_sigma_proto_encode(&tx, MESH_KEY, sizeof MESH_KEY - 1,
+                if (cos_sigma_proto_encode(&tx, MESH_SIGN_KEY, sizeof MESH_SIGN_KEY,
                                            reply, sizeof reply, &w) == 0) {
                     send_all(conn, reply, w);
                     emit_event(role, port, "send_response", "RESPONSE");

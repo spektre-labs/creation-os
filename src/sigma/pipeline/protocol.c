@@ -1,4 +1,24 @@
-/* σ-Protocol — wire codec + default FNV-based signer. */
+/*
+ * σ-Protocol — wire codec, Ed25519 default signer.
+ *
+ * v2.0 Omega CLOSE-3: the FNV-1a 64-bit shared-secret MAC is gone.
+ * The default signer is now Ed25519 (vendored orlp/ed25519, zlib
+ * license, `third_party/ed25519/`) — genuine asymmetric signatures
+ * over 32-byte public keys, 64-byte private keys, 64-byte
+ * signatures that fill COS_MSG_SIG_LEN byte-for-byte.
+ *
+ * Callers that previously passed a short shared key (e.g. the
+ * self-test used 6 bytes) must now pass the Ed25519 key blob:
+ *
+ *     sign():   key = private(64) || public(32)  → key_len = 96
+ *     verify(): key = public(32)                 → key_len = 32
+ *
+ * Any other key_len is rejected.  The self-tests at the bottom of
+ * this file exercise deterministic Ed25519 keypairs derived from
+ * fixed 32-byte seeds so every invocation is reproducible.
+ *
+ * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+ */
 
 #include "protocol.h"
 
@@ -46,59 +66,21 @@ static float get_f32(const uint8_t *p) {
     return f;
 }
 
-/* ---- FNV-1a 64-bit MAC (shared-secret).  v0 stub.  Swap for
- *      Ed25519 by passing a different signer to the codec. ---- */
-
-#define FNV64_OFFSET 0xcbf29ce484222325ULL
-#define FNV64_PRIME  0x00000100000001b3ULL
-
-static uint64_t fnv1a64_init(const uint8_t *key, size_t key_len, uint8_t round) {
-    uint64_t h = FNV64_OFFSET;
-    h ^= (uint64_t)round;
-    h *= FNV64_PRIME;
-    for (size_t i = 0; i < key_len; ++i) {
-        h ^= (uint64_t)key[i];
-        h *= FNV64_PRIME;
-    }
-    return h;
-}
-
-static uint64_t fnv1a64_update(uint64_t h, const uint8_t *data, size_t n) {
-    for (size_t i = 0; i < n; ++i) {
-        h ^= (uint64_t)data[i];
-        h *= FNV64_PRIME;
-    }
-    return h;
-}
+/* ---- Default signer: Ed25519.  The implementation lives in
+ *      protocol_ed25519.c; here we just forward. ---- */
 
 void cos_sigma_proto_default_sign(const uint8_t *data, size_t n,
                                   const uint8_t *key,  size_t key_len,
                                   uint8_t *sig)
 {
-    /* Eight 64-bit FNV digests, each seeded with a different round
-     * number so shifting bytes changes every digest. */
-    for (uint8_t r = 0; r < 8; ++r) {
-        uint64_t h = fnv1a64_init(key, key_len, r);
-        h = fnv1a64_update(h, data, n);
-        /* Post-mix with key length + round for extra diffusion. */
-        h ^= (uint64_t)n;
-        h *= FNV64_PRIME;
-        put_u64(sig + (r * 8), h);
-    }
+    cos_sigma_proto_ed25519_sign(data, n, key, key_len, sig);
 }
 
 int cos_sigma_proto_default_verify(const uint8_t *data, size_t n,
                                    const uint8_t *key,  size_t key_len,
                                    const uint8_t *sig)
 {
-    uint8_t expected[COS_MSG_SIG_LEN];
-    cos_sigma_proto_default_sign(data, n, key, key_len, expected);
-    /* Constant-time compare (portable fallback). */
-    unsigned diff = 0;
-    for (int i = 0; i < COS_MSG_SIG_LEN; ++i) {
-        diff |= (unsigned)(expected[i] ^ sig[i]);
-    }
-    return diff == 0;
+    return cos_sigma_proto_ed25519_verify(data, n, key, key_len, sig);
 }
 
 /* ---- codec ---- */
@@ -202,13 +184,42 @@ const char *cos_sigma_proto_type_name(cos_msg_type_t t) {
 }
 
 /* ---------- self-test ---------- */
+/*
+ * Self-test keys are generated from deterministic 32-byte seeds so
+ * the test is reproducible across hosts.  Seed "A" is the signer,
+ * seed "B" is a decoy to exercise the wrong-key branch.
+ */
+
+static void seed_fill(uint8_t *seed, uint8_t tag) {
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)(tag + i);
+}
+
+typedef struct {
+    uint8_t sk[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN]; /* sign */
+    uint8_t pk[COS_ED25519_PUB_LEN];                         /* verify */
+} test_key_t;
+
+static int make_test_key(uint8_t tag, test_key_t *out) {
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    seed_fill(seed, tag);
+    if (cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv) != 0)
+        return -1;
+    memcpy(out->sk, priv, COS_ED25519_PRIV_LEN);
+    memcpy(out->sk + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+    memcpy(out->pk, pub, COS_ED25519_PUB_LEN);
+    return 0;
+}
 
 static int bytes_eq(const void *a, const void *b, size_t n) {
     return memcmp(a, b, n) == 0;
 }
 
 static int check_roundtrip_query(void) {
-    uint8_t key[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0x13, 0x37 };
+    test_key_t k;
+    if (make_test_key(0x11, &k) != 0) return 10;
     const char *pl = "what is the meaning of life?";
     cos_msg_t tx = {
         .type = COS_MSG_QUERY,
@@ -220,24 +231,26 @@ static int check_roundtrip_query(void) {
     };
     uint8_t buf[512];
     size_t w = 0;
-    if (cos_sigma_proto_encode(&tx, key, sizeof key, buf, sizeof buf, &w) != 0)
-        return 10;
-    if (w != (size_t)COS_MSG_HEADER_LEN + tx.payload_len + COS_MSG_SIG_LEN)
+    if (cos_sigma_proto_encode(&tx, k.sk, sizeof k.sk, buf, sizeof buf, &w) != 0)
         return 11;
-    cos_msg_t rx;
-    if (cos_sigma_proto_decode(buf, w, key, sizeof key, &rx) != 0)
+    if (w != (size_t)COS_MSG_HEADER_LEN + tx.payload_len + COS_MSG_SIG_LEN)
         return 12;
-    if (rx.type != COS_MSG_QUERY)                         return 13;
-    if (strcmp(rx.sender_id, "self") != 0)                return 14;
-    if (rx.sender_sigma != tx.sender_sigma)               return 15;
-    if (rx.timestamp_ns != tx.timestamp_ns)               return 16;
-    if (rx.payload_len != tx.payload_len)                 return 17;
-    if (!bytes_eq(rx.payload, tx.payload, rx.payload_len))return 18;
+    cos_msg_t rx;
+    if (cos_sigma_proto_decode(buf, w, k.pk, sizeof k.pk, &rx) != 0)
+        return 13;
+    if (rx.type != COS_MSG_QUERY)                         return 14;
+    if (strcmp(rx.sender_id, "self") != 0)                return 15;
+    if (rx.sender_sigma != tx.sender_sigma)               return 16;
+    if (rx.timestamp_ns != tx.timestamp_ns)               return 17;
+    if (rx.payload_len != tx.payload_len)                 return 18;
+    if (!bytes_eq(rx.payload, tx.payload, rx.payload_len))return 19;
     return 0;
 }
 
 static int check_tamper(void) {
-    uint8_t key[] = { 1, 2, 3, 4 };
+    test_key_t k_signer, k_decoy;
+    if (make_test_key(0x22, &k_signer) != 0) return 20;
+    if (make_test_key(0x77, &k_decoy)  != 0) return 21;
     const uint8_t pl[] = { 'h', 'i' };
     cos_msg_t tx = {
         .type = COS_MSG_RESPONSE, .sender_id = "peer",
@@ -245,45 +258,55 @@ static int check_tamper(void) {
         .payload = pl, .payload_len = 2
     };
     uint8_t buf[256]; size_t w = 0;
-    if (cos_sigma_proto_encode(&tx, key, 4, buf, sizeof buf, &w) != 0)
-        return 20;
+    if (cos_sigma_proto_encode(&tx, k_signer.sk, sizeof k_signer.sk,
+                               buf, sizeof buf, &w) != 0)
+        return 22;
     /* Flip a byte in the payload → verify must fail. */
     buf[COS_MSG_HEADER_LEN] ^= 0x01;
     cos_msg_t rx;
-    if (cos_sigma_proto_decode(buf, w, key, 4, &rx) != -9) return 21;
+    if (cos_sigma_proto_decode(buf, w, k_signer.pk, sizeof k_signer.pk, &rx)
+        != -9)
+        return 23;
     /* Unflip, re-verify: must succeed again. */
     buf[COS_MSG_HEADER_LEN] ^= 0x01;
-    if (cos_sigma_proto_decode(buf, w, key, 4, &rx) != 0)  return 22;
-    /* Wrong key → verify must fail. */
-    uint8_t wrong_key[] = { 9, 9, 9, 9 };
-    if (cos_sigma_proto_decode(buf, w, wrong_key, 4, &rx) != -9) return 23;
+    if (cos_sigma_proto_decode(buf, w, k_signer.pk, sizeof k_signer.pk, &rx)
+        != 0)
+        return 24;
+    /* Wrong key (valid Ed25519 public key, but a different one) →
+     * verify must fail. */
+    if (cos_sigma_proto_decode(buf, w, k_decoy.pk, sizeof k_decoy.pk, &rx)
+        != -9)
+        return 25;
+    /* Malformed key_len → verify must fail. */
+    if (cos_sigma_proto_decode(buf, w, k_signer.pk, 4, &rx) != -9) return 26;
     return 0;
 }
 
 static int check_bad_frames(void) {
-    uint8_t key[] = { 1 };
+    test_key_t k;
+    if (make_test_key(0x33, &k) != 0) return 30;
     cos_msg_type_t ty;
 
     /* Too short. */
     uint8_t tiny[16] = {0};
-    if (cos_sigma_proto_peek_type(tiny, 16, &ty) != -1) return 30;
+    if (cos_sigma_proto_peek_type(tiny, 16, &ty) != -1) return 31;
 
     /* Bad magic. */
     uint8_t buf[COS_MSG_FRAME_MIN];
     memset(buf, 0, sizeof buf);
     buf[0] = 'X'; buf[1] = 'X'; buf[2] = 'X'; buf[3] = 0x02;
-    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -2) return 31;
+    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -2) return 32;
 
     /* Bad version. */
     buf[0] = COS_MSG_MAGIC_0; buf[1] = COS_MSG_MAGIC_1;
     buf[2] = COS_MSG_MAGIC_2; buf[3] = COS_MSG_MAGIC_3;
     buf[4] = COS_MSG_QUERY;   buf[5] = 42;
-    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -3) return 32;
+    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -3) return 33;
 
     /* Invalid type. */
     buf[5] = COS_MSG_VERSION;
     buf[4] = 99;
-    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -4) return 33;
+    if (cos_sigma_proto_peek_type(buf, sizeof buf, &ty) != -4) return 34;
 
     /* Encode rejects oversize payload_len. */
     cos_msg_t big = {
@@ -292,13 +315,15 @@ static int check_bad_frames(void) {
         .payload     = (const uint8_t*)"dummy",
     };
     uint8_t small[64]; size_t w = 0;
-    if (cos_sigma_proto_encode(&big, key, 1, small, sizeof small, &w) != -3)
-        return 34;
+    if (cos_sigma_proto_encode(&big, k.sk, sizeof k.sk,
+                               small, sizeof small, &w) != -3)
+        return 35;
     return 0;
 }
 
 static int check_all_types(void) {
-    uint8_t key[] = { 7, 7, 7 };
+    test_key_t k;
+    if (make_test_key(0x44, &k) != 0) return 40;
     const cos_msg_type_t types[] = {
         COS_MSG_QUERY, COS_MSG_RESPONSE, COS_MSG_HEARTBEAT,
         COS_MSG_CAPABILITY, COS_MSG_FEDERATION,
@@ -312,13 +337,14 @@ static int check_all_types(void) {
             .payload = (const uint8_t*)"ok", .payload_len = 2
         };
         size_t w = 0;
-        if (cos_sigma_proto_encode(&tx, key, 3, buf, sizeof buf, &w) != 0)
-            return 40 + (int)i;
-        cos_msg_t rx;
-        if (cos_sigma_proto_decode(buf, w, key, 3, &rx) != 0)
+        if (cos_sigma_proto_encode(&tx, k.sk, sizeof k.sk,
+                                   buf, sizeof buf, &w) != 0)
             return 50 + (int)i;
-        if (rx.type != types[i])
+        cos_msg_t rx;
+        if (cos_sigma_proto_decode(buf, w, k.pk, sizeof k.pk, &rx) != 0)
             return 60 + (int)i;
+        if (rx.type != types[i])
+            return 70 + (int)i;
     }
     return 0;
 }

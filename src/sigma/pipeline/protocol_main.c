@@ -19,7 +19,19 @@ static void dump_hex(const uint8_t *p, size_t n, char *out, size_t cap) {
 int main(int argc, char **argv) {
     int rc = cos_sigma_proto_self_test();
 
-    uint8_t key[] = "creation-os-shared-key-v0";
+    /* Deterministic Ed25519 keypair for the demo.  sign_key
+     * = priv(64) || pub(32); verify_key = pub(32).  Matches the
+     * default signer (post-FNV-1a). */
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)('d' + i);
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+    uint8_t sign_key[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN];
+    memcpy(sign_key, priv, COS_ED25519_PRIV_LEN);
+    memcpy(sign_key + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+
     const char *question = "what is the weather in helsinki?";
 
     cos_msg_t tx = {
@@ -33,25 +45,30 @@ int main(int argc, char **argv) {
 
     uint8_t frame[512];
     size_t  framed = 0;
-    int enc = cos_sigma_proto_encode(&tx, key, sizeof key - 1,
+    int enc = cos_sigma_proto_encode(&tx, sign_key, sizeof sign_key,
                                      frame, sizeof frame, &framed);
 
     cos_msg_type_t peeked = (cos_msg_type_t)0;
     int peek_rc = cos_sigma_proto_peek_type(frame, framed, &peeked);
 
     cos_msg_t rx;
-    int dec_ok = cos_sigma_proto_decode(frame, framed, key, sizeof key - 1, &rx);
+    int dec_ok = cos_sigma_proto_decode(frame, framed, pub, COS_ED25519_PUB_LEN, &rx);
 
     /* Flip the sigma byte → decode must reject. */
     frame[40] ^= 0x02;
     cos_msg_t rx_bad;
-    int dec_tamper = cos_sigma_proto_decode(frame, framed, key, sizeof key - 1, &rx_bad);
+    int dec_tamper = cos_sigma_proto_decode(frame, framed, pub, COS_ED25519_PUB_LEN, &rx_bad);
     frame[40] ^= 0x02;  /* restore                                  */
 
     /* Wrong key → decode must reject. */
-    uint8_t wrong[] = "impostor";
+    uint8_t wrong_seed[COS_ED25519_SEED_LEN];
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        wrong_seed[i] = (uint8_t)('w' + i);
+    uint8_t wrong_pub[COS_ED25519_PUB_LEN];
+    uint8_t wrong_priv[COS_ED25519_PRIV_LEN];
+    cos_sigma_proto_ed25519_keypair_from_seed(wrong_seed, wrong_pub, wrong_priv);
     cos_msg_t rx_key;
-    int dec_wrong = cos_sigma_proto_decode(frame, framed, wrong, sizeof wrong - 1, &rx_key);
+    int dec_wrong = cos_sigma_proto_decode(frame, framed, wrong_pub, COS_ED25519_PUB_LEN, &rx_key);
 
     char sig_head[24] = {0};
     dump_hex(frame + COS_MSG_HEADER_LEN + tx.payload_len, COS_MSG_SIG_LEN,

@@ -27,9 +27,10 @@ static float clip01(float x) {
     return x;
 }
 
-/* FNV-1a64 — acts as our deterministic "Ed25519" stand-in.  The
- * node secret is mixed in so swapping `from` can't forge another
- * node's signature. */
+/* Small hash-like helper retained for the σ-estimator and the
+ * deterministic DP-noise seed.  It is NOT cryptographic; the
+ * envelope signature itself is genuine Ed25519 over the canonical
+ * byte layout (see canonicalize_envelope below). */
 static uint64_t fnv1a64(const void *data, size_t n, uint64_t seed) {
     const unsigned char *p = (const unsigned char *)data;
     uint64_t h = 1469598103934665603ULL ^ seed;
@@ -40,33 +41,49 @@ static uint64_t fnv1a64(const void *data, size_t n, uint64_t seed) {
     return h;
 }
 
-static uint64_t sign_message(const cos_mesh3_node_t *signer,
-                             const cos_mesh3_msg_t *msg) {
-    /* Hash kind || from || to || payload with signer's secret. */
-    uint8_t buf[COS_MESH3_PAYLOAD_MAX + 16];
+/* Canonical byte-layout of the message envelope we sign: kind ||
+ * from || to || reserved(0) || payload.  Lives in a caller-owned
+ * scratch buffer. */
+static size_t canonicalize_envelope(const cos_mesh3_msg_t *msg,
+                                    uint8_t *buf, size_t cap) {
     size_t n = 0;
+    if (cap < 4) return 0;
     buf[n++] = (uint8_t)msg->kind;
     buf[n++] = (uint8_t)msg->from;
     buf[n++] = (uint8_t)msg->to;
     buf[n++] = 0;
     size_t pl = strlen(msg->payload);
-    if (pl > sizeof buf - n) pl = sizeof buf - n;
+    if (pl > cap - n) pl = cap - n;
     memcpy(buf + n, msg->payload, pl);
     n += pl;
-    return fnv1a64(buf, n, signer->secret);
+    return n;
+}
+
+static void sign_message(const cos_mesh3_node_t *signer,
+                         cos_mesh3_msg_t *msg) {
+    uint8_t buf[COS_MESH3_PAYLOAD_MAX + 16];
+    size_t n = canonicalize_envelope(msg, buf, sizeof buf);
+    cos_sigma_proto_ed25519_sign(buf, n,
+                                 signer->sign_key, sizeof signer->sign_key,
+                                 msg->signature);
 }
 
 static int verify_message(const cos_mesh3_mesh_t *mesh,
                           const cos_mesh3_msg_t *msg) {
     if (msg->from < 0 || msg->from >= COS_MESH3_NODES) return 0;
-    uint64_t expected = sign_message(&mesh->nodes[msg->from], msg);
-    return expected == msg->signature;
+    uint8_t buf[COS_MESH3_PAYLOAD_MAX + 16];
+    size_t n = canonicalize_envelope(msg, buf, sizeof buf);
+    return cos_sigma_proto_ed25519_verify(
+               buf, n,
+               mesh->nodes[msg->from].verify_key,
+               COS_ED25519_PUB_LEN,
+               msg->signature);
 }
 
 static int mesh_push(cos_mesh3_mesh_t *mesh, cos_mesh3_msg_t *msg) {
     if (mesh->n_messages >= COS_MESH3_MAX_MESSAGES) return -1;
-    msg->signature = sign_message(&mesh->nodes[msg->from], msg);
-    msg->verified  = verify_message(mesh, msg);
+    sign_message(&mesh->nodes[msg->from], msg);
+    msg->verified = verify_message(mesh, msg);
     if (!msg->verified) {
         msg->dropped = 1;
         mesh->signatures_rejected++;
@@ -105,20 +122,39 @@ static void dp_noise_fill(float *dst, int dim, uint64_t seed) {
 
 /* ------------------ init ------------------ */
 
+/* Derive a 32-byte Ed25519 seed from a single letter tag so that
+ * each mesh run gets the same keypair per role (reproducible) but
+ * different per node (unforgeable from another node's keypair). */
+static void derive_mesh_seed(uint8_t tag, uint8_t seed[COS_ED25519_SEED_LEN]) {
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)(tag ^ (uint8_t)(0x5Au + (unsigned)i));
+}
+
+static void mesh_init_keys(cos_mesh3_node_t *node, uint8_t tag) {
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    derive_mesh_seed(tag, seed);
+    cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+    memcpy(node->sign_key, priv, COS_ED25519_PRIV_LEN);
+    memcpy(node->sign_key + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+    memcpy(node->verify_key, pub, COS_ED25519_PUB_LEN);
+}
+
 void cos_mesh3_init(cos_mesh3_mesh_t *mesh) {
     if (!mesh) return;
     memset(mesh, 0, sizeof *mesh);
     ncpy(mesh->nodes[0].name, COS_MESH3_NAME_MAX, "A-helsinki-m3");
     ncpy(mesh->nodes[0].role, COS_MESH3_NAME_MAX, "coordinator");
-    mesh->nodes[0].secret = 0xA11CE0DEC0FFEEULL;
+    mesh_init_keys(&mesh->nodes[0], 'A');
 
     ncpy(mesh->nodes[1].name, COS_MESH3_NAME_MAX, "B-kerava-rpi5");
     ncpy(mesh->nodes[1].role, COS_MESH3_NAME_MAX, "leaf");
-    mesh->nodes[1].secret = 0xB0BC0FFEEDEADULL;
+    mesh_init_keys(&mesh->nodes[1], 'B');
 
     ncpy(mesh->nodes[2].name, COS_MESH3_NAME_MAX, "C-cloud-vm");
     ncpy(mesh->nodes[2].role, COS_MESH3_NAME_MAX, "federator");
-    mesh->nodes[2].secret = 0xC00FFEEB00B00BULL;
+    mesh_init_keys(&mesh->nodes[2], 'C');
 
     mesh->tau_escalate   = 0.55f;
     mesh->dp_noise_sigma = 0.05f;
@@ -192,8 +228,12 @@ int cos_mesh3_run_query(cos_mesh3_mesh_t *mesh, const char *query,
 
     /* 5. C federates weight update to A and B. */
     float delta[COS_MESH3_DP_DIM];
+    /* Per-node determinism: mix query with a stable uint64_t fold
+     * of node C's verify key (no secret key material leaks). */
+    uint64_t node_c_fold = fnv1a64(mesh->nodes[2].verify_key,
+                                   COS_ED25519_PUB_LEN, 0);
     dp_noise_fill(delta, COS_MESH3_DP_DIM,
-                  fnv1a64(query, strlen(query), mesh->nodes[2].secret));
+                  fnv1a64(query, strlen(query), node_c_fold));
     for (int peer = 0; peer < 2; peer++) {
         cos_mesh3_msg_t f = {0};
         f.from = 2; f.to = peer; f.kind = COS_MESH3_FEDERATION;
@@ -228,8 +268,11 @@ int cos_mesh3_tamper_probe(cos_mesh3_mesh_t *mesh) {
     bad.from = 1; bad.to = 0; bad.kind = COS_MESH3_ANSWER;
     ncpy(bad.payload, sizeof bad.payload,
          "{\"answer\":\"forged\",\"sigma\":0.05}");
-    /* Forge: take B's expected signature, flip one bit */
-    bad.signature = sign_message(&mesh->nodes[1], &bad) ^ 1ULL;
+    /* Forge: take B's real signature and flip one bit — must fail
+     * under Ed25519 verify (EdDSA has negligible second-preimage
+     * probability). */
+    sign_message(&mesh->nodes[1], &bad);
+    bad.signature[0] ^= 0x01;
     bad.verified = verify_message(mesh, &bad);
     if (bad.verified) return 0; /* unexpected pass */
     bad.dropped = 1;
@@ -264,6 +307,18 @@ int cos_mesh3_self_test(void) {
     /* Tamper */
     if (cos_mesh3_tamper_probe(&m) != 1) return -6;
     if (m.signatures_rejected < 1)       return -7;
+
+    /* Wrong-key probe: sign with C's key but claim to be B.  Must
+     * fail because B's verify key will not match C's signature. */
+    {
+        cos_mesh3_msg_t wk = {0};
+        wk.from = 1; wk.to = 0; wk.kind = COS_MESH3_ANSWER;
+        ncpy(wk.payload, sizeof wk.payload,
+             "{\"answer\":\"impostor\",\"sigma\":0.10}");
+        sign_message(&m.nodes[2], &wk);   /* C signs */
+        wk.verified = verify_message(&m, &wk); /* claims from == B */
+        if (wk.verified) return -8;
+    }
 
     return 0;
 }

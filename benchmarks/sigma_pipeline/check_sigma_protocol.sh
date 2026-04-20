@@ -36,8 +36,10 @@ grep -q '"timestamp_ns":1713500000000000000'                  <<<"$OUT" || { ech
 grep -q '"payload_len":32'                                    <<<"$OUT" || { echo "FAIL payload_len"; exit 1; }
 grep -q '"payload_hex16":"what is ..."'                       <<<"$OUT" || { echo "FAIL payload"; exit 1; }
 
-# FNV-based MAC is deterministic: first 8 bytes must match pin.
-grep -q '"sig_prefix8":"b2d1002a72d22435"'                    <<<"$OUT" || { echo "FAIL sig prefix"; exit 1; }
+# Ed25519 signatures are deterministic (EdDSA + SHA-512 nonce),
+# so the first 8 bytes match a stable pin.  The keypair comes from
+# the fixed demo seed in protocol_main.c.
+grep -q '"sig_prefix8":"8134ed03730da129"'                    <<<"$OUT" || { echo "FAIL sig prefix"; exit 1; }
 
 # Tamper + wrong key both rejected with rc=-9.
 grep -q '"tamper_rc":-9'                                      <<<"$OUT" || { echo "FAIL tamper reject"; exit 1; }

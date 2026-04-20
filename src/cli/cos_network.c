@@ -271,7 +271,19 @@ static int cmd_unlearn(int json, const char *data) {
         fprintf(stderr, "cos network unlearn: missing data\n");
         return 2;
     }
-    uint8_t key[] = "creation-os-shared-key-v0";
+    /* Deterministic Ed25519 keypair derived from a fixed seed, so the
+     * CLI command is byte-reproducible across hosts.  In production
+     * the operator supplies a per-node keypair instead. */
+    uint8_t seed[COS_ED25519_SEED_LEN];
+    for (int i = 0; i < COS_ED25519_SEED_LEN; ++i)
+        seed[i] = (uint8_t)('u' + i);
+    uint8_t pub[COS_ED25519_PUB_LEN];
+    uint8_t priv[COS_ED25519_PRIV_LEN];
+    cos_sigma_proto_ed25519_keypair_from_seed(seed, pub, priv);
+    uint8_t sk[COS_ED25519_PRIV_LEN + COS_ED25519_PUB_LEN];
+    memcpy(sk, priv, COS_ED25519_PRIV_LEN);
+    memcpy(sk + COS_ED25519_PRIV_LEN, pub, COS_ED25519_PUB_LEN);
+
     cos_msg_t tx = {
         .type         = COS_MSG_UNLEARN,
         .sender_sigma = 0.05f,     /* the request itself is trusted */
@@ -281,10 +293,10 @@ static int cmd_unlearn(int json, const char *data) {
     };
     strncpy(tx.sender_id, "self", COS_MSG_ID_CAP - 1);
     uint8_t frame[1024]; size_t w = 0;
-    int enc = cos_sigma_proto_encode(&tx, key, sizeof key - 1,
+    int enc = cos_sigma_proto_encode(&tx, sk, sizeof sk,
                                      frame, sizeof frame, &w);
     cos_msg_t rx;
-    int dec = cos_sigma_proto_decode(frame, w, key, sizeof key - 1, &rx);
+    int dec = cos_sigma_proto_decode(frame, w, pub, COS_ED25519_PUB_LEN, &rx);
 
     if (json) {
         printf("{\"command\":\"unlearn\",\"data\":\"%s\","
