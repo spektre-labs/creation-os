@@ -6060,8 +6060,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-pipeline-compose \
                       check-integration check-cos-cli \
                       check-sigma-tool check-sigma-plan \
-                      check-sigma-merge check-sigma-grounding
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding)"
+                      check-sigma-merge check-sigma-grounding \
+                      check-sigma-session
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6294,6 +6295,25 @@ creation_os_sigma_grounding: $(SIGMA_GR_SRCS) \
 check-sigma-grounding: creation_os_sigma_grounding
 	@bash benchmarks/sigma_pipeline/check_sigma_grounding.sh
 	@echo "check-sigma-grounding: OK (GROUNDED + UNSUPPORTED + CONFLICTED + SKIPPED + FNV provenance)"
+
+# --- σ-pipeline: Session (long-running turn ring + save/load, A5) ---
+#
+# Fixed-capacity ring of turns; σ-priority eviction (drop the worst-σ
+# turn when full, NOT the oldest).  Trend stats (mean, slope, min,
+# max) over turn_id; drift detector.  Line-based save/load with
+# FNV-1a-64 integrity checksum — `cos chat --save` / `--load` rides
+# directly on this format.
+SIGMA_SS_INC  = -Isrc/sigma/pipeline
+SIGMA_SS_SRCS = src/sigma/pipeline/session.c
+
+creation_os_sigma_session: $(SIGMA_SS_SRCS) \
+                           src/sigma/pipeline/session_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SS_INC) -o $@ \
+	    $(SIGMA_SS_SRCS) src/sigma/pipeline/session_main.c $(LDFLAGS)
+
+check-sigma-session: creation_os_sigma_session
+	@bash benchmarks/sigma_pipeline/check_sigma_session.sh
+	@echo "check-sigma-session: OK (append + σ-priority eviction + trend + drift + save/load round-trip)"
 
 # --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
 #
