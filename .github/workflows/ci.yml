@@ -59,6 +59,6 @@ jobs:
       - name: ASan + UBSan make check
         env:
           CC: clang
-          CFLAGS: -O1 -g -std=c11 -Wall -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -march=native
+          CFLAGS: -O1 -g -std=c11 -Wall -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -march=native -D_POSIX_C_SOURCE=200809L
           LDFLAGS: -lm -fsanitize=address,undefined
         run: make clean && make check

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 # One command: make all
 CC = cc
-CFLAGS = -O2 -march=native -Wall -std=c11
+CFLAGS = -O2 -march=native -Wall -std=c11 -D_POSIX_C_SOURCE=200809L
 LDFLAGS = -lm
 BUILDDIR = .build
 # Verilator 5+: --timing with --lint-only (Ubuntu 24.04+). Override: make VERILATOR_LINT_FLAGS=-Wall formal-rtl-lint
@@ -1121,7 +1121,7 @@ standalone-v61-hardened: src/v61/creation_os_v61.c $(V61_SRCS)
 # is intentional, unknown flags silently dropped via $(filter …)).
 HARDEN_CFLAGS = -O2 -std=c11 -Wall -Wformat=2 -Wformat-security \
                 -Werror=format-security -Wimplicit-fallthrough \
-                -D_FORTIFY_SOURCE=3 \
+                -D_POSIX_C_SOURCE=200809L -D_FORTIFY_SOURCE=3 \
                 -fstack-protector-strong -fstack-clash-protection \
                 -fstrict-flex-arrays=3 \
                 -fPIE -mbranch-protection=standard
@@ -1146,7 +1146,7 @@ harden: standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened 
 	@echo "harden: OK (v57 / v58 / v59 / v60 / v61 / v62 / v63 / v64 / v65 rebuilt with OpenSSF 2026 flags + M4 branch-protection)"
 
 # --- Sanitizer matrix (AddressSanitizer + UndefinedBehaviorSanitizer)
-SAN_CFLAGS  = -O1 -g -std=c11 -Wall -fno-omit-frame-pointer
+SAN_CFLAGS  = -O1 -g -std=c11 -Wall -fno-omit-frame-pointer -D_POSIX_C_SOURCE=200809L
 ASAN_FLAGS  = -fsanitize=address,undefined
 UBSAN_FLAGS = -fsanitize=undefined -fno-sanitize-recover=undefined
 
