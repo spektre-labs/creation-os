@@ -6057,8 +6057,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-continual check-sigma-unlearn \
                       check-sigma-agent check-sigma-diagnostic \
                       check-sigma-sovereign check-codex \
-                      check-sigma-pipeline-compose
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose)"
+                      check-sigma-pipeline-compose \
+                      check-integration check-cos-cli
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6129,6 +6130,37 @@ test_sigma_pipeline_integration: $(SIGMA_IT_SRCS) \
 check-integration: test_sigma_pipeline_integration
 	@./test_sigma_pipeline_integration
 	@echo "check-integration: OK (12 scenarios: codex + accept + hit + rethink + escalate + abstain + multimodal + unlearn + sovereign + diagnostic + live + codex-audit)"
+
+# --- Reference CLIs (I3 + I4): cos chat / cos benchmark / cos cost ---
+#
+# Thin wrappers over sigma_pipeline + the shared stub generator.
+# Real BitNet integration is one callback swap away; today these
+# binaries prove the control plane works and make the Codex effect
+# quantitatively visible.
+COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/cli
+COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
+               src/sigma/pipeline/codex.c \
+               src/sigma/pipeline/engram.c \
+               src/sigma/pipeline/reinforce.c \
+               src/sigma/pipeline/sovereign.c \
+               src/sigma/pipeline/agent.c \
+               src/cli/stub_gen.c
+
+cos-chat: $(COS_CLI_SRCS) src/cli/cos_chat.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
+	    $(COS_CLI_SRCS) src/cli/cos_chat.c $(LDFLAGS)
+
+cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
+	    $(COS_CLI_SRCS) src/cli/cos_benchmark.c $(LDFLAGS)
+
+cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
+	    $(COS_CLI_SRCS) src/cli/cos_cost.c $(LDFLAGS)
+
+check-cos-cli: cos-chat cos-benchmark cos-cost
+	@bash benchmarks/sigma_pipeline/check_cos_cli.sh
+	@echo "check-cos-cli: OK (cos chat banner + cos benchmark table + cos cost ledger)"
 
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
 #
