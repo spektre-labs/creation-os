@@ -6078,7 +6078,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-persist check-sigma-health \
                       check-sigma-signal check-cos-version-genesis \
                       check-sigma-distill check-sigma-cot-distill \
-                      check-sigma-sandbox check-sigma-stream
+                      check-sigma-sandbox check-sigma-stream \
+                      check-sigma-plugin
 	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
@@ -6738,6 +6739,50 @@ creation_os_sigma_stream: $(SIGMA_STREAM_SRCS) \
 check-sigma-stream: creation_os_sigma_stream
 	@bash benchmarks/sigma_pipeline/check_sigma_stream.sh
 	@echo "check-sigma-stream: OK (per-token σ streamed, rethink at σ ≥ τ)"
+
+# --- σ-pipeline: Plugin (extensibility ABI, NEXT-5) ---
+#
+# Shared-library plugins extend σ-pipeline with new tools, new
+# substrates, new σ-signals, or Codex extensions.  The core
+# exposes a single entry symbol (cos_sigma_plugin_entry) and an
+# ABI version that plugins must declare; dlopen is the transport.
+#
+# Two artefacts are produced:
+#   1. creation_os_sigma_plugin   — the host demo that dlopens a
+#      sibling demo plugin and exercises the full registry path.
+#   2. libcos_plugin_demo.{dylib,so} — the demo plugin itself.
+#
+# The Makefile auto-detects Apple Darwin vs. anything-else to pick
+# the shared-library extension and the right flags.
+UNAME_S  := $(shell uname -s 2>/dev/null)
+ifeq ($(UNAME_S),Darwin)
+SIGMA_PLUGIN_SHEXT   = dylib
+SIGMA_PLUGIN_SHFLAGS = -dynamiclib -undefined dynamic_lookup
+SIGMA_PLUGIN_HOSTLD  =
+else
+SIGMA_PLUGIN_SHEXT   = so
+SIGMA_PLUGIN_SHFLAGS = -shared -fPIC
+SIGMA_PLUGIN_HOSTLD  = -ldl -rdynamic
+endif
+
+SIGMA_PLUGIN_INC  = -Isrc/sigma/pipeline
+SIGMA_PLUGIN_SRCS = src/sigma/pipeline/plugin.c
+
+libcos_plugin_demo.$(SIGMA_PLUGIN_SHEXT): src/sigma/pipeline/plugin_demo.c \
+                                         src/sigma/pipeline/plugin.h
+	$(CC) $(CFLAGS) $(SIGMA_PLUGIN_SHFLAGS) -fPIC $(SIGMA_PLUGIN_INC) \
+	    -o $@ src/sigma/pipeline/plugin_demo.c
+
+creation_os_sigma_plugin: $(SIGMA_PLUGIN_SRCS) \
+                         src/sigma/pipeline/plugin_main.c \
+                         libcos_plugin_demo.$(SIGMA_PLUGIN_SHEXT)
+	$(CC) $(CFLAGS) $(SIGMA_PLUGIN_INC) -o $@ \
+	    $(SIGMA_PLUGIN_SRCS) src/sigma/pipeline/plugin_main.c \
+	    $(SIGMA_PLUGIN_HOSTLD) $(LDFLAGS)
+
+check-sigma-plugin: creation_os_sigma_plugin
+	@bash benchmarks/sigma_pipeline/check_sigma_plugin.sh
+	@echo "check-sigma-plugin: OK (static register + dlopen demo + tool + σ-signal)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #

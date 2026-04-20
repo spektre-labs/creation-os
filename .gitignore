@@ -707,3 +707,6 @@ creation_os_sigma_distill
 creation_os_sigma_cot_distill
 creation_os_sigma_sandbox
 creation_os_sigma_stream
+creation_os_sigma_plugin
+libcos_plugin_demo.dylib
+libcos_plugin_demo.so
