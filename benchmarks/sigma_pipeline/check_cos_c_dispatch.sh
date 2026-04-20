@@ -44,12 +44,43 @@ if [[ "$F_CO" != "$N_CO" ]]; then
 fi
 echo "  cos cost --json         == cos-cost --json"
 
-# ---- D. structural: cos must mention prefer_c_else_py + exec_sibling,
-#        proving the C-first dispatcher is compiled in (guard against
-#        accidental reversion to pure-Python dispatch).
-if ! grep -q 'prefer_c_else_py' cli/cos.c; then
-    echo "FAIL cli/cos.c no longer contains prefer_c_else_py dispatcher" >&2
+# ---- D. structural: cos must carry the C-first dispatcher and
+#        MUST NOT re-introduce the Python-subshell fallback.  After
+#        CLOSE-4 the only dispatch helpers are exec_sibling() /
+#        prefer_c_or_hint() / exec_preferred() — run_py_module and
+#        its sh_quote helper were retired.
+if ! grep -q 'exec_sibling' cli/cos.c; then
+    echo "FAIL cli/cos.c no longer contains exec_sibling dispatcher" >&2
     exit 6
 fi
+if ! grep -q 'prefer_c_or_hint\|prefer_c_else_py' cli/cos.c; then
+    echo "FAIL cli/cos.c missing C-first dispatcher helper" >&2
+    exit 6
+fi
+if grep -q 'run_py_module' cli/cos.c; then
+    echo "FAIL cli/cos.c re-introduced run_py_module (must stay pure-C)" >&2
+    exit 7
+fi
 
-echo "check-cos-c-dispatch: PASS (front door routes chat/benchmark/cost to C siblings)"
+# ---- E. front door must also route the seven long-tail kernels
+#        (CLOSE-4): mcp / a2a / team / lora / voice / offline /
+#        watchdog / index.  We assert the dispatch lines are
+#        present in cli/cos.c and that `cos help` advertises each
+#        one.  Capture the help once into a variable so the grep
+#        loop does not race the help producer (set -o pipefail
+#        would otherwise report SIGPIPE from the help side when
+#        `grep -q` exits early).
+HELP="$(NO_COLOR=1 ./cos help 2>&1 || true)"
+for verb in mcp a2a team lora voice offline watchdog index; do
+    if ! grep -qE "strcmp\(argv\[1\], \"$verb\"\) *== *0" cli/cos.c; then
+        echo "FAIL cli/cos.c missing dispatch line for 'cos $verb'" >&2
+        exit 8
+    fi
+    if ! printf '%s\n' "$HELP" | grep -qE "^  $verb( |$)"; then
+        echo "FAIL 'cos help' missing entry for '$verb'" >&2
+        exit 9
+    fi
+done
+echo "  cos {mcp,a2a,team,lora,voice,offline,watchdog,index} dispatched in pure C"
+
+echo "check-cos-c-dispatch: PASS (front door routes chat/benchmark/cost + 8 long-tail kernels to C siblings; zero Python)"

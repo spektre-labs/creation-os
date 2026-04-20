@@ -456,53 +456,13 @@ static int cmd_seal_unseal(int seal_mode, int argc, char **argv)
  *  All args after `chat` are forwarded verbatim.
  * -------------------------------------------------------------------- */
 
-/* Escape a single argv element for /bin/sh single-quoted form.
- * Writes at most cap-1 bytes + NUL; returns 0 on success, -1 on overflow.
- * Encoding: wrap in single quotes; any inner ' becomes '"'"' . */
-static int sh_quote(const char *s, char *out, size_t cap)
-{
-    size_t o = 0;
-    if (cap < 3) return -1;
-    out[o++] = '\'';
-    for (const char *p = s; *p; ++p) {
-        if (*p == '\'') {
-            if (o + 4 >= cap) return -1;
-            out[o++] = '\''; out[o++] = '"';
-            out[o++] = '\''; out[o++] = '"';
-            out[o++] = '\'';
-        } else {
-            if (o + 1 >= cap) return -1;
-            out[o++] = *p;
-        }
-    }
-    if (o + 2 >= cap) return -1;
-    out[o++] = '\'';
-    out[o]   = 0;
-    return 0;
-}
-
-static int run_py_module(const char *module, int argc, char **argv)
-{
-    char cmd[8192];
-    size_t off = 0;
-    const char *py = file_exists(".venv-bitnet/bin/python")
-                        ? ".venv-bitnet/bin/python" : "python3";
-    int k = snprintf(cmd + off, sizeof cmd - off,
-                     "PYTHONPATH=scripts%s%s %s -m %s",
-                     getenv("PYTHONPATH") ? ":" : "",
-                     getenv("PYTHONPATH") ? getenv("PYTHONPATH") : "",
-                     py, module);
-    if (k <= 0 || (size_t)k >= sizeof cmd - off) return 70;
-    off += (size_t)k;
-    char quoted[2048];
-    for (int i = 0; i < argc; ++i) {
-        if (sh_quote(argv[i], quoted, sizeof quoted) != 0) return 71;
-        k = snprintf(cmd + off, sizeof cmd - off, " %s", quoted);
-        if (k <= 0 || (size_t)k >= sizeof cmd - off) return 72;
-        off += (size_t)k;
-    }
-    return run_cmd(cmd);
-}
+/* CLOSE-4: the Python-subshell dispatch helper and its shell
+ * escaper have been retired in favour of pure C exec_sibling() /
+ * prefer_c_or_hint() / exec_preferred() paths.  No Python
+ * subshell is ever spawned from `cos`; the remaining run_cmd()
+ * call sites (e.g. `git log` in cmd_doctor) assemble literal,
+ * non-user-controlled shell strings so they do not require the
+ * single-quote escaper. */
 
 /* --------------------------------------------------------------------
  *  C-first dispatch — prefer the native sibling binary when it exists
@@ -514,9 +474,12 @@ static int run_py_module(const char *module, int argc, char **argv)
  * -------------------------------------------------------------------- */
 static int exec_sibling(const char *bin_name, int argc, char **argv);
 
-static int prefer_c_else_py(const char *c_bin,
-                            const char *py_module,
-                            int argc, char **argv)
+/* CLOSE-4: pure-C dispatch — the C binary is always the canonical
+ * path.  If the sibling hasn't been built yet (rare on a dev host
+ * since `make cos-chat`/etc. is part of every check-* target), we
+ * print a build hint rather than silently falling back to Python.
+ * This keeps the front door dependency-free per v287 granite. */
+static int prefer_c_or_hint(const char *c_bin, int argc, char **argv)
 {
     char path[512];
     if (snprintf(path, sizeof path, "./%s", c_bin) > 0 &&
@@ -524,13 +487,16 @@ static int prefer_c_else_py(const char *c_bin,
     {
         return exec_sibling(c_bin, argc, argv);
     }
-    return run_py_module(py_module, argc, argv);
+    fprintf(stderr,
+            "cos: %s not built yet — run 'make %s' first.\n"
+            "     The C dispatch is zero-Python by design (v287 granite).\n",
+            c_bin, c_bin);
+    return 127;
 }
 
 static int cmd_chat(int argc, char **argv)
 {
-    return prefer_c_else_py("cos-chat",
-                            "sigma_pipeline.cos_chat", argc, argv);
+    return prefer_c_or_hint("cos-chat", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -539,8 +505,7 @@ static int cmd_chat(int argc, char **argv)
  * -------------------------------------------------------------------- */
 static int cmd_benchmark(int argc, char **argv)
 {
-    return prefer_c_else_py("cos-benchmark",
-                            "sigma_pipeline.pipeline_bench", argc, argv);
+    return prefer_c_or_hint("cos-benchmark", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -548,8 +513,7 @@ static int cmd_benchmark(int argc, char **argv)
  * -------------------------------------------------------------------- */
 static int cmd_cost(int argc, char **argv)
 {
-    return prefer_c_else_py("cos-cost",
-                            "sigma_pipeline.cost_measure", argc, argv);
+    return prefer_c_or_hint("cos-cost", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -600,6 +564,52 @@ static int cmd_network(int argc, char **argv) { return exec_sibling("cos-network
 static int cmd_omega  (int argc, char **argv) { return exec_sibling("creation_os_sigma_omega",  argc, argv); }
 static int cmd_formal (int argc, char **argv) { return exec_sibling("creation_os_sigma_formal", argc, argv); }
 static int cmd_paper  (int argc, char **argv) { return exec_sibling("creation_os_sigma_paper",  argc, argv); }
+
+/* CLOSE-4: the seven "long-tail" kernels — mcp, a2a, team, lora,
+ * voice, offline, watchdog — ship as standalone binaries under
+ * creation_os_sigma_*.  Expose them through the cos front door
+ * with a tiny shim that prefers the short cos-* name when it
+ * exists (so symlinks / Homebrew casks can override) and
+ * otherwise execs the canonical creation_os_sigma_* binary.  No
+ * Python path anywhere. */
+static int exec_preferred(const char *short_name,
+                          const char *canonical_name,
+                          int argc, char **argv)
+{
+    char path[512];
+    if (short_name &&
+        snprintf(path, sizeof path, "./%s", short_name) > 0 &&
+        file_exists(path))
+    {
+        return exec_sibling(short_name, argc, argv);
+    }
+    if (snprintf(path, sizeof path, "./%s", canonical_name) > 0 &&
+        file_exists(path))
+    {
+        return exec_sibling(canonical_name, argc, argv);
+    }
+    fprintf(stderr,
+            "cos: %s not built yet — run 'make %s' first.\n",
+            canonical_name, canonical_name);
+    return 127;
+}
+
+static int cmd_mcp     (int argc, char **argv) { return exec_preferred("cos-mcp",      "creation_os_sigma_mcp",      argc, argv); }
+static int cmd_a2a     (int argc, char **argv) { return exec_preferred("cos-a2a",      "creation_os_sigma_a2a",      argc, argv); }
+static int cmd_team    (int argc, char **argv) { return exec_preferred("cos-team",     "creation_os_sigma_team",     argc, argv); }
+static int cmd_lora    (int argc, char **argv) { return exec_preferred("cos-lora",     "creation_os_sigma_lora",     argc, argv); }
+static int cmd_voice   (int argc, char **argv) { return exec_preferred("cos-voice",    "creation_os_sigma_voice",    argc, argv); }
+static int cmd_offline (int argc, char **argv) { return exec_preferred("cos-offline",  "creation_os_sigma_offline",  argc, argv); }
+static int cmd_watchdog(int argc, char **argv) { return exec_preferred("cos-watchdog", "creation_os_sigma_watchdog", argc, argv); }
+
+/* CLOSE-4: `cos index` is a tiny shim that calls the existing
+ * index-substrate kernel.  Shipped for discoverability in
+ * `cos --help`; forwarded to creation_os_sigma_index when
+ * present. */
+static int cmd_index(int argc, char **argv)
+{
+    return exec_preferred("cos-index", "creation_os_sigma_index", argc, argv);
+}
 
 /* cos health — runtime health snapshot (PROD-4).  Falls back to
  * the classic repo-health `cmd_doctor` if `./cos-health` hasn't
@@ -2103,6 +2113,8 @@ static int cmd_help(const char *prog)
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  full repo-health rollup (license · verify · hardening · receipts)\n",
            C_BOLD, "doctor", C_RESET);
+    printf("  %s%-12s%s  runtime health snapshot (PROD-4: substrates · proofs · latency)\n",
+           C_BOLD, "health", C_RESET);
     printf("  %s%-12s%s  the Verified-Agent (v57) report\n", C_BOLD, "verify",  C_RESET);
     printf("  %s%-12s%s  the CHACE-class 12-layer capability-hardening gate\n", C_BOLD, "chace",   C_RESET);
     printf("  %s%-12s%s  σ-Shield %s Σ-Citadel %s Fabric %s Cipher %s Intellect %s Hypercortex %s Silicon %s Noesis %s Mnemos %s Constellation %s Hyperscale %s Wormhole %s Chain %s Omnimodal %s Experience %s Surface self-tests\n",
@@ -2127,6 +2139,24 @@ static int cmd_help(const char *prog)
            C_BOLD, "paper", C_RESET);
     printf("  %s%-12s%s  σ-meta: where the gate helps / hurts + ledger + economics (H6 summary)\n",
            C_BOLD, "sigma-meta", C_RESET);
+    /* CLOSE-4: long-tail kernels on the front door — every one a
+     * standalone C binary (zero Python in the dispatch). */
+    printf("  %s%-12s%s  Model Context Protocol server (σ-gated tool + resource + prompt)\n",
+           C_BOLD, "mcp",      C_RESET);
+    printf("  %s%-12s%s  Agent-to-Agent protocol (σ-signed envelopes + delegation + handshake)\n",
+           C_BOLD, "a2a",      C_RESET);
+    printf("  %s%-12s%s  Team composition: specialist routing + critique + aggregation\n",
+           C_BOLD, "team",     C_RESET);
+    printf("  %s%-12s%s  LoRA/QLoRA adapter stack: load + compose + σ-gate + export\n",
+           C_BOLD, "lora",     C_RESET);
+    printf("  %s%-12s%s  Voice I/O: σ-gated ASR + TTS + barge-in guard\n",
+           C_BOLD, "voice",    C_RESET);
+    printf("  %s%-12s%s  Offline corpus ingest + σ-gated retrieval (no network required)\n",
+           C_BOLD, "offline",  C_RESET);
+    printf("  %s%-12s%s  Watchdog: liveness + σ-drift guard + auto-recover\n",
+           C_BOLD, "watchdog", C_RESET);
+    printf("  %s%-12s%s  Index kernel shim: build / query / receipt over the σ-corpus\n",
+           C_BOLD, "index",    C_RESET);
     printf("  %s%-12s%s  end-to-end encrypt a file (v63 σ-Cipher)\n",
            C_BOLD, "seal",   C_RESET);
     printf("  %s%-12s%s  verify and open a sealed envelope\n",
@@ -2612,6 +2642,15 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "paper")     == 0) return cmd_paper  (argc - 2, argv + 2);
     if (strcmp(argv[1], "sigma-meta") == 0 ||
         strcmp(argv[1], "meta-status") == 0) return cmd_sigma_meta(argc - 2, argv + 2);
+    /* CLOSE-4: long-tail kernels exposed on the front door. */
+    if (strcmp(argv[1], "mcp")      == 0) return cmd_mcp     (argc - 2, argv + 2);
+    if (strcmp(argv[1], "a2a")      == 0) return cmd_a2a     (argc - 2, argv + 2);
+    if (strcmp(argv[1], "team")     == 0) return cmd_team    (argc - 2, argv + 2);
+    if (strcmp(argv[1], "lora")     == 0) return cmd_lora    (argc - 2, argv + 2);
+    if (strcmp(argv[1], "voice")    == 0) return cmd_voice   (argc - 2, argv + 2);
+    if (strcmp(argv[1], "offline")  == 0) return cmd_offline (argc - 2, argv + 2);
+    if (strcmp(argv[1], "watchdog") == 0) return cmd_watchdog(argc - 2, argv + 2);
+    if (strcmp(argv[1], "index")    == 0) return cmd_index   (argc - 2, argv + 2);
     if (strcmp(argv[1], "seal")    == 0) return cmd_seal_unseal(1, argc - 2, argv + 2);
     if (strcmp(argv[1], "unseal")  == 0) return cmd_seal_unseal(0, argc - 2, argv + 2);
     if (strcmp(argv[1], "mcts")    == 0) return cmd_mcts();
