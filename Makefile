@@ -6080,8 +6080,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-distill check-sigma-cot-distill \
                       check-sigma-sandbox check-sigma-stream \
                       check-sigma-plugin check-sigma-rag \
-                      check-sigma-persona
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona)"
+                      check-sigma-persona check-sigma-offline
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6822,6 +6822,24 @@ creation_os_sigma_persona: $(SIGMA_PERSONA_SRCS) \
 check-sigma-persona: creation_os_sigma_persona
 	@bash benchmarks/sigma_pipeline/check_sigma_persona.sh
 	@echo "check-sigma-persona: OK (language + domain + verbosity + envelope stable)"
+
+# --- σ-pipeline: Offline (airplane-mode readiness, FINAL-3) ----------
+#
+# Five deterministic filesystem probes — model / engram / RAG
+# index / codex / persona — summarised into a single verdict that
+# `cos offline prepare` can rely on.  No DNS, no fork, no network
+# fallbacks: the whole thing is a stat() + hash() walk.
+SIGMA_OFFLINE_INC  = -Isrc/sigma/pipeline
+SIGMA_OFFLINE_SRCS = src/sigma/pipeline/offline.c
+
+creation_os_sigma_offline: $(SIGMA_OFFLINE_SRCS) \
+                          src/sigma/pipeline/offline_main.c
+	$(CC) $(CFLAGS) $(SIGMA_OFFLINE_INC) -o $@ \
+	    $(SIGMA_OFFLINE_SRCS) src/sigma/pipeline/offline_main.c $(LDFLAGS)
+
+check-sigma-offline: creation_os_sigma_offline
+	@bash benchmarks/sigma_pipeline/check_sigma_offline.sh
+	@echo "check-sigma-offline: OK (5-probe verifier + ready/not-ready gate)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
