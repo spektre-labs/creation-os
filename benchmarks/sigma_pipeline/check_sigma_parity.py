@@ -29,6 +29,7 @@ from sigma_pipeline.speculative import (                           # noqa: E402
 from sigma_pipeline import ttt as pttt                             # noqa: E402
 from sigma_pipeline.engram import fnv1a_64                          # noqa: E402
 from sigma_pipeline import moe as pmoe                              # noqa: E402
+from sigma_pipeline import multimodal as pmm                        # noqa: E402
 
 
 def _run_binary(name: str) -> dict:
@@ -166,6 +167,28 @@ def main() -> int:
               f"Py={[a.expert_id for a in py_topk]}")
         failures += 1
 
+    # Multimodal parity: replay the eight canonical σ measurements
+    # and assert Py matches C to 1e-6.
+    mm = _run_binary("creation_os_sigma_multimodal")
+    assert mm["pass"] is True, f"C multimodal self_test failed: {mm}"
+    d = mm["demo"]
+    blob = '{"id":1,"name":"a"}'
+    cases = [
+        ("text_sigma",          pmm.measure_text(0.42)),
+        ("code_ok",             pmm.measure_code("void f(){}")),
+        ("code_bad",            pmm.measure_code("void f(){")),
+        ("schema_ok",           pmm.measure_schema_cheap(blob, ["id", "name"])),
+        ("schema_one_missing",  pmm.measure_schema_cheap(blob, ["id", "name", "email"])),
+        ("image_similar",       pmm.measure_image(0.95)),
+        ("image_mismatch",      pmm.measure_image(0.10)),
+        ("audio",               pmm.measure_audio(0.75)),
+    ]
+    for key, py_val in cases:
+        c_val = d[key]
+        if abs(py_val - c_val) > 1e-6:
+            print(f"FAIL multimodal {key} C={c_val} Py={py_val}")
+            failures += 1
+
     # Engram parity: FNV-1a-64 must match byte-for-byte on the four
     # canonical strings the C binary publishes.
     eg = _run_binary("creation_os_sigma_engram")
@@ -185,7 +208,9 @@ def main() -> int:
     print("sigma-parity: OK — C ↔ Python decision parity on 18 canonical "
           "rows + cost-savings formula match (Δ<1e-4) + TTT 4-step demo "
           "match (Δ<1e-4) + Engram FNV-1a-64 byte-identical on 4 strings "
-          "+ MoE 4-row width-gate + top-k + compute_saved match (Δ<1e-6)")
+          "+ MoE 4-row width-gate + top-k + compute_saved match (Δ<1e-6) "
+          "+ Multimodal 8-row σ match across text/code/schema/image/audio "
+          "(Δ<1e-6)")
     return 0
 
 

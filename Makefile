@@ -6051,8 +6051,28 @@ check-sigma-speculative: creation_os_sigma_speculative
 
 check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-ttt check-sigma-engram \
-                      check-sigma-moe
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe primitives)"
+                      check-sigma-moe check-sigma-multimodal
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal primitives)"
+
+# --- σ-pipeline: Multimodal (modality-aware σ) ---
+#
+# σ measurements for the five modalities Creation OS emits:
+#   TEXT (identity pass-through), CODE (paren/brace/quote balance),
+#   STRUCTURED (JSON required-field scan), IMAGE / AUDIO (1 − CLIP-
+#   or-similar similarity).  All return σ ∈ [0, 1] so the same
+#   reinforce / speculative / engram / TTT pipeline downstream can
+#   gate any output modality, not just text.
+SIGMA_MM_INC  = -Isrc/sigma/pipeline
+SIGMA_MM_SRCS = src/sigma/pipeline/multimodal.c
+
+creation_os_sigma_multimodal: $(SIGMA_MM_SRCS) \
+                              src/sigma/pipeline/multimodal_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MM_INC) -o $@ \
+	    $(SIGMA_MM_SRCS) src/sigma/pipeline/multimodal_main.c $(LDFLAGS)
+
+check-sigma-multimodal: creation_os_sigma_multimodal
+	@bash benchmarks/sigma_pipeline/check_sigma_multimodal.sh
+	@echo "check-sigma-multimodal: OK (text + code + schema + image + audio σ)"
 
 # --- σ-pipeline: MoE (σ-gated expert routing + dynamic width) ---
 #

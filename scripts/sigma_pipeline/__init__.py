@@ -19,6 +19,7 @@ __all__ = [
     "ttt",
     "engram",
     "moe",
+    "multimodal",
     "backends",
     "generate_until",
     "orchestrator",
