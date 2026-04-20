@@ -682,6 +682,8 @@ creation_os_sigma_marketplace
 creation_os_sigma_federation
 creation_os_sigma_protocol
 creation_os_sigma_ed25519
+repro_bundle.txt
+repro_bundle.json
 cos-network
 creation_os_sigma_spike
 creation_os_sigma_photonic

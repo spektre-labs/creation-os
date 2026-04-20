@@ -6071,8 +6071,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-spike check-sigma-photonic \
                       check-sigma-substrate check-sigma-formal \
                       check-sigma-paper check-cos-unified \
-                      check-cos-c-dispatch
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch)"
+                      check-cos-c-dispatch check-repro-bundle
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6749,6 +6749,32 @@ check-sigma-paper: creation_os_sigma_paper
 check-cos-c-dispatch: cos cos-chat cos-benchmark cos-cost
 	@bash benchmarks/sigma_pipeline/check_cos_c_dispatch.sh
 	@echo "check-cos-c-dispatch: OK (cos chat|benchmark|cost prefer native C binaries)"
+
+# --- Reproduction bundle (FIX-4) -----------------------------------
+#
+# `make repro` emits repro_bundle.txt (or repro_bundle.json with
+# REPRO_JSON=1) containing host metadata, compiler identity, git
+# state, and the tail lines of merge-gate + check-sigma-pipeline.
+# Every measured claim in the README or paper should travel with
+# the bundle generated on the host that produced the number.
+REPRO_JSON ?= 0
+
+.PHONY: repro repro-quick check-repro-bundle
+repro:
+	@if [ "$(REPRO_JSON)" = "1" ]; then \
+	    bash scripts/repro_bundle.sh --json; \
+	else \
+	    bash scripts/repro_bundle.sh; \
+	fi
+	@echo "repro: see repro_bundle.txt (or .json)"
+
+repro-quick:
+	@bash scripts/repro_bundle.sh --quick
+	@echo "repro-quick: see repro_bundle.txt (no merge-gate invocation)"
+
+check-repro-bundle:
+	@bash benchmarks/sigma_pipeline/check_repro_bundle.sh
+	@echo "check-repro-bundle: OK (host metadata + git state + make summaries pinned)"
 
 check-cos-unified: cos cos-agent cos-network \
                    creation_os_sigma_omega \
