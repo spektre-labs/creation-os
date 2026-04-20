@@ -6081,8 +6081,11 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-sandbox check-sigma-stream \
                       check-sigma-plugin check-sigma-rag \
                       check-sigma-persona check-sigma-offline \
-                      check-sigma-corpus check-sigma-voice
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice)"
+                      check-sigma-corpus check-sigma-voice \
+                      check-sigma-lora check-sigma-team \
+                      check-sigma-suite check-sigma-lora-export \
+                      check-sigma-watchdog
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6881,6 +6884,95 @@ creation_os_sigma_voice: $(SIGMA_VOICE_SRCS) \
 check-sigma-voice: creation_os_sigma_voice
 	@bash benchmarks/sigma_pipeline/check_sigma_voice.sh
 	@echo "check-sigma-voice: OK (stt gate + respond + tts gate + native probe)"
+
+# --- σ-pipeline: LoRA (HERMES-1) -------------------------------------
+#
+# On-device fine-tuning via a rank-r adapter ΔW = (α/r) · B · A.
+# Pure C11 + libm, deterministic LCG init, SGD with MSE loss, and
+# a tiny multi-adapter registry so "factual" / "code" / … route to
+# the right adapter while "general" falls back to the frozen base.
+SIGMA_LORA_INC  = -Isrc/sigma/pipeline
+SIGMA_LORA_SRCS = src/sigma/pipeline/lora.c
+
+creation_os_sigma_lora: $(SIGMA_LORA_SRCS) \
+                       src/sigma/pipeline/lora_main.c
+	$(CC) $(CFLAGS) $(SIGMA_LORA_INC) -o $@ \
+	    $(SIGMA_LORA_SRCS) src/sigma/pipeline/lora_main.c $(LDFLAGS)
+
+check-sigma-lora: creation_os_sigma_lora
+	@bash benchmarks/sigma_pipeline/check_sigma_lora.sh
+	@echo "check-sigma-lora: OK (forward + SGD + improvement + determinism + routing)"
+
+# --- σ-pipeline: multi-agent orchestrator (HERMES-2) -----------------
+#
+# Plan-then-delegate coordinator that fans a goal out to an agent
+# team (researcher / coder / reviewer / writer / coordinator).  Each
+# step carries a σ estimate; the dispatcher picks the agent with the
+# best role-fit and re-tries via a fallback when σ exceeds τ.
+SIGMA_TEAM_INC  = -Isrc/sigma/pipeline
+SIGMA_TEAM_SRCS = src/sigma/pipeline/team.c
+
+creation_os_sigma_team: $(SIGMA_TEAM_SRCS) \
+                       src/sigma/pipeline/team_main.c
+	$(CC) $(CFLAGS) $(SIGMA_TEAM_INC) -o $@ \
+	    $(SIGMA_TEAM_SRCS) src/sigma/pipeline/team_main.c $(LDFLAGS)
+
+check-sigma-team: creation_os_sigma_team
+	@bash benchmarks/sigma_pipeline/check_sigma_team.sh
+	@echo "check-sigma-team: OK (plan + route + execute + escalate)"
+
+# --- σ-pipeline: benchmark suite (HERMES-3) --------------------------
+#
+# Aggregates multiple benchmarks into one deterministic table and
+# compares against a stored baseline.  When a delta crosses the
+# regression threshold the command exits non-zero so CI blocks the
+# merge.  Reads/writes are local, no network.
+SIGMA_SUITE_INC  = -Isrc/sigma/pipeline
+SIGMA_SUITE_SRCS = src/sigma/pipeline/bench_suite.c
+
+creation_os_sigma_suite: $(SIGMA_SUITE_SRCS) \
+                        src/sigma/pipeline/bench_suite_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SUITE_INC) -o $@ \
+	    $(SIGMA_SUITE_SRCS) src/sigma/pipeline/bench_suite_main.c $(LDFLAGS)
+
+check-sigma-suite: creation_os_sigma_suite
+	@bash benchmarks/sigma_pipeline/check_sigma_suite.sh
+	@echo "check-sigma-suite: OK (suite aggregate + regression gate)"
+
+# --- σ-pipeline: signed LoRA export (HERMES-4) -----------------------
+#
+# Serialise an adapter into a `.cos` container with a reproducible
+# FNV-1a64 MAC over the weights + metadata so another node can verify
+# before trusting the payload.  No network; file I/O only.
+SIGMA_LORAEXP_INC  = -Isrc/sigma/pipeline
+SIGMA_LORAEXP_SRCS = src/sigma/pipeline/lora.c \
+                    src/sigma/pipeline/lora_export.c
+
+creation_os_sigma_lora_export: $(SIGMA_LORAEXP_SRCS) \
+                              src/sigma/pipeline/lora_export_main.c
+	$(CC) $(CFLAGS) $(SIGMA_LORAEXP_INC) -o $@ \
+	    $(SIGMA_LORAEXP_SRCS) src/sigma/pipeline/lora_export_main.c $(LDFLAGS)
+
+check-sigma-lora-export: creation_os_sigma_lora_export
+	@bash benchmarks/sigma_pipeline/check_sigma_lora_export.sh
+	@echo "check-sigma-lora-export: OK (export + verify + tamper reject)"
+
+# --- σ-pipeline: watchdog (HERMES-5) ---------------------------------
+#
+# Rolling σ_mean over 1 h / 24 h / 7 d windows with trend + alert
+# thresholds.  Auto-heal suggests `cos omega` / `cos lora train`
+# when σ drifts up or escalation rises.
+SIGMA_WATCHDOG_INC  = -Isrc/sigma/pipeline
+SIGMA_WATCHDOG_SRCS = src/sigma/pipeline/watchdog.c
+
+creation_os_sigma_watchdog: $(SIGMA_WATCHDOG_SRCS) \
+                           src/sigma/pipeline/watchdog_main.c
+	$(CC) $(CFLAGS) $(SIGMA_WATCHDOG_INC) -o $@ \
+	    $(SIGMA_WATCHDOG_SRCS) src/sigma/pipeline/watchdog_main.c $(LDFLAGS)
+
+check-sigma-watchdog: creation_os_sigma_watchdog
+	@bash benchmarks/sigma_pipeline/check_sigma_watchdog.sh
+	@echo "check-sigma-watchdog: OK (windows + trend + alert + auto-heal)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #

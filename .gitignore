@@ -715,3 +715,8 @@ creation_os_sigma_persona
 creation_os_sigma_offline
 creation_os_sigma_corpus
 creation_os_sigma_voice
+creation_os_sigma_lora
+creation_os_sigma_team
+creation_os_sigma_suite
+creation_os_sigma_lora_export
+creation_os_sigma_watchdog
