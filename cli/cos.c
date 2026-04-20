@@ -232,6 +232,8 @@ static void status_quickstart(void)
     bullet_line("cos chace      %sthe DARPA-CHACE 12-layer security gate%s",   C_GREY, C_RESET);
     bullet_line("cos sigma      %srun all three kernels: σ-Shield, Σ-Citadel, Fabric%s",
                 C_GREY, C_RESET);
+    bullet_line("cos chat       %sσ-gated REPL (reinforce + speculative + generate_until)%s",
+                C_GREY, C_RESET);
     bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
                 C_GREY, C_RESET);
     bullet_line("make help      %sfull Make target list%s", C_GREY, C_RESET);
@@ -437,6 +439,62 @@ static int cmd_seal_unseal(int seal_mode, int argc, char **argv)
            "command attests\n        that the cryptographic kernel is "
            "authentic and ready.%s\n", C_GREY, C_RESET);
     return 0;
+}
+
+/* --------------------------------------------------------------------
+ *  cos chat — σ-gated interactive REPL (P1 reinforce + P2 speculative
+ *  + P3 generate_until).  Execs the Python driver in
+ *  scripts/sigma_pipeline/cos_chat.py with PYTHONPATH=scripts so the
+ *  user types a single short command instead of the module path.
+ *  All args after `chat` are forwarded verbatim.
+ * -------------------------------------------------------------------- */
+
+/* Escape a single argv element for /bin/sh single-quoted form.
+ * Writes at most cap-1 bytes + NUL; returns 0 on success, -1 on overflow.
+ * Encoding: wrap in single quotes; any inner ' becomes '"'"' . */
+static int sh_quote(const char *s, char *out, size_t cap)
+{
+    size_t o = 0;
+    if (cap < 3) return -1;
+    out[o++] = '\'';
+    for (const char *p = s; *p; ++p) {
+        if (*p == '\'') {
+            if (o + 4 >= cap) return -1;
+            out[o++] = '\''; out[o++] = '"';
+            out[o++] = '\''; out[o++] = '"';
+            out[o++] = '\'';
+        } else {
+            if (o + 1 >= cap) return -1;
+            out[o++] = *p;
+        }
+    }
+    if (o + 2 >= cap) return -1;
+    out[o++] = '\'';
+    out[o]   = 0;
+    return 0;
+}
+
+static int cmd_chat(int argc, char **argv)
+{
+    char cmd[8192];
+    size_t off = 0;
+    const char *py = file_exists(".venv-bitnet/bin/python")
+                        ? ".venv-bitnet/bin/python" : "python3";
+    int k = snprintf(cmd + off, sizeof cmd - off,
+                     "PYTHONPATH=scripts%s%s %s -m sigma_pipeline.cos_chat",
+                     getenv("PYTHONPATH") ? ":" : "",
+                     getenv("PYTHONPATH") ? getenv("PYTHONPATH") : "",
+                     py);
+    if (k <= 0 || (size_t)k >= sizeof cmd - off) return 70;
+    off += (size_t)k;
+    char quoted[2048];
+    for (int i = 0; i < argc; ++i) {
+        if (sh_quote(argv[i], quoted, sizeof quoted) != 0) return 71;
+        k = snprintf(cmd + off, sizeof cmd - off, " %s", quoted);
+        if (k <= 0 || (size_t)k >= sizeof cmd - off) return 72;
+        off += (size_t)k;
+    }
+    return run_cmd(cmd);
 }
 
 /* --------------------------------------------------------------------
@@ -2350,6 +2408,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
     if (strcmp(argv[1], "think")   == 0) return cmd_think(argc - 2, argv + 2);
+    if (strcmp(argv[1], "chat")    == 0) return cmd_chat(argc - 2, argv + 2);
     if (strcmp(argv[1], "seal")    == 0) return cmd_seal_unseal(1, argc - 2, argv + 2);
     if (strcmp(argv[1], "unseal")  == 0) return cmd_seal_unseal(0, argc - 2, argv + 2);
     if (strcmp(argv[1], "mcts")    == 0) return cmd_mcts();

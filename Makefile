@@ -6065,6 +6065,16 @@ check-sigma-generate-until: check-sigma-pipeline
 	@bash benchmarks/sigma_pipeline/check_sigma_generate_until.sh
 	@echo "check-sigma-generate-until: OK (per-token σ trace + policy + C↔Py parity)"
 
+# --- cos chat interactive demo ---
+#
+# Ties P1 (reinforce) + P2 (speculative) + P3 (generate_until) into one
+# CLI.  The smoke test runs the --once mode with a deterministic stub
+# backend so it passes on any host (no BitNet / PyTorch needed) and
+# asserts the transcript has the expected shape.
+check-cos-chat: check-sigma-generate-until cos
+	@bash benchmarks/sigma_pipeline/check_cos_chat.sh
+	@echo "check-cos-chat: OK (--once stub → ACCEPT/RETHINK/ABSTAIN + transcript JSONL)"
+
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #
 # v0 contracts: parameter split static_pct ∈ [20,25] AND
