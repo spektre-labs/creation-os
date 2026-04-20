@@ -6103,6 +6103,33 @@ check-sigma-pipeline-compose: creation_os_sigma_pipeline
 	@bash benchmarks/sigma_pipeline/check_sigma_pipeline_compose.sh
 	@echo "check-sigma-pipeline-compose: OK (end-to-end: engram HIT + RETHINK + escalate)"
 
+# --- σ-pipeline: integration tests (I2) — 12 scenarios ---
+#
+# Drives the real pipeline.c orchestrator with a stub generator
+# that covers every branch (engram HIT, ACCEPT, RETHINK×3 →
+# ABSTAIN → escalate, LOCAL_ONLY ABSTAIN), plus direct calls into
+# multimodal / unlearn / diagnostic / live / sovereign to prove
+# all 15 primitives stack into one process.
+SIGMA_IT_SRCS = src/sigma/pipeline/pipeline.c \
+                src/sigma/pipeline/codex.c \
+                src/sigma/pipeline/engram.c \
+                src/sigma/pipeline/reinforce.c \
+                src/sigma/pipeline/sovereign.c \
+                src/sigma/pipeline/agent.c \
+                src/sigma/pipeline/multimodal.c \
+                src/sigma/pipeline/unlearn.c \
+                src/sigma/pipeline/diagnostic.c \
+                src/sigma/pipeline/live.c
+
+test_sigma_pipeline_integration: $(SIGMA_IT_SRCS) \
+                                 tests/integration/test_pipeline.c
+	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -o $@ \
+	    $(SIGMA_IT_SRCS) tests/integration/test_pipeline.c $(LDFLAGS)
+
+check-integration: test_sigma_pipeline_integration
+	@./test_sigma_pipeline_integration
+	@echo "check-integration: OK (12 scenarios: codex + accept + hit + rethink + escalate + abstain + multimodal + unlearn + sovereign + diagnostic + live + codex-audit)"
+
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
 #
 # Truthful ledger of where every pipeline call ran (local vs
