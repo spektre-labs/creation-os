@@ -6049,8 +6049,30 @@ check-sigma-speculative: creation_os_sigma_speculative
 	@bash benchmarks/sigma_pipeline/check_sigma_speculative.sh
 	@echo "check-sigma-speculative: OK (2-state route + peak update + segment + cost model)"
 
-check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative check-sigma-ttt
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt primitives)"
+check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
+                      check-sigma-ttt check-sigma-engram
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram primitives)"
+
+# --- σ-pipeline: Engram (O(1) σ-aware cache) ---
+#
+# Live v260.1 kernel.  Open-addressed, power-of-two hash cache keyed by
+# FNV-1a-64 of the prompt.  Each entry stores σ_at_store + access
+# count + last-access step; age sweep evicts entries past a σ-derived
+# TTL (confidently-stored entries live long; uncertainly-stored
+# entries are ephemeral).  Insertion into a full table evicts the
+# entry with the highest (σ + age − usage) score.  Self-test covers
+# FNV-1a non-zero, put/get/update/delete, full-table eviction, age
+# sweep with σ-derived TTL, and a 10^4 LCG stress sweep.
+SIGMA_ENGRAM_INC  = -Isrc/sigma/pipeline
+SIGMA_ENGRAM_SRCS = src/sigma/pipeline/engram.c
+
+creation_os_sigma_engram: $(SIGMA_ENGRAM_SRCS) src/sigma/pipeline/engram_main.c
+	$(CC) $(CFLAGS) $(SIGMA_ENGRAM_INC) -o $@ \
+	    $(SIGMA_ENGRAM_SRCS) src/sigma/pipeline/engram_main.c $(LDFLAGS)
+
+check-sigma-engram: creation_os_sigma_engram
+	@bash benchmarks/sigma_pipeline/check_sigma_engram.sh
+	@echo "check-sigma-engram: OK (O(1) cache + σ-TTL + eviction)"
 
 # --- σ-pipeline: TTT (σ-gated test-time training) ---
 #

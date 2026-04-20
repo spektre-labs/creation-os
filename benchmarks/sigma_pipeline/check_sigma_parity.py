@@ -27,6 +27,7 @@ from sigma_pipeline.speculative import (                           # noqa: E402
     Route, cost_savings, route,
 )
 from sigma_pipeline import ttt as pttt                             # noqa: E402
+from sigma_pipeline.engram import fnv1a_64                          # noqa: E402
 
 
 def _run_binary(name: str) -> dict:
@@ -138,12 +139,25 @@ def main() -> int:
               f"vs Py={did_reset == 1}")
         failures += 1
 
+    # Engram parity: FNV-1a-64 must match byte-for-byte on the four
+    # canonical strings the C binary publishes.
+    eg = _run_binary("creation_os_sigma_engram")
+    assert eg["pass"] is True, f"C engram self_test failed: {eg}"
+    for label, s in (("empty", ""), ("a", "a"),
+                     ("hello", "hello"), ("q1", "What is 2+2?")):
+        c_hash = int(eg["hashes"][label])
+        py_hash = fnv1a_64(s)
+        if c_hash != py_hash:
+            print(f"FAIL engram FNV-1a-64 mismatch for {label!r}: "
+                  f"C={c_hash} vs Py={py_hash}")
+            failures += 1
+
     if failures:
         print(f"sigma-parity: {failures} divergence(s)")
         return 1
     print("sigma-parity: OK — C ↔ Python decision parity on 18 canonical "
           "rows + cost-savings formula match (Δ<1e-4) + TTT 4-step demo "
-          "(drift, counters, reset) match (Δ<1e-4)")
+          "match (Δ<1e-4) + Engram FNV-1a-64 byte-identical on 4 strings")
     return 0
 
 
