@@ -6029,6 +6029,29 @@ check-sigma-reinforce: creation_os_sigma_reinforce
 	@bash benchmarks/sigma_pipeline/check_sigma_reinforce.sh
 	@echo "check-sigma-reinforce: OK (3-state gate + monotone σ + round budget + LCG grid)"
 
+# --- σ-pipeline: speculative (small→big routing) ---
+#
+# Pure-C routing primitive: given a running σ peak and τ_escalate,
+# returns LOCAL or ESCALATE.  Includes a peak-update helper (running
+# max with NaN / negative rejection), a segment-boundary predicate
+# (don't hand off mid-word), and a cost-savings formula used by the
+# Python cost-measurement driver.  Self-test: canonical table +
+# monotone-in-σ sweep + peak-update + segment-boundary + cost model
+# + 10^5-point LCG grid.
+SIGMA_SPECULATIVE_INC  = -Isrc/sigma/pipeline
+SIGMA_SPECULATIVE_SRCS = src/sigma/pipeline/speculative.c
+
+creation_os_sigma_speculative: $(SIGMA_SPECULATIVE_SRCS) src/sigma/pipeline/speculative_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SPECULATIVE_INC) -o $@ \
+	    $(SIGMA_SPECULATIVE_SRCS) src/sigma/pipeline/speculative_main.c $(LDFLAGS)
+
+check-sigma-speculative: creation_os_sigma_speculative
+	@bash benchmarks/sigma_pipeline/check_sigma_speculative.sh
+	@echo "check-sigma-speculative: OK (2-state route + peak update + segment + cost model)"
+
+check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative
+	@echo "check-sigma-pipeline: OK (reinforce + speculative primitives)"
+
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #
 # v0 contracts: parameter split static_pct ∈ [20,25] AND
