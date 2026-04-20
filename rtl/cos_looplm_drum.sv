@@ -5,6 +5,8 @@
 //   after each beat. Exit when mean ≤ sigma_thresh or t reaches max_loops.
 // Same physical weights rotated like a washing machine — not 96 distinct layers.
 
+`timescale 1ns / 1ps
+
 module cos_looplm_drum #(
     parameter int unsigned W = 8
 ) (

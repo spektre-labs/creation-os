@@ -3,6 +3,8 @@
 //
 // Property: STABILIZE (2) is taken only when amplification, ≥2 traps, or anchor-override fires.
 
+`timescale 1ns / 1ps
+
 module cos_agency_iron_formal (
     input wire [6:0] trap_mask,
     input wire       state_declared,

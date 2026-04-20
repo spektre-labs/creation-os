@@ -4,6 +4,8 @@
 // σ_next = σ_now − ((σ_now − σ_tgt) >> shift), clamped at σ_tgt. Unsigned only;
 //   if already at/below target, hold. Maps to “one geodesic step” in harness algebra.
 
+`timescale 1ns / 1ps
+
 module cos_geodesic_tick (
     input  wire [15:0] sigma_now,
     input  wire [15:0] sigma_tgt,

@@ -4,6 +4,8 @@
 // C–I–L: context and ignored must be non-zero; optional falsifier requires context[0].
 // model_lane forbids owning commit (delegation boundary).
 
+`timescale 1ns / 1ps
+
 module cos_commit_iron_combo (
     input  wire [1:0] ctrl,
     input  wire       owner_ok,

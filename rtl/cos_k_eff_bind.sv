@@ -3,6 +3,8 @@
 //
 // σ_q8 = 0 → full K; σ_q8 = 255 → K_eff ≈ 0. Direct bind of K(t)=ρ·I·F story to one multiply.
 
+`timescale 1ns / 1ps
+
 module cos_k_eff_bind (
     input  wire [15:0] K,
     input  wire [ 7:0] sigma_q8,

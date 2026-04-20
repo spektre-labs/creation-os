@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // cos_formal_iron_combo.sv — formal stack + limits + sim≠commit (combinational)
 
+`timescale 1ns / 1ps
+
 module cos_formal_iron_combo #(
     parameter int unsigned W = 6
 ) (

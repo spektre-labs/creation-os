@@ -5,6 +5,8 @@
 // any trap / missing state or anchor / urgency-only → HOLD; else EXECUTE.
 // trap_mask[6] = ANCHOR_OVR per cos_agency_iron.h
 
+`timescale 1ns / 1ps
+
 module cos_agency_iron_combo (
     input  wire [6:0] trap_mask,
     input  wire       state_declared,
