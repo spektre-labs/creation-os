@@ -502,9 +502,33 @@ static int run_py_module(const char *module, int argc, char **argv)
     return run_cmd(cmd);
 }
 
+/* --------------------------------------------------------------------
+ *  C-first dispatch — prefer the native sibling binary when it exists
+ *  (keeping the front door dependency-free per v287 granite), fall
+ *  back to the Python reference implementation only when the C binary
+ *  has not been built yet.  This fulfils the "pure C front door"
+ *  contract: `cos chat` succeeds on a host with Python 3 uninstalled
+ *  as long as `make cos-chat` has run once.
+ * -------------------------------------------------------------------- */
+static int exec_sibling(const char *bin_name, int argc, char **argv);
+
+static int prefer_c_else_py(const char *c_bin,
+                            const char *py_module,
+                            int argc, char **argv)
+{
+    char path[512];
+    if (snprintf(path, sizeof path, "./%s", c_bin) > 0 &&
+        file_exists(path))
+    {
+        return exec_sibling(c_bin, argc, argv);
+    }
+    return run_py_module(py_module, argc, argv);
+}
+
 static int cmd_chat(int argc, char **argv)
 {
-    return run_py_module("sigma_pipeline.cos_chat", argc, argv);
+    return prefer_c_else_py("cos-chat",
+                            "sigma_pipeline.cos_chat", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -513,7 +537,8 @@ static int cmd_chat(int argc, char **argv)
  * -------------------------------------------------------------------- */
 static int cmd_benchmark(int argc, char **argv)
 {
-    return run_py_module("sigma_pipeline.pipeline_bench", argc, argv);
+    return prefer_c_else_py("cos-benchmark",
+                            "sigma_pipeline.pipeline_bench", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -521,7 +546,8 @@ static int cmd_benchmark(int argc, char **argv)
  * -------------------------------------------------------------------- */
 static int cmd_cost(int argc, char **argv)
 {
-    return run_py_module("sigma_pipeline.cost_measure", argc, argv);
+    return prefer_c_else_py("cos-cost",
+                            "sigma_pipeline.cost_measure", argc, argv);
 }
 
 /* --------------------------------------------------------------------
