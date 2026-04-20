@@ -702,3 +702,4 @@ creation_os_sigma_dp
 creation_os_sigma_ratelimit
 creation_os_sigma_persist
 cos-health
+creation_os_sigma_signal

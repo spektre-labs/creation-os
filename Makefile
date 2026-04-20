@@ -6075,8 +6075,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-truthfulqa check-mesh-2node \
                       check-lean-t3-discharged check-sigma-paper-latex \
                       check-sigma-dp check-sigma-ratelimit \
-                      check-sigma-persist check-sigma-health
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health)"
+                      check-sigma-persist check-sigma-health \
+                      check-sigma-signal
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6639,6 +6640,29 @@ cos-health: $(COS_HEALTH_SRCS) src/sigma/pipeline/health_main.c
 check-sigma-health: cos-health cos
 	@bash benchmarks/sigma_pipeline/check_sigma_health.sh
 	@echo "check-sigma-health: OK (cos-health sibling + cos health dispatch + grading)"
+
+# --- σ-pipeline: Graceful shutdown + signal handling (PROD-5) ---
+#
+# σ-Signal is the POSIX signal layer for long-lived σ-pipeline
+# processes (`cos-mesh-node`, `cos-network serve`, chat loops).
+# SIGINT / SIGTERM / SIGHUP latch a sig_atomic_t flag; the main
+# thread drains through a shutdown hook that writes final state
+# to σ-Persist SQLite before exit.  The handler itself is strictly
+# async-signal-safe (write(2) + flag only — no printf, malloc, or
+# SQLite calls from signal context).
+SIGMA_SIGNAL_INC   = -Isrc/sigma/pipeline
+SIGMA_SIGNAL_SRCS  = src/sigma/pipeline/cos_signal.c \
+                     src/sigma/pipeline/persist.c
+SIGMA_SIGNAL_LIBS  = -lsqlite3
+
+creation_os_sigma_signal: $(SIGMA_SIGNAL_SRCS) src/sigma/pipeline/cos_signal_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SIGNAL_INC) -o $@ \
+	    $(SIGMA_SIGNAL_SRCS) src/sigma/pipeline/cos_signal_main.c \
+	    $(SIGMA_SIGNAL_LIBS) $(LDFLAGS)
+
+check-sigma-signal: creation_os_sigma_signal
+	@bash benchmarks/sigma_pipeline/check_sigma_signal.sh
+	@echo "check-sigma-signal: OK (self-test + simulate + persist + real-SIGTERM drain)"
 
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #
