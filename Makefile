@@ -6079,8 +6079,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-signal check-cos-version-genesis \
                       check-sigma-distill check-sigma-cot-distill \
                       check-sigma-sandbox check-sigma-stream \
-                      check-sigma-plugin check-sigma-rag
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag)"
+                      check-sigma-plugin check-sigma-rag \
+                      check-sigma-persona
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6803,6 +6804,24 @@ creation_os_sigma_rag: $(SIGMA_RAG_SRCS) \
 check-sigma-rag: creation_os_sigma_rag
 	@bash benchmarks/sigma_pipeline/check_sigma_rag.sh
 	@echo "check-sigma-rag: OK (embed + chunk + σ-filter + top-k stable)"
+
+# --- σ-pipeline: Persona (adaptive user profile, FINAL-2) ------------
+#
+# Small JSON-backed profile (language, expertise, domains,
+# verbosity, formality) learned from query history + explicit
+# user feedback via EMA updates.  Persona is injected into the
+# Codex envelope; no fine-tuning, no weights.
+SIGMA_PERSONA_INC  = -Isrc/sigma/pipeline
+SIGMA_PERSONA_SRCS = src/sigma/pipeline/persona.c
+
+creation_os_sigma_persona: $(SIGMA_PERSONA_SRCS) \
+                          src/sigma/pipeline/persona_main.c
+	$(CC) $(CFLAGS) $(SIGMA_PERSONA_INC) -o $@ \
+	    $(SIGMA_PERSONA_SRCS) src/sigma/pipeline/persona_main.c $(LDFLAGS)
+
+check-sigma-persona: creation_os_sigma_persona
+	@bash benchmarks/sigma_pipeline/check_sigma_persona.sh
+	@echo "check-sigma-persona: OK (language + domain + verbosity + envelope stable)"
 
 # --- Release identity: v1.0.0 "Genesis" (PROD-6) ---------------------
 #
