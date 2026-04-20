@@ -24,6 +24,7 @@ __all__ = [
     "swarm",
     "live",
     "continual",
+    "unlearn",
     "backends",
     "generate_until",
     "orchestrator",

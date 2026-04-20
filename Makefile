@@ -6054,8 +6054,26 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-moe check-sigma-multimodal \
                       check-sigma-tinyml check-edge-portability \
                       check-sigma-swarm check-sigma-live \
-                      check-sigma-continual
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual primitives)"
+                      check-sigma-continual check-sigma-unlearn
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn primitives)"
+
+# --- σ-pipeline: Unlearn (GDPR right-to-be-forgotten, v278/FIT live) ---
+#
+# Surgical weight removal: shrink each weight in proportion to its
+# relative alignment with the target vector.  σ_unlearn = 1 − |cos|.
+# Iterate apply → verify until σ_unlearn ≥ σ_target; report whether
+# the fact was forgotten in a machine-checkable form.
+SIGMA_UL_INC  = -Isrc/sigma/pipeline
+SIGMA_UL_SRCS = src/sigma/pipeline/unlearn.c
+
+creation_os_sigma_unlearn: $(SIGMA_UL_SRCS) \
+                           src/sigma/pipeline/unlearn_main.c
+	$(CC) $(CFLAGS) $(SIGMA_UL_INC) -o $@ \
+	    $(SIGMA_UL_SRCS) src/sigma/pipeline/unlearn_main.c $(LDFLAGS)
+
+check-sigma-unlearn: creation_os_sigma_unlearn
+	@bash benchmarks/sigma_pipeline/check_sigma_unlearn.sh
+	@echo "check-sigma-unlearn: OK (GDPR unlearn loop + σ-verification)"
 
 # --- σ-pipeline: Continual (freeze mask, v278 ATLAS/SSU live) ---
 #
