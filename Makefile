@@ -6012,6 +6012,23 @@ check-v259-sigma-measurement-primitive: creation_os_v259_sigma_measurement
 check-v259: check-v259-sigma-measurement-primitive
 	@echo "check-v259: OK (σ-measurement_t canonical primitive)"
 
+# --- σ-pipeline: reinforce (ACCEPT/RETHINK/ABSTAIN three-state gate) ---
+#
+# Pure-C policy primitive built on top of cos_sigma_measurement_t.  The
+# runtime self-test iterates a canonical 15-row reference table + a
+# monotonicity sweep + a round-budget test + a 10^5-point LCG grid +
+# IEEE-754 NaN/negative safe-default checks.  Exit code 0 on PASS.
+SIGMA_REINFORCE_INC  = -Isrc/sigma/pipeline
+SIGMA_REINFORCE_SRCS = src/sigma/pipeline/reinforce.c
+
+creation_os_sigma_reinforce: $(SIGMA_REINFORCE_SRCS) src/sigma/pipeline/reinforce_main.c
+	$(CC) $(CFLAGS) $(SIGMA_REINFORCE_INC) -o $@ \
+	    $(SIGMA_REINFORCE_SRCS) src/sigma/pipeline/reinforce_main.c $(LDFLAGS)
+
+check-sigma-reinforce: creation_os_sigma_reinforce
+	@bash benchmarks/sigma_pipeline/check_sigma_reinforce.sh
+	@echo "check-sigma-reinforce: OK (3-state gate + monotone σ + round budget + LCG grid)"
+
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #
 # v0 contracts: parameter split static_pct ∈ [20,25] AND
