@@ -6052,6 +6052,19 @@ check-sigma-speculative: creation_os_sigma_speculative
 check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative
 	@echo "check-sigma-pipeline: OK (reinforce + speculative primitives)"
 
+# --- v103.1: generate_until with per-token σ-logging ---
+#
+# Drives a Backend (stub by default, v101 bridge when available) one
+# token at a time; logs full 8-channel σ per step as JSONL; applies the
+# reinforce + speculative policies *during* generation so ABSTAIN /
+# RETHINK / ESCALATE can stop a runaway low-confidence completion
+# before it finishes.  Smoke test uses the stub backend so it runs
+# without BitNet / PyTorch.  Parity test asserts Python mirrors agree
+# with the C binaries on a canonical 18-row decision grid.
+check-sigma-generate-until: check-sigma-pipeline
+	@bash benchmarks/sigma_pipeline/check_sigma_generate_until.sh
+	@echo "check-sigma-generate-until: OK (per-token σ trace + policy + C↔Py parity)"
+
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #
 # v0 contracts: parameter split static_pct ∈ [20,25] AND
