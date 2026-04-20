@@ -6074,8 +6074,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-cos-c-dispatch check-repro-bundle \
                       check-sigma-truthfulqa check-mesh-2node \
                       check-lean-t3-discharged check-sigma-paper-latex \
-                      check-sigma-dp check-sigma-ratelimit
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit)"
+                      check-sigma-dp check-sigma-ratelimit \
+                      check-sigma-persist
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6590,6 +6591,31 @@ creation_os_sigma_ratelimit: $(SIGMA_RL_SRCS) src/sigma/pipeline/ratelimit_main.
 check-sigma-ratelimit: creation_os_sigma_ratelimit
 	@bash benchmarks/sigma_pipeline/check_sigma_ratelimit.sh
 	@echo "check-sigma-ratelimit: OK (ALLOWED/THROTTLED_RATE/THROTTLED_GIVE/BLOCKED)"
+
+# --- σ-pipeline: Persistent state via SQLite WAL (PROD-3) -----------
+#
+# SQLite backing-store for the five stateful facets of the
+# σ-pipeline: pipeline meta, engrams, live state, cost ledger, and
+# τ calibration.  WAL mode + synchronous=NORMAL give concurrent-
+# reader + crash-consistent semantics; the whole agent state is
+# ONE file — `cos network migrate` is `cp state.db remote:`.
+#
+# Build flag: pass COS_PERSIST_FLAGS=-DCOS_NO_SQLITE to compile a
+# stubbed variant where every call returns COS_PERSIST_DISABLED.
+# Useful on bare embedded hosts without -lsqlite3.
+SIGMA_PERSIST_INC   = -Isrc/sigma/pipeline
+SIGMA_PERSIST_SRCS  = src/sigma/pipeline/persist.c
+SIGMA_PERSIST_LIBS  = -lsqlite3
+COS_PERSIST_FLAGS  ?=
+
+creation_os_sigma_persist: $(SIGMA_PERSIST_SRCS) src/sigma/pipeline/persist_main.c
+	$(CC) $(CFLAGS) $(COS_PERSIST_FLAGS) $(SIGMA_PERSIST_INC) -o $@ \
+	    $(SIGMA_PERSIST_SRCS) src/sigma/pipeline/persist_main.c \
+	    $(SIGMA_PERSIST_LIBS) $(LDFLAGS)
+
+check-sigma-persist: creation_os_sigma_persist
+	@bash benchmarks/sigma_pipeline/check_sigma_persist.sh
+	@echo "check-sigma-persist: OK (SQLite WAL + schema v1 + upsert/append/roundtrip)"
 
 # --- σ-pipeline: Protocol (signed binary wire format, D5) ---
 #
