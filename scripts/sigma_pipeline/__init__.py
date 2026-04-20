@@ -21,6 +21,7 @@ __all__ = [
     "moe",
     "multimodal",
     "tinyml",
+    "swarm",
     "backends",
     "generate_until",
     "orchestrator",

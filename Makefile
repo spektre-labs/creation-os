@@ -6052,8 +6052,28 @@ check-sigma-speculative: creation_os_sigma_speculative
 check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-ttt check-sigma-engram \
                       check-sigma-moe check-sigma-multimodal \
-                      check-sigma-tinyml check-edge-portability
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge primitives)"
+                      check-sigma-tinyml check-edge-portability \
+                      check-sigma-swarm
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm primitives)"
+
+# --- σ-pipeline: Swarm (σ-weighted consensus across N models) ---
+#
+# When multiple models (BitNet + Claude + GPT + …) answer the same
+# query, σ tells us which to trust.  ``consensus`` aggregates their
+# σ into a single verdict {ABSTAIN, CONSENSUS, ACCEPT} + a winner
+# index.  ``should_escalate`` drives cost-aware escalation: start
+# cheap, add the next model only while best-σ > tau_stop.
+SIGMA_SWARM_INC  = -Isrc/sigma/pipeline
+SIGMA_SWARM_SRCS = src/sigma/pipeline/swarm.c
+
+creation_os_sigma_swarm: $(SIGMA_SWARM_SRCS) \
+                         src/sigma/pipeline/swarm_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SWARM_INC) -o $@ \
+	    $(SIGMA_SWARM_SRCS) src/sigma/pipeline/swarm_main.c $(LDFLAGS)
+
+check-sigma-swarm: creation_os_sigma_swarm
+	@bash benchmarks/sigma_pipeline/check_sigma_swarm.sh
+	@echo "check-sigma-swarm: OK (σ-weighted consensus + cost-aware escalation)"
 
 # --- σ-pipeline: TinyML + edge portability (v270–v274) ---
 #
