@@ -6075,6 +6075,28 @@ check-cos-chat: check-sigma-generate-until cos
 	@bash benchmarks/sigma_pipeline/check_cos_chat.sh
 	@echo "check-cos-chat: OK (--once stub → ACCEPT/RETHINK/ABSTAIN + transcript JSONL)"
 
+# --- cost measurement — €saved vs accuracy maintained ---
+#
+# Replays a question set (10-row deterministic demo fixture OR a JSONL
+# with per-question sigma_peak / local_correct / api_correct labels)
+# through the σ-gated routing policy and reports the headline number:
+#
+#     "Creation OS saves X% of API costs while maintaining Y% of
+#      API-only accuracy."
+#
+# The cost formula here is byte-identical to the C primitive's
+# `cos_sigma_speculative_cost_savings` — the Python driver calls the
+# Python mirror and the parity test asserts they agree to 1e-6.  The
+# numbers in the smoke test (3/10 escalate, 67.5% savings, 100%
+# accuracy retained) are PINNED BY CONSTRUCTION from the demo fixture;
+# any drift breaks the gate.
+check-cost-measure: check-sigma-pipeline
+	@bash benchmarks/sigma_pipeline/check_cost_measure.sh
+	@echo "check-cost-measure: OK (headline savings + accuracy retained pinned)"
+
+check-sigma-product: check-sigma-pipeline check-sigma-generate-until check-cos-chat check-cost-measure
+	@echo "check-sigma-product: OK (reinforce + speculative + generate_until + cos chat + cost)"
+
 # --- v260 σ-Engram (O(1) fact lookup + σ-gated reasoning) ---
 #
 # v0 contracts: parameter split static_pct ∈ [20,25] AND
