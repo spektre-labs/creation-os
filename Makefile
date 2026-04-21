@@ -6110,8 +6110,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-watchdog check-sigma-mcp \
                       check-sigma-a2a check-sigma-formal-complete \
                       check-sigma-mesh3 check-sigma-arxiv \
-                      check-sigma-conformal
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal)"
+                      check-sigma-conformal check-sigma-coverage-curve
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7018,6 +7018,25 @@ cos-calibrate: creation_os_sigma_conformal
 check-sigma-conformal: creation_os_sigma_conformal
 	@bash benchmarks/sigma_pipeline/check_sigma_conformal.sh
 	@echo "check-sigma-conformal: OK (self-test + truthfulqa calibration)"
+
+# --- σ-pipeline: coverage curve (SCI-3) ------------------------------
+#
+# Sweeps τ ∈ [0,1] across a labelled detail JSONL and writes the
+# (τ, coverage, accuracy_accepted, risk_ucb) table that anchors the
+# accuracy-coverage trade-off figure.  Reuses the same conformal
+# leaf as SCI-1; a single TU, no extra link deps.
+creation_os_sigma_coverage_curve: $(SIGMA_CONFORMAL_SRCS) \
+                                  src/sigma/pipeline/coverage_curve_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CONFORMAL_INC) -o $@ \
+	    $(SIGMA_CONFORMAL_SRCS) src/sigma/pipeline/coverage_curve_main.c \
+	    $(LDFLAGS)
+
+cos-coverage-curve: creation_os_sigma_coverage_curve
+	@cp $< $@
+
+check-sigma-coverage-curve: creation_os_sigma_coverage_curve
+	@bash benchmarks/sigma_pipeline/check_sigma_coverage_curve.sh
+	@echo "check-sigma-coverage-curve: OK (sweep + monotonic coverage + JSON)"
 
 # --- σ-pipeline: benchmark suite (HERMES-3) --------------------------
 #
