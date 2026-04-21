@@ -176,4 +176,4 @@ runs on-device.
 
 All source, tests, documentation, SBOM, hardened binaries, and
 attestation stubs are AGPL-3.0-or-later under
-`github.com/sigmaosorg/creation-os-kernel` as of April 2026.
+`github.com/spektre-labs/creation-os` as of April 2026.

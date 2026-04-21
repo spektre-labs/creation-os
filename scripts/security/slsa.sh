@@ -46,7 +46,7 @@ cat <<JSON
     "buildDefinition": {
       "buildType": "https://slsa.dev/container-based-build/v0.1",
       "externalParameters": {
-        "source": "github.com/sigmaosorg/creation-os-kernel",
+        "source": "github.com/spektre-labs/creation-os",
         "commit": "$commit"
       },
       "internalParameters": {
