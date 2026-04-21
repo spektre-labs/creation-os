@@ -6088,6 +6088,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
                       check-sigma-meta check-sigma-omega check-agi-distill \
+                      check-ultra \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-sigma-ed25519 check-cos-network \
@@ -6238,9 +6239,11 @@ check-agi-icl: creation_os_inplace_ttt cos-chat
 	@./creation_os_inplace_ttt
 	@echo "check-agi-icl: OK (inplace_ttt self-test + cos-chat links)"
 
-cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
-	    $(COS_CLI_SRCS) src/cli/cos_benchmark.c $(LDFLAGS)
+cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
+               src/sigma/metrics/energy_metric.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma/metrics -o $@ \
+	    $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
+	    src/sigma/metrics/energy_metric.c $(LDFLAGS)
 
 cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
@@ -6512,6 +6515,81 @@ check-agi-meta: creation_os_agi_meta
 	@./creation_os_agi_meta --domains >/dev/null
 	@./creation_os_agi_meta --trend >/dev/null
 	@echo "check-agi-meta: OK (domain σ table + trend + JSONL scrape)"
+
+# --- ULTRA-1..10: σ-native architecture kernels (pure C, self-tested) --
+ULTRA_INC = -Isrc/sigma/moe -Isrc/sigma/world -Isrc/sigma/decode \
+            -Isrc/sigma/symbolic -Isrc/sigma/metacog -Isrc/sigma/nas \
+            -Isrc/sigma/metrics -Isrc/sigma/learn -Isrc/sigma/physics
+
+ULTRA_BASE_SRCS = src/sigma/moe/sigma_router.c \
+                  src/sigma/world/jepa.c \
+                  src/sigma/decode/selective.c \
+                  src/sigma/symbolic/neuro_sym.c \
+                  src/sigma/metacog/introspection.c \
+                  src/sigma/nas/sigma_search.c \
+                  src/sigma/metrics/energy_metric.c \
+                  src/sigma/learn/continuous_learn.c \
+                  src/sigma/physics/coherence.c
+
+creation_os_ultra_router: src/sigma/moe/sigma_router.c \
+                         src/sigma/moe/sigma_router_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/moe/sigma_router.c src/sigma/moe/sigma_router_main.c $(LDFLAGS)
+
+creation_os_ultra_jepa: src/sigma/world/jepa.c src/sigma/world/jepa_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/world/jepa.c src/sigma/world/jepa_main.c $(LDFLAGS)
+
+creation_os_ultra_selective: src/sigma/decode/selective.c \
+                            src/sigma/decode/selective_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/decode/selective.c src/sigma/decode/selective_main.c $(LDFLAGS)
+
+creation_os_ultra_neuro_sym: src/sigma/symbolic/neuro_sym.c \
+                            src/sigma/symbolic/neuro_sym_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/symbolic/neuro_sym.c src/sigma/symbolic/neuro_sym_main.c $(LDFLAGS)
+
+creation_os_ultra_metacog: src/sigma/metacog/introspection.c \
+                          src/sigma/metacog/introspection_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/metacog/introspection.c src/sigma/metacog/introspection_main.c $(LDFLAGS)
+
+creation_os_ultra_search: src/sigma/nas/sigma_search.c \
+                         src/sigma/nas/sigma_search_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/nas/sigma_search.c src/sigma/nas/sigma_search_main.c $(LDFLAGS)
+
+creation_os_ultra_learn: src/sigma/learn/continuous_learn.c \
+                        src/sigma/learn/continuous_learn_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/learn/continuous_learn.c src/sigma/learn/continuous_learn_main.c $(LDFLAGS)
+
+creation_os_ultra_coherence: src/sigma/physics/coherence.c \
+                            src/sigma/physics/coherence_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/physics/coherence.c src/sigma/physics/coherence_main.c $(LDFLAGS)
+
+creation_os_ultra_bundle: $(ULTRA_BASE_SRCS) src/sigma/ultra/ultra_stack_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    $(ULTRA_BASE_SRCS) src/sigma/ultra/ultra_stack_main.c $(LDFLAGS)
+
+check-ultra: creation_os_ultra_router creation_os_ultra_jepa \
+              creation_os_ultra_selective creation_os_ultra_neuro_sym \
+              creation_os_ultra_metacog creation_os_ultra_search \
+              creation_os_ultra_learn creation_os_ultra_coherence \
+              creation_os_ultra_bundle cos-benchmark
+	@./creation_os_ultra_router --self-test >/dev/null
+	@./creation_os_ultra_jepa --self-test >/dev/null
+	@./creation_os_ultra_selective --self-test >/dev/null
+	@./creation_os_ultra_neuro_sym --self-test >/dev/null
+	@./creation_os_ultra_metacog --self-test >/dev/null
+	@./creation_os_ultra_search --self-test >/dev/null
+	@./creation_os_ultra_learn --self-test >/dev/null
+	@./creation_os_ultra_coherence --self-test >/dev/null
+	@./creation_os_ultra_bundle >/dev/null
+	@./cos-benchmark --energy >/dev/null
+	@echo "check-ultra: OK (ULTRA-1..10 kernels + bundle + benchmark --energy)"
 
 # --- σ-pipeline: Curriculum (progressive difficulty clock, S2) ---
 #

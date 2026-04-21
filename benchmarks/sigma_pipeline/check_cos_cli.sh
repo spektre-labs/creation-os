@@ -40,6 +40,11 @@ grep -q '"codex_loaded":true' <<<"$BJ" || { echo "codex not loaded"  >&2; exit 1
 grep -q '"configs":\['        <<<"$BJ" || { echo "no configs"        >&2; exit 15; }
 grep -q '"name":"api_only"'   <<<"$BJ" || { echo "no api_only name"  >&2; exit 16; }
 
+echo "  · cos-benchmark --energy (ULTRA-7)"
+BE="$(./cos-benchmark --energy)"
+grep -q "reasoning/J" <<<"$BE" || { echo "no reasoning/J header" >&2; exit 27; }
+grep -q "bitnet_only" <<<"$BE" || { echo "no bitnet_only energy row" >&2; exit 28; }
+
 echo "  · cos-cost --json (canonical 85/15)"
 CJ="$(./cos-cost --json)"
 grep -q '"n_local":85'              <<<"$CJ" || { echo "n_local"     >&2; exit 17; }

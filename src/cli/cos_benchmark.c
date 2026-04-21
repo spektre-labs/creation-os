@@ -34,6 +34,8 @@
 #include "agent.h"
 #include "stub_gen.h"
 
+#include "../sigma/metrics/energy_metric.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
@@ -255,22 +257,31 @@ int main(int argc, char **argv) {
     int fmt_json = 0;
     const char *emit_comparison = NULL;
     int codex_mode = 0; /* 0 = try load, 1 = require codex, 2 = force off */
+    int energy_only = 0;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--json") == 0) fmt_json = 1;
         else if (strcmp(argv[i], "--emit-comparison") == 0 && i + 1 < argc)
             emit_comparison = argv[++i];
         else if (strcmp(argv[i], "--codex") == 0) codex_mode = 1;
         else if (strcmp(argv[i], "--no-codex") == 0) codex_mode = 2;
+        else if (strcmp(argv[i], "--energy") == 0) energy_only = 1;
         else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos benchmark — pipeline comparison (N=%d fixtures)\n"
                 "  --json                 emit per-config JSON instead of a table\n"
                 "  --emit-comparison PATH write Codex vs no-Codex stub summary JSON\n"
                 "  --codex                require a loadable Codex (exit 1 if missing)\n"
-                "  --no-codex             never load Codex (pipeline_codex row uses NULL soul)\n",
+                "  --no-codex             never load Codex (pipeline_codex row uses NULL soul)\n"
+                "  --energy               ULTRA-7: print reasoning/J demo table (no fixtures)\n",
                 N_FIXTURES);
             return 0;
         }
+    }
+
+    if (energy_only) {
+        if (cos_ultra_energy_metric_self_test() != 0) return 3;
+        cos_ultra_energy_print_demo_table(stdout);
+        return 0;
     }
 
     /* Baseline shared config. */

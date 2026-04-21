@@ -567,6 +567,22 @@ static int cmd_distill(int argc, char **argv)
 {
     return prefer_c_or_hint("creation_os_agi_distill", argc, argv);
 }
+static int cmd_introspect(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_ultra_metacog", argc, argv);
+}
+static int cmd_ultra_search(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_ultra_search", argc, argv);
+}
+static int cmd_learn(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_ultra_learn", argc, argv);
+}
+static int cmd_coherence(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_ultra_coherence", argc, argv);
+}
 static int cmd_formal (int argc, char **argv) { return exec_sibling("creation_os_sigma_formal", argc, argv); }
 static int cmd_paper  (int argc, char **argv) { return exec_sibling("creation_os_sigma_paper",  argc, argv); }
 
@@ -2297,7 +2313,7 @@ static int cmd_help(const char *prog)
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  σ-gated chat REPL (reinforce + speculative + generate_until + TTT + engram)\n",
            C_BOLD, "chat", C_RESET);
-    printf("  %s%-12s%s  end-to-end pipeline benchmark (accuracy / cost / latency)\n",
+    printf("  %s%-12s%s  end-to-end pipeline benchmark (accuracy / cost / latency; --energy for ULTRA-7)\n",
            C_BOLD, "benchmark", C_RESET);
     printf("  %s%-12s%s  cost-savings driver (€saved vs always-API)\n",
            C_BOLD, "cost", C_RESET);
@@ -2317,6 +2333,14 @@ static int cmd_help(const char *prog)
            C_BOLD, "sigma-meta", C_RESET);
     printf("  %s%-12s%s  continuous distillation status (AGI-3: escalation pairs JSONL)\n",
            C_BOLD, "distill", C_RESET);
+    printf("  %s%-12s%s  ULTRA-5: four-channel meta-σ report (creation_os_ultra_metacog)\n",
+           C_BOLD, "introspect", C_RESET);
+    printf("  %s%-12s%s  ULTRA-6: σ-guided toy architecture search (--generations)\n",
+           C_BOLD, "search", C_RESET);
+    printf("  %s%-12s%s  ULTRA-8: unified continuous-learning status (--status)\n",
+           C_BOLD, "learn", C_RESET);
+    printf("  %s%-12s%s  ULTRA-9: coherence / K_eff snapshot (Lagrangian-style scalars)\n",
+           C_BOLD, "coherence", C_RESET);
     /* CLOSE-4: long-tail kernels on the front door — every one a
      * standalone C binary (zero Python in the dispatch). */
     printf("  %s%-12s%s  Model Context Protocol server (σ-gated tool + resource + prompt)\n",
@@ -2822,6 +2846,10 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "omega")     == 0) return cmd_omega  (argc - 2, argv + 2);
     if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
     if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);
+    if (strcmp(argv[1], "introspect") == 0) return cmd_introspect(argc - 2, argv + 2);
+    if (strcmp(argv[1], "search")     == 0) return cmd_ultra_search(argc - 2, argv + 2);
+    if (strcmp(argv[1], "learn")      == 0) return cmd_learn(argc - 2, argv + 2);
+    if (strcmp(argv[1], "coherence")  == 0) return cmd_coherence(argc - 2, argv + 2);
     if (strcmp(argv[1], "formal")    == 0) return cmd_formal (argc - 2, argv + 2);
     if (strcmp(argv[1], "paper")     == 0) return cmd_paper  (argc - 2, argv + 2);
     if (strcmp(argv[1], "sigma-meta") == 0 ||
