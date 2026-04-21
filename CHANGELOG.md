@@ -1,5 +1,40 @@
 # Changelog
 
+## v3.2.0 — "HORIZON" — 2026-04-22
+
+Eighth tagged release — σ-orchestration surfaces for **multi-peer
+routing** and **sandboxed execution**, wired into the same
+`check-sigma-pipeline` merge gate as the rest of the σ stack.
+
+This is **infrastructure + lab harnesses**, not a claim of new
+harness accuracy on MMLU/ARC or new microbench throughput; see
+`docs/CLAIM_DISCIPLINE.md`.
+
+### HORIZON-4 — σ-swarm (mock peers, v0)
+
+- Library `src/sigma/swarm/` — register peers, `cos_swarm_route`
+  (argmin σ), joint abstain when all σ exceed τ, trust EMA after
+  each turn; deterministic `cos_swarm_mock_sigma` for CI.
+- **`cos-swarm`** CLI and **`cos swarm`** dispatcher (`--peers`,
+  `--self-test`, `--once --prompt`).
+- **`check-swarm`** folded into `check-sigma-pipeline`.
+
+### HORIZON-5 — `cos-sandbox` (front door on σ-Sandbox)
+
+- **`cos-sandbox`** / **`cos sandbox`** — wraps the existing
+  `src/sigma/pipeline/sandbox.c` (rlimits, allowlist, timeout,
+  risk tiers); **`check-sandbox`** in `check-sigma-pipeline`.
+- `sigma_tools.h` cross-links static σ_tool heuristics to OS-level
+  sandboxing via `cos-sandbox`.
+
+### Version
+
+- `COS_VERSION_STRING` → `3.2.0`
+- `COS_CODENAME` → `HORIZON`
+- `COS_CHECK_TARGETS` → 56 (+ `check-swarm`, `check-sandbox`)
+
+---
+
 ## v3.1.0 — "OMEGA" — 2026-04-21
 
 Seventh tagged release — the Ω-stack: recursive self-improvement
