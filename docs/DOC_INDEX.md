@@ -4,7 +4,10 @@ Single entry point for humans and automation. **All committed prose here is Engl
 
 | Document | Audience | Purpose |
 |----------|----------|---------|
-| [README.md](../README.md) | Everyone | Problem + measured table, bounded LLM comparison, FIG 09 scan map, BSC primer, invariants, build, limitations, theory links, VISUAL_INDEX-aligned figures, Living Kernel v6 |
+| [README.md](../README.md) | Everyone | Short front door: measured table, try-it paths, σ-pipeline summary, links to deep docs; long v112+ tables moved to `SURFACE_VERSIONS.md` |
+| [SURFACE_VERSIONS.md](SURFACE_VERSIONS.md) | Integrators, reviewers | Full v112–v278+ capability catalogue (tables + `make check-vNN` pointers) split out of README |
+| [README_REFACTOR_PLAN.md](README_REFACTOR_PLAN.md) | Maintainers | README slimming phases, metrics, optional `gen_readme_fragment.sh` automation |
+| [../data/corpus/INDEX.md](../data/corpus/INDEX.md) | Researchers | Spektre Corpus (CC BY 4.0): canonical GitHub corpus repo + optional submodule / LFS notes |
 | [VOCAB_PIPELINE_V27.md](VOCAB_PIPELINE_V27.md) | Integrators, tokenizer / FPGA roadmap readers | v27 shipped vs directive roadmap; mmap COSB + benches + optional Rust/SBY hooks |
 | [hallucination_reduction.md](../benchmarks/hallucination_reduction.md) | Benchmark authors | TruthfulQA / harness evidence note (external; not merge-gate) |
 | [WHAT_IS_REAL.md](WHAT_IS_REAL.md) | v29 readers / agents | Tier-tagged claims for the v29 harness (measured vs not claimed) |
