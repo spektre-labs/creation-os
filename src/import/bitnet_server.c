@@ -48,7 +48,12 @@
 
 #define BNS_DEFAULT_HOST       "127.0.0.1"
 #define BNS_DEFAULT_PORT       8088
-#define BNS_DEFAULT_CTX        2048
+/* DEV-6: default context bumped from 2048 → 8192 so the full
+ * Atlantean Codex (≈ 31 KB ≈ 8k tokens) fits as a system prompt
+ * without clipping.  Override with COS_BITNET_SERVER_CTX if the
+ * host is memory-constrained; with --no-codex or --codex-seed the
+ * smaller context still works fine. */
+#define BNS_DEFAULT_CTX        8192
 #define BNS_DEFAULT_NPROBS     5
 #define BNS_DEFAULT_NPRED      64
 #define BNS_DEFAULT_EXE        "./third_party/bitnet/build/bin/llama-server"
@@ -997,12 +1002,17 @@ static size_t build_stream_request_json(char *dst, size_t cap,
     if (n < 0) return 0; w += (size_t)n;
 
     if (system_prompt != NULL && system_prompt[0] != '\0') {
-        /* Manual prepend: "system\n\nuser" single string.  Good
-         * enough for BitNet-class models; DEV-6 will refine. */
-        char combo[8192];
+        /* Manual prepend: "system\n\nuser" single string.  Full
+         * Atlantean Codex is ~31KB so we use a generously-sized
+         * static buffer; anything larger than 64KiB gets silently
+         * truncated to preserve the stream request shape.  The
+         * user-visible symptom of over-truncation is a low-context
+         * model response, which surfaces as high σ → RETHINK. */
+        static char combo[65536];
         int cn = snprintf(combo, sizeof combo, "%s\n\n%s",
                           system_prompt, prompt);
-        if (cn <= 0 || cn >= (int)sizeof combo) return 0;
+        if (cn <= 0) return 0;
+        if ((size_t)cn >= sizeof combo) cn = (int)sizeof combo - 1;
         size_t sw = json_encode_string(dst + w, cap - w, combo);
         if (sw == 0) return 0; w += sw;
     } else {

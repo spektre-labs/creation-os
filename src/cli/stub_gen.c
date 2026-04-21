@@ -5,6 +5,7 @@
 #include "bitnet_server.h"
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
+#include "codex.h"
 #include "escalation.h"
 
 #include <stdio.h>
@@ -137,7 +138,15 @@ static int cos_chat_stream_cb(const char *tok, float sigma,
 int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                           const char **out_text, float *out_sigma,
                           double *out_cost_eur) {
-    (void)ctx;
+    /* DEV-6: the pipeline threads the loaded codex through ctx.  We
+     * install it as the backend's system_prompt so every /v1/chat/
+     * completions request (or the manually-prepended streaming
+     * prompt) carries Creation OS's canon verbatim.  NULL when
+     * --no-codex is set; in that case the backend runs unconditioned. */
+    const cos_sigma_codex_t *codex = (const cos_sigma_codex_t *)ctx;
+    const char *codex_sysprompt =
+        (codex != NULL && codex->bytes != NULL && codex->size > 0)
+            ? codex->bytes : NULL;
     if (prompt == NULL) {
         *out_text = "";
         *out_sigma = 1.0f;
@@ -157,6 +166,7 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                               * BitNet sampler path that emits
                               * "@@@@" with null probs). */
         p.temperature = 0.0f;
+        p.system_prompt = codex_sysprompt;
         /* Rotate exploration on RETHINK rounds.  round 0 uses the
          * server default (T=0.8, random seed); subsequent rounds
          * pin a distinct seed + bump temperature so the sampler

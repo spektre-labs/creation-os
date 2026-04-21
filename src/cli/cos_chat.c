@@ -327,6 +327,14 @@ int main(int argc, char **argv) {
     cfg.sovereign    = &sv;
     cfg.agent        = &ag;
     cfg.generate     = cos_cli_chat_generate;
+    /* DEV-6: thread the loaded Codex through to the BitNet backend
+     * via generate_ctx.  cos_cli_chat_generate reads
+     * (const cos_sigma_codex_t *)ctx->bytes and installs it as the
+     * /v1/chat/completions `system` message (for the blocking path)
+     * or the manually-prepended prefix (for the streaming /completion
+     * path).  When --no-codex is passed, ctx is NULL and the backend
+     * runs with no system prompt. */
+    cfg.generate_ctx = have_codex ? (void *)&codex : NULL;
     /* DEV-5: dispatch via the API escalation module.  When
      * CREATION_OS_ESCALATION_PROVIDER + matching API key are set in
      * the environment, this reaches out to Claude/OpenAI/DeepSeek
