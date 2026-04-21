@@ -46,6 +46,7 @@
 #include "sovereign.h"
 #include "agent.h"
 #include "stub_gen.h"
+#include "escalation.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -326,7 +327,14 @@ int main(int argc, char **argv) {
     cfg.sovereign    = &sv;
     cfg.agent        = &ag;
     cfg.generate     = cos_cli_chat_generate;
-    cfg.escalate     = cos_cli_stub_escalate;
+    /* DEV-5: dispatch via the API escalation module.  When
+     * CREATION_OS_ESCALATION_PROVIDER + matching API key are set in
+     * the environment, this reaches out to Claude/OpenAI/DeepSeek
+     * over HTTPS and appends a (student → teacher) distill pair to
+     * ~/.cos/distill_pairs.jsonl.  With no provider configured,
+     * cos_cli_escalate_api falls through to cos_cli_stub_escalate
+     * so CI and offline sessions keep the deterministic shape. */
+    cfg.escalate     = cos_cli_escalate_api;
     if (persist != NULL) {
         cfg.on_engram_store     = cos_engram_persist_store;
         cfg.on_engram_store_ctx = persist;

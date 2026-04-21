@@ -5,6 +5,7 @@
 #include "bitnet_server.h"
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
+#include "escalation.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,6 +13,22 @@
 
 /* One subprocess-sized buffer; cos-chat is single-threaded. */
 static char g_cos_chat_bitnet_buf[8192];
+
+/* DEV-5 distill-pair context (escalation.h).  Lives here, not in
+ * escalation.c, so that binaries which link stub_gen without the
+ * API tier (cos-benchmark, cos-cost) stay libcurl-free. */
+cos_escalation_ctx_t g_cos_escalation_ctx = { .student_valid = 0 };
+
+void cos_cli_escalation_record_student(const char *text, float sigma) {
+    if (text == NULL) return;
+    size_t n = strlen(text);
+    if (n >= sizeof g_cos_escalation_ctx.student_text)
+        n = sizeof g_cos_escalation_ctx.student_text - 1;
+    memcpy(g_cos_escalation_ctx.student_text, text, n);
+    g_cos_escalation_ctx.student_text[n] = '\0';
+    g_cos_escalation_ctx.student_sigma   = sigma;
+    g_cos_escalation_ctx.student_valid   = 1;
+}
 
 static int prompt_is_what_is_2_plus_2(const char *prompt) {
     const char *p = prompt;
@@ -176,6 +193,10 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             *out_text     = g_cos_chat_bitnet_buf;
             *out_sigma    = r.sigma;
             *out_cost_eur = r.cost_eur;
+            /* DEV-5: stash for distill pair logging if this round
+             * ultimately escalates to a teacher API. */
+            cos_cli_escalation_record_student(g_cos_chat_bitnet_buf,
+                                              r.sigma);
             return 0;
         }
         /* Server failed → fall through to legacy path.  This keeps
@@ -193,6 +214,8 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             *out_sigma      = cos_bitnet_sigma_for_prompt_and_output(
                 prompt, g_cos_chat_bitnet_buf);
             *out_cost_eur   = 0.0001;
+            cos_cli_escalation_record_student(g_cos_chat_bitnet_buf,
+                                              *out_sigma);
             return 0;
         }
     }
@@ -204,10 +227,13 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
         *out_text     = "4";
         *out_sigma    = cos_bitnet_sigma_for_local_output("4");
         *out_cost_eur = 0.0;
+        cos_cli_escalation_record_student(*out_text, *out_sigma);
         return 0;
     }
-    return cos_cli_stub_generate(prompt, round, ctx, out_text, out_sigma,
-                                 out_cost_eur);
+    int src = cos_cli_stub_generate(prompt, round, ctx, out_text,
+                                    out_sigma, out_cost_eur);
+    cos_cli_escalation_record_student(*out_text, *out_sigma);
+    return src;
 }
 
 int cos_cli_stub_escalate(const char *prompt, void *ctx,

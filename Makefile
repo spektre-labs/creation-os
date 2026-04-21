@@ -6201,10 +6201,21 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/import/bitnet_sigma.c \
                src/import/bitnet_ppl.c
 
-cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c src/cli/cos_chat.c
+# DEV-5: escalation.c reaches out to Claude/OpenAI/DeepSeek via libcurl
+# (SSL handled by the system stack; no extra dep beyond libcurl which
+# ships with every Linux / macOS box we target).  Linked ONLY into
+# cos-chat so that cos-benchmark / cos-cost / cos / cos-agent stay
+# dep-free (no libcurl, no TLS surface) and keep working on any host
+# without network tooling.  Sibling helpers in stub_gen.c that call
+# cos_cli_escalation_record_student reference it through a weak path
+# — it's only ever invoked from cos_chat's escalate callback, which
+# lives in cos-chat's link closure.
+cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+          src/cli/escalation.c src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
-	    src/cli/cos_chat.c $(LDFLAGS) -lsqlite3
+	    src/cli/escalation.c src/cli/cos_chat.c \
+	    $(LDFLAGS) -lsqlite3 -lcurl
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
