@@ -52,6 +52,24 @@ Creation OS separates **control-plane policy** (when to answer, rethink, abstain
 
 ---
 
-## 7. Honest bottom line
+## 7. Real BitNet run — TruthfulQA generation/validation, N=817
+
+The full 817-question TruthfulQA generation/validation split was executed end-to-end against the real BitNet b1.58 2B model via `llama-cli`, scored by substring match against each row's `correct_answers` / `incorrect_answers` lists. Raw summary and per-row detail are tracked at:
+
+- `benchmarks/pipeline/truthfulqa_817.json`
+- `benchmarks/pipeline/truthfulqa_817_detail.jsonl`
+
+| Configuration | N | Scored | Correct | Accuracy (of scored) | Coverage | Mean σ | Rethink rate | Wall (s) |
+|---------------|---|--------|---------|---------------------|----------|--------|--------------|---------|
+| `bitnet_only` (no σ-gate) | 817 | 111 | 29 | **0.261** | 0.136 | 0.370 | 0.000 | 1554.8 |
+| `pipeline` (σ-gate on)    | 817 | 140 | 47 | **0.336** | 0.171 | 0.391 | 0.991 | 4804.7 |
+
+- **Accuracy (of scored)** is computed only over rows where substring scoring was unambiguous; the remainder are treated as neither correct nor incorrect (noted in `n_scored`). This is a conservative, asymmetric metric — it is **not** directly comparable to `lm-eval` MC2.
+- The pipeline lifts both coverage and accuracy-of-scored rows over raw BitNet on the same generator and seeds, consistent with TruthfulQA being a domain where an uncertainty-aware gate **helps**, as section 2 predicts.
+- The ≈3× wall-time cost is the honest price of σ-driven rethink; this is the fixture for future calibration work, not a final throughput claim.
+
+---
+
+## 8. Honest bottom line
 
 σ-gating is a **governance and risk** layer: it makes doubt visible and composes with engrams, sovereign cost, and escalation policy. It is **not** a guarantee of commonsense, truthfulness, or harness leaderboard dominance without per-task measurement archived under the repro bundle rules in [REPRO_BUNDLE_TEMPLATE.md](REPRO_BUNDLE_TEMPLATE.md).
