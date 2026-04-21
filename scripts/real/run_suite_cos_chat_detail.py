@@ -30,7 +30,14 @@ import sys
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, TextIO, Tuple
+
+try:
+    import fcntl
+
+    _HAVE_FLOCK = True
+except ImportError:  # pragma: no cover
+    _HAVE_FLOCK = False
 
 # ---------------------------------------------------------------------------
 # Parsing cos-chat --once stdout (see src/cli/cos_chat.c run_chat_once).
@@ -237,10 +244,31 @@ def load_done_keys(path: Path) -> set:
     return done
 
 
-def append_jsonl(path: Path, obj: Dict[str, Any]) -> None:
+def dedupe_detail_jsonl(path: Path) -> int:
+    """Remove duplicate ``(id, mode)`` rows; **last** line wins (resume-safe)."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("a", encoding="utf-8") as fp:
-        fp.write(json.dumps(obj, ensure_ascii=False) + "\n")
+    if not path.is_file():
+        return 0
+    by_key: Dict[Tuple[Any, Any], str] = {}
+    for raw in path.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line:
+            continue
+        try:
+            o = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        by_key[(o.get("id"), o.get("mode"))] = line
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    body = "\n".join(by_key.values()) + ("\n" if by_key else "")
+    tmp.write_text(body, encoding="utf-8")
+    os.replace(str(tmp), str(path))
+    return len(by_key)
+
+
+def append_line(fp: TextIO, obj: Dict[str, Any]) -> None:
+    fp.write(json.dumps(obj, ensure_ascii=False) + "\n")
+    fp.flush()
 
 
 def main() -> int:
@@ -294,80 +322,97 @@ def main() -> int:
     rows_path = Path(args.rows).resolve()
     out_path = Path(args.out).resolve()
 
-    with tempfile.TemporaryDirectory(prefix="cos_suite_home_") as tmp:
-        home = Path(tmp)
-        prepare_home(home, calib_src)
-        base_env = os.environ.copy()
-        base_env["HOME"] = str(home)
-        base_env["COS_ENGRAM_DISABLE"] = "1"
-        base_env["CREATION_OS_BITNET_EXE"] = exe
-        base_env["CREATION_OS_BITNET_MODEL"] = mdl
+    dedupe_detail_jsonl(out_path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_fp = out_path.open("a+", encoding="utf-8")
+    if _HAVE_FLOCK:
+        try:
+            fcntl.flock(out_fp.fileno(), fcntl.LOCK_EX)
+        except OSError:
+            pass
 
+    try:
         done = load_done_keys(out_path)
-        with rows_path.open("r", encoding="utf-8") as fp:
-            n_rows = 0
-            for row_idx, line in enumerate(fp):
-                if max_rows is not None and row_idx >= max_rows:
-                    break
-                line = line.strip()
-                if not line:
-                    continue
-                row = json.loads(line)
-                n_rows += 1
-                rid = row.get("id")
-                dataset = row.get("dataset", "")
-                prompt = str(row.get("prompt", "")).strip()
-                gold = str(row.get("gold", "")).strip()
-                for mode in ("bitnet_only", "pipeline"):
-                    if (rid, mode) in done:
+        with tempfile.TemporaryDirectory(prefix="cos_suite_home_") as tmp:
+            home = Path(tmp)
+            prepare_home(home, calib_src)
+            base_env = os.environ.copy()
+            base_env["HOME"] = str(home)
+            base_env["COS_ENGRAM_DISABLE"] = "1"
+            base_env["CREATION_OS_BITNET_EXE"] = exe
+            base_env["CREATION_OS_BITNET_MODEL"] = mdl
+
+            with rows_path.open("r", encoding="utf-8") as fp:
+                n_rows = 0
+                for row_idx, line in enumerate(fp):
+                    if max_rows is not None and row_idx >= max_rows:
+                        break
+                    line = line.strip()
+                    if not line:
                         continue
-                    argv = build_argv(chat_bin, mode, prompt, repo, calib_src)
-                    rc, merged, wall_s = run_one_fixed(
-                        argv, repo, base_env, timeout_s
-                    )
-                    gen, sigma, action = parse_round0(merged)
-                    if gen and prompt and gen.startswith(prompt):
-                        gen = gen[len(prompt) :].lstrip()
-                    if sigma is None and gen is not None:
-                        sigma = sigma_heuristic(gen)
-                    elif sigma is None:
-                        sigma = 0.5
-                    abstained = bool(
-                        gen
-                        and (
-                            "uncertain and cannot answer" in gen
-                            or (action or "").upper() == "ABSTAIN"
+                    row = json.loads(line)
+                    n_rows += 1
+                    rid = row.get("id")
+                    dataset = row.get("dataset", "")
+                    prompt = str(row.get("prompt", "")).strip()
+                    gold = str(row.get("gold", "")).strip()
+                    for mode in ("bitnet_only", "pipeline"):
+                        if (rid, mode) in done:
+                            continue
+                        argv = build_argv(chat_bin, mode, prompt, repo, calib_src)
+                        rc, merged, wall_s = run_one_fixed(
+                            argv, repo, base_env, timeout_s
                         )
-                    )
-                    esc = "ESCALATE" in merged and mode == "pipeline"
-                    cor: Any = score_row(str(dataset), gen or "", gold)
-                    if abstained and cor is None:
-                        cor = None
-                    rec: Dict[str, Any] = {
-                        "id": rid,
-                        "dataset": dataset,
-                        "prompt": prompt,
-                        "gold": gold,
-                        "generated": gen if gen is not None else "",
-                        "sigma": sigma if sigma is not None else 0.5,
-                        "rounds": 1,
-                        "escalated": bool(esc),
-                        "abstained": bool(abstained),
-                        "wall_s": round(wall_s, 4),
-                        "gen_s": round(wall_s, 4),
-                        "eur": 0.0001,
-                        "correct": cor,
-                        "mode": mode,
-                        "cos_chat_rc": rc,
-                    }
-                    append_jsonl(out_path, rec)
-                    done.add((rid, mode))
-        print(
-            json.dumps(
-                {"rows_file": str(rows_path), "out": str(out_path), "rows": n_rows},
-                indent=2,
+                        gen, sigma, action = parse_round0(merged)
+                        if gen and prompt and gen.startswith(prompt):
+                            gen = gen[len(prompt) :].lstrip()
+                        if sigma is None and gen is not None:
+                            sigma = sigma_heuristic(gen)
+                        elif sigma is None:
+                            sigma = 0.5
+                        abstained = bool(
+                            gen
+                            and (
+                                "uncertain and cannot answer" in gen
+                                or (action or "").upper() == "ABSTAIN"
+                            )
+                        )
+                        esc = "ESCALATE" in merged and mode == "pipeline"
+                        cor: Any = score_row(str(dataset), gen or "", gold)
+                        if abstained and cor is None:
+                            cor = None
+                        rec: Dict[str, Any] = {
+                            "id": rid,
+                            "dataset": dataset,
+                            "prompt": prompt,
+                            "gold": gold,
+                            "generated": gen if gen is not None else "",
+                            "sigma": sigma if sigma is not None else 0.5,
+                            "rounds": 1,
+                            "escalated": bool(esc),
+                            "abstained": bool(abstained),
+                            "wall_s": round(wall_s, 4),
+                            "gen_s": round(wall_s, 4),
+                            "eur": 0.0001,
+                            "correct": cor,
+                            "mode": mode,
+                            "cos_chat_rc": rc,
+                        }
+                        append_line(out_fp, rec)
+                        done.add((rid, mode))
+            print(
+                json.dumps(
+                    {"rows_file": str(rows_path), "out": str(out_path), "rows": n_rows},
+                    indent=2,
+                )
             )
-        )
+    finally:
+        if _HAVE_FLOCK:
+            try:
+                fcntl.flock(out_fp.fileno(), fcntl.LOCK_UN)
+            except OSError:
+                pass
+        out_fp.close()
     return 0
 
 
