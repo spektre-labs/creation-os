@@ -6196,7 +6196,8 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
                src/cli/stub_gen.c \
-               src/import/bitnet_spawn.c
+               src/import/bitnet_spawn.c \
+               src/import/bitnet_sigma.c
 
 cos-chat: $(COS_CLI_SRCS) src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \

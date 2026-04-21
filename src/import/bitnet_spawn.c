@@ -35,6 +35,23 @@ static int append_env_argv(char **argv, int *argc, int max, const char *envname)
     return 0;
 }
 
+static void strip_ansi_inplace(char *s)
+{
+    char *w = s;
+    for (const char *r = s; *r != '\0';) {
+        if (*r == '\033' && r[1] == '[') {
+            r += 2;
+            while (*r != '\0' && *r != 'm')
+                ++r;
+            if (*r == 'm')
+                ++r;
+            continue;
+        }
+        *w++ = *r++;
+    }
+    *w = '\0';
+}
+
 static int read_all(int fd, char *buf, size_t cap)
 {
     size_t got = 0;
@@ -85,10 +102,53 @@ int cos_bitnet_spawn_capture(const char *exe, const char *prompt, char *out, siz
         (void)posix_spawn_file_actions_addclose(&fa, pin[1]);
     }
 
-    char *argv[32];
+    char *argv[40];
     int argc = 0;
     const int max = (int)(sizeof(argv) / sizeof(argv[0]) - 1);
     argv[argc++] = (char *)exe;
+
+    const char *model = getenv("CREATION_OS_BITNET_MODEL");
+    if (model != NULL && model[0] != '\0') {
+        const char *perf = getenv("CREATION_OS_BITNET_PERF");
+        if (perf == NULL || perf[0] != '1') {
+            if (argc + 1 >= max)
+                goto fail;
+            argv[argc++] = "--no-perf";
+        }
+        if (argc + 2 >= max)
+            goto fail;
+        argv[argc++] = "-m";
+        argv[argc++] = (char *)model;
+
+        char np_buf[32];
+        {
+            const char *np = getenv("CREATION_OS_BITNET_N_PREDICT");
+            if (np != NULL && np[0] != '\0')
+                (void)snprintf(np_buf, sizeof np_buf, "%s", np);
+            else
+                (void)snprintf(np_buf, sizeof np_buf, "128");
+        }
+        if (argc + 2 >= max)
+            goto fail;
+        argv[argc++] = "-n";
+        argv[argc++] = np_buf;
+
+        const char *threads = getenv("CREATION_OS_BITNET_THREADS");
+        if (threads != NULL && threads[0] != '\0') {
+            if (argc + 2 >= max)
+                goto fail;
+            argv[argc++] = "-t";
+            argv[argc++] = (char *)threads;
+        }
+        const char *ngl = getenv("CREATION_OS_BITNET_NGL");
+        if (ngl != NULL && ngl[0] != '\0') {
+            if (argc + 2 >= max)
+                goto fail;
+            argv[argc++] = "-ngl";
+            argv[argc++] = (char *)ngl;
+        }
+    }
+
     for (int i = 0; i < 10; i++) {
         char name[40];
         (void)snprintf(name, sizeof name, "CREATION_OS_BITNET_ARG%d", i);
@@ -131,6 +191,7 @@ int cos_bitnet_spawn_capture(const char *exe, const char *prompt, char *out, siz
         (void)waitpid(pid, NULL, 0);
         goto fail_after_spawn;
     }
+    strip_ansi_inplace(out);
     close(pout[0]);
     pout[0] = -1;
 
