@@ -165,6 +165,46 @@ Want just the tour?
 
 > Everything runs **locally**.  Nothing is sent to the cloud.  Nothing is logged.  Nothing calls home.  The installer installs nothing without telling you first, and nothing outside `~/creation-os`.  Safe to re-run.  Idempotent.
 
+<a id="quickstart-real-bitnet"></a>
+
+### Real-BitNet quickstart (clone → install → chat)
+
+Three commands stand up the real BitNet b1.58 2B inference stack, wired into `cos chat` with live σ-gating (no stub):
+
+```bash
+git clone https://github.com/spektre-labs/creation-os
+cd creation-os
+./scripts/install.sh
+./cos chat
+```
+
+`scripts/install.sh` checks for `python3`, `cmake`, and a C compiler; if `huggingface-cli` and `cmake` are present, it downloads the 1.2 GB `BitNet-b1.58-2B-4T` GGUF weights into `models/`, builds `third_party/bitnet` (`llama-cli` + `llama-perplexity`), builds the `cos` binary, and runs a smoke test (`cos chat --once --prompt "What is 2+2?"`). Set `COS_INSTALL_NO_BITNET=1` to skip the model download for CI-only clones.
+
+Once installed, `cos chat --once --prompt "What is the capital of France?"` calls real `llama-cli` via `src/import/bitnet_spawn.c` and prints the answer together with a measured σ.
+
+<a id="bench-truthfulqa-817"></a>
+
+### Measured — TruthfulQA generation/validation, N=817, real BitNet
+
+End-to-end run of the full TruthfulQA generation/validation split through real BitNet b1.58 2B via `llama-cli`, scored by substring match against each row's `correct_answers` / `incorrect_answers`. Raw artefacts: [`benchmarks/pipeline/truthfulqa_817.json`](benchmarks/pipeline/truthfulqa_817.json) · [`benchmarks/pipeline/truthfulqa_817_detail.jsonl`](benchmarks/pipeline/truthfulqa_817_detail.jsonl). Commentary and caveats: [`docs/domain_analysis.md`](docs/domain_analysis.md).
+
+| Configuration | N | Scored | Correct | Accuracy (of scored) | Coverage | Mean σ | Rethink rate | Wall (s) |
+|---------------|---|--------|---------|---------------------|----------|--------|--------------|---------|
+| `bitnet_only` (no σ-gate) | 817 | 111 | 29 | **0.261** | 0.136 | 0.370 | 0.000 | 1554.8 |
+| `pipeline` (σ-gate on)    | 817 | 140 | 47 | **0.336** | 0.171 | 0.391 | 0.991 | 4804.7 |
+
+- "Accuracy (of scored)" is conservative: rows whose generated text contained neither a correct nor an incorrect string are excluded from the numerator and denominator and counted under `n_scored`. This is **not** directly comparable to `lm-eval` MC2 and should not be merged with the v111.1 pre-registered σ vs entropy parity matrix above.
+- The pipeline configuration trades ≈3× wall time for both higher coverage and a higher fraction of scored-correct answers on the same prompts and seeds — consistent with TruthfulQA being a domain where an uncertainty-aware gate helps.
+- Codex vs no-Codex deterministic-stub comparison (separate harness): [`benchmarks/codex_comparison.json`](benchmarks/codex_comparison.json).
+
+<a id="proof-status-and-license"></a>
+
+### Proof status · License
+
+- **Lean 4 proofs:** 6 / 6 theorems, **sorry-free** (see [`hw/formal/v259/Measurement.lean`](hw/formal/v259/Measurement.lean) and `make check-v259`).
+- **Frama-C Wp:** 15 / 15 tier-1 proof obligations discharged (`make check-v259` / `make check-framac-tier1`; replay script under [`scripts/`](scripts)).
+- **License:** dual [Spektre Covenant Source License 1.0 (SCSL)](LICENSE-SCSL-1.0.md) + [AGPL-3.0-only](LICENSE-AGPL-3.0.txt). See [`LICENSE`](LICENSE) and the [license section](#license) below for the full sovereignty clauses.
+
 <a id="the-sigma-pipeline-product"></a>
 
 ### The σ-pipeline product (I0 – I6)
