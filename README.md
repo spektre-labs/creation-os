@@ -199,6 +199,20 @@ End-to-end run of the full TruthfulQA generation/validation split through real B
 - The pipeline configuration trades ≈3× wall time for both higher coverage and a higher fraction of scored-correct answers on the same prompts and seeds — consistent with TruthfulQA being a domain where an uncertainty-aware gate helps.
 - Codex vs no-Codex deterministic-stub comparison (separate harness): [`benchmarks/codex_comparison.json`](benchmarks/codex_comparison.json).
 
+#### Multi-dataset σ-gate suite (SCI-6)
+
+Aggregator: [`./cos-bench-suite-sci`](src/sigma/pipeline/suite_sci_main.c).  Output: [`benchmarks/suite/full_results.json`](benchmarks/suite/full_results.json), schema `cos.suite_sci.v1`.  Formal framework: [`docs/selective_prediction.md`](docs/selective_prediction.md).
+
+| Dataset | Status | N (rows) | acc(all) | acc(accepted) | coverage | σ_mean | τ | conformal valid |
+|---------|--------|---------:|---------:|--------------:|---------:|-------:|---:|-----------------|
+| TruthfulQA (generation/validation, scored) | **measured** | 817 | **0.336** | 0.336 | 0.171 | 0.391 | 0.655 | yes @ (α=0.80, δ=0.10) |
+| ARC-Challenge | wired, JSONL pending | — | — | — | — | — | — | — |
+| ARC-Easy | wired, JSONL pending | — | — | — | — | — | — | — |
+| GSM8K | wired, JSONL pending | — | — | — | — | — | — | — |
+| HellaSwag | wired, JSONL pending | — | — | — | — | — | — | — |
+
+Production recipe for the missing detail JSONLs is in [`benchmarks/suite/README.md`](benchmarks/suite/README.md).  The aggregator records `"measured": false` with zero-filled metrics for any dataset whose detail JSONL is absent — there are **no projected numbers** in the suite table. Per [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md), adding a row means producing its labelled detail JSONL and committing the output of `./cos-bench-suite-sci --alpha 0.80 --delta 0.10`.
+
 <a id="proof-status-and-license"></a>
 
 ### Proof status · License

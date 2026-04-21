@@ -6111,8 +6111,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-a2a check-sigma-formal-complete \
                       check-sigma-mesh3 check-sigma-arxiv \
                       check-sigma-conformal check-sigma-coverage-curve \
-                      check-sigma-multi
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma)"
+                      check-sigma-multi check-sigma-suite-sci
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7059,6 +7059,29 @@ cos-multi-sigma: creation_os_sigma_multi
 check-sigma-multi: creation_os_sigma_multi
 	@bash benchmarks/sigma_pipeline/check_sigma_multi.sh
 	@echo "check-sigma-multi: OK (self-test + demo deterministic)"
+
+# --- σ-pipeline: SCI-6 multi-dataset suite ---------------------------
+#
+# Aggregates per-dataset (σ, correct) detail JSONLs into a single
+# σ-gate evaluation table with conformal τ per dataset at fixed
+# (α, δ).  Missing detail files are reported as "measured": false;
+# no numbers are fabricated.
+SIGMA_SUITE_SCI_INC  = -Isrc/sigma/pipeline
+SIGMA_SUITE_SCI_SRCS = src/sigma/pipeline/suite_sci.c \
+                       src/sigma/pipeline/conformal.c
+
+creation_os_sigma_suite_sci: $(SIGMA_SUITE_SCI_SRCS) \
+                             src/sigma/pipeline/suite_sci_main.c
+	$(CC) $(CFLAGS) $(SIGMA_SUITE_SCI_INC) -o $@ \
+	    $(SIGMA_SUITE_SCI_SRCS) src/sigma/pipeline/suite_sci_main.c \
+	    $(LDFLAGS)
+
+cos-bench-suite-sci: creation_os_sigma_suite_sci
+	@cp $< $@
+
+check-sigma-suite-sci: creation_os_sigma_suite_sci
+	@bash benchmarks/sigma_pipeline/check_sigma_suite_sci.sh
+	@echo "check-sigma-suite-sci: OK (self-test + manifest eval + JSON)"
 
 # --- σ-pipeline: benchmark suite (HERMES-3) --------------------------
 #
