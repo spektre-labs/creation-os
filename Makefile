@@ -6113,8 +6113,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-mesh3 check-sigma-arxiv \
                       check-sigma-conformal check-sigma-coverage-curve \
                       check-sigma-multi check-sigma-suite-sci \
-                      check-cos-mcp
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp)"
+                      check-cos-mcp check-cos-a2a
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7360,6 +7360,21 @@ creation_os_sigma_a2a: $(SIGMA_A2A_SRCS) \
 check-sigma-a2a: creation_os_sigma_a2a
 	@bash benchmarks/sigma_pipeline/check_sigma_a2a.sh
 	@echo "check-sigma-a2a: OK (agent-cards + σ-trust + blocklist)"
+
+# --- cos-a2a (NEXT-5): product-level A2A CLI ------------------------
+#
+# Thin CLI over the σ-A2A kernel with persistent state at
+# ~/.cos/a2a.json.  Commands: card · register · request · list ·
+# demo · reset.  One process, one session — but state survives
+# across invocations so `cos-a2a request …` accumulates σ-trust
+# EMA over time.
+cos-a2a: $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c
+	$(CC) $(CFLAGS) $(SIGMA_A2A_INC) -Iinclude -o $@ \
+	    $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c $(LDFLAGS)
+
+check-cos-a2a: cos-a2a
+	@bash benchmarks/sigma_pipeline/check_cos_a2a.sh
+	@echo "check-cos-a2a: OK (card + register + request + EMA + blocklist + persist)"
 
 # --- σ-pipeline: formal-complete status (OMEGA-3) --------------------
 #
