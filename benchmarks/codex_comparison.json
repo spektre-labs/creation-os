@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "evidence_class": "repository stub fixture (cos_cli_stub_generate); not LM harness accuracy",
+  "generator": "cos_cli_stub_generate",
+  "fixtures": 20,
+  "codex_loaded": true,
+  "codex_hash": "c860c67f75bc9d1d",
+  "pipeline_no_codex": {
+    "accept_rate": 1.000000,
+    "coverage": 1.000000,
+    "mean_sigma": 0.116000,
+    "escalation_rate": 0.200000,
+    "n_accept": 20,
+    "n_escalated": 4,
+    "eur_total": 0.05140000
+  },
+  "pipeline_codex": {
+    "accept_rate": 1.000000,
+    "coverage": 1.000000,
+    "mean_sigma": 0.116000,
+    "escalation_rate": 0.200000,
+    "n_accept": 20,
+    "n_escalated": 4,
+    "eur_total": 0.05140000
+  },
+  "delta": {
+    "accept_rate": 0.000000,
+    "mean_sigma": 0.000000,
+    "escalation_rate": 0.000000,
+    "eur_total": 0.00000000
+  },
+  "honest_note": "When codex_loaded is false, pipeline_codex matches pipeline_no_codex by construction. For frontier accuracy, archive lm-eval JSON per docs/CLAIM_DISCIPLINE.md."
+}

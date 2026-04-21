@@ -34,6 +34,7 @@
 #include "agent.h"
 #include "stub_gen.h"
 
+#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -176,14 +177,97 @@ static void print_row(const bench_t *b) {
            b->n_rethink, b->n_escalated, b->n_engram_hit, b->n_abstain);
 }
 
+/* CLOSE-7 — pinned Codex vs no-Codex comparison on the stub harness. */
+static void bench_rates(const bench_t *b, int n_tot, double *acc, double *cov,
+                        double *mean_sig, double *esc_rate) {
+    if (b == NULL || n_tot <= 0) {
+        *acc = *cov = *mean_sig = *esc_rate = 0.0;
+        return;
+    }
+    *acc       = (double)b->n_accept / (double)n_tot;
+    *cov       = 1.0 - (double)b->n_abstain / (double)n_tot;
+    *mean_sig  = b->sum_sigma / (double)n_tot;
+    *esc_rate  = (double)b->n_escalated / (double)n_tot;
+}
+
+static int write_codex_comparison(const char *path, int n_fix,
+                                  const bench_t *b_nc, const bench_t *b_cx,
+                                  int codex_loaded, unsigned long long codex_hash) {
+    FILE *f = fopen(path, "w");
+    if (f == NULL) {
+        fprintf(stderr, "cos benchmark: cannot open %s: %s\n",
+                path, strerror(errno));
+        return -1;
+    }
+    double acc_nc, cov_nc, sig_nc, esc_nc;
+    double acc_cx, cov_cx, sig_cx, esc_cx;
+    bench_rates(b_nc, n_fix, &acc_nc, &cov_nc, &sig_nc, &esc_nc);
+    bench_rates(b_cx, n_fix, &acc_cx, &cov_cx, &sig_cx, &esc_cx);
+    fprintf(f,
+            "{\n"
+            "  \"schema_version\": 1,\n"
+            "  \"evidence_class\": \"repository stub fixture (cos_cli_stub_generate); not LM harness accuracy\",\n"
+            "  \"generator\": \"cos_cli_stub_generate\",\n"
+            "  \"fixtures\": %d,\n"
+            "  \"codex_loaded\": %s,\n"
+            "  \"codex_hash\": \"%016llx\",\n"
+            "  \"pipeline_no_codex\": {\n"
+            "    \"accept_rate\": %.6f,\n"
+            "    \"coverage\": %.6f,\n"
+            "    \"mean_sigma\": %.6f,\n"
+            "    \"escalation_rate\": %.6f,\n"
+            "    \"n_accept\": %d,\n"
+            "    \"n_escalated\": %d,\n"
+            "    \"eur_total\": %.8f\n"
+            "  },\n"
+            "  \"pipeline_codex\": {\n"
+            "    \"accept_rate\": %.6f,\n"
+            "    \"coverage\": %.6f,\n"
+            "    \"mean_sigma\": %.6f,\n"
+            "    \"escalation_rate\": %.6f,\n"
+            "    \"n_accept\": %d,\n"
+            "    \"n_escalated\": %d,\n"
+            "    \"eur_total\": %.8f\n"
+            "  },\n"
+            "  \"delta\": {\n"
+            "    \"accept_rate\": %.6f,\n"
+            "    \"mean_sigma\": %.6f,\n"
+            "    \"escalation_rate\": %.6f,\n"
+            "    \"eur_total\": %.8f\n"
+            "  },\n"
+            "  \"honest_note\": \"When codex_loaded is false, pipeline_codex matches pipeline_no_codex by construction. "
+            "For frontier accuracy, archive lm-eval JSON per docs/CLAIM_DISCIPLINE.md.\"\n"
+            "}\n",
+            n_fix,
+            codex_loaded ? "true" : "false",
+            codex_loaded ? codex_hash : 0ULL,
+            acc_nc, cov_nc, sig_nc, esc_nc,
+            b_nc->n_accept, b_nc->n_escalated, b_nc->sum_cost_eur,
+            acc_cx, cov_cx, sig_cx, esc_cx,
+            b_cx->n_accept, b_cx->n_escalated, b_cx->sum_cost_eur,
+            acc_cx - acc_nc, sig_cx - sig_nc, esc_cx - esc_nc,
+            b_cx->sum_cost_eur - b_nc->sum_cost_eur);
+    fclose(f);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     int fmt_json = 0;
+    const char *emit_comparison = NULL;
+    int codex_mode = 0; /* 0 = try load, 1 = require codex, 2 = force off */
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--json") == 0) fmt_json = 1;
+        else if (strcmp(argv[i], "--emit-comparison") == 0 && i + 1 < argc)
+            emit_comparison = argv[++i];
+        else if (strcmp(argv[i], "--codex") == 0) codex_mode = 1;
+        else if (strcmp(argv[i], "--no-codex") == 0) codex_mode = 2;
         else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos benchmark — pipeline comparison (N=%d fixtures)\n"
-                "  --json   emit per-config JSON instead of a table\n",
+                "  --json                 emit per-config JSON instead of a table\n"
+                "  --emit-comparison PATH write Codex vs no-Codex stub summary JSON\n"
+                "  --codex                require a loadable Codex (exit 1 if missing)\n"
+                "  --no-codex             never load Codex (pipeline_codex row uses NULL soul)\n",
                 N_FIXTURES);
             return 0;
         }
@@ -205,7 +289,18 @@ int main(int argc, char **argv) {
     /* Optional Codex. */
     cos_sigma_codex_t codex;
     memset(&codex, 0, sizeof(codex));
-    int have_codex = (cos_sigma_codex_load(NULL, &codex) == 0);
+    int have_codex = 0;
+    if (codex_mode == 2) {
+        have_codex = 0;
+    } else {
+        have_codex = (cos_sigma_codex_load(NULL, &codex) == 0);
+        if (codex_mode == 1 && !have_codex) {
+            fprintf(stderr,
+                    "cos benchmark: --codex requires a loadable Codex "
+                    "(see cos_sigma_codex_load)\n");
+            return 1;
+        }
+    }
 
     bench_t b_bn = {.name = "bitnet_only"};
     bench_t b_nc = {.name = "pipeline_no_codex"};
@@ -217,6 +312,17 @@ int main(int argc, char **argv) {
     run_config(&b_cx, &base,
                have_codex ? &codex : NULL, /* gate */ 1);
     run_api_only(&b_ap);
+
+    if (emit_comparison != NULL) {
+        if (write_codex_comparison(emit_comparison, N_FIXTURES,
+                                   &b_nc, &b_cx, have_codex,
+                                   have_codex
+                                       ? (unsigned long long)codex.hash_fnv1a64
+                                       : 0ULL) != 0) {
+            cos_sigma_codex_free(&codex);
+            return 2;
+        }
+    }
 
     if (fmt_json) {
         printf("{\"fixtures\":%d,\"codex_loaded\":%s,"

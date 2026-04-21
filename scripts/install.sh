@@ -111,7 +111,7 @@ download_default_model() {
     # forty-kernel stack: BitNet-b1.58-2B GGUF (~1.6 GB).
     # Honours the COS_V107_SKIP_MODEL escape so CI and sandboxed
     # hosts can install without network.
-    if [[ "${COS_V107_SKIP_MODEL:-0}" == "1" ]]; then
+    if [ "${COS_V107_SKIP_MODEL:-0}" = "1" ]; then
         log "COS_V107_SKIP_MODEL=1 — skipping BitNet GGUF download"
         return 0
     fi

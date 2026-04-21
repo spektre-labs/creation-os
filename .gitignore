@@ -729,3 +729,4 @@ creation_os_sigma_arxiv
 # Lean 4 / Lake build artefacts (hw/formal/v259/)
 hw/formal/**/.lake/
 hw/formal/**/lake-manifest.json
+docs/v259/frama_c_wp_full.log
