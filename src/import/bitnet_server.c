@@ -256,9 +256,12 @@ static int bns_http_get(const char *path, char *body_out, size_t body_cap) {
     return (strncmp(g_bns.resp_buf, "HTTP/1.1 200", 12) == 0) ? 0 : -1;
 }
 
-static int bns_http_post_json(const char *path,
-                              const char *json_body, size_t json_len,
-                              const char **out_body, size_t *out_len) {
+/* POLISH-3: attempt a single HTTP/1.1 POST; returns 0 on success with
+ * a populated body pointer, -1 on transient transport failures that
+ * the caller may want to retry. */
+static int bns_http_post_json_once(const char *path,
+                                   const char *json_body, size_t json_len,
+                                   const char **out_body, size_t *out_len) {
     int fd = bns_connect(BNS_REQ_TIMEOUT_S);
     if (fd < 0) return -1;
     int hn = snprintf(g_bns.req_buf, BNS_REQ_CAP,
@@ -284,6 +287,37 @@ static int bns_http_post_json(const char *path,
     *out_body = body;
     *out_len  = (size_t)len;
     return 0;
+}
+
+/* POLISH-3: wrapper that retries up to 3 times.  Between retries we
+ * reconfirm /health; if the server has died we attempt to restart it
+ * once before giving up.  Prints a single status line to stderr so
+ * the user sees what happened. */
+static int bns_http_post_json(const char *path,
+                              const char *json_body, size_t json_len,
+                              const char **out_body, size_t *out_len) {
+    const int MAX_ATTEMPTS = 3;
+    for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
+        if (bns_http_post_json_once(path, json_body, json_len,
+                                    out_body, out_len) == 0) {
+            return 0;
+        }
+        if (attempt == MAX_ATTEMPTS) break;
+        /* transient failure → pause, re-probe health, maybe restart. */
+        struct timespec sl = { 0, 250 * 1000 * 1000 };  /* 250 ms */
+        nanosleep(&sl, NULL);
+        if (!cos_bitnet_server_is_healthy()) {
+            fprintf(stderr,
+                    "cos: llama-server unresponsive (attempt %d/%d), restarting…\n",
+                    attempt, MAX_ATTEMPTS);
+            /* Reap old child if it died. */
+            cos_bitnet_server_shutdown();
+            if (cos_bitnet_server_ensure() != 0) {
+                return -1;
+            }
+        }
+    }
+    return -1;
 }
 
 /* --- minimal JSON helpers ---------------------------------------- */
@@ -659,6 +693,31 @@ static void bns_atexit(void) {
     cos_bitnet_server_shutdown();
 }
 
+/* POLISH-3: Ctrl-C handler — forwards SIGINT to the child so the
+ * whole process tree unwinds cleanly (SQLite flush, pid-file clear,
+ * TCP close), then restores default handling so the second Ctrl-C
+ * (if anyone is holding it down) actually kills us. */
+static void bns_sigint(int sig) {
+    (void)sig;
+    cos_bitnet_server_shutdown();
+    signal(SIGINT, SIG_DFL);
+    raise(SIGINT);
+}
+
+static void bns_install_signal_handlers(void) {
+    static int installed = 0;
+    if (installed) return;
+    struct sigaction sa;
+    memset(&sa, 0, sizeof sa);
+    sa.sa_handler = bns_sigint;
+    sa.sa_flags   = 0;
+    sigaction(SIGINT,  &sa, NULL);
+    sigaction(SIGTERM, &sa, NULL);
+    /* Ignore SIGPIPE — a closed HTTP socket must not tear us down. */
+    signal(SIGPIPE, SIG_IGN);
+    installed = 1;
+}
+
 /* POLISH-1 PID file helpers: write ~/.cos/llama_server.pid after the
  * child is reaped-by-us healthy, so inspection / external watchdogs
  * (and `cos-health --live`) can pick up the PID without re-forking.
@@ -784,6 +843,7 @@ int cos_bitnet_server_ensure(void) {
     /* parent */
     g_bns.child = pid;
     atexit(bns_atexit);
+    bns_install_signal_handlers();
     bns_pidfile_write(pid);
 
     if (bns_wait_ready(BNS_READY_TIMEOUT_S) != 0) {
