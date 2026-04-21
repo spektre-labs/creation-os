@@ -1,6 +1,7 @@
 /* ULTRA-10 — one binary runs every ULTRA kernel self-test (integration smoke). */
 
 #include "../decode/selective.h"
+#include "../loop/recurrent_depth.h"
 #include "../learn/continuous_learn.h"
 #include "../metacog/introspection.h"
 #include "../metrics/energy_metric.h"
@@ -17,8 +18,8 @@ static const char *ultra_stack_ascii(void) {
     return
         "ULTRA-10 reference stack (documentation string)\n"
         "  Input -> Codex -> metacog -> engram -> sigma-MoE router\n"
-        "  -> JEPA world -> neuro-symbolic gate -> selective decode\n"
-        "  -> BitNet -> logprob sigma -> conformal gate -> RETHINK\n"
+        "  -> recurrent depth (sigma halting) -> JEPA world -> neuro-symbolic gate\n"
+        "  -> selective decode -> BitNet -> logprob sigma -> conformal gate -> RETHINK\n"
         "  -> ACCEPT/ABSTAIN/ESCALATE -> engram + distill\n"
         "  -> continuous learn -> coherence -> output (+ cost, reasoning/J)\n";
 }
@@ -38,6 +39,7 @@ int main(int argc, char **argv) {
     rc |= cos_ultra_energy_metric_self_test();
     rc |= cos_ultra_continuous_learn_self_test();
     rc |= cos_ultra_coherence_self_test();
+    rc |= cos_ultra_recurrent_depth_self_test();
     if (rc != 0) {
         fprintf(stderr, "creation_os_ultra_bundle: self-test failed (rc=%d)\n", rc);
         return 1;

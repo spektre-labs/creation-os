@@ -6516,10 +6516,11 @@ check-agi-meta: creation_os_agi_meta
 	@./creation_os_agi_meta --trend >/dev/null
 	@echo "check-agi-meta: OK (domain σ table + trend + JSONL scrape)"
 
-# --- ULTRA-1..10: σ-native architecture kernels (pure C, self-tested) --
+# --- ULTRA-1..11: σ-native architecture kernels (pure C, self-tested) --
 ULTRA_INC = -Isrc/sigma/moe -Isrc/sigma/world -Isrc/sigma/decode \
             -Isrc/sigma/symbolic -Isrc/sigma/metacog -Isrc/sigma/nas \
-            -Isrc/sigma/metrics -Isrc/sigma/learn -Isrc/sigma/physics
+            -Isrc/sigma/metrics -Isrc/sigma/learn -Isrc/sigma/physics \
+            -Isrc/sigma/loop
 
 ULTRA_BASE_SRCS = src/sigma/moe/sigma_router.c \
                   src/sigma/world/jepa.c \
@@ -6529,7 +6530,8 @@ ULTRA_BASE_SRCS = src/sigma/moe/sigma_router.c \
                   src/sigma/nas/sigma_search.c \
                   src/sigma/metrics/energy_metric.c \
                   src/sigma/learn/continuous_learn.c \
-                  src/sigma/physics/coherence.c
+                  src/sigma/physics/coherence.c \
+                  src/sigma/loop/recurrent_depth.c
 
 creation_os_ultra_router: src/sigma/moe/sigma_router.c \
                          src/sigma/moe/sigma_router_main.c
@@ -6570,6 +6572,11 @@ creation_os_ultra_coherence: src/sigma/physics/coherence.c \
 	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
 	    src/sigma/physics/coherence.c src/sigma/physics/coherence_main.c $(LDFLAGS)
 
+creation_os_ultra_recurrent_depth: src/sigma/loop/recurrent_depth.c \
+                                   src/sigma/loop/recurrent_depth_main.c
+	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
+	    src/sigma/loop/recurrent_depth.c src/sigma/loop/recurrent_depth_main.c $(LDFLAGS)
+
 creation_os_ultra_bundle: $(ULTRA_BASE_SRCS) src/sigma/ultra/ultra_stack_main.c
 	$(CC) $(CFLAGS) $(ULTRA_INC) -o $@ \
 	    $(ULTRA_BASE_SRCS) src/sigma/ultra/ultra_stack_main.c $(LDFLAGS)
@@ -6578,7 +6585,8 @@ check-ultra: creation_os_ultra_router creation_os_ultra_jepa \
               creation_os_ultra_selective creation_os_ultra_neuro_sym \
               creation_os_ultra_metacog creation_os_ultra_search \
               creation_os_ultra_learn creation_os_ultra_coherence \
-              creation_os_ultra_bundle cos-benchmark
+              creation_os_ultra_recurrent_depth creation_os_ultra_bundle \
+              cos-benchmark
 	@./creation_os_ultra_router --self-test >/dev/null
 	@./creation_os_ultra_jepa --self-test >/dev/null
 	@./creation_os_ultra_selective --self-test >/dev/null
@@ -6587,9 +6595,10 @@ check-ultra: creation_os_ultra_router creation_os_ultra_jepa \
 	@./creation_os_ultra_search --self-test >/dev/null
 	@./creation_os_ultra_learn --self-test >/dev/null
 	@./creation_os_ultra_coherence --self-test >/dev/null
+	@./creation_os_ultra_recurrent_depth --self-test >/dev/null
 	@./creation_os_ultra_bundle >/dev/null
 	@./cos-benchmark --energy >/dev/null
-	@echo "check-ultra: OK (ULTRA-1..10 kernels + bundle + benchmark --energy)"
+	@echo "check-ultra: OK (ULTRA-1..11 kernels + bundle + benchmark --energy)"
 
 # --- σ-pipeline: Curriculum (progressive difficulty clock, S2) ---
 #
