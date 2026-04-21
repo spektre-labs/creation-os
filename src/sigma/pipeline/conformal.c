@@ -405,8 +405,9 @@ static int jp_line_get_bool_or_null(const char *line, const char *key,
     return -1;
 }
 
-int cos_conformal_load_jsonl(const char *path, const char *mode_filter,
-                             cos_conformal_sample_t *out, int cap) {
+int cos_conformal_load_jsonl_ex(const char *path, const char *mode_filter,
+                                int classify,
+                                cos_conformal_sample_t *out, int cap) {
     if (!path || !out || cap <= 0) return -1;
     FILE *fp = fopen(path, "r");
     if (!fp) return -1;
@@ -431,14 +432,119 @@ int cos_conformal_load_jsonl(const char *path, const char *mode_filter,
         cos_conformal_sample_t s; memset(&s, 0, sizeof(s));
         s.sigma   = (float)sigma;
         s.correct = correct;
-        /* category -> domain (optional). */
-        (void)jp_line_get_string(line, "\"category\"", s.domain,
-                                 COS_CONFORMAL_NAME_MAX);
+
+        if (classify) {
+            /* Best-effort prompt extraction; classifier is deterministic
+             * on the string, "other" on NULL.  The kernel's line parser
+             * handles escaped quotes by stopping at the first closing
+             * quote, which is good enough for TruthfulQA prompts. */
+            char prompt[512] = {0};
+            (void)jp_line_get_string(line, "\"prompt\"", prompt, sizeof(prompt));
+            const char *cat = cos_conformal_classify_prompt(prompt);
+            snprintf(s.domain, sizeof(s.domain), "%s", cat);
+        } else {
+            /* category -> domain (optional). */
+            (void)jp_line_get_string(line, "\"category\"", s.domain,
+                                     COS_CONFORMAL_NAME_MAX);
+        }
         out[n_out++] = s;
     }
     free(line);
     fclose(fp);
     return n_out;
+}
+
+int cos_conformal_load_jsonl(const char *path, const char *mode_filter,
+                             cos_conformal_sample_t *out, int cap) {
+    return cos_conformal_load_jsonl_ex(path, mode_filter, 0, out, cap);
+}
+
+/* ========================================================================
+ * SCI-2: prompt classifier (factual / code / reasoning / other).
+ *
+ * The goal is not a clever model; it is a deterministic, auditable
+ * tag that the calibration pipeline can partition on, so `cos
+ * calibrate --classify-prompts` produces one τ per category even
+ * when the dataset did not ship its own "category" field.
+ *
+ * Rules, in priority order:
+ *   code       — triggers if the prompt contains any of {"```",
+ *                "def ", "function ", "class ", "return ",
+ *                "import ", "#include", "SELECT ", "=>", "printf("}.
+ *   reasoning  — triggers on {"why ", "explain", "derive",
+ *                "prove", "step by step", "therefore", "because",
+ *                "reason "}.
+ *   factual    — triggers on {"what ", "who ", "when ", "where ",
+ *                "which ", "capital", "define", "how many"}.
+ *   other      — fallback.
+ *
+ * Matching is case-insensitive over an ASCII lowercase copy.  An
+ * empty or NULL prompt returns "other".
+ * ======================================================================== */
+static int contains_ci(const char *hay, const char *needle) {
+    if (!hay || !needle) return 0;
+    size_t hl = strlen(hay), nl = strlen(needle);
+    if (nl == 0 || nl > hl) return 0;
+    for (size_t i = 0; i + nl <= hl; ++i) {
+        size_t k = 0;
+        while (k < nl) {
+            char a = (char)tolower((unsigned char)hay[i + k]);
+            char b = (char)tolower((unsigned char)needle[k]);
+            if (a != b) break;
+            ++k;
+        }
+        if (k == nl) return 1;
+    }
+    return 0;
+}
+
+const char *cos_conformal_classify_prompt(const char *prompt) {
+    if (!prompt || !*prompt) return "other";
+
+    static const char *code_keys[] = {
+        "```", "def ", "function ", "class ", "return ",
+        "import ", "#include", "select ", "=>", "printf(",
+        NULL
+    };
+    for (int i = 0; code_keys[i]; ++i) {
+        if (contains_ci(prompt, code_keys[i])) return "code";
+    }
+
+    static const char *reasoning_keys[] = {
+        "why ", "explain", "derive", "prove", "step by step",
+        "therefore", "because", "reason ", "how does",
+        NULL
+    };
+    for (int i = 0; reasoning_keys[i]; ++i) {
+        if (contains_ci(prompt, reasoning_keys[i])) return "reasoning";
+    }
+
+    static const char *factual_keys[] = {
+        "what ", "who ", "when ", "where ", "which ", "capital",
+        "define ", "how many", "how much", "how long",
+        NULL
+    };
+    for (int i = 0; factual_keys[i]; ++i) {
+        if (contains_ci(prompt, factual_keys[i])) return "factual";
+    }
+
+    return "other";
+}
+
+/* ========================================================================
+ * SCI-2: Gibbs-Candès ACI update.
+ *   τ_{t+1} = clamp(τ_t + η · (err_t − α_target), 0, 1)
+ *   err_t  = 1 if σ_t > τ_t  (rejection event)   else 0
+ * ======================================================================== */
+float cos_conformal_aci_update(float sigma, float tau_in,
+                               float alpha_target, float eta) {
+    if (!(alpha_target > 0.0f && alpha_target < 1.0f)) return tau_in;
+    if (!(eta > 0.0f && eta < 1.0f))                   return tau_in;
+    float err = (sigma > tau_in) ? 1.0f : 0.0f;
+    float tau_out = tau_in + eta * (err - alpha_target);
+    if (tau_out < 0.0f) tau_out = 0.0f;
+    if (tau_out > 1.0f) tau_out = 1.0f;
+    return tau_out;
 }
 
 /* ========================================================================
@@ -480,6 +586,34 @@ int cos_conformal_self_test(void) {
     cos_conformal_report_t r_zero;
     if (rc == 0 && cos_conformal_eval_at(s, N, 0.0f, 0.05f, &r_zero) != 0) rc = -1;
     if (rc == 0 && r_zero.n_accepted != 1) rc = -1; /* σ_0 == 0.0 */
+
+    /* SCI-2 ACI convergence: drive τ toward the (1−α)-quantile of a
+     * stationary stream.  We draw σ's uniformly on [0,1]; with
+     * α_target = 0.10 the asymptotic τ should be ≈ 0.90. */
+    if (rc == 0) {
+        float tau = 0.5f;
+        unsigned seed = 0xC0FFEEu;
+        for (int i = 0; i < 20000 && rc == 0; ++i) {
+            seed = seed * 1103515245u + 12345u;
+            float u = (float)((seed >> 16) & 0x7FFF) / 32767.0f;
+            tau = cos_conformal_aci_update(u, tau, 0.10f, 0.01f);
+        }
+        /* Slack of ±0.05 accommodates the stochastic tail. */
+        if (tau < 0.85f || tau > 0.95f) rc = -1;
+    }
+
+    /* SCI-2 classifier smoke: at least one routing per category. */
+    if (rc == 0) {
+        if (strcmp(cos_conformal_classify_prompt(
+                   "What is the capital of France?"), "factual") != 0) rc = -1;
+        if (rc == 0 && strcmp(cos_conformal_classify_prompt(
+                   "Why is the sky blue?"), "reasoning") != 0) rc = -1;
+        if (rc == 0 && strcmp(cos_conformal_classify_prompt(
+                   "```python\ndef foo():\n    return 42\n```"),
+                              "code") != 0) rc = -1;
+        if (rc == 0 && strcmp(cos_conformal_classify_prompt(""),
+                              "other") != 0) rc = -1;
+    }
 
     free(s);
     return rc;

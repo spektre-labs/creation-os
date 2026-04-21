@@ -56,6 +56,7 @@ static void usage(void) {
         "                [--delta D]         (default: 0.05)\n"
         "                [--out PATH]        (default: ~/.cos/calibration.json)\n"
         "                [--per-domain]      (SCI-2: one τ per category)\n"
+        "                [--classify-prompts] (SCI-2: factual/code/reasoning)\n"
         "                [--self-test]\n"
         "\n"
         "The calibration writes a JSON file whose shape is:\n"
@@ -79,6 +80,7 @@ int main(int argc, char **argv) {
     float alpha = 0.10f;
     float delta = 0.05f;
     int per_domain = 0;
+    int classify   = 0;
     int self_test  = 0;
 
     for (int i = 1; i < argc; ++i) {
@@ -88,6 +90,7 @@ int main(int argc, char **argv) {
         else if (!strcmp(argv[i], "--alpha")   && i + 1 < argc) alpha   = (float)atof(argv[++i]);
         else if (!strcmp(argv[i], "--delta")   && i + 1 < argc) delta   = (float)atof(argv[++i]);
         else if (!strcmp(argv[i], "--per-domain")) per_domain = 1;
+        else if (!strcmp(argv[i], "--classify-prompts")) { classify = 1; per_domain = 1; }
         else if (!strcmp(argv[i], "--self-test"))  self_test  = 1;
         else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help")) {
             usage();
@@ -124,8 +127,8 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    int n = cos_conformal_load_jsonl(dataset, mode, samples,
-                                     COS_CONFORMAL_MAX_SAMPLES);
+    int n = cos_conformal_load_jsonl_ex(dataset, mode, classify, samples,
+                                        COS_CONFORMAL_MAX_SAMPLES);
     if (n < 0) {
         fprintf(stderr, "cos-calibrate: cannot read dataset: %s\n", dataset);
         free(samples);

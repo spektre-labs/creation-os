@@ -36,18 +36,23 @@ trap 'rm -f "$OUT1" "$OUT2" "$JSON1" "$JSON2"' EXIT
 "$BIN" --dataset "$DATA" --mode pipeline --alpha 0.60 --delta 0.10 \
        --out "$JSON2" >"$OUT2"
 
-python3 - "$JSON1" "$JSON2" <<'PY'
+# SCI-2: per-domain + classifier flow.
+JSON3=$(mktemp); trap 'rm -f "$OUT1" "$OUT2" "$JSON1" "$JSON2" "$JSON3"' EXIT
+"$BIN" --dataset "$DATA" --mode pipeline --alpha 0.80 --delta 0.10 \
+       --classify-prompts --out "$JSON3" >/dev/null
+
+python3 - "$JSON1" "$JSON2" "$JSON3" <<'PY'
 import json, sys
 j1 = json.load(open(sys.argv[1]))
 j2 = json.load(open(sys.argv[2]))
+j3 = json.load(open(sys.argv[3]))
 
-for j, alpha in ((j1, 0.30), (j2, 0.60)):
+for j, alpha in ((j1, 0.30), (j2, 0.60), (j3, 0.80)):
     assert j["schema"] == "cos.conformal.v1", j
     assert abs(j["alpha"] - alpha) < 1e-6, j
     rs = j["per_domain"]
     assert len(rs) >= 1, j
-    domains = [r["domain"] for r in rs]
-    assert domains[0] == "all", domains
+    assert rs[0]["domain"] == "all", rs
     for r in rs:
         if r["valid"]:
             assert r["risk_ucb"] <= alpha + 1e-6, (r, alpha)
@@ -58,9 +63,18 @@ tau_tight = j1["per_domain"][0]["tau"]
 tau_loose = j2["per_domain"][0]["tau"]
 assert tau_tight <= tau_loose + 1e-6, (tau_tight, tau_loose)
 
+# SCI-2: classifier produces one or more categories from the fixed
+#        label set {factual, code, reasoning, other}.
+cats = {r["domain"] for r in j3["per_domain"] if r["domain"] != "all"}
+allowed = {"factual", "code", "reasoning", "other"}
+assert cats and cats.issubset(allowed), cats
+# At α=0.80 with 140 scored rows, at least one partition should pass.
+assert any(r["valid"] for r in j3["per_domain"]), j3
+
 print("check_sigma_conformal: PASS", {
     "tau_alpha_0.30": tau_tight,
     "tau_alpha_0.60": tau_loose,
-    "domains": len(j1["per_domain"]),
+    "classifier_domains": sorted(cats),
+    "valid_partitions": sum(1 for r in j3["per_domain"] if r["valid"]),
 })
 PY

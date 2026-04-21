@@ -122,18 +122,56 @@ int cos_conformal_read_bundle_json (const char *path,
  *   "correct"  : bool | null
  *   "mode"     : string (optional; filters when `mode_filter` is non-NULL)
  *   "category" : string (optional; copied into sample.domain)
+ *   "prompt"   : string (optional; consumed only when classify == 1)
  *
  * Rows with correct == null are loaded with correct = -1 so they do
  * not contribute to the calibration numerator or denominator.
+ *
+ * When `classify` is non-zero the loader overrides sample.domain
+ * with cos_conformal_classify_prompt(row["prompt"]), yielding one of
+ * {"factual","code","reasoning","other"} regardless of the row's
+ * dataset-native category.  This is the SCI-2 per-domain τ surface.
  *
  * Returns the number of samples loaded on success (≤ cap), -1 on io.
  */
 int cos_conformal_load_jsonl(const char *path, const char *mode_filter,
                              cos_conformal_sample_t *out, int cap);
+int cos_conformal_load_jsonl_ex(const char *path, const char *mode_filter,
+                                int classify,
+                                cos_conformal_sample_t *out, int cap);
+
+/* --------------------------------------------------------------- *
+ * SCI-2: adaptive τ per domain + online update.
+ * --------------------------------------------------------------- *
+ *
+ * (a) Prompt classifier.  Keyword-heuristic, returns one of the
+ *     fixed category tags {"factual","code","reasoning","other"}.
+ *     Strictly deterministic; no model calls.  The output pointer
+ *     is a compile-time literal owned by the library.
+ */
+const char *cos_conformal_classify_prompt(const char *prompt);
+
+/*
+ * (b) Online adaptive τ.  Gibbs-Candès "Adaptive Conformal Inference
+ *     under Distribution Shift" (arXiv:2106.00170) update rule:
+ *
+ *         τ_{t+1} = clamp(τ_t + η · (1{σ_t > τ_t} − α_target), 0, 1)
+ *
+ *     Interpretation: if recent rejection rate exceeds α_target, τ
+ *     grows (we accept more); if it undershoots, τ shrinks.  This is
+ *     the simplest adaptive rule that preserves a marginal coverage
+ *     guarantee under arbitrary distribution drift.
+ *
+ *     `sigma` is the σ of the *latest* observation; `tau_in` is the
+ *     current threshold; `alpha_target` is the desired rejection
+ *     rate; `eta` is the learning rate (typical 0.05).  Returns the
+ *     updated τ clipped to [0,1].  Pure function, no state.         */
+float cos_conformal_aci_update(float sigma, float tau_in,
+                               float alpha_target, float eta);
 
 /* Self-test: synthetic calibration on a hand-constructed dataset; checks
- * τ monotonicity in α and that the computed UCB matches the analytic
- * Hoeffding bound.  Returns 0 on success. */
+ * τ monotonicity in α, UCB shape, and ACI convergence behaviour.
+ * Returns 0 on success. */
 int cos_conformal_self_test(void);
 
 #ifdef __cplusplus
