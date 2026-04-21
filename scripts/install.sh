@@ -28,11 +28,13 @@
 # the deterministic StubBackend so the user sees a working
 # product on first run.
 #
-# Optional full BitNet + bitnet.cpp stack (large download, requires
-# huggingface-cli and cmake): export COS_INSTALL_REAL_BITNET=1 before
-# running this script.  That path runs scripts/real/setup_bitnet_model.sh
-# then smoke-tests `cos chat` with CREATION_OS_BITNET_EXE and
-# CREATION_OS_BITNET_MODEL pointed at the built llama-cli + GGUF.
+# Default full BitNet + bitnet.cpp stack (large download, requires
+# huggingface-cli and cmake): enabled automatically when those tools are on
+# PATH.  Opt out with COS_INSTALL_NO_BITNET=1 or force on with
+# COS_INSTALL_REAL_BITNET=1.  The real path runs
+# scripts/real/setup_bitnet_model.sh then smoke-tests `cos chat` with
+# CREATION_OS_BITNET_EXE and CREATION_OS_BITNET_MODEL pointed at the built
+# llama-cli + GGUF.
 #
 # v107 legacy steps (forty-kernel stack):
 #
@@ -199,6 +201,22 @@ install_real_bitnet_cos() {
     ./cos chat --once --prompt "What is 2+2?" --max-tokens 32 \
         || fail "cos chat smoke with BitNet failed"
 }
+
+autodetect_real_bitnet() {
+    # Default to the full BitNet path if the maintainer has the tools and
+    # has not explicitly opted out with COS_INSTALL_NO_BITNET=1.
+    if [[ "${COS_INSTALL_NO_BITNET:-0}" == "1" ]]; then
+        echo "0"; return 0
+    fi
+    command -v cmake            >/dev/null 2>&1 || { echo "0"; return 0; }
+    command -v huggingface-cli  >/dev/null 2>&1 || { echo "0"; return 0; }
+    command -v python3          >/dev/null 2>&1 || { echo "0"; return 0; }
+    echo "1"
+}
+
+if [[ "${COS_INSTALL_REAL_BITNET:-}" == "" ]]; then
+    COS_INSTALL_REAL_BITNET="$(autodetect_real_bitnet)"
+fi
 
 if [[ "${COS_INSTALL_REAL_BITNET:-0}" == "1" ]]; then
     install_real_bitnet_cos
