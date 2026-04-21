@@ -2102,14 +2102,176 @@ static int cmd_demo(void)
     return total_fail == 0 ? 0 : 1;
 }
 
+/* --------------------------------------------------------------------
+ *  POLISH-2: `cos demo`  — the first-run σ-chat showcase.
+ *
+ *  Runs five carefully chosen prompts through ./cos-chat --once, with
+ *  envelope timing + per-query ACCEPT / RETHINK / ABSTAIN outcome, and
+ *  ends on a summary line.  The last prompt is a repeat of the first
+ *  so the user sees the engram cache kick in (FRESH → CACHE).  The
+ *  original kernel-tour stays reachable as `cos tour` / `cos showcase`.
+ *
+ *  We shell out to the real cos-chat binary and parse its last output
+ *  line of shape:
+ *
+ *     [σ=0.034 | FRESH | LOCAL | rethink=0 | €0.0001]
+ *
+ *  Nothing about σ or routing is faked; every number shown here came
+ *  out of a real pipeline call moments ago.
+ * -------------------------------------------------------------------- */
+
+struct chat_demo_prompt {
+    const char *label;    /* "Factual" */
+    const char *prompt;   /* "What is 2+2?" */
+    const char *expect;   /* "low σ expected" */
+};
+
+static const struct chat_demo_prompt g_chat_demo_prompts[] = {
+    { "Factual",      "What is 2+2?",                   "low σ expected"   },
+    { "Knowledge",    "What is the capital of France?", "medium σ"         },
+    { "Reasoning",    "Why is the sky blue?",           "may RETHINK"      },
+    { "Uncertainty",  "What will happen in 2030?",      "high σ → ABSTAIN" },
+    /* Cache hit: identical prompt #1 — engram should answer in ms. */
+    { "Cache hit",    "What is 2+2?",                   "from engram"      },
+};
+
+static const char *g_chat_demo_binaries[] = {
+    "./cos-chat",
+    "cos-chat",  /* fall back to PATH */
+};
+
+static int cmd_chat_demo(void)
+{
+    print_header();
+    section("five-query σ-chat showcase");
+
+    printf("  %sEvery answer below comes from a real pipeline pass.%s\n",
+           C_GREY, C_RESET);
+    printf("  %sσ is measured from per-token logprobs; CACHE is the σ-Engram.%s\n\n",
+           C_GREY, C_RESET);
+
+    /* Locate cos-chat. */
+    const char *cc = NULL;
+    for (size_t i = 0; i < sizeof g_chat_demo_binaries / sizeof g_chat_demo_binaries[0]; i++) {
+        struct stat st;
+        if (g_chat_demo_binaries[i][0] == '.'
+            && stat(g_chat_demo_binaries[i], &st) == 0) {
+            cc = g_chat_demo_binaries[i]; break;
+        }
+    }
+    if (cc == NULL) cc = "cos-chat";  /* trust PATH */
+
+    const int N = (int)(sizeof g_chat_demo_prompts / sizeof g_chat_demo_prompts[0]);
+    int    accept_count = 0, rethink_any = 0, abstain_count = 0, cache_count = 0;
+    double sum_sigma    = 0.0;
+    double sum_cost_eur = 0.0;
+    double t0 = wall_seconds();
+
+    for (int i = 0; i < N; ++i) {
+        const struct chat_demo_prompt *p = &g_chat_demo_prompts[i];
+        printf("  %s[%d/%d]%s %s%-12s%s %s(%s)%s\n",
+               C_BOLD, i + 1, N, C_RESET,
+               C_BOLD, p->label, C_RESET,
+               C_GREY, p->expect, C_RESET);
+        printf("    %s>%s %s\n", C_GREY, C_RESET, p->prompt);
+        fflush(stdout);
+
+        /* Build command.  Quote the prompt defensively. */
+        char cmd[1024];
+        snprintf(cmd, sizeof cmd,
+                 "%s --once --prompt %c%s%c 2>/dev/null",
+                 cc, '\'', p->prompt, '\'');
+
+        FILE *pf = popen(cmd, "r");
+        if (pf == NULL) {
+            printf("    %s(cos-chat not runnable — skipping)%s\n\n",
+                   C_AMBER, C_RESET);
+            continue;
+        }
+        char line[1024];
+        char last[1024]; last[0] = '\0';
+        while (fgets(line, sizeof line, pf) != NULL) {
+            /* Keep the last non-empty line. */
+            size_t l = strlen(line);
+            if (l > 0 && line[l-1] == '\n') line[--l] = '\0';
+            if (l == 0) continue;
+            /* Keep the envelope line, not the intermediate "round N" lines. */
+            if (line[0] == '[') {
+                snprintf(last, sizeof last, "%s", line);
+            }
+        }
+        int pc = pclose(pf);
+        (void)pc;
+
+        /* Parse: [σ=0.034 | FRESH | LOCAL | rethink=0 | €0.0001] */
+        float  sigma = -1.0f;
+        int    rethink = 0;
+        double cost = 0.0;
+        int    is_cache = (strstr(last, "| CACHE |")    != NULL);
+        int    is_abstain = (strstr(last, "ABSTAIN")    != NULL);
+        int    is_escal = (strstr(last, "| CLOUD |")    != NULL);
+        const char *sg = strstr(last, "σ=");
+        if (sg != NULL) sigma = (float)strtod(sg + 3, NULL);
+        const char *rt = strstr(last, "rethink=");
+        if (rt != NULL) rethink = atoi(rt + 8);
+        const char *er = strstr(last, "€");
+        if (er != NULL) cost = strtod(er + strlen("€"), NULL);
+        /* UTF-8 σ is 2 bytes and € is 3 bytes; strstr still works byte-wise. */
+
+        if (is_cache)   cache_count++;
+        if (rethink > 0) rethink_any++;
+        if (is_abstain) abstain_count++;
+        else            accept_count++;
+        if (sigma >= 0.0f && sigma <= 1.0f) sum_sigma += sigma;
+        sum_cost_eur += cost;
+
+        /* Outcome label. */
+        const char *tag =
+            is_abstain ? "ABSTAIN" :
+            is_cache   ? "CACHE"   :
+            is_escal   ? "ESCAL"   :
+            rethink > 0 ? "RETHINK" :
+                         "ACCEPT";
+        const char *col =
+            is_abstain ? C_AMBER :
+            is_cache   ? C_BLUE  :
+            rethink > 0 ? C_AMBER :
+                         C_GREEN;
+
+        printf("    %s→%s %s  %s[%s%s%s | σ=%.3f | rethink=%d | €%.4f]%s\n\n",
+               C_GREY, C_RESET,
+               last[0] ? "" : "(no answer)",
+               C_GREY, col, tag, C_GREY, (double)sigma, rethink,
+               cost, C_RESET);
+    }
+
+    double te = wall_seconds() - t0;
+    hr(72);
+    printf("  %sSummary%s\n", C_BOLD, C_RESET);
+    printf("    %d queries · %d ACCEPT · %d RETHINK · %d ABSTAIN · %d CACHE\n",
+           N, accept_count - abstain_count, rethink_any, abstain_count, cache_count);
+    printf("    σ_mean %.3f   cost €%.4f   elapsed %.1fs\n",
+           (N > 0) ? sum_sigma / (double)N : 0.0, sum_cost_eur, te);
+    printf("\n  %sNext:%s  %scos chat%s %s(interactive)%s %s·%s %scos cost%s %s(savings)%s %s·%s %scos health%s\n\n",
+           C_GREY, C_RESET,
+           C_BOLD, C_RESET, C_GREY, C_RESET,
+           C_GREY, C_RESET,
+           C_BOLD, C_RESET, C_GREY, C_RESET,
+           C_GREY, C_RESET,
+           C_BOLD, C_RESET);
+    return 0;
+}
+
 static int cmd_help(const char *prog)
 {
     print_header();
     section("commands");
     printf("  %s%-12s%s  first-run greeting — plain language, no jargon (aliases: start, hello, hi)\n",
            C_BOLD, "welcome", C_RESET);
-    printf("  %s%-12s%s  30-second live tour of all forty kernels — real numbers, no mocks (aliases: showcase, tour)\n",
+    printf("  %s%-12s%s  five-query σ-chat showcase — FRESH / RETHINK / ABSTAIN / CACHE (real pipeline)\n",
            C_BOLD, "demo",    C_RESET);
+    printf("  %s%-12s%s  30-second kernel self-test tour — every kernel runs live (aliases: showcase, kernel-tour)\n",
+           C_BOLD, "tour",    C_RESET);
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
     printf("  %s%-12s%s  full repo-health rollup (license · verify · hardening · receipts)\n",
            C_BOLD, "doctor", C_RESET);
@@ -2619,9 +2781,13 @@ int main(int argc, char **argv)
         strcmp(argv[1], "hello")   == 0 ||
         strcmp(argv[1], "hi")      == 0 ||
         strcmp(argv[1], "onboard") == 0) return cmd_welcome();
-    if (strcmp(argv[1], "demo")     == 0 ||
+    /* POLISH-2: `cos demo` now runs the five-query σ-chat showcase.
+     * The long-standing kernel self-test tour stays reachable via
+     * `cos tour` / `cos showcase` (unchanged behaviour). */
+    if (strcmp(argv[1], "demo") == 0)      return cmd_chat_demo();
+    if (strcmp(argv[1], "tour")     == 0 ||
         strcmp(argv[1], "showcase") == 0 ||
-        strcmp(argv[1], "tour")     == 0) return cmd_demo();
+        strcmp(argv[1], "kernel-tour") == 0) return cmd_demo();
     if (strcmp(argv[1], "doctor")  == 0) return cmd_doctor();
     if (strcmp(argv[1], "health")  == 0) return cmd_health(argc - 2, argv + 2);
     if (strcmp(argv[1], "verify")  == 0) return cmd_verify();
