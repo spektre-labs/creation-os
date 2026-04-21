@@ -6109,8 +6109,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-suite check-sigma-lora-export \
                       check-sigma-watchdog check-sigma-mcp \
                       check-sigma-a2a check-sigma-formal-complete \
-                      check-sigma-mesh3 check-sigma-arxiv
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv)"
+                      check-sigma-mesh3 check-sigma-arxiv \
+                      check-sigma-conformal
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6995,6 +6996,28 @@ creation_os_sigma_team: $(SIGMA_TEAM_SRCS) \
 check-sigma-team: creation_os_sigma_team
 	@bash benchmarks/sigma_pipeline/check_sigma_team.sh
 	@echo "check-sigma-team: OK (plan + route + execute + escalate)"
+
+# --- σ-pipeline: conformal calibration (SCI-1 / SCI-2) ---------------
+#
+# Angelopoulos-Bates "Learn-then-Test" risk control specialised to
+# binary selective prediction.  Reads a detail JSONL with (σ, correct)
+# per row and writes ~/.cos/calibration.json holding τ with the
+# coverage guarantee P(wrong | σ ≤ τ) ≤ α with confidence 1 − δ.  No
+# network, libm only.
+SIGMA_CONFORMAL_INC  = -Isrc/sigma/pipeline
+SIGMA_CONFORMAL_SRCS = src/sigma/pipeline/conformal.c
+
+creation_os_sigma_conformal: $(SIGMA_CONFORMAL_SRCS) \
+                             src/sigma/pipeline/conformal_main.c
+	$(CC) $(CFLAGS) $(SIGMA_CONFORMAL_INC) -o $@ \
+	    $(SIGMA_CONFORMAL_SRCS) src/sigma/pipeline/conformal_main.c $(LDFLAGS)
+
+cos-calibrate: creation_os_sigma_conformal
+	@cp $< $@
+
+check-sigma-conformal: creation_os_sigma_conformal
+	@bash benchmarks/sigma_pipeline/check_sigma_conformal.sh
+	@echo "check-sigma-conformal: OK (self-test + truthfulqa calibration)"
 
 # --- σ-pipeline: benchmark suite (HERMES-3) --------------------------
 #
