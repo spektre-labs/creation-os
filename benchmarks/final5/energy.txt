@@ -1,0 +1,6 @@
+cos benchmark --energy (ULTRA-7 demo constants)
+ config           | accuracy |  J/query |    reasoning/J
+ -----------------+----------+----------+--------------
+ bitnet_only      |    0.261 |      0.8 |          0.326
+ sigma_pipeline   |    0.336 |      1.2 |          0.280
+ sigma_selective  |    0.520 |      0.5 |          1.040

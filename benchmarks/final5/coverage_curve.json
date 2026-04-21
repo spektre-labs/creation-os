@@ -1,0 +1,33 @@
+{
+  "schema": "cos.coverage_curve.v1",
+  "dataset": "benchmarks/pipeline/truthfulqa_817_detail.jsonl",
+  "mode": "pipeline",
+  "delta": 0.050000,
+  "step": 0.050000,
+  "n_scored": 140,
+  "n_correct": 47,
+  "accuracy_all": 0.335714,
+  "rows": [
+    {"tau":0.0000, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.0500, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.1000, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.1500, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.2000, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.2500, "coverage":0.000000, "n_accept":0, "accuracy":null, "risk_ucb":null},
+    {"tau":0.3000, "coverage":0.007143, "n_accept":1, "accuracy":0.000000, "risk_ucb":1.000000},
+    {"tau":0.3500, "coverage":0.135714, "n_accept":19, "accuracy":0.421053, "risk_ucb":0.859723},
+    {"tau":0.4000, "coverage":0.614286, "n_accept":86, "accuracy":0.372093, "risk_ucb":0.759881},
+    {"tau":0.4500, "coverage":0.914286, "n_accept":128, "accuracy":0.328125, "risk_ucb":0.780051},
+    {"tau":0.5000, "coverage":0.971429, "n_accept":136, "accuracy":0.323529, "risk_ucb":0.781417},
+    {"tau":0.5500, "coverage":0.978571, "n_accept":137, "accuracy":0.328467, "risk_ucb":0.776095},
+    {"tau":0.6000, "coverage":0.985714, "n_accept":138, "accuracy":0.326087, "risk_ucb":0.778096},
+    {"tau":0.6500, "coverage":0.992857, "n_accept":139, "accuracy":0.330935, "risk_ucb":0.772872},
+    {"tau":0.7000, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":0.7500, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":0.8000, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":0.8500, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":0.9000, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":0.9500, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722},
+    {"tau":1.0000, "coverage":1.000000, "n_accept":140, "accuracy":0.335714, "risk_ucb":0.767722}
+  ]
+}

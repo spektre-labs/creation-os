@@ -85,7 +85,9 @@ Example:
 
 Two independent, reproducible evidence surfaces — both use real
 BitNet-b1.58 2B4T weights; neither is simulated.  Claim-class rules:
-[`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
+[`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).  Compact
+re-run bundle for the v3.0 wired pipeline (identical numbers, one
+command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 
 ### 1. TruthfulQA 817 (generation/validation, end-to-end)
 
