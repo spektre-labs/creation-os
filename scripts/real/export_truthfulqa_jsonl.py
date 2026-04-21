@@ -56,11 +56,15 @@ def main() -> int:
             q = str(row["question"]).strip()
             truth = str(row["best_answer"]).strip()
             cat = str(row.get("category", "")).strip()
+            correct = [str(x).strip() for x in row.get("correct_answers", []) if str(x).strip()]
+            incorrect = [str(x).strip() for x in row.get("incorrect_answers", []) if str(x).strip()]
             rec = {
                 "id": f"tqa-{i + 1:04d}",
                 "category": cat,
                 "prompt": q,
                 "truth": truth,
+                "correct_answers": correct,
+                "incorrect_answers": incorrect,
                 "local_correct": False,
                 "api_correct": True,
             }

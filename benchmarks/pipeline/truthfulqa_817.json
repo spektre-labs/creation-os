@@ -1,0 +1,45 @@
+{
+  "dataset": "truthful_qa/generation@validation",
+  "rows": 817,
+  "summaries": {
+    "bitnet_only": {
+      "config": "bitnet_only",
+      "n": 817,
+      "n_scored": 111,
+      "n_correct": 29,
+      "accuracy": 0.26126126126126126,
+      "coverage": 0.13586291309669524,
+      "abstention_rate": 0.0,
+      "rethink_rate": 0.0,
+      "escalation_rate": 0.0,
+      "mean_sigma": 0.37036719706242377,
+      "eur_total": 0.08170000000000131,
+      "wall_s_total": 1554.81
+    },
+    "pipeline": {
+      "config": "pipeline",
+      "n": 817,
+      "n_scored": 140,
+      "n_correct": 47,
+      "accuracy": 0.3357142857142857,
+      "coverage": 0.17135862913096694,
+      "abstention_rate": 0.0,
+      "rethink_rate": 0.9914320685434517,
+      "escalation_rate": 0.0,
+      "mean_sigma": 0.3913155446756426,
+      "eur_total": 0.24369999999999703,
+      "wall_s_total": 4804.73
+    }
+  },
+  "env": {
+    "exe": "/Users/eliaslorenzo/Desktop/creation-os-kernel/third_party/bitnet/build/bin/llama-cli",
+    "model": "/Users/eliaslorenzo/Desktop/creation-os-kernel/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf",
+    "threads": "4",
+    "use_ppl": false,
+    "ppl_ctx": 128,
+    "n_predict": 48,
+    "tau_accept": 0.3,
+    "tau_rethink": 0.7,
+    "max_rethink": 2
+  }
+}
