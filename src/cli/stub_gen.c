@@ -6,6 +6,7 @@
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -56,17 +57,58 @@ int cos_cli_stub_generate(const char *prompt, int round, void *ctx,
     return 0;
 }
 
-/* Backend selection (DEV-1):
+/* DEV-4: streaming callback.
+ *
+ * Installed as the per-token callback when COS_BITNET_STREAM=1.
+ * Prints each token's content to stdout immediately (no newline, no
+ * buffering beyond stdio's) so the user sees the answer materialise
+ * in real time.  When --verbose-style σ-per-token is requested via
+ * COS_BITNET_STREAM_VERBOSE=1 we append `[σ=0.12]` after each token
+ * so the uncertainty signal is visible during the stream.
+ *
+ * The callback returns 0 (continue) on every chunk; early-abort
+ * would be reported as stopped_limit=1 in the summary. */
+typedef struct {
+    int verbose;
+    int have_printed;
+} cos_chat_stream_ctx_t;
+
+static int cos_chat_stream_cb(const char *tok, float sigma,
+                              int is_last, void *ctx) {
+    cos_chat_stream_ctx_t *s = (cos_chat_stream_ctx_t *)ctx;
+    if (tok == NULL || tok[0] == '\0') {
+        /* Terminal chunk (stop=true) — server emits empty content. */
+        if (is_last && s->have_printed) {
+            fputc('\n', stdout);
+            fflush(stdout);
+        }
+        return 0;
+    }
+    fputs(tok, stdout);
+    if (s->verbose) fprintf(stdout, "[σ=%.2f]", (double)sigma);
+    fflush(stdout);
+    s->have_printed = 1;
+    return 0;
+}
+
+/* Backend selection (DEV-1 / DEV-4):
  *
  *   COS_BITNET_SERVER=1        → spawn llama-server (bitnet_server.h)
  *                                and measure σ from real per-token
- *                                probs in the /v1/chat/completions
- *                                response.  Each RETHINK round
+ *                                probs.  Default endpoint is
+ *                                /v1/chat/completions (best output
+ *                                quality).  Each RETHINK round
  *                                (round > 0) rotates the seed and
  *                                bumps the temperature so the
  *                                sampler explores a different
- *                                trajectory — prerequisite for
- *                                DEV-2's real regeneration loop.
+ *                                trajectory.
+ *   COS_BITNET_STREAM=1        → also enable DEV-4 SSE streaming.
+ *                                Token text is printed to stdout
+ *                                as it arrives (via stream_cb), and
+ *                                the pipeline receives the final
+ *                                (text, σ) tuple when the stream
+ *                                closes.  Uses /completion natively
+ *                                because chat streaming drops probs.
  *   CREATION_OS_BITNET_EXE=/…  → legacy one-shot subprocess capture
  *                                with heuristic σ (bitnet_sigma.h).
  *                                Kept for CI parity and for hosts
@@ -107,7 +149,18 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             p.temperature = 0.8f + 0.15f * (float)round;
         }
         cos_bitnet_server_result_t r;
-        int rc = cos_bitnet_server_complete(prompt, &p, &r);
+        int rc;
+        const char *use_stream = getenv("COS_BITNET_STREAM");
+        if (use_stream != NULL && use_stream[0] == '1') {
+            cos_chat_stream_ctx_t sctx = { 0, 0 };
+            const char *sv = getenv("COS_BITNET_STREAM_VERBOSE");
+            sctx.verbose = (sv != NULL && sv[0] == '1');
+            rc = cos_bitnet_server_complete_stream(prompt, &p,
+                                                   cos_chat_stream_cb,
+                                                   &sctx, &r);
+        } else {
+            rc = cos_bitnet_server_complete(prompt, &p, &r);
+        }
         if (rc == 0) {
             /* Copy text into the module-local buffer so the pipeline
              * can reference it after the next server call clobbers

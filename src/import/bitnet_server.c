@@ -903,3 +903,383 @@ int cos_bitnet_server_complete(const char                       *prompt,
     }
     return rc;
 }
+
+/* =====================================================================
+ * DEV-4: streaming completion (/completion + "stream":true)
+ *
+ * Transport: the response is HTTP/1.1 chunked-transfer SSE.  We
+ * decode the chunk framing on the fly and accumulate clean body
+ * bytes into a small scratch; whenever a complete `data:` event
+ * (terminated by blank-line \n\n or \r\n\r\n) is present we extract
+ * it, parse (content, stop, completion_probabilities[0].probs[0].prob),
+ * invoke the caller's `token_cb`, and compact the scratch.
+ *
+ * JSON shape per event (llama.cpp native /completion streaming):
+ *   {"content":" Paris","stop":false,"id_slot":0,...,
+ *    "completion_probabilities":[{"content":" Paris",
+ *        "probs":[{"tok_str":" Paris","prob":0.88},...]}]}
+ *
+ * On the terminal event `"stop":true` the server also includes
+ * `tokens_predicted`, `stopped_eos`, `stopped_limit` — we mirror
+ * these into `out`.
+ *
+ * Why /completion and not /v1/chat/completions:
+ *   Chat streaming DROPS probabilities (deltas carry only content)
+ *   on the upstream llama.cpp we ship.  We need per-token σ, so we
+ *   use the native endpoint and accept the trade-off that the chat
+ *   template is not applied automatically.  DEV-6 (Codex as system
+ *   prompt) reintroduces instruction-following via system_prompt.
+ * ===================================================================== */
+
+#define BNS_STREAM_EVBUF 16384   /* max one SSE event json size */
+#define BNS_STREAM_NETBUF 4096
+
+typedef struct {
+    int  in_chunk;         /* 0 = reading size line, 1 = reading bytes,
+                              2 = reading trailing \r\n */
+    long chunk_rem;        /* bytes remaining in current chunk */
+    char size_line[32];
+    size_t size_len;
+} bns_chunked_t;
+
+/* Decode one byte of a chunked-transfer response.  When a clean
+ * payload byte is emitted, writes it into *out_byte and returns 1.
+ * Returns 0 if the byte was framing (consumed silently), -1 on end-
+ * of-stream (terminal 0-length chunk), -2 on protocol error. */
+static int bns_chunked_step(bns_chunked_t *s, char c, char *out_byte) {
+    if (s->in_chunk == 0) {
+        /* accumulating hex size line until \r\n */
+        if (c == '\r') return 0;
+        if (c == '\n') {
+            s->size_line[s->size_len] = '\0';
+            long n = strtol(s->size_line, NULL, 16);
+            s->size_len = 0;
+            if (n < 0) return -2;
+            if (n == 0) return -1;  /* terminal chunk */
+            s->chunk_rem = n;
+            s->in_chunk  = 1;
+            return 0;
+        }
+        if (s->size_len + 1 >= sizeof s->size_line) return -2;
+        s->size_line[s->size_len++] = c;
+        return 0;
+    }
+    if (s->in_chunk == 1) {
+        /* payload byte */
+        *out_byte = c;
+        if (--s->chunk_rem == 0) s->in_chunk = 2;
+        return 1;
+    }
+    /* in_chunk == 2: swallow \r\n then back to size line. */
+    if (c == '\n') s->in_chunk = 0;
+    return 0;
+}
+
+/* Scan a single SSE event JSON for "stop":true / false.  Returns
+ * 1 on stop=true, 0 on stop=false or absent. */
+static int sse_event_is_terminal(const char *ev, size_t elen) {
+    const char *p = json_find_key(ev, ev + elen, "stop");
+    if (p == NULL) return 0;
+    return (strncmp(p, "true", 4) == 0) ? 1 : 0;
+}
+
+/* Build the JSON request body for /completion streaming.  Writes
+ * into `dst` (cap `cap`).  Returns bytes written, or 0 on overflow. */
+static size_t build_stream_request_json(char *dst, size_t cap,
+                                        const char *prompt,
+                                        const char *system_prompt,
+                                        int n_predict, int n_probs,
+                                        float temperature, int seed,
+                                        const char *stop_word) {
+    size_t w = 0;
+    int n;
+    n = snprintf(dst + w, cap - w, "{\"prompt\":");
+    if (n < 0) return 0; w += (size_t)n;
+
+    if (system_prompt != NULL && system_prompt[0] != '\0') {
+        /* Manual prepend: "system\n\nuser" single string.  Good
+         * enough for BitNet-class models; DEV-6 will refine. */
+        char combo[8192];
+        int cn = snprintf(combo, sizeof combo, "%s\n\n%s",
+                          system_prompt, prompt);
+        if (cn <= 0 || cn >= (int)sizeof combo) return 0;
+        size_t sw = json_encode_string(dst + w, cap - w, combo);
+        if (sw == 0) return 0; w += sw;
+    } else {
+        size_t sw = json_encode_string(dst + w, cap - w, prompt);
+        if (sw == 0) return 0; w += sw;
+    }
+
+    n = snprintf(dst + w, cap - w,
+                 ",\"n_predict\":%d,\"n_probs\":%d,\"stream\":true,"
+                 "\"cache_prompt\":true",
+                 n_predict, n_probs);
+    if (n < 0) return 0; w += (size_t)n;
+
+    if (temperature > 0.0f) {
+        n = snprintf(dst + w, cap - w, ",\"temperature\":%.3f",
+                     (double)temperature);
+        if (n < 0) return 0; w += (size_t)n;
+    }
+    if (seed >= 0) {
+        n = snprintf(dst + w, cap - w, ",\"seed\":%d", seed);
+        if (n < 0) return 0; w += (size_t)n;
+    }
+    if (stop_word != NULL && stop_word[0] != '\0') {
+        n = snprintf(dst + w, cap - w, ",\"stop\":[");
+        if (n < 0) return 0; w += (size_t)n;
+        size_t sw = json_encode_string(dst + w, cap - w, stop_word);
+        if (sw == 0) return 0; w += sw;
+        n = snprintf(dst + w, cap - w, "]");
+        if (n < 0) return 0; w += (size_t)n;
+    }
+    n = snprintf(dst + w, cap - w, "}");
+    if (n < 0) return 0; w += (size_t)n;
+    return w;
+}
+
+int cos_bitnet_server_complete_stream(
+    const char                       *prompt,
+    const cos_bitnet_server_params_t *params,
+    cos_bitnet_server_token_cb_t      token_cb,
+    void                             *cb_ctx,
+    cos_bitnet_server_result_t       *out) {
+    if (prompt == NULL || out == NULL) return -1;
+    memset(out, 0, sizeof(*out));
+    bns_load_config();
+    if (cos_bitnet_server_ensure() != 0) return -2;
+
+    int   n_predict = params && params->n_predict > 0
+                          ? params->n_predict : g_bns.n_predict_default;
+    int   n_probs   = params && params->n_probs   > 0
+                          ? params->n_probs   : g_bns.n_probs_default;
+    int   seed      = params ? params->seed : -1;
+    float temp      = params ? params->temperature : 0.0f;
+    const char *stp = params ? params->stop_word    : NULL;
+    const char *sp  = params ? params->system_prompt: NULL;
+
+    static char json_tmp[BNS_REQ_CAP];
+    size_t jlen = build_stream_request_json(json_tmp, sizeof json_tmp,
+                                            prompt, sp, n_predict,
+                                            n_probs, temp, seed, stp);
+    if (jlen == 0) return -3;
+
+    int fd = bns_connect(BNS_REQ_TIMEOUT_S);
+    if (fd < 0) return -4;
+
+    int hn = snprintf(g_bns.req_buf, BNS_REQ_CAP,
+                      "POST /completion HTTP/1.1\r\n"
+                      "Host: %s:%d\r\n"
+                      "Content-Type: application/json\r\n"
+                      "Content-Length: %zu\r\n"
+                      "Accept: text/event-stream\r\n"
+                      "Connection: close\r\n\r\n",
+                      g_bns.host, g_bns.port, jlen);
+    if (hn < 0 || (size_t)hn + jlen >= BNS_REQ_CAP) { close(fd); return -3; }
+    memcpy(g_bns.req_buf + hn, json_tmp, jlen);
+    if (bns_send_all(fd, g_bns.req_buf, (size_t)hn + jlen) != 0) {
+        close(fd); return -5;
+    }
+
+    double t0 = now_ms();
+
+    /* --- read + parse phase --- */
+    char   netbuf[BNS_STREAM_NETBUF];
+    char   body[BNS_STREAM_EVBUF];
+    size_t blen = 0;
+    int    headers_done = 0;
+    int    is_chunked   = 0;
+    int    status_ok    = 0;
+    char   hbuf[2048];     /* header accumulator */
+    size_t hlen = 0;
+    bns_chunked_t cs = {0};
+
+    float  max_sigma = 0.0f;
+    double sum_sigma = 0.0;
+    int    n_tokens  = 0;
+    int    aborted   = 0;
+    int    hit_terminal = 0;
+
+    /* text accumulator (owned by module; caller sees out->text) */
+    g_bns.text_buf[0] = '\0';
+    size_t text_w = 0;
+
+    for (;;) {
+        ssize_t r = recv(fd, netbuf, sizeof netbuf, 0);
+        if (r < 0) {
+            if (errno == EINTR) continue;
+            break;
+        }
+        if (r == 0) break;
+
+        size_t i = 0;
+        while (i < (size_t)r) {
+            if (!headers_done) {
+                char c = netbuf[i++];
+                if (hlen + 1 < sizeof hbuf) hbuf[hlen++] = c;
+                if (hlen >= 4
+                    && hbuf[hlen-4] == '\r' && hbuf[hlen-3] == '\n'
+                    && hbuf[hlen-2] == '\r' && hbuf[hlen-1] == '\n') {
+                    hbuf[hlen] = '\0';
+                    status_ok  = (strncmp(hbuf, "HTTP/1.1 200", 12) == 0);
+                    is_chunked = (strcasestr(hbuf,
+                                             "Transfer-Encoding: chunked") != NULL);
+                    headers_done = 1;
+                    if (!status_ok) { close(fd); return -6; }
+                }
+                continue;
+            }
+
+            /* body byte */
+            char c = netbuf[i++];
+            char out_c;
+            int bs;
+            if (is_chunked) {
+                bs = bns_chunked_step(&cs, c, &out_c);
+                if (bs == -1) { /* end of stream */ i = (size_t)r; break; }
+                if (bs == -2) { close(fd); return -7; }
+                if (bs == 0) continue; /* framing consumed */
+            } else {
+                out_c = c;
+            }
+
+            /* accumulate + dispatch */
+            if (blen + 1 >= sizeof body) {
+                /* event too large; drop first quarter */
+                memmove(body, body + sizeof body / 4,
+                        blen - sizeof body / 4);
+                blen -= sizeof body / 4;
+            }
+            body[blen++] = out_c;
+
+            /* Look for complete event boundary: "\n\n" or "\r\n\r\n". */
+            if (blen >= 2 && body[blen-2] == '\n' && body[blen-1] == '\n') {
+                /* isolate this event text */
+                body[blen] = '\0';
+                const char *ev = body;
+                size_t elen = blen;
+
+                /* Expect "data: " prefix. */
+                const char *dp = strstr(ev, "data:");
+                if (dp != NULL) {
+                    dp += 5;
+                    while (*dp == ' ' || *dp == '\t') dp++;
+                    size_t dlen = elen - (size_t)(dp - ev);
+
+                    /* "[DONE]" marker? */
+                    if (strncmp(dp, "[DONE]", 6) == 0) {
+                        hit_terminal = 1;
+                    } else {
+                        /* Parse JSON content + probs + stop. */
+                        char tok_buf[2048];
+                        tok_buf[0] = '\0';
+                        const char *cp = json_find_key(dp, dp + dlen, "content");
+                        if (cp != NULL && *cp == '"') {
+                            size_t n; const char *q = cp;
+                            if (json_parse_string(&q, dp + dlen,
+                                                  tok_buf, sizeof tok_buf,
+                                                  &n) != 0) {
+                                tok_buf[0] = '\0';
+                            }
+                        }
+
+                        /* σ from first completion_probabilities entry. */
+                        float sigma_tok = 1.0f;
+                        const char *cp_arr = json_find_key(dp, dp + dlen,
+                                                           "completion_probabilities");
+                        if (cp_arr != NULL && *cp_arr == '[') {
+                            const char *pq = cp_arr + 1;
+                            json_skip_ws(&pq, dp + dlen);
+                            if (pq < dp + dlen && *pq == '{') {
+                                const char *obj = pq;
+                                /* Find nested probs → first entry → prob. */
+                                const char *probs = json_find_key(obj, dp + dlen, "probs");
+                                if (probs != NULL && *probs == '[') {
+                                    const char *eq = probs + 1;
+                                    json_skip_ws(&eq, dp + dlen);
+                                    if (eq < dp + dlen && *eq == '{') {
+                                        const char *pr = json_find_key(eq, dp + dlen, "prob");
+                                        if (pr != NULL) {
+                                            float v = (float)strtod(pr, NULL);
+                                            if (v >= 0.0f && v <= 1.0f) {
+                                                sigma_tok = 1.0f - v;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        int is_stop = sse_event_is_terminal(dp, dlen);
+
+                        /* Append token text to accumulator. */
+                        if (tok_buf[0] != '\0') {
+                            size_t tlen = strlen(tok_buf);
+                            if (text_w + tlen + 1 < BNS_TEXT_CAP) {
+                                memcpy(g_bns.text_buf + text_w, tok_buf, tlen);
+                                text_w += tlen;
+                                g_bns.text_buf[text_w] = '\0';
+                            }
+                        }
+
+                        /* Only count non-empty tokens toward σ. */
+                        if (tok_buf[0] != '\0') {
+                            n_tokens++;
+                            sum_sigma += sigma_tok;
+                            if (sigma_tok > max_sigma) max_sigma = sigma_tok;
+                        }
+
+                        /* Fire callback per event.  Empty tok_buf on the
+                         * terminal event is expected; cb can distinguish
+                         * via is_last. */
+                        if (token_cb != NULL) {
+                            int rc = token_cb(tok_buf, sigma_tok,
+                                              is_stop, cb_ctx);
+                            if (rc != 0) {
+                                aborted = 1;
+                                hit_terminal = 1;
+                            }
+                        }
+
+                        if (is_stop) {
+                            /* Harvest terminal-event stats. */
+                            const char *tp = json_find_key(dp, dp + dlen, "tokens_predicted");
+                            if (tp != NULL) out->token_count = atoi(tp);
+                            const char *se = json_find_key(dp, dp + dlen, "stopped_eos");
+                            if (se != NULL && strncmp(se, "true", 4) == 0)
+                                out->stopped_eos = 1;
+                            const char *sl = json_find_key(dp, dp + dlen, "stopped_limit");
+                            if (sl != NULL && strncmp(sl, "true", 4) == 0)
+                                out->stopped_limit = 1;
+                            hit_terminal = 1;
+                        }
+                    }
+                }
+                blen = 0;
+                if (hit_terminal) { i = (size_t)r; break; }
+            }
+            /* Also handle \r\n\r\n terminators. */
+            if (blen >= 4
+                && body[blen-4] == '\r' && body[blen-3] == '\n'
+                && body[blen-2] == '\r' && body[blen-1] == '\n') {
+                blen -= 2;  /* let the \n\n path catch it next iter */
+            }
+        }
+
+        if (hit_terminal) break;
+    }
+    close(fd);
+
+    /* Finalize summary. */
+    if (out->token_count == 0) out->token_count = n_tokens;
+    out->sigma      = (max_sigma > 0.0f) ? max_sigma
+                                         : (n_tokens == 0 ? 1.0f : 0.0f);
+    out->mean_sigma = (n_tokens > 0) ? (float)(sum_sigma / n_tokens) : 1.0f;
+    out->text       = g_bns.text_buf;
+    out->elapsed_ms = now_ms() - t0;
+    out->cost_eur   = 0.0001;
+    if (aborted && !out->stopped_limit && !out->stopped_eos) {
+        out->stopped_limit = 1;  /* caller-aborted → treat as truncation */
+    }
+    return 0;
+}

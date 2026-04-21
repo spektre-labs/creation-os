@@ -102,6 +102,48 @@ int  cos_bitnet_server_complete(const char                     *prompt,
                                 const cos_bitnet_server_params_t *params,
                                 cos_bitnet_server_result_t       *out);
 
+/* DEV-4: streaming completion.
+ *
+ * Opens a POST /completion with "stream": true + "n_probs" and reads
+ * the SSE response line-by-line.  For each token chunk, invokes the
+ * caller-supplied `token_cb` with:
+ *
+ *   - tok_text : one token's "content" string (NUL-terminated, valid
+ *                until the cb returns).  Empty for the final chunk.
+ *   - sigma    : 1.0 - max(top-k prob) for this token.  1.0 if the
+ *                server omitted probs on this chunk.
+ *   - is_last  : 0 for each streamed token, 1 on the terminal chunk
+ *                (which carries stop=true + tokens_predicted summary).
+ *
+ * After streaming completes, `out` is filled with the usual summary:
+ *   - text        : accumulated full response (server-module-owned buf)
+ *   - sigma       : max over all per-token σ
+ *   - token_count : count of streamed tokens
+ *   - mean_sigma  : mean over all per-token σ
+ *   - stopped_eos / stopped_limit / elapsed_ms / cost_eur
+ *
+ * The callback MAY return non-zero to abort the stream early; that is
+ * reported as stopped_limit=1 in the summary, and the socket is
+ * closed.  Returns 0 on success, non-zero on transport / parse error.
+ *
+ * Uses the native /completion endpoint (NOT /v1/chat/completions)
+ * because the chat endpoint drops probabilities in streaming mode —
+ * we need real per-token σ, so we pay the quality cost of skipping
+ * the chat template.  For chat-quality streaming, enable Codex
+ * (DEV-6) which prepends the system prompt manually. */
+typedef int (*cos_bitnet_server_token_cb_t)(
+    const char *tok_text,
+    float       sigma,
+    int         is_last,
+    void       *ctx);
+
+int  cos_bitnet_server_complete_stream(
+    const char                         *prompt,
+    const cos_bitnet_server_params_t   *params,
+    cos_bitnet_server_token_cb_t        token_cb,
+    void                               *cb_ctx,
+    cos_bitnet_server_result_t         *out);
+
 /* SIGTERM + reap.  Idempotent; safe to call from atexit. */
 void cos_bitnet_server_shutdown(void);
 
