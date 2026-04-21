@@ -91,8 +91,9 @@ SHA-256 of LICENSE-SCSL-1.0.md.  The pinned reference hash is in
 CONTACT
 ================================================================================
 
-    Licensing       spektrelabs@proton.me
-    Security        spektrelabs@proton.me   ( / SECURITY.md )
+    Website         https://spektrelabs.org
+    Licensing       spektre.labs@proton.me
+    Security        spektre.labs@proton.me   ( / SECURITY.md )
     Maintainer      Lauri Elias Rainio · Spektre Labs Oy · Helsinki, Finland
     Source          https://github.com/spektre-labs/creation-os-kernel
     ORCID           0009-0006-0903-8541

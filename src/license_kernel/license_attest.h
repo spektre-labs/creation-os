@@ -1,7 +1,8 @@
 /*  SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  *  SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
  *  Source:        https://github.com/spektre-labs/creation-os-kernel
- *  Commercial:    spektrelabs@proton.me
+ *  Website:       https://spektrelabs.org
+ *  Commercial:    spektre.labs@proton.me
  *  License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
  *
  *  src/license_kernel/license_attest.h
@@ -55,7 +56,8 @@ extern const uint8_t  spektre_license_sha256_bin[32];
 #define SPEKTRE_LICENSE_SPDX     "LicenseRef-SCSL-1.0 OR AGPL-3.0-only"
 #define SPEKTRE_COPYRIGHT_LINE   "2024-2026 Lauri Elias Rainio \xc2\xb7 Spektre Labs Oy"
 #define SPEKTRE_SOURCE_URL       "https://github.com/spektre-labs/creation-os-kernel"
-#define SPEKTRE_COMMERCIAL_EMAIL "spektrelabs@proton.me"
+#define SPEKTRE_WEBSITE_URL      "https://spektrelabs.org"
+#define SPEKTRE_COMMERCIAL_EMAIL "spektre.labs@proton.me"
 
 /* ── 1. SHA-256 (FIPS-180-4), self-contained ───────────────────── */
 

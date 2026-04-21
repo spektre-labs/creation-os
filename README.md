@@ -2913,7 +2913,8 @@ copyright, trademark and patent notices.
 
 Lauri Elias Rainio · Spektre Labs Oy · Helsinki, Finland
 ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541) ·
-licensing: `spektrelabs@proton.me`
+licensing: `spektre.labs@proton.me` ·
+web: [spektrelabs.org](https://spektrelabs.org)
 
 ---
 

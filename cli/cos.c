@@ -1656,7 +1656,7 @@ static int cmd_license(int argc, char **argv)
                C_AMBER, C_RESET);
         printf("    %sDENY %s  intelligence · military operational · mass surveillance · sanctioned · aggression\n",
                C_RED, C_RESET);
-        printf("\n  %slicensing@spektre-labs.com  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
+        printf("\n  %sspektre.labs@proton.me  ·  https://spektrelabs.org  ·  see COMMERCIAL_LICENSE.md  ·  docs/LICENSING.md%s\n",
                C_DIM, C_RESET);
         return 0;
     }

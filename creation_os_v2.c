@@ -16,7 +16,8 @@
  * 2. COMMERCIAL: proprietary / enterprise use requires a separate licence from
  *    the copyright holder. See COMMERCIAL_LICENSE.md and LICENSE_PROTOCOL.md.
  *
- * COMMERCIAL LICENSING CONTACT: spektrelabs@proton.me
+ * COMMERCIAL LICENSING CONTACT: spektre.labs@proton.me
+ * WEBSITE: https://spektrelabs.org
  *
  * DISCLAIMER: this header is not a substitute for LICENSE or an executed
  * commercial agreement. See creation_os/LEGAL/SOURCE_FILE_HEADER.c.

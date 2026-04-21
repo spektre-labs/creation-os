@@ -43,7 +43,7 @@ following:
     §11 unless the Commercial License expressly waives the relevant
     section by number.
 
-If You are unsure, write to `spektrelabs@proton.me` **before**
+If You are unsure, write to `spektre.labs@proton.me` **before**
 You begin.
 
 ---
@@ -92,7 +92,7 @@ purported waiver of these clauses is void.
 ## Service-Level Commitments
 
 The Licensor commits to the following first-response service levels
-on inbound `spektrelabs@proton.me` requests (Helsinki business
+on inbound `spektre.labs@proton.me` requests (Helsinki business
 days, Mon–Fri 09:00–17:00 EET/EEST):
 
 | Tier                 | First reply       |  Quote / NDA      | Signed license   |
@@ -183,7 +183,8 @@ Lauri Elias Rainio
 Spektre Labs Oy
 Helsinki, Finland
 Y-tunnus / Business ID: (on request)
-e-mail: spektrelabs@proton.me
+e-mail: spektre.labs@proton.me
+website: https://spektrelabs.org
 GitHub: spektre-labs
 ORCID:  0009-0006-0903-8541
 ```

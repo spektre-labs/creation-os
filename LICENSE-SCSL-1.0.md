@@ -312,7 +312,8 @@ refusal.
   Spektre Labs Oy
   Helsinki, Finland
   Y-tunnus / Business ID: (on request)
-  E-mail: spektrelabs@proton.me
+  E-mail: spektre.labs@proton.me
+  Website: https://spektrelabs.org
   GitHub: spektre-labs
   ORCID: 0009-0006-0903-8541
   ```
@@ -384,7 +385,8 @@ carry, at the top of the file:
 /*  SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  *  SPDX-Copyright-Identifier: 2024–2026 Lauri Elias Rainio · Spektre Labs Oy
  *  Source: https://github.com/spektre-labs/creation-os-kernel
- *  Commercial: spektrelabs@proton.me
+ *  Website: https://spektrelabs.org
+ *  Commercial: spektre.labs@proton.me
  *  License documents: LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
  */
 ```

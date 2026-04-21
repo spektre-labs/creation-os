@@ -214,7 +214,7 @@ source of truth on or after the Effective Date of this CLA.
 Entities that wish to formalize a Corporate CLA covering all
 present and future contributions by their employees may request
 the Spektre Labs Corporate CLA template by writing to
-`spektrelabs@proton.me`. The Corporate CLA supersedes this
+`spektre.labs@proton.me`. The Corporate CLA supersedes this
 Individual CLA for all employees named in its schedule.
 
 ---
