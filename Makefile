@@ -6190,7 +6190,7 @@ check-integration: test_sigma_pipeline_integration
 # Real BitNet integration is one callback swap away; today these
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
-COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/cli -Isrc/import
+COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6216,11 +6216,27 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
 # — it's only ever invoked from cos_chat's escalate callback, which
 # lives in cos-chat's link closure.
 cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+          src/sigma/ttt/inplace_ttt.c \
           src/cli/escalation.c src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/sigma/ttt/inplace_ttt.c \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
+
+# AGI-1: tiny self-test for ICL composer (no SQLite required).
+creation_os_inplace_ttt: src/sigma/ttt/inplace_ttt.c \
+                        src/sigma/ttt/inplace_ttt_main.c \
+                        src/sigma/pipeline/engram_persist.c \
+                        src/sigma/pipeline/engram.c
+	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/sigma/ttt -o $@ \
+	    src/sigma/ttt/inplace_ttt.c src/sigma/ttt/inplace_ttt_main.c \
+	    src/sigma/pipeline/engram_persist.c src/sigma/pipeline/engram.c \
+	    $(LDFLAGS) -lsqlite3
+
+check-agi-icl: creation_os_inplace_ttt cos-chat
+	@./creation_os_inplace_ttt
+	@echo "check-agi-icl: OK (inplace_ttt self-test + cos-chat links)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
@@ -7760,7 +7776,7 @@ check-sigma-generate-until: check-sigma-pipeline
 # CLI.  The smoke test runs the --once mode with a deterministic stub
 # backend so it passes on any host (no BitNet / PyTorch needed) and
 # asserts the transcript has the expected shape.
-check-cos-chat: check-sigma-generate-until cos
+check-cos-chat: check-sigma-generate-until check-agi-icl cos
 	@bash benchmarks/sigma_pipeline/check_cos_chat.sh
 	@echo "check-cos-chat: OK (--once stub → ACCEPT/RETHINK/ABSTAIN + transcript JSONL)"
 

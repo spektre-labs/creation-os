@@ -43,6 +43,7 @@
 #include "codex.h"
 #include "engram.h"
 #include "engram_persist.h"
+#include "inplace_ttt.h"
 #include "sovereign.h"
 #include "agent.h"
 #include "stub_gen.h"
@@ -52,6 +53,17 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+
+/* AGI-1: SQLite engram → few-shot prefix (ICL as TTT proxy). */
+static int chat_icl_compose(void *icl_ctx, uint64_t exclude_prompt_hash,
+                            float exemplar_max_sigma, int k_shots,
+                            const char *user_prompt,
+                            char *out, size_t out_cap) {
+    cos_engram_persist_t *p = (cos_engram_persist_t *)icl_ctx;
+    return cos_inplace_ttt_compose_from_engram(
+        p, exclude_prompt_hash, exemplar_max_sigma, k_shots,
+        user_prompt, out, out_cap);
+}
 
 static const char *mode_label(cos_pipeline_mode_t m) {
     switch (m) {
@@ -212,6 +224,10 @@ int main(int argc, char **argv) {
     int     have_tau_rethink = 0;
     float   tau_accept    = 0.40f;
     float   tau_rethink   = 0.60f;
+    int     want_icl           = 0;
+    int     icl_k              = 3;
+    int     icl_rethink        = 0;
+    int     icl_user_disabled  = 0;
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -231,9 +247,20 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--tau-accept") == 0 && i + 1 < argc) {
             tau_accept = (float)atof(argv[++i]);
             have_tau_accept = 1;
-        } else if (strcmp(argv[i], "--tau-rethink")== 0 && i + 1 < argc) {
+        }         else if (strcmp(argv[i], "--tau-rethink")== 0 && i + 1 < argc) {
             tau_rethink = (float)atof(argv[++i]);
             have_tau_rethink = 1;
+        } else if (strcmp(argv[i], "--icl") == 0) {
+            want_icl = 1;
+        } else if (strcmp(argv[i], "--no-icl") == 0) {
+            want_icl = 0;
+            icl_user_disabled = 1;
+        } else if (strcmp(argv[i], "--icl-k") == 0 && i + 1 < argc) {
+            icl_k = atoi(argv[++i]);
+            if (icl_k < 1) icl_k = 1;
+            if (icl_k > 8) icl_k = 8;
+        } else if (strcmp(argv[i], "--icl-rethink-only") == 0) {
+            icl_rethink = 1;
         } else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos chat — σ-gated interactive inference\n"
@@ -252,10 +279,18 @@ int main(int argc, char **argv) {
                 "  --no-transcript     skip JSONL for --once\n"
                 "  --max-tokens N      accepted for argv parity (ignored)\n"
                 "  --banner-only       print banner and exit (CI hook)\n"
+                "  --icl               prepend few-shot exemplars from ~/.cos/engram.db\n"
+                "  --no-icl            disable ICL even if COS_ENGRAM_ICL=1\n"
+                "  --icl-k N           number of exemplars (default 3, max 8)\n"
+                "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
                 "  --help              this text\n"
                 "\n"
                 "  CREATION_OS_BITNET_EXE  optional path to local inference binary\n"
-                "                          (see src/import/bitnet_spawn.h).\n");
+                "                          (see src/import/bitnet_spawn.h).\n"
+                "  COS_ENGRAM_ICL=1        same as --icl (overridden by --no-icl)\n"
+                "  COS_ENGRAM_ICL_N=3      exemplar count\n"
+                "  COS_ENGRAM_ICL_RETHINK=1   same as --icl-rethink-only\n"
+                "  COS_ENGRAM_ICL_TAU=0.35    max σ for an exemplar row (default τ_accept)\n");
             return 0;
         }
     }
@@ -263,6 +298,11 @@ int main(int argc, char **argv) {
     if (once_mode) {
         if (!have_tau_accept)  tau_accept  = 0.30f;
         if (!have_tau_rethink) tau_rethink = 0.70f;
+    }
+
+    if (!icl_user_disabled) {
+        const char *env_icl = getenv("COS_ENGRAM_ICL");
+        if (env_icl != NULL && env_icl[0] == '1') want_icl = 1;
     }
 
     /* Codex load (optional). */
@@ -327,14 +367,34 @@ int main(int argc, char **argv) {
     cfg.sovereign    = &sv;
     cfg.agent        = &ag;
     cfg.generate     = cos_cli_chat_generate;
-    /* DEV-6: thread the loaded Codex through to the BitNet backend
-     * via generate_ctx.  cos_cli_chat_generate reads
-     * (const cos_sigma_codex_t *)ctx->bytes and installs it as the
-     * /v1/chat/completions `system` message (for the blocking path)
-     * or the manually-prepended prefix (for the streaming /completion
-     * path).  When --no-codex is passed, ctx is NULL and the backend
-     * runs with no system prompt. */
-    cfg.generate_ctx = have_codex ? (void *)&codex : NULL;
+    /* DEV-6 + AGI-1: always pass a tagged `cos_cli_generate_ctx_t` so
+     * the backend can attach Codex + optional engram-driven ICL. */
+    cos_cli_generate_ctx_t genctx;
+    memset(&genctx, 0, sizeof(genctx));
+    genctx.magic                   = COS_CLI_GENERATE_CTX_MAGIC;
+    genctx.codex                   = have_codex ? &codex : NULL;
+    genctx.persist                 = persist;
+    genctx.icl_exemplar_max_sigma  = tau_accept;
+    const char *icl_tau_env = getenv("COS_ENGRAM_ICL_TAU");
+    if (icl_tau_env != NULL && icl_tau_env[0] != '\0')
+        genctx.icl_exemplar_max_sigma = (float)atof(icl_tau_env);
+    genctx.icl_k                   = 0;
+    genctx.icl_rethink_only        = icl_rethink;
+    genctx.icl_compose             = chat_icl_compose;
+    genctx.icl_ctx                 = persist;
+    const char *env_icln = getenv("COS_ENGRAM_ICL_N");
+    if (env_icln != NULL && env_icln[0] != '\0') {
+        int n = atoi(env_icln);
+        if (n >= 1 && n <= 8) icl_k = n;
+    }
+    const char *env_iclr = getenv("COS_ENGRAM_ICL_RETHINK");
+    if (env_iclr != NULL && env_iclr[0] == '1') genctx.icl_rethink_only = 1;
+    if (want_icl && persist != NULL) {
+        genctx.icl_k = icl_k;
+    } else {
+        genctx.icl_k = 0;
+    }
+    cfg.generate_ctx = &genctx;
     /* DEV-5: dispatch via the API escalation module.  When
      * CREATION_OS_ESCALATION_PROVIDER + matching API key are set in
      * the environment, this reaches out to Claude/OpenAI/DeepSeek

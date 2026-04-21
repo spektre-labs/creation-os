@@ -26,9 +26,43 @@
 
 #include "pipeline.h"
 
+#include <stddef.h>
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Magic at offset 0 so `generate_ctx` can be either this struct or a
+ * legacy bare `cos_sigma_codex_t *` (first field there is a pointer,
+ * which never equals this constant on real hosts). */
+#define COS_CLI_GENERATE_CTX_MAGIC  0xC053100Du
+
+struct cos_engram_persist_s;
+typedef struct cos_engram_persist_s cos_engram_persist_t;
+
+/* Optional AGI-1 hook: build an ICL-augmented prompt from the engram.
+ * Returns 0 on success; on failure the generator falls back to the
+ * raw user prompt. */
+typedef int (*cos_cli_icl_compose_fn)(
+    void *icl_ctx,
+    uint64_t exclude_prompt_hash,
+    float exemplar_max_sigma,
+    int k_shots,
+    const char *user_prompt,
+    char *out, size_t out_cap);
+
+typedef struct {
+    uint32_t                   magic;
+    uint32_t                   _pad;
+    const cos_sigma_codex_t   *codex;
+    cos_engram_persist_t      *persist; /* optional SQLite engram   */
+    float                      icl_exemplar_max_sigma; /* σ < this    */
+    int                        icl_k;      /* 0 = off                  */
+    int                        icl_rethink_only; /* 1 = round>0 only    */
+    cos_cli_icl_compose_fn     icl_compose;
+    void                      *icl_ctx;    /* usually `persist`      */
+} cos_cli_generate_ctx_t;
 
 int cos_cli_stub_generate(const char *prompt, int round, void *ctx,
                           const char **out_text, float *out_sigma,

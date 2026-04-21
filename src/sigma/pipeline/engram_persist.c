@@ -343,3 +343,61 @@ int64_t cos_engram_persist_row_count(cos_engram_persist_t *p) {
 const char *cos_engram_persist_path(const cos_engram_persist_t *p) {
     return (p != NULL) ? p->path : NULL;
 }
+
+/* ------------------------------------------------------------------ *
+ * AGI-1 — ICL exemplar fetch.
+ * ------------------------------------------------------------------ */
+static void copy_trunc(char *dst, size_t dst_cap, const char *src) {
+    if (dst == NULL || dst_cap == 0) return;
+    dst[0] = '\0';
+    if (src == NULL) return;
+    size_t n = strlen(src);
+    if (n >= dst_cap) n = dst_cap - 1;
+    memcpy(dst, src, n);
+    dst[n] = '\0';
+}
+
+int cos_engram_persist_fetch_icl_exemplars(
+    cos_engram_persist_t *p,
+    uint64_t exclude_hash,
+    float max_sigma,
+    int k,
+    cos_engram_icl_exemplar_t *out,
+    int out_cap) {
+    if (p == NULL || p->db == NULL || out == NULL || out_cap <= 0)
+        return -1;
+    if (k <= 0) return 0;
+    if (k > out_cap) k = out_cap;
+
+    const char *sql =
+        "SELECT prompt, response, sigma FROM engram "
+        "WHERE prompt_hash != ?1 AND sigma < ?2 "
+        "ORDER BY sigma ASC, ts DESC LIMIT ?3";
+    sqlite3_stmt *st = NULL;
+    if (sqlite3_prepare_v2(p->db, sql, -1, &st, NULL) != SQLITE_OK) {
+        warn_sqlite("prepare ICL SELECT", p->db);
+        return -1;
+    }
+    sqlite3_bind_int64(st, 1, (sqlite3_int64)exclude_hash);
+    sqlite3_bind_double(st, 2, (double)max_sigma);
+    sqlite3_bind_int(st, 3, k);
+
+    int n = 0;
+    int rc;
+    while ((rc = sqlite3_step(st)) == SQLITE_ROW && n < k) {
+        const unsigned char *pr = sqlite3_column_text(st, 0);
+        const unsigned char *rs = sqlite3_column_text(st, 1);
+        double sig = sqlite3_column_double(st, 2);
+        copy_trunc(out[n].prompt, sizeof out[n].prompt,
+                   pr ? (const char *)pr : "");
+        copy_trunc(out[n].response, sizeof out[n].response,
+                   rs ? (const char *)rs : "");
+        out[n].sigma = (float)sig;
+        n++;
+    }
+    if (rc != SQLITE_DONE && rc != SQLITE_ROW && rc != SQLITE_OK) {
+        warn_sqlite("step ICL SELECT", p->db);
+    }
+    sqlite3_finalize(st);
+    return n;
+}

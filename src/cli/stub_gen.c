@@ -8,6 +8,7 @@
 #include "codex.h"
 #include "cost_log.h"
 #include "escalation.h"
+#include "engram.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,6 +16,9 @@
 
 /* One subprocess-sized buffer; cos-chat is single-threaded. */
 static char g_cos_chat_bitnet_buf[8192];
+
+/* AGI-1: ICL-wrapped prompt (few-shot prefix + final user line). */
+static char g_cos_chat_icl_buf[16384];
 
 /* DEV-5 distill-pair context (escalation.h).  Lives here, not in
  * escalation.c, so that binaries which link stub_gen without the
@@ -139,12 +143,22 @@ static int cos_chat_stream_cb(const char *tok, float sigma,
 int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                           const char **out_text, float *out_sigma,
                           double *out_cost_eur) {
-    /* DEV-6: the pipeline threads the loaded codex through ctx.  We
-     * install it as the backend's system_prompt so every /v1/chat/
-     * completions request (or the manually-prepended streaming
-     * prompt) carries Creation OS's canon verbatim.  NULL when
-     * --no-codex is set; in that case the backend runs unconditioned. */
-    const cos_sigma_codex_t *codex = (const cos_sigma_codex_t *)ctx;
+    /* DEV-6 / AGI-1: ctx is either a legacy `cos_sigma_codex_t *` or a
+     * `cos_cli_generate_ctx_t *` tagged with COS_CLI_GENERATE_CTX_MAGIC.
+     * The latter enables SQLite-backed few-shot ICL before local model
+     * calls (BitNet / llama-server); keyword stubs still key off the
+     * raw user `prompt` so harnesses stay stable. */
+    const cos_sigma_codex_t *codex = NULL;
+    cos_cli_generate_ctx_t   *wrap = NULL;
+    if (ctx != NULL) {
+        uint32_t m = *(const uint32_t *)ctx;
+        if (m == COS_CLI_GENERATE_CTX_MAGIC) {
+            wrap  = (cos_cli_generate_ctx_t *)ctx;
+            codex = wrap->codex;
+        } else {
+            codex = (const cos_sigma_codex_t *)ctx;
+        }
+    }
     const char *codex_sysprompt =
         (codex != NULL && codex->bytes != NULL && codex->size > 0)
             ? codex->bytes : NULL;
@@ -153,6 +167,20 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
         *out_sigma = 1.0f;
         *out_cost_eur = 0.0;
         return 1;
+    }
+
+    const char *prompt_model = prompt;
+    if (wrap != NULL && wrap->icl_compose != NULL && wrap->icl_ctx != NULL
+        && wrap->icl_k > 0
+        && (!wrap->icl_rethink_only || round > 0)) {
+        uint64_t h = cos_sigma_engram_hash(prompt);
+        if (wrap->icl_compose(wrap->icl_ctx, h,
+                              wrap->icl_exemplar_max_sigma,
+                              wrap->icl_k, prompt,
+                              g_cos_chat_icl_buf,
+                              sizeof g_cos_chat_icl_buf) == 0) {
+            prompt_model = g_cos_chat_icl_buf;
+        }
     }
 
     /* Branch A — llama-server backend (real per-token σ). */
@@ -183,11 +211,11 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             cos_chat_stream_ctx_t sctx = { 0, 0 };
             const char *sv = getenv("COS_BITNET_STREAM_VERBOSE");
             sctx.verbose = (sv != NULL && sv[0] == '1');
-            rc = cos_bitnet_server_complete_stream(prompt, &p,
+            rc = cos_bitnet_server_complete_stream(prompt_model, &p,
                                                    cos_chat_stream_cb,
                                                    &sctx, &r);
         } else {
-            rc = cos_bitnet_server_complete(prompt, &p, &r);
+            rc = cos_bitnet_server_complete(prompt_model, &p, &r);
         }
         if (rc == 0) {
             /* Copy text into the module-local buffer so the pipeline
@@ -225,7 +253,7 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
     /* Branch B — legacy subprocess capture with heuristic σ. */
     const char *exe = getenv("CREATION_OS_BITNET_EXE");
     if (exe != NULL && exe[0] != '\0' && round == 0) {
-        if (cos_bitnet_spawn_capture(exe, prompt, g_cos_chat_bitnet_buf,
+        if (cos_bitnet_spawn_capture(exe, prompt_model, g_cos_chat_bitnet_buf,
                                      sizeof g_cos_chat_bitnet_buf) == 0
             && g_cos_chat_bitnet_buf[0] != '\0') {
             *out_text       = g_cos_chat_bitnet_buf;

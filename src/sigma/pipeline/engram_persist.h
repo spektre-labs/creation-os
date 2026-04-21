@@ -105,6 +105,35 @@ int64_t cos_engram_persist_row_count(cos_engram_persist_t *p);
 /* Diagnostics: resolved filesystem path.  Lifetime is the handle's. */
 const char *cos_engram_persist_path(const cos_engram_persist_t *p);
 
+/* ------------------------------------------------------------------ *
+ * AGI-1: few-shot exemplars for in-context "test-time training".
+ *
+ * Pull up to `k` prior rows with σ < max_sigma, excluding the row
+ * whose prompt_hash equals `exclude_hash` (the current query).  Rows
+ * are ordered by ascending σ (most confident first), then newest
+ * `ts` as tie-break.  Each prompt/response is truncated to fit the
+ * fixed-width fields — this is a hot-path guard, not a semantic
+ * guarantee.
+ *
+ * Returns the number of exemplars written (0..k), or -1 on error.
+ * ------------------------------------------------------------------ */
+#define COS_ENGRAM_ICL_PROMPT_MAX    256
+#define COS_ENGRAM_ICL_RESPONSE_MAX 512
+
+typedef struct {
+    char  prompt[COS_ENGRAM_ICL_PROMPT_MAX];
+    char  response[COS_ENGRAM_ICL_RESPONSE_MAX];
+    float sigma;
+} cos_engram_icl_exemplar_t;
+
+int cos_engram_persist_fetch_icl_exemplars(
+    cos_engram_persist_t *p,
+    uint64_t exclude_hash,
+    float max_sigma,
+    int k,
+    cos_engram_icl_exemplar_t *out,
+    int out_cap);
+
 #ifdef __cplusplus
 }
 #endif
