@@ -672,6 +672,12 @@ int main(int argc, char **argv) {
         if (!have_tau_rethink) tau_rethink = 0.70f;
     }
 
+    /* NEXT-1: --verbose implies the σ_combined shadow ensemble in both
+     * REPL and --once paths so the full ULTRA stack is visible with one
+     * flag.  Users who want the ensemble without the verbose banner can
+     * still pass --multi-sigma explicitly. */
+    if (verbose) multi_sigma = 1;
+
     /* FINAL-2 Phase B: resolve conformal τ (overrides static defaults
      * unless the user explicitly passed --tau-accept). */
     int   conformal_active = 0;

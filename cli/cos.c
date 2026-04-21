@@ -2152,15 +2152,21 @@ struct chat_demo_prompt {
     const char *label;    /* "Factual" */
     const char *prompt;   /* "What is 2+2?" */
     const char *expect;   /* "low σ expected" */
+    int         verbose;  /* NEXT-2: force --verbose for the metacog turn */
 };
 
+/* NEXT-2: 60-second showcase — 6 queries covering every terminal
+ * state.  The last prompt is run with --verbose so the full ULTRA
+ * stack (metacog + σ_combined + coherence) is visible. */
 static const struct chat_demo_prompt g_chat_demo_prompts[] = {
-    { "Factual",      "What is 2+2?",                   "low σ expected"   },
-    { "Knowledge",    "What is the capital of France?", "medium σ"         },
-    { "Reasoning",    "Why is the sky blue?",           "may RETHINK"      },
-    { "Uncertainty",  "What will happen in 2030?",      "high σ → ABSTAIN" },
+    { "Factual",        "What is 2+2?",                       "low σ expected",   0 },
+    { "Knowledge",      "What is the capital of France?",     "medium σ",         0 },
+    { "Reasoning",      "Why is the sky blue?",               "may RETHINK",      0 },
+    { "Uncertainty",    "What will the stock market do tomorrow?",
+                                                              "high σ → ABSTAIN", 0 },
     /* Cache hit: identical prompt #1 — engram should answer in ms. */
-    { "Cache hit",    "What is 2+2?",                   "from engram"      },
+    { "Cache hit",      "What is 2+2?",                       "from engram",      0 },
+    { "Meta-cognition", "Explain consciousness",              "verbose · ULTRA",  1 },
 };
 
 static const char *g_chat_demo_binaries[] = {
@@ -2171,11 +2177,13 @@ static const char *g_chat_demo_binaries[] = {
 static int cmd_chat_demo(void)
 {
     print_header();
-    section("five-query σ-chat showcase");
+    section("60-second σ-chat showcase");
 
     printf("  %sEvery answer below comes from a real pipeline pass.%s\n",
            C_GREY, C_RESET);
-    printf("  %sσ is measured from per-token logprobs; CACHE is the σ-Engram.%s\n\n",
+    printf("  %sσ is measured from per-token logprobs; CACHE is the σ-Engram.%s\n",
+           C_GREY, C_RESET);
+    printf("  %sLast query uses --verbose so you see the full ULTRA stack.%s\n\n",
            C_GREY, C_RESET);
 
     /* Locate cos-chat. */
@@ -2204,11 +2212,15 @@ static int cmd_chat_demo(void)
         printf("    %s>%s %s\n", C_GREY, C_RESET, p->prompt);
         fflush(stdout);
 
-        /* Build command.  Quote the prompt defensively. */
-        char cmd[1024];
+        /* Build command.  Quote the prompt defensively.  NEXT-2 turn #6
+         * runs with --verbose so the meta-cognitive + σ_combined +
+         * coherence lines print alongside the receipt.  We also force
+         * --no-transcript so the demo does not append JSONL to cwd. */
+        char cmd[1200];
         snprintf(cmd, sizeof cmd,
-                 "%s --once --prompt %c%s%c 2>/dev/null",
-                 cc, '\'', p->prompt, '\'');
+                 "%s --once%s --no-transcript --prompt %c%s%c 2>/dev/null",
+                 cc, p->verbose ? " --verbose" : "",
+                 '\'', p->prompt, '\'');
 
         FILE *pf = popen(cmd, "r");
         if (pf == NULL) {
@@ -2216,32 +2228,49 @@ static int cmd_chat_demo(void)
                    C_AMBER, C_RESET);
             continue;
         }
-        char line[1024];
-        char last[1024]; last[0] = '\0';
+        char line[2048];
+        char last[2048]; last[0] = '\0';
+        /* For the verbose turn we echo the meta / ensemble / coherence
+         * lines inline so the reviewer sees the full ULTRA stack. */
         while (fgets(line, sizeof line, pf) != NULL) {
-            /* Keep the last non-empty line. */
             size_t l = strlen(line);
             if (l > 0 && line[l-1] == '\n') line[--l] = '\0';
             if (l == 0) continue;
-            /* Keep the envelope line, not the intermediate "round N" lines. */
-            if (line[0] == '[') {
+            if (p->verbose) {
+                if (strstr(line, "[meta:")          != NULL ||
+                    strstr(line, "[σ_combined=")    != NULL ||
+                    strstr(line, "[coherence:")     != NULL) {
+                    printf("    %s%s%s\n", C_GREY, line, C_RESET);
+                }
+            }
+            if (line[0] == '[' && strncmp(line, "[σ=", 4) == 0) {
+                /* Canonical first-line receipt (new NEXT-1 format). */
                 snprintf(last, sizeof last, "%s", line);
             }
         }
         int pc = pclose(pf);
         (void)pc;
 
-        /* Parse: [σ=0.034 | FRESH | LOCAL | rethink=0 | €0.0001] */
-        float  sigma = -1.0f;
+        /* Parse the polished NEXT-1 receipt:
+         *   [σ=0.063 | ACCEPT | CACHE | LOCAL | 0 ms | €0.0000]
+         *   [σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0 ms | €0.0123]
+         *   [σ=0.300 | ABSTAIN | RETHINK ×2 | 0 ms | €0.0003] */
+        float  sigma   = -1.0f;
         int    rethink = 0;
-        double cost = 0.0;
-        int    is_cache = (strstr(last, "| CACHE |")    != NULL);
-        int    is_abstain = (strstr(last, "ABSTAIN")    != NULL);
-        int    is_escal = (strstr(last, "| CLOUD |")    != NULL);
+        double cost    = 0.0;
+        int    is_cache   = (strstr(last, "| CACHE |")   != NULL);
+        int    is_abstain = (strstr(last, "| ABSTAIN")   != NULL);
+        int    is_escal   = (strstr(last, "| CLOUD |")   != NULL);
         const char *sg = strstr(last, "σ=");
-        if (sg != NULL) sigma = (float)strtod(sg + 3, NULL);
-        const char *rt = strstr(last, "rethink=");
-        if (rt != NULL) rethink = atoi(rt + 8);
+        if (sg != NULL) sigma = (float)strtod(sg + strlen("σ="), NULL);
+        /* Try the new "RETHINK ×N" marker first, then fall back to the
+         * legacy "rethink=N" for any stale builds. */
+        const char *rt = strstr(last, "RETHINK ×");
+        if (rt != NULL) rethink = atoi(rt + strlen("RETHINK ×"));
+        else {
+            rt = strstr(last, "rethink=");
+            if (rt != NULL) rethink = atoi(rt + 8);
+        }
         const char *er = strstr(last, "€");
         if (er != NULL) cost = strtod(er + strlen("€"), NULL);
         /* UTF-8 σ is 2 bytes and € is 3 bytes; strstr still works byte-wise. */
@@ -2296,7 +2325,7 @@ static int cmd_help(const char *prog)
     section("commands");
     printf("  %s%-12s%s  first-run greeting — plain language, no jargon (aliases: start, hello, hi)\n",
            C_BOLD, "welcome", C_RESET);
-    printf("  %s%-12s%s  five-query σ-chat showcase — FRESH / RETHINK / ABSTAIN / CACHE (real pipeline)\n",
+    printf("  %s%-12s%s  60-second σ-chat showcase — 6 queries, full ULTRA stack on the last one\n",
            C_BOLD, "demo",    C_RESET);
     printf("  %s%-12s%s  30-second kernel self-test tour — every kernel runs live (aliases: showcase, kernel-tour)\n",
            C_BOLD, "tour",    C_RESET);
