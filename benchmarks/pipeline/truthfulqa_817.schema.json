@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "creation-os://benchmarks/pipeline/truthfulqa_817_summary",
+  "title": "pipeline_bench BenchSummary (TruthfulQA-scale run)",
+  "type": "object",
+  "required": [
+    "n",
+    "accuracy_api",
+    "accuracy_local",
+    "accuracy_hybrid",
+    "accuracy_retained",
+    "local_share",
+    "savings_frac"
+  ],
+  "properties": {
+    "n": { "type": "integer", "minimum": 1 },
+    "n_engram": { "type": "integer" },
+    "n_local": { "type": "integer" },
+    "n_api": { "type": "integer" },
+    "n_escalated": { "type": "integer" },
+    "n_abstained": { "type": "integer" },
+    "rounds_total": { "type": "integer" },
+    "ttt_updates_total": { "type": "integer" },
+    "ttt_resets_total": { "type": "integer" },
+    "elapsed_ms_total": { "type": "number" },
+    "eur_cost_hybrid": { "type": "number" },
+    "eur_cost_api_only": { "type": "number" },
+    "savings_frac": { "type": "number" },
+    "accuracy_api": { "type": "number" },
+    "accuracy_local": { "type": "number" },
+    "accuracy_hybrid": { "type": "number" },
+    "accuracy_retained": { "type": "number" },
+    "local_share": { "type": "number" }
+  },
+  "additionalProperties": true
+}

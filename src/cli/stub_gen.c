@@ -71,7 +71,8 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                                      sizeof g_cos_chat_bitnet_buf) == 0
             && g_cos_chat_bitnet_buf[0] != '\0') {
             *out_text       = g_cos_chat_bitnet_buf;
-            *out_sigma      = cos_bitnet_sigma_for_local_output(g_cos_chat_bitnet_buf);
+            *out_sigma      = cos_bitnet_sigma_for_prompt_and_output(
+                prompt, g_cos_chat_bitnet_buf);
             *out_cost_eur   = 0.0001;
             return 0;
         }

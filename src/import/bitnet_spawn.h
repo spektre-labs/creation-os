@@ -24,4 +24,7 @@
 /** Capture stdout from `exe` into `out` (NUL-terminated). Returns 0 on success, child exit 0. */
 int cos_bitnet_spawn_capture(const char *exe, const char *prompt, char *out, size_t cap);
 
+/** Run argv[0] with argv NULL-terminated; capture stdout (and stderr if merge_stderr) into out. */
+int cos_bitnet_spawn_argv_capture(char *const argv[], char *out, size_t cap, int merge_stderr);
+
 #endif /* BITNET_SPAWN_H */

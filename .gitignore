@@ -730,3 +730,7 @@ creation_os_sigma_arxiv
 hw/formal/**/.lake/
 hw/formal/**/lake-manifest.json
 docs/v259/frama_c_wp_full.log
+
+# TruthfulQA full export + locally materialised 817-summary (large / host-specific)
+benchmarks/pipeline/data/*.jsonl
+benchmarks/pipeline/truthfulqa_817.json

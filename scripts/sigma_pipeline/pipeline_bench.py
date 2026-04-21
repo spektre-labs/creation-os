@@ -47,12 +47,14 @@ from typing import Any, Dict, List, Optional
 if __package__ in (None, ""):
     _here = pathlib.Path(__file__).resolve().parent.parent
     sys.path.insert(0, str(_here))
-    from sigma_pipeline.backends import StubBackend                 # noqa: E402
+    from sigma_pipeline.backends import (                         # noqa: E402
+        Backend, LlamaCliBackend, StubBackend,
+    )
     from sigma_pipeline.orchestrator import (                       # noqa: E402
         Orchestrator, OrchestratorConfig,
     )
 else:
-    from .backends import StubBackend
+    from .backends import Backend, LlamaCliBackend, StubBackend
     from .orchestrator import Orchestrator, OrchestratorConfig
 
 
@@ -131,21 +133,27 @@ def _load(fixture_path: Optional[pathlib.Path]
 def run_bench(fixture: List[Dict[str, Any]],
               cfg: Optional[OrchestratorConfig] = None,
               log_path: Optional[pathlib.Path] = None,
+              backend: str = "stub",
               ) -> tuple[List[BenchRow], BenchSummary]:
     cfg = cfg or OrchestratorConfig(max_tokens=16)
     # One orchestrator for the whole run so engram warms up.  We give
-    # it a fresh StubBackend per call so each row's token counter
-    # starts at 0 (otherwise StubBackend's _step carries over and the
-    # second identical prompt gets a different σ trace).
+    # it a fresh backend per call so each row's token counter / local
+    # state starts at 0 (otherwise StubBackend's _step carries over and
+    # the second identical prompt gets a different σ trace).
     orch: Optional[Orchestrator] = None
+
+    def _make_backend() -> Backend:
+        if backend == "llama_cli":
+            return LlamaCliBackend()
+        return StubBackend(max_steps=256)
 
     def _orch() -> Orchestrator:
         # Swap in a fresh backend each call; keep engram + TTT.
         nonlocal orch
         if orch is None:
-            orch = Orchestrator(StubBackend(max_steps=256), cfg)
+            orch = Orchestrator(_make_backend(), cfg)
         else:
-            orch._backend = StubBackend(max_steps=256)
+            orch._backend = _make_backend()
         return orch
 
     rows: List[BenchRow] = []
@@ -282,12 +290,25 @@ def main(argv: Optional[List[str]] = None) -> int:
                     help="Path for JSON summary; default stderr.")
     ap.add_argument("--log", default=None,
                     help="Per-row JSONL trace path (optional).")
+    ap.add_argument(
+        "--backend",
+        choices=("stub", "llama_cli"),
+        default="stub",
+        help="stub (default, deterministic) or llama_cli (CREATION_OS_BITNET_* env).",
+    )
     args = ap.parse_args(argv)
 
     fixture = _load(pathlib.Path(args.input) if args.input else None)
+    if args.backend == "llama_cli":
+        try:
+            LlamaCliBackend()
+        except OSError as exc:
+            print(f"pipeline_bench: {exc}", file=sys.stderr)
+            return 2
     rows, summary = run_bench(
         fixture,
         log_path=pathlib.Path(args.log) if args.log else None,
+        backend=args.backend,
     )
     md = format_markdown(rows, summary)
     if args.output_md:

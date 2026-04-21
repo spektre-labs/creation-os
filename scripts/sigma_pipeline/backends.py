@@ -240,3 +240,123 @@ class BridgeBackend:
                 except Exception:
                     pass
             self._proc = None
+
+
+# --------------------------------------------------------------------------
+# LlamaCliBackend — one-shot llama-cli / BitNet (matches cos-chat C bridge)
+# --------------------------------------------------------------------------
+
+
+class LlamaCliBackend:
+    """Runs ``CREATION_OS_BITNET_EXE`` once per prompt (``-m`` model from env).
+
+    Emits the entire completion as a single terminal token step so the
+    existing ``GenerateUntilEngine`` loop stays well-defined.  σ is a
+    lightweight length / punctuation heuristic unless
+    ``COS_LLAMA_CLI_SIGMA`` is set to a float in ``[0, 1]``.
+    """
+
+    def __init__(self) -> None:
+        exe = os.environ.get("CREATION_OS_BITNET_EXE", "").strip()
+        model = os.environ.get("CREATION_OS_BITNET_MODEL", "").strip()
+        if not exe or not model:
+            raise OSError(
+                "LlamaCliBackend requires CREATION_OS_BITNET_EXE and "
+                "CREATION_OS_BITNET_MODEL in the environment",
+            )
+        self._exe = exe
+        self._model = model
+        self._buf: str = ""
+        self._closed = False
+
+    @staticmethod
+    def _heuristic_sigma(text: str) -> float:
+        fixed = os.environ.get("COS_LLAMA_CLI_SIGMA", "").strip()
+        if fixed:
+            try:
+                v = float(fixed)
+                return max(0.0, min(1.0, v))
+            except ValueError:
+                pass
+        t = text.rstrip()
+        n = len(t)
+        if n == 0:
+            return 1.0
+        q = t.count("?")
+        short_num = n <= 6 and any(ch.isdigit() for ch in t) and all(
+            (ch.isdigit() or ch in " \t-+./") for ch in t
+        )
+        base = 0.18 + n * 0.00035
+        if short_num:
+            base *= 0.35
+        base += 0.06 * q
+        return max(0.05, min(0.95, base))
+
+    def _run_cli(self, prompt: str) -> str:
+        head = [self._exe, "--no-perf", "-m", self._model]
+        extra: list[str] = []
+        th = os.environ.get("CREATION_OS_BITNET_THREADS", "").strip()
+        if th:
+            extra += ["-t", th]
+        tail = [
+            "-n",
+            os.environ.get("CREATION_OS_BITNET_N_PREDICT", "128"),
+            "-ngl",
+            "0",
+            "-p",
+            prompt,
+        ]
+        proc = subprocess.run(
+            head + extra + tail,
+            capture_output=True,
+            text=True,
+            timeout=int(os.environ.get("CREATION_OS_BITNET_TIMEOUT_SEC", "600")),
+            check=False,
+        )
+        if proc.returncode != 0:
+            err = (proc.stderr or "")[:400]
+            raise RuntimeError(f"llama-cli failed rc={proc.returncode}: {err}")
+        out = proc.stdout or ""
+        # Strip common ANSI escapes (best-effort; matches C helper intent).
+        esc = "\033["
+        while esc in out:
+            i = out.index(esc)
+            j = out.find("m", i + 2)
+            if j == -1:
+                break
+            out = out[:i] + out[j + 1 :]
+        return out.strip()
+
+    def step(self, prompt: str, accumulated: str) -> TokenStep:
+        if self._closed:
+            raise RuntimeError("LlamaCliBackend: closed")
+        if accumulated != "":
+            return TokenStep(
+                step=0,
+                token_text="",
+                sigma_mean=0.05,
+                sigma_max=0.05,
+                sigma_product=0.05,
+                sigma_profile=[0.05] * 8,
+                eos=True,
+            )
+        # Fresh ``GenerateUntilEngine.run`` starts with accumulated == "".
+        # RETHINK rounds change ``prompt``; re-query llama-cli each time.
+        self._buf = self._run_cli(prompt)
+        sig = self._heuristic_sigma(self._buf)
+        prof = [sig] * 8
+        sm = mx = sig
+        gm = math.exp(sum(math.log(max(1e-9, 1.0 - x)) for x in prof) / len(prof))
+        sigma_product = max(0.0, min(1.0, 1.0 - gm))
+        return TokenStep(
+            step=0,
+            token_text=self._buf,
+            sigma_mean=sm,
+            sigma_max=mx,
+            sigma_product=sigma_product,
+            sigma_profile=prof,
+            eos=True,
+        )
+
+    def close(self) -> None:
+        self._closed = True
