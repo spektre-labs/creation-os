@@ -12,6 +12,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [comparison.md](comparison.md) | Everyone, reviewers | Honest side-by-side of Creation OS vs OpenClaw / Hermes / Ollama / Dify with claim links |
 | [MCP_COS_TOOLS.md](MCP_COS_TOOLS.md) | Agent integrators | `cos-mcp` JSON-RPC server — six `cos.*` tools (chat / sigma / calibrate / health / engram.lookup / introspect) exposed over stdio |
 | [A2A_COS_TRUST.md](A2A_COS_TRUST.md) | Agent integrators | `cos-a2a` CLI — agent card + σ-trust EMA per peer + blocklist · persistent state at ~/.cos/a2a.json |
+| [OMEGA_EVOLVE.md](OMEGA_EVOLVE.md) | Research / Ω-stack | `cos-evolve` scaffold — σ-gated (1+1)-ES + sqlite opt-memory + τ auto-calibration + hypothesis harness + watchdog daemon |
 | [reddit_post_draft.md](reddit_post_draft.md) | Release / comms | r/MachineLearning v3.0.0 announcement draft — claim-disciplined, honest limitations, pre-submit checklist (NEXT-6) |
 | [../data/corpus/INDEX.md](../data/corpus/INDEX.md) | Researchers | Spektre Corpus (CC BY 4.0): canonical GitHub corpus repo + optional submodule / LFS notes |
 | [VOCAB_PIPELINE_V27.md](VOCAB_PIPELINE_V27.md) | Integrators, tokenizer / FPGA roadmap readers | v27 shipped vs directive roadmap; mmap COSB + benches + optional Rust/SBY hooks |

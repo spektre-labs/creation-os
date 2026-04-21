@@ -1,0 +1,3 @@
+{"id":"hx_self","hypothesis":"cos-evolve primitives all self-test clean","cmd":"./cos-evolve self-test","expect_kind":"exit_0"}
+{"id":"hx_fixture_reject","hypothesis":"cos-evolve refuses to evolve without a fixture path","cmd":"./cos-evolve evolve","expect_kind":"exit_nz"}
+{"id":"hx_brier_reported","hypothesis":"cos-evolve evolve prints a brier score","cmd":"./cos-evolve evolve --fixture benchmarks/evolve/fixture_tiny.jsonl --generations 20","expect":"brier","expect_kind":"contains"}

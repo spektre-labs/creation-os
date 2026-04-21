@@ -6113,8 +6113,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-mesh3 check-sigma-arxiv \
                       check-sigma-conformal check-sigma-coverage-curve \
                       check-sigma-multi check-sigma-suite-sci \
-                      check-cos-mcp check-cos-a2a
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a)"
+                      check-cos-mcp check-cos-a2a check-cos-evolve
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a + cos-evolve)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7375,6 +7375,41 @@ cos-a2a: $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c
 check-cos-a2a: cos-a2a
 	@bash benchmarks/sigma_pipeline/check_cos_a2a.sh
 	@echo "check-cos-a2a: OK (card + register + request + EMA + blocklist + persist)"
+
+# --- OMEGA: σ-guided parameter evolution + optimisation memory -------
+#
+# cos-evolve is a standalone multi-command CLI that owns the OMEGA
+# surface:
+#
+#   cos-evolve evolve          σ-guided (1+1)-ES on the σ-ensemble
+#                              weights + τ · Brier fitness · keep/revert
+#   cos-evolve memory-top      top-N accepted mutations (sqlite)
+#   cos-evolve memory-stats    aggregate mutation ledger
+#   cos-evolve calibrate-auto  false_accept/false_reject τ-sweep
+#   cos-evolve discover        declarative experiment harness
+#   cos-evolve omega           recursive evolve + calibrate loop
+#   cos-evolve daemon          foreground watchdog (σ_mean envelope)
+#   cos-evolve demo            deterministic 40-row showcase
+#   cos-evolve self-test       link-level sanity for every primitive
+#
+# No LLM dependency in the fitness path — the evolved parameters are
+# σ-ensemble weights + τ, scored against a labeled σ-fixture via Brier.
+# Convergence is a known-good attractor, so the self-test is
+# deterministic on every host.  LLM-backed mutators can be plugged in
+# via the $COS_EVOLVE_MUTATOR env knob without recompiling.
+COS_EVOLVE_SRCS = src/sigma/evolve/cos_evolve.c \
+                  src/sigma/evolve/opt_memory.c \
+                  src/sigma/evolve/self_calibrate.c \
+                  src/sigma/evolve/discover.c
+COS_EVOLVE_INC  = -Isrc/sigma/evolve
+
+cos-evolve: $(COS_EVOLVE_SRCS) src/cli/cos_evolve_cli.c
+	$(CC) $(CFLAGS) $(COS_EVOLVE_INC) -o $@ \
+	    $(COS_EVOLVE_SRCS) src/cli/cos_evolve_cli.c $(LDFLAGS) -lsqlite3
+
+check-cos-evolve: cos-evolve
+	@bash benchmarks/evolve/check_cos_evolve.sh
+	@echo "check-cos-evolve: OK (evolve + memory + calibrate + discover + omega + daemon)"
 
 # --- σ-pipeline: formal-complete status (OMEGA-3) --------------------
 #
