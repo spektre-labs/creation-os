@@ -8,7 +8,8 @@
  * supplied τ_low and τ_high.
  *
  * This is a static risk heuristic — not a substitute for OS-level
- * sandboxing (see HORIZON-5).  It exists so agents never fire blindly.
+ * OS-level sandboxing (`cos-sandbox`, HORIZON-5).  It exists so agents
+ * never fire blindly.
  *
  * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  */
