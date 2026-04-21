@@ -21,13 +21,13 @@
 extern "C" {
 #endif
 
-#define COS_VERSION_MAJOR   2
+#define COS_VERSION_MAJOR   3
 #define COS_VERSION_MINOR   0
 #define COS_VERSION_PATCH   0
 
-#define COS_VERSION_STRING  "2.0.0"
-#define COS_CODENAME        "Omega"
-#define COS_RELEASE_DATE    "2026-04-19"
+#define COS_VERSION_STRING  "3.0.0"
+#define COS_CODENAME        "ULTRA"
+#define COS_RELEASE_DATE    "2026-04-21"
 #define COS_TAGLINE         "assert(declared == realized)"
 
 #define COS_SIGMA_PRIMITIVES  20

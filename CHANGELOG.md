@@ -1,5 +1,70 @@
 # Changelog
 
+## v3.0.0 — "ULTRA" — 2026-04-21
+
+Sixth tagged release — the σ-native cognitive architecture ships.
+v2.0.0 (Omega) proved the protocol boundary; v3.0.0 (ULTRA) turns
+the kernel into a cognitive runtime end-to-end: every `cos chat`
+turn now flows through the conformal-calibrated σ-gate (SCI-1), the
+multi-signal σ ensemble (SCI-5), the meta-cognitive awareness
+channels (ULTRA-5), and the session-level coherence window (ULTRA-9).
+No per-token σ measurement silently drops any more — accept,
+rethink, abstain, cache, and escalation all appear on the receipt.
+
+### New kernels & wiring (ULTRA-1 … ULTRA-11, SCI-1 … SCI-6)
+
+- **Conformal calibration (SCI-1):** `cos_conformal_calibrate` +
+  `cos_conformal_read_bundle_json` ship a risk-controlling τ per
+  domain, auto-loaded by `cos chat` from `~/.cos/calibration.json`
+  so the static 0.40 fallback only applies when no bundle is present.
+- **Multi-σ ensemble (SCI-5):** `cos_multi_sigma_combine` fuses
+  σ_logprob / σ_entropy / σ_perplexity / σ_consistency into a
+  single σ_combined.  `cos chat --multi-sigma` emits it per turn,
+  and `--verbose` auto-enables the shadow pass.
+- **Meta-cognitive σ (ULTRA-5):** four awareness channels
+  (perception / self / social / situational) printed on
+  `cos chat --verbose` before every reply.
+- **Coherence conservation (ULTRA-9):** Lagrangian-style
+  dσ/dt + K_eff session window; shown as a running one-liner
+  under `--verbose` and as a closing report on `exit`.
+- **AGI-1 ICL proxy:** engram-backed few-shot prefixes feed the
+  generator when `COS_ENGRAM_ICL=1` or `--icl` is set.
+- **DEV-3 / DEV-6:** persistent engram (`~/.cos/engram.db`) with
+  write-through hook; cross-session cache hits show `CACHE` in
+  the new receipt format.
+- **Spektre Corpus embed:** 77 theory PDFs (CC BY 4.0, ~13 MB)
+  vendored under `data/corpus/` with `INDEX.md` + upstream SHA.
+
+### `cos chat` polish (NEXT-1)
+
+- Boxed startup banner with version, backend, mode, σ-gate
+  thresholds, codex state, engram count, cost.
+- Unified per-turn receipt — `[σ=… | ACCEPT | CACHE | LOCAL | …ms | €…]`
+  — encodes every action (ACCEPT/RETHINK ×N/ABSTAIN) in one line.
+- ABSTAIN prints an explicit advisory.  `help` command available
+  in the REPL.
+
+### README & docs
+
+- README slimmed from 1 906 → ~540 lines; full archived copy at
+  `docs/README_FULL.md`; long version history moved to
+  `docs/SURFACE_VERSIONS.md`; limitations moved to
+  `docs/limitations.md`.
+
+### Benchmarks
+
+- `benchmarks/final5/` re-run bundle (TruthfulQA 817 +
+  coverage-curve + SCI suite + energy) archived with all the
+  numbers referenced from the README.
+
+### Backwards compatibility
+
+- Binary and on-disk schemas unchanged vs. v2.x.
+- New CLI flags (`--multi-sigma`, `--conformal`, `--coherence`,
+  `--calibration-path`) are opt-in / defaulted so existing
+  harnesses (`check-cos-chat`, `check-cos-cli`, `check-cos-chat`)
+  keep passing.
+
 ## v2.0.0 — "Omega" — 2026-04-19
 
 Fifth tagged release of Creation OS — and the first major version.

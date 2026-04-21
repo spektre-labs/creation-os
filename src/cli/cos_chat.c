@@ -66,6 +66,17 @@
 #include <time.h>
 #include <math.h>
 
+#ifndef COS_CHAT_VERSION_STRING
+#define COS_CHAT_VERSION_STRING "v3.0.0"
+#endif
+
+/* NEXT-1 polish: backend detection + one-line action decorator. */
+static const char *cos_chat_backend_label(void) {
+    const char *exe = getenv("CREATION_OS_BITNET_EXE");
+    if (exe != NULL && exe[0] != '\0') return "bridge · BitNet b1.58 2B · Local · CPU";
+    return "stub · deterministic (no weights)";
+}
+
 /* AGI-1: SQLite engram → few-shot prefix (ICL as TTT proxy). */
 static int chat_icl_compose(void *icl_ctx, uint64_t exclude_prompt_hash,
                             float exemplar_max_sigma, int k_shots,
@@ -297,21 +308,78 @@ static const char *mode_label(cos_pipeline_mode_t m) {
 
 static void print_banner(const cos_pipeline_config_t *cfg,
                          const cos_sigma_codex_t *codex) {
+    /* Strict substrings required by benchmarks/sigma_pipeline/check_cos_cli.sh:
+     *   "Creation OS · σ-gated chat", "1 = 1",
+     *   "codex:  loaded" (2 spaces) OR "codex:  off" (2 spaces).
+     * All preserved inside the boxed NEXT-1 polish layout. */
+    const char *backend = cos_chat_backend_label();
     fprintf(stdout,
-        "Creation OS · σ-gated chat\n"
-        "  1 = 1 — declared must equal realized\n"
-        "  mode:   %s\n"
-        "  codex:  %s%s\n"
-        "  τ_acc:  %.2f   τ_rethink: %.2f   max_rethink: %d\n"
-        "  type 'exit' to quit · 'cost' for ledger · 'status' for config\n"
-        "─────────────────────────────────────────────────────────\n",
+        "┌─ Creation OS · σ-gated chat · %s · ULTRA ─┐\n"
+        "   1 = 1 — declared must equal realized\n"
+        "   mode   : %s\n"
+        "   backend: %s\n"
+        "   codex:  %s%s\n"
+        "   σ-gate : τ_acc=%.2f · τ_rethink=%.2f · max_rethink=%d\n",
+        COS_CHAT_VERSION_STRING,
         mode_label(cfg->mode),
+        backend,
         codex != NULL ? "loaded" : "off",
-        codex != NULL
-            ? (codex->is_seed ? " (seed)" : " (full)")
-            : "",
+        codex != NULL ? (codex->is_seed ? " (seed)" : " (full)") : "",
         (double)cfg->tau_accept, (double)cfg->tau_rethink,
         cfg->max_rethink);
+    if (cfg->engram != NULL) {
+        fprintf(stdout,
+            "   engram : %u entries (persist: ~/.cos/engram.db)\n",
+            cfg->engram->count);
+    }
+    fprintf(stdout,
+        "   cost   : €0.0000 this session · local-first\n"
+        "   type 'exit' · 'cost' · 'status' · 'help'\n"
+        "└────────────────────────────────────────────────────┘\n");
+    fflush(stdout);
+}
+
+/* NEXT-1: polished per-turn receipt.
+ *
+ * Encodes every terminal state into a single visually-scannable line
+ * (plus an advisory when ABSTAIN).  Preserves the ACCEPT/RETHINK/ABSTAIN
+ * substring required by benchmarks/sigma_pipeline/check_cos_chat.sh. */
+static void print_receipt_polished(const cos_pipeline_result_t *r,
+                                   double elapsed_ms,
+                                   int conformal_active,
+                                   float conformal_alpha) {
+    const char *act   = cos_sigma_action_label(r->final_action);
+    const char *src   = r->engram_hit ? "CACHE" : "FRESH";
+    const char *route = r->escalated  ? "CLOUD" : "LOCAL";
+    double ms = r->engram_hit ? 0.0 : elapsed_ms;
+
+    char rethink_tag[48];
+    rethink_tag[0] = '\0';
+    if (r->rethink_count > 0) {
+        snprintf(rethink_tag, sizeof(rethink_tag),
+                 " | RETHINK ×%d", r->rethink_count);
+    }
+
+    char conformal_tag[64];
+    conformal_tag[0] = '\0';
+    if (conformal_active) {
+        snprintf(conformal_tag, sizeof(conformal_tag),
+                 " | conformal@α=%.2f", (double)conformal_alpha);
+    }
+
+    if (r->final_action == COS_SIGMA_ACTION_ABSTAIN) {
+        fprintf(stdout,
+                "[σ=%.3f | ABSTAIN%s%s | %.0f ms | €%.4f]\n"
+                "  (σ above τ_rethink — cannot guarantee accuracy at "
+                "this confidence; reformulate or accept uncertainty.)\n",
+                (double)r->sigma, conformal_tag, rethink_tag,
+                ms, r->cost_eur);
+    } else {
+        fprintf(stdout,
+                "[σ=%.3f | %s | %s | %s%s%s | %.0f ms | €%.4f]\n",
+                (double)r->sigma, act, src, route,
+                conformal_tag, rethink_tag, ms, r->cost_eur);
+    }
     fflush(stdout);
 }
 
@@ -436,28 +504,13 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             cos_sigma_action_label(r.final_action),
             route);
 
-    /* Receipt line.  Phase B annotation is added when a conformal τ
-     * bundle overrode the static threshold; Phase A ensemble fields
-     * are appended on a second line so the canonical first-line
-     * receipt stays byte-compatible with earlier harnesses. */
-    if (feat != NULL && feat->conformal_active) {
-        fprintf(stdout,
-                "[σ=%.3f | %s | %s | conformal@α=%.2f | rethink=%d | €%.4f]\n",
-                (double)r.sigma,
-                r.engram_hit ? "CACHE" : "FRESH",
-                r.escalated ? "CLOUD" : "LOCAL",
-                (double)feat->conformal_alpha,
-                r.rethink_count,
-                r.cost_eur);
-    } else {
-        fprintf(stdout,
-                "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
-                (double)r.sigma,
-                r.engram_hit ? "CACHE" : "FRESH",
-                r.escalated ? "CLOUD" : "LOCAL",
-                r.rethink_count,
-                r.cost_eur);
-    }
+    /* NEXT-1 polished receipt (shared with REPL path).  Harness only
+     * requires ACCEPT/RETHINK/ABSTAIN to appear somewhere in the
+     * output; the "round 0" line already satisfied that, so the
+     * receipt is free to adopt the visual format. */
+    print_receipt_polished(&r, elapsed_ms,
+                           feat != NULL ? feat->conformal_active : 0,
+                           feat != NULL ? feat->conformal_alpha  : 0.0f);
     if (have_ms) {
         fprintf(stdout,
                 "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
@@ -845,9 +898,28 @@ int main(int argc, char **argv) {
                                                         have_codex ? &codex : NULL);
                                             continue; }
 
+        if (strcmp(line, "help") == 0) {
+            fprintf(stdout,
+                "  commands:\n"
+                "    exit | quit         end session + summary\n"
+                "    cost                print sovereign ledger\n"
+                "    status              print config + engram stats\n"
+                "    help                this text\n"
+                "  receipt glossary:\n"
+                "    ACCEPT / RETHINK ×N / ABSTAIN   terminal action\n"
+                "    CACHE / FRESH                   engram hit or miss\n"
+                "    LOCAL / CLOUD                   where inference ran\n"
+                "    conformal@α=…                   SCI-1 bundle active\n");
+            continue;
+        }
+
         turn++;
+        clock_t t0 = clock();
         cos_pipeline_result_t r;
         cos_sigma_pipeline_run(&cfg, line, &r);
+        clock_t t1 = clock();
+        double elapsed_ms = (double)(t1 - t0) * 1000.0 / (double)CLOCKS_PER_SEC;
+        if (elapsed_ms < 0.0) elapsed_ms = 0.0;
 
         /* FINAL-2 Phase C: metacog emits BEFORE the answer so the user
          * can read the awareness breakdown alongside the reply. */
@@ -861,29 +933,21 @@ int main(int argc, char **argv) {
                     (double)lv.sigma_social, (double)lv.sigma_situational);
         }
 
-        fprintf(stdout, "%s\n", r.response);
-
-        if (conformal_active) {
-            fprintf(stdout,
-                "[σ=%.3f | %s | %s | conformal@α=%.2f | rethink=%d | €%.4f]\n",
-                (double)r.sigma,
-                r.engram_hit ? "CACHE" : "FRESH",
-                r.escalated  ? "CLOUD" : "LOCAL",
-                (double)conformal_alpha,
-                r.rethink_count,
-                r.cost_eur);
+        if (r.final_action == COS_SIGMA_ACTION_ABSTAIN) {
+            fprintf(stdout, "(no answer — abstained)\n");
         } else {
-            fprintf(stdout,
-                "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
-                (double)r.sigma,
-                r.engram_hit ? "CACHE" : "FRESH",
-                r.escalated  ? "CLOUD" : "LOCAL",
-                r.rethink_count,
-                r.cost_eur);
+            fprintf(stdout, "%s\n", r.response);
         }
 
-        /* FINAL-2 Phase A: optional σ_combined shadow ensemble. */
-        if (multi_sigma) {
+        /* NEXT-1 polished receipt: encodes action/cache/route/rethink
+         * count/conformal/wall ms/cost in one scannable line. */
+        print_receipt_polished(&r, elapsed_ms,
+                               conformal_active, conformal_alpha);
+
+        /* FINAL-2 Phase A: optional σ_combined shadow ensemble.
+         * NEXT-1 auto-enables this under --verbose so the full ULTRA
+         * stack shows without requiring a second flag. */
+        if (multi_sigma || verbose) {
             chat_multi_t ms;
             if (chat_multi_shadow(&cfg, line, r.response, r.sigma, &ms) == 0) {
                 fprintf(stdout,
@@ -900,6 +964,20 @@ int main(int argc, char **argv) {
 
         /* FINAL-2 Phase D: session window for coherence. */
         if (coherence_enabled) coh_push(&coh, r.sigma);
+
+        /* NEXT-1: running coherence one-liner under --verbose, starting
+         * at 2+ samples so dσ/dt has a meaningful slope. */
+        if (verbose && coherence_enabled && coh.n >= 2) {
+            float mean = 0.0f, slope = 0.0f;
+            coh_summary(&coh, &mean, &slope);
+            float k_eff = 1.0f - mean;
+            const char *state = (mean < 0.5f && fabsf(slope) < 0.05f) ? "STABLE"
+                              : (mean < 0.7f)                         ? "DRIFTING"
+                              :                                         "AT_RISK";
+            fprintf(stdout,
+                "[coherence: dσ/dt=%+.3f/turn | K_eff=%.2f | %s | n=%d]\n",
+                (double)slope, (double)k_eff, state, coh.n);
+        }
 
         if (verbose && r.diagnostic != NULL) {
             fprintf(stdout, "  diag: %s\n", r.diagnostic);
