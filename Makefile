@@ -6110,8 +6110,9 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-watchdog check-sigma-mcp \
                       check-sigma-a2a check-sigma-formal-complete \
                       check-sigma-mesh3 check-sigma-arxiv \
-                      check-sigma-conformal check-sigma-coverage-curve
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve)"
+                      check-sigma-conformal check-sigma-coverage-curve \
+                      check-sigma-multi
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7037,6 +7038,27 @@ cos-coverage-curve: creation_os_sigma_coverage_curve
 check-sigma-coverage-curve: creation_os_sigma_coverage_curve
 	@bash benchmarks/sigma_pipeline/check_sigma_coverage_curve.sh
 	@echo "check-sigma-coverage-curve: OK (sweep + monotonic coverage + JSON)"
+
+# --- σ-pipeline: multi-σ ensemble (SCI-5) ----------------------------
+#
+# Four components (logprob max, mean token entropy, sequence
+# perplexity, regeneration consistency) weighted into one combined
+# score that feeds into the same conformal calibration surface as
+# the scalar σ.  Library + demo CLI.  No network, libm only.
+SIGMA_MULTI_INC  = -Isrc/sigma/pipeline
+SIGMA_MULTI_SRCS = src/sigma/pipeline/multi_sigma.c
+
+creation_os_sigma_multi: $(SIGMA_MULTI_SRCS) \
+                        src/sigma/pipeline/multi_sigma_main.c
+	$(CC) $(CFLAGS) $(SIGMA_MULTI_INC) -o $@ \
+	    $(SIGMA_MULTI_SRCS) src/sigma/pipeline/multi_sigma_main.c $(LDFLAGS)
+
+cos-multi-sigma: creation_os_sigma_multi
+	@cp $< $@
+
+check-sigma-multi: creation_os_sigma_multi
+	@bash benchmarks/sigma_pipeline/check_sigma_multi.sh
+	@echo "check-sigma-multi: OK (self-test + demo deterministic)"
 
 # --- σ-pipeline: benchmark suite (HERMES-3) --------------------------
 #
