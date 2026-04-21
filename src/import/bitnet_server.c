@@ -34,11 +34,13 @@
 #include <fcntl.h>
 #include <math.h>
 #include <netinet/in.h>
+#include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/socket.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -657,6 +659,71 @@ static void bns_atexit(void) {
     cos_bitnet_server_shutdown();
 }
 
+/* POLISH-1 PID file helpers: write ~/.cos/llama_server.pid after the
+ * child is reaped-by-us healthy, so inspection / external watchdogs
+ * (and `cos-health --live`) can pick up the PID without re-forking.
+ * Nothing cares if the file is missing or stale — it's advisory. */
+static void bns_pidfile_path(char *out, size_t cap) {
+    const char *h = getenv("HOME");
+    if (h == NULL || h[0] == '\0') {
+        struct passwd *pw = getpwuid(getuid());
+        h = (pw && pw->pw_dir) ? pw->pw_dir : ".";
+    }
+    snprintf(out, cap, "%s/.cos/llama_server.pid", h);
+}
+
+static void bns_pidfile_write(pid_t pid) {
+    char path[1024];
+    bns_pidfile_path(path, sizeof path);
+    /* Best-effort mkdir ~/.cos if missing. */
+    char dir[1024];
+    snprintf(dir, sizeof dir, "%s", path);
+    char *slash = strrchr(dir, '/');
+    if (slash) { *slash = '\0'; (void)mkdir(dir, 0700); }
+    FILE *f = fopen(path, "w");
+    if (f == NULL) return;
+    fprintf(f, "%ld\n", (long)pid);
+    fclose(f);
+}
+
+static void bns_pidfile_clear(void) {
+    char path[1024];
+    bns_pidfile_path(path, sizeof path);
+    (void)unlink(path);
+}
+
+/* POLISH-1 / POLISH-3 pre-flight: before we fork+exec, check that the
+ * model file and the server binary actually exist.  If not, print a
+ * single actionable error line so the user knows exactly what to fix
+ * instead of "execvp failed". */
+static int bns_preflight(void) {
+    static int warned = 0;
+    struct stat st;
+    if (stat(g_bns.exe, &st) != 0) {
+        if (!warned) {
+            fprintf(stderr,
+                    "cos: llama-server binary not found at %s\n"
+                    "  → run: ./scripts/install.sh  (builds third_party/bitnet)\n"
+                    "  → or set COS_BITNET_SERVER_EXE=/path/to/llama-server\n",
+                    g_bns.exe);
+            warned = 1;
+        }
+        return -1;
+    }
+    if (stat(g_bns.model, &st) != 0) {
+        if (!warned) {
+            fprintf(stderr,
+                    "cos: BitNet model not found at %s\n"
+                    "  → run: ./scripts/install.sh  (downloads + converts model)\n"
+                    "  → or set COS_BITNET_SERVER_MODEL=/path/to/model.gguf\n",
+                    g_bns.model);
+            warned = 1;
+        }
+        return -1;
+    }
+    return 0;
+}
+
 int cos_bitnet_server_ensure(void) {
     bns_load_config();
 
@@ -665,8 +732,15 @@ int cos_bitnet_server_ensure(void) {
 
     if (g_bns.external) {
         /* Caller promised an external server; propagate failure. */
+        fprintf(stderr,
+                "cos: COS_BITNET_SERVER_EXTERNAL=1 but no server answers "
+                "http://%s:%d/health\n"
+                "  → start llama-server manually, or unset the variable\n",
+                g_bns.host, g_bns.port);
         return -1;
     }
+
+    if (bns_preflight() != 0) return -1;
 
     /* Fork + exec llama-server. */
     pid_t pid = fork();
@@ -710,8 +784,13 @@ int cos_bitnet_server_ensure(void) {
     /* parent */
     g_bns.child = pid;
     atexit(bns_atexit);
+    bns_pidfile_write(pid);
 
     if (bns_wait_ready(BNS_READY_TIMEOUT_S) != 0) {
+        fprintf(stderr,
+                "cos: llama-server did not respond to /health within %ds\n"
+                "  → check /tmp/cos-bitnet-server.log for the child's stderr\n",
+                BNS_READY_TIMEOUT_S);
         cos_bitnet_server_shutdown();
         return -1;
     }
@@ -720,6 +799,16 @@ int cos_bitnet_server_ensure(void) {
 
 void cos_bitnet_server_shutdown(void) {
     if (g_bns.child > 0) {
+        /* POLISH-1: honour --keep-server (COS_BITNET_KEEP_SERVER=1).
+         * Useful for dev loops where `cos chat --once ...` is invoked
+         * repeatedly and paying the 2-3 s cold-start each time is
+         * wasteful.  The pid file remains so the next invocation can
+         * reconnect via is_healthy(). */
+        const char *keep = getenv("COS_BITNET_KEEP_SERVER");
+        if (keep != NULL && keep[0] == '1') {
+            g_bns.child = 0;
+            return;
+        }
         kill(g_bns.child, SIGTERM);
         int status = 0;
         for (int i = 0; i < 30; i++) {
@@ -732,6 +821,7 @@ void cos_bitnet_server_shutdown(void) {
         kill(g_bns.child, SIGKILL);
         waitpid(g_bns.child, &status, 0);
         g_bns.child = 0;
+        bns_pidfile_clear();
     }
 }
 
