@@ -245,6 +245,8 @@ static void status_quickstart(void)
                 C_GREY, C_RESET);
     bullet_line("cos plan       %slong-horizon σ-checkpoints + snapshot rollback (demo missions)%s",
                 C_GREY, C_RESET);
+    bullet_line("cos swarm      %sσ routing across mock peers (argmin σ + trust EMA)%s",
+                C_GREY, C_RESET);
     bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
                 C_GREY, C_RESET);
     bullet_line("make help      %sfull Make target list%s", C_GREY, C_RESET);
@@ -646,6 +648,12 @@ static int cmd_exec(int argc, char **argv)
 static int cmd_plan(int argc, char **argv)
 {
     return exec_sibling("cos-plan", argc, argv);
+}
+
+/* HORIZON-4: cos swarm — σ-coordinated multi-peer routing. */
+static int cmd_swarm(int argc, char **argv)
+{
+    return exec_sibling("cos-swarm", argc, argv);
 }
 
 /* cos health — runtime health snapshot (PROD-4).  Falls back to
@@ -2366,6 +2374,8 @@ static int cmd_help(const char *prog)
            C_BOLD, "exec", C_RESET);
     printf("  %s%-12s%s  long-horizon planner + σ-checkpoints (HORIZON-3: cos-plan --mission)\n",
            C_BOLD, "plan", C_RESET);
+    printf("  %s%-12s%s  σ-swarm routing — lowest-σ peer wins (HORIZON-4: cos-swarm --peers)\n",
+           C_BOLD, "swarm", C_RESET);
     printf("  %s%-12s%s  autonomous tool-calling agent (A6: tool + plan + gate + budget)\n",
            C_BOLD, "agent", C_RESET);
     printf("  %s%-12s%s  distributed mesh / marketplace / federation (D6: join/list/status/serve/query/federate/unlearn)\n",
@@ -2888,6 +2898,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
     if (strcmp(argv[1], "exec")      == 0) return cmd_exec(argc - 2, argv + 2);
     if (strcmp(argv[1], "plan")      == 0) return cmd_plan(argc - 2, argv + 2);
+    if (strcmp(argv[1], "swarm")    == 0) return cmd_swarm(argc - 2, argv + 2);
     /* H6: unified dispatch to the dedicated C binaries for
      * agent (A6), network (D6), omega (S6), formal (H4), paper
      * (H5).  Each subcommand forwards its flags verbatim; the

@@ -6082,7 +6082,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-sovereign check-codex \
                       check-sigma-pipeline-compose \
                       check-integration check-cos-cli check-digital-twin \
-                      check-long-horizon \
+                      check-long-horizon check-swarm \
                       check-sigma-tool check-sigma-plan \
                       check-sigma-merge check-sigma-grounding \
                       check-sigma-session check-cos-agent \
@@ -6115,7 +6115,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-conformal check-sigma-coverage-curve \
                       check-sigma-multi check-sigma-suite-sci \
                       check-cos-mcp check-cos-a2a check-cos-evolve
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a + cos-evolve + digital-twin + long-horizon)"
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a + cos-evolve + digital-twin + long-horizon + sigma-swarm)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -6281,6 +6281,15 @@ cos-plan: src/sigma/plan/long_horizon.c src/sigma/pipeline/reinforce.c \
 check-long-horizon: cos-plan
 	@bash benchmarks/sigma_pipeline/check_long_horizon.sh
 	@echo "check-long-horizon: OK (plan self-test + demo + rollback + cos plan forward)"
+
+# HORIZON-4: σ-swarm routing (argmin σ + trust EMA; mock peers in v0).
+cos-swarm: src/sigma/swarm/cos_swarm.c src/cli/cos_swarm_cli.c
+	$(CC) $(CFLAGS) -Isrc/sigma/swarm -o $@ \
+	    src/sigma/swarm/cos_swarm.c src/cli/cos_swarm_cli.c $(LDFLAGS)
+
+check-swarm: cos-swarm
+	@bash benchmarks/sigma_pipeline/check_swarm.sh
+	@echo "check-swarm: OK (self-test + once + cos swarm forward)"
 
 # --- DEV-1: real per-token σ from llama-server ---------------------
 #
