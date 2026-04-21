@@ -147,6 +147,22 @@ typedef struct {
     void                     *generate_ctx;
     cos_pipeline_escalator_fn escalate;
     void                     *escalate_ctx;
+
+    /* DEV-3: persistence hook.  Called after pipeline_engram_store
+     * successfully stores a NEW (prompt, response, sigma) entry in
+     * the in-memory engram.  Typical implementation: write-through
+     * to ~/.cos/engram.db via SQLite.  Optional — when NULL, engram
+     * behaves as before (in-memory only, evaporates on process
+     * exit).  Return value is ignored; errors should be logged by
+     * the hook.  Invocation order: engram.put succeeds → hook runs
+     * (so the in-memory cache is always the source of truth; the
+     * persistence layer is a replica). */
+    void (*on_engram_store)(const char *prompt,
+                            uint64_t    prompt_hash,
+                            const char *response,
+                            float       sigma,
+                            void       *ctx);
+    void *on_engram_store_ctx;
 } cos_pipeline_config_t;
 
 /* --- result --- */

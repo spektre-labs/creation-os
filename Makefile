@@ -6201,9 +6201,10 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/import/bitnet_sigma.c \
                src/import/bitnet_ppl.c
 
-cos-chat: $(COS_CLI_SRCS) src/cli/cos_chat.c
+cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
-	    $(COS_CLI_SRCS) src/cli/cos_chat.c $(LDFLAGS)
+	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/cli/cos_chat.c $(LDFLAGS) -lsqlite3
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \

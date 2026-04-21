@@ -58,12 +58,15 @@ static void pipeline_engram_store(cos_pipeline_config_t *cfg,
     if (cfg->engram == NULL || input == NULL || response == NULL) return;
     uint64_t h = cos_sigma_engram_hash(input);
 
-    /* Free any previous value for this key before overwriting. */
+    /* Free any previous value for this key before overwriting.
+     * Also record whether the pre-put state was empty so we can
+     * tell "new insert" apart from "overwrite" for the persistence
+     * hook (both paths still write-through, but the hook is free
+     * to treat them differently if it wants). */
     cos_sigma_engram_entry_t existing;
-    if (cos_sigma_engram_get(cfg->engram, h, &existing) == 1) {
-        if (existing.value != NULL) {
-            free(existing.value);
-        }
+    int had_prior = (cos_sigma_engram_get(cfg->engram, h, &existing) == 1);
+    if (had_prior && existing.value != NULL) {
+        free(existing.value);
     }
 
     char *copy = (char *)strdup_safe(response);
@@ -76,6 +79,16 @@ static void pipeline_engram_store(cos_pipeline_config_t *cfg,
          * drains the whole table at shutdown via
          * cos_sigma_pipeline_free_engram_values(). */
         (void)evicted;
+    }
+    /* DEV-3: fan out to the persistence hook.  Runs AFTER put()
+     * succeeds so the hook sees a value that is already in the
+     * in-memory cache.  Callers may use this to write-through to
+     * SQLite (~/.cos/engram.db).  `had_prior` is informational —
+     * most implementations will just UPSERT unconditionally. */
+    (void)had_prior;
+    if (cfg->on_engram_store != NULL) {
+        cfg->on_engram_store(input, h, response, sigma,
+                             cfg->on_engram_store_ctx);
     }
 }
 

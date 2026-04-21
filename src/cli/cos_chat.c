@@ -42,6 +42,7 @@
 #include "pipeline.h"
 #include "codex.h"
 #include "engram.h"
+#include "engram_persist.h"
 #include "sovereign.h"
 #include "agent.h"
 #include "stub_gen.h"
@@ -284,6 +285,29 @@ int main(int argc, char **argv) {
     cos_sigma_engram_t engram;
     cos_sigma_engram_init(&engram, slots, N_SLOTS, 0.25f, 200, 20);
 
+    /* DEV-3: rehydrate engram from ~/.cos/engram.db (default; override
+     * with COS_ENGRAM_DB=/abs/path or COS_ENGRAM_DISABLE=1).  The
+     * write-through hook is installed into cfg below.  We open the
+     * handle unconditionally so that even transient --once runs
+     * benefit from cross-session cache hits ("What is 2+2?" answered
+     * once, cached forever). */
+    cos_engram_persist_t *persist = NULL;
+    const char *disable_persist = getenv("COS_ENGRAM_DISABLE");
+    if (disable_persist == NULL || disable_persist[0] != '1') {
+        if (cos_engram_persist_open(NULL, &persist) == 0) {
+            /* N_SLOTS=64, so cap the rehydrate to match — extra rows
+             * would just evict each other during load. */
+            int n = cos_engram_persist_load(persist, &engram, N_SLOTS);
+            if (verbose && n > 0) {
+                fprintf(stderr, "engram: loaded %d row%s from %s\n",
+                        n, n == 1 ? "" : "s",
+                        cos_engram_persist_path(persist));
+            }
+        }
+        /* On open failure we silently continue in-memory-only; a
+         * broken ~/.cos/ should never brick the CLI. */
+    }
+
     cos_sigma_sovereign_t sv;
     cos_sigma_sovereign_init(&sv, 0.85f);
     cos_sigma_agent_t ag;
@@ -303,11 +327,16 @@ int main(int argc, char **argv) {
     cfg.agent        = &ag;
     cfg.generate     = cos_cli_chat_generate;
     cfg.escalate     = cos_cli_stub_escalate;
+    if (persist != NULL) {
+        cfg.on_engram_store     = cos_engram_persist_store;
+        cfg.on_engram_store_ctx = persist;
+    }
 
     if (banner_only) {
         print_banner(&cfg, have_codex ? &codex : NULL);
         cos_sigma_pipeline_free_engram_values(&engram);
         cos_sigma_codex_free(&codex);
+        cos_engram_persist_close(persist);
         return 0;
     }
 
@@ -316,6 +345,7 @@ int main(int argc, char **argv) {
             fprintf(stderr, "cos chat: --once requires --prompt\n");
             cos_sigma_pipeline_free_engram_values(&engram);
             cos_sigma_codex_free(&codex);
+            cos_engram_persist_close(persist);
             return 2;
         }
         const char *exe = getenv("CREATION_OS_BITNET_EXE");
@@ -338,6 +368,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "cos chat: cannot open transcript: %s\n", p);
                 cos_sigma_pipeline_free_engram_values(&engram);
                 cos_sigma_codex_free(&codex);
+                cos_engram_persist_close(persist);
                 return 4;
             }
         }
@@ -346,6 +377,7 @@ int main(int argc, char **argv) {
             fclose(tout);
         cos_sigma_pipeline_free_engram_values(&engram);
         cos_sigma_codex_free(&codex);
+        cos_engram_persist_close(persist);
         return rc;
     }
 
@@ -394,5 +426,6 @@ int main(int argc, char **argv) {
 
     cos_sigma_pipeline_free_engram_values(&engram);
     cos_sigma_codex_free(&codex);
+    cos_engram_persist_close(persist);
     return 0;
 }
