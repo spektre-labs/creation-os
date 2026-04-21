@@ -156,14 +156,30 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
     pipeline_track_local(cfg, cost);
 
     /* [7] σ-gate decision. */
-    cos_sigma_action_t action = cos_sigma_reinforce_round(
-        sigma, cfg->tau_accept, cfg->tau_rethink, 0);
+    cos_sigma_action_t action =
+        cos_sigma_reinforce(sigma, cfg->tau_accept, cfg->tau_rethink);
 
-    /* [8] RETHINK loop. */
+    /* [8] RETHINK loop (DEV-2: real regeneration).
+     *
+     * Policy: regenerate whenever the σ-gate does not say ACCEPT and
+     * we still have budget.  That means BOTH the middle-band
+     * (τ_accept ≤ σ < τ_rethink, classic RETHINK) AND the high-σ
+     * tail (σ ≥ τ_rethink) get a second chance at the local model
+     * before we fall through to escalation or ABSTAIN.  A single
+     * bad sampler trajectory should not short-circuit the gate —
+     * the caller's `generate(..., round, ...)` rotates seed +
+     * temperature each round, so subsequent rounds explore a
+     * genuinely different trajectory.
+     *
+     * Budget-exhausted state: if σ is still ≥ τ_accept after the
+     * final round, resolve per threshold:
+     *   σ ≥ τ_rethink → ABSTAIN (always).
+     *   middle-band   → ABSTAIN (same as classic reinforce_round
+     *                   MAX_ROUNDS-1 hard-fall).  */
     int round = 0;
     int budget = cfg->max_rethink > 0 ? cfg->max_rethink
                                       : COS_SIGMA_REINFORCE_MAX_ROUNDS;
-    while (action == COS_SIGMA_ACTION_RETHINK && round < budget - 1) {
+    while (action != COS_SIGMA_ACTION_ACCEPT && round < budget - 1) {
         round++;
         rc = cfg->generate(input, round, cfg->generate_ctx,
                            &text, &sigma, &cost);
@@ -176,8 +192,12 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
         out->sigma      = sigma;
         out->cost_eur  += cost;
         pipeline_track_local(cfg, cost);
-        action = cos_sigma_reinforce_round(
-            sigma, cfg->tau_accept, cfg->tau_rethink, round);
+        action = cos_sigma_reinforce(
+            sigma, cfg->tau_accept, cfg->tau_rethink);
+    }
+    /* Budget-exhausted RETHINK → ABSTAIN (escalate / hold the line). */
+    if (action == COS_SIGMA_ACTION_RETHINK) {
+        action = COS_SIGMA_ACTION_ABSTAIN;
     }
     out->rethink_count = round;
 
@@ -416,6 +436,15 @@ int cos_sigma_pipeline_self_test(void) {
     if (r.escalated) { fprintf(stderr, "T5: escalated in LOCAL_ONLY\n"); fails++; }
     if (r.final_action != COS_SIGMA_ACTION_ABSTAIN) {
         fprintf(stderr, "T5: action=%d\n", r.final_action); fails++;
+    }
+    /* DEV-2: even a "persistently high σ" prompt must exercise the
+     * full regeneration budget before we ABSTAIN.  The old behavior
+     * short-circuited to ABSTAIN at round 0; the new behavior tries
+     * MAX-1 regenerations first.  The "high:" stub returns σ=0.92
+     * on every call, so rethink_count must equal budget - 1. */
+    if (r.rethink_count != COS_SIGMA_REINFORCE_MAX_ROUNDS - 1) {
+        fprintf(stderr, "T5: rethink_count=%d (want %d after DEV-2)\n",
+                r.rethink_count, COS_SIGMA_REINFORCE_MAX_ROUNDS - 1); fails++;
     }
 
     /* --- T6: sovereign counters moved forward --- */
