@@ -6,6 +6,7 @@
  * continues monotonically afterward. */
 
 #include "omega.h"
+#include "omega_agi_live.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -62,6 +63,10 @@ static int d_meta(cos_omega_config_t *cfg, void *ctx,
 }
 
 int main(int argc, char **argv) {
+    int agi = cos_agi_omega_live_dispatch(argc, argv);
+    if (agi != -1)
+        return agi;
+
     int rc = cos_sigma_omega_self_test();
 
     cos_omega_hooks_t h = {0};

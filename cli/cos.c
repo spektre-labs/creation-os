@@ -562,6 +562,11 @@ static int exec_sibling(const char *bin_name, int argc, char **argv)
 static int cmd_agent  (int argc, char **argv) { return exec_sibling("cos-agent",                argc, argv); }
 static int cmd_network(int argc, char **argv) { return exec_sibling("cos-network",              argc, argv); }
 static int cmd_omega  (int argc, char **argv) { return exec_sibling("creation_os_sigma_omega",  argc, argv); }
+static int cmd_selfplay(int argc, char **argv) { return exec_sibling("creation_os_agi_selfplay", argc, argv); }
+static int cmd_distill(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_agi_distill", argc, argv);
+}
 static int cmd_formal (int argc, char **argv) { return exec_sibling("creation_os_sigma_formal", argc, argv); }
 static int cmd_paper  (int argc, char **argv) { return exec_sibling("creation_os_sigma_paper",  argc, argv); }
 
@@ -638,6 +643,13 @@ static int cmd_health(int argc, char **argv)
  * + results sections.                                           */
 static int cmd_sigma_meta(int argc, char **argv)
 {
+    for (int i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--domains") == 0 ||
+            strcmp(argv[i], "--trend") == 0 ||
+            strcmp(argv[i], "--self-test") == 0) {
+            return prefer_c_or_hint("creation_os_agi_meta", argc, argv);
+        }
+    }
     (void)argc; (void)argv;
     printf("{\"tool\":\"cos\",\"subcommand\":\"sigma-meta\","
            "\"invariant\":\"declared==realized\","
@@ -2295,12 +2307,16 @@ static int cmd_help(const char *prog)
            C_BOLD, "network", C_RESET);
     printf("  %s%-12s%s  self-improving Ω iterator (S6: selfplay + curriculum + synthetic + evolution + meta)\n",
            C_BOLD, "omega", C_RESET);
+    printf("  %s%-12s%s  σ-guided self-play curriculum (AGI-2; deterministic harness)\n",
+           C_BOLD, "selfplay", C_RESET);
     printf("  %s%-12s%s  T3/T4/T5/T6 evidence ledger (H4: monotonicity + commutativity + encode/decode + latency)\n",
            C_BOLD, "formal", C_RESET);
     printf("  %s%-12s%s  σ-gate arXiv paper — deterministic Markdown generator (H5)\n",
            C_BOLD, "paper", C_RESET);
-    printf("  %s%-12s%s  σ-meta: where the gate helps / hurts + ledger + economics (H6 summary)\n",
+    printf("  %s%-12s%s  σ-meta: H6 JSON summary; use --domains / --trend for AGI-5 live buckets\n",
            C_BOLD, "sigma-meta", C_RESET);
+    printf("  %s%-12s%s  continuous distillation status (AGI-3: escalation pairs JSONL)\n",
+           C_BOLD, "distill", C_RESET);
     /* CLOSE-4: long-tail kernels on the front door — every one a
      * standalone C binary (zero Python in the dispatch). */
     printf("  %s%-12s%s  Model Context Protocol server (σ-gated tool + resource + prompt)\n",
@@ -2804,6 +2820,8 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "agent")     == 0) return cmd_agent  (argc - 2, argv + 2);
     if (strcmp(argv[1], "network")   == 0) return cmd_network(argc - 2, argv + 2);
     if (strcmp(argv[1], "omega")     == 0) return cmd_omega  (argc - 2, argv + 2);
+    if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
+    if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);
     if (strcmp(argv[1], "formal")    == 0) return cmd_formal (argc - 2, argv + 2);
     if (strcmp(argv[1], "paper")     == 0) return cmd_paper  (argc - 2, argv + 2);
     if (strcmp(argv[1], "sigma-meta") == 0 ||

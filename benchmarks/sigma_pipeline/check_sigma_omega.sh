@@ -27,4 +27,11 @@ grep -q '"n_restore":1'           <<<"$OUT" || { echo "restores"  >&2; exit 14; 
 grep -q '"focus":"math"'          <<<"$OUT" || { echo "focus"     >&2; exit 15; }
 grep -q '"trace_rollback_iter":5' <<<"$OUT" || { echo "rb iter"   >&2; exit 16; }
 
-echo "check-sigma-omega: PASS (Ω loop + ∫σ tracking + best snapshot + K_eff rollback)"
+# AGI-4: live Ω iterations + JSON report artifact.
+LIVE="$("$BIN" --iterations 3)"
+grep -q 'Ω-loop live' <<<"$LIVE" || { echo "AGI live banner" >&2; exit 17; }
+grep -q 'omega_last.json' <<<"$LIVE" || { echo "AGI last-json hint" >&2; exit 18; }
+REP="$("$BIN" --report)"
+grep -q 'sigma_mean' <<<"$REP" || { echo "AGI --report fields" >&2; exit 19; }
+
+echo "check-sigma-omega: PASS (Ω loop + ∫σ tracking + best snapshot + K_eff rollback + AGI live/report)"

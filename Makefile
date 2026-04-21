@@ -6087,7 +6087,7 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-session check-cos-agent \
                       check-sigma-selfplay check-sigma-curriculum \
                       check-sigma-synthetic check-sigma-evolution \
-                      check-sigma-meta check-sigma-omega \
+                      check-sigma-meta check-sigma-omega check-agi-distill \
                       check-sigma-mesh check-sigma-split \
                       check-sigma-marketplace check-sigma-federation \
                       check-sigma-protocol check-sigma-ed25519 check-cos-network \
@@ -6462,9 +6462,56 @@ creation_os_sigma_selfplay: $(SIGMA_SP_SRCS) \
 	$(CC) $(CFLAGS) $(SIGMA_SP_INC) -o $@ \
 	    $(SIGMA_SP_SRCS) src/sigma/pipeline/selfplay_main.c $(LDFLAGS)
 
-check-sigma-selfplay: creation_os_sigma_selfplay
+check-sigma-selfplay: creation_os_sigma_selfplay check-agi-selfplay
 	@bash benchmarks/sigma_pipeline/check_sigma_selfplay.sh
 	@echo "check-sigma-selfplay: OK (proposer + solver + σ-verifier + TOO_EASY/LEARNING/TOO_HARD bands + proconductor)"
+
+# --- AGI-2: σ-guided self-play (outer curriculum) --------------------
+SIGMA_AGI_SP_INC  = -Isrc/sigma/pipeline -Isrc/sigma/selfplay
+SIGMA_AGI_SP_SRCS = src/sigma/selfplay/agi_selfplay.c \
+                    src/sigma/pipeline/selfplay.c
+
+creation_os_agi_selfplay: $(SIGMA_AGI_SP_SRCS) \
+                         src/sigma/selfplay/agi_selfplay_main.c
+	$(CC) $(CFLAGS) $(SIGMA_AGI_SP_INC) -o $@ \
+	    $(SIGMA_AGI_SP_SRCS) src/sigma/selfplay/agi_selfplay_main.c \
+	    $(LDFLAGS)
+
+check-agi-selfplay: creation_os_agi_selfplay
+	@./creation_os_agi_selfplay --self-test >/dev/null
+	@./creation_os_agi_selfplay --rounds 50 --domain math >/dev/null
+	@echo "check-agi-selfplay: OK (curriculum + σ-selfplay harness)"
+
+# --- AGI-3: continuous distillation status (escalation pairs JSONL) ---
+SIGMA_AGI_DS_INC  = -Isrc/sigma/distill
+SIGMA_AGI_DS_SRCS = src/sigma/distill/agi_continuous.c
+
+creation_os_agi_distill: $(SIGMA_AGI_DS_SRCS) \
+                         src/sigma/distill/agi_continuous_main.c
+	$(CC) $(CFLAGS) $(SIGMA_AGI_DS_INC) -o $@ \
+	    $(SIGMA_AGI_DS_SRCS) src/sigma/distill/agi_continuous_main.c \
+	    $(LDFLAGS)
+
+check-agi-distill: creation_os_agi_distill
+	@./creation_os_agi_distill --self-test >/dev/null
+	@./creation_os_agi_distill status >/dev/null
+	@echo "check-agi-distill: OK (pairs JSONL + train state helpers)"
+
+# --- AGI-5: meta-awareness CLI (domain table + week trend) ----------
+SIGMA_AGI_MT_INC  = -Isrc/sigma/pipeline
+SIGMA_AGI_MT_SRCS = src/sigma/pipeline/meta.c
+
+creation_os_agi_meta: $(SIGMA_AGI_MT_SRCS) \
+                      src/sigma/pipeline/agi_meta_main.c
+	$(CC) $(CFLAGS) $(SIGMA_AGI_MT_INC) -o $@ \
+	    $(SIGMA_AGI_MT_SRCS) src/sigma/pipeline/agi_meta_main.c \
+	    $(LDFLAGS)
+
+check-agi-meta: creation_os_agi_meta
+	@./creation_os_agi_meta --self-test >/dev/null
+	@./creation_os_agi_meta --domains >/dev/null
+	@./creation_os_agi_meta --trend >/dev/null
+	@echo "check-agi-meta: OK (domain σ table + trend + JSONL scrape)"
 
 # --- σ-pipeline: Curriculum (progressive difficulty clock, S2) ---
 #
@@ -6543,7 +6590,7 @@ creation_os_sigma_meta: $(SIGMA_MT_SRCS) \
 	$(CC) $(CFLAGS) $(SIGMA_MT_INC) -o $@ \
 	    $(SIGMA_MT_SRCS) src/sigma/pipeline/meta_main.c $(LDFLAGS)
 
-check-sigma-meta: creation_os_sigma_meta
+check-sigma-meta: creation_os_sigma_meta check-agi-meta
 	@bash benchmarks/sigma_pipeline/check_sigma_meta.sh
 	@echo "check-sigma-meta: OK (bucket + mean + slope + competence flags + recommend_focus)"
 
@@ -6556,7 +6603,8 @@ check-sigma-meta: creation_os_sigma_meta
 # → best-snapshot if improved → K_eff check → rollback if unsafe.
 # Deterministic smoke pins the trajectory on a stub runtime.
 SIGMA_OM_INC  = -Isrc/sigma/pipeline
-SIGMA_OM_SRCS = src/sigma/pipeline/omega.c
+SIGMA_OM_SRCS = src/sigma/pipeline/omega.c \
+                src/sigma/pipeline/omega_agi_live.c
 
 creation_os_sigma_omega: $(SIGMA_OM_SRCS) \
                          src/sigma/pipeline/omega_main.c
@@ -6565,7 +6613,7 @@ creation_os_sigma_omega: $(SIGMA_OM_SRCS) \
 
 check-sigma-omega: creation_os_sigma_omega
 	@bash benchmarks/sigma_pipeline/check_sigma_omega.sh
-	@echo "check-sigma-omega: OK (Ω loop + ∫σ tracking + best snapshot + K_eff rollback)"
+	@echo "check-sigma-omega: OK (Ω loop + ∫σ tracking + best snapshot + K_eff rollback + AGI live/report)"
 
 # --- σ-pipeline: Mesh (peer-to-peer routing + σ-reputation, D1) ---
 #
