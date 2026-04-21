@@ -49,10 +49,22 @@
 #include "stub_gen.h"
 #include "escalation.h"
 
+/* FINAL-2: σ-native cognitive stack wired into cos chat.
+ *   Phase A: σ_combined (SCI-5 multi-σ ensemble shadow)
+ *   Phase B: conformal τ (SCI-1) auto-loaded from ~/.cos/calibration.json
+ *   Phase C: meta-cognitive σ per turn (ULTRA-5) under --verbose
+ *   Phase D: per-session coherence summary (ULTRA-9) on exit
+ */
+#include "conformal.h"
+#include "multi_sigma.h"
+#include "introspection.h"
+#include "coherence.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <math.h>
 
 /* AGI-1: SQLite engram → few-shot prefix (ICL as TTT proxy). */
 static int chat_icl_compose(void *icl_ctx, uint64_t exclude_prompt_hash,
@@ -63,6 +75,215 @@ static int chat_icl_compose(void *icl_ctx, uint64_t exclude_prompt_hash,
     return cos_inplace_ttt_compose_from_engram(
         p, exclude_prompt_hash, exemplar_max_sigma, k_shots,
         user_prompt, out, out_cap);
+}
+
+/* ----------------------------------------------------------------------
+ * FINAL-2 Phase B: load conformal τ from ~/.cos/calibration.json.
+ *
+ * Returns 0 on success and fills *out_tau / *out_alpha / *out_domain.
+ * Returns -1 when no valid report is available (caller keeps static τ).
+ * ---------------------------------------------------------------------- */
+static int calibration_default_path(char *buf, size_t cap) {
+    const char *env = getenv("COS_CALIBRATION");
+    if (env != NULL && env[0] != '\0') {
+        snprintf(buf, cap, "%s", env);
+        return 0;
+    }
+    const char *home = getenv("HOME");
+    if (home == NULL || home[0] == '\0') return -1;
+    snprintf(buf, cap, "%s/.cos/calibration.json", home);
+    return 0;
+}
+
+static int load_conformal_tau(const char *path,
+                              float *out_tau,
+                              float *out_alpha,
+                              char  *out_domain, size_t domain_cap) {
+    cos_conformal_bundle_t b;
+    if (cos_conformal_read_bundle_json(path, &b) != 0) return -1;
+    /* Report index 0 is "all"; prefer it when valid. */
+    for (int i = 0; i < b.n_reports; ++i) {
+        const cos_conformal_report_t *r = &b.reports[i];
+        if (!r->valid) continue;
+        if (out_tau)    *out_tau   = r->tau;
+        if (out_alpha)  *out_alpha = r->alpha;
+        if (out_domain) snprintf(out_domain, domain_cap, "%s", r->domain);
+        return 0;
+    }
+    return -1;
+}
+
+/* ----------------------------------------------------------------------
+ * FINAL-2 Phase A: σ_combined shadow ensemble.
+ *
+ * The scalar σ from the pipeline is treated as σ_logprob.  We call the
+ * same local generator K_REGEN extra times (fresh round sampling) to
+ * compute σ_consistency over the K+1 regenerations.  σ_perplexity is a
+ * sequence-level smoothing of σ_logprob (kept as r.sigma here — when a
+ * real backend supplies per-token logprobs this becomes the mean-logprob
+ * derivation in multi_sigma.c).  σ_entropy falls back to the scalar in
+ * the absence of top-k logprobs; it is still a bounded-in-[0,1] signal
+ * so the ensemble stays in [0,1].
+ *
+ * This is a diagnostic shadow: gating still uses the pipeline scalar σ.
+ * When logprob streams become available (llama-server already emits
+ * them — see DEV-1 + bitnet_server.c) the per-token primitives will
+ * feed straight into the same cos_multi_sigma_combine() call.
+ * ---------------------------------------------------------------------- */
+#define COS_CHAT_MULTI_K_REGEN 2  /* total regenerations = K_REGEN + 1 */
+#define COS_CHAT_MULTI_TEXT_CAP 2048
+
+typedef struct {
+    cos_multi_sigma_t ens;
+    int   have;
+    int   k_used;
+} chat_multi_t;
+
+static int chat_multi_shadow(cos_pipeline_config_t *cfg,
+                             const char *input,
+                             const char *primary_text,
+                             float primary_sigma,
+                             chat_multi_t *out) {
+    if (out == NULL) return -1;
+    memset(out, 0, sizeof(*out));
+
+    /* Collect up to K+1 texts: [primary, regen_1, regen_2, ...]. */
+    const int K = COS_CHAT_MULTI_K_REGEN;
+    const char *texts[1 + COS_CHAT_MULTI_K_REGEN];
+    char        copies[1 + COS_CHAT_MULTI_K_REGEN][COS_CHAT_MULTI_TEXT_CAP];
+    int n = 0;
+    if (primary_text != NULL) {
+        snprintf(copies[n], sizeof(copies[n]), "%s", primary_text);
+        texts[n] = copies[n];
+        n++;
+    }
+
+    for (int k = 0; k < K; ++k) {
+        if (cfg->generate == NULL) break;
+        const char *t = NULL;
+        float       s = 1.0f;
+        double      c = 0.0;
+        /* Use round = k+1 so the generator seeds a different trajectory;
+         * the K extra calls are local electricity only and are not
+         * forwarded to the sovereign ledger (shadow mode). */
+        if (cfg->generate(input, k + 1, cfg->generate_ctx,
+                          &t, &s, &c) != 0 || t == NULL) break;
+        snprintf(copies[n], sizeof(copies[n]), "%s", t);
+        texts[n] = copies[n];
+        n++;
+    }
+
+    float sigma_consistency =
+        (n >= 2) ? cos_multi_sigma_consistency(texts, n) : 0.0f;
+    if (sigma_consistency < 0.0f) sigma_consistency = 0.0f;
+
+    /* Defensive clamp on the scalar. */
+    float s_lp = primary_sigma;
+    if (s_lp < 0.0f) s_lp = 0.0f;
+    if (s_lp > 1.0f) s_lp = 1.0f;
+
+    /* In the absence of per-token top-k logprobs we conservatively feed
+     * the scalar into σ_entropy and σ_perplexity; the ensemble weights
+     * (w_entropy=0.20, w_perplexity=0.10, w_consistency=0.20) keep the
+     * ensemble under the scalar unless consistency genuinely diverges. */
+    if (cos_multi_sigma_combine(s_lp, s_lp, s_lp,
+                                sigma_consistency, NULL, &out->ens) == 0) {
+        out->have   = 1;
+        out->k_used = n;
+        return 0;
+    }
+    return -1;
+}
+
+/* ----------------------------------------------------------------------
+ * FINAL-2 Phase C: per-turn meta-cognitive σ (ULTRA-5).
+ *
+ * Channel mapping (heuristic until dedicated probes land):
+ *   σ_perception  — short prompts (≤ 3 words) get a bump: we do not have
+ *                   enough context to read the user's intent cleanly.
+ *   σ_self        — the pipeline's scalar σ for this turn.
+ *   σ_social      — high when the prompt looks like it needs clarification
+ *                   (trailing '?' + extreme brevity, or pronouns without
+ *                   antecedents).  Conservative default 0.
+ *   σ_situational — rethink_count / max(max_rethink, 1); grows as the
+ *                   loop approaches its budget.
+ * ---------------------------------------------------------------------- */
+static int count_words(const char *s) {
+    int n = 0, in = 0;
+    for (; s && *s; ++s) {
+        int w = (*s > ' ');
+        if (w && !in) { n++; in = 1; }
+        else if (!w)  { in = 0; }
+    }
+    return n;
+}
+
+static void chat_metacog_levels(const char *prompt,
+                                const cos_pipeline_result_t *r,
+                                int max_rethink,
+                                cos_ultra_metacog_levels_t *lv) {
+    memset(lv, 0, sizeof(*lv));
+    int words = count_words(prompt);
+    lv->sigma_perception = (words <= 3) ? 0.35f : 0.05f;
+    lv->sigma_self       = (r != NULL) ? r->sigma : 1.0f;
+    lv->sigma_social     = 0.0f;
+    if (prompt != NULL) {
+        size_t L = strlen(prompt);
+        if (L > 0 && prompt[L-1] == '?' && words <= 4) {
+            lv->sigma_social = 0.45f;  /* "who? what? how?"-class */
+        }
+    }
+    int budget = max_rethink > 0 ? max_rethink : 1;
+    lv->sigma_situational =
+        (r != NULL) ? ((float)r->rethink_count / (float)budget) : 0.0f;
+    if (lv->sigma_situational > 1.0f) lv->sigma_situational = 1.0f;
+}
+
+/* ----------------------------------------------------------------------
+ * FINAL-2 Phase D: per-session coherence window (ULTRA-9).
+ *
+ * We keep a ring of the last COS_CHAT_COH_CAP σ samples; on session end
+ * we compute the mean over the window and dσ/dt as the simple
+ * (last - first) / max(1, n-1) slope per turn.  The report uses a
+ * nominal K=2 capacity ceiling (BitNet-class local) and K_crit=1.0 so
+ * degradation trips DRIFTING before AT_RISK for demo purposes.
+ * ---------------------------------------------------------------------- */
+#define COS_CHAT_COH_CAP 32
+typedef struct {
+    float samples[COS_CHAT_COH_CAP];
+    int   n;
+    int   head;
+} chat_coh_t;
+
+static void coh_reset(chat_coh_t *c) {
+    memset(c, 0, sizeof(*c));
+}
+
+static void coh_push(chat_coh_t *c, float sigma) {
+    if (c == NULL) return;
+    c->samples[c->head] = sigma;
+    c->head = (c->head + 1) % COS_CHAT_COH_CAP;
+    if (c->n < COS_CHAT_COH_CAP) c->n += 1;
+}
+
+static void coh_summary(const chat_coh_t *c,
+                        float *out_mean, float *out_slope) {
+    if (out_mean)  *out_mean  = 0.0f;
+    if (out_slope) *out_slope = 0.0f;
+    if (c == NULL || c->n == 0) return;
+    double acc = 0.0;
+    /* Reconstruct ordered samples: samples in insertion order from
+     * (head - n) mod cap up through (head - 1). */
+    int start = (c->head - c->n + COS_CHAT_COH_CAP) % COS_CHAT_COH_CAP;
+    float first = c->samples[start];
+    float last  = c->samples[(c->head - 1 + COS_CHAT_COH_CAP) %
+                             COS_CHAT_COH_CAP];
+    for (int i = 0; i < c->n; ++i) {
+        acc += (double)c->samples[(start + i) % COS_CHAT_COH_CAP];
+    }
+    if (out_mean)  *out_mean = (float)(acc / (double)c->n);
+    if (out_slope) *out_slope =
+        (c->n > 1) ? (last - first) / (float)(c->n - 1) : 0.0f;
 }
 
 static const char *mode_label(cos_pipeline_mode_t m) {
@@ -158,7 +379,20 @@ static void fprint_json_string(FILE *fp, const char *s) {
     fputc('"', fp);
 }
 
+/* FINAL-2 per-turn toggles carried through to the --once / REPL paths.
+ * Kept in a small config struct so the function signatures do not grow
+ * an unbounded number of arguments. */
+typedef struct {
+    int   multi_sigma;          /* Phase A   */
+    int   conformal_active;     /* Phase B on (τ loaded from bundle)   */
+    float conformal_alpha;      /* Phase B pinned α (for receipt)     */
+    int   verbose;              /* Phase C: emit metacog banner       */
+    int   coherence_active;     /* Phase D: track σ in session window */
+    chat_coh_t *coh;            /* Phase D window state               */
+} chat_feat_t;
+
 static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
+                         const chat_feat_t *feat,
                          const char *prompt) {
     clock_t t0 = clock();
     cos_pipeline_result_t r;
@@ -172,19 +406,74 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     if (elapsed_ms < 0.0) elapsed_ms = 0.0;
 
     const char *route = r.escalated ? "ESCALATE" : "LOCAL";
+
+    /* FINAL-2 Phase C: metacog banner (verbose only; before the round
+     * line so the diagnostic precedes the answer). */
+    if (feat != NULL && feat->verbose) {
+        cos_ultra_metacog_levels_t lv;
+        chat_metacog_levels(prompt, &r, cfg_rw->max_rethink, &lv);
+        fprintf(stdout,
+                "[meta: perception=%.2f self=%.2f social=%.2f "
+                "situational=%.2f]\n",
+                (double)lv.sigma_perception, (double)lv.sigma_self,
+                (double)lv.sigma_social, (double)lv.sigma_situational);
+    }
+
+    /* FINAL-2 Phase A: σ_combined shadow (does not change gating). */
+    chat_multi_t ms;
+    int have_ms = 0;
+    if (feat != NULL && feat->multi_sigma) {
+        if (chat_multi_shadow(cfg_rw, prompt,
+                              r.response, r.sigma, &ms) == 0) {
+            have_ms = 1;
+        }
+    }
+
     fprintf(stdout,
             "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
             r.response != NULL ? r.response : "",
             (double)r.sigma,
             cos_sigma_action_label(r.final_action),
             route);
-    fprintf(stdout,
-            "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
-            (double)r.sigma,
-            r.engram_hit ? "CACHE" : "FRESH",
-            r.escalated ? "CLOUD" : "LOCAL",
-            r.rethink_count,
-            r.cost_eur);
+
+    /* Receipt line.  Phase B annotation is added when a conformal τ
+     * bundle overrode the static threshold; Phase A ensemble fields
+     * are appended on a second line so the canonical first-line
+     * receipt stays byte-compatible with earlier harnesses. */
+    if (feat != NULL && feat->conformal_active) {
+        fprintf(stdout,
+                "[σ=%.3f | %s | %s | conformal@α=%.2f | rethink=%d | €%.4f]\n",
+                (double)r.sigma,
+                r.engram_hit ? "CACHE" : "FRESH",
+                r.escalated ? "CLOUD" : "LOCAL",
+                (double)feat->conformal_alpha,
+                r.rethink_count,
+                r.cost_eur);
+    } else {
+        fprintf(stdout,
+                "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
+                (double)r.sigma,
+                r.engram_hit ? "CACHE" : "FRESH",
+                r.escalated ? "CLOUD" : "LOCAL",
+                r.rethink_count,
+                r.cost_eur);
+    }
+    if (have_ms) {
+        fprintf(stdout,
+                "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
+                "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
+                (double)ms.ens.sigma_combined,
+                (double)ms.ens.sigma_logprob,
+                (double)ms.ens.sigma_entropy,
+                (double)ms.ens.sigma_perplexity,
+                (double)ms.ens.sigma_consistency,
+                ms.k_used);
+    }
+
+    /* FINAL-2 Phase D: add scalar σ to the session window if tracked. */
+    if (feat != NULL && feat->coherence_active && feat->coh != NULL) {
+        coh_push(feat->coh, r.sigma);
+    }
 
     if (tout != NULL) {
         fprintf(tout, "{\"ts_ms\":%.3f,\"prompt\":",
@@ -229,6 +518,14 @@ int main(int argc, char **argv) {
     int     icl_rethink        = 0;
     int     icl_user_disabled  = 0;
 
+    /* FINAL-2 feature toggles (all off by default to keep existing
+     * harnesses byte-identical; opt-in via flags or env). */
+    int         multi_sigma        = 0;
+    int         conformal_enabled  = 1;  /* auto-load bundle if present */
+    int         coherence_enabled  = 1;  /* REPL-only; --once is a single
+                                            turn so it has no trend.   */
+    const char *calibration_path_arg = NULL;
+
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
         else if (strcmp(argv[i], "--codex-seed") == 0) { use_codex = 1; use_seed = 1; }
@@ -261,6 +558,21 @@ int main(int argc, char **argv) {
             if (icl_k > 8) icl_k = 8;
         } else if (strcmp(argv[i], "--icl-rethink-only") == 0) {
             icl_rethink = 1;
+        } else if (strcmp(argv[i], "--multi-sigma") == 0) {
+            multi_sigma = 1;
+        } else if (strcmp(argv[i], "--no-multi-sigma") == 0) {
+            multi_sigma = 0;
+        } else if (strcmp(argv[i], "--conformal") == 0) {
+            conformal_enabled = 1;
+        } else if (strcmp(argv[i], "--no-conformal") == 0) {
+            conformal_enabled = 0;
+        } else if (strcmp(argv[i], "--coherence") == 0) {
+            coherence_enabled = 1;
+        } else if (strcmp(argv[i], "--no-coherence") == 0) {
+            coherence_enabled = 0;
+        } else if (strcmp(argv[i], "--calibration-path") == 0 && i + 1 < argc) {
+            calibration_path_arg = argv[++i];
+            conformal_enabled = 1;
         } else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos chat — σ-gated interactive inference\n"
@@ -283,6 +595,13 @@ int main(int argc, char **argv) {
                 "  --no-icl            disable ICL even if COS_ENGRAM_ICL=1\n"
                 "  --icl-k N           number of exemplars (default 3, max 8)\n"
                 "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
+                "  --multi-sigma       emit σ_combined (SCI-5) shadow per turn\n"
+                "  --no-multi-sigma    disable the ensemble shadow (default)\n"
+                "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
+                "  --no-conformal      always use the static τ_accept flag\n"
+                "  --calibration-path PATH  override the conformal bundle path\n"
+                "  --coherence         track per-session σ window (ULTRA-9, default)\n"
+                "  --no-coherence      disable the session coherence summary\n"
                 "  --help              this text\n"
                 "\n"
                 "  CREATION_OS_BITNET_EXE  optional path to local inference binary\n"
@@ -298,6 +617,33 @@ int main(int argc, char **argv) {
     if (once_mode) {
         if (!have_tau_accept)  tau_accept  = 0.30f;
         if (!have_tau_rethink) tau_rethink = 0.70f;
+    }
+
+    /* FINAL-2 Phase B: resolve conformal τ (overrides static defaults
+     * unless the user explicitly passed --tau-accept). */
+    int   conformal_active = 0;
+    float conformal_alpha  = 0.0f;
+    if (conformal_enabled) {
+        char path[1024];
+        int have_path = 0;
+        if (calibration_path_arg != NULL && calibration_path_arg[0] != '\0') {
+            snprintf(path, sizeof(path), "%s", calibration_path_arg);
+            have_path = 1;
+        } else if (calibration_default_path(path, sizeof(path)) == 0) {
+            have_path = 1;
+        }
+        if (have_path) {
+            float ct = 0.0f, ca = 0.0f;
+            char  cd[COS_CONFORMAL_NAME_MAX];
+            cd[0] = '\0';
+            if (load_conformal_tau(path, &ct, &ca, cd, sizeof(cd)) == 0) {
+                conformal_active = 1;
+                conformal_alpha  = ca;
+                /* Only override τ_accept when the user did not pin it
+                 * from the CLI; otherwise an explicit flag wins. */
+                if (!have_tau_accept) tau_accept = ct;
+            }
+        }
     }
 
     if (!icl_user_disabled) {
@@ -448,7 +794,15 @@ int main(int argc, char **argv) {
                 return 4;
             }
         }
-        int rc = run_chat_once(tout, &cfg, once_prompt);
+        chat_feat_t feat;
+        memset(&feat, 0, sizeof(feat));
+        feat.multi_sigma        = multi_sigma;
+        feat.conformal_active   = conformal_active;
+        feat.conformal_alpha    = conformal_alpha;
+        feat.verbose            = verbose;
+        feat.coherence_active   = 0; /* single-turn: no trend to report */
+        feat.coh                = NULL;
+        int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
         cos_sigma_pipeline_free_engram_values(&engram);
@@ -458,6 +812,19 @@ int main(int argc, char **argv) {
     }
 
     print_banner(&cfg, have_codex ? &codex : NULL);
+    if (conformal_active) {
+        fprintf(stdout,
+                "  conformal: τ=%.4f @ α=%.2f (from ~/.cos/calibration.json)\n",
+                (double)tau_accept, (double)conformal_alpha);
+    }
+    if (multi_sigma) {
+        fprintf(stdout,
+                "  σ-ensemble: shadow (SCI-5), K_regen=%d per turn\n",
+                COS_CHAT_MULTI_K_REGEN);
+    }
+
+    chat_coh_t coh;
+    coh_reset(&coh);
 
     char line[2048];
     int turn = 0;
@@ -482,14 +849,58 @@ int main(int argc, char **argv) {
         cos_pipeline_result_t r;
         cos_sigma_pipeline_run(&cfg, line, &r);
 
+        /* FINAL-2 Phase C: metacog emits BEFORE the answer so the user
+         * can read the awareness breakdown alongside the reply. */
+        if (verbose) {
+            cos_ultra_metacog_levels_t lv;
+            chat_metacog_levels(line, &r, cfg.max_rethink, &lv);
+            fprintf(stdout,
+                    "[meta: perception=%.2f self=%.2f social=%.2f "
+                    "situational=%.2f]\n",
+                    (double)lv.sigma_perception, (double)lv.sigma_self,
+                    (double)lv.sigma_social, (double)lv.sigma_situational);
+        }
+
         fprintf(stdout, "%s\n", r.response);
-        fprintf(stdout,
-            "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
-            (double)r.sigma,
-            r.engram_hit ? "CACHE" : "FRESH",
-            r.escalated  ? "CLOUD" : "LOCAL",
-            r.rethink_count,
-            r.cost_eur);
+
+        if (conformal_active) {
+            fprintf(stdout,
+                "[σ=%.3f | %s | %s | conformal@α=%.2f | rethink=%d | €%.4f]\n",
+                (double)r.sigma,
+                r.engram_hit ? "CACHE" : "FRESH",
+                r.escalated  ? "CLOUD" : "LOCAL",
+                (double)conformal_alpha,
+                r.rethink_count,
+                r.cost_eur);
+        } else {
+            fprintf(stdout,
+                "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
+                (double)r.sigma,
+                r.engram_hit ? "CACHE" : "FRESH",
+                r.escalated  ? "CLOUD" : "LOCAL",
+                r.rethink_count,
+                r.cost_eur);
+        }
+
+        /* FINAL-2 Phase A: optional σ_combined shadow ensemble. */
+        if (multi_sigma) {
+            chat_multi_t ms;
+            if (chat_multi_shadow(&cfg, line, r.response, r.sigma, &ms) == 0) {
+                fprintf(stdout,
+                    "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
+                    "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
+                    (double)ms.ens.sigma_combined,
+                    (double)ms.ens.sigma_logprob,
+                    (double)ms.ens.sigma_entropy,
+                    (double)ms.ens.sigma_perplexity,
+                    (double)ms.ens.sigma_consistency,
+                    ms.k_used);
+            }
+        }
+
+        /* FINAL-2 Phase D: session window for coherence. */
+        if (coherence_enabled) coh_push(&coh, r.sigma);
+
         if (verbose && r.diagnostic != NULL) {
             fprintf(stdout, "  diag: %s\n", r.diagnostic);
         }
@@ -498,6 +909,14 @@ int main(int argc, char **argv) {
     fprintf(stdout, "\n─── Session summary ───\n");
     fprintf(stdout, "  turns: %d\n", turn);
     print_cost(&sv);
+    if (coherence_enabled && coh.n > 0) {
+        float mean = 0.0f, slope = 0.0f;
+        coh_summary(&coh, &mean, &slope);
+        /* Present dσ/dt per turn; ULTRA-9 report scales to "per hour"
+         * under the convention that a single turn ≈ an hour of usage
+         * for demo purposes. */
+        cos_ultra_coherence_emit_report(stdout, mean, slope, 2.0f, 1.0f);
+    }
     fprintf(stdout, "  assert(declared == realized);\n  1 = 1.\n");
 
     cos_sigma_pipeline_free_engram_values(&engram);

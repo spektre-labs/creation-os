@@ -6191,7 +6191,8 @@ check-integration: test_sigma_pipeline_integration
 # Real BitNet integration is one callback swap away; today these
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
-COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import
+COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
+               -Isrc/sigma/metacog -Isrc/sigma/physics
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6218,10 +6219,18 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
 # lives in cos-chat's link closure.
 cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/ttt/inplace_ttt.c \
+          src/sigma/pipeline/conformal.c \
+          src/sigma/pipeline/multi_sigma.c \
+          src/sigma/metacog/introspection.c \
+          src/sigma/physics/coherence.c \
           src/cli/escalation.c src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
+	    src/sigma/pipeline/conformal.c \
+	    src/sigma/pipeline/multi_sigma.c \
+	    src/sigma/metacog/introspection.c \
+	    src/sigma/physics/coherence.c \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 
