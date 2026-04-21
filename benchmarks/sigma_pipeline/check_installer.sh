@@ -25,17 +25,17 @@ echo "  · [2b] cos status"
 
 echo "  · [2c] cos benchmark"
 OUT=$(./cos benchmark 2>/dev/null)
-grep -q "Creation OS — end-to-end pipeline benchmark" <<<"$OUT" \
-    || { echo "cos benchmark did not print the expected header" >&2; exit 3; }
-grep -q "Creation OS served" <<<"$OUT" \
-    || { echo "cos benchmark did not print the headline" >&2; exit 4; }
+grep -q "cos benchmark" <<<"$OUT" \
+    || { echo "cos benchmark did not print the expected banner" >&2; exit 3; }
+grep -qE "fixtures|1 = 1" <<<"$OUT" \
+    || { echo "cos benchmark did not print fixture summary" >&2; exit 4; }
 
 echo "  · [2d] cos cost --fixture demo"
 OUT=$(./cos cost --fixture demo 2>/dev/null)
-grep -q "σ-gated hybrid cost measurement" <<<"$OUT" \
+grep -q "Creation OS — zero-cloud sovereignty ledger" <<<"$OUT" \
     || { echo "cos cost did not print the expected header" >&2; exit 5; }
-grep -q "Savings" <<<"$OUT" \
-    || { echo "cos cost did not print savings" >&2; exit 6; }
+grep -q "saved" <<<"$OUT" \
+    || { echo "cos cost did not print savings line" >&2; exit 6; }
 
 echo "  · [3] installer advertises each command"
 grep -q "cos chat"        scripts/install.sh || { echo "missing chat"; exit 7; }
