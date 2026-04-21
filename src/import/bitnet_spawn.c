@@ -198,6 +198,8 @@ int cos_bitnet_spawn_capture(const char *exe, const char *prompt, char *out, siz
     char *argv[40];
     int argc = 0;
     const int max = (int)(sizeof(argv) / sizeof(argv[0]) - 1);
+    char np_buf[32];
+    np_buf[0] = '\0';
     argv[argc++] = (char *)exe;
 
     const char *model = getenv("CREATION_OS_BITNET_MODEL");
@@ -213,7 +215,6 @@ int cos_bitnet_spawn_capture(const char *exe, const char *prompt, char *out, siz
         argv[argc++] = "-m";
         argv[argc++] = (char *)model;
 
-        char np_buf[32];
         {
             const char *np = getenv("CREATION_OS_BITNET_N_PREDICT");
             if (np != NULL && np[0] != '\0')
