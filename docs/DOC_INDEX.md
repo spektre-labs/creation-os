@@ -9,6 +9,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [SURFACE_VERSIONS.md](SURFACE_VERSIONS.md) | Integrators, reviewers | Full v112–v278+ capability catalogue (tables + `make check-vNN` pointers) split out of README |
 | [README_REFACTOR_PLAN.md](README_REFACTOR_PLAN.md) | Maintainers | README slimming phases, metrics, optional `gen_readme_fragment.sh` automation |
 | [limitations.md](limitations.md) | Everyone | Full scope / caveat list for the README § Limitations link-out |
+| [comparison.md](comparison.md) | Everyone, reviewers | Honest side-by-side of Creation OS vs OpenClaw / Hermes / Ollama / Dify with claim links |
 | [../data/corpus/INDEX.md](../data/corpus/INDEX.md) | Researchers | Spektre Corpus (CC BY 4.0): canonical GitHub corpus repo + optional submodule / LFS notes |
 | [VOCAB_PIPELINE_V27.md](VOCAB_PIPELINE_V27.md) | Integrators, tokenizer / FPGA roadmap readers | v27 shipped vs directive roadmap; mmap COSB + benches + optional Rust/SBY hooks |
 | [hallucination_reduction.md](../benchmarks/hallucination_reduction.md) | Benchmark authors | TruthfulQA / harness evidence note (external; not merge-gate) |
