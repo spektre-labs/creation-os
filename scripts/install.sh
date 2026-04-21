@@ -229,8 +229,10 @@ if [[ "$RUN_SMOKE" == "1" ]]; then
         || fail "σ-pipeline primitives failed self-test"
     log "smoke test: end-to-end pipeline benchmark (offline, stub backend)"
     ./cos benchmark 2>/dev/null | tail -6 | sed 's/^/    /'
-    log "smoke test: cost measurement"
-    ./cos cost --fixture demo 2>/dev/null | head -15 | sed 's/^/    /'
+    log "smoke test: cost measurement (canonical sovereignty ledger)"
+    # POLISH-6: --from-benchmark replaces the legacy --fixture demo flag
+    # (which was silently unknown and printed nothing on older builds).
+    ./cos cost --from-benchmark 2>/dev/null | head -15 | sed 's/^/    /'
 fi
 
 # -------------------- PATH wiring --------------------
@@ -252,8 +254,10 @@ cat <<EOF
 
   Try:
       cos              # status board
+      cos demo         # five-query σ-chat showcase (FRESH / RETHINK / ABSTAIN / CACHE)
       cos chat         # σ-gated REPL (uses stub backend unless gguf present)
+      cos health       # runtime metrics (engram + llama-server + distill pairs)
       cos benchmark    # end-to-end pipeline: engram + BitNet + σ + TTT + API
-      cos cost --fixture demo    # headline: X% of API cost saved, Y% accuracy retained
+      cos cost --from-log --compare   # live €savings vs Claude-Haiku baseline
 
 EOF
