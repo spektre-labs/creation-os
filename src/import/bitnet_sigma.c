@@ -1,8 +1,6 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later */
 #include "bitnet_sigma.h"
 
-#include "bitnet_ppl.h"
-
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
@@ -67,6 +65,18 @@ float cos_bitnet_sigma_for_local_output(const char *text)
 
 float cos_bitnet_sigma_for_prompt_and_output(const char *prompt, const char *text)
 {
+    /* DEV-8: the bitnet_ppl.c perplexity second-pass that used to live
+     * here has been purged.  Real per-token σ now comes from
+     * bitnet_server.c (logprobs).  The legacy subprocess path (called
+     * from stub_gen.c when CREATION_OS_BITNET_EXE is set) still lands
+     * here but falls through to the text-shape heuristic, which is
+     * fine for that narrow fallback.
+     *
+     * The `prompt` argument is kept for API stability: earlier callers
+     * used it to feed llama-perplexity the full prompt+completion
+     * context.  It is intentionally unused in the heuristic. */
+    (void)prompt;
+
     const char *o = getenv("CREATION_OS_BITNET_SIGMA");
     if (o != NULL && o[0] != '\0') {
         char *end = NULL;
@@ -74,10 +84,6 @@ float cos_bitnet_sigma_for_prompt_and_output(const char *prompt, const char *tex
         if (end != o && v >= 0.0f && v <= 1.0f)
             return v;
     }
-
-    float ppl_sig = cos_bitnet_sigma_from_perplexity(prompt, text);
-    if (ppl_sig >= 0.0f && ppl_sig <= 1.0f)
-        return ppl_sig;
 
     return sigma_heuristic_text_only(text);
 }

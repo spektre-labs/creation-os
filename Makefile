@@ -6198,8 +6198,10 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/cli/stub_gen.c \
                src/import/bitnet_server.c \
                src/import/bitnet_spawn.c \
-               src/import/bitnet_sigma.c \
-               src/import/bitnet_ppl.c
+               src/import/bitnet_sigma.c
+# DEV-8 purge: src/import/bitnet_ppl.c (llama-perplexity σ heuristic)
+# was removed — bitnet_server.c now delivers real per-token logprob
+# σ from llama-server's /v1/chat/completions + /completion endpoints.
 
 # DEV-5: escalation.c reaches out to Claude/OpenAI/DeepSeek via libcurl
 # (SSL handled by the system stack; no extra dep beyond libcurl which
