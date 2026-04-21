@@ -6196,6 +6196,7 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
                src/cli/stub_gen.c \
+               src/import/bitnet_server.c \
                src/import/bitnet_spawn.c \
                src/import/bitnet_sigma.c \
                src/import/bitnet_ppl.c
@@ -6211,6 +6212,33 @@ cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c
 cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
 	    $(COS_CLI_SRCS) src/cli/cos_cost.c $(LDFLAGS)
+
+# --- DEV-1: real per-token σ from llama-server ---------------------
+#
+# tests/import/test_bitnet_server_parse.c — CI-safe unit test for
+# bitnet_server.c's JSON reducer.  No network, no subprocess, no
+# model file: feeds canned /v1/chat/completions responses and
+# asserts σ_max / σ_mean / text / token_count.
+#
+# tests/import/test_bitnet_server.c — live harness that actually
+# spawns llama-server + posts a real completion.  Not wired into
+# `make check` because it requires the 1 GiB GGUF model file and a
+# working bitnet.cpp build.  Invoke manually:
+#     make test_bitnet_server && ./test_bitnet_server "What is 2+2?"
+test_bitnet_server_parse: src/import/bitnet_server.c \
+                          tests/import/test_bitnet_server_parse.c
+	$(CC) $(CFLAGS) -Isrc/import -o $@ \
+	    src/import/bitnet_server.c \
+	    tests/import/test_bitnet_server_parse.c $(LDFLAGS)
+
+check-bitnet-server-parse: test_bitnet_server_parse
+	@./test_bitnet_server_parse
+	@echo "check-bitnet-server-parse: OK (5 cases: mixed / null / empty / /completion / utf8)"
+
+test_bitnet_server: src/import/bitnet_server.c tests/import/test_bitnet_server.c
+	$(CC) $(CFLAGS) -Isrc/import -o $@ \
+	    src/import/bitnet_server.c \
+	    tests/import/test_bitnet_server.c $(LDFLAGS)
 
 # --- cos agent (A6): autonomous task execution -------------------
 #

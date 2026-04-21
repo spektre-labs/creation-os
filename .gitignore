@@ -153,3 +153,7 @@ docs/papers/creation_os_v1.toc
 
 # Frama-C WP full logs (keep summary under hw/formal/v259/)
 docs/v259/frama_c_wp_full.log
+
+# DEV-1 bitnet_server test harnesses (built ad-hoc; live harness needs model)
+/test_bitnet_server
+/test_bitnet_server_parse

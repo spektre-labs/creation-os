@@ -2,6 +2,7 @@
 
 #include "stub_gen.h"
 
+#include "bitnet_server.h"
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
 
@@ -55,6 +56,25 @@ int cos_cli_stub_generate(const char *prompt, int round, void *ctx,
     return 0;
 }
 
+/* Backend selection (DEV-1):
+ *
+ *   COS_BITNET_SERVER=1        → spawn llama-server (bitnet_server.h)
+ *                                and measure σ from real per-token
+ *                                probs in the /v1/chat/completions
+ *                                response.  Each RETHINK round
+ *                                (round > 0) rotates the seed and
+ *                                bumps the temperature so the
+ *                                sampler explores a different
+ *                                trajectory — prerequisite for
+ *                                DEV-2's real regeneration loop.
+ *   CREATION_OS_BITNET_EXE=/…  → legacy one-shot subprocess capture
+ *                                with heuristic σ (bitnet_sigma.h).
+ *                                Kept for CI parity and for hosts
+ *                                without the full server build.
+ *   (neither)                  → deterministic stub for self-tests
+ *                                that still exercise every pipeline
+ *                                branch (ACCEPT / RETHINK / ABSTAIN).
+ */
 int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                           const char **out_text, float *out_sigma,
                           double *out_cost_eur) {
@@ -65,6 +85,52 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
         *out_cost_eur = 0.0;
         return 1;
     }
+
+    /* Branch A — llama-server backend (real per-token σ). */
+    const char *use_server = getenv("COS_BITNET_SERVER");
+    if (use_server != NULL && use_server[0] == '1') {
+        cos_bitnet_server_params_t p;
+        memset(&p, 0, sizeof(p));
+        p.n_predict   = 64;
+        p.n_probs     = 5;
+        p.seed        = -1;  /* round 0 → server-random (empirically
+                              * needed; seed=0 hits a degenerate
+                              * BitNet sampler path that emits
+                              * "@@@@" with null probs). */
+        p.temperature = 0.0f;
+        /* Rotate exploration on RETHINK rounds.  round 0 uses the
+         * server default (T=0.8, random seed); subsequent rounds
+         * pin a distinct seed + bump temperature so the sampler
+         * explores a different trajectory. */
+        if (round > 0) {
+            p.seed        = 42 + round * 1009;
+            p.temperature = 0.8f + 0.15f * (float)round;
+        }
+        cos_bitnet_server_result_t r;
+        int rc = cos_bitnet_server_complete(prompt, &p, &r);
+        if (rc == 0) {
+            /* Copy text into the module-local buffer so the pipeline
+             * can reference it after the next server call clobbers
+             * the server's scratch.  `r.text` points at
+             * bitnet_server.c's static text_buf, which is fine for
+             * the current turn but would race with a later call. */
+            size_t n = strlen(r.text);
+            if (n >= sizeof(g_cos_chat_bitnet_buf))
+                n = sizeof(g_cos_chat_bitnet_buf) - 1;
+            memcpy(g_cos_chat_bitnet_buf, r.text, n);
+            g_cos_chat_bitnet_buf[n] = '\0';
+
+            *out_text     = g_cos_chat_bitnet_buf;
+            *out_sigma    = r.sigma;
+            *out_cost_eur = r.cost_eur;
+            return 0;
+        }
+        /* Server failed → fall through to legacy path.  This keeps
+         * the CLI usable when the model file is missing or the
+         * server crashed mid-session. */
+    }
+
+    /* Branch B — legacy subprocess capture with heuristic σ. */
     const char *exe = getenv("CREATION_OS_BITNET_EXE");
     if (exe != NULL && exe[0] != '\0' && round == 0) {
         if (cos_bitnet_spawn_capture(exe, prompt, g_cos_chat_bitnet_buf,
@@ -77,6 +143,10 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             return 0;
         }
     }
+
+    /* Branch C — deterministic self-test stub.  Keep the 2+2 fast
+     * path because a number of check-*.sh harnesses pin on the
+     * exact "4" answer + low σ. */
     if (round == 0 && prompt_is_what_is_2_plus_2(prompt)) {
         *out_text     = "4";
         *out_sigma    = cos_bitnet_sigma_for_local_output("4");
