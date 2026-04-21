@@ -28,6 +28,12 @@
 # the deterministic StubBackend so the user sees a working
 # product on first run.
 #
+# Optional full BitNet + bitnet.cpp stack (large download, requires
+# huggingface-cli and cmake): export COS_INSTALL_REAL_BITNET=1 before
+# running this script.  That path runs scripts/real/setup_bitnet_model.sh
+# then smoke-tests `cos chat` with CREATION_OS_BITNET_EXE and
+# CREATION_OS_BITNET_MODEL pointed at the built llama-cli + GGUF.
+#
 # v107 legacy steps (forty-kernel stack):
 #
 #   This script supersedes the v107 Homebrew + curl + Docker
@@ -170,6 +176,32 @@ if [[ "${COS_V107_LEGACY:-0}" == "1" ]]; then
     download_default_model
     write_default_config
     start_server_optional
+fi
+
+# -------------------- optional: BitNet.gguf + bitnet.cpp (REAL path) ---
+install_real_bitnet_cos() {
+    need cmake
+    need huggingface-cli
+    log "COS_INSTALL_REAL_BITNET=1 — BitNet GGUF + third_party/bitnet build"
+    bash "$INSTALL_DIR/scripts/real/setup_bitnet_model.sh" \
+        || fail "BitNet setup script failed"
+    log "building cos-chat (BitNet bridge)"
+    make cos-chat >/dev/null || fail "make cos-chat failed"
+    export CREATION_OS_BITNET_EXE="$INSTALL_DIR/third_party/bitnet/build/bin/llama-cli"
+    export CREATION_OS_BITNET_MODEL="$INSTALL_DIR/models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf"
+    if [[ ! -x "$CREATION_OS_BITNET_EXE" ]]; then
+        fail "llama-cli missing after setup: $CREATION_OS_BITNET_EXE"
+    fi
+    if [[ ! -f "$CREATION_OS_BITNET_MODEL" ]]; then
+        fail "GGUF missing after setup: $CREATION_OS_BITNET_MODEL"
+    fi
+    log "smoke: cos chat with local llama-cli + GGUF"
+    ./cos chat --once --prompt "What is 2+2?" --max-tokens 32 \
+        || fail "cos chat smoke with BitNet failed"
+}
+
+if [[ "${COS_INSTALL_REAL_BITNET:-0}" == "1" ]]; then
+    install_real_bitnet_cos
 fi
 
 # -------------------- smoke test --------------------
