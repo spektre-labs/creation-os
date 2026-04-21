@@ -34,10 +34,14 @@ typedef struct {
 static const default_entry_t DEFAULT_MANIFEST[] = {
     { "truthfulqa",    "benchmarks/pipeline/truthfulqa_817_detail.jsonl",
                        "pipeline" },
-    { "arc_challenge", "benchmarks/suite/arc_challenge_detail.jsonl", NULL },
-    { "arc_easy",      "benchmarks/suite/arc_easy_detail.jsonl",      NULL },
-    { "gsm8k",         "benchmarks/suite/gsm8k_detail.jsonl",         NULL },
-    { "hellaswag",     "benchmarks/suite/hellaswag_detail.jsonl",     NULL },
+    { "arc_challenge", "benchmarks/suite/arc_challenge_detail.jsonl",
+                       "pipeline" },
+    { "arc_easy",      "benchmarks/suite/arc_easy_detail.jsonl",
+                       "pipeline" },
+    { "gsm8k",         "benchmarks/suite/gsm8k_detail.jsonl",
+                       "pipeline" },
+    { "hellaswag",     "benchmarks/suite/hellaswag_detail.jsonl",
+                       "pipeline" },
     { NULL, NULL, NULL }
 };
 

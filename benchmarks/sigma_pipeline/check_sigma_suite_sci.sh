@@ -6,9 +6,9 @@
 #   1. --self-test PASSes.
 #   2. Default manifest eval writes benchmarks/suite/full_results.json
 #      with schema "cos.suite_sci.v1".
-#   3. The "truthfulqa" row is measured (its detail JSONL ships in-
-#      repo); at least one other row is reported with measured=false
-#      and zero-filled metrics.
+#   3. At least one dataset is measured (TruthfulQA ships in-repo);
+#      any measured row has n_scored > 0.  When ARC/GSM8K/HellaSwag
+#      detail JSONLs are added, their rows flip to measured=true.
 #   4. Every row's numeric fields are in [0,1] or sentinel 0.
 #
 set -euo pipefail
@@ -48,18 +48,16 @@ tqa = next(r for r in rows if r["name"] == "truthfulqa")
 assert tqa["measured"] == 1, tqa
 assert tqa["n_scored"] > 0, tqa
 
-unmeasured = [r for r in rows if r["measured"] == 0]
-assert unmeasured, rows
+measured = [r for r in rows if r["measured"] == 1]
+assert measured, rows
 
-# Zero-filled sanity on unmeasured rows.
-for r in unmeasured:
-    assert r["n_rows"] == 0, r
-    assert r["n_scored"] == 0, r
-    assert r["accuracy_all"] == 0.0, r
+for r in measured:
+    assert r["n_rows"] > 0, r
+    assert r["n_scored"] > 0, r
 
 print("check_sigma_suite_sci: PASS", {
     "rows": len(rows),
-    "measured": sum(r["measured"] for r in rows),
+    "measured": len(measured),
     "truthfulqa_acc_all": round(tqa["accuracy_all"], 4),
     "truthfulqa_acc_accepted": round(tqa["accuracy_accepted"], 4),
     "truthfulqa_tau_valid": tqa["tau_valid"],

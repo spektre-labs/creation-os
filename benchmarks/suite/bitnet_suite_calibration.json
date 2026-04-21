@@ -1,0 +1,21 @@
+{
+  "schema": "cos.conformal.v1",
+  "alpha": 0.800000,
+  "delta": 0.100000,
+  "per_domain": [
+    {
+      "domain": "all",
+      "tau": 0.655150,
+      "alpha": 0.800000,
+      "delta": 0.100000,
+      "n_total": 817,
+      "n_scored": 140,
+      "n_accepted": 140,
+      "n_errors_accepted": 93,
+      "empirical_risk": 0.664286,
+      "risk_ucb": 0.754969,
+      "coverage": 1.000000,
+      "valid": 1
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "schema": "cos.evolve.overnight_run.v1",
+  "command": [
+    "/Users/eliaslorenzo/Desktop/creation-os-kernel/cos-evolve",
+    "omega",
+    "--fixture",
+    "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/evolve/fixture_tiny.jsonl",
+    "--rounds",
+    "20",
+    "--gens",
+    "250"
+  ],
+  "cwd": "/Users/eliaslorenzo/Desktop/creation-os-kernel",
+  "cos_evolve_home": "/tmp/cos_overnight_evolve",
+  "exit_code": 0,
+  "elapsed_s": 0.011,
+  "parsed": {
+    "brier_start": 0.030049,
+    "brier_end": 0.016614,
+    "brier_delta": -0.013435,
+    "mutations_accepted": 20,
+    "mutations_reverted": 4980
+  },
+  "stdout_tail": "cos-omega recursive: fixture=/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/evolve/fixture_tiny.jsonl n=20 rounds=20 gens/round=250\n  round 0: brier=0.030049 \u03c4=0.500\n  round 1: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+20/-230)\n  round 2: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 3: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 4: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 5: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 6: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 7: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 8: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 9: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 10: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 11: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 12: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 13: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 14: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 15: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 16: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 17: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 18: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 19: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\n  round 20: brier=0.016614 acc@\u03c4=1.000 cov=0.500 \u03c4=0.185  (+0/-250)\ncos-omega: brier 0.030049 \u2192 0.016614  \u0394=-0.013435  (+20 accepted / -4980 reverted)\n"
+}
