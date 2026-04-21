@@ -22,6 +22,7 @@
 #endif
 
 #include "escalation.h"
+#include "cost_log.h"
 #include "stub_gen.h"
 
 #include <errno.h>
@@ -647,5 +648,13 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
     *out_cost_eur   = cost;
     *out_bytes_sent = sent;
     *out_bytes_recv = recv;
+
+    /* POLISH-4: mirror the successful API call into the per-inference
+     * cost log so `cos cost --from-log` reports it alongside LOCAL
+     * calls.  Provider string matches CREATION_OS_ESCALATION_PROVIDER
+     * (claude / openai / deepseek). */
+    cos_cost_log_append(name, "API",
+                        (int)sent, (int)recv,
+                        teacher_sigma, cost);
     return 0;
 }

@@ -6,6 +6,7 @@
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
 #include "codex.h"
+#include "cost_log.h"
 #include "escalation.h"
 
 #include <stdio.h>
@@ -207,6 +208,13 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
              * ultimately escalates to a teacher API. */
             cos_cli_escalation_record_student(g_cos_chat_bitnet_buf,
                                               r.sigma);
+            /* POLISH-4: record the successful LOCAL call into the
+             * per-inference cost log.  tokens_in is unknown from the
+             * backend shape so we pass 0; the pipeline tracks it at
+             * the outer layer for higher-level reporting. */
+            cos_cost_log_append("bitnet", "LOCAL",
+                                0, r.token_count,
+                                r.sigma, r.cost_eur);
             return 0;
         }
         /* Server failed → fall through to legacy path.  This keeps
@@ -238,11 +246,17 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
         *out_sigma    = cos_bitnet_sigma_for_local_output("4");
         *out_cost_eur = 0.0;
         cos_cli_escalation_record_student(*out_text, *out_sigma);
+        /* POLISH-4: even stub calls are real pipeline passes from the
+         * user's perspective.  Log them with provider=stub so
+         * `cos cost --from-log` has something to show when no server
+         * or API key is configured. */
+        cos_cost_log_append("stub", "LOCAL", 0, 1, *out_sigma, *out_cost_eur);
         return 0;
     }
     int src = cos_cli_stub_generate(prompt, round, ctx, out_text,
                                     out_sigma, out_cost_eur);
     cos_cli_escalation_record_student(*out_text, *out_sigma);
+    cos_cost_log_append("stub", "LOCAL", 0, 1, *out_sigma, *out_cost_eur);
     return src;
 }
 

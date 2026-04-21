@@ -20,6 +20,7 @@
 #include "sovereign.h"
 #include "agent.h"
 #include "stub_gen.h"
+#include "cost_log.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,19 +118,81 @@ static void from_benchmark(cos_sigma_sovereign_t *out_sv) {
     cos_sigma_codex_free(&codex);
 }
 
+/* POLISH-4: rich summary over the live ~/.cos/cost_log.jsonl.
+ *
+ * Every line is one real pipeline call (see cost_log.h).  We show
+ * today / 7-day / 30-day totals plus the cloud-only counterfactual
+ * so users see the sovereignty savings in €.  The compare column
+ * uses Claude Haiku's public per-call estimate (€0.012/call). */
+static void print_from_log(int compare_cloud) {
+    cos_cost_log_agg_t a;
+    if (cos_cost_log_aggregate(&a) != 0) {
+        printf("cos cost — no ~/.cos/cost_log.jsonl yet.\n"
+               "  Run `cos chat --once --prompt \"hello\"` to create one,\n"
+               "  or pass --from-benchmark for the canonical projection.\n");
+        return;
+    }
+    double today_local_pct = a.queries_today > 0
+        ? 100.0 * (double)a.local_today / (double)a.queries_today : 0.0;
+    double week_local_pct  = a.queries_week > 0
+        ? 100.0 * (double)a.local_week / (double)a.queries_week : 0.0;
+    double month_local_pct = a.queries_month > 0
+        ? 100.0 * (double)a.local_month / (double)a.queries_month : 0.0;
+
+    /* Monthly cloud-only counterfactual at €0.012 / call (Haiku tier) */
+    double cf_today = 0.012 * (double)a.queries_today;
+    double cf_week  = 0.012 * (double)a.queries_week;
+    double cf_month = 0.012 * (double)a.queries_month;
+
+    printf("cos cost — live usage (from ~/.cos/cost_log.jsonl)\n");
+    printf("  Today      €%-8.4f (%d queries, %.0f%% local)\n",
+           a.eur_today,  a.queries_today,  today_local_pct);
+    printf("  This week  €%-8.4f (%d queries, %.0f%% local)\n",
+           a.eur_week,   a.queries_week,   week_local_pct);
+    printf("  This month €%-8.4f (%d queries, %.0f%% local)\n",
+           a.eur_month,  a.queries_month,  month_local_pct);
+    if (a.tokens_out_month > 0) {
+        printf("  Tokens     %d in / %d out (30-day)\n",
+               a.tokens_in_month, a.tokens_out_month);
+    }
+    if (compare_cloud) {
+        printf("\n");
+        printf("  Cloud-only counterfactual (€0.012 / call, Claude Haiku tier):\n");
+        printf("    Today     %s€%.4f → €%.4f%s  (-€%.4f)\n",
+               "", a.eur_today, cf_today, "", cf_today - a.eur_today);
+        printf("    Week      %s€%.4f → €%.4f%s  (-€%.4f)\n",
+               "", a.eur_week, cf_week, "", cf_week - a.eur_week);
+        printf("    Month     %s€%.4f → €%.4f%s  (-€%.4f)\n",
+               "", a.eur_month, cf_month, "", cf_month - a.eur_month);
+        double sv_pct = cf_month > 0.0
+            ? 100.0 * (1.0 - a.eur_month / cf_month) : 0.0;
+        printf("    Savings   %.1f%% (this month)\n", sv_pct);
+    }
+}
+
 int main(int argc, char **argv) {
     int from_bench = 0;
+    int from_log   = 0;
+    int compare    = 0;
     int calls_per_day = 100;
     int json = 0;
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--from-benchmark") == 0) from_bench = 1;
+        else if (strcmp(argv[i], "--from-log")       == 0) from_log = 1;
+        else if (strcmp(argv[i], "--compare")        == 0) compare = from_log = 1;
         else if (strcmp(argv[i], "--json")           == 0) json = 1;
         else if (strcmp(argv[i], "--calls-per-day") == 0 && i + 1 < argc)
             calls_per_day = atoi(argv[++i]);
         else if (strcmp(argv[i], "--help") == 0) {
-            printf("cos cost [--from-benchmark] [--calls-per-day N] [--json]\n");
+            printf("cos cost [--from-benchmark | --from-log [--compare]]\n"
+                   "         [--calls-per-day N] [--json]\n");
             return 0;
         }
+    }
+
+    if (from_log && !json) {
+        print_from_log(compare);
+        return 0;
     }
 
     cos_sigma_sovereign_t sv;
