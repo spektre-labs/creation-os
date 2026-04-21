@@ -14,9 +14,10 @@
  *
  * Escalation returns σ=0.08 at €0.012 per call.
  *
- * Swapping the stub for a real BitNet bridge only touches the two
- * function pointers in cos_pipeline_config_t.  The rest of the
- * CLI code is unchanged.
+ * `cos_cli_chat_generate()` is the **chat** entry point: optional
+ * `CREATION_OS_BITNET_EXE` subprocess (see `bitnet_spawn.h`), then
+ * the canonical arithmetic demo prompt **What is 2+2?** → `"4"`
+ * with low σ, then the prefix stub rules above.
  *
  * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  */
@@ -38,6 +39,10 @@ int cos_cli_stub_escalate(const char *prompt, void *ctx,
                           double *out_cost_eur,
                           uint64_t *out_bytes_sent,
                           uint64_t *out_bytes_recv);
+
+int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
+                          const char **out_text, float *out_sigma,
+                          double *out_cost_eur);
 
 #ifdef __cplusplus
 }

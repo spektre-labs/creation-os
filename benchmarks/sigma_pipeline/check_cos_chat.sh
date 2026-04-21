@@ -35,7 +35,7 @@ grep -q "cos chat"                         <<<"$OUT" \
     || { echo "FAIL: banner missing" >&2; exit 2; }
 grep -q "round 0"                          <<<"$OUT" \
     || { echo "FAIL: round 0 line missing" >&2; exit 3; }
-grep -qE "(ESCALATE|ABSTAIN|RETHINK)"      <<<"$OUT" \
+grep -qE "(ACCEPT|ESCALATE|ABSTAIN|RETHINK)" <<<"$OUT" \
     || { echo "FAIL: terminal action missing" >&2; exit 4; }
 
 # Transcript must have exactly 1 JSONL record for --once.

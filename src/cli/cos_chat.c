@@ -5,9 +5,11 @@
  * as system prompt by default), and prints the response plus a
  * compact receipt:
  *
- *     > low:what is 2+2?
- *     a confident local answer (stub; real BitNet would fill this in).
- *     [σ=0.050 | FRESH | LOCAL | rethink=0 | €0.0001]
+ *     > What is 2+2?
+ *     4
+ *     [σ=0.030 | FRESH | LOCAL | rethink=0 | €0.0000]
+ *
+ *     Second identical prompt → engram HIT → CACHE (same answer).
  *
  * Special commands:
  *   "exit" / "quit"   — end the session and print a summary
@@ -24,6 +26,15 @@
  *   --tau-accept F     — override τ_accept (default 0.40)
  *   --tau-rethink F    — override τ_rethink (default 0.60)
  *   --banner-only      — print the banner and exit (smoke-test hook)
+ *   --once             — one turn: requires --prompt (CI / headless)
+ *   --prompt TEXT      — user line for --once
+ *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
+ *   --no-transcript    — skip JSONL for --once
+ *   --max-tokens N     — accepted for CLI parity; C path ignores today
+ *
+ * Optional local inference (BitNet-class subprocess):
+ *
+ *   CREATION_OS_BITNET_EXE=/path/to/bitnet-cli
  *
  * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  */
@@ -38,6 +49,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 static const char *mode_label(cos_pipeline_mode_t m) {
     switch (m) {
@@ -114,6 +126,74 @@ static void print_status(const cos_pipeline_config_t *cfg,
     fflush(stdout);
 }
 
+static void fprint_json_string(FILE *fp, const char *s) {
+    fputc('"', fp);
+    if (s != NULL) {
+        for (; *s; ++s) {
+            unsigned char c = (unsigned char)*s;
+            if (c == '"' || c == '\\') {
+                fputc('\\', fp);
+                fputc((int)c, fp);
+            } else if (c < 0x20u) {
+                fprintf(fp, "\\u%04x", (unsigned)c);
+            } else {
+                fputc((int)c, fp);
+            }
+        }
+    }
+    fputc('"', fp);
+}
+
+static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
+                         const char *prompt) {
+    clock_t t0 = clock();
+    cos_pipeline_result_t r;
+    if (cos_sigma_pipeline_run(cfg_rw, prompt, &r) != 0) {
+        fprintf(stderr, "cos chat: pipeline_run failed\n");
+        return 3;
+    }
+    clock_t t1 = clock();
+    double elapsed_ms =
+        (double)(t1 - t0) * 1000.0 / (double)CLOCKS_PER_SEC;
+    if (elapsed_ms < 0.0) elapsed_ms = 0.0;
+
+    const char *route = r.escalated ? "ESCALATE" : "LOCAL";
+    fprintf(stdout,
+            "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
+            r.response != NULL ? r.response : "",
+            (double)r.sigma,
+            cos_sigma_action_label(r.final_action),
+            route);
+    fprintf(stdout,
+            "[σ=%.3f | %s | %s | rethink=%d | €%.4f]\n",
+            (double)r.sigma,
+            r.engram_hit ? "CACHE" : "FRESH",
+            r.escalated ? "CLOUD" : "LOCAL",
+            r.rethink_count,
+            r.cost_eur);
+
+    if (tout != NULL) {
+        fprintf(tout, "{\"ts_ms\":%.3f,\"prompt\":",
+                (double)time(NULL) * 1000.0);
+        fprint_json_string(tout, prompt);
+        fprintf(tout, ",\"rounds\":[{\"text\":");
+        fprint_json_string(tout, r.response != NULL ? r.response : "");
+        fprintf(tout,
+                ",\"tokens\":1,\"elapsed_ms\":%.3f,"
+                "\"sigma_peak\":%.6f,\"sigma_mean_avg\":%.6f,"
+                "\"terminal_action\":\"%s\","
+                "\"terminal_route\":\"%s\","
+                "\"segments\":0,\"eos\":true}],\"final_text\":",
+                elapsed_ms, (double)r.sigma, (double)r.sigma,
+                cos_sigma_action_label(r.final_action),
+                route);
+        fprint_json_string(tout, r.response != NULL ? r.response : "");
+        fprintf(tout, "}\n");
+        fflush(tout);
+    }
+    return 0;
+}
+
 int main(int argc, char **argv) {
     int     use_codex     = 1;
     int     use_seed      = 0;
@@ -122,6 +202,12 @@ int main(int argc, char **argv) {
     int     swarm_mode    = 0;
     int     verbose       = 0;
     int     banner_only   = 0;
+    int     once_mode     = 0;
+    const char *once_prompt = NULL;
+    const char *transcript_path = NULL;
+    int     no_transcript = 0;
+    int     have_tau_accept = 0;
+    int     have_tau_rethink = 0;
     float   tau_accept    = 0.40f;
     float   tau_rethink   = 0.60f;
 
@@ -133,11 +219,20 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--swarm")      == 0) swarm_mode = 1;
         else if (strcmp(argv[i], "--verbose")    == 0) verbose = 1;
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
-        else if (strcmp(argv[i], "--tau-accept") == 0 && i + 1 < argc)
+        else if (strcmp(argv[i], "--once")       == 0) once_mode = 1;
+        else if (strcmp(argv[i], "--prompt")     == 0 && i + 1 < argc)
+            once_prompt = argv[++i];
+        else if (strcmp(argv[i], "--transcript") == 0 && i + 1 < argc)
+            transcript_path = argv[++i];
+        else if (strcmp(argv[i], "--no-transcript") == 0) no_transcript = 1;
+        else if (strcmp(argv[i], "--max-tokens") == 0 && i + 1 < argc) ++i; /* parity */
+        else if (strcmp(argv[i], "--tau-accept") == 0 && i + 1 < argc) {
             tau_accept = (float)atof(argv[++i]);
-        else if (strcmp(argv[i], "--tau-rethink")== 0 && i + 1 < argc)
+            have_tau_accept = 1;
+        } else if (strcmp(argv[i], "--tau-rethink")== 0 && i + 1 < argc) {
             tau_rethink = (float)atof(argv[++i]);
-        else if (strcmp(argv[i], "--help") == 0) {
+            have_tau_rethink = 1;
+        } else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos chat — σ-gated interactive inference\n"
                 "  --no-codex          start without Codex as system prompt\n"
@@ -146,12 +241,26 @@ int main(int argc, char **argv) {
                 "  --local-only        never escalate to cloud\n"
                 "  --swarm             cloud tier uses swarm consensus (stub)\n"
                 "  --verbose           print a per-turn diagnostic\n"
-                "  --tau-accept  F     override τ_accept (default 0.40)\n"
-                "  --tau-rethink F     override τ_rethink (default 0.60)\n"
+                "  --tau-accept  F     override τ_accept (default 0.40 interactive,\n"
+                "                      0.30 for --once to match Python harness)\n"
+                "  --tau-rethink F     override τ_rethink (default 0.60 / 0.70)\n"
+                "  --once              one headless turn (needs --prompt)\n"
+                "  --prompt TEXT       prompt for --once\n"
+                "  --transcript PATH   JSONL transcript for --once\n"
+                "  --no-transcript     skip JSONL for --once\n"
+                "  --max-tokens N      accepted for argv parity (ignored)\n"
                 "  --banner-only       print banner and exit (CI hook)\n"
-                "  --help              this text\n");
+                "  --help              this text\n"
+                "\n"
+                "  CREATION_OS_BITNET_EXE  optional path to local inference binary\n"
+                "                          (see src/import/bitnet_spawn.h).\n");
             return 0;
         }
+    }
+
+    if (once_mode) {
+        if (!have_tau_accept)  tau_accept  = 0.30f;
+        if (!have_tau_rethink) tau_rethink = 0.70f;
     }
 
     /* Codex load (optional). */
@@ -192,15 +301,55 @@ int main(int argc, char **argv) {
     cfg.engram       = &engram;
     cfg.sovereign    = &sv;
     cfg.agent        = &ag;
-    cfg.generate     = cos_cli_stub_generate;
+    cfg.generate     = cos_cli_chat_generate;
     cfg.escalate     = cos_cli_stub_escalate;
 
-    print_banner(&cfg, have_codex ? &codex : NULL);
     if (banner_only) {
+        print_banner(&cfg, have_codex ? &codex : NULL);
         cos_sigma_pipeline_free_engram_values(&engram);
         cos_sigma_codex_free(&codex);
         return 0;
     }
+
+    if (once_mode) {
+        if (once_prompt == NULL || once_prompt[0] == '\0') {
+            fprintf(stderr, "cos chat: --once requires --prompt\n");
+            cos_sigma_pipeline_free_engram_values(&engram);
+            cos_sigma_codex_free(&codex);
+            return 2;
+        }
+        const char *exe = getenv("CREATION_OS_BITNET_EXE");
+        const char *backend =
+            (exe != NULL && exe[0] != '\0') ? "bridge" : "stub";
+        fprintf(stdout,
+                "cos chat  ·  backend=%s  ·  τ_accept=%g  τ_rethink=%g\n",
+                backend, (double)tau_accept, (double)tau_rethink);
+        fflush(stdout);
+
+        FILE *tout = NULL;
+        if (!no_transcript) {
+            const char *p = transcript_path;
+            if (p == NULL || p[0] == '\0')
+                p = getenv("COS_CHAT_TRANSCRIPT");
+            if (p == NULL || p[0] == '\0')
+                p = "./cos_chat_transcript.jsonl";
+            tout = fopen(p, "a");
+            if (tout == NULL) {
+                fprintf(stderr, "cos chat: cannot open transcript: %s\n", p);
+                cos_sigma_pipeline_free_engram_values(&engram);
+                cos_sigma_codex_free(&codex);
+                return 4;
+            }
+        }
+        int rc = run_chat_once(tout, &cfg, once_prompt);
+        if (tout != NULL)
+            fclose(tout);
+        cos_sigma_pipeline_free_engram_values(&engram);
+        cos_sigma_codex_free(&codex);
+        return rc;
+    }
+
+    print_banner(&cfg, have_codex ? &codex : NULL);
 
     char line[2048];
     int turn = 0;

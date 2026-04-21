@@ -6188,14 +6188,15 @@ check-integration: test_sigma_pipeline_integration
 # Real BitNet integration is one callback swap away; today these
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
-COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/cli
+COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/cli -Isrc/import
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
                src/sigma/pipeline/reinforce.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
-               src/cli/stub_gen.c
+               src/cli/stub_gen.c \
+               src/import/bitnet_spawn.c
 
 cos-chat: $(COS_CLI_SRCS) src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
