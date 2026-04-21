@@ -81,6 +81,15 @@ typedef struct {
     int   escalation_rate_pct;
     char  weakest_domain[32];
 
+    /* DEV-7: runtime facets populated by cos_sigma_health_load_live().
+     * When the live loader is skipped these stay zero / empty and the
+     * banner prints them as "unknown". */
+    int   llama_server_up;        /* 1 if GET /health returned "ok" */
+    int   llama_server_port;      /* resolved port (COS_BITNET_SERVER_PORT) */
+    char  llama_server_host[64];  /* resolved host */
+    char  model_path[256];        /* COS_BITNET_SERVER_MODEL */
+    int   distill_pairs_today;    /* count of escalations today */
+
     /* Roll-up. */
     int   mode;
     int   status;
@@ -93,6 +102,22 @@ int  cos_sigma_health_init_defaults(cos_health_report_t *r);
  * Fields not present in the DB are left at their default values. */
 int  cos_sigma_health_load_state(cos_health_report_t *r,
                                  const char *state_db_path);
+
+/* DEV-7: enrich a report with live runtime metrics collected from
+ * this machine:
+ *   - engrams           ← row count of ~/.cos/engram.db (DEV-3)
+ *   - sigma_mean_last_100 ← avg σ of most-recent 100 engram rows
+ *   - cost_today_eur    ← sum of cost_eur in ~/.cos/distill_pairs.jsonl
+ *                          with ts ≥ midnight today (local)
+ *   - distill_pairs_today, llama_server_up, llama_server_host/port,
+ *     model_path
+ *
+ * Paths are resolved from COS_ENGRAM_DB, CREATION_OS_DISTILL_LOG,
+ * COS_BITNET_SERVER_HOST / _PORT, COS_BITNET_SERVER_MODEL with the
+ * same defaults as the runtime.  Returns 0 on success (partial OK
+ * if a source is missing; the field simply stays at its current
+ * value). */
+int  cos_sigma_health_load_live(cos_health_report_t *r);
 
 /* Decide the HEALTHY / DEGRADED / UNHEALTHY verdict from the
  * report's quantitative fields.  Mutates r->status in place.

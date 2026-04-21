@@ -127,7 +127,12 @@ int cos_sigma_health_emit(const cos_health_report_t *r, int emit_json) {
                "\"cost_today_eur\":%.4f,"
                "\"rethink_rate_pct\":%d,"
                "\"escalation_rate_pct\":%d,"
-               "\"weakest_domain\":\"%s\"}\n",
+               "\"weakest_domain\":\"%s\","
+               "\"llama_server_up\":%d,"
+               "\"llama_server_host\":\"%s\","
+               "\"llama_server_port\":%d,"
+               "\"model_path\":\"%s\","
+               "\"distill_pairs_today\":%d}\n",
                cos_sigma_health_status_name(r->status),
                cos_sigma_health_mode_name  (r->mode),
                pipeline_pct,
@@ -140,19 +145,37 @@ int cos_sigma_health_emit(const cos_health_report_t *r, int emit_json) {
                (double)r->uptime_hours,
                (double)r->cost_today_eur,
                r->rethink_rate_pct, r->escalation_rate_pct,
-               r->weakest_domain);
+               r->weakest_domain,
+               r->llama_server_up,
+               r->llama_server_host,
+               r->llama_server_port,
+               r->model_path,
+               r->distill_pairs_today);
     } else {
         printf("cos health:\n");
         printf("  Status         %s\n", cos_sigma_health_status_name(r->status));
         printf("  Mode           %s\n", cos_sigma_health_mode_name  (r->mode));
         printf("  Pipeline       OK (%d/%d checks green)\n",
                r->checks_green, r->checks_total);
+        /* DEV-7: live llama-server probe + model path. */
+        if (r->llama_server_host[0] != '\0') {
+            printf("  llama-server   %s  (http://%s:%d)\n",
+                   r->llama_server_up ? "UP" : "DOWN",
+                   r->llama_server_host, r->llama_server_port);
+        }
+        if (r->model_path[0] != '\0') {
+            printf("  Model          %s\n", r->model_path);
+        }
         printf("  Engrams        %d stored\n", r->engrams);
         printf("  τ_accept       %.3f\n", (double)r->tau_accept);
         printf("  τ_rethink      %.3f\n", (double)r->tau_rethink);
         printf("  σ mean         %.3f (last 100 queries)\n", (double)r->sigma_mean_last_100);
         printf("  Uptime         %.1f hours\n", (double)r->uptime_hours);
-        printf("  Cost today     €%.2f\n",      (double)r->cost_today_eur);
+        printf("  Cost today     €%.4f", (double)r->cost_today_eur);
+        if (r->distill_pairs_today > 0) {
+            printf("  (%d escalations)", r->distill_pairs_today);
+        }
+        printf("\n");
         printf("  Rethink rate   %d%%\n",       r->rethink_rate_pct);
         printf("  Escalation     %d%%\n",       r->escalation_rate_pct);
         printf("  Weakest        %s\n",         r->weakest_domain);

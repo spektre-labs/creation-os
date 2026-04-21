@@ -6704,7 +6704,11 @@ check-sigma-persist: creation_os_sigma_persist
 # dispatches to this sibling when ./cos-health exists, and falls
 # back to `cos doctor` otherwise (no regression on old installs).
 COS_HEALTH_INC   = -Isrc/sigma/pipeline
+# DEV-7 adds health_live.c: reads engram.db + distill_pairs.jsonl +
+# probes llama-server's HTTP /health endpoint so `cos-health` reports
+# live runtime facets rather than only compile-time defaults.
 COS_HEALTH_SRCS  = src/sigma/pipeline/health.c \
+                   src/sigma/pipeline/health_live.c \
                    src/sigma/pipeline/persist.c
 COS_HEALTH_LIBS  = -lsqlite3
 
