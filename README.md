@@ -32,29 +32,60 @@ Forty branchless integer kernels · one composed verdict · <strong>1 = 1</stron
 </table>
 </p>
 
+<p align="center">
+  <a href="Makefile"><img src="https://img.shields.io/badge/merge--gate-check%E2%80%93v6%E2%80%A6v306-22c55e?style=flat-square&labelColor=14532d" alt="Merge gate"/></a>
+  <a href="#build"><img src="https://img.shields.io/badge/CI-sigma--pipeline-38bdf8?style=flat-square&labelColor=0c4a6e" alt="Sigma pipeline checks"/></a>
+  <a href="docs/LICENSING.md"><img src="https://img.shields.io/badge/license-SCSL%20%2B%20AGPL-f97316?style=flat-square&labelColor=7c2d12" alt="License"/></a>
+  <a href="docs/FEATURES_AND_STANDALONE_BUILDS.md"><img src="https://img.shields.io/badge/binaries-standalone%20kernels-c4b5fd?style=flat-square&labelColor=3730a3" alt="Standalone binaries"/></a>
+</p>
+
 ## Contents
 
-- [Try it](#try-it)
-- [Measured](#measured)
-- [How Creation OS differs](#how-creation-os-differs)
-- [Architecture](#architecture)
-- [Beyond inference](#beyond-inference)
-- [Build](#build)
-- [Proof status](#proof-status)
-- [Surface versions (v112 – v278+)](#surface-versions)
-- [Docs hub](#docs-hub)
-- [Doctoral and committee read path](#doctoral-and-committee-read-path)
-- [Limitations](#limitations)
-- [License](#license)
+<table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr valign="top">
+<td width="50%">
+
+**Ship path**
+
+<ul>
+<li><a href="#try-it"><strong>Try it</strong></a> — 30 s smoke</li>
+<li><a href="#measured"><strong>Measured</strong></a> — receipts</li>
+<li><a href="#how-creation-os-differs"><strong>Differs</strong></a> — vs field</li>
+<li><a href="#architecture"><strong>Architecture</strong></a> — ULTRA + BSC</li>
+<li><a href="#beyond-inference"><strong>Beyond inference</strong></a> — <code>cos</code> surface</li>
+<li><a href="#build"><strong>Build</strong></a> — <code>make</code> bars</li>
+</ul>
+
+</td>
+<td width="50%">
+
+**Proofs · docs · policy**
+
+<ul>
+<li><a href="#proof-status"><strong>Proof status</strong></a> — Lean + Frama-C</li>
+<li><a href="#surface-versions"><strong>Surface versions</strong></a> — v112–v306+</li>
+<li><a href="#docs-hub"><strong>Docs hub</strong></a> — DOC_INDEX</li>
+<li><a href="#doctoral-and-committee-read-path"><strong>Doctoral path</strong></a> — committee order</li>
+<li><a href="#limitations"><strong>Limitations</strong></a> — honest scope</li>
+<li><a href="#license"><strong>License</strong></a> — SCSL / AGPL</li>
+</ul>
+
+</td>
+</tr>
+</table>
 
 <p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
 <p align="center"><sub><strong>FIG 09</strong> — where to look first on this page (adapts to light/dark in supporting clients). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a> · <a href="docs/DOC_INDEX.md">DOC_INDEX</a>.</sub></p>
 
 ---
 
+<p align="center"><sub><strong>· · ·</strong> ship <strong>· · ·</strong></sub></p>
+
 <a id="try-it"></a>
 
 ## Try it
+
+<sub>Zero-to-chat on macOS or Linux — weights optional for CI (<code>COS_INSTALL_NO_BITNET=1</code>).</sub>
 
 One path, from a terminal, on any macOS or Linux host:
 
@@ -92,6 +123,14 @@ is logged.  Nothing calls home.  Safe to re-run; idempotent.
 | **C** meta-cognitive σ | `cos_ultra_metacog_*` — perception · self · social · situational | `--verbose` |
 | **D** session coherence | `cos_ultra_coherence_emit_report` — dσ/dt, K_eff, {STABLE, DRIFTING, AT_RISK} | REPL-only; `--no-coherence` to opt out |
 
+```mermaid
+%%{init: {'theme':'neutral', 'flowchart': {'curve': 'linear'}}}%%
+flowchart LR
+  A["Phase A<br/>σ_combined"] --> B["Phase B<br/>conformal τ"]
+  B --> C["Phase C<br/>meta-cog"]
+  C --> D["Phase D<br/>coherence"]
+```
+
 Example:
 
 ```bash
@@ -103,7 +142,7 @@ Example:
 #    σ_perplexity=0.063 σ_consistency=0.667 | k=3]
 ```
 
----
+<p align="center"><sub><strong>· · ·</strong> evidence <strong>· · ·</strong></sub></p>
 
 <a id="measured"></a>
 
@@ -117,6 +156,14 @@ command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 
 <p align="center"><img src="docs/assets/evidence-ladder.svg" width="92%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/></p>
 <p align="center"><sub><strong>FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+
+<table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="10" style="margin:0.75rem 0 1.25rem;">
+<tr align="center">
+<td style="border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;"><sub>TruthfulQA 817 · baseline</sub><br/><strong style="font-size:1.35em;">0.261</strong><br/><code>bitnet_only</code></td>
+<td style="border:1px solid #bbf7d0;border-radius:10px;background:#ecfdf5;"><sub>σ-pipeline · scored acc.</sub><br/><strong style="font-size:1.35em;">0.336</strong><br/><code>pipeline</code></td>
+<td style="border:1px solid #bae6fd;border-radius:10px;background:#f0f9ff;"><sub>Conformal τ (SCI-1)</sub><br/><strong style="font-size:1.35em;">0.655</strong><br/><code>α=0.80, δ=0.10</code></td>
+</tr>
+</table>
 
 ### 1. TruthfulQA 817 (generation/validation, end-to-end)
 
@@ -237,7 +284,7 @@ change daily — they are **not** an engineering scorecard.
 They are bigger.  We measure σ.  Nobody else does.  
 Full comparison: [`docs/comparison.md`](docs/comparison.md).
 
----
+<p align="center"><sub><strong>· · ·</strong> stack <strong>· · ·</strong></sub></p>
 
 <a id="architecture"></a>
 
@@ -415,11 +462,15 @@ says so.
 > **Ω = argmin ∫σ dt** subject to **K ≥ K_crit**.  
 > Implemented: [`src/sigma/evolve/`](src/sigma/evolve/).
 
+<p align="center"><sub><strong>· · ·</strong> surface <strong>· · ·</strong></sub></p>
+
 ---
 
 <a id="beyond-inference"></a>
 
 ## Beyond inference
+
+<sub>One <code>cos</code> front door plus dedicated σ binaries — all instrumented.</sub>
 
 Creation OS is not just a chat interface.
 
@@ -440,7 +491,20 @@ Creation OS is not just a chat interface.
 | `cos mcp`            | MCP server — σ-gate as infrastructure |
 | `cos a2a`            | agent-to-agent with σ-trust |
 
+```mermaid
+%%{init: {'theme':'neutral', 'flowchart': {'curve': 'basis'}}}%%
+flowchart LR
+  H[Operator] --> FD[cos dispatcher]
+  FD --> G1[chat · benchmark · cost]
+  FD --> G2[swarm · sandbox · plan · exec]
+  FD --> G3[health · mcp · a2a]
+  H --> OM[cos-evolve]
+  OM --> G4[evolve · discover · calibrate-auto · omega]
+```
+
 Every surfaced turn measures σ.  Every gate decision is logged.
+
+<p align="center"><sub><strong>· · ·</strong> toolchain <strong>· · ·</strong></sub></p>
 
 ---
 
@@ -448,15 +512,21 @@ Every surfaced turn measures σ.  Every gate decision is logged.
 
 ## Build
 
-Minimal (any C11 + libm host):
+<table role="presentation" width="100%" border="0" cellspacing="16" cellpadding="0">
+<tr valign="top">
+<td width="50%">
+
+**Minimal (any C11 + libm)**
 
 ```bash
 cc -O2 -I. -o creation_os creation_os_v2.c -lm
 ./creation_os
 ```
 
-With `make`, the repo default is `CFLAGS = -O2 -march=native -Wall
--std=c11` and `LDFLAGS = -lm`:
+</td>
+<td width="50%">
+
+**Make (default <code>-O2 -march=native</code>)**
 
 ```bash
 make help           # full target list (labs, RTL, benches)
@@ -466,6 +536,10 @@ make check-sigma-pipeline
                     # every σ-pipeline kernel + 12 integration scenarios
 make merge-gate     # check + check-v6 … check-v306 (maintainer bar)
 ```
+
+</td>
+</tr>
+</table>
 
 Flagship check targets: `make check-v6` (Living Kernel, 30 self-tests)
 … `make check-v29` (collapse harness, 22 self-tests);
@@ -479,11 +553,18 @@ Optional (not in `merge-gate`): σ labs, MCP, RTL, native-M4 —
 Host metadata when publishing numbers:
 [`docs/REPRO_BUNDLE_TEMPLATE.md`](docs/REPRO_BUNDLE_TEMPLATE.md).
 
+<p align="center"><sub><strong>· · ·</strong> proofs <strong>· · ·</strong></sub></p>
+
 ---
 
 <a id="proof-status"></a>
 
 ## Proof status
+
+<p align="center">
+  <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-6%2F6%20theorems-059669?style=for-the-badge&labelColor=064e3b" alt="Lean 4 theorems"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20Wp-15%2F15%20tier--1-6366f1?style=for-the-badge&labelColor=312e81" alt="Frama-C Wp"/></a>
+</p>
 
 - **Lean 4**: 6 / 6 theorems discharged, **sorry-free** —
   [`hw/formal/v259/Measurement.lean`](hw/formal/v259/Measurement.lean);
@@ -497,6 +578,8 @@ Host metadata when publishing numbers:
 - **Conformal guarantee** (selective prediction, Angelopoulos-Bates):
   P(wrong | σ ≤ τ) ≤ α with confidence 1 − δ on the calibration draw —
   [`docs/v111/CONFORMAL_GUARANTEE.md`](docs/v111/CONFORMAL_GUARANTEE.md).
+
+<p align="center"><sub><strong>· · ·</strong> versions <strong>· · ·</strong></sub></p>
 
 ---
 
@@ -541,6 +624,8 @@ dominant primitive.  At head:
   ruin-value / Dougong / Parthenon / Leanstral / Hagia Sofia ·
   federated / immune / antifragile / clock / Rosetta · knowledge-graph
   / complete · zkp / green / governance / narrative / swarm / omega.
+
+<p align="center"><sub><strong>· · ·</strong> docs <strong>· · ·</strong></sub></p>
 
 ---
 
@@ -608,6 +693,8 @@ people associate with trillion-parameter clouds — **without** mixing
 lab toy kernels with harness claims; see
 [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
 
+<p align="center"><sub><strong>· · ·</strong> committee <strong>· · ·</strong></sub></p>
+
 ---
 
 <a id="doctoral-and-committee-read-path"></a>
@@ -648,6 +735,8 @@ into the same tables as §7 throughput without an explicit wall — see
 <p align="center"><img src="docs/assets/kernel-lineage-evidence.svg" width="96%" alt="Portable proof vs standalone lab demos (evidence classes)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
 <p align="center"><sub><strong>FIG 04</strong> — portable proof vs extended lab demos (evidence-class guardrail). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
+<p align="center"><sub><strong>· · ·</strong> scope <strong>· · ·</strong></sub></p>
+
 ---
 
 <a id="limitations"></a>
@@ -670,6 +759,8 @@ This is a research prototype.  Full list with scope and caveats:
   archived host metadata.
 - **BitNet quickstart** downloads real 1.2 GB weights; the local
   runtime is real.  Cloud escalation is opt-in and off by default.
+
+<p align="center"><sub><strong>· · ·</strong> license <strong>· · ·</strong></sub></p>
 
 ---
 
