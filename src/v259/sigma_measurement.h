@@ -127,7 +127,23 @@ typedef enum {
     COS_SIGMA_GATE_ABSTAIN        = 2,
 } cos_sigma_gate_t;
 
-/* Pure predicate; no global state, no allocation, no I/O. */
+/* Pure predicate; no global state, no allocation, no I/O.
+ * ACSL (Frama-C Wp): totality holds for finite IEEE-754 floats; NaN
+ * comparisons are false in C, so the implementation falls through to
+ * ABSTAIN without satisfying the trichotomy — excluded by \is_finite. */
+/*@
+  requires \valid_read(m);
+  requires \is_finite(m->sigma) && \is_finite(m->tau);
+  assigns  \nothing;
+  ensures
+    (m->sigma <  m->tau && \result == COS_SIGMA_GATE_ALLOW)    ||
+    (m->sigma == m->tau && \result == COS_SIGMA_GATE_BOUNDARY) ||
+    (m->sigma >  m->tau && \result == COS_SIGMA_GATE_ABSTAIN);
+  ensures
+       \result == COS_SIGMA_GATE_ALLOW
+    || \result == COS_SIGMA_GATE_BOUNDARY
+    || \result == COS_SIGMA_GATE_ABSTAIN;
+*/
 static inline cos_sigma_gate_t
 cos_sigma_measurement_gate(const cos_sigma_measurement_t *m) {
     if (m->sigma <  m->tau) return COS_SIGMA_GATE_ALLOW;
@@ -151,6 +167,11 @@ cos_sigma_measurement_gate(const cos_sigma_measurement_t *m) {
  * struct level.  The gate predicate itself does NOT clamp — see
  * `sigma_measurement.h.acsl`, theorem 5, for why: out-of-range
  * telemetry is classifiable, not silently altered. */
+/*@
+  assigns \nothing;
+  ensures \is_finite(\result);
+  ensures 0.0f <= \result <= 1.0f;
+*/
 static inline float
 cos_sigma_measurement_clamp(float x) {
     /* NaN test: x != x is true iff x is NaN (IEEE-754). */
@@ -175,18 +196,97 @@ cos_sigma_measurement_clamp(float x) {
  *
  * Purity: `memcpy` is the only side effect, restricted to the
  * explicitly named 12-byte buffer.  Thread-safe (no global state). */
+/*@
+  requires \valid_read(m);
+  requires \valid(buf);
+  requires \separated(m, buf);
+  assigns buf[0 .. 11];
+  ensures buf[0]  == ((unsigned char const *)m)[0]
+      &&  buf[1]  == ((unsigned char const *)m)[1]
+      &&  buf[2]  == ((unsigned char const *)m)[2]
+      &&  buf[3]  == ((unsigned char const *)m)[3]
+      &&  buf[4]  == ((unsigned char const *)m)[4]
+      &&  buf[5]  == ((unsigned char const *)m)[5]
+      &&  buf[6]  == ((unsigned char const *)m)[6]
+      &&  buf[7]  == ((unsigned char const *)m)[7]
+      &&  buf[8]  == ((unsigned char const *)m)[8]
+      &&  buf[9]  == ((unsigned char const *)m)[9]
+      &&  buf[10] == ((unsigned char const *)m)[10]
+      &&  buf[11] == ((unsigned char const *)m)[11];
+*/
 static inline void
 cos_sigma_measurement_encode(const cos_sigma_measurement_t *m,
                              uint8_t buf[12]) {
-    __builtin_memcpy(buf, m, 12);
+    const unsigned char *s = (const unsigned char *)m;
+    buf[0]  = s[0];
+    buf[1]  = s[1];
+    buf[2]  = s[2];
+    buf[3]  = s[3];
+    buf[4]  = s[4];
+    buf[5]  = s[5];
+    buf[6]  = s[6];
+    buf[7]  = s[7];
+    buf[8]  = s[8];
+    buf[9]  = s[9];
+    buf[10] = s[10];
+    buf[11] = s[11];
 }
 
+/*@
+  requires \valid_read(buf);
+  requires \valid(m);
+  requires \separated(buf, m);
+  assigns ((unsigned char *)m)[0 .. 11];
+  ensures ((unsigned char *)m)[0]  == buf[0]
+      &&  ((unsigned char *)m)[1]  == buf[1]
+      &&  ((unsigned char *)m)[2]  == buf[2]
+      &&  ((unsigned char *)m)[3]  == buf[3]
+      &&  ((unsigned char *)m)[4]  == buf[4]
+      &&  ((unsigned char *)m)[5]  == buf[5]
+      &&  ((unsigned char *)m)[6]  == buf[6]
+      &&  ((unsigned char *)m)[7]  == buf[7]
+      &&  ((unsigned char *)m)[8]  == buf[8]
+      &&  ((unsigned char *)m)[9]  == buf[9]
+      &&  ((unsigned char *)m)[10] == buf[10]
+      &&  ((unsigned char *)m)[11] == buf[11];
+*/
 static inline void
 cos_sigma_measurement_decode(const uint8_t buf[12],
                              cos_sigma_measurement_t *m) {
-    __builtin_memcpy(m, buf, 12);
+    unsigned char *d = (unsigned char *)m;
+    d[0]  = buf[0];
+    d[1]  = buf[1];
+    d[2]  = buf[2];
+    d[3]  = buf[3];
+    d[4]  = buf[4];
+    d[5]  = buf[5];
+    d[6]  = buf[6];
+    d[7]  = buf[7];
+    d[8]  = buf[8];
+    d[9]  = buf[9];
+    d[10] = buf[10];
+    d[11] = buf[11];
 }
 
+/*@
+  requires \valid_read(in);
+  requires \valid(out);
+  requires \separated(in, out);
+  assigns ((unsigned char *)out)[0 .. 11];
+  ensures ((unsigned char *)out)[0]  == ((unsigned char const *)in)[0]
+      &&  ((unsigned char *)out)[1]  == ((unsigned char const *)in)[1]
+      &&  ((unsigned char *)out)[2]  == ((unsigned char const *)in)[2]
+      &&  ((unsigned char *)out)[3]  == ((unsigned char const *)in)[3]
+      &&  ((unsigned char *)out)[4]  == ((unsigned char const *)in)[4]
+      &&  ((unsigned char *)out)[5]  == ((unsigned char const *)in)[5]
+      &&  ((unsigned char *)out)[6]  == ((unsigned char const *)in)[6]
+      &&  ((unsigned char *)out)[7]  == ((unsigned char const *)in)[7]
+      &&  ((unsigned char *)out)[8]  == ((unsigned char const *)in)[8]
+      &&  ((unsigned char *)out)[9]  == ((unsigned char const *)in)[9]
+      &&  ((unsigned char *)out)[10] == ((unsigned char const *)in)[10]
+      &&  ((unsigned char *)out)[11] == ((unsigned char const *)in)[11];
+  ensures  \result == \true;
+*/
 static inline bool
 cos_sigma_measurement_roundtrip(const cos_sigma_measurement_t *in,
                                 cos_sigma_measurement_t *out) {
@@ -199,7 +299,18 @@ cos_sigma_measurement_roundtrip(const cos_sigma_measurement_t *in,
      * comparison is the correct roundtrip invariant. */
     const uint8_t *a = (const uint8_t *)in;
     const uint8_t *b = (const uint8_t *)out;
-    for (int i = 0; i < 12; ++i) if (a[i] != b[i]) return false;
+    if (a[0]  != b[0])  return false;
+    if (a[1]  != b[1])  return false;
+    if (a[2]  != b[2])  return false;
+    if (a[3]  != b[3])  return false;
+    if (a[4]  != b[4])  return false;
+    if (a[5]  != b[5])  return false;
+    if (a[6]  != b[6])  return false;
+    if (a[7]  != b[7])  return false;
+    if (a[8]  != b[8])  return false;
+    if (a[9]  != b[9])  return false;
+    if (a[10] != b[10]) return false;
+    if (a[11] != b[11]) return false;
     return true;
 }
 

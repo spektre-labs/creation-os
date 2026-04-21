@@ -1,0 +1,15 @@
+# Frama-C Wp discharge ledger — v259 σ-measurement gate
+# generated: 2026-04-21T07:32:00Z
+# frama-c:   32.0 (Germanium)
+# alt-ergo:  v2.6.3
+# z3:        Z3 version 4.15.4 - 64 bit
+
+# Tier-1 (mandatory): gate + clamp on src/v259/sigma_measurement.c — Wp discharged.
+#   [wp] Proved goals:   15 / 15
+# Reference ACSL scaffold (not fed to Wp in this script):
+#   hw/formal/v259/sigma_measurement.h.acsl
+
+# Goal summary lines from this run (see docs/v259/frama_c_wp_full.log for full output):
+#   [wp] Proved goals:   15 / 15
+
+# For the full transcript see docs/v259/frama_c_wp_full.log.

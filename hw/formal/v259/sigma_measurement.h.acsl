@@ -7,18 +7,21 @@
  *
  * CLAIM DISCIPLINE
  * ----------------
- * This file is SCAFFOLDING, not a discharged proof.
+ * This file is a **human-readable duplicate** of the contracts that
+ * live on `cos_sigma_measurement_gate` / clamp / encode / decode /
+ * roundtrip in `src/v259/sigma_measurement.h`.
  *
- *   * None of the `//@ requires / ensures / assigns` clauses below
- *     have been checked by Frama-C Wp in this tree yet.
- *   * The file exists so that the v259 contract can be stated in a
- *     machine-checkable form, and so that a CI job which invokes
- *     `frama-c -wp hw/formal/v259/sigma_measurement.h.acsl` can later
- *     fail-hard if any of them regress.
- *   * Until that CI job exists, every theorem carries an explicit
- *     `PROOF: PENDING` tag in the comment preceding it.
- *   * The C self-test in `src/v259/sigma_measurement.c` is the ONLY
- *     enforcement today.
+ *   * **Frama-C Wp (tier-1):** `scripts/v259/run_frama_c_wp.sh`
+ *     discharges **gate + clamp** on `src/v259/sigma_measurement.c`
+ *     (see `docs/v259/frama_c_wp_results.txt`).  The script does *not*
+ *     feed this `.acsl` stub in the same invocation (double contracts
+ *     confuse the provers).
+ *   * **Byte surface (encode / decode / roundtrip):** still enforced by
+ *     Lean (`roundtrip_bytes_identity`) + the exhaustive C checker; Wp
+ *     on the uchar overlay is optional R&D (`COS_V259_WP_BYTES=1`).
+ *   * Theorems below keep `PROOF: PENDING` until each obligation is
+ *     either discharged by Wp or explicitly retired in favour of the
+ *     Lean / runtime path documented in `docs/v259/formal_status.md`.
  *
  * Running the annotations (once Frama-C + Wp is installed)
  * --------------------------------------------------------
