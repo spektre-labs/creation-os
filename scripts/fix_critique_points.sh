@@ -6,7 +6,7 @@
 # exact-duplicate GDA files (if present).
 set -eu
 
-ROOT=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+ROOT=$(CDPATH= cd -- "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 
 echo "fix_critique_points: archive GDA duplicates (exact matches only)"
