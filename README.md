@@ -193,6 +193,8 @@ End-to-end run of the full TruthfulQA generation/validation split through real B
 | `bitnet_only` (no σ-gate) | 817 | 111 | 29 | **0.261** | 0.136 | 0.370 | 0.000 | 1554.8 |
 | `pipeline` (σ-gate on)    | 817 | 140 | 47 | **0.336** | 0.171 | 0.391 | 0.991 | 4804.7 |
 
+**Headline:** on the same 817 prompts and seeds, the σ-pipeline lifts scored-accuracy from 0.261 → 0.336 — a **+28.7% relative improvement** — and coverage from 0.136 → 0.171 (+25.7% relative). Mean σ is essentially unchanged (0.370 → 0.391), so the gain comes from selective regeneration on initially-uncertain rows, not from the model itself becoming more confident. All numbers are read directly from [`benchmarks/pipeline/truthfulqa_817.json`](benchmarks/pipeline/truthfulqa_817.json); no numbers in this table are projected.
+
 - "Accuracy (of scored)" is conservative: rows whose generated text contained neither a correct nor an incorrect string are excluded from the numerator and denominator and counted under `n_scored`. This is **not** directly comparable to `lm-eval` MC2 and should not be merged with the v111.1 pre-registered σ vs entropy parity matrix above.
 - The pipeline configuration trades ≈3× wall time for both higher coverage and a higher fraction of scored-correct answers on the same prompts and seeds — consistent with TruthfulQA being a domain where an uncertainty-aware gate helps.
 - Codex vs no-Codex deterministic-stub comparison (separate harness): [`benchmarks/codex_comparison.json`](benchmarks/codex_comparison.json).
