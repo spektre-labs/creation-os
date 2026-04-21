@@ -24,6 +24,9 @@ echo "  · cos-chat --no-codex --banner-only"
 Bn="$(./cos-chat --no-codex --banner-only)"
 grep -q "codex:  off" <<<"$Bn" || { echo "no-codex banner wrong" >&2; exit 6; }
 
+echo "  · cos-chat --tools-self-test (HORIZON-1 σ-gated tool gate)"
+./cos-chat --tools-self-test || { echo "tools self-test failed" >&2; exit 29; }
+
 echo "  · cos-benchmark"
 BM="$(./cos-benchmark)"
 grep -q "bitnet_only"       <<<"$BM" || { echo "no bitnet_only row"  >&2; exit 7; }

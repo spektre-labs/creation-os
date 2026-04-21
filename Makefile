@@ -6224,14 +6224,16 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/pipeline/multi_sigma.c \
           src/sigma/metacog/introspection.c \
           src/sigma/physics/coherence.c \
+          src/sigma/tools/sigma_tools.c \
           src/cli/escalation.c src/cli/cos_chat.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
 	    src/sigma/pipeline/multi_sigma.c \
 	    src/sigma/metacog/introspection.c \
 	    src/sigma/physics/coherence.c \
+	    src/sigma/tools/sigma_tools.c \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 

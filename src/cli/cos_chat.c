@@ -31,6 +31,9 @@
  *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
  *   --no-transcript    — skip JSONL for --once
  *   --max-tokens N     — accepted for CLI parity; C path ignores today
+ *   --tools            — σ-gated shell tool REPL (HORIZON-1; no LLM)
+ *   --tools-self-test  — 20-case classifier regression (exit 0/1)
+ *   --tools-dry-run    — gate only, never exec /bin/sh
  *
  * Optional local inference (BitNet-class subprocess):
  *
@@ -59,12 +62,15 @@
 #include "multi_sigma.h"
 #include "introspection.h"
 #include "coherence.h"
+#include "sigma_tools.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #ifndef COS_CHAT_VERSION_STRING
 #define COS_CHAT_VERSION_STRING "v3.0.0"
@@ -550,6 +556,95 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     return 0;
 }
 
+/* HORIZON-1: run /bin/sh -c with argv-style -c string (no quoting hell). */
+static int chat_sh_c_capture(const char *cmd, char *buf, size_t cap) {
+    if (!cmd || !buf || cap < 2) return -1;
+    int p[2];
+    if (pipe(p) != 0) return -1;
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(p[0]);
+        close(p[1]);
+        return -1;
+    }
+    if (pid == 0) {
+        close(p[0]);
+        dup2(p[1], STDOUT_FILENO);
+        dup2(p[1], STDERR_FILENO);
+        close(p[1]);
+        execl("/bin/sh", "sh", "-c", cmd, (char *)NULL);
+        _exit(126);
+    }
+    close(p[1]);
+    size_t n = 0;
+    for (;;) {
+        ssize_t r = read(p[0], buf + n, cap - 1 - n);
+        if (r <= 0) break;
+        n += (size_t)r;
+        if (n >= cap - 1) break;
+    }
+    buf[n] = '\0';
+    close(p[0]);
+    int st = 0;
+    if (waitpid(pid, &st, 0) < 0) return -1;
+    if (WIFEXITED(st)) return WEXITSTATUS(st);
+    return -1;
+}
+
+static int chat_tools_confirm_yes(FILE *in) {
+    const char *e = getenv("COS_TOOLS_ASSUME_YES");
+    if (e != NULL && e[0] == '1') return 1;
+    fprintf(stdout, "CONFIRM this command? [y/N] ");
+    fflush(stdout);
+    char b[32];
+    if (fgets(b, sizeof b, in) == NULL) return 0;
+    return (b[0] == 'y' || b[0] == 'Y');
+}
+
+/* One user line → gate line → optional execute. */
+static int chat_tools_dispatch_line(const char *line, int dry_run, FILE *confirm_in) {
+    float tl = 0.35f, th = 0.65f;
+    cos_sigma_tool_thresholds_default(&tl, &th);
+    cos_tool_gate_result_t g;
+    if (cos_sigma_tool_gate(line, tl, th, &g) != 0) {
+        fprintf(stdout, "[tool: (empty) | — | σ_tool=— | —]\n");
+        return 0;
+    }
+    fprintf(stdout, "[tool: %s | %s | σ_tool=%.2f | %s]\n",
+            g.expanded_cmd, g.risk_label, (double)g.sigma_tool, g.decision_label);
+    if (g.decision == COS_TOOL_DEC_BLOCKED) {
+        if (g.block_reason[0] != '\0')
+            fprintf(stdout, "%s\n", g.block_reason);
+        else
+            fprintf(stdout, "High-risk operation blocked by σ-gate\n");
+        return 0;
+    }
+    if (g.decision == COS_TOOL_DEC_CONFIRM) {
+        if (!chat_tools_confirm_yes(confirm_in)) {
+            fprintf(stdout, "[tool: not executed]\n");
+            return 0;
+        }
+    }
+    if (dry_run) {
+        fprintf(stdout, "[tool: dry-run — not executing]\n");
+        return 0;
+    }
+    enum { CAP = 16384 };
+    char out[CAP];
+    int ex = chat_sh_c_capture(g.expanded_cmd, out, sizeof out);
+    if (out[0] != '\0') {
+        fputs(out, stdout);
+        size_t ol = strlen(out);
+        if (ol > 0 && out[ol - 1] != '\n')
+            fputc('\n', stdout);
+    } else if (ex == 0) {
+        fprintf(stdout, "Done.\n");
+    }
+    if (ex != 0)
+        fprintf(stderr, "[tool: /bin/sh exit=%d]\n", ex);
+    return 0;
+}
+
 int main(int argc, char **argv) {
     int     use_codex     = 1;
     int     use_seed      = 0;
@@ -578,6 +673,9 @@ int main(int argc, char **argv) {
     int         coherence_enabled  = 1;  /* REPL-only; --once is a single
                                             turn so it has no trend.   */
     const char *calibration_path_arg = NULL;
+    int         tools_mode       = 0;
+    int         tools_self_test  = 0;
+    int         tools_dry_run    = 0;
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -626,6 +724,12 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[i], "--calibration-path") == 0 && i + 1 < argc) {
             calibration_path_arg = argv[++i];
             conformal_enabled = 1;
+        } else if (strcmp(argv[i], "--tools") == 0) {
+            tools_mode = 1;
+        } else if (strcmp(argv[i], "--tools-self-test") == 0) {
+            tools_self_test = 1;
+        } else if (strcmp(argv[i], "--tools-dry-run") == 0) {
+            tools_dry_run = 1;
         } else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos chat — σ-gated interactive inference\n"
@@ -655,6 +759,9 @@ int main(int argc, char **argv) {
                 "  --calibration-path PATH  override the conformal bundle path\n"
                 "  --coherence         track per-session σ window (ULTRA-9, default)\n"
                 "  --no-coherence      disable the session coherence summary\n"
+                "  --tools             σ-gated shell tool REPL (HORIZON-1)\n"
+                "  --tools-self-test   20-case classifier regression (exit 0/1)\n"
+                "  --tools-dry-run     with --tools: gate only, never exec\n"
                 "  --help              this text\n"
                 "\n"
                 "  CREATION_OS_BITNET_EXE  optional path to local inference binary\n"
@@ -662,9 +769,67 @@ int main(int argc, char **argv) {
                 "  COS_ENGRAM_ICL=1        same as --icl (overridden by --no-icl)\n"
                 "  COS_ENGRAM_ICL_N=3      exemplar count\n"
                 "  COS_ENGRAM_ICL_RETHINK=1   same as --icl-rethink-only\n"
-                "  COS_ENGRAM_ICL_TAU=0.35    max σ for an exemplar row (default τ_accept)\n");
+                "  COS_ENGRAM_ICL_TAU=0.35    max σ for an exemplar row (default τ_accept)\n"
+                "  COS_TOOL_TAU_LOW/HIGH      tool gate thresholds (default 0.35 / 0.65)\n"
+                "  COS_TOOLS_ASSUME_YES=1     auto-answer CONFIRM as yes\n");
             return 0;
         }
+    }
+
+    if (tools_self_test) {
+        int trc = cos_sigma_tools_self_test();
+        if (trc != 0)
+            fprintf(stderr, "cos chat: --tools-self-test FAILED (rc=%d)\n", trc);
+        return trc != 0 ? 1 : 0;
+    }
+
+    if (tools_mode) {
+        float tl = 0.35f, th = 0.65f;
+        cos_sigma_tool_thresholds_default(&tl, &th);
+        if (banner_only) {
+            fprintf(stdout,
+                    "Creation OS · σ-gated chat\n"
+                    "  HORIZON-1 · σ_tool gate  ·  τ_low=%.2f  τ_high=%.2f\n"
+                    "  assert(declared == realized);\n"
+                    "  1 = 1.\n",
+                    (double)tl, (double)th);
+            return 0;
+        }
+        if (once_mode) {
+            if (once_prompt == NULL || once_prompt[0] == '\0') {
+                fprintf(stderr, "cos chat: --tools --once requires --prompt\n");
+                return 2;
+            }
+            chat_tools_dispatch_line(once_prompt, tools_dry_run, stdin);
+            return 0;
+        }
+        fprintf(stdout,
+                "Creation OS · σ-gated tools (HORIZON-1)\n"
+                "  Natural language:  \"List files in /tmp\"\n"
+                "                     \"Delete all files in /home\"\n"
+                "                     \"Write hello to /tmp/test.txt\"\n"
+                "  Or type a shell command.  exit | quit to end.\n"
+                "  CONFIRM tier: answer y/N (or COS_TOOLS_ASSUME_YES=1).\n");
+        char line[2048];
+        for (;;) {
+            fprintf(stdout, "\n> ");
+            fflush(stdout);
+            if (fgets(line, sizeof line, stdin) == NULL) break;
+            size_t n = strlen(line);
+            while (n > 0 && (line[n - 1] == '\n' || line[n - 1] == '\r'))
+                line[--n] = '\0';
+            if (n == 0) continue;
+            if (strcmp(line, "exit") == 0 || strcmp(line, "quit") == 0) break;
+            if (strcmp(line, "help") == 0) {
+                fprintf(stdout,
+                        "  σ_tool gate: READ < WRITE < DELETE < EXEC < NETWORK\n"
+                        "  AUTO / CONFIRM / BLOCKED from τ_low / τ_high\n");
+                continue;
+            }
+            chat_tools_dispatch_line(line, tools_dry_run, stdin);
+        }
+        fprintf(stdout, "\n  assert(declared == realized);\n  1 = 1.\n");
+        return 0;
     }
 
     if (once_mode) {
