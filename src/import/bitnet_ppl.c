@@ -20,7 +20,8 @@ float cos_bitnet_sigma_from_perplexity(const char *prompt, const char *generated
 
 /* llama-perplexity requires at least 2*n_ctx BPE tokens in the input file.
  * Append this English filler so short chat answers still qualify when
- * using a modest ctx (see CREATION_OS_BITNET_PPL_CTX, default 128). */
+ * using a modest ctx (see CREATION_OS_BITNET_PPL_CTX, default 128).
+ * The pad is repeated N times below to clear the 256-token floor. */
 static const char k_ppl_pad[] =
     "\n\nThe quick brown fox jumps over the lazy dog. "
     "Pack my box with five dozen liquor jugs. "
@@ -73,14 +74,35 @@ static int write_ppl_input(const char *prompt, const char *gen, char *path, size
         unlink(tmpl);
         return -1;
     }
-    if (prompt != NULL)
-        fputs(prompt, fp);
-    fputc('\n', fp);
-    fputc('\n', fp);
-    if (gen != NULL)
-        fputs(gen, fp);
-    fputc('\n', fp);
-    fputs(k_ppl_pad, fp);
+
+    size_t unit_bytes = 1u;
+    if (prompt != NULL) unit_bytes += strlen(prompt);
+    if (gen != NULL)    unit_bytes += strlen(gen);
+    unit_bytes += 2u; /* newlines */
+
+    /* llama-perplexity needs ≥2·n_ctx BPE tokens (~≥1024 chars at ctx=128).
+     * Repeat the prompt+gen block so *only* their joint distribution drives
+     * the perplexity; a generic English pad is appended as a last resort if
+     * the repeated block is still too short. */
+    int reps = (int)(2048u / (unit_bytes ? unit_bytes : 1u)) + 1;
+    if (reps < 2) reps = 2;
+    if (reps > 64) reps = 64;
+
+    for (int i = 0; i < reps; i++) {
+        if (prompt != NULL && prompt[0] != '\0') {
+            fputs(prompt, fp);
+            fputc('\n', fp);
+        }
+        if (gen != NULL && gen[0] != '\0') {
+            fputs(gen, fp);
+            fputc('\n', fp);
+        }
+    }
+    /* Safety net for degenerate inputs. */
+    if (reps * (int)unit_bytes < 1024) {
+        fputs(k_ppl_pad, fp);
+    }
+
     if (fclose(fp) != 0) {
         unlink(tmpl);
         return -1;
@@ -132,27 +154,39 @@ static float parse_ppl_sigma(const char *merged_out)
 float cos_bitnet_sigma_from_perplexity(const char *prompt, const char *generated_text)
 {
     const char *use = getenv("CREATION_OS_BITNET_USE_PPL");
-    if (use == NULL || use[0] != '1')
+    const int debug = (getenv("CREATION_OS_BITNET_PPL_DEBUG") != NULL);
+    if (use == NULL || use[0] != '1') {
+        if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] skip: USE_PPL not set\n");
         return -1.0f;
+    }
 
     const char *model = getenv("CREATION_OS_BITNET_MODEL");
-    if (model == NULL || model[0] == '\0')
+    if (model == NULL || model[0] == '\0') {
+        if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] skip: no model\n");
         return -1.0f;
+    }
 
     const char *cli = getenv("CREATION_OS_BITNET_EXE");
-    if (cli == NULL || cli[0] == '\0')
+    if (cli == NULL || cli[0] == '\0') {
+        if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] skip: no exe\n");
         return -1.0f;
+    }
 
     char perp_path[512];
     const char *pex = getenv("CREATION_OS_BITNET_PERPLEX_EXE");
-    if (pex != NULL && pex[0] != '\0')
+    if (pex != NULL && pex[0] != '\0') {
         (void)snprintf(perp_path, sizeof perp_path, "%s", pex);
-    else if (derive_perplex_exe(cli, perp_path, sizeof perp_path) != 0)
+    } else if (derive_perplex_exe(cli, perp_path, sizeof perp_path) != 0) {
+        if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] skip: derive failed\n");
         return -1.0f;
+    }
+    if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] using %s\n", perp_path);
 
     char tmp[512];
-    if (write_ppl_input(prompt, generated_text, tmp, sizeof tmp) != 0)
+    if (write_ppl_input(prompt, generated_text, tmp, sizeof tmp) != 0) {
+        if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] skip: write input failed\n");
         return -1.0f;
+    }
 
     char ctx_buf[32];
     {
@@ -173,16 +207,21 @@ float cos_bitnet_sigma_from_perplexity(const char *prompt, const char *generated
     argv[ac++] = tmp;
     argv[ac++] = "-c";
     argv[ac++] = ctx_buf;
-    argv[ac++] = "-ngl";
-    argv[ac++] = "0";
+    /* -ngl 0 crashes bitnet llama-perplexity; let the backend pick metal/CPU. */
     argv[ac] = NULL;
 
-    char merged[16384];
-    if (cos_bitnet_spawn_argv_capture(argv, merged, sizeof merged, 1) != 0) {
-        unlink(tmp);
+    char merged[131072];
+    int rc = cos_bitnet_spawn_argv_capture(argv, merged, sizeof merged, 1);
+    if (debug)
+        (void)fprintf(stderr, "[cos-bitnet-ppl] spawn rc=%d len=%zu\n",
+                      rc, strlen(merged));
+    if (rc != 0) {
+        (void)unlink(tmp);
         return -1.0f;
     }
-    unlink(tmp);
-    return parse_ppl_sigma(merged);
+    (void)unlink(tmp);
+    float s = parse_ppl_sigma(merged);
+    if (debug) (void)fprintf(stderr, "[cos-bitnet-ppl] sigma=%.4f\n", (double)s);
+    return s;
 }
 #endif

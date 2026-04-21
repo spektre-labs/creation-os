@@ -79,7 +79,7 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
     }
     if (round == 0 && prompt_is_what_is_2_plus_2(prompt)) {
         *out_text     = "4";
-        *out_sigma    = 0.03f;
+        *out_sigma    = cos_bitnet_sigma_for_local_output("4");
         *out_cost_eur = 0.0;
         return 0;
     }
