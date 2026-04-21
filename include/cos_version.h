@@ -22,16 +22,16 @@ extern "C" {
 #endif
 
 #define COS_VERSION_MAJOR   3
-#define COS_VERSION_MINOR   0
+#define COS_VERSION_MINOR   1
 #define COS_VERSION_PATCH   0
 
-#define COS_VERSION_STRING  "3.0.0"
-#define COS_CODENAME        "ULTRA"
+#define COS_VERSION_STRING  "3.1.0"
+#define COS_CODENAME        "OMEGA"
 #define COS_RELEASE_DATE    "2026-04-21"
 #define COS_TAGLINE         "assert(declared == realized)"
 
 #define COS_SIGMA_PRIMITIVES  20
-#define COS_CHECK_TARGETS     53   /* +mcp +a2a +formal-complete +mesh3 +arxiv */
+#define COS_CHECK_TARGETS     54   /* +cos-evolve over v3.0.0 */
 #define COS_SUBSTRATES         4
 #define COS_FORMAL_PROOFS      6   /* 6/6 discharged; Lean 4 core, zero sorry, zero Mathlib */
 #define COS_FORMAL_PROOFS_TOTAL 6
