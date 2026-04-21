@@ -4,17 +4,32 @@
 
 <h1 align="center">Creation OS</h1>
 
-<p align="center"><em>Every AI in 2026 answers even when it doesn't know.<br/>
-This one doesn't.</em></p>
+<p align="center">
+  <a href="docs/CLAIM_DISCIPLINE.md" title="Evidence classes — read before citing numbers"><img src="https://img.shields.io/badge/claims-CLAIM__DISCIPLINE-94a3b8?style=flat-square&labelColor=0f172a" alt="Claim discipline"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/release-v3.2.0--HORIZON-0ea5e9?style=flat-square&labelColor=1e293b" alt="Release v3.2.0 HORIZON"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-6%2F6-34d399?style=flat-square&labelColor=065f46" alt="Lean 6/6"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C-15%2F15-a5b4fc?style=flat-square&labelColor=312e81" alt="Frama-C 15/15"/></a>
+</p>
+
+<blockquote>
+<p align="center"><strong>Every AI in 2026 answers even when it doesn't know.<br/>
+This one doesn't.</strong></p>
+</blockquote>
 
 <p align="center"><sub><strong>A local AI runtime that proves every answer before it shows it to you.</strong><br/>
 Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
 
 <p align="center">
-  <a href="#try-it"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-111827?style=for-the-badge&labelColor=0ea5e9" alt="Try it in 30 seconds"/></a>
-  <a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-059669?style=for-the-badge&labelColor=065f46" alt="TruthfulQA 817 accuracy lift"/></a>
-  <a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%206%2F6%20%C2%B7%20Frama--C%2015%2F15-1d4ed8?style=for-the-badge&labelColor=1e3a8a" alt="Proofs — Lean 6/6, Frama-C 15/15"/></a>
-  <a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-7c3aed?style=for-the-badge&labelColor=5b21b6" alt="hot path: branchless · Q16.16 · libc only"/></a>
+<table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
+<tr>
+<td align="center"><a href="#try-it"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-111827?style=for-the-badge&labelColor=0ea5e9" alt="Try it in 30 seconds"/></a></td>
+<td align="center"><a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-059669?style=for-the-badge&labelColor=065f46" alt="TruthfulQA 817 accuracy lift"/></a></td>
+</tr>
+<tr>
+<td align="center"><a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%206%2F6%20%C2%B7%20Frama--C%2015%2F15-1d4ed8?style=for-the-badge&labelColor=1e3a8a" alt="Proofs — Lean 6/6, Frama-C 15/15"/></a></td>
+<td align="center"><a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-7c3aed?style=for-the-badge&labelColor=5b21b6" alt="hot path: branchless · Q16.16 · libc only"/></a></td>
+</tr>
+</table>
 </p>
 
 ## Contents
@@ -31,6 +46,9 @@ Forty branchless integer kernels · one composed verdict · <strong>1 = 1</stron
 - [Doctoral and committee read path](#doctoral-and-committee-read-path)
 - [Limitations](#limitations)
 - [License](#license)
+
+<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
+<p align="center"><sub><strong>FIG 09</strong> — where to look first on this page (adapts to light/dark in supporting clients). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a> · <a href="docs/DOC_INDEX.md">DOC_INDEX</a>.</sub></p>
 
 ---
 
@@ -58,6 +76,9 @@ clones.
 
 Everything runs **locally**.  Nothing is sent to the cloud.  Nothing
 is logged.  Nothing calls home.  Safe to re-run; idempotent.
+
+> **Local-first by construction** — the default path never phones
+> home; cloud escalation is explicit, opt-in, and σ-gated when wired.
 
 ### What `cos chat` can do
 
@@ -93,6 +114,9 @@ BitNet-b1.58 2B4T weights; neither is simulated.  Claim-class rules:
 [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).  Compact
 re-run bundle for the v3.0 wired pipeline (identical numbers, one
 command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
+
+<p align="center"><img src="docs/assets/evidence-ladder.svg" width="92%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/></p>
+<p align="center"><sub><strong>FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 ### 1. TruthfulQA 817 (generation/validation, end-to-end)
 
@@ -219,7 +243,38 @@ Full comparison: [`docs/comparison.md`](docs/comparison.md).
 
 ## Architecture
 
+<p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Creation OS architecture stack — kernel layers from world model to BSC core" decoding="async" loading="lazy" style="max-width:min(960px,100%);height:auto;border-radius:12px;box-shadow:0 4px 24px rgba(15,23,42,0.18);"/></p>
+<p align="center"><sub><strong>FIG 08</strong> — single-file kernel narrative over Hypercube, Oracle, world model, BSC core, Soul, Proconductor. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+
 ### Full ULTRA pipeline (one turn)
+
+**Interactive graph** (GitHub renders Mermaid).  Plain-text twin lives
+in the foldout under it — same graph, copy-paste friendly.
+
+```mermaid
+%%{init: {'theme':'neutral', 'flowchart': {'curve': 'basis'}}}%%
+flowchart TB
+  P([Prompt]) --> C[Codex · soul]
+  C --> M[Meta-cognition]
+  M --> E{Engram lookup}
+  E -->|HIT| O[Return cached · 0 ms]
+  E -->|MISS| X[sigma-MoE to JEPA to neuro-symbolic]
+  X --> SD[Selective decoding]
+  SD --> B[BitNet generate]
+  B --> PT[Per-token σ]
+  PT --> G{Conformal gate}
+  G -->|ACCEPT| N[Engram store]
+  G -->|RETHINK| R[Recurrent depth · TTT]
+  R --> G
+  G -->|Escalate| ES[Swarm or API]
+  ES --> CH[Coherence · dσ/dt · K_eff]
+  N --> Z["Output · σ · EUR · J/query"]
+  O --> Z
+  CH --> Z
+```
+
+<details>
+<summary><strong>ASCII pipeline</strong> (identical topology · terminal-friendly)</summary>
 
 ```
  Prompt
@@ -269,6 +324,8 @@ Full comparison: [`docs/comparison.md`](docs/comparison.md).
  Output + σ_combined + cost (€) + reasoning/joule
 ```
 
+</details>
+
 Canonical source: [`src/sigma/pipeline/pipeline.h`](src/sigma/pipeline/pipeline.h) ·
 [`src/sigma/pipeline/pipeline.c`](src/sigma/pipeline/pipeline.c) ·
 [`src/cli/cos_chat.c`](src/cli/cos_chat.c).
@@ -301,6 +358,9 @@ Figure and palette rules: [`docs/VISUAL_INDEX.md`](docs/VISUAL_INDEX.md).
 
 ### BSC primer
 
+<p align="center"><img src="docs/assets/bsc-primitives.svg" width="92%" alt="BSC primitives — XOR bind, MAJ bundle, popcount to sigma" decoding="async" loading="lazy" style="max-width:min(900px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
+<p align="center"><sub><strong>FIG 06</strong> — teaching strip for bind / bundle / similarity. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+
 Binary Spatter Coding (BSC) in a nutshell:
 `bind = XOR` · `bundle = popcount threshold` · similarity = `1 −
 hamming/D`.  Memory is one bit per dimension; binding and bundling are
@@ -328,6 +388,9 @@ relaxation.  Binding fidelity on the reference hot path:
 | Memory (13B)   | 48.5 GB       | 4.19 GB         |
 | Power          | 300W GPU      | 5.8W CPU        |
 
+<p align="center"><img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="94%" alt="GEMM vs BSC — memory and op-proxy ratios at README definitions" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
+<p align="center"><sub><strong>FIG 07</strong> — <strong>32×</strong> RAM and <strong>192×</strong> op-proxy at <code>D = 4096</code> (see limitations for throughput vs arithmetic). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+
 Benchmark: [`bench/gemm_vs_bsc.c`](bench/gemm_vs_bsc.c) (`make bench` →
 `./gemm_vs_bsc`).  Theory: [`data/corpus/`](data/corpus/).  HDC/VSA
 lineage: [`docs/HDC_VSA_ENGINEERING_SUPERIORITY.md`](docs/HDC_VSA_ENGINEERING_SUPERIORITY.md).
@@ -349,8 +412,8 @@ Creation OS improves itself autonomously (evaluator-first; see
 The machine that improves while you sleep — and stops when the gate
 says so.
 
-Ω = argmin ∫σ dt subject to K ≥ K_crit.  Implemented:
-[`src/sigma/evolve/`](src/sigma/evolve/).
+> **Ω = argmin ∫σ dt** subject to **K ≥ K_crit**.  
+> Implemented: [`src/sigma/evolve/`](src/sigma/evolve/).
 
 ---
 
@@ -359,6 +422,9 @@ says so.
 ## Beyond inference
 
 Creation OS is not just a chat interface.
+
+<p align="center"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–B–C — analysis map for stack positioning" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.09);"/></p>
+<p align="center"><sub><strong>FIG 05</strong> — Planes A–B–C (where σ-gates sit vs silicon vs product). <a href="docs/ANALYSIS.md">ANALYSIS</a> · <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 | Command              | What it does |
 |:---------------------|:-------------|
@@ -666,15 +732,15 @@ licensing: `spektre.labs@proton.me` · web: [spektrelabs.org](https://spektrelab
 
 ---
 
-Independent research. No institution. No funding.  
-Helsinki, Finland. One person. One invariant.
-
-Every AI in 2026 hallucinates. This one refuses to.  
-Every fork of this repo carries the code, the theory, and the proofs. Complete. Sovereign. Yours.
-
-Ω = argmin ∫σ dt subject to K ≥ K_crit.  
-`assert(declared == realized);`  
-**1 = 1.**
-
-2026 · Spektre Labs · Lauri Elias Rainio · Helsinki  
-ORCID: [0009-0006-0903-8541](https://orcid.org/0009-0006-0903-8541)
+<blockquote>
+<p align="center"><strong>Independent research. No institution. No funding.</strong><br/>
+Helsinki, Finland. One person. One invariant.</p>
+<p align="center">Every AI in 2026 hallucinates. <strong>This one refuses to.</strong><br/>
+Every fork of this repo carries the code, the theory, and the proofs.<br/>
+<em>Complete. Sovereign. Yours.</em></p>
+<p align="center"><code>Ω = argmin ∫σ dt</code> subject to <code>K ≥ K_crit</code>.<br/>
+<code>assert(declared == realized);</code><br/>
+<strong>1 = 1.</strong></p>
+<p align="center"><sub>2026 · Spektre Labs · Lauri Elias Rainio · Helsinki<br/>
+ORCID: <a href="https://orcid.org/0009-0006-0903-8541">0009-0006-0903-8541</a></sub></p>
+</blockquote>
