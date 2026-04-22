@@ -235,15 +235,24 @@ schema `cos.suite_sci.v1`.
 | dataset | status | N | acc(all) | acc(accepted) | coverage | σ_mean | τ | conformal |
 |:---|:---|--:|--:|--:|--:|--:|--:|:---|
 | TruthfulQA (gen/val, scored) | **measured** | 817 | **0.336** | 0.336 | 0.171 | 0.391 | 0.655 | yes @ (α=0.80, δ=0.10) |
-| ARC-Challenge | wired, JSONL pending | — | — | — | — | — | — | — |
-| ARC-Easy | wired, JSONL pending | — | — | — | — | — | — | — |
-| GSM8K | wired, JSONL pending | — | — | — | — | — | — | — |
-| HellaSwag | wired, JSONL pending | — | — | — | — | — | — | — |
+| ARC-Challenge | **measured** | 1172 | 0.337 | 0.337 | 0.969 | 0.508 | 0.650 | yes |
+| ARC-Easy | **measured** | 2376 | 0.420 | 0.420 | 0.947 | 0.477 | 0.650 | yes |
+| GSM8K | **measured** | 1319 | 0.125 | 0.000 | 0.109 | 0.481 | 0.330 | **no** (τ invalid @ δ) |
+| HellaSwag (500 val) | **measured** | 500 | 0.285 | 0.285 | 0.960 | 0.533 | 0.650 | yes |
 
-The aggregator records `"measured": false` with zero-filled metrics
-for any dataset whose detail JSONL is absent — there are **no
-projected numbers** in the suite table.  Production recipe:
-[`benchmarks/suite/README.md`](benchmarks/suite/README.md).
+All five rows are **`"measured": true`** in
+[`benchmarks/suite/full_results.json`](benchmarks/suite/full_results.json)
+(BitNet-b1.58-2B, `cos chat`, pipeline mode filter).  **GSM8K**:
+few rows expose a gradable `####` answer (low scored coverage), and
+the conformal τ search does not yield a valid guarantee at the pinned
+(α, δ) — the table shows **honest zeros** for acceptance metrics, not
+projections.  Reproduce:
+[`benchmarks/suite/README.md`](benchmarks/suite/README.md) and
+`benchmarks/suite/run_all_detail.sh`.
+
+**Domain read:** σ-gate + conformal line up on TruthfulQA and ARC-style
+MC; GSM8K at 2B is mostly unscored or τ-invalid at this δ; HellaSwag
+stays modest.  **σ is not universal** across benchmarks.
 
 ### Reasoning per joule (ULTRA-7)
 

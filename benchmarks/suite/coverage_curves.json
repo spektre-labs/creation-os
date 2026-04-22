@@ -1,0 +1,802 @@
+{
+  "schema": "cos.suite_coverage_curves.v1",
+  "step": 0.05,
+  "delta": 0.1,
+  "datasets": {
+    "truthfulqa": {
+      "schema": "cos.coverage_curve.v1",
+      "dataset": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/pipeline/truthfulqa_817_detail.jsonl",
+      "mode": "pipeline",
+      "delta": 0.1,
+      "step": 0.05,
+      "n_scored": 140,
+      "n_correct": 47,
+      "accuracy_all": 0.335714,
+      "rows": [
+        {
+          "tau": 0.0,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.05,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.1,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.15,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.2,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.25,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.3,
+          "coverage": 0.007143,
+          "n_accept": 1,
+          "accuracy": 0.0,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.35,
+          "coverage": 0.135714,
+          "n_accept": 19,
+          "accuracy": 0.421053,
+          "risk_ucb": 0.825107
+        },
+        {
+          "tau": 0.4,
+          "coverage": 0.614286,
+          "n_accept": 86,
+          "accuracy": 0.372093,
+          "risk_ucb": 0.74361
+        },
+        {
+          "tau": 0.45,
+          "coverage": 0.914286,
+          "n_accept": 128,
+          "accuracy": 0.328125,
+          "risk_ucb": 0.766714
+        },
+        {
+          "tau": 0.5,
+          "coverage": 0.971429,
+          "n_accept": 136,
+          "accuracy": 0.323529,
+          "risk_ucb": 0.768478
+        },
+        {
+          "tau": 0.55,
+          "coverage": 0.978571,
+          "n_accept": 137,
+          "accuracy": 0.328467,
+          "risk_ucb": 0.763204
+        },
+        {
+          "tau": 0.6,
+          "coverage": 0.985714,
+          "n_accept": 138,
+          "accuracy": 0.326087,
+          "risk_ucb": 0.765251
+        },
+        {
+          "tau": 0.65,
+          "coverage": 0.992857,
+          "n_accept": 139,
+          "accuracy": 0.330935,
+          "risk_ucb": 0.760074
+        },
+        {
+          "tau": 0.7,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 0.75,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 0.8,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 0.85,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 0.9,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 0.95,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        },
+        {
+          "tau": 1.0,
+          "coverage": 1.0,
+          "n_accept": 140,
+          "accuracy": 0.335714,
+          "risk_ucb": 0.754969
+        }
+      ]
+    },
+    "arc_challenge": {
+      "schema": "cos.coverage_curve.v1",
+      "dataset": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/suite/arc_challenge_detail.jsonl",
+      "mode": "pipeline",
+      "delta": 0.1,
+      "step": 0.05,
+      "n_scored": 1136,
+      "n_correct": 383,
+      "accuracy_all": 0.337148,
+      "rows": [
+        {
+          "tau": 0.0,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.05,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.1,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.15,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.2,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.25,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.3,
+          "coverage": 0.069542,
+          "n_accept": 79,
+          "accuracy": 0.278481,
+          "risk_ucb": 0.842239
+        },
+        {
+          "tau": 0.35,
+          "coverage": 0.072183,
+          "n_accept": 82,
+          "accuracy": 0.280488,
+          "risk_ucb": 0.838003
+        },
+        {
+          "tau": 0.4,
+          "coverage": 0.103873,
+          "n_accept": 118,
+          "accuracy": 0.220339,
+          "risk_ucb": 0.878437
+        },
+        {
+          "tau": 0.45,
+          "coverage": 0.209507,
+          "n_accept": 238,
+          "accuracy": 0.243697,
+          "risk_ucb": 0.825854
+        },
+        {
+          "tau": 0.5,
+          "coverage": 0.427817,
+          "n_accept": 486,
+          "accuracy": 0.283951,
+          "risk_ucb": 0.764721
+        },
+        {
+          "tau": 0.55,
+          "coverage": 0.678697,
+          "n_accept": 771,
+          "accuracy": 0.324254,
+          "risk_ucb": 0.714388
+        },
+        {
+          "tau": 0.6,
+          "coverage": 0.890845,
+          "n_accept": 1012,
+          "accuracy": 0.336957,
+          "risk_ucb": 0.696772
+        },
+        {
+          "tau": 0.65,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.7,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.75,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.8,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.85,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.9,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 0.95,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        },
+        {
+          "tau": 1.0,
+          "coverage": 1.0,
+          "n_accept": 1136,
+          "accuracy": 0.337148,
+          "risk_ucb": 0.694687
+        }
+      ]
+    },
+    "arc_easy": {
+      "schema": "cos.coverage_curve.v1",
+      "dataset": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/suite/arc_easy_detail.jsonl",
+      "mode": "pipeline",
+      "delta": 0.1,
+      "step": 0.05,
+      "n_scored": 2249,
+      "n_correct": 944,
+      "accuracy_all": 0.419742,
+      "rows": [
+        {
+          "tau": 0.0,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.05,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.1,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.15,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.2,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.25,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.3,
+          "coverage": 0.007114,
+          "n_accept": 16,
+          "accuracy": 0.1875,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.35,
+          "coverage": 0.014229,
+          "n_accept": 32,
+          "accuracy": 0.34375,
+          "risk_ucb": 0.845928
+        },
+        {
+          "tau": 0.4,
+          "coverage": 0.110716,
+          "n_accept": 249,
+          "accuracy": 0.325301,
+          "risk_ucb": 0.742696
+        },
+        {
+          "tau": 0.45,
+          "coverage": 0.34771,
+          "n_accept": 782,
+          "accuracy": 0.360614,
+          "risk_ucb": 0.677756
+        },
+        {
+          "tau": 0.5,
+          "coverage": 0.656292,
+          "n_accept": 1476,
+          "accuracy": 0.394309,
+          "risk_ucb": 0.63362
+        },
+        {
+          "tau": 0.55,
+          "coverage": 0.88795,
+          "n_accept": 1997,
+          "accuracy": 0.408613,
+          "risk_ucb": 0.615398
+        },
+        {
+          "tau": 0.6,
+          "coverage": 0.976879,
+          "n_accept": 2197,
+          "accuracy": 0.415112,
+          "risk_ucb": 0.60778
+        },
+        {
+          "tau": 0.65,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.7,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.75,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.8,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.85,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.9,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 0.95,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        },
+        {
+          "tau": 1.0,
+          "coverage": 1.0,
+          "n_accept": 2249,
+          "accuracy": 0.419742,
+          "risk_ucb": 0.602883
+        }
+      ]
+    },
+    "gsm8k": {
+      "schema": "cos.coverage_curve.v1",
+      "dataset": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/suite/gsm8k_detail.jsonl",
+      "mode": "pipeline",
+      "delta": 0.1,
+      "step": 0.05,
+      "n_scored": 144,
+      "n_correct": 18,
+      "accuracy_all": 0.125,
+      "rows": [
+        {
+          "tau": 0.0,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.05,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.1,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.15,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.2,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.25,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.3,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.35,
+          "coverage": 0.006944,
+          "n_accept": 1,
+          "accuracy": 0.0,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.4,
+          "coverage": 0.083333,
+          "n_accept": 12,
+          "accuracy": 0.083333,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.45,
+          "coverage": 0.347222,
+          "n_accept": 50,
+          "accuracy": 0.18,
+          "risk_ucb": 0.971743
+        },
+        {
+          "tau": 0.5,
+          "coverage": 0.597222,
+          "n_accept": 86,
+          "accuracy": 0.162791,
+          "risk_ucb": 0.952912
+        },
+        {
+          "tau": 0.55,
+          "coverage": 0.868056,
+          "n_accept": 125,
+          "accuracy": 0.128,
+          "risk_ucb": 0.96797
+        },
+        {
+          "tau": 0.6,
+          "coverage": 0.951389,
+          "n_accept": 137,
+          "accuracy": 0.131387,
+          "risk_ucb": 0.960284
+        },
+        {
+          "tau": 0.65,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.7,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.75,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.8,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.85,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.9,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 0.95,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        },
+        {
+          "tau": 1.0,
+          "coverage": 1.0,
+          "n_accept": 144,
+          "accuracy": 0.125,
+          "risk_ucb": 0.964415
+        }
+      ]
+    },
+    "hellaswag": {
+      "schema": "cos.coverage_curve.v1",
+      "dataset": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/suite/hellaswag_detail.jsonl",
+      "mode": "pipeline",
+      "delta": 0.1,
+      "step": 0.05,
+      "n_scored": 480,
+      "n_correct": 137,
+      "accuracy_all": 0.285417,
+      "rows": [
+        {
+          "tau": 0.0,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.05,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.1,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.15,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.2,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.25,
+          "coverage": 0.0,
+          "n_accept": 0,
+          "accuracy": null,
+          "risk_ucb": null
+        },
+        {
+          "tau": 0.3,
+          "coverage": 0.01875,
+          "n_accept": 9,
+          "accuracy": 0.222222,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.35,
+          "coverage": 0.01875,
+          "n_accept": 9,
+          "accuracy": 0.222222,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.4,
+          "coverage": 0.020833,
+          "n_accept": 10,
+          "accuracy": 0.2,
+          "risk_ucb": 1.0
+        },
+        {
+          "tau": 0.45,
+          "coverage": 0.05,
+          "n_accept": 24,
+          "accuracy": 0.25,
+          "risk_ucb": 0.969022
+        },
+        {
+          "tau": 0.5,
+          "coverage": 0.264583,
+          "n_accept": 127,
+          "accuracy": 0.267717,
+          "risk_ucb": 0.827495
+        },
+        {
+          "tau": 0.55,
+          "coverage": 0.66875,
+          "n_accept": 321,
+          "accuracy": 0.299065,
+          "risk_ucb": 0.760823
+        },
+        {
+          "tau": 0.6,
+          "coverage": 0.885417,
+          "n_accept": 425,
+          "accuracy": 0.287059,
+          "risk_ucb": 0.764988
+        },
+        {
+          "tau": 0.65,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.7,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.75,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.8,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.85,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.9,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 0.95,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        },
+        {
+          "tau": 1.0,
+          "coverage": 1.0,
+          "n_accept": 480,
+          "accuracy": 0.285417,
+          "risk_ucb": 0.763558
+        }
+      ]
+    }
+  }
+}
