@@ -57,7 +57,10 @@
 #define BNS_DEFAULT_NPROBS     5
 #define BNS_DEFAULT_NPRED      64
 #define BNS_DEFAULT_EXE        "./third_party/bitnet/build/bin/llama-server"
-#define BNS_DEFAULT_MODEL      "./models/qwen3-8b-Q4_K_M.gguf"
+/* Prefer Qwen3.5-9B when present; resolver falls back to Qwen3-8B GGUF. */
+#define BNS_DEFAULT_MODEL      "./models/qwen3.5-9b-Q4_K_M.gguf"
+#define BNS_FALLBACK_MODEL     "./models/qwen3-8b-Q4_K_M.gguf"
+#define BNS_SMALL_MODEL        "./models/qwen3.5-2b-Q4_K_M.gguf"
 
 #define BNS_READY_TIMEOUT_S    90   /* cold-start on M-series: ~3 s */
 #define BNS_CONNECT_TIMEOUT_S    5
@@ -130,6 +133,42 @@ static void bns_alloc_scratch(void) {
         g_bns.text_buf = (char *)malloc(BNS_TEXT_CAP);
 }
 
+static int bns_model_path_exists(const char *p) {
+    struct stat st;
+    return (p != NULL && p[0] != '\0' && stat(p, &st) == 0) ? 1 : 0;
+}
+
+/** Pick GGUF path: COS_BITNET_SERVER_MODEL overrides everything.
+ *  Else COS_MODEL_SIZE=small → COS_MODEL_SMALL_PATH (2B),
+ *  else COS_MODEL_PATH or default 9B.  Missing Qwen3.5 files fall
+ *  back to Qwen3-8B when present. */
+static void bns_resolve_model_path(char *dst, size_t cap) {
+    const char *forced = getenv("COS_BITNET_SERVER_MODEL");
+    if (forced != NULL && forced[0] != '\0') {
+        strncpy(dst, forced, cap - 1);
+        dst[cap - 1] = '\0';
+        return;
+    }
+
+    const char *size_env = getenv("COS_MODEL_SIZE");
+    int          small    = (size_env != NULL && strcmp(size_env, "small") == 0);
+
+    const char *primary =
+        small ? env_or("COS_MODEL_SMALL_PATH", BNS_SMALL_MODEL)
+              : env_or("COS_MODEL_PATH", BNS_DEFAULT_MODEL);
+
+    strncpy(dst, primary, cap - 1);
+    dst[cap - 1] = '\0';
+
+    if (bns_model_path_exists(dst))
+        return;
+
+    if (bns_model_path_exists(BNS_FALLBACK_MODEL)) {
+        strncpy(dst, BNS_FALLBACK_MODEL, cap - 1);
+        dst[cap - 1] = '\0';
+    }
+}
+
 static void bns_load_config(void) {
     if (g_bns.initialized) return;
     const char *host = env_or("COS_BITNET_SERVER_HOST", BNS_DEFAULT_HOST);
@@ -139,9 +178,7 @@ static void bns_load_config(void) {
     strncpy(g_bns.exe,   env_or("COS_BITNET_SERVER_EXE",   BNS_DEFAULT_EXE),
             sizeof(g_bns.exe) - 1);
     g_bns.exe[sizeof(g_bns.exe) - 1] = '\0';
-    strncpy(g_bns.model, env_or("COS_BITNET_SERVER_MODEL", BNS_DEFAULT_MODEL),
-            sizeof(g_bns.model) - 1);
-    g_bns.model[sizeof(g_bns.model) - 1] = '\0';
+    bns_resolve_model_path(g_bns.model, sizeof(g_bns.model));
 
     g_bns.port              = env_int_or("COS_BITNET_SERVER_PORT",   BNS_DEFAULT_PORT);
     {
@@ -1138,6 +1175,10 @@ int cos_bitnet_server_ensure(void) {
         return -1;
     }
     return 0;
+}
+
+void cos_bitnet_server_invalidate_config(void) {
+    g_bns.initialized = 0;
 }
 
 void cos_bitnet_server_shutdown(void) {

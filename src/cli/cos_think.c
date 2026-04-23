@@ -11,6 +11,7 @@
 #include "engram.h"
 #include "engram_persist.h"
 #include "stub_gen.h"
+#include "bitnet_server.h"
 #include "escalation.h"
 #include "multi_sigma.h"
 #include "error_attribution.h"
@@ -130,6 +131,38 @@ static int think_goal_world_augment(const char *goal, char *dst, size_t cap)
     }
     snprintf(dst + off, cap - off, "\n%s", goal);
     return 1;
+}
+
+/** Route decomposition to a fast llama-server on COS_THINK_SMALL_PORT (e.g. 2B
+ *  on :8089) while subtasks use COS_BITNET_SERVER_PORT (9B on :8088). */
+static int think_cli_chat_generate_decompose(const char *prompt,
+                                             cos_cli_generate_ctx_t *gctx,
+                                             const char **text, float *sigma,
+                                             double *cost_eur)
+{
+#if defined(__unix__) || defined(__APPLE__)
+    const char *alt = getenv("COS_THINK_SMALL_PORT");
+    if (alt != NULL && alt[0] != '\0') {
+        const char *prev = getenv("COS_BITNET_SERVER_PORT");
+        char        saved[24];
+        int         had_prev = 0;
+        if (prev != NULL && prev[0] != '\0') {
+            snprintf(saved, sizeof saved, "%s", prev);
+            had_prev = 1;
+        }
+        setenv("COS_BITNET_SERVER_PORT", alt, 1);
+        cos_bitnet_server_invalidate_config();
+        int rc =
+            cos_cli_chat_generate(prompt, 0, gctx, text, sigma, cost_eur);
+        if (had_prev)
+            setenv("COS_BITNET_SERVER_PORT", saved, 1);
+        else
+            unsetenv("COS_BITNET_SERVER_PORT");
+        cos_bitnet_server_invalidate_config();
+        return rc;
+    }
+#endif
+    return cos_cli_chat_generate(prompt, 0, gctx, text, sigma, cost_eur);
 }
 
 static void think_trim(char *s) {
@@ -373,7 +406,8 @@ int cos_think_decompose(const char *goal, char subtasks[][1024], int *n_out) {
     const char *text = NULL;
     float       sigma = 1.0f;
     double      cost  = 0.0;
-    if (cos_cli_chat_generate(prompt, 0, &gctx, &text, &sigma, &cost) != 0
+    if (think_cli_chat_generate_decompose(prompt, &gctx, &text, &sigma, &cost)
+            != 0
         || text == NULL)
         goto fallback;
 

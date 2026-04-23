@@ -25,7 +25,16 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
 EXE="${COS_BITNET_SERVER_EXE:-/opt/homebrew/bin/llama-server}"
-MODEL="${COS_BITNET_SERVER_MODEL:-$ROOT/models/qwen3-8b-Q4_K_M.gguf}"
+# Resolution: explicit COS_BITNET_SERVER_MODEL, else COS_MODEL_PATH, else 9B then 8B on disk.
+if [[ -n "${COS_BITNET_SERVER_MODEL:-}" ]]; then
+    MODEL="$COS_BITNET_SERVER_MODEL"
+elif [[ -n "${COS_MODEL_PATH:-}" && -f "${COS_MODEL_PATH}" ]]; then
+    MODEL="$COS_MODEL_PATH"
+elif [[ -f "$ROOT/models/qwen3.5-9b-Q4_K_M.gguf" ]]; then
+    MODEL="$ROOT/models/qwen3.5-9b-Q4_K_M.gguf"
+else
+    MODEL="$ROOT/models/qwen3-8b-Q4_K_M.gguf"
+fi
 HOST="${COS_BITNET_SERVER_HOST:-127.0.0.1}"
 PORT="${COS_BITNET_SERVER_PORT:-8088}"
 CTX="${COS_BITNET_CHAT_CTX:-${COS_QWEN_SERVER_CTX:-${COS_LLAMA_CTX:-2048}}}"

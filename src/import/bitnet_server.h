@@ -31,8 +31,15 @@
  *                             default: ./third_party/bitnet/build/bin/llama-server
  *                             (Qwen3 GGUF needs a recent upstream llama-server;
  *                              BitNet fork cannot load architecture qwen3.)
- *    COS_BITNET_SERVER_MODEL  GGUF model path
- *                             default: ./models/qwen3-8b-Q4_K_M.gguf
+ *    COS_BITNET_SERVER_MODEL  GGUF path — if set, overrides all routing below
+ *    COS_MODEL_PATH           preferred medium (9B) weights:
+ *                             default ./models/qwen3.5-9b-Q4_K_M.gguf
+ *    COS_MODEL_SMALL_PATH     when COS_MODEL_SIZE=small:
+ *                             default ./models/qwen3.5-2b-Q4_K_M.gguf
+ *    COS_MODEL_SIZE           "small" (2B, fast) or "medium" (9B, default)
+ *                             Used only when COS_BITNET_SERVER_MODEL is unset.
+ *                             If the Qwen3.5 file is missing, falls back to
+ *                             ./models/qwen3-8b-Q4_K_M.gguf when present.
  *    COS_BITNET_SERVER_HOST   bind host         default: 127.0.0.1
  *    COS_BITNET_SERVER_PORT   bind port         default: 8088
  *    COS_BITNET_CHAT_CTX      preferred --ctx-size hint (default 2048 if unset)
@@ -64,6 +71,10 @@
  *
  *  System prompt file: see σ pipeline codex loader — COS_CODEX_PATH overrides
  *  the default path to the Atlantean Codex text (same variable as chat).
+ *
+ *  cos think decomposition (optional second server — small/fast model):
+ *    COS_THINK_SMALL_PORT    e.g. 8089 when llama-server loads qwen3.5-2b;
+ *                            only affects `cos think` goal breakdown, not subtasks.
  */
 #ifndef COS_BITNET_SERVER_H
 #define COS_BITNET_SERVER_H
@@ -178,6 +189,10 @@ int  cos_bitnet_server_complete_stream(
 
 /* SIGTERM + reap.  Idempotent; safe to call from atexit. */
 void cos_bitnet_server_shutdown(void);
+
+/* Drop cached env snapshot so the next ensure/complete reloads COS_* .
+ * Used when switching COS_BITNET_SERVER_PORT for multi-server setups. */
+void cos_bitnet_server_invalidate_config(void);
 
 /* Probe the /health endpoint on the currently-configured host:port.
  * Returns 1 on "ok", 0 otherwise.  Does NOT spawn the server. */
