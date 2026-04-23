@@ -37,6 +37,7 @@
 #include "plan.h"
 #include "tool.h"
 #include "agent.h"
+#include "cos_agent_node.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,6 +159,10 @@ static int compile_plan(cos_plan_t *plan, const cos_tool_registry_t *reg,
 /* --- main ------------------------------------------------------- */
 
 int main(int argc, char **argv) {
+    int na = cos_agent_node_cli(argc, argv);
+    if (na != COS_AGENT_NODE_NA)
+        return na;
+
     /* Defaults. */
     int dry_run = 0, approve_each = 0, local_only = 0, json_mode = 0;
     int banner_only = 0;

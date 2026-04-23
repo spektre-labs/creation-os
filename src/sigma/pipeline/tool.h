@@ -129,8 +129,8 @@ cos_action_class_t cos_sigma_tool_risk_to_action(cos_tool_risk_t r);
  * or BLOCK.  IRREVERSIBLE always requires CONFIRM minimum (the
  * canonical "ask every time" rule), regardless of σ_select. */
 cos_agent_decision_t
-     cos_sigma_tool_gate(const cos_sigma_agent_t *agent,
-                         const cos_tool_call_t   *call);
+     cos_sigma_pipeline_tool_gate(const cos_sigma_agent_t *agent,
+                                  const cos_tool_call_t   *call);
 
 /* Execute: if the gate allows, run the executor and stamp σ_result
  * and rc onto the call.  Returns 0 on ALLOW+success, -1 on BLOCK,

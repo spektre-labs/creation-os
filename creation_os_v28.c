@@ -37,6 +37,24 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#if !defined(_WIN32)
+/* bitnet_spawn forwards llama-cli argv when CREATION_OS_BITNET_MODEL is set;
+ * the v28 cat probe must run with a clean argv so /bin/cat is not given -m/-n/.... */
+static void cos_v28_unset_bitnet_argv_env(void)
+{
+    (void)unsetenv("CREATION_OS_BITNET_MODEL");
+    (void)unsetenv("CREATION_OS_BITNET_PERF");
+    (void)unsetenv("CREATION_OS_BITNET_N_PREDICT");
+    (void)unsetenv("CREATION_OS_BITNET_THREADS");
+    (void)unsetenv("CREATION_OS_BITNET_NGL");
+    for (int i = 0; i < 10; i++) {
+        char name[48];
+        (void)snprintf(name, sizeof name, "CREATION_OS_BITNET_ARG%d", i);
+        (void)unsetenv(name);
+    }
+}
+#endif
+
 #include "src/import/cos_gguf.h"
 #include "src/import/bitnet_spawn.h"
 #include "src/import/tokenizer_json.h"
@@ -177,6 +195,7 @@ static int self_test(void)
 
 #if !defined(_WIN32)
     if (setenv("CREATION_OS_BITNET_STDIN", "1", 1) == 0) {
+        cos_v28_unset_bitnet_argv_env();
         char eb[256];
         st("bitnet_spawn_cat", cos_bitnet_spawn_capture("/bin/cat", "v28", eb, sizeof eb) == 0);
         st("bitnet_spawn_has_v28", strstr(eb, "v28") != NULL);

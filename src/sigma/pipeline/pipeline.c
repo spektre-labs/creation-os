@@ -7,6 +7,7 @@
  */
 
 #include "pipeline.h"
+#include "ttt_runtime.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,6 +34,7 @@ void cos_sigma_pipeline_config_defaults(cos_pipeline_config_t *cfg) {
     cfg->tau_rethink  = 0.60f;
     cfg->max_rethink  = COS_SIGMA_REINFORCE_MAX_ROUNDS;
     cfg->mode         = COS_PIPELINE_MODE_HYBRID;
+    cfg->ttt_enabled  = 0;
 }
 
 /* -------- engram helpers -------- */
@@ -130,6 +132,10 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
     out->agent_gate   = COS_AGENT_BLOCK;
     out->response     = ABSTAIN_TEXT;
     out->codex_hash   = (cfg->codex != NULL) ? cfg->codex->hash_fnv1a64 : 0;
+    out->ttt_applied  = 0;
+
+    if (cfg->ttt_enabled)
+        cos_ttt_turn_begin();
 
     /* [3] Engram lookup. */
     cos_sigma_engram_entry_t hit;
@@ -168,6 +174,8 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
     out->cost_eur = cost;
     pipeline_track_local(cfg, cost);
 
+    float first_sigma = sigma;
+
     /* [7] σ-gate decision. */
     cos_sigma_action_t action =
         cos_sigma_reinforce(sigma, cfg->tau_accept, cfg->tau_rethink);
@@ -194,6 +202,8 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
                                       : COS_SIGMA_REINFORCE_MAX_ROUNDS;
     while (action != COS_SIGMA_ACTION_ACCEPT && round < budget - 1) {
         round++;
+        if (cfg->ttt_enabled && round >= 1)
+            cos_ttt_prepare_rethink(input, out->response, out->sigma);
         rc = cfg->generate(input, round, cfg->generate_ctx,
                            &text, &sigma, &cost);
         if (rc != 0 || text == NULL) {
@@ -201,6 +211,9 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
             action = COS_SIGMA_ACTION_ABSTAIN;
             break;
         }
+        if (cfg->ttt_enabled && round >= 1
+            && cos_ttt_should_revert(sigma))
+            cos_ttt_revert(NULL);
         out->response   = text;
         out->sigma      = sigma;
         out->cost_eur  += cost;
@@ -213,6 +226,10 @@ int cos_sigma_pipeline_run(cos_pipeline_config_t *cfg,
         action = COS_SIGMA_ACTION_ABSTAIN;
     }
     out->rethink_count = round;
+
+    if (cfg->ttt_enabled && round > 0 && cos_ttt_episode_applied_flag()
+        && !cos_ttt_was_reverted() && out->sigma < first_sigma - 1e-5f)
+        out->ttt_applied = 1;
 
     /* [9] Escalation. */
     if (action == COS_SIGMA_ACTION_ABSTAIN

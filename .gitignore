@@ -162,3 +162,47 @@ docs/v259/frama_c_wp_full.log
 # DEV-1 bitnet_server test harnesses (built ad-hoc; live harness needs model)
 /test_bitnet_server
 /test_bitnet_server_parse
+
+# ------------------------------------------------------------------
+# Repo hygiene — build artefacts, runtime data, benchmark outputs (2026-04)
+# ------------------------------------------------------------------
+
+# Build artifacts (subset; root cos/kernel binaries remain under rules above)
+*.a
+creation_os_check_*
+/creation_os_cos_memory
+
+# Duplicate cos entrypoints sometimes emitted by local builds (also see /cos-* above)
+/cos-chat
+/cos-omega
+/cos-monitor
+/cos-demo
+/cos-cache
+/cos-bench-*
+/cos-evolve
+/cos-self-play
+/cos-calibrate
+
+# Runtime data
+*.db
+*.bin
+*.jsonl
+*.gguf
+
+# Editor / OS junk (macOS duplicates already excluded above)
+*.swp
+*~
+
+# Third-party build trees (upstream weights stay local only)
+third_party/bitnet/build/
+third_party/bitnet/models/
+
+# Benchmark outputs (keep scripts under benchmarks/** — ignore generated reports)
+benchmarks/*/results/
+benchmarks/qwen_first_contact/*.txt
+benchmarks/qwen_first_contact/*.csv
+benchmarks/omega_campaign/*.txt
+benchmarks/omega_campaign/*.csv
+benchmarks/speed/
+benchmarks/forgetting/*.csv
+benchmarks/forgetting/*.txt

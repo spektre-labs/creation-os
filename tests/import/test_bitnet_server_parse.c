@@ -163,8 +163,45 @@ int main(void) {
                           1.0f - 0.95f, 1.0f - 0.95f,
                           "Helsinki is the capital of Finland.", 1);
 
+    /* Case 6: OpenAI chat + llama-server — message.content empty,
+     * reasoning_content holds text; σ from logprobs.content[].logprob
+     * (not completion_probabilities). */
+    const float s1 = 1.0f - (float)exp(-0.1);
+    const float s2 = 1.0f - (float)exp(-1.0);
+    char json6[1536];
+    int j6 = snprintf(json6, sizeof(json6),
+                      "{\"choices\":[{\"finish_reason\":\"stop\","
+                      "\"message\":{\"content\":\"\",\"reasoning_content\":\"xy\"}"
+                      ",\"logprobs\":{\"content\":["
+                      "{\"logprob\":%.4f},{\"logprob\":%.4f}]}],"
+                      "\"usage\":{\"completion_tokens\":2}}"
+                      ,(double)-0.1, (double)-1.0);
+    if (j6 < 0 || (size_t)j6 >= sizeof(json6))
+        return 99;
+    fails += assert_parse(
+        "case6: logprobs.content σ (reasoning_text → σ=mean)",
+        json6,
+        (s1 + s2) * 0.5f,
+        (s1 + s2) * 0.5f,
+        "xy",
+        2);
+
+    /* Case 7: visible message.content + logprobs.content → σ=max. */
+    const float s7a = 1.0f - (float)exp(-0.1);
+    const float s7b = 1.0f - (float)exp(-0.69);
+    const char *json7 =
+        "{\"choices\":[{\"message\":{\"content\":\"hi\"},\"logprobs\":"
+        "{\"content\":[{\"logprob\":-0.1},{\"logprob\":-0.69}]}}],"
+        "\"usage\":{\"completion_tokens\":2}}";
+    fails += assert_parse("case7: logprobs.content σ (plain content → σ=max)",
+                          json7,
+                          (s7a > s7b ? s7a : s7b),
+                          (s7a + s7b) * 0.5f,
+                          "hi",
+                          2);
+
     if (fails == 0) {
-        fprintf(stdout, "OK: all 5 cases passed\n");
+        fprintf(stdout, "OK: all 7 cases passed\n");
         return 0;
     }
     fprintf(stderr, "FAIL: %d assertion(s)\n", fails);

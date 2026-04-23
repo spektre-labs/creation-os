@@ -50,7 +50,7 @@ static void usage(void) {
     fprintf(stderr,
         "cos-calibrate — conformal σ-calibration (SCI-1 / SCI-2)\n"
         "\n"
-        "  cos-calibrate [--dataset PATH]   (default: %s)\n"
+        "  cos-calibrate [--dataset PATH|truthfulqa]   (default: %s)\n"
         "                [--mode MODE]       (default: pipeline)\n"
         "                [--alpha A]         (default: 0.10)\n"
         "                [--delta D]         (default: 0.05)\n"
@@ -84,8 +84,13 @@ int main(int argc, char **argv) {
     int self_test  = 0;
 
     for (int i = 1; i < argc; ++i) {
-        if      (!strcmp(argv[i], "--dataset") && i + 1 < argc) dataset = argv[++i];
-        else if (!strcmp(argv[i], "--mode")    && i + 1 < argc) mode    = argv[++i];
+        if (!strcmp(argv[i], "--dataset") && i + 1 < argc) {
+            i++;
+            if (!strcmp(argv[i], "truthfulqa"))
+                dataset = DEFAULT_DATASET;
+            else
+                dataset = argv[i];
+        } else if (!strcmp(argv[i], "--mode")    && i + 1 < argc) mode    = argv[++i];
         else if (!strcmp(argv[i], "--out")     && i + 1 < argc) outpath = argv[++i];
         else if (!strcmp(argv[i], "--alpha")   && i + 1 < argc) alpha   = (float)atof(argv[++i]);
         else if (!strcmp(argv[i], "--delta")   && i + 1 < argc) delta   = (float)atof(argv[++i]);

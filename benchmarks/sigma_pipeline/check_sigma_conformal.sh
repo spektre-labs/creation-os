@@ -36,16 +36,22 @@ trap 'rm -f "$OUT1" "$OUT2" "$JSON1" "$JSON2"' EXIT
 "$BIN" --dataset "$DATA" --mode pipeline --alpha 0.60 --delta 0.10 \
        --out "$JSON2" >"$OUT2"
 
+# Shorthand --dataset truthfulqa must match the explicit JSONL path.
+JSONTQ=$(mktemp)
+"$BIN" --dataset truthfulqa --mode pipeline --alpha 0.30 --delta 0.10 \
+       --out "$JSONTQ" >/dev/null
+
 # SCI-2: per-domain + classifier flow.
-JSON3=$(mktemp); trap 'rm -f "$OUT1" "$OUT2" "$JSON1" "$JSON2" "$JSON3"' EXIT
+JSON3=$(mktemp); trap 'rm -f "$OUT1" "$OUT2" "$JSON1" "$JSON2" "$JSON3" "$JSONTQ"' EXIT
 "$BIN" --dataset "$DATA" --mode pipeline --alpha 0.80 --delta 0.10 \
        --classify-prompts --out "$JSON3" >/dev/null
 
-python3 - "$JSON1" "$JSON2" "$JSON3" <<'PY'
+python3 - "$JSON1" "$JSON2" "$JSON3" "$JSONTQ" <<'PY'
 import json, sys
 j1 = json.load(open(sys.argv[1]))
 j2 = json.load(open(sys.argv[2]))
 j3 = json.load(open(sys.argv[3]))
+jtq = json.load(open(sys.argv[4]))
 
 for j, alpha in ((j1, 0.30), (j2, 0.60), (j3, 0.80)):
     assert j["schema"] == "cos.conformal.v1", j
@@ -62,6 +68,9 @@ for j, alpha in ((j1, 0.30), (j2, 0.60), (j3, 0.80)):
 tau_tight = j1["per_domain"][0]["tau"]
 tau_loose = j2["per_domain"][0]["tau"]
 assert tau_tight <= tau_loose + 1e-6, (tau_tight, tau_loose)
+
+assert abs(jtq["per_domain"][0]["tau"] - tau_tight) < 1e-9, (
+    jtq["per_domain"][0]["tau"], tau_tight)
 
 # SCI-2: classifier produces one or more categories from the fixed
 #        label set {factual, code, reasoning, other}.

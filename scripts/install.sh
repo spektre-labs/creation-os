@@ -28,6 +28,18 @@
 # the deterministic StubBackend so the user sees a working
 # product on first run.
 #
+# Qwen3-8B GGUF + llama-server (σ-pipeline unchanged in C kernels):
+#   COS_INSTALL_QWEN_GGUF=1            — STEP 1: setup_qwen_gguf.sh
+#                                        (literal hf name, Hub fallback file)
+#                                        → models/qwen3-8b-Q4_K_M.gguf
+#   COS_INSTALL_QWEN_LLAMA_SERVER=1  — STEP 2: detached llama-server with
+#                                        --jinja --temp 0.6 --top-k 20 --top-p 0.95
+#                                        -c 8192 --parallel 1 -ngl 0
+#                                        (needs llama-server + GGUF).  Qwen3 needs
+#                                        upstream llama.cpp (e.g. macOS:
+#                                        brew install llama.cpp ; see
+#                                        scripts/real/start_qwen_llama_server.sh).
+#
 # Default full BitNet + bitnet.cpp stack (large download, requires
 # huggingface-cli and cmake): enabled automatically when those tools are on
 # PATH.  Opt out with COS_INSTALL_NO_BITNET=1 or force on with
@@ -102,6 +114,8 @@ cd "$INSTALL_DIR"
 # -------------------- build --------------------
 log "building: cos launcher + σ-pipeline primitives"
 make cos                          >/dev/null
+make cos-calibrate                >/dev/null
+make cos-bench-suite-sci          >/dev/null
 make creation_os_sigma_reinforce  >/dev/null
 make creation_os_sigma_speculative >/dev/null
 make creation_os_sigma_ttt        >/dev/null
@@ -222,6 +236,55 @@ if [[ "${COS_INSTALL_REAL_BITNET:-0}" == "1" ]]; then
     install_real_bitnet_cos
 fi
 
+# -------------------- optional: Qwen3 GGUF + llama-server ------------
+install_qwen_gguf_optional() {
+    if [[ "${COS_INSTALL_QWEN_GGUF:-0}" != "1" ]]; then
+        return 0
+    fi
+    need huggingface-cli
+    log "COS_INSTALL_QWEN_GGUF=1 — Qwen GGUF (see scripts/real/setup_qwen_gguf.sh)"
+    bash "$INSTALL_DIR/scripts/real/setup_qwen_gguf.sh" \
+        || fail "Qwen GGUF setup failed"
+}
+
+start_qwen_llama_server_optional() {
+    if [[ "${COS_INSTALL_QWEN_LLAMA_SERVER:-0}" != "1" ]]; then
+        return 0
+    fi
+    local exe="${COS_BITNET_SERVER_EXE:-$INSTALL_DIR/third_party/bitnet/build/bin/llama-server}"
+    local model="${COS_BITNET_SERVER_MODEL:-$INSTALL_DIR/models/qwen3-8b-Q4_K_M.gguf}"
+    local host="${COS_BITNET_SERVER_HOST:-127.0.0.1}"
+    local port="${COS_BITNET_SERVER_PORT:-8088}"
+    if [[ ! -x "$exe" ]]; then
+        fail "llama-server not executable: $exe (build BitNet third_party or set COS_BITNET_SERVER_EXE)"
+    fi
+    if [[ ! -f "$model" ]]; then
+        fail "GGUF missing: $model (set COS_INSTALL_QWEN_GGUF=1 or COS_BITNET_SERVER_MODEL)"
+    fi
+    local jinja=()
+    if "$exe" --help 2>&1 | grep -qE '^[[:space:]]*--jinja[[:space:]]'; then
+        jinja=(--jinja)
+    fi
+    log "COS_INSTALL_QWEN_LLAMA_SERVER=1 — llama-server (detached, $host:$port)"
+    nohup "$exe" \
+        --model "$model" \
+        --host "$host" \
+        --port "$port" \
+        "${jinja[@]}" \
+        --temp 0.6 \
+        --top-k 20 \
+        --top-p 0.95 \
+        -c 8192 \
+        --parallel 1 \
+        -ngl 0 \
+        >"$INSTALL_DIR/qwen-llama-server.log" 2>&1 &
+    log "  log: $INSTALL_DIR/qwen-llama-server.log"
+    log "  export COS_BITNET_SERVER_EXTERNAL=1 COS_BITNET_SERVER_HOST=$host COS_BITNET_SERVER_PORT=$port"
+}
+
+install_qwen_gguf_optional
+start_qwen_llama_server_optional
+
 # -------------------- smoke test --------------------
 if [[ "$RUN_SMOKE" == "1" ]]; then
     log "smoke test: pipeline primitives"
@@ -259,5 +322,13 @@ cat <<EOF
       cos health       # runtime metrics (engram + llama-server + distill pairs)
       cos benchmark    # end-to-end pipeline: engram + BitNet + σ + TTT + API
       cos cost --from-log --compare   # live €savings vs Claude-Haiku baseline
+
+  Conformal τ (after new detail JSONL for the model; default TruthfulQA path):
+      make cos-calibrate
+      ./cos-calibrate --dataset benchmarks/pipeline/truthfulqa_817_detail.jsonl
+
+  SCI-6 suite + coverage curves (same datasets; compare runs by swapping GGUF / server):
+      ./cos-bench-suite-sci --alpha 0.80 --delta 0.10
+      python3 scripts/real/build_suite_coverage_curves.py
 
 EOF

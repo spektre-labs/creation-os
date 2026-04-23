@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
     if (cos_bitnet_server_ensure() != 0) {
         fprintf(stderr, "test_bitnet_server: ensure() failed — is "
                         "third_party/bitnet/build/bin/llama-server "
-                        "and models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf "
+                        "and COS_BITNET_SERVER_MODEL (default: models/qwen3-8b-Q4_K_M.gguf) "
                         "present?\n");
         return 2;
     }

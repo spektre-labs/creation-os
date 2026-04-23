@@ -19,7 +19,8 @@ enum cos_error_source {
     COS_ERR_ALEATORIC,
     COS_ERR_REASONING,
     COS_ERR_MEMORY,
-    COS_ERR_NOVEL_DOMAIN
+    COS_ERR_NOVEL_DOMAIN,
+    COS_ERR_INJECTION
 };
 
 struct cos_error_attribution {

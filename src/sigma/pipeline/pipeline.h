@@ -163,6 +163,9 @@ typedef struct {
                             float       sigma,
                             void       *ctx);
     void *on_engram_store_ctx;
+
+    /* ULTRA-8: optional in-place TTT sketch before each RETHINK attempt. */
+    int ttt_enabled;
 } cos_pipeline_config_t;
 
 /* --- result --- */
@@ -179,6 +182,7 @@ typedef struct {
     const char        *diagnostic;   /* short one-liner         */
     cos_pipeline_mode_t mode;
     uint64_t           codex_hash;   /* 0 if no codex loaded    */
+    int                ttt_applied; /* 1 if RETHINK used TTT + σ improved */
 } cos_pipeline_result_t;
 
 /* --- entry point --- */

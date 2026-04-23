@@ -52,6 +52,10 @@ typedef struct {
  * COS_TOOL_TAU_LOW / COS_TOOL_TAU_HIGH (parsed by gate). */
 void cos_sigma_tool_thresholds_default(float *tau_low, float *tau_high);
 
+/* Prompt/tool-injection heuristic score ∈ [0,1]. Matches HORIZON MCP gate;
+ * thresholds default COS_INJECTION_TAU=0.72 (reject when score > tau). */
+float cos_sigma_tool_injection_detect(const char *text);
+
 /* Full pipeline: optional natural-language expansion → classify → σ
  * → decision.  Returns 0 on success, -1 on empty/invalid input.
  * `user_line` is the raw REPL line (may be NL or shell). */

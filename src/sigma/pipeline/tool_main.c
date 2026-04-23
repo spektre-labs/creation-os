@@ -71,9 +71,9 @@ int main(int argc, char **argv) {
     const char *text = NULL;
     int rc_exec = cos_sigma_tool_call(&c_calc, &ag, exec_calc, NULL, 0, &text);
 
-    cos_agent_decision_t d_calc  = cos_sigma_tool_gate(&ag, &c_calc);
-    cos_agent_decision_t d_fread = cos_sigma_tool_gate(&ag, &c_fread);
-    cos_agent_decision_t d_rm    = cos_sigma_tool_gate(&ag, &c_rm);
+    cos_agent_decision_t d_calc  = cos_sigma_pipeline_tool_gate(&ag, &c_calc);
+    cos_agent_decision_t d_fread = cos_sigma_pipeline_tool_gate(&ag, &c_fread);
+    cos_agent_decision_t d_rm    = cos_sigma_pipeline_tool_gate(&ag, &c_rm);
 
     printf("{\"kernel\":\"sigma_tool\","
            "\"self_test_rc\":%d,"

@@ -114,8 +114,8 @@ cos_sigma_tool_select(const cos_tool_registry_t *reg,
 }
 
 cos_agent_decision_t
-cos_sigma_tool_gate(const cos_sigma_agent_t *agent,
-                    const cos_tool_call_t   *call)
+cos_sigma_pipeline_tool_gate(const cos_sigma_agent_t *agent,
+                             const cos_tool_call_t   *call)
 {
     if (!agent || !call || !call->tool) return COS_AGENT_BLOCK;
     cos_action_class_t cls =
@@ -137,7 +137,7 @@ int cos_sigma_tool_call(cos_tool_call_t *call,
                         const char **out_text)
 {
     if (!call || !call->tool || !executor) return -1;
-    cos_agent_decision_t d = cos_sigma_tool_gate(agent, call);
+    cos_agent_decision_t d = cos_sigma_pipeline_tool_gate(agent, call);
     call->decision = d;
     if (d == COS_AGENT_BLOCK)   return -1;
     if (d == COS_AGENT_CONFIRM && !confirmed) return -2;
@@ -246,12 +246,12 @@ static int check_gate_and_call(void) {
     float s;
     cos_tool_call_t c_safe = cos_sigma_tool_select(&r, "calculator 2+2", "2+2", &s);
     /* base=0.80, σ≈0.05 → eff=0.76 → READ (0.30) → ALLOW */
-    if (cos_sigma_tool_gate(&ag, &c_safe) != COS_AGENT_ALLOW) return 40;
+    if (cos_sigma_pipeline_tool_gate(&ag, &c_safe) != COS_AGENT_ALLOW) return 40;
 
     cos_tool_call_t c_irrev = cos_sigma_tool_select(&r, "shell_rm now", "-rf /", &s);
     /* Even with σ≈0.05 eff=0.76 < 0.95 irrev requirement → CONFIRM band
      * (margin 0.10): 0.76 ≥ 0.85? no. So BLOCK. */
-    if (cos_sigma_tool_gate(&ag, &c_irrev) != COS_AGENT_BLOCK) return 41;
+    if (cos_sigma_pipeline_tool_gate(&ag, &c_irrev) != COS_AGENT_BLOCK) return 41;
 
     /* IRREV never returns ALLOW even when math would otherwise permit.
      * Full base=1.0, σ=0 → eff=1.0 ≥ 0.95 would normally ALLOW; we
@@ -259,11 +259,11 @@ static int check_gate_and_call(void) {
     cos_sigma_agent_t ag2;
     cos_sigma_agent_init(&ag2, 1.0f, 0.10f);
     c_irrev.sigma_select = 0.0f;
-    if (cos_sigma_tool_gate(&ag2, &c_irrev) != COS_AGENT_CONFIRM) return 42;
+    if (cos_sigma_pipeline_tool_gate(&ag2, &c_irrev) != COS_AGENT_CONFIRM) return 42;
 
     /* NULL guards. */
-    if (cos_sigma_tool_gate(NULL,  &c_safe) != COS_AGENT_BLOCK)   return 43;
-    if (cos_sigma_tool_gate(&ag,   NULL)    != COS_AGENT_BLOCK)   return 44;
+    if (cos_sigma_pipeline_tool_gate(NULL,  &c_safe) != COS_AGENT_BLOCK)   return 43;
+    if (cos_sigma_pipeline_tool_gate(&ag,   NULL)    != COS_AGENT_BLOCK)   return 44;
 
     /* Execute successful call. */
     const char *text = NULL;

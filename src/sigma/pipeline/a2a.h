@@ -24,6 +24,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,6 +41,15 @@ extern "C" {
 #define COS_A2A_TAU_BLOCK            0.90f
 #define COS_A2A_TAU_WARN             0.70f
 
+#define COS_A2A_Q_PENDING            0
+#define COS_A2A_Q_APPROVED           1
+#define COS_A2A_Q_REJECTED           2
+
+#define COS_A2A_QUARANTINE_CAP       64
+
+#define COS_A2A_TAU_CONTENT_DEFAULT  0.65f
+#define COS_A2A_TAU_TRUST_CAP_DEFAULT 0.85f /* reject when peer.sigma_trust exceeds this */
+
 enum cos_a2a_status {
     COS_A2A_OK          =  0,
     COS_A2A_ERR_ARG     = -1,
@@ -47,6 +57,17 @@ enum cos_a2a_status {
     COS_A2A_ERR_BLOCKED = -3,
     COS_A2A_ERR_NOPEER  = -4,
     COS_A2A_ERR_CAP     = -5,
+    COS_A2A_ERR_QUARANTINE = -6,
+};
+
+struct cos_a2a_quarantine_entry {
+    char    sender_id[COS_A2A_ID_MAX];
+    char    message[4096];
+    float   sigma_content;
+    float   trust_sender;
+    char    reject_reason[256];
+    int64_t timestamp_ms;
+    int     status;
 };
 
 typedef struct {
@@ -105,6 +126,28 @@ int cos_a2a_request(cos_a2a_network_t *net,
                     const char *agent_id,
                     const char *capability,
                     float sigma_response);
+
+/* Incoming message σ-gate + optional quarantine queue (PROCESS-local). */
+int cos_a2a_incoming_message(cos_a2a_network_t *net,
+                             const char *sender_id,
+                             const char *message,
+                             float tau_content,
+                             float tau_trust_cap,
+                             int *quarantined_out,
+                             struct cos_a2a_quarantine_entry *detail_out_or_null);
+
+int cos_a2a_quarantine_count(void);
+
+int cos_a2a_quarantine_get(int index,
+                             struct cos_a2a_quarantine_entry *out);
+
+int cos_a2a_quarantine_resolve(cos_a2a_network_t *net,
+                               int index,
+                               int approve);
+
+void cos_a2a_quarantine_print(FILE *fp);
+
+void cos_a2a_init_default_taus(float *tau_content, float *tau_trust_cap);
 
 /* Serialise the network-visible "own" agent card. */
 int cos_a2a_self_card(const cos_a2a_network_t *net,

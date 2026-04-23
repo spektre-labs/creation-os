@@ -244,6 +244,7 @@ static void usage(void) {
         "  cos-a2a register <id> <url> [capability ...]\n"
         "  cos-a2a request  <id> <capability> <sigma>\n"
         "  cos-a2a list\n"
+        "  cos-a2a quarantine        print σ-quarantined inbound messages (process-local)\n"
         "  cos-a2a demo\n"
         "  cos-a2a reset\n"
         "  cos-a2a --self <id>         override self_id (default: creation-os)\n"
@@ -325,6 +326,12 @@ static int cmd_request(cos_a2a_network_t *net, int argc, char **argv) {
     return (rc == COS_A2A_OK || rc == COS_A2A_ERR_BLOCKED) ? 0 : 4;
 }
 
+static int cmd_quarantine(void)
+{
+    cos_a2a_quarantine_print(stdout);
+    return 0;
+}
+
 static int cmd_list(const cos_a2a_network_t *net) {
     fprintf(stdout,
         "peers: %d · τ_block=%.2f · lr=%.2f\n"
@@ -396,6 +403,10 @@ int main(int argc, char **argv) {
     int consumed = 1;
     while (consumed < argc) {
         if (strcmp(argv[consumed], "--help") == 0) { usage(); return 0; }
+        if (strcmp(argv[consumed], "--quarantine") == 0) {
+            cos_a2a_quarantine_print(stdout);
+            return 0;
+        }
         if (strcmp(argv[consumed], "--self") == 0 && consumed + 1 < argc) {
             self_id = argv[consumed + 1];
             consumed += 2;
@@ -431,6 +442,7 @@ int main(int argc, char **argv) {
     int save = 0;
     if      (strcmp(cmd, "card")     == 0) rc = cmd_card(&net);
     else if (strcmp(cmd, "list")     == 0) rc = cmd_list(&net);
+    else if (strcmp(cmd, "quarantine") == 0) rc = cmd_quarantine();
     else if (strcmp(cmd, "register") == 0) { rc = cmd_register(&net, argc - consumed, argv + consumed); save = (rc == 0); }
     else if (strcmp(cmd, "request")  == 0) { rc = cmd_request (&net, argc - consumed, argv + consumed); save = (rc == 0); }
     else if (strcmp(cmd, "demo")     == 0) rc = cmd_demo(&net);
