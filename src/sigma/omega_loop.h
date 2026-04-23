@@ -1,0 +1,85 @@
+/*
+ * Ω-loop — unified perceive → think → gate → learn iteration.
+ *
+ * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+ */
+#ifndef COS_SIGMA_OMEGA_LOOP_H
+#define COS_SIGMA_OMEGA_LOOP_H
+
+#include <signal.h>
+#include <stdint.h>
+
+/** SIGINT/SIGTERM: checked each Ω turn (cos_omega_cli registers handlers). */
+extern volatile sig_atomic_t cos_omega_signal_halt_requested;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/** Ledger coherence bucket when σ session mean is elevated (see state_ledger.c). */
+#define COS_OMEGA_COHERENCE_AT_RISK 2
+
+struct cos_omega_config {
+    int   max_turns;
+    int   consolidate_interval;
+    float sigma_halt_threshold;
+    float k_eff_halt_threshold;
+    int   human_review_interval;
+
+    int enable_ttt;
+    int enable_search;
+    int enable_codegen;
+    int enable_federation;
+    int enable_physical;
+    int enable_consciousness;
+    int simulation_mode;
+};
+
+struct cos_omega_state {
+    int   turn;
+    float sigma_mean;
+    float sigma_trend;
+    float k_eff;
+    int   consciousness_level;
+    float energy_total_joules;
+    float co2_total_grams;
+    int   skills_learned;
+    int   episodes_stored;
+    int   cache_hits;
+    int   rollbacks;
+    int   pauses;
+
+    float sigma_mean_initial;
+    float k_eff_initial;
+
+    int64_t started_ms;
+    int64_t elapsed_ms;
+
+    int running;
+    int halt_requested;
+    char halt_reason[256];
+};
+
+int cos_omega_init(const struct cos_omega_config *config,
+                   struct cos_omega_state          *state);
+
+int cos_omega_run(struct cos_omega_state *state);
+
+int cos_omega_step(struct cos_omega_state *state);
+
+int cos_omega_halt(struct cos_omega_state *state, const char *reason);
+
+/** malloc'd UTF-8 report — caller free() when non-NULL. */
+char *cos_omega_report(const struct cos_omega_state *state);
+
+void cos_omega_print_status(const struct cos_omega_state *state);
+
+/** Persist ledger, episodic consolidate, write ~/.cos/omega/last_report.txt, print report. */
+int cos_omega_finish_session(struct cos_omega_state *state);
+
+int cos_omega_self_test(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* COS_SIGMA_OMEGA_LOOP_H */

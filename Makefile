@@ -6149,11 +6149,14 @@ SIGMA_PIPELINE_SRCS = src/sigma/pipeline/pipeline.c \
                       src/sigma/pipeline/engram.c \
                       src/sigma/pipeline/reinforce.c \
                       src/sigma/pipeline/sovereign.c \
-                      src/sigma/pipeline/agent.c
+                      src/sigma/pipeline/agent.c \
+                      src/sigma/ttt_runtime.c \
+                      src/sigma/pipeline/ttt_fallback_shim.c
 
 creation_os_sigma_pipeline: $(SIGMA_PIPELINE_SRCS) \
                             src/sigma/pipeline/pipeline_main.c
-	$(CC) $(CFLAGS) $(SIGMA_PIPELINE_INC) -o $@ \
+	$(CC) $(CFLAGS) $(SIGMA_PIPELINE_INC) -Isrc/sigma -Isrc/import \
+	    -o $@ \
 	    $(SIGMA_PIPELINE_SRCS) src/sigma/pipeline/pipeline_main.c $(LDFLAGS)
 
 check-sigma-pipeline-compose: creation_os_sigma_pipeline
@@ -6176,11 +6179,13 @@ SIGMA_IT_SRCS = src/sigma/pipeline/pipeline.c \
                 src/sigma/pipeline/multimodal.c \
                 src/sigma/pipeline/unlearn.c \
                 src/sigma/pipeline/diagnostic.c \
-                src/sigma/pipeline/live.c
+                src/sigma/pipeline/live.c \
+                src/sigma/ttt_runtime.c \
+                src/sigma/pipeline/ttt_fallback_shim.c
 
 test_sigma_pipeline_integration: $(SIGMA_IT_SRCS) \
                                  tests/integration/test_pipeline.c
-	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -o $@ \
+	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/sigma -Isrc/import -o $@ \
 	    $(SIGMA_IT_SRCS) tests/integration/test_pipeline.c $(LDFLAGS)
 
 check-integration: test_sigma_pipeline_integration
@@ -6194,18 +6199,25 @@ check-integration: test_sigma_pipeline_integration
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
 COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
-               -Isrc/sigma/metacog -Isrc/sigma/physics
+               -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
                src/sigma/pipeline/reinforce.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
+               src/sigma/ttt_runtime.c \
                src/cli/stub_gen.c \
                src/cli/cost_log.c \
                src/import/bitnet_server.c \
                src/import/bitnet_spawn.c \
                src/import/bitnet_sigma.c
+
+COS_EDGE_INF = src/sigma/inference_cache.c
+COS_SPIKE_ADAPT_SRCS = src/sigma/spike_engine.c src/sigma/adaptive_compute.c
+COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
+		     src/license_kernel/license_attest.c
+
 # DEV-8 purge: src/import/bitnet_ppl.c (llama-perplexity σ heuristic)
 # was removed — bitnet_server.c now delivers real per-token logprob
 # σ from llama-server's /v1/chat/completions + /completion endpoints.
@@ -6229,8 +6241,12 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/state_ledger.c \
           src/sigma/error_attribution.c \
           src/sigma/engram_episodic.c \
-          src/cli/escalation.c src/cli/cos_chat.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma -Isrc/sigma/tools -o $@ \
+          src/sigma/inference_cache.c \
+          src/sigma/knowledge_graph.c \
+          src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
+          $(COS_PROOF_LIB) src/cli/escalation.c src/cli/cos_chat.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
+	    -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
@@ -6241,8 +6257,468 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/state_ledger.c \
 	    src/sigma/error_attribution.c \
 	    src/sigma/engram_episodic.c \
+	    src/sigma/inference_cache.c \
+	    src/sigma/knowledge_graph.c \
+	    src/sigma/speculative_sigma.c \
+	    $(COS_SPIKE_ADAPT_SRCS) \
+	    $(COS_PROOF_LIB) \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
+
+cos-spike: src/cli/cos_spike.c $(COS_SPIKE_ADAPT_SRCS)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/cli/cos_spike.c \
+	    $(COS_SPIKE_ADAPT_SRCS) $(LDFLAGS)
+
+creation_os_check_spike_engine: tests/agi/check_spike_engine_main.c \
+	    $(COS_SPIKE_ADAPT_SRCS)
+	$(CC) $(CFLAGS) -Isrc/sigma -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_spike_engine_main.c $(COS_SPIKE_ADAPT_SRCS) \
+	    $(LDFLAGS)
+
+creation_os_check_adaptive_compute: tests/agi/check_adaptive_compute_main.c \
+	    $(COS_SPIKE_ADAPT_SRCS)
+	$(CC) $(CFLAGS) -Isrc/sigma -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_adaptive_compute_main.c $(COS_SPIKE_ADAPT_SRCS) \
+	    $(LDFLAGS)
+
+check-spike-engine: creation_os_check_spike_engine
+	@./creation_os_check_spike_engine
+	@echo "check-spike-engine: OK (sigma spike engine self-test)"
+
+check-adaptive-compute: creation_os_check_adaptive_compute
+	@./creation_os_check_adaptive_compute
+	@echo "check-adaptive-compute: OK (adaptive compute self-test)"
+
+creation_os_check_proof_receipt: tests/agi/check_proof_receipt_main.c \
+		$(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_proof_receipt_main.c $(COS_PROOF_LIB) $(LDFLAGS)
+
+creation_os_check_compliance: tests/agi/check_compliance_main.c $(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_compliance_main.c $(COS_PROOF_LIB) $(LDFLAGS)
+
+check-proof-receipt: creation_os_check_proof_receipt
+	@./creation_os_check_proof_receipt
+	@echo "check-proof-receipt: OK (proof receipt self-test)"
+
+check-compliance: creation_os_check_compliance
+	@./creation_os_check_compliance
+	@echo "check-compliance: OK (compliance self-test)"
+
+cos-receipts: src/cli/cos_receipts.c $(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -o $@ src/cli/cos_receipts.c $(COS_PROOF_LIB) $(LDFLAGS)
+
+cos-compliance: src/cli/cos_compliance_cli.c $(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -o $@ src/cli/cos_compliance_cli.c $(COS_PROOF_LIB) $(LDFLAGS)
+
+# cos think — same link closure as cos-chat (σ pipeline + Codex + escalation).
+COS_THINK_CLI_AUX = src/sigma/pipeline/engram_persist.c \
+          src/sigma/ttt/inplace_ttt.c \
+          src/sigma/pipeline/conformal.c \
+          src/sigma/pipeline/multi_sigma.c \
+          src/sigma/metacog/introspection.c \
+          src/sigma/physics/coherence.c \
+          src/sigma/tools/sigma_tools.c \
+          src/sigma/state_ledger.c \
+          src/sigma/error_attribution.c \
+          src/sigma/engram_episodic.c \
+          src/cli/escalation.c
+
+cos-think: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+	    src/sigma/knowledge_graph.c src/sigma/world_model.c \
+	    $(COS_EDGE_INF) src/cli/cos_think.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -o $@ $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+	    src/sigma/knowledge_graph.c src/sigma/world_model.c \
+	    $(COS_EDGE_INF) src/cli/cos_think.c \
+	    -DCOS_THINK_MAIN $(LDFLAGS) -lsqlite3 -lcurl
+
+check-think: cos-think
+	@./cos-think --self-test
+	@echo "check-think: OK (cos_think_self_test)"
+
+creation_os_check_ttt_runtime: src/sigma/ttt_runtime.c \
+		src/sigma/pipeline/ttt_fallback_shim.c \
+		tests/agi/check_ttt_runtime_main.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/import -o $@ \
+	    src/sigma/ttt_runtime.c \
+	    src/sigma/pipeline/ttt_fallback_shim.c \
+	    tests/agi/check_ttt_runtime_main.c $(LDFLAGS)
+
+check-ttt-runtime: creation_os_check_ttt_runtime
+	@./creation_os_check_ttt_runtime
+	@echo "check-ttt-runtime: OK (cos_ttt_runtime_self_test)"
+
+creation_os_check_inference_cache: tests/agi/check_inference_cache_main.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ tests/agi/check_inference_cache_main.c $(COS_EDGE_INF) $(LDFLAGS)
+
+creation_os_check_speculative_sigma: tests/agi/check_speculative_sigma_main.c \
+		src/sigma/inference_cache.c src/sigma/speculative_sigma.c
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ tests/agi/check_speculative_sigma_main.c \
+	    src/sigma/inference_cache.c src/sigma/speculative_sigma.c $(LDFLAGS)
+
+check-inference-cache: creation_os_check_inference_cache
+	@./creation_os_check_inference_cache
+	@echo "check-inference-cache: OK (semantic inference cache self-test)"
+
+check-speculative-sigma: creation_os_check_speculative_sigma
+	@./creation_os_check_speculative_sigma
+	@echo "check-speculative-sigma: OK (speculative sigma self-test)"
+
+cos-cache: src/cli/cos_cache.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/cli/cos_cache.c $(COS_EDGE_INF) $(LDFLAGS)
+
+# σ-knowledge graph CLI (SQLite + BSC; no LLM extraction in the C path).
+cos-graph: src/cli/cos_graph.c src/sigma/knowledge_graph.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -DCOS_GRAPH_STANDALONE_MAIN -o $@ \
+	    src/cli/cos_graph.c src/sigma/knowledge_graph.c $(COS_EDGE_INF) \
+	    $(LDFLAGS) -lsqlite3 -lm
+
+creation_os_check_knowledge_graph: tests/agi/check_knowledge_graph_main.c \
+		src/sigma/knowledge_graph.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ tests/agi/check_knowledge_graph_main.c \
+	    src/sigma/knowledge_graph.c $(COS_EDGE_INF) $(LDFLAGS) -lsqlite3 -lm
+
+creation_os_check_world_model: tests/agi/check_world_model_main.c \
+		src/sigma/world_model.c src/sigma/knowledge_graph.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ tests/agi/check_world_model_main.c \
+	    src/sigma/world_model.c src/sigma/knowledge_graph.c $(COS_EDGE_INF) \
+	    $(LDFLAGS) -lsqlite3 -lm
+
+check-knowledge-graph: creation_os_check_knowledge_graph
+	@./creation_os_check_knowledge_graph
+	@echo "check-knowledge-graph: OK (8 tests)"
+
+check-world-model: creation_os_check_world_model
+	@./creation_os_check_world_model
+	@echo "check-world-model: OK (4 tests)"
+
+# --- σ-multimodal perception (vision / audio HTTP clients + fusion) -----
+PERCEPTION_LINK_SRCS = src/sigma/perception.c src/sigma/error_attribution.c \
+	src/import/bitnet_server.c src/import/bitnet_sigma.c $(COS_EDGE_INF) \
+	src/sigma/knowledge_graph.c src/sigma/engram_episodic.c
+
+creation_os_check_sensor_fusion: tests/agi/check_sensor_fusion_main.c \
+		src/sigma/sensor_fusion.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/sigma -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_sensor_fusion_main.c src/sigma/sensor_fusion.c \
+	    $(COS_EDGE_INF) $(LDFLAGS)
+
+creation_os_check_perception: tests/agi/check_perception_main.c $(PERCEPTION_LINK_SRCS)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/import -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_perception_main.c $(PERCEPTION_LINK_SRCS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+cos-sense: src/cli/cos_sense.c src/sigma/sensor_fusion.c $(PERCEPTION_LINK_SRCS)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/import \
+	    -DCOS_SENSE_STANDALONE_MAIN -o $@ src/cli/cos_sense.c \
+	    src/sigma/sensor_fusion.c $(PERCEPTION_LINK_SRCS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+check-sensor-fusion: creation_os_check_sensor_fusion
+	@./creation_os_check_sensor_fusion
+	@echo "check-sensor-fusion: OK (4 tests)"
+
+check-perception: creation_os_check_perception
+	@./creation_os_check_perception
+	@echo "check-perception: OK (6 tests)"
+
+creation_os_check_watchdog: tests/agi/check_watchdog_main.c \
+		src/sigma/coherence_watchdog.c src/sigma/state_ledger.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_watchdog_main.c src/sigma/coherence_watchdog.c \
+	    src/sigma/state_ledger.c $(LDFLAGS)
+
+creation_os_check_mission: tests/agi/check_mission_main.c $(COS_CLI_SRCS) \
+		$(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+		src/sigma/knowledge_graph.c src/sigma/world_model.c \
+		$(COS_EDGE_INF) src/cli/cos_think.c src/sigma/mission.c \
+		src/sigma/coherence_watchdog.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ tests/agi/check_mission_main.c \
+	    $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+	    src/sigma/knowledge_graph.c src/sigma/world_model.c \
+	    $(COS_EDGE_INF) src/cli/cos_think.c src/sigma/mission.c \
+	    src/sigma/coherence_watchdog.c $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+cos-mission: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+	    src/sigma/knowledge_graph.c src/sigma/world_model.c \
+	    $(COS_EDGE_INF) src/cli/cos_think.c src/sigma/mission.c \
+	    src/sigma/coherence_watchdog.c src/cli/cos_mission.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -DCOS_MISSION_MAIN -o $@ $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
+	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
+	    src/cli/cos_mission.c $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+check-watchdog: creation_os_check_watchdog
+	@./creation_os_check_watchdog
+	@echo "check-watchdog: OK (4 tests)"
+
+check-mission: creation_os_check_mission
+	@./creation_os_check_mission
+	@echo "check-mission: OK (8 tests)"
+
+FED_LIB_SRCS = src/sigma/federation.c \
+	src/sigma/pipeline/a2a.c \
+	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
+	src/sigma/channels.c \
+	src/sigma/state_ledger.c src/sigma/pipeline/reinforce.c \
+	src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	src/sigma/knowledge_graph.c src/sigma/skill_distill.c \
+	$(COS_EDGE_INF)
+
+creation_os_check_federation: tests/agi/check_federation_main.c $(FED_LIB_SRCS)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma/tools \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_federation_main.c $(FED_LIB_SRCS) \
+	    $(LDFLAGS) -lsqlite3
+
+creation_os_check_sovereign: tests/agi/check_sovereign_main.c \
+		src/sigma/sovereign_limits.c src/sigma/state_ledger.c \
+		src/sigma/pipeline/reinforce.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_sovereign_main.c src/sigma/sovereign_limits.c \
+	    src/sigma/state_ledger.c src/sigma/pipeline/reinforce.c \
+	    $(LDFLAGS)
+
+cos-federation: $(FED_LIB_SRCS) src/cli/cos_federation.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma/tools \
+	    -DCOS_FEDERATION_MAIN -o $@ $(FED_LIB_SRCS) \
+	    src/cli/cos_federation.c $(LDFLAGS) -lsqlite3
+
+check-federation: creation_os_check_federation
+	@./creation_os_check_federation
+	@echo "check-federation: OK (8 tests)"
+
+check-sovereign: creation_os_check_sovereign
+	@./creation_os_check_sovereign
+	@echo "check-sovereign: OK (6 tests)"
+
+creation_os_check_energy_accounting: tests/agi/check_energy_accounting_main.c \
+		src/sigma/energy_accounting.c
+	$(CC) $(CFLAGS) -Isrc/sigma \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_energy_accounting_main.c src/sigma/energy_accounting.c \
+	    $(LDFLAGS)
+
+check-energy-accounting: creation_os_check_energy_accounting
+	@./creation_os_check_energy_accounting
+	@echo "check-energy-accounting: OK (energy receipt + timers + persistence API)"
+
+creation_os_check_green_score: tests/agi/check_green_score_main.c \
+		src/sigma/energy_accounting.c src/sigma/green_score.c
+	$(CC) $(CFLAGS) -Isrc/sigma \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_green_score_main.c src/sigma/energy_accounting.c \
+	    src/sigma/green_score.c $(LDFLAGS)
+
+check-green-score: creation_os_check_green_score
+	@./creation_os_check_green_score
+	@echo "check-green-score: OK (green composite + embedded self-test)"
+
+# Ω-loop: speculative path + σ-mission + federation edge + unified driver
+COS_OMEGA_SUPPORT_SRCS = src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
+	$(COS_PROOF_LIB) \
+	src/sigma/mission.c src/sigma/coherence_watchdog.c \
+	src/sigma/perception.c src/sigma/pipeline/watchdog.c \
+	src/sigma/federation.c src/sigma/pipeline/a2a.c \
+	src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
+	src/sigma/omega_loop.c src/cli/cos_omega_cli.c
+
+COS_OMEGA_STATE_DEPS = src/sigma/sovereign_limits.c \
+	src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
+	src/sigma/physics_model.c src/sigma/embodiment.c \
+	src/sigma/energy_accounting.c src/sigma/green_score.c \
+	src/sigma/codegen.c src/sigma/evolution_engine.c
+
+creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
+		$(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+		src/sigma/knowledge_graph.c src/sigma/world_model.c $(COS_EDGE_INF) \
+		src/cli/cos_think.c $(COS_OMEGA_SUPPORT_SRCS) $(COS_OMEGA_STATE_DEPS)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/cli \
+	    -Isrc/sigma/tools -Isrc/sigma/pipeline \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_omega_loop_main.c \
+	    $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
+	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
+	    $(COS_PROOF_LIB) \
+	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
+	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
+	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
+	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
+	    src/sigma/omega_loop.c \
+	    $(COS_OMEGA_STATE_DEPS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+check-omega: creation_os_check_omega
+	@./creation_os_check_omega
+	@echo "check-omega: OK (Ω-loop mechanics + embedded self-test)"
+
+cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
+	src/sigma/knowledge_graph.c src/sigma/world_model.c $(COS_EDGE_INF) \
+	src/cli/cos_think.c $(COS_OMEGA_SUPPORT_SRCS) $(COS_OMEGA_STATE_DEPS) \
+	include/cos_version.h
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/cli \
+	    -Isrc/sigma/tools -Isrc/sigma/pipeline \
+	    -DCOS_OMEGA_MAIN -o $@ src/cli/cos_omega_cli.c \
+	    $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
+	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
+	    $(COS_PROOF_LIB) \
+	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
+	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
+	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
+	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
+	    src/sigma/omega_loop.c \
+	    $(COS_OMEGA_STATE_DEPS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+EMBODY_CHECK_SRCS = src/sigma/embodiment.c src/sigma/physics_model.c \
+	src/sigma/sovereign_limits.c src/sigma/state_ledger.c \
+	src/sigma/pipeline/reinforce.c src/sigma/knowledge_graph.c \
+	src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	$(COS_EDGE_INF)
+
+creation_os_check_physics_model: tests/agi/check_physics_model_main.c \
+		src/sigma/physics_model.c
+	$(CC) $(CFLAGS) -Isrc/sigma -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_physics_model_main.c src/sigma/physics_model.c \
+	    $(LDFLAGS)
+
+creation_os_check_embodiment: tests/agi/check_embodiment_main.c \
+		$(EMBODY_CHECK_SRCS)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_embodiment_main.c $(EMBODY_CHECK_SRCS) \
+	    $(LDFLAGS) -lsqlite3
+
+cos-embody: $(EMBODY_CHECK_SRCS) src/cli/cos_embody.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma \
+	    -DCOS_EMBODY_MAIN -o $@ $(EMBODY_CHECK_SRCS) src/cli/cos_embody.c \
+	    $(LDFLAGS) -lsqlite3
+
+check-physics-model: creation_os_check_physics_model
+	@./creation_os_check_physics_model
+	@echo "check-physics-model: OK (physics twin checks)"
+
+check-embodiment: creation_os_check_embodiment
+	@./creation_os_check_embodiment
+	@echo "check-embodiment: OK (embodiment checks)"
+
+CODEGEN_ENGINE_SRCS = src/sigma/codegen.c src/sigma/evolution_engine.c \
+	$(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	src/sigma/world_model.c src/sigma/sovereign_limits.c \
+	$(COS_EDGE_INF)
+
+creation_os_check_codegen: tests/agi/check_codegen_main.c \
+		$(CODEGEN_ENGINE_SRCS)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_codegen_main.c $(CODEGEN_ENGINE_SRCS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+creation_os_check_evolution_engine: \
+		tests/agi/check_evolution_engine_main.c $(CODEGEN_ENGINE_SRCS)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_evolution_engine_main.c $(CODEGEN_ENGINE_SRCS) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+cos-codegen: $(CODEGEN_ENGINE_SRCS) src/cli/cos_codegen_cli.c src/cli/cos_think.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -DCOS_CODEGEN_CLI_MAIN -o $@ $(CODEGEN_ENGINE_SRCS) \
+	    src/cli/cos_codegen_cli.c src/cli/cos_think.c $(LDFLAGS) -lsqlite3 \
+	    -lcurl
+
+check-codegen: creation_os_check_codegen
+	@./creation_os_check_codegen
+	@echo "check-codegen: OK (codegen checks)"
+
+check-evolution-engine: creation_os_check_evolution_engine
+	@./creation_os_check_evolution_engine
+	@echo "check-evolution-engine: OK (evolution engine checks)"
+
+CONSCIOUSNESS_METER_SRCS = src/sigma/consciousness_meter.c
+
+AWARENESS_LOG_SRCS = src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
+	src/sigma/state_ledger.c src/sigma/pipeline/reinforce.c
+
+creation_os_check_consciousness: tests/agi/check_consciousness_main.c \
+		$(CONSCIOUSNESS_METER_SRCS)
+	$(CC) $(CFLAGS) -Isrc/sigma -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_consciousness_main.c \
+	    $(CONSCIOUSNESS_METER_SRCS) $(LDFLAGS)
+
+creation_os_check_awareness_log: tests/agi/check_awareness_log_main.c \
+		$(AWARENESS_LOG_SRCS)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_awareness_log_main.c $(AWARENESS_LOG_SRCS) \
+	    $(LDFLAGS) -lsqlite3
+
+cos-consciousness: $(AWARENESS_LOG_SRCS) src/cli/cos_consciousness_cli.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma \
+	    -DCOS_CONSCIOUSNESS_CLI_MAIN -o $@ $(AWARENESS_LOG_SRCS) \
+	    src/cli/cos_consciousness_cli.c $(LDFLAGS) -lsqlite3
+
+check-consciousness: creation_os_check_consciousness
+	@./creation_os_check_consciousness
+	@echo "check-consciousness: OK (consciousness meter checks)"
+
+check-awareness-log: creation_os_check_awareness_log
+	@./creation_os_check_awareness_log
+	@echo "check-awareness-log: OK (awareness log checks)"
+
+SELF_PLAY_FULL = $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/self_play.c \
+	    $(COS_EDGE_INF)
+
+cos-self-play: $(SELF_PLAY_FULL) src/cli/cos_self_play.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -o $@ $(SELF_PLAY_FULL) src/cli/cos_self_play.c \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+cos-skills: src/sigma/skill_distill.c $(COS_EDGE_INF) src/cli/cos_skills.c
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/sigma/skill_distill.c \
+	    $(COS_EDGE_INF) src/cli/cos_skills.c $(LDFLAGS) -lsqlite3 -lm
+
+creation_os_check_skill_distill: tests/agi/check_skill_distill_main.c \
+		src/sigma/skill_distill.c $(COS_EDGE_INF)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/cli -o $@ tests/agi/check_skill_distill_main.c \
+	    src/sigma/skill_distill.c $(COS_EDGE_INF) $(LDFLAGS) -lsqlite3
+
+creation_os_check_self_play: tests/agi/check_self_play_main.c $(SELF_PLAY_FULL)
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -o $@ tests/agi/check_self_play_main.c $(SELF_PLAY_FULL) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+check-skill-distill: creation_os_check_skill_distill
+	@./creation_os_check_skill_distill
+	@echo "check-skill-distill: OK (skill_distill self-test)"
+
+check-self-play: creation_os_check_self_play
+	@./creation_os_check_self_play
+	@echo "check-self-play: OK (self_play self-test)"
+
+cos-search: src/cli/cos_search.c
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/cli/cos_search.c \
+	    -DCOS_SEARCH_MAIN $(LDFLAGS) -lcurl
+
+check-search: cos-search
+	@./cos-search --self-test
+	@echo "check-search: OK (cos_search_self_test)"
 
 # AGI-1: tiny self-test for ICL composer (no SQLite required).
 creation_os_inplace_ttt: src/sigma/ttt/inplace_ttt.c \
@@ -6366,7 +6842,7 @@ test_bitnet_server_parse: src/import/bitnet_server.c \
 
 check-bitnet-server-parse: test_bitnet_server_parse
 	@./test_bitnet_server_parse
-	@echo "check-bitnet-server-parse: OK (5 cases: mixed / null / empty / /completion / utf8)"
+	@echo "check-bitnet-server-parse: OK (7 cases: mixed / null / empty / /completion / utf8 / chat logprobs mean|max)"
 
 test_bitnet_server: src/import/bitnet_server.c tests/import/test_bitnet_server.c
 	$(CC) $(CFLAGS) -Isrc/import -o $@ \
@@ -6382,19 +6858,30 @@ test_bitnet_server: src/import/bitnet_server.c tests/import/test_bitnet_server.c
 # emits a pinnable receipt.
 COS_AGENT_SRCS = src/sigma/pipeline/plan.c \
                  src/sigma/pipeline/tool.c \
-                 src/sigma/pipeline/agent.c
+                 src/sigma/pipeline/agent.c \
+                 src/cli/cos_agent_node.c \
+                 src/sigma/pipeline/codex.c \
+                 src/license_kernel/license_attest.c \
+                 src/sigma/pipeline/a2a.c \
+                 src/sigma/sigma_mcp_gate.c \
+                 src/sigma/tools/sigma_tools.c \
+                 src/sigma/channels.c \
+                 src/sigma/engram_episodic.c \
+                 src/sigma/error_attribution.c
 
 cos-agent: $(COS_AGENT_SRCS) src/cli/cos_agent.c
-	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/cli -o $@ \
-	    $(COS_AGENT_SRCS) src/cli/cos_agent.c $(LDFLAGS)
+	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
+	    -Isrc/license_kernel -o $@ \
+	    $(COS_AGENT_SRCS) src/cli/cos_agent.c $(LDFLAGS) -lsqlite3
 
 check-cos-agent: cos-agent
 	@bash benchmarks/sigma_pipeline/check_cos_agent.sh
 	@echo "check-cos-agent: OK (plan compile + gate ALLOW/CONFIRM/BLOCK + budget + flags)"
 
-check-cos-cli: cos-chat cos-benchmark cos-cost
+check-cos-cli: cos-chat cos-benchmark cos-cost cos-think
 	@bash benchmarks/sigma_pipeline/check_cos_cli.sh
-	@echo "check-cos-cli: OK (cos chat banner + cos benchmark table + cos cost ledger)"
+	@./cos-think --self-test
+	@echo "check-cos-cli: OK (cos chat banner + cos benchmark table + cos cost ledger + cos think)"
 
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---
 #
@@ -7436,13 +7923,15 @@ check-cos-mcp: cos-mcp
 # Agent-card advertise + σ-trust tracking per peer.  Trust scores
 # move via EMA on request outcomes; peers whose σ_trust exceeds
 # τ_blocklist stop receiving traffic.  Mesh-level analogue of D1.
-SIGMA_A2A_INC  = -Isrc/sigma/pipeline
-SIGMA_A2A_SRCS = src/sigma/pipeline/a2a.c
+SIGMA_A2A_INC  = -Isrc/sigma/pipeline -Isrc/sigma -Isrc/sigma/tools
+SIGMA_A2A_SRCS = src/sigma/pipeline/a2a.c \
+	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
+	src/sigma/channels.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
 
 creation_os_sigma_a2a: $(SIGMA_A2A_SRCS) \
                       src/sigma/pipeline/a2a_main.c
 	$(CC) $(CFLAGS) $(SIGMA_A2A_INC) -o $@ \
-	    $(SIGMA_A2A_SRCS) src/sigma/pipeline/a2a_main.c $(LDFLAGS)
+	    $(SIGMA_A2A_SRCS) src/sigma/pipeline/a2a_main.c $(LDFLAGS) -lsqlite3
 
 check-sigma-a2a: creation_os_sigma_a2a
 	@bash benchmarks/sigma_pipeline/check_sigma_a2a.sh
@@ -7457,7 +7946,7 @@ check-sigma-a2a: creation_os_sigma_a2a
 # EMA over time.
 cos-a2a: $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c
 	$(CC) $(CFLAGS) $(SIGMA_A2A_INC) -Iinclude -o $@ \
-	    $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c $(LDFLAGS)
+	    $(SIGMA_A2A_SRCS) src/cli/cos_a2a_cli.c $(LDFLAGS) -lsqlite3
 
 check-cos-a2a: cos-a2a
 	@bash benchmarks/sigma_pipeline/check_cos_a2a.sh
@@ -9557,12 +10046,44 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 
 # --- cos: Apple-tier unified CLI front door ----------------------
 #
-# Single C binary, no deps beyond libc, NO_COLOR-respecting, isatty
-# auto-detect.  This is the "front door" for end users: `cos`,
-# `cos verify`, `cos chace`, `cos sigma`, `cos think <prompt>`.
-cos: cli/cos.c include/cos_version.h src/sigma/state_ledger.c
-	$(CC) -O2 -Wall -std=c11 -Iinclude -Isrc/sigma -Isrc/sigma/pipeline \
-	    -o cos cli/cos.c src/sigma/state_ledger.c
+# Linked with creation_os cos_think (libsqlite3 + libcurl) for
+# `cos think --goal ...`.  NO_COLOR / TERM=dumb respected; isatty
+# auto-detect for colour.
+cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
+	src/cli/cos_search.c \
+	src/sigma/embodiment.c src/sigma/physics_model.c \
+	src/sigma/sovereign_limits.c src/cli/cos_embody.c \
+	src/sigma/codegen.c src/sigma/evolution_engine.c \
+	src/cli/cos_codegen_cli.c \
+	src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
+	src/cli/cos_consciousness_cli.c \
+	src/sigma/energy_accounting.c src/sigma/green_score.c \
+	src/cli/cos_energy_green_cli.c \
+	$(COS_OMEGA_SUPPORT_SRCS)
+	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
+	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline \
+	    -o cos cli/cos.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
+	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
+	    src/cli/cos_search.c \
+	    src/sigma/embodiment.c src/sigma/physics_model.c \
+	    src/sigma/sovereign_limits.c src/cli/cos_embody.c \
+	    src/sigma/codegen.c src/sigma/evolution_engine.c \
+	    src/cli/cos_codegen_cli.c \
+	    src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
+	    src/cli/cos_consciousness_cli.c \
+	    src/sigma/energy_accounting.c src/sigma/green_score.c \
+	    src/cli/cos_energy_green_cli.c \
+	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
+	    $(COS_PROOF_LIB) \
+	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
+	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
+	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
+	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
+	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 
 check-cos: cos
 	./cos --version
@@ -9622,10 +10143,31 @@ chace:
 	@bash scripts/security/chace.sh
 
 # v36: MCP-native σ server (JSON-RPC over STDIO + optional HTTP shim).
-MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c
+MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c \
+	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
 
 standalone-mcp: $(MCP_SRCS)
-	$(CC) $(CFLAGS) -I. -o creation_os_mcp $(MCP_SRCS) $(LDFLAGS)
+	$(CC) $(CFLAGS) -I. -Isrc/sigma -Isrc/sigma/tools -o creation_os_mcp $(MCP_SRCS) $(LDFLAGS) -lsqlite3
+
+creation_os_check_mcp_sigma: tests/agi/check_mcp_sigma_main.c \
+	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
+	src/sigma/channels.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/tools -o $@ tests/agi/check_mcp_sigma_main.c \
+	    src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c src/sigma/channels.c \
+	    src/sigma/engram_episodic.c src/sigma/error_attribution.c $(LDFLAGS) -lsqlite3
+
+check-mcp-sigma: standalone-mcp creation_os_check_mcp_sigma
+	@./creation_os_mcp --self-test
+	@./creation_os_check_mcp_sigma
+	@echo "check-mcp-sigma: OK (MCP σ gate + MCP server self-test)"
+
+check-a2a-sigma: creation_os_sigma_a2a
+	@./creation_os_sigma_a2a >/dev/null
+	@echo "check-a2a-sigma: OK (σ-A2A kernel self-test)"
+
+check-agent: cos-agent
+	@./cos-agent --self-test-node
+	@echo "check-agent: OK (unified cos agent identity surface)"
 
 # Optional: OpenAI-shaped loopback stub for wiring local tools (no weights; POSIX-only).
 standalone-openai-stub: creation_os_openai_stub.c src/server/json_esc.c
