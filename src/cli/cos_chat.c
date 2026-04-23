@@ -29,6 +29,8 @@
  *   --once             — one turn: requires --prompt (CI / headless)
  *   --stream           — stream tokens from llama-server (default: ON in REPL)
  *   --no-stream        — wait for full response (default for --once)
+ *   --tui              — ANSI live layout (default on interactive TTY)
+ *   --no-tui           — plain transcript (also for piped stdin)
  *   --prompt TEXT      — user line for --once
  *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
  *   --no-transcript    — skip JSONL for --once
@@ -78,6 +80,7 @@
 #include "proof_receipt.h"
 #include "speed_metrics.h"
 #include "bitnet_server.h"
+#include "cos_tui.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -453,7 +456,7 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                  " | conformal@α=%.2f", (double)conformal_alpha);
     }
 
-    float ttft_ms = (spd != NULL) ? spd->time_to_first_token_ms : 0.0f;
+    float ttft_ms = (spd != NULL) ? spd->ttft_ms : 0.0f;
 
     if (r->final_action == COS_SIGMA_ACTION_ABSTAIN) {
         fprintf(stdout,
@@ -1297,6 +1300,8 @@ int main(int argc, char **argv) {
     int         energy_report      = 0;
     int         want_proof_receipt = 0;
     int         stream_cli         = -1; /* unset: REPL on, --once off */
+    int         tui_cli            = -1; /* unset: TTY REPL on, --once/pipe off */
+    int         use_tui            = 0;
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -1308,6 +1313,8 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
         else if (strcmp(argv[i], "--stream")     == 0) stream_cli = 1;
         else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
+        else if (strcmp(argv[i], "--tui")       == 0) tui_cli = 1;
+        else if (strcmp(argv[i], "--no-tui")    == 0) tui_cli = 0;
         else if (strcmp(argv[i], "--once")       == 0) once_mode = 1;
         else if (strcmp(argv[i], "--prompt")     == 0 && i + 1 < argc)
             once_prompt = argv[++i];
@@ -1380,6 +1387,8 @@ int main(int argc, char **argv) {
                 "  --verbose           print a per-turn diagnostic\n"
                 "  --stream            stream tokens (default: on in REPL)\n"
                 "  --no-stream         full response at once (default with --once)\n"
+                "  --tui               ANSI live layout (default on interactive TTY)\n"
+                "  --no-tui            plain transcript text\n"
                 "  --tau-accept  F     override τ_accept (default 0.40 interactive,\n"
                 "                      0.30 for --once to match Python harness)\n"
                 "  --tau-rethink F     override τ_rethink (default 0.60 / 0.70)\n"
@@ -1431,6 +1440,14 @@ int main(int argc, char **argv) {
         int stream_on =
             (stream_cli >= 0) ? stream_cli : (once_mode ? 0 : 1);
         (void)setenv("COS_BITNET_STREAM", stream_on ? "1" : "0", 1);
+    }
+
+    {
+        int tty_in  = isatty(STDIN_FILENO);
+        int tty_out = isatty(STDOUT_FILENO);
+        int def_tui = tty_in && tty_out && !once_mode;
+        use_tui     = (tui_cli >= 0) ? tui_cli : def_tui;
+        (void)setenv("COS_CHAT_TUI", use_tui ? "1" : "0", 1);
     }
 
     {
@@ -1751,26 +1768,41 @@ int main(int argc, char **argv) {
         return rc;
     }
 
-    print_banner(&cfg, have_codex ? &codex : NULL);
-    if (conformal_active) {
-        fprintf(stdout,
-                "  conformal: τ=%.4f @ α=%.2f (from ~/.cos/calibration.json)\n",
-                (double)tau_accept, (double)conformal_alpha);
-    }
-    if (multi_sigma) {
-        fprintf(stdout,
-                "  σ-ensemble: shadow (SCI-5), K_regen=%d per turn\n",
-                COS_CHAT_MULTI_K_REGEN);
+    if (!use_tui) {
+        print_banner(&cfg, have_codex ? &codex : NULL);
+        if (conformal_active) {
+            fprintf(stdout,
+                    "  conformal: τ=%.4f @ α=%.2f (from ~/.cos/calibration.json)\n",
+                    (double)tau_accept, (double)conformal_alpha);
+        }
+        if (multi_sigma) {
+            fprintf(stdout,
+                    "  σ-ensemble: shadow (SCI-5), K_regen=%d per turn\n",
+                    COS_CHAT_MULTI_K_REGEN);
+        }
+    } else {
+        cos_tui_init();
+        cos_tui_clear();
+        cos_tui_header(0.f, 1.f);
+        cos_tui_status_bar(0, 0, 0.f, 0.f);
     }
 
     chat_coh_t coh;
     coh_reset(&coh);
 
-    char line[2048];
-    int turn = 0;
+    char   line[2048];
+    int    turn              = 0;
+    float  sigma_sess_sum    = 0.f;
+    int    sigma_sess_n      = 0;
+    int    cache_sess_hits   = 0;
     for (;;) {
-        fprintf(stdout, "\n> ");
-        fflush(stdout);
+        if (!use_tui) {
+            fprintf(stdout, "\n> ");
+            fflush(stdout);
+        } else {
+            fputs("\033[0m│ You: ", stdout);
+            fflush(stdout);
+        }
         if (fgets(line, sizeof(line), stdin) == NULL) break;  /* EOF */
 
         /* strip trailing newline */
@@ -1877,7 +1909,7 @@ int main(int argc, char **argv) {
                                          ? cfg.codex->hash_fnv1a64
                                          : 0ULL;
                 r.ttt_applied      = 0;
-                fprintf(stdout,
+                fprintf(use_tui ? stderr : stdout,
                         "[CACHE_SEMANTIC] hit  σ=%.3f  (BSC neighbour reuse)\n",
                         (double)hit.sigma);
             }
@@ -1910,16 +1942,25 @@ int main(int argc, char **argv) {
                 r.codex_hash       = cfg.codex != NULL ? cfg.codex->hash_fnv1a64
                                                        : 0ULL;
                 r.ttt_applied      = 0;
-                fprintf(stdout,
+                fprintf(use_tui ? stderr : stdout,
                         "[CACHE_SPIKE] hit  hamming_norm=%.4f  σ=%.3f\n",
                         (double)hm, (double)r.sigma);
             }
         }
 
         if (!early_spec_abstain && !semantic_hit) {
+            if (use_tui && cos_chat_stream_env_on())
+                cos_tui_begin_ai_line();
             w0 = chat_wall_ms();
             prc = cos_sigma_pipeline_run(&cfg, line, &r);
             w1 = chat_wall_ms();
+        }
+
+        if (use_tui && semantic_hit && r.response != NULL
+            && r.final_action != COS_SIGMA_ACTION_ABSTAIN) {
+            cos_tui_begin_ai_line();
+            fputs(r.response, stdout);
+            cos_tui_stream_newline();
         }
 
         if (SL.did_budget)
@@ -1968,8 +2009,9 @@ int main(int argc, char **argv) {
          * can read the awareness breakdown alongside the reply. */
         if (verbose) {
             cos_ultra_metacog_levels_t lv;
+            FILE *mv = use_tui ? stderr : stdout;
             chat_metacog_levels(line, &r, cfg.max_rethink, &lv);
-            fprintf(stdout,
+            fprintf(mv,
                     "[meta: perception=%.2f self=%.2f social=%.2f "
                     "situational=%.2f]\n",
                     (double)lv.sigma_perception, (double)lv.sigma_self,
@@ -1977,9 +2019,23 @@ int main(int argc, char **argv) {
         }
 
         if (r.final_action == COS_SIGMA_ACTION_ABSTAIN) {
-            fprintf(stdout, "(no answer — abstained)\n");
+            if (use_tui)
+                fputs("│ (no answer — abstained)\n", stdout);
+            else
+                fprintf(stdout, "(no answer — abstained)\n");
         } else if (!cos_chat_stream_env_on()) {
-            fprintf(stdout, "%s\n", r.response);
+            /* Semantic-cache + TUI: response already printed above. */
+            if (semantic_hit && use_tui)
+                ;
+            else if (r.response != NULL) {
+                if (use_tui) {
+                    cos_tui_begin_ai_line();
+                    fputs(r.response, stdout);
+                    cos_tui_stream_newline();
+                } else {
+                    fprintf(stdout, "%s\n", r.response);
+                }
+            }
         }
 
         /* FINAL-2 Phase A: optional σ_combined shadow ensemble.
@@ -2010,7 +2066,8 @@ int main(int argc, char **argv) {
         }
         chat_agi_after_turn(&cfg, line, &r, &xf, &ms, ms_ok);
         if (ms_ok) {
-            fprintf(stdout,
+            FILE *msf = use_tui ? stderr : stdout;
+            fprintf(msf,
                     "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
                     "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
                     (double)ms.ens.sigma_combined,
@@ -2031,11 +2088,36 @@ int main(int argc, char **argv) {
             struct cos_speed_metrics spd = cos_speed_measure_ex(
                 r.response != NULL ? r.response : "", (float)elapsed_ms,
                 ttft_pass);
-            cos_speed_print(&spd);
-            fputc('\n', stdout);
-            print_receipt_polished(&r, elapsed_ms,
-                                   conformal_active, conformal_alpha,
-                                   semantic_hit, &spd);
+            if (!use_tui) {
+                cos_speed_print(&spd);
+                fputc('\n', stdout);
+                print_receipt_polished(&r, elapsed_ms,
+                                       conformal_active, conformal_alpha,
+                                       semantic_hit, &spd);
+            } else {
+                cos_tui_print_receipt(
+                    r.sigma, cos_sigma_action_label(r.final_action),
+                    spd.tokens_per_second, spd.ttft_ms, (float)r.cost_eur);
+                sigma_sess_sum += r.sigma;
+                sigma_sess_n++;
+                if (semantic_hit || r.engram_hit)
+                    cache_sess_hits++;
+                {
+                    float smean = sigma_sess_n
+                                      ? sigma_sess_sum / (float)sigma_sess_n
+                                      : 0.f;
+                    float k_eff_h = 1.f - smean;
+                    if (coherence_enabled && coh.n >= 1) {
+                        float mn = 0.f, sl = 0.f;
+                        coh_summary(&coh, &mn, &sl);
+                        (void)sl;
+                        k_eff_h = 1.f - mn;
+                    }
+                    cos_tui_status_bar(turn, cache_sess_hits,
+                                       0.001f * (float)turn, smean);
+                    cos_tui_header(smean, k_eff_h);
+                }
+            }
         }
         chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
                              elapsed_ms);

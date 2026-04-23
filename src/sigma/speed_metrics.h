@@ -10,13 +10,13 @@ struct cos_speed_metrics {
     int   tokens_generated;
     float wall_time_ms;
     float tokens_per_second;
-    float time_to_first_token_ms;
+    float ttft_ms;
 };
 
 struct cos_speed_metrics cos_speed_measure(const char *response,
                                            float       wall_ms);
 
-/** When ttft_ms >= 0, sets time_to_first_token_ms to TTFT (streaming).
+/** When ttft_ms >= 0, sets ttft_ms field to TTFT (streaming).
  *  Otherwise leaves it at wall-clock echo from cos_speed_measure(). */
 struct cos_speed_metrics cos_speed_measure_ex(const char *response,
                                               float       wall_ms,

@@ -6208,6 +6208,7 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/agent.c \
                src/sigma/ttt_runtime.c \
                src/cli/stub_gen.c \
+               src/cli/cos_tui.c \
                src/cli/cost_log.c \
                src/import/bitnet_server.c \
                src/import/bitnet_spawn.c \

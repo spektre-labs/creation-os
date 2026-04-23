@@ -6,16 +6,21 @@
 #include "bitnet_spawn.h"
 #include "bitnet_sigma.h"
 #include "codex.h"
+#include "cos_tui.h"
 #include "cost_log.h"
 #include "escalation.h"
 #include "engram.h"
+#include "ttt_runtime.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* One subprocess-sized buffer; cos-chat is single-threaded. */
-static char g_cos_chat_bitnet_buf[8192];
+/* Matches bitnet_server.c BNS_TEXT_CAP — max_tokens must not exceed what we
+ * can copy back from llama-server (same order as reasoning-heavy replies). */
+#define COS_CLI_BITNET_TEXT_CAP (512u * 1024u)
+static char g_cos_chat_bitnet_buf[COS_CLI_BITNET_TEXT_CAP];
+static char g_cos_ttt_augment_buf[COS_CLI_BITNET_TEXT_CAP];
 
 /* AGI-1: ICL-wrapped prompt (few-shot prefix + final user line). */
 static char g_cos_chat_icl_buf[16384];
@@ -96,19 +101,60 @@ typedef struct {
     int have_printed;
 } cos_chat_stream_ctx_t;
 
+/* Use OpenAI-compat HTTP when either flag is set: COS_BITNET_SERVER alone
+ * was easy to omit when COS_BITNET_SERVER_EXTERNAL=1 already pins a remote
+ * llama-server — falling through to cos_bitnet_spawn_capture() passes -p,
+ * which llama-server rejects (that flag is for llama-cli). */
+static int cos_cli_use_bitnet_http(void) {
+    const char *s = getenv("COS_BITNET_SERVER");
+    if (s != NULL && s[0] == '1') return 1;
+    const char *e = getenv("COS_BITNET_SERVER_EXTERNAL");
+    return (e != NULL && e[0] == '1');
+}
+
+/* Default was 64 max_tokens → answers looked like cut-off reasoning.
+ * COS_BITNET_CHAT_MAX_TOKENS overrides; else COS_BITNET_SERVER_NPRED;
+ * else 4096.  Clamped [32, 8192]. */
+static int cos_cli_bitnet_chat_max_tokens(void) {
+    const char *e = getenv("COS_BITNET_CHAT_MAX_TOKENS");
+    int          n = 0;
+    if (e != NULL && e[0] != '\0')
+        n = atoi(e);
+    if (n <= 0 && (e = getenv("COS_BITNET_SERVER_NPRED")) != NULL && e[0] != '\0')
+        n = atoi(e);
+    if (n <= 0)
+        n = 4096;
+    if (n < 32)
+        n = 32;
+    if (n > 8192)
+        n = 8192;
+    return n;
+}
+
 static int cos_chat_stream_cb(const char *tok, float sigma,
                               int is_last, void *ctx) {
     cos_chat_stream_ctx_t *s = (cos_chat_stream_ctx_t *)ctx;
+    const char       *tui_env = getenv("COS_CHAT_TUI");
+    int               use_tui = (tui_env != NULL && tui_env[0] == '1');
+
     if (tok == NULL || tok[0] == '\0') {
         /* Terminal chunk (stop=true) — server emits empty content. */
         if (is_last && s->have_printed) {
-            fputc('\n', stdout);
-            fflush(stdout);
+            if (use_tui)
+                cos_tui_stream_newline();
+            else {
+                fputc('\n', stdout);
+                fflush(stdout);
+            }
         }
         return 0;
     }
-    fputs(tok, stdout);
-    if (s->verbose) fprintf(stdout, "[σ=%.2f]", (double)sigma);
+    if (use_tui)
+        cos_tui_print_token(tok);
+    else
+        fputs(tok, stdout);
+    if (!use_tui && s->verbose)
+        fprintf(stdout, "[σ=%.2f]", (double)sigma);
     fflush(stdout);
     s->have_printed = 1;
     return 0;
@@ -116,7 +162,8 @@ static int cos_chat_stream_cb(const char *tok, float sigma,
 
 /* Backend selection (DEV-1 / DEV-4):
  *
- *   COS_BITNET_SERVER=1        → spawn llama-server (bitnet_server.h)
+ *   COS_BITNET_SERVER=1 or
+ *   COS_BITNET_SERVER_EXTERNAL=1 → HTTP POST to llama-server (bitnet_server.h)
  *                                and measure σ from real per-token
  *                                probs.  Default endpoint is
  *                                /v1/chat/completions (best output
@@ -184,11 +231,19 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
     }
 
     /* Branch A — llama-server backend (real per-token σ). */
-    const char *use_server = getenv("COS_BITNET_SERVER");
-    if (use_server != NULL && use_server[0] == '1') {
+    if (cos_cli_use_bitnet_http()) {
+        const char *prompt_send = prompt_model;
+        const char *ttt_env     = getenv("COS_CHAT_TTT");
+        if (ttt_env != NULL && ttt_env[0] == '1' && round > 0) {
+            size_t nw = cos_ttt_augment_prompt(g_cos_ttt_augment_buf,
+                                               sizeof(g_cos_ttt_augment_buf),
+                                               prompt_model);
+            if (nw > 0)
+                prompt_send = g_cos_ttt_augment_buf;
+        }
         cos_bitnet_server_params_t p;
         memset(&p, 0, sizeof(p));
-        p.n_predict   = 64;
+        p.n_predict   = cos_cli_bitnet_chat_max_tokens();
         p.n_probs     = 5;
         p.seed        = -1;  /* round 0 → server-random (empirically
                               * needed; seed=0 hits a degenerate
@@ -211,11 +266,11 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
             cos_chat_stream_ctx_t sctx = { 0, 0 };
             const char *sv = getenv("COS_BITNET_STREAM_VERBOSE");
             sctx.verbose = (sv != NULL && sv[0] == '1');
-            rc = cos_bitnet_server_complete_stream(prompt_model, &p,
+            rc = cos_bitnet_server_complete_stream(prompt_send, &p,
                                                    cos_chat_stream_cb,
                                                    &sctx, &r);
         } else {
-            rc = cos_bitnet_server_complete(prompt_model, &p, &r);
+            rc = cos_bitnet_server_complete(prompt_send, &p, &r);
         }
         if (rc == 0) {
             /* Copy text into the module-local buffer so the pipeline
@@ -250,9 +305,13 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
          * server crashed mid-session. */
     }
 
-    /* Branch B — legacy subprocess capture with heuristic σ. */
+    /* Branch B — legacy subprocess capture with heuristic σ.
+     * Never mix this with COS_BITNET_SERVER_EXTERNAL: the exe is often
+     * llama-server, which does not accept -p (see cos_cli_use_bitnet_http). */
+    const char *ext_spawn_block = getenv("COS_BITNET_SERVER_EXTERNAL");
     const char *exe = getenv("CREATION_OS_BITNET_EXE");
-    if (exe != NULL && exe[0] != '\0' && round == 0) {
+    if ((ext_spawn_block == NULL || ext_spawn_block[0] != '1')
+        && exe != NULL && exe[0] != '\0' && round == 0) {
         if (cos_bitnet_spawn_capture(exe, prompt_model, g_cos_chat_bitnet_buf,
                                      sizeof g_cos_chat_bitnet_buf) == 0
             && g_cos_chat_bitnet_buf[0] != '\0') {

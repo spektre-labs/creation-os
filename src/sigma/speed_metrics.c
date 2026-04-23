@@ -18,7 +18,7 @@ struct cos_speed_metrics cos_speed_measure_ex(const char *response,
     m.tokens_generated        = 0;
     m.wall_time_ms            = wall_ms;
     m.tokens_per_second       = 0.0f;
-    m.time_to_first_token_ms  = wall_ms;
+    m.ttft_ms  = wall_ms;
 
     if (response != NULL) {
         int in_word = 0;
@@ -40,7 +40,7 @@ struct cos_speed_metrics cos_speed_measure_ex(const char *response,
             (float)m.tokens_generated / (wall_ms / 1000.0f);
 
     if (ttft_ms >= 0.0f)
-        m.time_to_first_token_ms = ttft_ms;
+        m.ttft_ms = ttft_ms;
 
     return m;
 }
@@ -52,5 +52,5 @@ void cos_speed_print(const struct cos_speed_metrics *m)
     printf("[speed: %d tok | %.0fms | %.1f tok/s | TTFT %.0fms]",
            m->tokens_generated, (double)m->wall_time_ms,
            (double)m->tokens_per_second,
-           (double)m->time_to_first_token_ms);
+           (double)m->ttft_ms);
 }
