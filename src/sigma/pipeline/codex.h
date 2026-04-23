@@ -33,6 +33,10 @@
  * and from an installed layout where the two `data/codex/` text
  * files ship alongside the binary.
  *
+ * Environment override: `COS_CODEX_PATH` — when set, used as the
+ * default path when `cos_sigma_codex_load(NULL, …)` is called (same
+ * role as `COS_CODEX_PATH` for the inference stack).
+ *
  * Canonical shape:
  *
  *   * Full Codex (`atlantean_codex.txt`)     → ~17 KB, ≥ 33 chapters

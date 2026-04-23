@@ -74,12 +74,22 @@
 #include "spike_engine.h"
 #include "adaptive_compute.h"
 #include "proof_receipt.h"
+#include "speed_metrics.h"
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <math.h>
+
+/** Wall time for throughput (preferred over CPU `clock()` on multicore). */
+static double chat_wall_ms(void)
+{
+    struct timespec ts;
+    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
+        return (double)clock() * 1000.0 / (double)CLOCKS_PER_SEC;
+    return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1.0e6;
+}
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdint.h>
@@ -407,7 +417,8 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                                    double elapsed_ms,
                                    int conformal_active,
                                    float conformal_alpha,
-                                   int semantic_cache_hit) {
+                                   int semantic_cache_hit,
+                                   const struct cos_speed_metrics *spd) {
     const char *act = cos_sigma_action_label(r->final_action);
     const char *src = semantic_cache_hit ? "CACHE_SEMANTIC"
                      : r->engram_hit     ? "CACHE"
@@ -415,6 +426,8 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
     const char *route = r->escalated ? "CLOUD" : "LOCAL";
     double       ms =
         (r->engram_hit || semantic_cache_hit) ? 0.0 : elapsed_ms;
+    float        tps = 0.0f;
+    if (spd != NULL) tps = spd->tokens_per_second;
 
     char rethink_tag[48];
     rethink_tag[0] = '\0';
@@ -432,16 +445,16 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
 
     if (r->final_action == COS_SIGMA_ACTION_ABSTAIN) {
         fprintf(stdout,
-                "[σ=%.3f | ABSTAIN%s%s | %.0f ms | €%.4f]\n"
+                "[σ=%.3f | ABSTAIN%s%s | %.1f tok/s | %.0f ms | €%.4f]\n"
                 "  (σ above τ_rethink — cannot guarantee accuracy at "
                 "this confidence; reformulate or accept uncertainty.)\n",
-                (double)r->sigma, conformal_tag, rethink_tag,
+                (double)r->sigma, conformal_tag, rethink_tag, (double)tps,
                 ms, r->cost_eur);
     } else {
         fprintf(stdout,
-                "[σ=%.3f | %s | %s | %s%s%s | %.0f ms | €%.4f]\n",
+                "[σ=%.3f | %s | %s | %s%s%s | %.1f tok/s | %.0f ms | €%.4f]\n",
                 (double)r->sigma, act, src, route,
-                conformal_tag, rethink_tag, ms, r->cost_eur);
+                conformal_tag, rethink_tag, (double)tps, ms, r->cost_eur);
     }
     fflush(stdout);
 }
@@ -921,7 +934,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     int semantic_hit = 0;
 
-    clock_t t0;
+    double w0 = 0.0, w1 = 0.0;
     double  elapsed_ms = 0.0;
     int     prc          = 0;
 
@@ -984,8 +997,9 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     }
 
     if (!early_spec_abstain && !semantic_hit) {
-        t0 = clock();
+        w0 = chat_wall_ms();
         prc = cos_sigma_pipeline_run(cfg_rw, prompt, &r);
+        w1 = chat_wall_ms();
     }
 
     if (SL.did_budget)
@@ -996,10 +1010,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         chat_emit_pipeline_failure_help();
         return 3;
     }
-    clock_t t1 = clock();
     if (!early_spec_abstain && !semantic_hit) {
-        elapsed_ms =
-            (double)(t1 - t0) * 1000.0 / (double)CLOCKS_PER_SEC;
+        elapsed_ms = w1 - w0;
         if (elapsed_ms < 0.0)
             elapsed_ms = 0.0;
     } else {
@@ -1080,10 +1092,16 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
      * requires ACCEPT/RETHINK/ABSTAIN to appear somewhere in the
      * output; the "round 0" line already satisfied that, so the
      * receipt is free to adopt the visual format. */
-    print_receipt_polished(&r, elapsed_ms,
-                           feat != NULL ? feat->conformal_active : 0,
-                           feat != NULL ? feat->conformal_alpha  : 0.0f,
-                           semantic_hit);
+    {
+        struct cos_speed_metrics spd = cos_speed_measure(
+            r.response != NULL ? r.response : "", (float)elapsed_ms);
+        cos_speed_print(&spd);
+        fputc('\n', stdout);
+        print_receipt_polished(&r, elapsed_ms,
+                               feat != NULL ? feat->conformal_active : 0,
+                               feat != NULL ? feat->conformal_alpha  : 0.0f,
+                               semantic_hit, &spd);
+    }
     chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
                          elapsed_ms);
     if (have_ms) {
@@ -1803,7 +1821,7 @@ int main(int argc, char **argv) {
 
         int semantic_hit = 0;
 
-        clock_t t0;
+        double w0 = 0.0, w1 = 0.0;
         double  elapsed_ms = 0.0;
         int     prc        = 0;
 
@@ -1865,8 +1883,9 @@ int main(int argc, char **argv) {
         }
 
         if (!early_spec_abstain && !semantic_hit) {
-            t0 = clock();
+            w0 = chat_wall_ms();
             prc = cos_sigma_pipeline_run(&cfg, line, &r);
+            w1 = chat_wall_ms();
         }
 
         if (SL.did_budget)
@@ -1880,9 +1899,7 @@ int main(int argc, char **argv) {
         }
 
         if (!early_spec_abstain && !semantic_hit) {
-            clock_t t1 = clock();
-            elapsed_ms =
-                (double)(t1 - t0) * 1000.0 / (double)CLOCKS_PER_SEC;
+            elapsed_ms = w1 - w0;
             if (elapsed_ms < 0.0)
                 elapsed_ms = 0.0;
         }
@@ -1970,9 +1987,15 @@ int main(int argc, char **argv) {
                     ms.k_used);
         }
 
-        print_receipt_polished(&r, elapsed_ms,
-                               conformal_active, conformal_alpha,
-                               semantic_hit);
+        {
+            struct cos_speed_metrics spd = cos_speed_measure(
+                r.response != NULL ? r.response : "", (float)elapsed_ms);
+            cos_speed_print(&spd);
+            fputc('\n', stdout);
+            print_receipt_polished(&r, elapsed_ms,
+                                   conformal_active, conformal_alpha,
+                                   semantic_hit, &spd);
+        }
         chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
                              elapsed_ms);
 

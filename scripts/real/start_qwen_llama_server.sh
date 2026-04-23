@@ -6,11 +6,15 @@
 #   brew install llama.cpp
 # or set COS_BITNET_SERVER_EXE to any recent llama-server binary.
 #
+# Tuned defaults for ~8 GB unified memory (2048 ctx, flash-attn, q8 KV):
+#   ~4.9 GB footprint vs ~8+ GB with stock 8192 ctx + fp16 KV.
+#
 # Literal flags (matches install.sh / bitnet_server spawn intent):
 #   --jinja --temp 0.6 --top-k 20 --top-p 0.95 -c <CTX> --parallel 1 -ngl 0
+#   --flash-attn -b/-ub --cache-type-k/v q8_0 -t <threads> --mlock
 #
-# Context window for llama-server (-c). Prefer COS_BITNET_CHAT_CTX (Creation OS
-# default 2048 on 8GB machines), then COS_QWEN_SERVER_CTX, else 2048.
+# Context window (-c): COS_BITNET_CHAT_CTX > COS_QWEN_SERVER_CTX >
+#   COS_LLAMA_CTX > 2048.
 #
 # Usage (repo root):
 #   bash scripts/real/start_qwen_llama_server.sh
@@ -24,7 +28,9 @@ EXE="${COS_BITNET_SERVER_EXE:-/opt/homebrew/bin/llama-server}"
 MODEL="${COS_BITNET_SERVER_MODEL:-$ROOT/models/qwen3-8b-Q4_K_M.gguf}"
 HOST="${COS_BITNET_SERVER_HOST:-127.0.0.1}"
 PORT="${COS_BITNET_SERVER_PORT:-8088}"
-CTX="${COS_BITNET_CHAT_CTX:-${COS_QWEN_SERVER_CTX:-2048}}"
+CTX="${COS_BITNET_CHAT_CTX:-${COS_QWEN_SERVER_CTX:-${COS_LLAMA_CTX:-2048}}}"
+BATCH="${COS_LLAMA_BATCH:-512}"
+THREADS="${COS_LLAMA_THREADS:-4}"
 LOG="${COS_QWEN_SERVER_LOG:-$ROOT/qwen-llama-server.log}"
 
 if [[ ! -x "$EXE" ]]; then
@@ -39,11 +45,18 @@ if [[ ! -f "$MODEL" ]]; then
 fi
 
 echo "start_qwen_llama_server.sh: $EXE (log: $LOG)"
+echo "  ctx=$CTX batch=$BATCH threads=$THREADS"
+
 nohup "$EXE" \
     --model "$MODEL" \
     --host "$HOST" \
     --port "$PORT" \
     -c "$CTX" \
+    --flash-attn \
+    -b "$BATCH" -ub "$BATCH" \
+    --cache-type-k q8_0 --cache-type-v q8_0 \
+    -t "$THREADS" \
+    --mlock \
     --parallel 1 \
     -ngl 0 \
     --jinja \

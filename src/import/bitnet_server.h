@@ -43,6 +43,27 @@
  *                                server already running on host:port
  *    COS_BITNET_CHAT_MODEL    JSON "model" id for /v1/chat/completions
  *                                (default: "bitnet")
+ *
+ *    COS_INFERENCE_BACKEND    "llama-server" (default) or "ollama" — when
+ *                             ollama: POST http://host:port/api/chat (local
+ *                             Metal/MLX via Ollama on Apple Silicon).
+ *                             Requires a running `ollama serve`; this module
+ *                             does not spawn Ollama.
+ *    COS_OLLAMA_HOST          bind host when backend is ollama (optional)
+ *    COS_OLLAMA_PORT          TCP port when backend is ollama (default 11434)
+ *    COS_OLLAMA_MODEL         chat model id (default "qwen3:8b")
+ *    COS_OLLAMA_DEFAULT_SIGMA fallback σ when logprobs are unavailable
+ *                             (default "0.35")
+ *
+ *    COS_LLAMA_CTX            fourth fallback for --ctx-size after
+ *                             COS_BITNET_CHAT_CTX / COS_BITNET_SERVER_CTX
+ *    COS_LLAMA_BATCH          llama-server -b / -ub when spawned (512)
+ *    COS_LLAMA_THREADS        llama-server -t when spawned (4)
+ *    COS_LLAMA_NO_FLASH_ATTN  set "1" to omit --flash-attn on spawn
+ *    COS_LLAMA_NO_MLOCK       set "1" to omit --mlock on spawn
+ *
+ *  System prompt file: see σ pipeline codex loader — COS_CODEX_PATH overrides
+ *  the default path to the Atlantean Codex text (same variable as chat).
  */
 #ifndef COS_BITNET_SERVER_H
 #define COS_BITNET_SERVER_H

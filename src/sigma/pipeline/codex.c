@@ -64,7 +64,11 @@ static int read_file(const char *path, char **out_buf, size_t *out_n) {
 int cos_sigma_codex_load(const char *path, cos_sigma_codex_t *out) {
     if (out == NULL) return -1;
     memset(out, 0, sizeof(*out));
-    const char *p = (path != NULL) ? path : COS_CODEX_PATH_FULL;
+    const char *p = path;
+    if (p == NULL) {
+        const char *env = getenv("COS_CODEX_PATH");
+        p = (env != NULL && env[0] != '\0') ? env : COS_CODEX_PATH_FULL;
+    }
     char *buf = NULL;
     size_t n = 0;
     int rc = read_file(p, &buf, &n);
@@ -73,8 +77,10 @@ int cos_sigma_codex_load(const char *path, cos_sigma_codex_t *out) {
     out->size           = n;
     out->hash_fnv1a64   = cos_sigma_codex_hash_bytes(buf, n);
     out->chapters_found = count_chapters(buf, n);
-    out->is_seed        = (path != NULL &&
-                           strstr(path, "codex_seed") != NULL) ? 1 : 0;
+    out->is_seed        = (p != NULL && (strstr(p, "codex_seed") != NULL
+                                          || strstr(p, "compact") != NULL))
+                              ? 1
+                              : 0;
     return 0;
 }
 

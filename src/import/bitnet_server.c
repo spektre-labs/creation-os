@@ -81,6 +81,8 @@ typedef struct {
     int   ctx;
     int   n_probs_default;
     int   n_predict_default;
+    int   http_port;         /* TCP port for API (llama or Ollama)     */
+    int   backend_ollama;    /* 1 if COS_INFERENCE_BACKEND=ollama     */
 
     /* Response-shaped scratch space.  Static so a cos chat session
      * that emits a 10k-token reply stays allocation-free. */
@@ -93,6 +95,10 @@ static bns_state_t g_bns = {0};
 
 static float g_bns_last_tok_sigma[COS_BITNET_SERVER_MAX_TOKENS];
 static int   g_bns_last_tok_n;
+
+static char bns_spawn_batch_s[16];
+static char bns_spawn_ubatch_s[16];
+static char bns_spawn_threads_s[16];
 
 /* --- utilities --------------------------------------------------- */
 
@@ -141,12 +147,16 @@ static void bns_load_config(void) {
     {
         const char *cc = getenv("COS_BITNET_CHAT_CTX");
         const char *cs = getenv("COS_BITNET_SERVER_CTX");
+        const char *cl = getenv("COS_LLAMA_CTX");
         int         chat = (cc != NULL && cc[0] != '\0') ? atoi(cc) : 0;
         int         srv  = (cs != NULL && cs[0] != '\0') ? atoi(cs) : 0;
+        int         lc   = (cl != NULL && cl[0] != '\0') ? atoi(cl) : 0;
         if (chat > 0)
             g_bns.ctx = chat;
         else if (srv > 0)
             g_bns.ctx = srv;
+        else if (lc > 0)
+            g_bns.ctx = lc;
         else
             g_bns.ctx = BNS_DEFAULT_CTX;
     }
@@ -155,6 +165,22 @@ static void bns_load_config(void) {
 
     const char *ext = getenv("COS_BITNET_SERVER_EXTERNAL");
     g_bns.external = (ext != NULL && ext[0] == '1') ? 1 : 0;
+
+    {
+        const char *be = getenv("COS_INFERENCE_BACKEND");
+        g_bns.backend_ollama =
+            (be != NULL && strcmp(be, "ollama") == 0) ? 1 : 0;
+    }
+    if (g_bns.backend_ollama) {
+        const char *oh = getenv("COS_OLLAMA_HOST");
+        if (oh != NULL && oh[0] != '\0') {
+            strncpy(g_bns.host, oh, sizeof(g_bns.host) - 1);
+            g_bns.host[sizeof(g_bns.host) - 1] = '\0';
+        }
+        g_bns.http_port = env_int_or("COS_OLLAMA_PORT", 11434);
+    } else {
+        g_bns.http_port = g_bns.port;
+    }
 
     bns_alloc_scratch();
     g_bns.initialized = 1;
@@ -171,7 +197,7 @@ static int bns_tcp_connect(void) {
     struct sockaddr_in sa;
     memset(&sa, 0, sizeof(sa));
     sa.sin_family = AF_INET;
-    sa.sin_port   = htons((uint16_t)g_bns.port);
+    sa.sin_port   = htons((uint16_t)g_bns.http_port);
     if (inet_pton(AF_INET, g_bns.host, &sa.sin_addr) != 1) {
         close(fd);
         return -1;
@@ -296,7 +322,7 @@ static int bns_http_get(const char *path, char *body_out, size_t body_cap) {
                      "GET %s HTTP/1.1\r\n"
                      "Host: %s:%d\r\n"
                      "Connection: close\r\n\r\n",
-                     path, g_bns.host, g_bns.port);
+                     path, g_bns.host, g_bns.http_port);
     if (bns_send_all(fd, g_bns.req_buf, (size_t)n) != 0) {
         close(fd); return -1;
     }
@@ -328,7 +354,7 @@ static int bns_http_post_json_once(const char *path,
                       "Content-Type: application/json\r\n"
                       "Content-Length: %zu\r\n"
                       "Connection: close\r\n\r\n",
-                      path, g_bns.host, g_bns.port, json_len);
+                      path, g_bns.host, g_bns.http_port, json_len);
     if (hn < 0 || (size_t)hn + json_len >= BNS_REQ_CAP) {
         close(fd); return -1;
     }
@@ -856,7 +882,14 @@ static size_t json_encode_string(char *dst, size_t cap, const char *s) {
 
 int cos_bitnet_server_is_healthy(void) {
     bns_load_config();
-    char body[64];
+    char body[4096];
+    if (g_bns.backend_ollama) {
+        if (bns_http_get("/api/tags", body, sizeof(body)) != 0)
+            return 0;
+        /* Any JSON listing models counts as alive. */
+        return (strstr(body, "\"models\"") != NULL
+                || strstr(body, "models") != NULL) ? 1 : 0;
+    }
     if (bns_http_get("/health", body, sizeof(body)) != 0) return 0;
     return (strstr(body, "\"status\":\"ok\"") != NULL) ? 1 : 0;
 }
@@ -995,6 +1028,16 @@ int cos_bitnet_server_ensure(void) {
     /* Already healthy?  (external mode or pre-existing spawn.) */
     if (cos_bitnet_server_is_healthy()) return 0;
 
+    if (g_bns.backend_ollama) {
+        fprintf(stderr,
+                "cos: Ollama not reachable at http://%s:%d/api/tags\n"
+                "  → run: ollama serve\n"
+                "  → pull: ollama pull %s\n",
+                g_bns.host, g_bns.http_port,
+                env_or("COS_OLLAMA_MODEL", "qwen3:8b"));
+        return -1;
+    }
+
     if (g_bns.external) {
         /* Caller promised an external server; propagate failure. */
         fprintf(stderr,
@@ -1026,7 +1069,7 @@ int cos_bitnet_server_ensure(void) {
         char port_s[16]; snprintf(port_s, sizeof port_s, "%d", g_bns.port);
         char ctx_s[16];  snprintf(ctx_s,  sizeof ctx_s,  "%d", g_bns.ctx);
 
-        char *argv[48];
+        char *argv[64];
         int a = 0;
         argv[a++] = (char *)g_bns.exe;
         argv[a++] = (char *)"--model";
@@ -1048,6 +1091,31 @@ int cos_bitnet_server_ensure(void) {
         argv[a++] = (char *)"20";
         argv[a++] = (char *)"--top-p";
         argv[a++] = (char *)"0.95";
+        {
+            int bat = env_int_or("COS_LLAMA_BATCH", 512);
+            int thr = env_int_or("COS_LLAMA_THREADS", 4);
+            if (bat < 1) bat = 512;
+            if (thr < 1) thr = 4;
+            snprintf(bns_spawn_batch_s, sizeof bns_spawn_batch_s, "%d", bat);
+            snprintf(bns_spawn_ubatch_s, sizeof bns_spawn_ubatch_s, "%d", bat);
+            snprintf(bns_spawn_threads_s, sizeof bns_spawn_threads_s, "%d", thr);
+            const char *no_flash = getenv("COS_LLAMA_NO_FLASH_ATTN");
+            if (no_flash == NULL || no_flash[0] != '1')
+                argv[a++] = (char *)"--flash-attn";
+            argv[a++] = (char *)"-b";
+            argv[a++] = bns_spawn_batch_s;
+            argv[a++] = (char *)"-ub";
+            argv[a++] = bns_spawn_ubatch_s;
+            argv[a++] = (char *)"--cache-type-k";
+            argv[a++] = (char *)"q8_0";
+            argv[a++] = (char *)"--cache-type-v";
+            argv[a++] = (char *)"q8_0";
+            argv[a++] = (char *)"-t";
+            argv[a++] = bns_spawn_threads_s;
+            const char *no_mlock = getenv("COS_LLAMA_NO_MLOCK");
+            if (no_mlock == NULL || no_mlock[0] != '1')
+                argv[a++] = (char *)"--mlock";
+        }
         argv[a++] = NULL;
         execvp(g_bns.exe, argv);
         /* execvp failed. */
@@ -1108,6 +1176,111 @@ void cos_bitnet_server_diag(const char **out_host, int *out_port,
     if (out_pid)  *out_pid  = (int)g_bns.child;
 }
 
+/* --- Ollama HTTP backend (COS_INFERENCE_BACKEND=ollama) ------------ */
+
+static int bns_ollama_chat_complete(const char                       *prompt,
+                                    const cos_bitnet_server_params_t *params,
+                                    cos_bitnet_server_result_t       *out)
+{
+    if (cos_bitnet_server_ensure() != 0)
+        return -2;
+
+    int         n_predict = params && params->n_predict > 0 ? params->n_predict
+                                                            : g_bns.n_predict_default;
+    float       temperature = params ? params->temperature : 0.0f;
+    const char *syspr       = params ? params->system_prompt : NULL;
+    const char *model       = env_or("COS_OLLAMA_MODEL", "qwen3:8b");
+
+    char *b = g_bns.req_buf;
+    const size_t JSON_CAP = BNS_REQ_CAP - 4096;
+    char *jb = b + 4096;
+    size_t w = 0;
+    int    n;
+
+    n = snprintf(jb + w, JSON_CAP - w, "{\"model\":");
+    if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+    w += (size_t)n;
+    {
+        size_t mw = json_encode_string(jb + w, JSON_CAP - w, model);
+        if (mw == 0) return -3;
+        w += mw;
+    }
+    n = snprintf(jb + w, JSON_CAP - w, ",\"stream\":false,\"messages\":[");
+    if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+    w += (size_t)n;
+
+    if (syspr != NULL && syspr[0] != '\0') {
+        n = snprintf(jb + w, JSON_CAP - w, "{\"role\":\"system\",\"content\":");
+        if (n < 0) return -3;
+        w += (size_t)n;
+        size_t sw = json_encode_string(jb + w, JSON_CAP - w, syspr);
+        if (sw == 0) return -3;
+        w += sw;
+        n = snprintf(jb + w, JSON_CAP - w, "},");
+        if (n < 0) return -3;
+        w += (size_t)n;
+    }
+    n = snprintf(jb + w, JSON_CAP - w, "{\"role\":\"user\",\"content\":");
+    if (n < 0) return -3;
+    w += (size_t)n;
+    {
+        size_t sw = json_encode_string(jb + w, JSON_CAP - w, prompt);
+        if (sw == 0) return -3;
+        w += sw;
+    }
+    n = snprintf(jb + w, JSON_CAP - w,
+                  "}],\"options\":{\"num_predict\":%d", n_predict);
+    if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+    w += (size_t)n;
+
+    if (temperature > 0.0f) {
+        n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
+                     (double)temperature);
+        if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+        w += (size_t)n;
+    }
+    n = snprintf(jb + w, JSON_CAP - w, "}}");
+    if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+    w += (size_t)n;
+
+    double      t0 = now_ms();
+    static char json_tmp[BNS_REQ_CAP];
+    if (w >= sizeof(json_tmp)) return -3;
+    memcpy(json_tmp, jb, w);
+
+    const char *body = NULL;
+    size_t      blen = 0;
+    int         rc   = bns_http_post_json("/api/chat", json_tmp, w, &body, &blen);
+    if (rc == -5) {
+        fputs("[timeout] Ollama inference exceeded 60s\n", stderr);
+        memset(out, 0, sizeof(*out));
+        out->sigma      = 1.0f;
+        out->mean_sigma = 1.0f;
+        out->elapsed_ms = now_ms() - t0;
+        return 0;
+    }
+    if (rc != 0 || body == NULL)
+        return -4;
+
+    rc = parse_completion_response(body, blen, out);
+    out->elapsed_ms = now_ms() - t0;
+    out->cost_eur   = 0.0001;
+
+    {
+        float sd = strtof(env_or("COS_OLLAMA_DEFAULT_SIGMA", "0.35"), NULL);
+        if (sd < 0.0f) sd = 0.0f;
+        if (sd > 1.0f) sd = 1.0f;
+        out->sigma      = sd;
+        out->mean_sigma = sd;
+        const char *end = body + blen;
+        const char *pe  = json_find_key(body, end, "eval_count");
+        if (pe != NULL && out->token_count <= 0)
+            out->token_count = atoi(pe);
+    }
+
+    return rc;
+}
+
 /* --- test hook (declared in tests/import/test_bitnet_server_parse.c)
  *
  * Exposes the static reducer to the CI unit test without widening
@@ -1130,6 +1303,8 @@ int cos_bitnet_server_complete(const char                       *prompt,
     if (prompt == NULL || out == NULL) return -1;
     memset(out, 0, sizeof(*out));
     bns_load_config();
+    if (g_bns.backend_ollama)
+        return bns_ollama_chat_complete(prompt, params, out);
     if (cos_bitnet_server_ensure() != 0) return -2;
 
     int   n_predict   = params && params->n_predict   > 0
@@ -1440,6 +1615,12 @@ int cos_bitnet_server_complete_stream(
     if (prompt == NULL || out == NULL) return -1;
     memset(out, 0, sizeof(*out));
     bns_load_config();
+    if (g_bns.backend_ollama) {
+        fputs("cos: streaming completion is not available when "
+              "COS_INFERENCE_BACKEND=ollama\n",
+              stderr);
+        return -1;
+    }
     if (cos_bitnet_server_ensure() != 0) return -2;
 
     int   n_predict = params && params->n_predict > 0
