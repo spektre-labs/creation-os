@@ -72,6 +72,12 @@ static int                           g_have_cache;
 static int                           g_have_federation;
 static float                         g_prev_conscious_sigma = 0.5f;
 
+static FILE                         *g_omega_events_fp;
+static float                         g_omega_prev_energy_j;
+static float                         g_omega_prev_co2_g;
+static int                           g_omega_sigma_streak;
+static int                           g_omega_cache_info_done;
+
 static int64_t omega_now_ms(void)
 {
 #if defined(CLOCK_REALTIME)
@@ -146,6 +152,76 @@ static void omega_consume_halt_file(void)
     if (omega_home_subdir(p, sizeof p, "halt") >= (int)sizeof p)
         return;
     (void)unlink(p);
+}
+
+static int omega_events_path(char *buf, size_t cap)
+{
+    return omega_home_subdir(buf, cap, "events.jsonl");
+}
+
+static const char *omega_action_json(int a)
+{
+    if (a == COS_SIGMA_ACTION_RETHINK)
+        return "RETHINK";
+    if (a == COS_SIGMA_ACTION_ABSTAIN)
+        return "ABSTAIN";
+    return "ACCEPT";
+}
+
+static void omega_json_escape_alert(FILE *fp, const char *msg)
+{
+    const char *p;
+    if (!msg)
+        return;
+    for (p = msg; *p; ++p) {
+        if (*p == '"' || *p == '\\')
+            fputc('\\', fp);
+        fputc((unsigned char)*p, fp);
+    }
+}
+
+static void omega_emit_alert_json(FILE *fp, int64_t t_ms, const char *msg,
+                                   const char *level)
+{
+    if (!fp || !msg || !level)
+        return;
+    fprintf(fp, "{\"t\":%lld,\"alert\":\"", (long long)t_ms);
+    omega_json_escape_alert(fp, msg);
+    fprintf(fp, "\",\"level\":\"%s\"}\n", level);
+}
+
+static void omega_run_alert_rules(FILE *fp, const struct cos_omega_state *st,
+                                  float sigma_turn, float energy_turn_j)
+{
+    int64_t       tnow = omega_now_ms();
+    float         ratio;
+
+    if (sigma_turn > 0.7f)
+        g_omega_sigma_streak++;
+    else
+        g_omega_sigma_streak = 0;
+
+    if (g_omega_sigma_streak >= 3)
+        omega_emit_alert_json(
+            fp, tnow,
+            "sigma above 0.7 for 3 consecutive turns", "ALERT");
+
+    if (st->k_eff < 0.3f)
+        omega_emit_alert_json(fp, tnow, "k_eff below 0.3", "ALERT");
+
+    if (energy_turn_j > 1.0f)
+        omega_emit_alert_json(fp, tnow,
+                              "energy per turn exceeds 1 J", "WARNING");
+
+    if (st->turn >= 50 && !g_omega_cache_info_done && st->turn > 0) {
+        ratio = (float)st->cache_hits / (float)st->turn;
+        if (ratio < 0.10f) {
+            omega_emit_alert_json(
+                fp, tnow,
+                "cache hit ratio below 10pct after 50+ turns", "INFO");
+            g_omega_cache_info_done = 1;
+        }
+    }
 }
 
 static int omega_write_status(struct cos_omega_state *st)
@@ -354,6 +430,27 @@ int cos_omega_init(const struct cos_omega_config *config,
     }
 
     cos_omega_signal_halt_requested = 0;
+
+    {
+        char evpath[512];
+        int  n = omega_events_path(evpath, sizeof evpath);
+        if (g_omega_events_fp != NULL) {
+            fclose(g_omega_events_fp);
+            g_omega_events_fp = NULL;
+        }
+        g_omega_prev_energy_j   = 0.f;
+        g_omega_prev_co2_g      = 0.f;
+        g_omega_sigma_streak    = 0;
+        g_omega_cache_info_done = 0;
+        if (n > 0 && n < (int)sizeof evpath) {
+            g_omega_events_fp = fopen(evpath, "a");
+            if (g_omega_events_fp == NULL)
+                omega_skip("events.jsonl open");
+            else
+                setvbuf(g_omega_events_fp, NULL, _IONBF, 0);
+        }
+    }
+
     g_inited                        = 1;
     return 0;
 }
@@ -396,6 +493,7 @@ static int omega_step_inner(struct cos_omega_state *state)
     int                               fired[8];
     int                               nf = 0;
     int                               omega_turn_timed_out = 0;
+    int64_t                           omega_turn_t0_ms = omega_now_ms();
 
     memset(&pin, 0, sizeof pin);
     memset(&pr, 0, sizeof pr);
@@ -669,6 +767,31 @@ common_tail:
         state->pauses++;
     }
 
+    if (g_omega_events_fp) {
+        struct cos_omega_turn_emit row;
+        float e_turn = state->energy_total_joules - g_omega_prev_energy_j;
+        float c_turn = state->co2_total_grams - g_omega_prev_co2_g;
+
+        g_omega_prev_energy_j = state->energy_total_joules;
+        g_omega_prev_co2_g    = state->co2_total_grams;
+
+        row.t_ms          = omega_now_ms();
+        row.sigma         = sigma_proof;
+        row.attribution   = (int)ea.source;
+        row.gate_action   = gate_decision;
+        row.cache_hit     = cache_hit;
+        row.energy_turn_j = e_turn;
+        row.co2_turn_g    = c_turn;
+        row.latency_ms    = omega_now_ms() - omega_turn_t0_ms;
+
+        if (cos_omega_emit_event(g_omega_events_fp, state, state->turn, &row)
+            == 0) {
+            omega_run_alert_rules(g_omega_events_fp, state, sigma_proof,
+                                  e_turn);
+            fflush(g_omega_events_fp);
+        }
+    }
+
     return 0;
 }
 
@@ -768,8 +891,13 @@ int cos_omega_finish_session(struct cos_omega_state *state)
 
     snprintf(rp, sizeof rp, "%s/.cos/omega/last_report.txt", h);
     txt = cos_omega_report(state);
-    if (!txt)
+    if (!txt) {
+        if (g_omega_events_fp != NULL) {
+            fclose(g_omega_events_fp);
+            g_omega_events_fp = NULL;
+        }
         return -2;
+    }
     fp = fopen(rp, "w");
     if (fp) {
         fputs(txt, fp);
@@ -778,6 +906,11 @@ int cos_omega_finish_session(struct cos_omega_state *state)
     fputs(txt, stdout);
     fflush(stdout);
     free(txt);
+
+    if (g_omega_events_fp != NULL) {
+        fclose(g_omega_events_fp);
+        g_omega_events_fp = NULL;
+    }
     return 0;
 }
 
@@ -876,6 +1009,37 @@ void cos_omega_print_status(const struct cos_omega_state *state)
         fputs(r, stdout);
         free(r);
     }
+}
+
+int cos_omega_emit_event(FILE                          *fp,
+                           const struct cos_omega_state *state,
+                           int                             turn_completed,
+                           const struct cos_omega_turn_emit *row)
+{
+    const struct cos_energy_measurement *life;
+    struct cos_green_score               gs;
+
+    if (!fp || !state || !row)
+        return -1;
+    life = cos_energy_lifetime_total();
+    gs   = cos_green_calculate(life);
+
+    fprintf(fp,
+            "{\"t\":%lld,\"turn\":%d,\"sigma\":%.6f,\"k_eff\":%.6f,"
+            "\"attribution\":%d,\"action\":\"%s\",\"cache_hit\":%s,"
+            "\"energy_j\":%.9f,\"co2_g\":%.9f,\"latency_ms\":%lld,"
+            "\"consciousness\":%d,\"skills\":%d,\"episodes\":%d,"
+            "\"sigma_trend\":%.6f,\"green_score\":%.4f,"
+            "\"green_grade\":\"%c\"}\n",
+            (long long)row->t_ms, turn_completed, (double)row->sigma,
+            (double)state->k_eff, row->attribution,
+            omega_action_json(row->gate_action),
+            row->cache_hit ? "true" : "false",
+            (double)row->energy_turn_j, (double)row->co2_turn_g,
+            (long long)row->latency_ms, state->consciousness_level,
+            state->skills_learned, state->episodes_stored,
+            (double)state->sigma_trend, (double)gs.green_score, gs.grade);
+    return 0;
 }
 
 int cos_omega_self_test(void)

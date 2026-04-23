@@ -8,6 +8,7 @@
 
 #include <signal.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /** SIGINT/SIGTERM: checked each Ω turn (cos_omega_cli registers handlers). */
 extern volatile sig_atomic_t cos_omega_signal_halt_requested;
@@ -38,6 +39,18 @@ struct cos_omega_config {
     int enable_physical;
     int enable_consciousness;
     int simulation_mode;
+};
+
+/** Per-turn fields for JSONL (not all duplicated in cos_omega_state). */
+struct cos_omega_turn_emit {
+    int64_t t_ms;
+    float   sigma; /* σ proof this turn */
+    int     attribution;
+    int     gate_action;
+    int     cache_hit;
+    float   energy_turn_j;
+    float   co2_turn_g;
+    int64_t latency_ms;
 };
 
 struct cos_omega_state {
@@ -83,6 +96,12 @@ void cos_omega_print_status(const struct cos_omega_state *state);
 int cos_omega_finish_session(struct cos_omega_state *state);
 
 int cos_omega_self_test(void);
+
+/** Append one JSONL line for a completed turn; fflush caller. */
+int cos_omega_emit_event(FILE                          *fp,
+                         const struct cos_omega_state   *state,
+                         int                             turn_completed,
+                         const struct cos_omega_turn_emit *row);
 
 #ifdef __cplusplus
 }

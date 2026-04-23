@@ -2,7 +2,8 @@
  *
  * cos — Creation OS unified front door (Apple-tier CLI).
  *
- * Single-binary C, no dependencies beyond libc, designed under Apple's
+ * Single-binary C (libc + libsqlite3 + libcurl when built with cos_think),
+ * designed under Apple's
  * Human Interface Guidelines for terminal UIs:
  *   - Clarity over decoration: no ASCII art, no emojis, no banners.
  *   - Deference: content over chrome.  Whitespace is structural.
@@ -15,7 +16,8 @@
  *     cos chace                  # the CHACE-class 12-layer security gate
  *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
- *     cos think <prompt>         # demo: latent-CoT + EBT + HRM
+ *     cos think --goal "..."      # σ-orchestrated decomposition + pipeline
+ *     cos search --query "…"     # σ-ranked web retrieval (curl)
  *     cos seal <file> [ctx]      # v63 σ-Cipher: attestation-bound E2E seal
  *     cos unseal <file> [ctx]    # v63 σ-Cipher: verify + open sealed envelope
  *     cos mcts                   # v64 σ-Intellect: MCTS-σ / skill / tool-authz self-test
@@ -57,6 +59,14 @@
 
 #include "cos_version.h"
 
+#include "../src/cli/cos_think.h"
+#include "../src/cli/cos_search.h"
+#include "../src/cli/cos_embody.h"
+#include "../src/cli/cos_codegen_cli.h"
+#include "../src/cli/cos_consciousness_cli.h"
+#include "../src/cli/cos_energy_green_cli.h"
+#include "../src/cli/cos_omega_cli.h"
+#include "../src/cli/cos_monitor.h"
 #include "../src/sigma/state_ledger.h"
 
 /* --------------------------------------------------------------------
@@ -254,7 +264,9 @@ static void status_quickstart(void)
                 C_GREY, C_RESET);
     bullet_line("cos sandbox    %sσ-Sandbox exec — rlimits + allowlist (HORIZON-5)%s",
                 C_GREY, C_RESET);
-    bullet_line("cos think hi   %sdemo a latent-CoT step + EBT verify + HRM converge%s",
+    bullet_line("cos think --goal \"…\"   %sdecompose goal → subtasks + σ per answer%s",
+                C_GREY, C_RESET);
+    bullet_line("cos search --query \"…\" %sσ-ranked web results (curl; see COS_SEARCH_API_URL)%s",
                 C_GREY, C_RESET);
     bullet_line("make help      %sfull Make target list%s", C_GREY, C_RESET);
 }
@@ -529,6 +541,56 @@ static int cmd_cost(int argc, char **argv)
     return prefer_c_or_hint("cos-cost", argc, argv);
 }
 
+static int cmd_cache(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-cache", argc, argv);
+}
+
+static int cmd_skills(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-skills", argc, argv);
+}
+
+static int cmd_graph(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-graph", argc, argv);
+}
+
+static int cmd_sense_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-sense", argc, argv);
+}
+
+static int cmd_mission_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-mission", argc, argv);
+}
+
+static int cmd_federation_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-federation", argc - 2, argv + 2);
+}
+
+static int cmd_spike_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-spike", argc - 2, argv + 2);
+}
+
+static int cmd_receipts_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-receipts", argc - 2, argv + 2);
+}
+
+static int cmd_compliance_sibling(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-compliance", argc - 2, argv + 2);
+}
+
+static int cmd_self_play_cli(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-self-play", argc, argv);
+}
+
 /* --------------------------------------------------------------------
  *  H6 sibling dispatch — exec the dedicated C binaries for the four
  *  I/A/S/D/H products without re-linking the whole stack.
@@ -574,7 +636,6 @@ static int exec_sibling(const char *bin_name, int argc, char **argv)
 
 static int cmd_agent  (int argc, char **argv) { return exec_sibling("cos-agent",                argc, argv); }
 static int cmd_network(int argc, char **argv) { return exec_sibling("cos-network",              argc, argv); }
-static int cmd_omega  (int argc, char **argv) { return exec_sibling("creation_os_sigma_omega",  argc, argv); }
 static int cmd_selfplay(int argc, char **argv) { return exec_sibling("creation_os_agi_selfplay", argc, argv); }
 static int cmd_distill(int argc, char **argv)
 {
@@ -776,64 +837,12 @@ static int cmd_sigma_meta(int argc, char **argv)
 }
 
 /* --------------------------------------------------------------------
- *  cos think — demo of v62 reasoning fabric on a tiny prompt.
- *  Prints what each layer did, in plain English.
+ *  cos think — delegates to cos_think_main() (see src/cli/cos_think.c).
  * -------------------------------------------------------------------- */
 
-static int cmd_think(int argc, char **argv)
-{
-    print_header();
-    section("reasoning fabric demo");
+static int cmd_think(int argc, char **argv) { return cos_think_main(argc, argv); }
 
-    char prompt[256] = {0};
-    if (argc > 0) {
-        size_t off = 0;
-        for (int i = 0; i < argc && off < sizeof prompt - 1; ++i) {
-            int k = snprintf(prompt + off, sizeof prompt - off,
-                             "%s%s", i ? " " : "", argv[i]);
-            if (k <= 0) break;
-            off += (size_t)k;
-        }
-    } else {
-        snprintf(prompt, sizeof prompt, "what is the meaning of σ?");
-    }
-
-    kv("prompt", "%s%s%s", C_BOLD, prompt, C_RESET);
-
-    /* Build the v62 binary if absent — single-shot, transparent.     */
-    if (!file_exists("creation_os_v62")) {
-        printf("  %sbuilding creation_os_v62 (first run)...%s\n", C_DIM, C_RESET);
-        int b = run_cmd("make -s standalone-v62");
-        if (b != 0) {
-            printf("  %s%s%s build failed (rc=%d)\n",
-                   C_RED, cross(), C_RESET, b);
-            return b;
-        }
-    }
-
-    /* Stage 1 — run the 68 self-tests so the user sees the kernel works. */
-    bullet_line("%sstage 1%s  kernel self-test (latent-CoT %s EBT %s HRM %s NSA %s MTP %s ARKV)",
-                C_BOLD, C_RESET, bullet(), bullet(), bullet(), bullet(), bullet());
-    int rc = run_cmd("./creation_os_v62 --self-test | sed 's/^/    /'");
-    if (rc != 0) return rc;
-
-    /* Stage 2 — emit a composed decision quote. */
-    bullet_line("%sstage 2%s  composed σ/Σ/Fabric decision (machine-readable)",
-                C_BOLD, C_RESET);
-    rc = run_cmd("./creation_os_v62 --decision | sed 's/^/    /'");
-    if (rc != 0) return rc;
-
-    /* Stage 3 — microbench so the user sees the silicon discipline.  */
-    bullet_line("%sstage 3%s  microbench on this M-series host",
-                C_BOLD, C_RESET);
-    rc = run_cmd("./creation_os_v62 --bench | sed 's/^/    /'");
-
-    printf("\n  %s%s%s reasoning fabric demo complete.\n",
-           rc == 0 ? C_GREEN : C_RED, rc == 0 ? check() : cross(), C_RESET);
-    printf("  %sno tokens were spent on linguistic glue — reasoning lived"
-           " in continuous space.%s\n", C_GREY, C_RESET);
-    return rc;
-}
+static int cmd_search(int argc, char **argv) { return cos_search_main(argc, argv); }
 
 /* --------------------------------------------------------------------
  *  cos mcts — σ-Intellect self-test + microbench demo.
@@ -2422,8 +2431,29 @@ static int cmd_help(const char *prog)
            C_BOLD, "chat", C_RESET);
     printf("  %s%-12s%s  end-to-end pipeline benchmark (accuracy / cost / latency; --energy for ULTRA-7)\n",
            C_BOLD, "benchmark", C_RESET);
-    printf("  %s%-12s%s  cost-savings driver (€saved vs always-API)\n",
+    printf("  %s%-12s%s  cost-savings driver (€saved vs always-API); for Joules and gCO₂ use `cos energy`\n",
            C_BOLD, "cost", C_RESET);
+    printf("  %s%-12s%s  session and lifetime energy receipt (CPU×TDP → J, CO₂, €)\n",
+           C_BOLD, "energy", C_RESET);
+    printf("  %s%-12s%s  green score (0–100) and grade vs cloud counterfactuals (`--compare`)\n",
+           C_BOLD, "green", C_RESET);
+    printf("  %s%-12s%s  semantic inference-cache stats (see cos-cache --help)\n",
+           C_BOLD, "cache", C_RESET);
+    printf("  %s%-12s%s  σ-distilled skills DB — list / retire / detail (cos-skills --help)\n",
+           C_BOLD, "skills", C_RESET);
+    printf("  %s%-12s%s  runtime σ-knowledge graph — stats / query / contradictions (cos-graph --help)\n",
+           C_BOLD, "graph", C_RESET);
+    printf("  %s%-12s%s  σ-gated image perception (build `cos-sense` first; cos see --image …)\n",
+           C_BOLD, "see", C_RESET);
+    printf("  %s%-12s%s  σ-gated audio path (cos hear --audio …)\n", C_BOLD, "hear", C_RESET);
+    printf("  %s%-12s%s  multimodal σ fusion (cos sense --image … [--audio …])\n",
+           C_BOLD, "sense", C_RESET);
+    printf("  %s%-12s%s  long-horizon σ-mission + rollback (build `cos-mission`; cos mission --goal …)\n",
+           C_BOLD, "mission", C_RESET);
+    printf("  %s%-12s%s  σ-federated semantic sharing (build `cos-federation`; cos federation status)\n",
+           C_BOLD, "federation", C_RESET);
+    printf("  %s%-12s%s  σ self-play rounds — consistency vs dual-sample (cos-self-play --help)\n",
+           C_BOLD, "self-play", C_RESET);
     printf("  %s%-12s%s  conformal τ calibration (cos-calibrate; --dataset truthfulqa)\n",
            C_BOLD, "calibrate", C_RESET);
     printf("  %s%-12s%s  digital-twin preflight + guarded shell (HORIZON-2: cos-exec --simulate)\n",
@@ -2438,8 +2468,11 @@ static int cmd_help(const char *prog)
            C_BOLD, "agent", C_RESET);
     printf("  %s%-12s%s  distributed mesh / marketplace / federation (D6: join/list/status/serve/query/federate/unlearn)\n",
            C_BOLD, "network", C_RESET);
-    printf("  %s%-12s%s  self-improving Ω iterator (S6: selfplay + curriculum + synthetic + evolution + meta)\n",
+    printf("  %s%-12s%s  unified Ω-loop (perceive → think → gate → learn; --turns / --hours / --status / --halt)\n",
            C_BOLD, "omega", C_RESET);
+    printf("  %s%-12s%s  Ω JSONL telemetry viewer (~/.cos/omega/events.jsonl — "
+           "--summary / --sigma / --csv / --plot / --html / --follow)\n",
+           C_BOLD, "monitor", C_RESET);
     printf("  %s%-12s%s  σ-guided self-play curriculum (AGI-2; deterministic harness)\n",
            C_BOLD, "selfplay", C_RESET);
     printf("  %s%-12s%s  T3/T4/T5/T6 evidence ledger (H4: monotonicity + commutativity + encode/decode + latency)\n",
@@ -2955,9 +2988,44 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
     if (strcmp(argv[1], "think")     == 0) return cmd_think(argc - 2, argv + 2);
+    if (strcmp(argv[1], "search")   == 0) return cmd_search(argc - 2, argv + 2);
     if (strcmp(argv[1], "chat")      == 0) return cmd_chat(argc - 2, argv + 2);
     if (strcmp(argv[1], "benchmark") == 0) return cmd_benchmark(argc - 2, argv + 2);
     if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
+    if (strcmp(argv[1], "cache")     == 0) return cmd_cache(argc - 2, argv + 2);
+    if (strcmp(argv[1], "skills")    == 0) return cmd_skills(argc - 2, argv + 2);
+    if (strcmp(argv[1], "graph")     == 0) return cmd_graph(argc - 2, argv + 2);
+    if (strcmp(argv[1], "see")       == 0)
+        return cmd_sense_sibling(argc - 1, argv + 1);
+    if (strcmp(argv[1], "hear")      == 0)
+        return cmd_sense_sibling(argc - 1, argv + 1);
+    if (strcmp(argv[1], "sense")     == 0)
+        return cmd_sense_sibling(argc - 1, argv + 1);
+    if (strcmp(argv[1], "mission")   == 0)
+        return cmd_mission_sibling(argc - 2, argv + 2);
+    if (strcmp(argv[1], "spike") == 0)
+        return cmd_spike_sibling(argc, argv);
+    if (strcmp(argv[1], "receipts") == 0)
+        return cmd_receipts_sibling(argc, argv);
+    if (strcmp(argv[1], "compliance") == 0)
+        return cmd_compliance_sibling(argc, argv);
+    if (strcmp(argv[1], "federation") == 0)
+        return cmd_federation_sibling(argc, argv);
+    if (strcmp(argv[1], "embody") == 0)
+        return cos_embody_main(argc, argv);
+    if (strcmp(argv[1], "codegen") == 0)
+        return cos_codegen_main(argc, argv);
+    if (strcmp(argv[1], "consciousness") == 0)
+        return cos_consciousness_main(argc, argv);
+    if (strcmp(argv[1], "energy") == 0)
+        return cos_energy_main(argc, argv);
+    if (strcmp(argv[1], "green") == 0)
+        return cos_green_main(argc, argv);
+    if (strcmp(argv[1], "evolve") == 0 && argc >= 3
+        && strcmp(argv[2], "--code") == 0)
+        return cos_evolve_code_main(argc, argv);
+    if (strcmp(argv[1], "self-play") == 0)
+        return cmd_self_play_cli(argc - 2, argv + 2);
     if (strcmp(argv[1], "calibrate") == 0) return cmd_calibrate(argc - 2, argv + 2);
     if (strcmp(argv[1], "exec")      == 0) return cmd_exec(argc - 2, argv + 2);
     if (strcmp(argv[1], "plan")      == 0) return cmd_plan(argc - 2, argv + 2);
@@ -2969,7 +3037,8 @@ int main(int argc, char **argv)
      * sibling binary owns its own --help / --json. */
     if (strcmp(argv[1], "agent")     == 0) return cmd_agent  (argc - 2, argv + 2);
     if (strcmp(argv[1], "network")   == 0) return cmd_network(argc - 2, argv + 2);
-    if (strcmp(argv[1], "omega")     == 0) return cmd_omega  (argc - 2, argv + 2);
+    if (strcmp(argv[1], "monitor")   == 0) return cos_monitor_main(argc, argv);
+    if (strcmp(argv[1], "omega")     == 0) return cos_omega_main(argc, argv);
     if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
     if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);
     if (strcmp(argv[1], "memory") == 0) return cmd_memory(argc - 2, argv + 2);

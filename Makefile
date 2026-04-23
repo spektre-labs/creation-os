@@ -10082,8 +10082,12 @@ cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
-	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c src/cli/cos_monitor.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+cos-monitor: src/cli/cos_monitor.c
+	$(CC) -O2 -Wall -std=c11 -o cos-monitor src/cli/cos_monitor.c \
+	    -DCOS_MONITOR_MAIN
 
 check-cos: cos
 	./cos --version

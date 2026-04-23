@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Creation OS — Ω dashboard (offline)</title>
+<style>
+  body { font-family: system-ui, Segoe UI, sans-serif; margin: 16px;
+         background: #0d1117; color: #e6edf3; }
+  h1 { font-size: 1.1rem; }
+  #drop { border: 2px dashed #30363d; padding: 24px; margin: 12px 0;
+          border-radius: 8px; color: #8b949e; }
+  canvas { border: 1px solid #30363d; background: #010409; display: block;
+           margin: 8px 0; }
+  #stats { font-size: 0.9rem; color: #8b949e; }
+</style>
+</head>
+<body>
+<h1>Ω live dashboard</h1>
+<p id="drop">Drag <code>~/.cos/omega/events.jsonl</code> here (or use
+<code>cos monitor --html</code> for embedded data).</p>
+<div id="stats"></div>
+<canvas id="sig" width="720" height="180"></canvas>
+<canvas id="keff" width="720" height="180"></canvas>
+<canvas id="eng" width="720" height="120"></canvas>
+<script>
+(function(){
+  const EV = [];
+  function parseLine(ln) {
+    if (!ln.trim() || ln.indexOf('"alert"') >= 0) return;
+    if (ln.indexOf('"turn"') < 0) return;
+    try { EV.push(JSON.parse(ln)); } catch (e) {}
+  }
+  function chart(id, getY, label) {
+    const c = document.getElementById(id);
+    const x = c.getContext('2d');
+    const w = c.width, h = c.height;
+    x.fillStyle = '#161b22';
+    x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8b949e';
+    x.font = '12px sans-serif';
+    x.fillText(label, 6, 14);
+    if (!EV.length) return;
+    let mn = 1, mx = 0;
+    for (const e of EV) {
+      const v = getY(e);
+      if (v < mn) mn = v;
+      if (v > mx) mx = v;
+    }
+    if (mx <= mn) mx = mn + 1e-9;
+    x.strokeStyle = '#58a6ff';
+    x.beginPath();
+    EV.forEach((e, i) => {
+      const px = i / (EV.length - 1 || 1) * (w - 4) + 2;
+      const py = h - 4 - ((getY(e) - mn) / (mx - mn) * (h - 24));
+      if (i) x.lineTo(px, py); else x.moveTo(px, py);
+    });
+    x.stroke();
+  }
+  function barEnergy() {
+    const c = document.getElementById('eng');
+    const x = c.getContext('2d');
+    const w = c.width, h = c.height;
+    x.fillStyle = '#161b22';
+    x.fillRect(0, 0, w, h);
+    x.fillStyle = '#8b949e';
+    x.fillText('Energy per turn (J)', 6, 14);
+    let mx = 0;
+    for (const e of EV) {
+      const v = e.energy_j || 0;
+      if (v > mx) mx = v;
+    }
+    if (mx <= 0) mx = 1e-9;
+    const bw = (w - 4) / EV.length;
+    EV.forEach((e, i) => {
+      const v = e.energy_j || 0;
+      const bh = (v / mx) * (h - 24);
+      x.fillStyle = '#238636';
+      x.fillRect(2 + i * bw, h - 4 - bh, Math.max(1, bw - 1), bh);
+    });
+  }
+  function refresh() {
+    document.getElementById('drop').style.display = 'none';
+    let hits = 0;
+    for (const e of EV) if (e.cache_hit) hits++;
+    const ratio = EV.length ? (100 * hits / EV.length).toFixed(0) : 0;
+    const dist = { ACCEPT: 0, RETHINK: 0, ABSTAIN: 0 };
+    for (const e of EV) {
+      if (e.action && dist[e.action] !== undefined) dist[e.action]++;
+    }
+    const lastg = EV.length ? EV[EV.length - 1].green_score : 0;
+    const lastgr = EV.length ? EV[EV.length - 1].green_grade : '?';
+    const con0 = EV.length ? EV[0].consciousness : 0;
+    const con1 = EV.length ? EV[EV.length - 1].consciousness : 0;
+    document.getElementById('stats').textContent =
+      'Turns: ' + EV.length +
+      ' | Cache hit: ' + ratio + '%' +
+      ' | Consciousness: ' + con0 + ' → ' + con1 +
+      ' | Actions A/R/A: ' + dist.ACCEPT + '/' + dist.RETHINK + '/' + dist.ABSTAIN +
+      ' | Green: ' + lastgr + ' (' + lastg.toFixed(1) + ')';
+    chart('sig', e => e.sigma, 'σ');
+    chart('keff', e => e.k_eff, 'k_eff');
+    barEnergy();
+  }
+  window.addEventListener('dragover', function (ev) {
+    ev.preventDefault();
+  });
+  window.addEventListener('drop', function (ev) {
+    ev.preventDefault();
+    const f = ev.dataTransfer.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = function () {
+      EV.length = 0;
+      String(r.result).split(/\n/).forEach(parseLine);
+      refresh();
+    };
+    r.readAsText(f);
+  });
+})();
+</script>
+</body>
+</html>
