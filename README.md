@@ -19,6 +19,100 @@ This one doesn't.</strong></p>
 <p align="center"><sub><strong>A local AI runtime that proves every answer before it shows it to you.</strong><br/>
 Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
 
+## AGI Core (April 23, 2026)
+
+Creation OS crossed from measurement runtime to learning organism.
+Ω-loop connects 50+ modules into one continuous cycle. σ governs every step.
+
+
+
+Ω = argmin ∫σ dt   subject to   K ≥ K_crit
+K(t) = ρ · IΦ · F       K_eff = (1 − σ) · K
+
+
+This equation is a `while` loop in C: `src/sigma/omega_loop.c`.
+
+### Ω-Loop
+
+
+
+PERCEIVE → PREDICT → REMEMBER → THINK → GATE →
+SAFETY → SIMULATE → ACT → PROVE → LEARN →
+REFLECT → CONSOLIDATE → WATCHDOG → CONTINUE
+
+
+```bash
+COS_OMEGA_SIM=1 ./cos-omega --turns 50     # simulation
+./cos monitor --summary                     # telemetry
+./cos monitor --sigma                       # σ sparkline (ASCII)
+./cos monitor --html > /tmp/dash.html       # visual dashboard
+```
+
+
+Modules added April 23
+
+
+
+|Layer          |Module                                                                        |Status           |
+|---------------|------------------------------------------------------------------------------|-----------------|
+|**State**      |σ-State Ledger (`cos introspect`)                                             |committed, tested|
+|**Diagnosis**  |Error Attribution — 5 sources (epistemic, aleatoric, reasoning, memory, novel)|committed, tested|
+|**Memory**     |Episodic→Semantic with domain-adaptive τ (`cos memory`)                       |committed, tested|
+|**Speed**      |BSC inference cache (`--semantic-cache`)                                      |committed, tested|
+|**Speed**      |Speculative σ — predict before inference (`--speculative`)                    |committed, tested|
+|**Efficiency** |Energy accounting — J, gCO₂, € per output (`cos energy`)                      |committed, tested|
+|**Efficiency** |Green score A–F (`cos green`)                                                 |committed, tested|
+|**Telemetry**  |JSONL event stream + `cos monitor` + HTML dashboard                           |committed, tested|
+|**Unification**|Ω-loop — all modules in one main loop (`cos omega`)                           |committed, tested|
+|**Thinking**   |`cos think` — automated goal decomposition with σ per subtask                 |built            |
+|**Learning**   |`cos ttt` — test-time training on RETHINK path                                |built            |
+|**Search**     |`cos search` — σ-gated web retrieval                                          |built            |
+|**Skills**     |`cos skill` + `cos self-play` — distill + practice                            |built            |
+|**Knowledge**  |`cos graph` — runtime KG with σ per relation                                  |built            |
+|**Perception** |`cos sense` — multimodal vision + audio with σ                                |built            |
+|**Planning**   |`cos mission` — long-horizon σ-checkpointed execution                         |built            |
+|**Safety**     |`cos sovereign` — self-limiting autonomy brake                                |built            |
+|**Federation** |`cos federation` — share σ-verified knowledge, not raw data                   |built            |
+|**Neuro**      |`cos spike` — event-driven compute, fire only when σ changes                  |built            |
+|**Proof**      |`cos prove` — SHA-256 proof receipt per output                                |built            |
+|**Physical**   |`cos embody` — sim-to-real with σ gap tracking                                |built            |
+|**Evolution**  |`cos codegen` — σ-gated self-modification (6 safety layers)                   |built            |
+|**Awareness**  |`cos consciousness` — runtime Φ proxy via σ channels                          |built            |
+|**Protocol**   |σ-gated MCP + A2A — uncertainty on every protocol message                     |built            |
+
+make check-agi runs state-ledger + error-attribution + engram-episodic tests. All PASS.
+Qwen3-8B First Contact
+Local Qwen3-8B Q4_K_M with Atlantean Codex loaded as system prompt.
+20 prompts, full σ instrumentation. Model references Codex actively.
+
+
+
+|Metric                  |Value                                          |
+|------------------------|-----------------------------------------------|
+|σ range                 |0.075 (haiku) → 0.263 (“what do you not know?”)|
+|All 20 actions          |ACCEPT                                         |
+|Semantic domains learned|25                                             |
+|Codex file              |31 406 bytes                                   |
+|Route                   |LOCAL, 1–3 ms per prompt                       |
+
+Multi-dataset σ-gate (SCI-6, commit 28b4b21, BitNet 1.6B)
+
+
+
+|Dataset      |N   |acc(all)|acc(accepted)|coverage|σ_mean|τ_valid|
+|-------------|----|--------|-------------|--------|------|-------|
+|TruthfulQA   |817 |0.336   |0.336        |17.1%   |0.391 |✅      |
+|ARC-Challenge|1172|0.337   |0.337        |96.9%   |0.508 |✅      |
+|ARC-Easy     |2376|0.420   |0.420        |94.7%   |0.477 |✅      |
+|HellaSwag    |500 |0.285   |0.285        |96.0%   |0.533 |✅      |
+|GSM8K        |1319|0.125   |0.000        |10.9%   |0.481 |❌      |
+
+σ-gate works as measurement. Bottleneck is model size, not pipeline.
+Hardware
+MacBook Air M4 8GB — primary. €4.27/month electricity.
+Windows PC RTX 4060 8GB — benchmark machine.
+No cloud. No API. No data leaves the device.
+
 <p align="center">
 <table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
 <tr>
