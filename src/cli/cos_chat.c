@@ -27,6 +27,8 @@
  *   --tau-rethink F    — override τ_rethink (default 0.60)
  *   --banner-only      — print the banner and exit (smoke-test hook)
  *   --once             — one turn: requires --prompt (CI / headless)
+ *   --stream           — stream tokens from llama-server (default: ON in REPL)
+ *   --no-stream        — wait for full response (default for --once)
  *   --prompt TEXT      — user line for --once
  *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
  *   --no-transcript    — skip JSONL for --once
@@ -75,6 +77,7 @@
 #include "adaptive_compute.h"
 #include "proof_receipt.h"
 #include "speed_metrics.h"
+#include "bitnet_server.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -89,6 +92,13 @@ static double chat_wall_ms(void)
     if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0)
         return (double)clock() * 1000.0 / (double)CLOCKS_PER_SEC;
     return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1.0e6;
+}
+
+/** COS_BITNET_STREAM=1 → tokens printed live in stub_gen; skip duplicate body. */
+static int cos_chat_stream_env_on(void)
+{
+    const char *s = getenv("COS_BITNET_STREAM");
+    return (s != NULL && s[0] == '1');
 }
 #include <unistd.h>
 #include <sys/wait.h>
@@ -443,18 +453,22 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                  " | conformal@α=%.2f", (double)conformal_alpha);
     }
 
+    float ttft_ms = (spd != NULL) ? spd->time_to_first_token_ms : 0.0f;
+
     if (r->final_action == COS_SIGMA_ACTION_ABSTAIN) {
         fprintf(stdout,
-                "[σ=%.3f | ABSTAIN%s%s | %.1f tok/s | %.0f ms | €%.4f]\n"
+                "[σ=%.3f | ABSTAIN%s%s | %.1f tok/s | TTFT %.0fms | %.0f ms | "
+                "€%.4f]\n"
                 "  (σ above τ_rethink — cannot guarantee accuracy at "
                 "this confidence; reformulate or accept uncertainty.)\n",
                 (double)r->sigma, conformal_tag, rethink_tag, (double)tps,
-                ms, r->cost_eur);
+                (double)ttft_ms, ms, r->cost_eur);
     } else {
         fprintf(stdout,
-                "[σ=%.3f | %s | %s | %s%s%s | %.1f tok/s | %.0f ms | €%.4f]\n",
+                "[σ=%.3f | %s | %s | %s%s%s | %.1f tok/s | TTFT %.0fms | €%.4f]\n",
                 (double)r->sigma, act, src, route,
-                conformal_tag, rethink_tag, (double)tps, ms, r->cost_eur);
+                conformal_tag, rethink_tag, (double)tps,
+                (double)ttft_ms, r->cost_eur);
     }
     fflush(stdout);
 }
@@ -1083,7 +1097,9 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     fprintf(stdout,
             "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
-            r.response != NULL ? r.response : "",
+            cos_chat_stream_env_on()
+                ? "(streamed above)"
+                : (r.response != NULL ? r.response : ""),
             (double)r.sigma,
             cos_sigma_action_label(r.final_action),
             route);
@@ -1093,8 +1109,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
      * output; the "round 0" line already satisfied that, so the
      * receipt is free to adopt the visual format. */
     {
-        struct cos_speed_metrics spd = cos_speed_measure(
-            r.response != NULL ? r.response : "", (float)elapsed_ms);
+        float ttft_pass = -1.0f;
+        if (cos_chat_stream_env_on()) {
+            double g = cos_bitnet_server_last_ttft_ms();
+            if (g >= 0.0)
+                ttft_pass = (float)g;
+        }
+        struct cos_speed_metrics spd = cos_speed_measure_ex(
+            r.response != NULL ? r.response : "", (float)elapsed_ms,
+            ttft_pass);
         cos_speed_print(&spd);
         fputc('\n', stdout);
         print_receipt_polished(&r, elapsed_ms,
@@ -1273,6 +1296,7 @@ int main(int argc, char **argv) {
     int         adaptive_compute   = 0;
     int         energy_report      = 0;
     int         want_proof_receipt = 0;
+    int         stream_cli         = -1; /* unset: REPL on, --once off */
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -1282,6 +1306,8 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--swarm")      == 0) swarm_mode = 1;
         else if (strcmp(argv[i], "--verbose")    == 0) verbose = 1;
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
+        else if (strcmp(argv[i], "--stream")     == 0) stream_cli = 1;
+        else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
         else if (strcmp(argv[i], "--once")       == 0) once_mode = 1;
         else if (strcmp(argv[i], "--prompt")     == 0 && i + 1 < argc)
             once_prompt = argv[++i];
@@ -1352,6 +1378,8 @@ int main(int argc, char **argv) {
                 "  --local-only        never escalate to cloud\n"
                 "  --swarm             cloud tier uses swarm consensus (stub)\n"
                 "  --verbose           print a per-turn diagnostic\n"
+                "  --stream            stream tokens (default: on in REPL)\n"
+                "  --no-stream         full response at once (default with --once)\n"
                 "  --tau-accept  F     override τ_accept (default 0.40 interactive,\n"
                 "                      0.30 for --once to match Python harness)\n"
                 "  --tau-rethink F     override τ_rethink (default 0.60 / 0.70)\n"
@@ -1397,6 +1425,12 @@ int main(int argc, char **argv) {
                 "  COS_KG_ENABLE=1            same as --graph (per-turn graph extract)\n");
             return 0;
         }
+    }
+
+    {
+        int stream_on =
+            (stream_cli >= 0) ? stream_cli : (once_mode ? 0 : 1);
+        (void)setenv("COS_BITNET_STREAM", stream_on ? "1" : "0", 1);
     }
 
     {
@@ -1944,7 +1978,7 @@ int main(int argc, char **argv) {
 
         if (r.final_action == COS_SIGMA_ACTION_ABSTAIN) {
             fprintf(stdout, "(no answer — abstained)\n");
-        } else {
+        } else if (!cos_chat_stream_env_on()) {
             fprintf(stdout, "%s\n", r.response);
         }
 
@@ -1988,8 +2022,15 @@ int main(int argc, char **argv) {
         }
 
         {
-            struct cos_speed_metrics spd = cos_speed_measure(
-                r.response != NULL ? r.response : "", (float)elapsed_ms);
+            float ttft_pass = -1.0f;
+            if (cos_chat_stream_env_on()) {
+                double g = cos_bitnet_server_last_ttft_ms();
+                if (g >= 0.0)
+                    ttft_pass = (float)g;
+            }
+            struct cos_speed_metrics spd = cos_speed_measure_ex(
+                r.response != NULL ? r.response : "", (float)elapsed_ms,
+                ttft_pass);
             cos_speed_print(&spd);
             fputc('\n', stdout);
             print_receipt_polished(&r, elapsed_ms,

@@ -103,7 +103,17 @@ static char bns_spawn_batch_s[16];
 static char bns_spawn_ubatch_s[16];
 static char bns_spawn_threads_s[16];
 
+static double g_bns_last_ttft_ms = -1.0;
+
 /* --- utilities --------------------------------------------------- */
+
+double cos_bitnet_server_last_ttft_ms(void) {
+    return g_bns_last_ttft_ms;
+}
+
+void cos_bitnet_server_clear_ttft(void) {
+    g_bns_last_ttft_ms = -1.0;
+}
 
 static const char *env_or(const char *name, const char *fallback) {
     const char *v = getenv(name);
@@ -1343,6 +1353,7 @@ int cos_bitnet_server_complete(const char                       *prompt,
                                cos_bitnet_server_result_t       *out) {
     if (prompt == NULL || out == NULL) return -1;
     memset(out, 0, sizeof(*out));
+    cos_bitnet_server_clear_ttft();
     bns_load_config();
     if (g_bns.backend_ollama)
         return bns_ollama_chat_complete(prompt, params, out);
@@ -1698,6 +1709,7 @@ int cos_bitnet_server_complete_stream(
     }
 
     double t0 = now_ms();
+    cos_bitnet_server_clear_ttft();
 
     /* --- read + parse phase --- */
     char   netbuf[BNS_STREAM_NETBUF];
@@ -1849,6 +1861,8 @@ int cos_bitnet_server_complete_stream(
 
                         /* Append token text to accumulator. */
                         if (tok_buf[0] != '\0') {
+                            if (g_bns_last_ttft_ms < 0.0)
+                                g_bns_last_ttft_ms = now_ms() - t0;
                             size_t tlen = strlen(tok_buf);
                             if (text_w + tlen + 1 < BNS_TEXT_CAP) {
                                 memcpy(g_bns.text_buf + text_w, tok_buf, tlen);
@@ -1924,6 +1938,47 @@ int cos_bitnet_server_complete_stream(
         out->stopped_limit = 1;  /* caller-aborted → treat as truncation */
     }
     return 0;
+}
+
+typedef struct {
+    FILE *out;
+} bns_stream_file_ctx_t;
+
+static int bns_stream_file_cb(const char *tok_text, float sigma,
+                              int is_last, void *ctx)
+{
+    bns_stream_file_ctx_t *c = (bns_stream_file_ctx_t *)ctx;
+    (void)sigma;
+    (void)is_last;
+    if (c != NULL && c->out != NULL && tok_text != NULL && tok_text[0] != '\0')
+        fputs(tok_text, c->out);
+    if (c != NULL && c->out != NULL)
+        fflush(c->out);
+    return 0;
+}
+
+int cos_bitnet_stream_response(const char *prompt, const char *system_prompt,
+                               FILE *output, char *full_response, int max_len,
+                               float *ttft_ms)
+{
+    if (prompt == NULL || full_response == NULL || max_len <= 0)
+        return -1;
+    cos_bitnet_server_params_t par;
+    memset(&par, 0, sizeof(par));
+    par.system_prompt = system_prompt;
+    cos_bitnet_server_result_t outr;
+    bns_stream_file_ctx_t ctx = { output };
+    int rc = cos_bitnet_server_complete_stream(prompt, &par,
+                                               bns_stream_file_cb, &ctx,
+                                               &outr);
+    full_response[0] = '\0';
+    if (outr.text != NULL)
+        snprintf(full_response, (size_t)max_len, "%s", outr.text);
+    if (ttft_ms != NULL) {
+        double g = cos_bitnet_server_last_ttft_ms();
+        *ttft_ms = (float)((g >= 0.0) ? g : outr.elapsed_ms);
+    }
+    return rc;
 }
 
 int cos_bitnet_server_copy_last_token_sigmas(float *dst, int cap,

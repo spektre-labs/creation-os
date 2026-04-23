@@ -81,6 +81,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -186,6 +187,19 @@ int  cos_bitnet_server_complete_stream(
     cos_bitnet_server_token_cb_t        token_cb,
     void                               *cb_ctx,
     cos_bitnet_server_result_t         *out);
+
+/* TTFT wall clock from the stream path: first non-empty streamed token.
+ * Undefined until after a streaming complete() finishes; negative when
+ * not streamed or unavailable. */
+double cos_bitnet_server_last_ttft_ms(void);
+void   cos_bitnet_server_clear_ttft(void);
+
+/** Stream completion to FILE* (stdout/stderr); fills full_response for
+ *  downstream σ work.  Returns same codes as cos_bitnet_server_complete_stream.
+ *  max_len includes the terminating NUL for full_response. */
+int cos_bitnet_stream_response(const char *prompt, const char *system_prompt,
+                               FILE *output, char *full_response, int max_len,
+                               float *ttft_ms);
 
 /* SIGTERM + reap.  Idempotent; safe to call from atexit. */
 void cos_bitnet_server_shutdown(void);
