@@ -21,6 +21,8 @@ struct cos_engram_episode {
     int action;
     int was_correct;
     enum cos_error_source attribution;
+    int ttt_applied;
+    int turn_timeout; /* 1 if Ω-loop wall-clock turn budget exceeded */
 };
 
 struct cos_engram_semantic {

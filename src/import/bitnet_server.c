@@ -34,6 +34,7 @@
 #include <fcntl.h>
 #include <math.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <pwd.h>
 #include <signal.h>
 #include <stdio.h>
@@ -50,19 +51,17 @@
 
 #define BNS_DEFAULT_HOST       "127.0.0.1"
 #define BNS_DEFAULT_PORT       8088
-/* DEV-6: default context bumped from 2048 → 8192 so the full
- * Atlantean Codex (≈ 31 KB ≈ 8k tokens) fits as a system prompt
- * without clipping.  Override with COS_BITNET_SERVER_CTX if the
- * host is memory-constrained; with --no-codex or --codex-seed the
- * smaller context still works fine. */
-#define BNS_DEFAULT_CTX        8192
+/* Default context: prefer COS_BITNET_CHAT_CTX (chat-side hint), then
+ * COS_BITNET_SERVER_CTX.  Low-RAM hosts should use 2048 or 1024. */
+#define BNS_DEFAULT_CTX        2048
 #define BNS_DEFAULT_NPROBS     5
 #define BNS_DEFAULT_NPRED      64
 #define BNS_DEFAULT_EXE        "./third_party/bitnet/build/bin/llama-server"
-#define BNS_DEFAULT_MODEL      "./models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf"
+#define BNS_DEFAULT_MODEL      "./models/qwen3-8b-Q4_K_M.gguf"
 
 #define BNS_READY_TIMEOUT_S    90   /* cold-start on M-series: ~3 s */
-#define BNS_REQ_TIMEOUT_S      120
+#define BNS_CONNECT_TIMEOUT_S    5
+#define BNS_IO_TIMEOUT_S         60   /* recv/send; inference wall clock */
 #define BNS_RESP_CAP           (8u * 1024u * 1024u)
 #define BNS_REQ_CAP            (1u * 1024u * 1024u)
 #define BNS_TEXT_CAP           (512u * 1024u)
@@ -91,6 +90,9 @@ typedef struct {
 } bns_state_t;
 
 static bns_state_t g_bns = {0};
+
+static float g_bns_last_tok_sigma[COS_BITNET_SERVER_MAX_TOKENS];
+static int   g_bns_last_tok_n;
 
 /* --- utilities --------------------------------------------------- */
 
@@ -136,7 +138,18 @@ static void bns_load_config(void) {
     g_bns.model[sizeof(g_bns.model) - 1] = '\0';
 
     g_bns.port              = env_int_or("COS_BITNET_SERVER_PORT",   BNS_DEFAULT_PORT);
-    g_bns.ctx               = env_int_or("COS_BITNET_SERVER_CTX",    BNS_DEFAULT_CTX);
+    {
+        const char *cc = getenv("COS_BITNET_CHAT_CTX");
+        const char *cs = getenv("COS_BITNET_SERVER_CTX");
+        int         chat = (cc != NULL && cc[0] != '\0') ? atoi(cc) : 0;
+        int         srv  = (cs != NULL && cs[0] != '\0') ? atoi(cs) : 0;
+        if (chat > 0)
+            g_bns.ctx = chat;
+        else if (srv > 0)
+            g_bns.ctx = srv;
+        else
+            g_bns.ctx = BNS_DEFAULT_CTX;
+    }
     g_bns.n_probs_default   = env_int_or("COS_BITNET_SERVER_NPROBS", BNS_DEFAULT_NPROBS);
     g_bns.n_predict_default = env_int_or("COS_BITNET_SERVER_NPRED",  BNS_DEFAULT_NPRED);
 
@@ -149,9 +162,11 @@ static void bns_load_config(void) {
 
 /* --- socket helpers --------------------------------------------- */
 
-static int bns_connect(int timeout_s) {
+/** Blocking TCP to llama-server: connect ≤5 s, recv/send each ≤60 s. */
+static int bns_tcp_connect(void) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) return -1;
+    if (fd < 0)
+        return -1;
 
     struct sockaddr_in sa;
     memset(&sa, 0, sizeof(sa));
@@ -162,16 +177,45 @@ static int bns_connect(int timeout_s) {
         return -1;
     }
 
-    struct timeval tv;
-    tv.tv_sec  = timeout_s;
-    tv.tv_usec = 0;
-    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
-
-    if (connect(fd, (struct sockaddr *)&sa, sizeof(sa)) != 0) {
+    int fl = fcntl(fd, F_GETFL, 0);
+    if (fl < 0 || fcntl(fd, F_SETFL, fl | O_NONBLOCK) != 0) {
         close(fd);
         return -1;
     }
+
+    int cr = connect(fd, (struct sockaddr *)&sa, sizeof(sa));
+    if (cr != 0 && errno != EINPROGRESS && errno != EINTR) {
+        close(fd);
+        return -1;
+    }
+
+    struct pollfd pfd;
+    memset(&pfd, 0, sizeof pfd);
+    pfd.fd     = fd;
+    pfd.events = POLLOUT;
+    int pr     = poll(&pfd, 1, BNS_CONNECT_TIMEOUT_S * 1000);
+    if (pr <= 0) {
+        close(fd);
+        return -1;
+    }
+
+    int         soerr = 0;
+    socklen_t   sl    = sizeof(soerr);
+    if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &soerr, &sl) != 0 || soerr != 0) {
+        close(fd);
+        return -1;
+    }
+
+    if (fcntl(fd, F_SETFL, fl) != 0) {
+        close(fd);
+        return -1;
+    }
+
+    struct timeval tv;
+    tv.tv_sec = BNS_IO_TIMEOUT_S;
+    tv.tv_usec = 0;
+    setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
     return fd;
 }
 
@@ -198,7 +242,20 @@ static ssize_t bns_recv_response(int fd, const char **out_body) {
         ssize_t r = recv(fd, g_bns.resp_buf + total,
                          BNS_RESP_CAP - 1 - total, 0);
         if (r < 0) {
-            if (errno == EINTR) continue;
+            if (errno == EINTR)
+                continue;
+#ifdef EAGAIN
+            if (errno == EAGAIN)
+                return -2;
+#endif
+#ifdef EWOULDBLOCK
+            if (errno == EWOULDBLOCK)
+                return -2;
+#endif
+#ifdef ETIMEDOUT
+            if (errno == ETIMEDOUT)
+                return -2;
+#endif
             return -1;
         }
         if (r == 0) break;
@@ -233,7 +290,7 @@ static ssize_t bns_recv_response(int fd, const char **out_body) {
 }
 
 static int bns_http_get(const char *path, char *body_out, size_t body_cap) {
-    int fd = bns_connect(3);
+    int fd = bns_tcp_connect();
     if (fd < 0) return -1;
     int n = snprintf(g_bns.req_buf, BNS_REQ_CAP,
                      "GET %s HTTP/1.1\r\n"
@@ -262,8 +319,9 @@ static int bns_http_get(const char *path, char *body_out, size_t body_cap) {
 static int bns_http_post_json_once(const char *path,
                                    const char *json_body, size_t json_len,
                                    const char **out_body, size_t *out_len) {
-    int fd = bns_connect(BNS_REQ_TIMEOUT_S);
-    if (fd < 0) return -1;
+    int fd = bns_tcp_connect();
+    if (fd < 0)
+        return -1;
     int hn = snprintf(g_bns.req_buf, BNS_REQ_CAP,
                       "POST %s HTTP/1.1\r\n"
                       "Host: %s:%d\r\n"
@@ -282,8 +340,12 @@ static int bns_http_post_json_once(const char *path,
     const char *body = NULL;
     ssize_t len = bns_recv_response(fd, &body);
     close(fd);
-    if (len < 0 || body == NULL) return -1;
-    if (strncmp(g_bns.resp_buf, "HTTP/1.1 200", 12) != 0) return -1;
+    if (len == -2)
+        return -5;
+    if (len < 0 || body == NULL)
+        return -1;
+    if (strncmp(g_bns.resp_buf, "HTTP/1.1 200", 12) != 0)
+        return -1;
     *out_body = body;
     *out_len  = (size_t)len;
     return 0;
@@ -298,11 +360,14 @@ static int bns_http_post_json(const char *path,
                               const char **out_body, size_t *out_len) {
     const int MAX_ATTEMPTS = 3;
     for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
-        if (bns_http_post_json_once(path, json_body, json_len,
-                                    out_body, out_len) == 0) {
+        int once = bns_http_post_json_once(path, json_body, json_len,
+                                            out_body, out_len);
+        if (once == 0)
             return 0;
-        }
-        if (attempt == MAX_ATTEMPTS) break;
+        if (once == -5)
+            return -5;
+        if (attempt == MAX_ATTEMPTS)
+            break;
         /* transient failure → pause, re-probe health, maybe restart. */
         struct timespec sl = { 0, 250 * 1000 * 1000 };  /* 250 ms */
         nanosleep(&sl, NULL);
@@ -487,10 +552,22 @@ static int json_skip_value(const char **p, const char *end) {
 
 /* --- response parsing ------------------------------------------- */
 
+static const char *bns_find_bytes(const char *s, const char *end,
+                                  const char *needle, size_t nlen) {
+    if (nlen == 0 || s == NULL || end == NULL || s >= end) return NULL;
+    for (; s + nlen <= end; ++s) {
+        if (memcmp(s, needle, nlen) == 0) return s;
+    }
+    return NULL;
+}
+
 static int parse_completion_response(const char *body, size_t body_len,
                                      cos_bitnet_server_result_t *out) {
+    g_bns_last_tok_n = 0;
     const char *end = body + body_len;
     const char *p;
+    int          text_from_reasoning     = 0;
+    int          sigmas_from_chat_logprobs = 0;
 
     /* content: /v1/chat/completions nests it under
      * choices[0].message.content; /completion puts it at the top.
@@ -509,6 +586,18 @@ static int parse_completion_response(const char *body, size_t body_len,
     } else {
         g_bns.text_buf[0] = '\0';
         out->text = g_bns.text_buf;
+    }
+    /* "Thinking" models (Qwen, etc.) may return an empty `content` and
+     * place text in `reasoning_content` (llama.cpp OpenAI shape). */
+    if (g_bns.text_buf[0] == '\0') {
+        p = json_find_key(scan_from, end, "reasoning_content");
+        if (p != NULL && *p == '"') {
+            size_t n;
+            if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
+                out->text = g_bns.text_buf;
+                text_from_reasoning = 1;
+            }
+        }
     }
 
     /* tokens_predicted (llama.cpp extension; also present on chat path) */
@@ -619,6 +708,8 @@ static int parse_completion_response(const char *body, size_t body_len,
             if (sigma_tok > max_sigma) max_sigma = sigma_tok;
             sum_sigma += (double)sigma_tok;
             n_tokens++;
+            if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
+                g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
 
             q = obj_end;
             json_skip_ws(&q, end);
@@ -626,12 +717,102 @@ static int parse_completion_response(const char *body, size_t body_len,
         }
     }
 
+    /* OpenAI-style chat (llama.cpp Qwen, etc.): per-token fields live in
+     * choices[].logprobs.content[] with a scalar `logprob` on each item,
+     * not in top-level completion_probabilities. */
+    if (n_tokens == 0) {
+        const char *anchor = bns_find_bytes(body, end, "\"logprobs\"", 10);
+        if (anchor != NULL) {
+            const char *cq =
+                bns_find_bytes(anchor, end, "\"content\"", 9);
+            const char *arr_in = NULL;
+            if (cq != NULL) {
+                const char *v = cq + 9;
+                while (v < end && (*v == ' ' || *v == '\t')) v++;
+                if (v < end && *v == ':') {
+                    v++;
+                    while (v < end && (*v == ' ' || *v == '\t' || *v == '\n'
+                                       || *v == '\r')) v++;
+                    if (v < end && *v == '[') arr_in = v + 1;
+                }
+            }
+            if (arr_in != NULL) {
+                sigmas_from_chat_logprobs = 1;
+                const char *q = arr_in;
+                while (q < end) {
+                    if (!json_skip_ws(&q, end)) break;
+                    if (*q == ']') break;
+                    if (*q != '{') break;
+                    const char *obj_start = q;
+                    int depth = 0;
+                    const char *obj_end = q;
+                    while (obj_end < end) {
+                        if (*obj_end == '"') {
+                            obj_end++;
+                            while (obj_end < end && *obj_end != '"') {
+                                if (*obj_end == '\\'
+                                    && obj_end + 1 < end) obj_end += 2;
+                                else obj_end++;
+                            }
+                            if (obj_end >= end) break;
+                            obj_end++;
+                            continue;
+                        }
+                        if (*obj_end == '{') depth++;
+                        if (*obj_end == '}') {
+                            depth--;
+                            obj_end++;
+                            if (depth == 0) break;
+                            continue;
+                        }
+                        obj_end++;
+                    }
+                    if (obj_end > end) obj_end = end;
+
+                    float chosen_prob = 1.0f;
+                    const char *lpr =
+                        json_find_key(obj_start, obj_end, "logprob");
+                    if (lpr != NULL) {
+                        while (lpr < obj_end && (*lpr == ' ' || *lpr == '\t'))
+                            lpr++;
+                        if (lpr < obj_end
+                            && (*lpr == '-' || (*lpr >= '0' && *lpr <= '9'))) {
+                            double lg = strtod(lpr, NULL);
+                            chosen_prob = (float)exp(lg);
+                            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
+                            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
+                        }
+                    }
+                    float sigma_tok = 1.0f - chosen_prob;
+                    if (sigma_tok > max_sigma) max_sigma = sigma_tok;
+                    sum_sigma += (double)sigma_tok;
+                    n_tokens++;
+                    if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
+                        g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
+
+                    q = obj_end;
+                    json_skip_ws(&q, end);
+                    if (q < end && *q == ',') q++;
+                }
+            }
+        }
+    }
+
     if (n_tokens == 0) {
         out->sigma      = 1.0f;
         out->mean_sigma = 1.0f;
     } else {
-        out->sigma      = max_sigma;
-        out->mean_sigma = (float)(sum_sigma / (double)n_tokens);
+        float mean_s = (float)(sum_sigma / (double)n_tokens);
+        /* Thinking streams: max σ over raw logprob slots spikes on template
+         * / metadata tokens while reasoning_content reads coherently.  Mean
+         * tracks usable uncertainty for the σ-gate without touching gate
+         * logic itself. */
+        if (text_from_reasoning && sigmas_from_chat_logprobs) {
+            out->sigma = mean_s;
+        } else {
+            out->sigma = max_sigma;
+        }
+        out->mean_sigma = mean_s;
         if (out->token_count == 0) out->token_count = n_tokens;
     }
     return 0;
@@ -755,6 +936,31 @@ static void bns_pidfile_clear(void) {
  * model file and the server binary actually exist.  If not, print a
  * single actionable error line so the user knows exactly what to fix
  * instead of "execvp failed". */
+/* Upstream llama.cpp exposes --jinja; older BitNet forks reject it.
+ * Probe --help once so Qwen-oriented defaults still spawn on stock builds. */
+static int bns_help_has_jinja_flag(const char *exe) {
+    char cmd[768];
+    if (exe == NULL || exe[0] == '\0') return 0;
+    if (strpbrk(exe, ";|&`$()<>\\\"") != NULL) return 0;
+    if (snprintf(cmd, sizeof cmd, "\"%s\" --help 2>&1", exe) >= (int)sizeof cmd)
+        return 0;
+    FILE *fp = popen(cmd, "r");
+    if (fp == NULL) return 0;
+    char line[512];
+    int has = 0;
+    size_t total = 0;
+    while (fgets(line, sizeof line, fp) != NULL) {
+        if (strstr(line, "--jinja") != NULL) {
+            has = 1;
+            break;
+        }
+        total += strlen(line);
+        if (total > 400000u) break;
+    }
+    (void)pclose(fp);
+    return has;
+}
+
 static int bns_preflight(void) {
     static int warned = 0;
     struct stat st;
@@ -772,8 +978,8 @@ static int bns_preflight(void) {
     if (stat(g_bns.model, &st) != 0) {
         if (!warned) {
             fprintf(stderr,
-                    "cos: BitNet model not found at %s\n"
-                    "  → run: ./scripts/install.sh  (downloads + converts model)\n"
+                    "cos: GGUF model not found at %s\n"
+                    "  → run: bash scripts/real/setup_qwen_gguf.sh  (Qwen) or BitNet setup\n"
                     "  → or set COS_BITNET_SERVER_MODEL=/path/to/model.gguf\n",
                     g_bns.model);
             warned = 1;
@@ -801,6 +1007,8 @@ int cos_bitnet_server_ensure(void) {
 
     if (bns_preflight() != 0) return -1;
 
+    const int want_jinja = bns_help_has_jinja_flag(g_bns.exe);
+
     /* Fork + exec llama-server. */
     pid_t pid = fork();
     if (pid < 0) return -1;
@@ -818,7 +1026,7 @@ int cos_bitnet_server_ensure(void) {
         char port_s[16]; snprintf(port_s, sizeof port_s, "%d", g_bns.port);
         char ctx_s[16];  snprintf(ctx_s,  sizeof ctx_s,  "%d", g_bns.ctx);
 
-        char *argv[32];
+        char *argv[48];
         int a = 0;
         argv[a++] = (char *)g_bns.exe;
         argv[a++] = (char *)"--model";
@@ -827,12 +1035,19 @@ int cos_bitnet_server_ensure(void) {
         argv[a++] = (char *)g_bns.host;
         argv[a++] = (char *)"--port";
         argv[a++] = port_s;
-        argv[a++] = (char *)"--ctx-size";
+        argv[a++] = (char *)"-c";
         argv[a++] = ctx_s;
         argv[a++] = (char *)"--parallel";
         argv[a++] = (char *)"1";
         argv[a++] = (char *)"-ngl";
         argv[a++] = (char *)"0";
+        if (want_jinja) argv[a++] = (char *)"--jinja";
+        argv[a++] = (char *)"--temp";
+        argv[a++] = (char *)"0.6";
+        argv[a++] = (char *)"--top-k";
+        argv[a++] = (char *)"20";
+        argv[a++] = (char *)"--top-p";
+        argv[a++] = (char *)"0.95";
         argv[a++] = NULL;
         execvp(g_bns.exe, argv);
         /* execvp failed. */
@@ -950,8 +1165,17 @@ int cos_bitnet_server_complete(const char                       *prompt,
     char *jb = b + 4096;
     size_t w = 0;
     int n;
-    n = snprintf(jb + w, JSON_CAP - w,
-                 "{\"model\":\"bitnet\",\"messages\":[");
+    n = snprintf(jb + w, JSON_CAP - w, "{\"model\":");
+    if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+    w += (size_t)n;
+    {
+        const char *mid = getenv("COS_BITNET_CHAT_MODEL");
+        if (mid == NULL || mid[0] == '\0') mid = "bitnet";
+        size_t mw = json_encode_string(jb + w, JSON_CAP - w, mid);
+        if (mw == 0) return -3;
+        w += mw;
+    }
+    n = snprintf(jb + w, JSON_CAP - w, ",\"messages\":[");
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
 
@@ -1005,7 +1229,16 @@ int cos_bitnet_server_complete(const char                       *prompt,
     memcpy(json_tmp, jb, w);
     int rc = bns_http_post_json("/v1/chat/completions",
                                 json_tmp, w, &body, &blen);
-    if (rc != 0 || body == NULL) return -4;
+    if (rc == -5) {
+        fputs("[timeout] inference exceeded 60s, σ=1.0\n", stderr);
+        memset(out, 0, sizeof(*out));
+        out->sigma      = 1.0f;
+        out->mean_sigma = 1.0f;
+        out->elapsed_ms = now_ms() - t0;
+        return 0;
+    }
+    if (rc != 0 || body == NULL)
+        return -4;
 
     const char *debug = getenv("COS_BITNET_SERVER_DEBUG");
     if (debug != NULL && debug[0] == '1') {
@@ -1224,8 +1457,9 @@ int cos_bitnet_server_complete_stream(
                                             n_probs, temp, seed, stp);
     if (jlen == 0) return -3;
 
-    int fd = bns_connect(BNS_REQ_TIMEOUT_S);
-    if (fd < 0) return -4;
+    int fd = bns_tcp_connect();
+    if (fd < 0)
+        return -4;
 
     int hn = snprintf(g_bns.req_buf, BNS_REQ_CAP,
                       "POST /completion HTTP/1.1\r\n"
@@ -1259,6 +1493,7 @@ int cos_bitnet_server_complete_stream(
     int    n_tokens  = 0;
     int    aborted   = 0;
     int    hit_terminal = 0;
+    int    io_timed_out = 0;
 
     /* text accumulator (owned by module; caller sees out->text) */
     g_bns.text_buf[0] = '\0';
@@ -1267,7 +1502,25 @@ int cos_bitnet_server_complete_stream(
     for (;;) {
         ssize_t r = recv(fd, netbuf, sizeof netbuf, 0);
         if (r < 0) {
-            if (errno == EINTR) continue;
+            if (errno == EINTR)
+                continue;
+            {
+                int timed = 0;
+#ifdef EAGAIN
+                if (errno == EAGAIN)
+                    timed = 1;
+#endif
+#ifdef EWOULDBLOCK
+                if (errno == EWOULDBLOCK)
+                    timed = 1;
+#endif
+#ifdef ETIMEDOUT
+                if (errno == ETIMEDOUT)
+                    timed = 1;
+#endif
+                if (timed)
+                    io_timed_out = 1;
+            }
             break;
         }
         if (r == 0) break;
@@ -1431,6 +1684,13 @@ int cos_bitnet_server_complete_stream(
     close(fd);
 
     /* Finalize summary. */
+    if (io_timed_out) {
+        fputs("[timeout] inference exceeded 60s, σ=1.0\n", stderr);
+        g_bns.text_buf[0] = '\0';
+        max_sigma = 1.0f;
+        n_tokens  = 0;
+        sum_sigma = 0.0;
+    }
     if (out->token_count == 0) out->token_count = n_tokens;
     out->sigma      = (max_sigma > 0.0f) ? max_sigma
                                          : (n_tokens == 0 ? 1.0f : 0.0f);
@@ -1441,5 +1701,17 @@ int cos_bitnet_server_complete_stream(
     if (aborted && !out->stopped_limit && !out->stopped_eos) {
         out->stopped_limit = 1;  /* caller-aborted → treat as truncation */
     }
+    return 0;
+}
+
+int cos_bitnet_server_copy_last_token_sigmas(float *dst, int cap,
+                                             int *n_out) {
+    if (n_out == NULL) return -1;
+    int n = g_bns_last_tok_n;
+    *n_out = n;
+    if (dst == NULL || cap <= 0) return 0;
+    int c = (n < cap) ? n : cap;
+    if (c > 0)
+        memcpy(dst, g_bns_last_tok_sigma, (size_t)c * sizeof(float));
     return 0;
 }

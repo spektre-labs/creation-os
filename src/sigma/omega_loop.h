@@ -26,6 +26,11 @@ struct cos_omega_config {
     float k_eff_halt_threshold;
     int   human_review_interval;
 
+    /** Wall-clock budget for cos_think_run + overhead (seconds). ≤0 → default/env. */
+    int turn_timeout_s;
+    /** Override adaptive compute; <0 = use spike budget. */
+    int max_rethinks;
+
     int enable_ttt;
     int enable_search;
     int enable_codegen;

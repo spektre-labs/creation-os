@@ -72,9 +72,12 @@ static int usage_omega(FILE *fp)
         "  cos omega --halt           request graceful stop (~/.cos/omega/halt)\n"
         "  cos omega --report         print report (after a run or from last state)\n"
         "  cos omega --sim            synthetic σ step (no live think / perception I/O)\n"
+        "  cos omega --light          minimal Ω for low-RAM hosts (60s turn cap, max 1 rethink,\n"
+        "                             no TTT / federation / codegen / embodiment / consciousness)\n"
         "Env: COS_OMEGA_GOAL  per-turn goal string (optional)\n"
         "     COS_OMEGA_SIM=1       same as --sim\n"
-        "     COS_OMEGA_HOURS_CAP  hours wall clock (alternative to --hours)\n",
+        "     COS_OMEGA_HOURS_CAP  hours wall clock (alternative to --hours)\n"
+        "     COS_OMEGA_TURN_TIMEOUT_S  per-turn wall budget (default 120; --light uses 60)\n",
         fp);
     return fp == stderr ? 2 : 0;
 }
@@ -110,6 +113,15 @@ int cos_omega_main(int argc, char **argv)
             setenv("COS_OMEGA_HOURS_CAP", ebuf, 1);
         } else if (strcmp(argv[i], "--sim") == 0) {
             cfg.simulation_mode = 1;
+        } else if (strcmp(argv[i], "--light") == 0) {
+            cfg.turn_timeout_s       = 60;
+            cfg.max_rethinks         = 1;
+            cfg.enable_ttt           = 0;
+            cfg.enable_search        = 0;
+            cfg.enable_codegen       = 0;
+            cfg.enable_federation    = 0;
+            cfg.enable_physical      = 0;
+            cfg.enable_consciousness = 0;
         } else if (strcmp(argv[i], "--status") == 0) {
             char path[768];
             FILE *f;

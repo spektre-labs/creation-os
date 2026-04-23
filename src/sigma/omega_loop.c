@@ -103,6 +103,8 @@ static void omega_cfg_defaults(struct cos_omega_config *c)
     c->sigma_halt_threshold   = 0.96f;
     c->k_eff_halt_threshold   = 0.07f;
     c->human_review_interval  = 0;
+    c->turn_timeout_s         = 0; /* cos_omega_init: 120 or COS_OMEGA_TURN_TIMEOUT_S */
+    c->max_rethinks           = -1;
     c->enable_ttt             = 1;
     c->enable_search          = 1;
     c->enable_codegen         = 0;
@@ -277,6 +279,11 @@ int cos_omega_init(const struct cos_omega_config *config,
     memcpy(&g_cfg, &def, sizeof g_cfg);
     if (config)
         memcpy(&g_cfg, config, sizeof g_cfg);
+    if (g_cfg.turn_timeout_s <= 0) {
+        const char *te = getenv("COS_OMEGA_TURN_TIMEOUT_S");
+        int          v  = (te != NULL && te[0] != '\0') ? atoi(te) : 0;
+        g_cfg.turn_timeout_s = (v > 0) ? v : 120;
+    }
     if (g_cfg.consolidate_interval <= 0)
         g_cfg.consolidate_interval = 50;
     if (g_cfg.sigma_halt_threshold <= 0.f)
@@ -388,6 +395,7 @@ static int omega_step_inner(struct cos_omega_state *state)
     float                             spvals[8];
     int                               fired[8];
     int                               nf = 0;
+    int                               omega_turn_timed_out = 0;
 
     memset(&pin, 0, sizeof pin);
     memset(&pr, 0, sizeof pr);
@@ -434,6 +442,8 @@ static int omega_step_inner(struct cos_omega_state *state)
         bud.enable_search = 0;
     if (!g_cfg.enable_ttt)
         bud.enable_ttt = 0;
+    if (g_cfg.max_rethinks >= 0)
+        bud.max_rethinks = g_cfg.max_rethinks;
 
     if (spec.early_abstain) {
         fputs("[omega] speculative early ABSTAIN\n", stderr);
@@ -466,7 +476,6 @@ static int omega_step_inner(struct cos_omega_state *state)
 
     {
         float local_tau = cos_engram_get_local_tau(domain_h);
-
         cos_energy_timer_start(&et);
 
         if (g_cfg.simulation_mode) {
@@ -478,14 +487,40 @@ static int omega_step_inner(struct cos_omega_state *state)
             tr.subtasks[0].final_action = COS_SIGMA_ACTION_ACCEPT;
             snprintf(tr.subtasks[0].answer, sizeof tr.subtasks[0].answer,
                      "[Ω-sim] ok — σ≈0.38 for `%s`", goal);
-        } else if (cos_think_run(goal, bud.max_rethinks, &tr) != 0) {
-            omega_skip("cos_think_run");
-            snprintf(tr.subtasks[0].answer, sizeof tr.subtasks[0].answer,
-                     "[think error]");
-            tr.sigma_mean                 = g_ledger.sigma_combined;
-            tr.n_subtasks                 = 1;
-            tr.subtasks[0].sigma_combined = tr.sigma_mean;
-            tr.subtasks[0].final_action = COS_SIGMA_ACTION_ABSTAIN;
+        } else {
+            int64_t t0_wall = omega_now_ms();
+            int     trc     = cos_think_run(goal, bud.max_rethinks, &tr);
+
+            if (trc != 0) {
+                omega_skip("cos_think_run");
+                snprintf(tr.subtasks[0].answer, sizeof tr.subtasks[0].answer,
+                         "[think error]");
+                tr.sigma_mean                 = g_ledger.sigma_combined;
+                tr.n_subtasks                 = 1;
+                tr.subtasks[0].sigma_combined = tr.sigma_mean;
+                tr.subtasks[0].final_action = COS_SIGMA_ACTION_ABSTAIN;
+            }
+
+            if (g_cfg.turn_timeout_s > 0) {
+                int64_t elapsed_ms = omega_now_ms() - t0_wall;
+                if (elapsed_ms > (int64_t)g_cfg.turn_timeout_s * 1000LL) {
+                    fprintf(stderr,
+                            "[omega] turn %d timed out after %llds\n",
+                            state->turn + 1,
+                            (long long)(elapsed_ms / 1000LL));
+                    omega_turn_timed_out = 1;
+                    snprintf(tr.goal, sizeof tr.goal, "%s", goal);
+                    tr.n_subtasks       = 1;
+                    tr.best_subtask_idx = 0;
+                    tr.sigma_mean       = 1.0f;
+                    tr.subtasks[0].sigma_combined = 1.0f;
+                    tr.subtasks[0].final_action =
+                        COS_SIGMA_ACTION_ABSTAIN;
+                    snprintf(tr.subtasks[0].answer,
+                             sizeof tr.subtasks[0].answer,
+                             "[Ω turn timeout]");
+                }
+            }
         }
 
         {
@@ -498,7 +533,8 @@ static int omega_step_inner(struct cos_omega_state *state)
 
         memcpy(&g_last_tr, &tr, sizeof tr);
 
-        if (local_tau > 1e-6f && tr.sigma_mean > local_tau && g_cfg.enable_ttt) {
+        if (!omega_turn_timed_out && local_tau > 1e-6f && tr.sigma_mean > local_tau
+            && g_cfg.enable_ttt) {
             struct cos_ttt_update tu;
             const char           *ans =
                 tr.subtasks[tr.best_subtask_idx >= 0 ? tr.best_subtask_idx : 0]
@@ -564,6 +600,7 @@ common_tail:
     ep.was_correct      = (gate_decision == COS_SIGMA_ACTION_ACCEPT);
     ep.attribution      = ea.source;
     ep.ttt_applied      = g_cfg.enable_ttt ? 1 : 0;
+    ep.turn_timeout     = omega_turn_timed_out;
 
     if (cos_engram_episode_store(&ep) == 0)
         state->episodes_stored++;

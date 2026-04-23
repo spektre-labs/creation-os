@@ -29,15 +29,20 @@
  *  Environment overrides (all optional):
  *    COS_BITNET_SERVER_EXE    path to llama-server
  *                             default: ./third_party/bitnet/build/bin/llama-server
+ *                             (Qwen3 GGUF needs a recent upstream llama-server;
+ *                              BitNet fork cannot load architecture qwen3.)
  *    COS_BITNET_SERVER_MODEL  GGUF model path
- *                             default: ./models/BitNet-b1.58-2B-4T/ggml-model-i2_s.gguf
+ *                             default: ./models/qwen3-8b-Q4_K_M.gguf
  *    COS_BITNET_SERVER_HOST   bind host         default: 127.0.0.1
  *    COS_BITNET_SERVER_PORT   bind port         default: 8088
- *    COS_BITNET_SERVER_CTX    --ctx-size        default: 2048
+ *    COS_BITNET_CHAT_CTX      preferred --ctx-size hint (default 2048 if unset)
+ *    COS_BITNET_SERVER_CTX    fallback --ctx-size if COS_BITNET_CHAT_CTX unset
  *    COS_BITNET_SERVER_NPROBS --n-probs value   default: 5
  *    COS_BITNET_SERVER_NPRED  default n_predict default: 64
  *    COS_BITNET_SERVER_EXTERNAL  if "1": skip spawn, assume external
  *                                server already running on host:port
+ *    COS_BITNET_CHAT_MODEL    JSON "model" id for /v1/chat/completions
+ *                                (default: "bitnet")
  */
 #ifndef COS_BITNET_SERVER_H
 #define COS_BITNET_SERVER_H
@@ -101,6 +106,12 @@ int  cos_bitnet_server_ensure(void);
 int  cos_bitnet_server_complete(const char                     *prompt,
                                 const cos_bitnet_server_params_t *params,
                                 cos_bitnet_server_result_t       *out);
+
+/** Last /completion parse: per-token σ (1−p(selected)).  Cleared each
+ *  parse; copy before the next `cos_bitnet_server_complete` call.
+ *  Returns count written (≤ cap). */
+int cos_bitnet_server_copy_last_token_sigmas(float *dst, int cap,
+                                             int *n_out);
 
 /* DEV-4: streaming completion.
  *

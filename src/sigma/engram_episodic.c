@@ -101,6 +101,42 @@ static int ensure_open(void) {
             "  attribution INTEGER NOT NULL);\n"
             "CREATE INDEX IF NOT EXISTS ix_ep_ts ON episode(ts);\n";
         if (exec(db_ep, ddl_ep) != 0) return -1;
+        sqlite3_stmt *pr = NULL;
+        int              has_ttt = 0;
+        if (sqlite3_prepare_v2(db_ep, "PRAGMA table_info(episode)", -1, &pr,
+                               NULL) == SQLITE_OK) {
+            while (sqlite3_step(pr) == SQLITE_ROW) {
+                const char *cn = (const char *)sqlite3_column_text(pr, 1);
+                if (cn != NULL && strcmp(cn, "ttt_applied") == 0) {
+                    has_ttt = 1;
+                    break;
+                }
+            }
+            sqlite3_finalize(pr);
+        }
+        if (!has_ttt
+            && exec(db_ep,
+                    "ALTER TABLE episode ADD COLUMN ttt_applied INTEGER "
+                    "NOT NULL DEFAULT 0;") != 0)
+            return -1;
+        int has_turn_to = 0;
+        if (sqlite3_prepare_v2(db_ep, "PRAGMA table_info(episode)", -1, &pr,
+                               NULL) == SQLITE_OK) {
+            while (sqlite3_step(pr) == SQLITE_ROW) {
+                const char *cn = (const char *)sqlite3_column_text(pr, 1);
+                if (cn != NULL && strcmp(cn, "turn_timeout") == 0) {
+                    has_turn_to = 1;
+                    break;
+                }
+            }
+            sqlite3_finalize(pr);
+            pr = NULL;
+        }
+        if (!has_turn_to
+            && exec(db_ep,
+                    "ALTER TABLE episode ADD COLUMN turn_timeout INTEGER "
+                    "NOT NULL DEFAULT 0;") != 0)
+            return -1;
     }
     if (!db_sem) {
         if (semantic_path(path, sizeof(path)) != 0) return -1;
@@ -125,7 +161,7 @@ int cos_engram_episode_store(const struct cos_engram_episode *ep) {
     sqlite3_stmt *st = NULL;
     const char *ins =
         "INSERT INTO episode(ts,prompt_hash,sigma,action,was_correct,"
-        "attribution) VALUES(?,?,?,?,?,?)";
+        "attribution,ttt_applied,turn_timeout) VALUES(?,?,?,?,?,?,?,?)";
     if (sqlite3_prepare_v2(db_ep, ins, -1, &st, NULL) != SQLITE_OK)
         return -1;
     sqlite3_bind_int64(st, 1, (sqlite3_int64)ep->timestamp_ms);
@@ -134,6 +170,8 @@ int cos_engram_episode_store(const struct cos_engram_episode *ep) {
     sqlite3_bind_int(st, 4, ep->action);
     sqlite3_bind_int(st, 5, ep->was_correct);
     sqlite3_bind_int(st, 6, (int)ep->attribution);
+    sqlite3_bind_int(st, 7, ep->ttt_applied != 0 ? 1 : 0);
+    sqlite3_bind_int(st, 8, ep->turn_timeout != 0 ? 1 : 0);
     int rc = sqlite3_step(st);
     sqlite3_finalize(st);
     return rc == SQLITE_DONE ? 0 : -1;
@@ -341,6 +379,8 @@ int cos_engram_episodic_self_test(void) {
         .action = 0,
         .was_correct = 1,
         .attribution = COS_ERR_NONE,
+        .ttt_applied = 0,
+        .turn_timeout = 0,
     };
     if (cos_engram_episode_store(&ep) != 0) {
         cos_engram_sqlite_shutdown();
