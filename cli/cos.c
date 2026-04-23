@@ -27,6 +27,7 @@
  *     cos hs                     # v70 σ-Hyperscale: P2Q ShiftAddLLM + Mamba-2 SSM + RWKV-7 + MoE-10k + HBM-PIM popcount + photonic WDM + Loihi-3 spike + NCCL ring + LRU-stream + HSL self-test
  *     cos wh                     # v71 σ-Wormhole: portal ER-bridge + anchor cleanup + single-XOR teleport + Kleinberg small-world route + ER=EPR tensor-bond + HMAC-HV integrity + Poincaré-boundary gate + hop budget + path receipt + WHL self-test
  *     cos decide v60 v61 v62 v63 v64 v65 v66 v67 v68 v69 v70 v71 # 12-bit composed decision (JSON)
+ *     cos calibrate [--dataset truthfulqa]  # SCI-1/2 conformal τ → ~/.cos/calibration.json
  *     cos version                # one-line version string
  *     cos help                   # this message
  *
@@ -55,6 +56,8 @@
 #include <unistd.h>
 
 #include "cos_version.h"
+
+#include "../src/sigma/state_ledger.h"
 
 /* --------------------------------------------------------------------
  *  Colour & style — Apple SF-inspired terminal palette.
@@ -240,6 +243,8 @@ static void status_quickstart(void)
     bullet_line("cos benchmark  %send-to-end pipeline bench (engram + BitNet + σ + TTT + API)%s",
                 C_GREY, C_RESET);
     bullet_line("cos cost       %show many € did σ-gating save (vs always-API)%s",
+                C_GREY, C_RESET);
+    bullet_line("cos calibrate  %sconformal τ (try: --dataset truthfulqa → ~/.cos/calibration.json)%s",
                 C_GREY, C_RESET);
     bullet_line("cos exec       %sdigital-twin preflight + guarded /bin/sh (cp modeled)%s",
                 C_GREY, C_RESET);
@@ -575,9 +580,44 @@ static int cmd_distill(int argc, char **argv)
 {
     return prefer_c_or_hint("creation_os_agi_distill", argc, argv);
 }
+static int cmd_memory(int argc, char **argv)
+{
+    return prefer_c_or_hint("creation_os_cos_memory", argc, argv);
+}
+
 static int cmd_introspect(int argc, char **argv)
 {
-    return prefer_c_or_hint("creation_os_ultra_metacog", argc, argv);
+    if (argc >= 1 &&
+        (!strcmp(argv[0], "--ultra") ||
+         !strcmp(argv[0], "--metacog"))) {
+        return prefer_c_or_hint(
+            "creation_os_ultra_metacog",
+            argc - 1,
+            argv + 1);
+    }
+
+    struct cos_state_ledger L;
+    memset(&L, 0, sizeof(L));
+    char path[768];
+    if (cos_state_ledger_default_path(path, sizeof(path)) != 0) {
+        fprintf(stderr,
+                "cos introspect: HOME unset — cannot resolve ledger path\n");
+        return 2;
+    }
+    if (cos_state_ledger_load(&L, path) != 0)
+        fprintf(stderr,
+                "cos introspect: no snapshot at %s — printing zeros\n",
+                path);
+
+    printf("σ-State Ledger\n");
+    cos_state_ledger_print_summary(stdout, &L);
+    char *js = cos_state_ledger_to_json(&L);
+    if (js != NULL) {
+        printf("%s\n", js);
+        free(js);
+    }
+    printf("(Use `cos introspect --ultra` for ULTRA metacog binary.)\n");
+    return 0;
 }
 static int cmd_ultra_search(int argc, char **argv)
 {
@@ -638,6 +678,12 @@ static int cmd_watchdog(int argc, char **argv) { return exec_preferred("cos-watc
 static int cmd_index(int argc, char **argv)
 {
     return exec_preferred("cos-index", "creation_os_sigma_index", argc, argv);
+}
+
+/* cos calibrate — forwards to cos-calibrate / creation_os_sigma_conformal. */
+static int cmd_calibrate(int argc, char **argv)
+{
+    return exec_preferred("cos-calibrate", "creation_os_sigma_conformal", argc, argv);
 }
 
 /* HORIZON-2: cos exec — digital-twin preflight + guarded /bin/sh -c. */
@@ -2378,6 +2424,8 @@ static int cmd_help(const char *prog)
            C_BOLD, "benchmark", C_RESET);
     printf("  %s%-12s%s  cost-savings driver (€saved vs always-API)\n",
            C_BOLD, "cost", C_RESET);
+    printf("  %s%-12s%s  conformal τ calibration (cos-calibrate; --dataset truthfulqa)\n",
+           C_BOLD, "calibrate", C_RESET);
     printf("  %s%-12s%s  digital-twin preflight + guarded shell (HORIZON-2: cos-exec --simulate)\n",
            C_BOLD, "exec", C_RESET);
     printf("  %s%-12s%s  long-horizon planner + σ-checkpoints (HORIZON-3: cos-plan --mission)\n",
@@ -2402,8 +2450,12 @@ static int cmd_help(const char *prog)
            C_BOLD, "sigma-meta", C_RESET);
     printf("  %s%-12s%s  continuous distillation status (AGI-3: escalation pairs JSONL)\n",
            C_BOLD, "distill", C_RESET);
-    printf("  %s%-12s%s  ULTRA-5: four-channel meta-σ report (creation_os_ultra_metacog)\n",
+    printf("  %s%-12s%s  σ-state ledger snapshot (~/.cos/state_ledger.json); "
+           "`--ultra` → creation_os_ultra_metacog\n",
            C_BOLD, "introspect", C_RESET);
+    printf("  %s%-12s%s  episodic + semantic SQLite memory (--episodes / "
+           "--consolidate / --forget / --tau)\n",
+           C_BOLD, "memory", C_RESET);
     printf("  %s%-12s%s  ULTRA-6: σ-guided toy architecture search (--generations)\n",
            C_BOLD, "search", C_RESET);
     printf("  %s%-12s%s  ULTRA-8: unified continuous-learning status (--status)\n",
@@ -2906,6 +2958,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "chat")      == 0) return cmd_chat(argc - 2, argv + 2);
     if (strcmp(argv[1], "benchmark") == 0) return cmd_benchmark(argc - 2, argv + 2);
     if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
+    if (strcmp(argv[1], "calibrate") == 0) return cmd_calibrate(argc - 2, argv + 2);
     if (strcmp(argv[1], "exec")      == 0) return cmd_exec(argc - 2, argv + 2);
     if (strcmp(argv[1], "plan")      == 0) return cmd_plan(argc - 2, argv + 2);
     if (strcmp(argv[1], "swarm")    == 0) return cmd_swarm(argc - 2, argv + 2);
@@ -2919,6 +2972,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "omega")     == 0) return cmd_omega  (argc - 2, argv + 2);
     if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
     if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);
+    if (strcmp(argv[1], "memory") == 0) return cmd_memory(argc - 2, argv + 2);
     if (strcmp(argv[1], "introspect") == 0) return cmd_introspect(argc - 2, argv + 2);
     if (strcmp(argv[1], "search")     == 0) return cmd_ultra_search(argc - 2, argv + 2);
     if (strcmp(argv[1], "learn")      == 0) return cmd_learn(argc - 2, argv + 2);

@@ -1,0 +1,53 @@
+/*
+ * Persistent episodic → semantic memory layer (SQLite).
+ *
+ * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+ */
+#ifndef COS_SIGMA_ENGRAM_EPISODIC_H
+#define COS_SIGMA_ENGRAM_EPISODIC_H
+
+#include "error_attribution.h"
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+struct cos_engram_episode {
+    int64_t timestamp_ms;
+    uint64_t prompt_hash;
+    float sigma_combined;
+    int action;
+    int was_correct;
+    enum cos_error_source attribution;
+};
+
+struct cos_engram_semantic {
+    uint64_t pattern_hash;
+    float sigma_mean;
+    int encounter_count;
+    float reliability;
+    float tau_local;
+};
+
+uint64_t cos_engram_prompt_hash(const char *prompt_utf8);
+
+int cos_engram_episode_store(const struct cos_engram_episode *ep);
+
+int cos_engram_consolidate(int n_recent);
+
+struct cos_engram_semantic *cos_engram_query_semantic(uint64_t prompt_hash);
+
+float cos_engram_get_local_tau(uint64_t domain_hash);
+
+int cos_engram_forget(int64_t older_than_ms, float reliability_below);
+
+void cos_engram_sqlite_shutdown(void);
+
+int cos_engram_episodic_self_test(void);
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* COS_SIGMA_ENGRAM_EPISODIC_H */

@@ -63,6 +63,9 @@
 #include "introspection.h"
 #include "coherence.h"
 #include "sigma_tools.h"
+#include "state_ledger.h"
+#include "error_attribution.h"
+#include "engram_episodic.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -71,6 +74,7 @@
 #include <math.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <stdint.h>
 
 #ifndef COS_CHAT_VERSION_STRING
 #define COS_CHAT_VERSION_STRING "v3.0.0"
@@ -465,12 +469,107 @@ typedef struct {
     chat_coh_t *coh;            /* Phase D window state               */
 } chat_feat_t;
 
+static struct cos_state_ledger g_ag_ledger;
+static int                     g_ag_ledger_ready;
+static int                     g_ag_turns;
+
+static const char *chat_err_src(enum cos_error_source s) {
+    switch (s) {
+        case COS_ERR_NONE: return "NONE";
+        case COS_ERR_EPISTEMIC: return "EPISTEMIC";
+        case COS_ERR_ALEATORIC: return "ALEATORIC";
+        case COS_ERR_REASONING: return "REASONING";
+        case COS_ERR_MEMORY: return "MEMORY";
+        case COS_ERR_NOVEL_DOMAIN: return "NOVEL_DOMAIN";
+        default: return "?";
+    }
+}
+
+static void chat_agi_after_turn(cos_pipeline_config_t *cfg_rw,
+                                const char *prompt,
+                                cos_pipeline_result_t *r,
+                                const chat_feat_t *feat,
+                                chat_multi_t *ms,
+                                int have_ms) {
+    cos_ultra_metacog_levels_t lv;
+    chat_metacog_levels(prompt, r, cfg_rw->max_rethink, &lv);
+    cos_multi_sigma_t mc;
+    if (have_ms && ms != NULL) {
+        mc = ms->ens;
+    } else {
+        memset(&mc, 0, sizeof(mc));
+        float s = r->sigma;
+        if (s < 0.f) s = 0.f;
+        if (s > 1.f) s = 1.f;
+        mc.sigma_logprob = s;
+        mc.sigma_entropy = s;
+        mc.sigma_perplexity = s;
+        mc.sigma_consistency = 0.f;
+        mc.sigma_combined = s;
+    }
+    float meta[4] = {
+        lv.sigma_perception, lv.sigma_self,
+        lv.sigma_social, lv.sigma_situational,
+    };
+    struct cos_error_attribution attr =
+        cos_error_attribute(mc.sigma_logprob, mc.sigma_entropy,
+                           mc.sigma_consistency, lv.sigma_perception);
+
+    if (!g_ag_ledger_ready) {
+        cos_state_ledger_init(&g_ag_ledger);
+        g_ag_ledger_ready = 1;
+    }
+    cos_state_ledger_fill_multi(&g_ag_ledger, &mc);
+    cos_state_ledger_update(&g_ag_ledger, mc.sigma_combined, meta,
+                           (int)r->final_action);
+    cos_state_ledger_add_cost(&g_ag_ledger, (float)r->cost_eur);
+    if (r->engram_hit) cos_state_ledger_note_cache_hit(&g_ag_ledger);
+
+    struct cos_engram_episode ep;
+    ep.timestamp_ms = (int64_t)time(NULL) * 1000LL;
+    ep.prompt_hash = cos_engram_prompt_hash(prompt);
+    ep.sigma_combined = mc.sigma_combined;
+    ep.action = (int)r->final_action;
+    ep.was_correct = -1;
+    ep.attribution = attr.source;
+    cos_engram_episode_store(&ep);
+
+    g_ag_turns++;
+    int ev = 50;
+    const char *es = getenv("COS_EPISODE_CONSOLIDATE_EVERY");
+    if (es != NULL && es[0] != '\0') ev = atoi(es);
+    if (ev > 0 && (g_ag_turns % ev) == 0)
+        cos_engram_consolidate(ev * 100);
+
+    if (feat != NULL && feat->verbose) {
+        fprintf(stdout,
+                "[attribution: source=%s confidence=%.2f]\n"
+                "  reason=\"%s\"\n"
+                "  fix=\"%s\"\n",
+                chat_err_src(attr.source), (double)attr.confidence,
+                attr.reason, attr.fix);
+        cos_state_ledger_print_summary(stdout, &g_ag_ledger);
+        fprintf(stdout,
+                "[episode stored: σ=%.3f action=%s]\n",
+                (double)mc.sigma_combined,
+                cos_sigma_action_label(r->final_action));
+    }
+}
+
 static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                          const chat_feat_t *feat,
                          const char *prompt) {
     clock_t t0 = clock();
+    uint64_t ph = cos_engram_prompt_hash(prompt);
+    float    tau_saved = cfg_rw->tau_accept;
+    float    tl = cos_engram_get_local_tau(ph);
+    if (tl > 0.f && tl < 1.f)
+        cfg_rw->tau_accept = tl;
+
     cos_pipeline_result_t r;
-    if (cos_sigma_pipeline_run(cfg_rw, prompt, &r) != 0) {
+    int prc = cos_sigma_pipeline_run(cfg_rw, prompt, &r);
+    cfg_rw->tau_accept = tau_saved;
+    if (prc != 0) {
         fprintf(stderr, "cos chat: pipeline_run failed\n");
         return 3;
     }
@@ -496,12 +595,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     /* FINAL-2 Phase A: σ_combined shadow (does not change gating). */
     chat_multi_t ms;
     int have_ms = 0;
+    memset(&ms, 0, sizeof(ms));
     if (feat != NULL && feat->multi_sigma) {
         if (chat_multi_shadow(cfg_rw, prompt,
                               r.response, r.sigma, &ms) == 0) {
             have_ms = 1;
         }
     }
+
+    chat_agi_after_turn(cfg_rw, prompt, &r, feat, &ms, have_ms);
 
     fprintf(stdout,
             "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
@@ -1029,6 +1131,12 @@ int main(int argc, char **argv) {
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
+        if (g_ag_ledger_ready) {
+            char slp[512];
+            if (cos_state_ledger_default_path(slp, sizeof(slp)) == 0)
+                cos_state_ledger_persist(&g_ag_ledger, slp);
+            cos_engram_consolidate(50000);
+        }
         cos_sigma_pipeline_free_engram_values(&engram);
         cos_sigma_codex_free(&codex);
         cos_engram_persist_close(persist);
@@ -1087,7 +1195,13 @@ int main(int argc, char **argv) {
         turn++;
         clock_t t0 = clock();
         cos_pipeline_result_t r;
+        uint64_t tph = cos_engram_prompt_hash(line);
+        float    tau_sv = cfg.tau_accept;
+        float    tloc = cos_engram_get_local_tau(tph);
+        if (tloc > 0.f && tloc < 1.f)
+            cfg.tau_accept = tloc;
         cos_sigma_pipeline_run(&cfg, line, &r);
+        cfg.tau_accept = tau_sv;
         clock_t t1 = clock();
         double elapsed_ms = (double)(t1 - t0) * 1000.0 / (double)CLOCKS_PER_SEC;
         if (elapsed_ms < 0.0) elapsed_ms = 0.0;
@@ -1118,10 +1232,25 @@ int main(int argc, char **argv) {
         /* FINAL-2 Phase A: optional σ_combined shadow ensemble.
          * NEXT-1 auto-enables this under --verbose so the full ULTRA
          * stack shows without requiring a second flag. */
-        if (multi_sigma || verbose) {
-            chat_multi_t ms;
-            if (chat_multi_shadow(&cfg, line, r.response, r.sigma, &ms) == 0) {
-                fprintf(stdout,
+        chat_feat_t xf;
+        memset(&xf, 0, sizeof(xf));
+        xf.multi_sigma = (multi_sigma || verbose) ? 1 : 0;
+        xf.verbose = verbose;
+        xf.conformal_active = conformal_active;
+        xf.conformal_alpha = conformal_alpha;
+
+        chat_multi_t ms;
+        memset(&ms, 0, sizeof(ms));
+        int ms_ok = 0;
+        if (multi_sigma || verbose)
+            ms_ok =
+                (chat_multi_shadow(&cfg, line, r.response, r.sigma,
+                                   &ms) == 0)
+                    ? 1
+                    : 0;
+        chat_agi_after_turn(&cfg, line, &r, &xf, &ms, ms_ok);
+        if (ms_ok) {
+            fprintf(stdout,
                     "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
                     "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
                     (double)ms.ens.sigma_combined,
@@ -1130,7 +1259,6 @@ int main(int argc, char **argv) {
                     (double)ms.ens.sigma_perplexity,
                     (double)ms.ens.sigma_consistency,
                     ms.k_used);
-            }
         }
 
         /* FINAL-2 Phase D: session window for coherence. */
@@ -1167,6 +1295,13 @@ int main(int argc, char **argv) {
         cos_ultra_coherence_emit_report(stdout, mean, slope, 2.0f, 1.0f);
     }
     fprintf(stdout, "  assert(declared == realized);\n  1 = 1.\n");
+
+    if (g_ag_ledger_ready) {
+        char sp[512];
+        if (cos_state_ledger_default_path(sp, sizeof(sp)) == 0)
+            cos_state_ledger_persist(&g_ag_ledger, sp);
+        cos_engram_consolidate(50000);
+    }
 
     cos_sigma_pipeline_free_engram_values(&engram);
     cos_sigma_codex_free(&codex);

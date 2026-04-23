@@ -6226,8 +6226,11 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/metacog/introspection.c \
           src/sigma/physics/coherence.c \
           src/sigma/tools/sigma_tools.c \
+          src/sigma/state_ledger.c \
+          src/sigma/error_attribution.c \
+          src/sigma/engram_episodic.c \
           src/cli/escalation.c src/cli/cos_chat.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma/tools -o $@ \
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
@@ -6235,6 +6238,9 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/metacog/introspection.c \
 	    src/sigma/physics/coherence.c \
 	    src/sigma/tools/sigma_tools.c \
+	    src/sigma/state_ledger.c \
+	    src/sigma/error_attribution.c \
+	    src/sigma/engram_episodic.c \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 
@@ -6251,6 +6257,46 @@ creation_os_inplace_ttt: src/sigma/ttt/inplace_ttt.c \
 check-agi-icl: creation_os_inplace_ttt cos-chat
 	@./creation_os_inplace_ttt
 	@echo "check-agi-icl: OK (inplace_ttt self-test + cos-chat links)"
+
+creation_os_cos_memory: src/cli/cos_memory_cli.c src/sigma/engram_episodic.c \
+                       src/sigma/error_attribution.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline -o $@ \
+	    src/cli/cos_memory_cli.c src/sigma/engram_episodic.c \
+	    src/sigma/error_attribution.c $(LDFLAGS) -lsqlite3
+
+creation_os_check_state_ledger: src/sigma/state_ledger.c \
+                               src/sigma/pipeline/multi_sigma.c \
+                               tests/agi/check_state_ledger_main.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline -o $@ \
+	    src/sigma/state_ledger.c src/sigma/pipeline/multi_sigma.c \
+	    tests/agi/check_state_ledger_main.c $(LDFLAGS) -lm
+
+check-state-ledger: creation_os_check_state_ledger
+	@./creation_os_check_state_ledger
+	@echo "check-state-ledger: OK"
+
+creation_os_check_error_attribution: src/sigma/error_attribution.c \
+                                    tests/agi/check_error_attribution_main.c
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ src/sigma/error_attribution.c \
+	    tests/agi/check_error_attribution_main.c $(LDFLAGS) -lm
+
+check-error-attribution: creation_os_check_error_attribution
+	@./creation_os_check_error_attribution
+	@echo "check-error-attribution: OK"
+
+creation_os_check_engram_episodic: src/sigma/engram_episodic.c \
+                                  src/sigma/error_attribution.c \
+                                  tests/agi/check_engram_episodic_main.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline -o $@ \
+	    src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	    tests/agi/check_engram_episodic_main.c $(LDFLAGS) -lsqlite3
+
+check-engram-episodic: creation_os_check_engram_episodic
+	@./creation_os_check_engram_episodic
+	@echo "check-engram-episodic: OK"
+
+check-agi: check-state-ledger check-error-attribution check-engram-episodic
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c
@@ -9514,8 +9560,9 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 # Single C binary, no deps beyond libc, NO_COLOR-respecting, isatty
 # auto-detect.  This is the "front door" for end users: `cos`,
 # `cos verify`, `cos chace`, `cos sigma`, `cos think <prompt>`.
-cos: cli/cos.c include/cos_version.h
-	$(CC) -O2 -Wall -std=c11 -Iinclude -o cos cli/cos.c
+cos: cli/cos.c include/cos_version.h src/sigma/state_ledger.c
+	$(CC) -O2 -Wall -std=c11 -Iinclude -Isrc/sigma -Isrc/sigma/pipeline \
+	    -o cos cli/cos.c src/sigma/state_ledger.c
 
 check-cos: cos
 	./cos --version
