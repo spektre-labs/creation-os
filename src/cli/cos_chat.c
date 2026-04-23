@@ -93,6 +93,42 @@ static const char COS_CHAT_PIPELINE_ABSTAIN[] =
     "I am uncertain and cannot answer this locally "
     "(σ above threshold; escalation not permitted).";
 
+/* When the σ pipeline cannot run (missing weights, server down, etc.),
+ * print next steps — never leave the user at a bare errno-style line. */
+static void chat_emit_pipeline_failure_help(void)
+{
+    int tty = isatty(fileno(stderr));
+    if (!tty) {
+        fputs(
+            "\ncos chat: model or inference server unavailable.\n"
+            "  To use live inference, run:\n"
+            "    ./scripts/install.sh\n"
+            "  To see a demo without a model:\n"
+            "    ./cos demo\n"
+            "  External llama-server:\n"
+            "    export COS_BITNET_SERVER_EXTERNAL=1\n"
+            "    export COS_BITNET_SERVER_PORT=8088\n\n",
+            stderr);
+        return;
+    }
+    fputs(
+        "\n"
+        "\u256d\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256e\n"
+        "\u2502 Model not found or inference server unavailable.        \u2502\n"
+        "\u2502                                                            \u2502\n"
+        "\u2502 To use live inference, run:                                \u2502\n"
+        "\u2502   ./scripts/install.sh                                     \u2502\n"
+        "\u2502                                                            \u2502\n"
+        "\u2502 To see a demo without a model:                             \u2502\n"
+        "\u2502   ./cos demo                                               \u2502\n"
+        "\u2502                                                            \u2502\n"
+        "\u2502 External llama-server (example env):                       \u2502\n"
+        "\u2502   export COS_BITNET_SERVER_EXTERNAL=1                    \u2502\n"
+        "\u2502   export COS_BITNET_SERVER_PORT=8088                     \u2502\n"
+        "\u2570\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u256f\n",
+        stderr);
+}
+
 /* NEXT-1 polish: backend detection + one-line action decorator. */
 static const char *cos_chat_backend_label(void) {
     const char *exe = getenv("CREATION_OS_BITNET_EXE");
@@ -957,7 +993,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     cfg_rw->tau_accept = tau_saved;
     if (!early_spec_abstain && !semantic_hit && prc != 0) {
-        fprintf(stderr, "cos chat: pipeline_run failed\n");
+        chat_emit_pipeline_failure_help();
         return 3;
     }
     clock_t t1 = clock();
@@ -1839,7 +1875,7 @@ int main(int argc, char **argv) {
         cfg.tau_accept = tau_sv;
 
         if (!early_spec_abstain && !semantic_hit && prc != 0) {
-            fprintf(stderr, "cos chat: pipeline_run failed\n");
+            chat_emit_pipeline_failure_help();
             continue;
         }
 

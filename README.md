@@ -181,7 +181,15 @@ No cloud. No API. No data leaves the device.
 
 <sub>Zero-to-chat on macOS or Linux — weights optional for CI (<code>COS_INSTALL_NO_BITNET=1</code>).</sub>
 
-One path, from a terminal, on any macOS or Linux host:
+Fast path — under a minute, no GGUF download (recorded sigma from benchmarks):
+
+```bash
+git clone https://github.com/spektre-labs/creation-os
+cd creation-os
+bash scripts/quickstart.sh
+```
+
+Full path — local weights + `cos chat` smoke test:
 
 ```bash
 git clone https://github.com/spektre-labs/creation-os

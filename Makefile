@@ -10061,6 +10061,7 @@ cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	src/cli/cos_consciousness_cli.c \
 	src/sigma/energy_accounting.c src/sigma/green_score.c \
 	src/cli/cos_energy_green_cli.c \
+	src/cli/cos_demo.c \
 	$(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline \
@@ -10076,6 +10077,7 @@ cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/cli/cos_consciousness_cli.c \
 	    src/sigma/energy_accounting.c src/sigma/green_score.c \
 	    src/cli/cos_energy_green_cli.c \
+	    src/cli/cos_demo.c \
 	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	    $(COS_PROOF_LIB) \
 	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
@@ -10084,6 +10086,9 @@ cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c src/cli/cos_monitor.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
+
+cos-demo: cos
+	@ln -f cos cos-demo && echo "cos-demo -> cos (run ./cos demo)"
 
 cos-monitor: src/cli/cos_monitor.c
 	$(CC) -O2 -Wall -std=c11 -o cos-monitor src/cli/cos_monitor.c \

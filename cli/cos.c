@@ -67,6 +67,7 @@
 #include "../src/cli/cos_energy_green_cli.h"
 #include "../src/cli/cos_omega_cli.h"
 #include "../src/cli/cos_monitor.h"
+#include "../src/cli/cos_demo.h"
 #include "../src/sigma/state_ledger.h"
 
 /* --------------------------------------------------------------------
@@ -2008,7 +2009,7 @@ static int cmd_welcome(void)
            C_BOLD, C_RESET);
 
     section("Try these, in this order");
-    bullet_line("%scos demo%s          %sthe 30-second tour — numbers, live, not promises%s",
+    bullet_line("%scos demo%s          %ssee real sigma from benchmarks — no model download%s",
                 C_BOLD, C_RESET, C_GREY, C_RESET);
     bullet_line("%scos sigma%s         %srun every kernel's self-test — 6+ million PASS rows%s",
                 C_BOLD, C_RESET, C_GREY, C_RESET);
@@ -2406,14 +2407,126 @@ static int cmd_chat_demo(void)
     return 0;
 }
 
-static int cmd_help(const char *prog)
+static int cmd_help_full(const char *prog);
+
+static int cmd_help_quick(const char *prog)
+{
+    printf("\n%sCreation OS — sigma-gated cognitive architecture%s\n\n",
+           C_BOLD, C_RESET);
+    printf("%sQUICK START%s\n", C_BOLD, C_RESET);
+    printf("  %s%-28s%s  sigma without downloading a model (benchmark-recorded)\n",
+           C_BOLD, "cos demo", C_RESET);
+    printf("  %s%-28s%s  sigma-gated chat (weights or llama-server)\n",
+           C_BOLD, "cos chat", C_RESET);
+    printf("  %s%-28s%s  one-command build + `./cos demo`\n",
+           C_BOLD, "bash scripts/quickstart.sh", C_RESET);
+    printf("\n%sMEASURE%s\n", C_BOLD, C_RESET);
+    printf("  %s%-28s%s  system state + gates\n",
+           C_BOLD, "cos introspect", C_RESET);
+    printf("  %s%-28s%s  learned domains + tau snapshot\n",
+           C_BOLD, "cos memory", C_RESET);
+    printf("  %s%-28s%s  joules + gCO2 per answer\n",
+           C_BOLD, "cos energy", C_RESET);
+    printf("  %s%-28s%s  sustainability grade A-F\n",
+           C_BOLD, "cos green", C_RESET);
+    printf("\n%sOPERATE%s\n", C_BOLD, C_RESET);
+    printf("  %s%-28s%s  Omega-loop (continuous operation)\n",
+           C_BOLD, "cos omega", C_RESET);
+    printf("  %s%-28s%s  decompose + solve with sigma pipeline\n",
+           C_BOLD, "cos think", C_RESET);
+    printf("  %s%-28s%s  live telemetry dashboard\n",
+           C_BOLD, "cos monitor", C_RESET);
+    printf("\n%sMANAGE%s\n", C_BOLD, C_RESET);
+    printf("  %s%-28s%s  inference cache stats\n",
+           C_BOLD, "cos cache", C_RESET);
+    printf("  %s%-28s%s  learned skills + reliability\n",
+           C_BOLD, "cos skills", C_RESET);
+    printf("  %s%-28s%s  knowledge graph\n",
+           C_BOLD, "cos graph", C_RESET);
+    printf("\n%sFULL HELP%s\n", C_BOLD, C_RESET);
+    printf("  %s%-28s%s  every command\n",
+           C_BOLD, "cos help --all", C_RESET);
+    printf("  %s%-28s%s  one-line topic (e.g. demo, chat)\n\n",
+           C_BOLD, "cos help COMMAND", C_RESET);
+    printf("%susage:%s  %s <command> [args]\n\n", C_GREY, C_RESET, prog);
+    return 0;
+}
+
+static int cmd_help_topic(const char *topic, const char *prog)
+{
+    static const struct {
+        const char *name;
+        const char *blurb;
+    } rows[] = {
+        {"demo",
+         "Show recorded sigma from benchmarks — no GGUF download "
+         "(see benchmarks/qwen_first_contact/)."},
+        {"demo-live",
+         "Live sigma-chat showcase via cos-chat — six scripted queries."},
+        {"chat",
+         "Interactive sigma-gated REPL — needs weights or "
+         "COS_BITNET_SERVER_EXTERNAL."},
+        {"introspect", "Runtime snapshot — ledger, gates, substrate health."},
+        {"memory", "Mnemos-style domains + tau snapshot."},
+        {"energy", "Session energy receipt — joules, CO2, euro."},
+        {"green", "Sustainability grade vs cloud counterfactuals."},
+        {"omega", "Omega-loop continuous operation controls."},
+        {"think", "Goal-oriented decomposition + sigma pipeline."},
+        {"monitor", "Live telemetry dashboard (substrates + latency)."},
+        {"cache", "Inference cache hits, stats, sizing."},
+        {"skills", "Skill library health + reliability."},
+        {"graph", "Knowledge-graph introspection."},
+    };
+
+    if (topic == NULL || !topic[0]) {
+        fprintf(stderr, "cos: missing help topic.  Try '%s help --all'.\n",
+                prog);
+        return 2;
+    }
+    for (size_t i = 0; i < sizeof rows / sizeof rows[0]; i++) {
+        if (strcmp(topic, rows[i].name) != 0)
+            continue;
+        printf("\n%s%s%s — %s\n", C_BOLD, rows[i].name, C_RESET,
+               rows[i].blurb);
+        printf("%sFull command list:%s %s help --all\n\n",
+               C_GREY, C_RESET, prog);
+        return 0;
+    }
+    fprintf(stderr,
+            "cos: unknown help topic '%s'.  Try '%s help --all'.\n",
+            topic, prog);
+    return 2;
+}
+
+static int cmd_help_route(int argc, char **argv)
+{
+    const char *slash = strrchr(argv[0], '/');
+    const char *prog   = slash ? slash + 1 : argv[0];
+
+    if (argc >= 3 && strcmp(argv[1], "help") == 0
+        && strcmp(argv[2], "--all") == 0)
+        return cmd_help_full(prog);
+    if (argc >= 3 && strcmp(argv[1], "help") == 0)
+        return cmd_help_topic(argv[2], prog);
+    if (argc >= 2 && strcmp(argv[1], "help") == 0)
+        return cmd_help_quick(prog);
+    if (argc >= 2
+        && (!strcmp(argv[1], "-h") || !strcmp(argv[1], "--help")))
+        return cmd_help_quick(prog);
+    return cmd_help_quick(prog);
+}
+
+static int cmd_help_full(const char *prog)
 {
     print_header();
     section("commands");
     printf("  %s%-12s%s  first-run greeting — plain language, no jargon (aliases: start, hello, hi)\n",
            C_BOLD, "welcome", C_RESET);
-    printf("  %s%-12s%s  60-second σ-chat showcase — 6 queries, full ULTRA stack on the last one\n",
-           C_BOLD, "demo",    C_RESET);
+    printf("  %s%-12s%s  sigma showcase without a model (benchmark-recorded); "
+           "`cos demo-live` = scripted cos-chat tour\n",
+           C_BOLD, "demo", C_RESET);
+    printf("  %s%-12s%s  live sigma-chat showcase via cos-chat — six queries\n",
+           C_BOLD, "demo-live", C_RESET);
     printf("  %s%-12s%s  30-second kernel self-test tour — every kernel runs live (aliases: showcase, kernel-tour)\n",
            C_BOLD, "tour",    C_RESET);
     printf("  %s%-12s%s  status board (default)\n",       C_BOLD, "status",  C_RESET);
@@ -2975,10 +3088,12 @@ int main(int argc, char **argv)
         strcmp(argv[1], "hello")   == 0 ||
         strcmp(argv[1], "hi")      == 0 ||
         strcmp(argv[1], "onboard") == 0) return cmd_welcome();
-    /* POLISH-2: `cos demo` now runs the five-query σ-chat showcase.
-     * The long-standing kernel self-test tour stays reachable via
-     * `cos tour` / `cos showcase` (unchanged behaviour). */
-    if (strcmp(argv[1], "demo") == 0)      return cmd_chat_demo();
+    /* Zero-friction demo (no model download); scripted chat tour is
+     * `cos demo-live`. Kernel self-tests: `cos tour` / `cos showcase`. */
+    if (strcmp(argv[1], "demo") == 0)
+        return cos_demo_main(argc - 2, argv + 2);
+    if (strcmp(argv[1], "demo-live") == 0)
+        return cmd_chat_demo();
     if (strcmp(argv[1], "tour")     == 0 ||
         strcmp(argv[1], "showcase") == 0 ||
         strcmp(argv[1], "kernel-tour") == 0) return cmd_demo();
@@ -3109,7 +3224,8 @@ int main(int argc, char **argv)
         return cmd_version();
     if (strcmp(argv[1], "help")    == 0 ||
         strcmp(argv[1], "-h")      == 0 ||
-        strcmp(argv[1], "--help")  == 0) return cmd_help(argv[0]);
+        strcmp(argv[1], "--help")  == 0)
+        return cmd_help_route(argc, argv);
 
     fprintf(stderr, "cos: unknown command '%s'.  Try 'cos help'.\n", argv[1]);
     return 2;
