@@ -40,6 +40,9 @@ struct cos_state_ledger {
     int rethinks;
     int abstains;
     int cache_hits;
+    /** Speculative dual-model routing (draft 2B vs verify 9B). */
+    int spec_decode_drafts;
+    int spec_decode_verifies;
     float cost_total_eur;
 
     float sigma_mean_session;
@@ -63,6 +66,10 @@ void cos_state_ledger_update(struct cos_state_ledger *l,
                              int action);
 
 void cos_state_ledger_note_cache_hit(struct cos_state_ledger *l);
+
+/** Count a speculative-decode outcome (draft-only vs escalated verify). */
+void cos_state_ledger_note_spec_decode(struct cos_state_ledger *l,
+                                       int used_draft);
 
 void cos_state_ledger_add_cost(struct cos_state_ledger *l, float eur);
 

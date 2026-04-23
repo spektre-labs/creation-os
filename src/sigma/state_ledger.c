@@ -66,6 +66,15 @@ void cos_state_ledger_note_cache_hit(struct cos_state_ledger *l) {
     l->cache_hits += 1;
 }
 
+void cos_state_ledger_note_spec_decode(struct cos_state_ledger *l,
+                                         int used_draft) {
+    if (!l) return;
+    if (used_draft)
+        l->spec_decode_drafts += 1;
+    else
+        l->spec_decode_verifies += 1;
+}
+
 void cos_state_ledger_add_cost(struct cos_state_ledger *l, float eur) {
     if (!l) return;
     if (eur > 0.f) l->cost_total_eur += eur;
@@ -143,9 +152,9 @@ int cos_state_ledger_default_path(char *buf, size_t cap) {
 
 char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
     if (!l) return NULL;
-    char *out = (char *)malloc(2048);
+    char *out = (char *)malloc(2560);
     if (!out) return NULL;
-    snprintf(out, 2048,
+    snprintf(out, 2560,
         "{"
         "\"sigma_logprob\":%.6f,\"sigma_entropy\":%.6f,"
         "\"sigma_perplexity\":%.6f,\"sigma_consistency\":%.6f,"
@@ -155,7 +164,9 @@ char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
         "\"k_eff\":%.6f,\"dk_dt\":%.6f,\"d2k_dt2\":%.6f,"
         "\"coherence_status\":%d,"
         "\"total_queries\":%d,\"accepts\":%d,\"rethinks\":%d,"
-        "\"abstains\":%d,\"cache_hits\":%d,\"cost_total_eur\":%.6f,"
+        "\"abstains\":%d,\"cache_hits\":%d,"
+        "\"spec_decode_drafts\":%d,\"spec_decode_verifies\":%d,"
+        "\"cost_total_eur\":%.6f,"
         "\"sigma_mean_session\":%.6f,\"sigma_mean_delta\":%.6f,"
         "\"omega_generation\":%d,"
         "\"pending_actions\":%d,\"max_risk_level\":%d,"
@@ -169,7 +180,9 @@ char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
         (double)l->k_eff, (double)l->dk_dt, (double)l->d2k_dt2,
         l->coherence_status,
         l->total_queries, l->accepts, l->rethinks,
-        l->abstains, l->cache_hits, (double)l->cost_total_eur,
+        l->abstains, l->cache_hits,
+        l->spec_decode_drafts, l->spec_decode_verifies,
+        (double)l->cost_total_eur,
         (double)l->sigma_mean_session, (double)l->sigma_mean_delta,
         l->omega_generation,
         l->pending_actions, l->max_risk_level,
@@ -248,6 +261,8 @@ int cos_state_ledger_load(struct cos_state_ledger *l,
     l->rethinks          = grab_int(buf, "rethinks", 0);
     l->abstains          = grab_int(buf, "abstains", 0);
     l->cache_hits        = grab_int(buf, "cache_hits", 0);
+    l->spec_decode_drafts   = grab_int(buf, "spec_decode_drafts", 0);
+    l->spec_decode_verifies = grab_int(buf, "spec_decode_verifies", 0);
     l->cost_total_eur    = grab_float(buf, "cost_total_eur", 0.f);
     l->sigma_mean_session = grab_float(buf, "sigma_mean_session", 0.f);
     l->sigma_mean_delta   = grab_float(buf, "sigma_mean_delta", 0.f);
@@ -290,6 +305,15 @@ void cos_state_ledger_print_summary(FILE *fp,
             l->cache_hits, (double)l->cost_total_eur,
             (double)l->sigma_mean_session, (double)l->sigma_mean_delta,
             (double)l->k_eff, coh[c]);
+    if (l->spec_decode_drafts + l->spec_decode_verifies > 0) {
+        int tot = l->spec_decode_drafts + l->spec_decode_verifies;
+        float ratio =
+            tot > 0 ? (float)l->spec_decode_drafts / (float)tot : 0.f;
+        fprintf(fp,
+                "        spec_decode: draft=%d verify=%d draft_ratio=%.2f\n",
+                l->spec_decode_drafts, l->spec_decode_verifies,
+                (double)ratio);
+    }
 }
 
 int cos_state_ledger_self_test(void) {

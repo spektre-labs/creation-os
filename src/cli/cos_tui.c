@@ -157,10 +157,16 @@ void cos_tui_print_receipt(float sigma, const char *action, float tok_s,
                            float ttft_ms, float cost_eur)
 {
     const char *act = action != NULL ? action : "?";
+    const char *tier = "";
+    const char *sdr  = getenv("COS_SPEC_DECODE_ROUTE");
+    if (sdr != NULL && strcmp(sdr, "DRAFT") == 0)
+        tier = " DRAFT(2B)";
+    else if (sdr != NULL && strcmp(sdr, "VERIFY") == 0)
+        tier = " VERIFY(9B)";
     cos_tui_color_sigma(sigma);
     fprintf(stdout,
-            "│ [\033[1mσ=%.3f %s %.1f tok/s TTFT:%.0fms €%.4f\033[0m]\033[K\n",
-            (double)sigma, act, (double)tok_s, (double)ttft_ms,
+            "│ [\033[1mσ=%.3f %s%s %.1f tok/s TTFT:%.0fms €%.4f\033[0m]\033[K\n",
+            (double)sigma, act, tier, (double)tok_s, (double)ttft_ms,
             (double)cost_eur);
     cos_tui_reset_color();
     fputs("│\033[K\n", stdout);

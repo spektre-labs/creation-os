@@ -31,6 +31,7 @@
  *   --no-stream        — wait for full response (default for --once)
  *   --tui              — ANSI live layout (default on interactive TTY)
  *   --no-tui           — plain transcript (also for piped stdin)
+ *   --spec | --speculative-decode — dual-model draft (2B) then verify (9B) by σ
  *   --prompt TEXT      — user line for --once
  *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
  *   --no-transcript    — skip JSONL for --once
@@ -81,6 +82,7 @@
 #include "speed_metrics.h"
 #include "bitnet_server.h"
 #include "cos_tui.h"
+#include "speculative_decode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -437,6 +439,13 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                      : r->engram_hit     ? "CACHE"
                                          : "FRESH";
     const char *route = r->escalated ? "CLOUD" : "LOCAL";
+    if (!r->escalated) {
+        const char *sdr = getenv("COS_SPEC_DECODE_ROUTE");
+        if (sdr != NULL && strcmp(sdr, "DRAFT") == 0)
+            route = "DRAFT(2B)";
+        else if (sdr != NULL && strcmp(sdr, "VERIFY") == 0)
+            route = "VERIFY(9B)";
+    }
     double       ms =
         (r->engram_hit || semantic_cache_hit) ? 0.0 : elapsed_ms;
     float        tps = 0.0f;
@@ -639,6 +648,14 @@ static void chat_agi_after_turn(cos_pipeline_config_t *cfg_rw,
                            (int)r->final_action);
     cos_state_ledger_add_cost(&g_ag_ledger, (float)r->cost_eur);
     if (r->engram_hit) cos_state_ledger_note_cache_hit(&g_ag_ledger);
+
+    {
+        const char *sdr = getenv("COS_SPEC_DECODE_ROUTE");
+        if (sdr != NULL) {
+            int draft = (strcmp(sdr, "DRAFT") == 0);
+            cos_state_ledger_note_spec_decode(&g_ag_ledger, draft);
+        }
+    }
 
     struct cos_engram_episode ep;
     ep.timestamp_ms = (int64_t)time(NULL) * 1000LL;
@@ -1302,6 +1319,7 @@ int main(int argc, char **argv) {
     int         stream_cli         = -1; /* unset: REPL on, --once off */
     int         tui_cli            = -1; /* unset: TTY REPL on, --once/pipe off */
     int         use_tui            = 0;
+    int         spec_decode        = 0;
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -1315,6 +1333,9 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
         else if (strcmp(argv[i], "--tui")       == 0) tui_cli = 1;
         else if (strcmp(argv[i], "--no-tui")    == 0) tui_cli = 0;
+        else if (strcmp(argv[i], "--speculative-decode") == 0
+                 || strcmp(argv[i], "--spec") == 0)
+            spec_decode = 1;
         else if (strcmp(argv[i], "--once")       == 0) once_mode = 1;
         else if (strcmp(argv[i], "--prompt")     == 0 && i + 1 < argc)
             once_prompt = argv[++i];
@@ -1389,6 +1410,7 @@ int main(int argc, char **argv) {
                 "  --no-stream         full response at once (default with --once)\n"
                 "  --tui               ANSI live layout (default on interactive TTY)\n"
                 "  --no-tui            plain transcript text\n"
+                "  --spec|--speculative-decode  dual-model σ decode (2B draft / 9B verify)\n"
                 "  --tau-accept  F     override τ_accept (default 0.40 interactive,\n"
                 "                      0.30 for --once to match Python harness)\n"
                 "  --tau-rethink F     override τ_rethink (default 0.60 / 0.70)\n"
@@ -1448,6 +1470,13 @@ int main(int argc, char **argv) {
         int def_tui = tty_in && tty_out && !once_mode;
         use_tui     = (tui_cli >= 0) ? tui_cli : def_tui;
         (void)setenv("COS_CHAT_TUI", use_tui ? "1" : "0", 1);
+    }
+
+    if (spec_decode) {
+        (void)setenv("COS_SPEC_DECODE", "1", 1);
+        cos_spec_decode_init(NULL);
+    } else {
+        (void)unsetenv("COS_SPEC_DECODE");
     }
 
     {

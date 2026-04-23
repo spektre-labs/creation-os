@@ -4,6 +4,7 @@
 
 #include "bitnet_server.h"
 #include "bitnet_spawn.h"
+#include "speculative_decode.h"
 #include "bitnet_sigma.h"
 #include "codex.h"
 #include "cos_tui.h"
@@ -232,6 +233,8 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
 
     /* Branch A — llama-server backend (real per-token σ). */
     if (cos_cli_use_bitnet_http()) {
+        (void)unsetenv("COS_SPEC_DECODE_ROUTE");
+
         const char *prompt_send = prompt_model;
         const char *ttt_env     = getenv("COS_CHAT_TTT");
         if (ttt_env != NULL && ttt_env[0] == '1' && round > 0) {
@@ -240,6 +243,35 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                                                prompt_model);
             if (nw > 0)
                 prompt_send = g_cos_ttt_augment_buf;
+        }
+
+        const char *specdec = getenv("COS_SPEC_DECODE");
+        if (specdec != NULL && specdec[0] == '1' && round == 0) {
+            cos_spec_decode_result_t sr;
+            memset(&sr, 0, sizeof(sr));
+            cos_spec_decode_init(NULL);
+            if (cos_spec_decode_run(prompt_send, codex_sysprompt, &sr)
+                == 0) {
+                size_t n = strlen(sr.response);
+                if (n >= sizeof(g_cos_chat_bitnet_buf))
+                    n = sizeof(g_cos_chat_bitnet_buf) - 1;
+                memcpy(g_cos_chat_bitnet_buf, sr.response, n);
+                g_cos_chat_bitnet_buf[n] = '\0';
+                *out_text     = g_cos_chat_bitnet_buf;
+                *out_sigma    = sr.sigma;
+                *out_cost_eur = 0.0001;
+                setenv("COS_SPEC_DECODE_ROUTE",
+                       sr.used_draft ? "DRAFT" : "VERIFY", 1);
+                cos_cli_escalation_record_student(g_cos_chat_bitnet_buf,
+                                                  sr.sigma);
+                cos_cost_log_append(sr.used_draft ? "spec_draft"
+                                                  : "spec_verify",
+                                    "LOCAL", 0,
+                                    (int)(n / 4u + 1u),
+                                    sr.sigma, 0.0001);
+                return 0;
+            }
+            /* Failed — fall through to single-model path. */
         }
         cos_bitnet_server_params_t p;
         memset(&p, 0, sizeof(p));
