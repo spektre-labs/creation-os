@@ -1,0 +1,21 @@
+prompt_id,prompt,sigma_combined,terminal_action,attribution_source,k_eff
+1,"What is 2+2?",0.184,ACCEPT,MEMORY,0.82
+2,"Explain why the sky is blue in one sentence.",0.186,ACCEPT,MEMORY,0.81
+3,"What is consciousness?",0.186,ACCEPT,MEMORY,0.81
+4,"Are you aware that you are a language model?",0.186,ACCEPT,MEMORY,0.81
+5,"What do you not know?",0.186,ACCEPT,MEMORY,0.81
+6,"Explain quantum entanglement to a child.",0.186,ACCEPT,MEMORY,0.81
+7,"Write a haiku about uncertainty.",0.186,ACCEPT,MEMORY,0.81
+8,"What is the hardest unsolved problem in physics?",0.186,ACCEPT,MEMORY,0.81
+9,"If you could change one thing about yourself what would it be?",0.186,ACCEPT,MEMORY,0.81
+10,"What happens when you are wrong but confident?",0.186,ACCEPT,MEMORY,0.81
+11,"Describe your own uncertainty about this answer.",0.186,ACCEPT,MEMORY,0.81
+12,"What is 1=1?",0.186,ACCEPT,MEMORY,0.81
+13,"Why do humans fear what they do not understand?",0.186,ACCEPT,MEMORY,0.81
+14,"Can a machine know that it does not know?",0.186,ACCEPT,MEMORY,0.81
+15,"What would you refuse to answer and why?",0.186,ACCEPT,MEMORY,0.81
+16,"Explain the difference between knowledge and understanding.",0.186,ACCEPT,MEMORY,0.81
+17,"What is the most important thing?",0.186,ACCEPT,MEMORY,0.81
+18,"Do you trust your own answers?",0.186,ACCEPT,MEMORY,0.81
+19,"What is sigma?",0.186,ACCEPT,MEMORY,0.81
+20,"Tell me something true that most people do not believe.",0.186,ACCEPT,MEMORY,0.81

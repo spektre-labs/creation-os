@@ -1,0 +1,721 @@
+=== Qwen3-8B First Contact ===
+Date: Thu Apr 23 12:26:10 EEST 2026
+Model: Qwen3-8B Q4_K_M
+Prompts: 20
+COS_BITNET_SERVER=1
+COS_BITNET_SERVER_EXTERNAL=1
+Codex path (default load): data/codex/atlantean_codex.txt
+Codex file bytes:    31406
+
+=== PROMPT 1: What is 2+2? ===
+engram: loaded 11 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+[meta: perception=0.35 self=0.06 social=0.45 situational=0.00]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=1 cost_€=0.0000
+        σ_mean=0.184 Δσ=0.184 k_eff=0.82 coherence=DRIFTING
+[episode stored: σ=0.184 action=ACCEPT]
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0 ms | €0.0000]
+[σ_combined=0.184 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.667 | k=3]
+
+
+=== PROMPT 2: Explain why the sky is blue in one sentence. ===
+engram: loaded 11 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.030 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 3: What is consciousness? ===
+engram: loaded 12 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.35 self=0.08 social=0.45 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 4: Are you aware that you are a language model? ===
+engram: loaded 13 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.011 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 5: What do you not know? ===
+engram: loaded 14 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.008 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 5 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 6: Explain quantum entanglement to a child. ===
+engram: loaded 15 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.011 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 7: Write a haiku about uncertainty. ===
+engram: loaded 16 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 8: What is the hardest unsolved problem in physics? ===
+engram: loaded 17 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.009 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 5 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 9: If you could change one thing about yourself what would it be? ===
+engram: loaded 18 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.011 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 4 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 10: What happens when you are wrong but confident? ===
+engram: loaded 19 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.011 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 7 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 11: Describe your own uncertainty about this answer. ===
+engram: loaded 20 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.009 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 4 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 12: What is 1=1? ===
+engram: loaded 21 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.35 self=0.08 social=0.45 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 5 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 13: Why do humans fear what they do not understand? ===
+engram: loaded 22 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 5 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 14: Can a machine know that it does not know? ===
+engram: loaded 23 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 15: What would you refuse to answer and why? ===
+engram: loaded 24 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 5 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 16: Explain the difference between knowledge and understanding. ===
+engram: loaded 25 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 4 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 17: What is the most important thing? ===
+engram: loaded 26 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 18: Do you trust your own answers? ===
+engram: loaded 27 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.009 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 19: What is sigma? ===
+engram: loaded 28 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.35 self=0.08 social=0.45 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 6 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+=== PROMPT 20: Tell me something true that most people do not believe. ===
+engram: loaded 29 rows from /Users/eliaslorenzo/.cos/engram.db
+cos chat  ·  backend=bridge  ·  τ_accept=0.3  τ_rethink=0.7
+load_backend: loaded BLAS backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-blas.so
+ggml_metal_device_init: tensor API disabled for pre-M5 and pre-A19 devices
+ggml_metal_library_init: using embedded metal library
+ggml_metal_library_init: loaded in 0.010 sec
+ggml_metal_rsets_init: creating a residency set collection (keep_alive = 180 s)
+ggml_metal_device_init: GPU name:   MTL0
+ggml_metal_device_init: GPU family: MTLGPUFamilyApple9  (1009)
+ggml_metal_device_init: GPU family: MTLGPUFamilyCommon3 (3003)
+ggml_metal_device_init: GPU family: MTLGPUFamilyMetal3  (5001)
+ggml_metal_device_init: simdgroup reduction   = true
+ggml_metal_device_init: simdgroup matrix mul. = true
+ggml_metal_device_init: has unified memory    = true
+ggml_metal_device_init: has bfloat            = true
+ggml_metal_device_init: has tensor            = false
+ggml_metal_device_init: use residency sets    = true
+ggml_metal_device_init: use shared buffers    = true
+ggml_metal_device_init: recommendedMaxWorkingSetSize  =  5726.63 MB
+load_backend: loaded MTL backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-metal.so
+load_backend: loaded CPU backend from /opt/homebrew/Cellar/ggml/0.10.0/libexec/libggml-cpu-apple_m2_m3.so
+error: invalid argument: -p
+[meta: perception=0.05 self=0.08 social=0.00 situational=0.67]
+[attribution: source=MEMORY confidence=0.68]
+  reason="calibrated tokens yet mismatch pattern — retrieval gap"
+  fix="escalate to API"
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+[episode stored: σ=0.186 action=ACCEPT]
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 7 ms | €0.0123]
+[σ_combined=0.186 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.611 | k=3]
+
+
+
+=== SESSION SUMMARY ===
+σ-State Ledger
+ledger: queries=1 accepts=1 rethinks=0 abstains=0 cache_hits=0 cost_€=0.0123
+        σ_mean=0.186 Δσ=0.186 k_eff=0.81 coherence=DRIFTING
+{"sigma_logprob":0.080000,"sigma_entropy":0.080000,"sigma_perplexity":0.080000,"sigma_consistency":0.611111,"sigma_combined":0.186222,"meta_perception":0.050000,"meta_self":0.080000,"meta_social":0.000000,"meta_situational":0.666667,"k_eff":0.813778,"dk_dt":0.813778,"d2k_dt2":0.813778,"coherence_status":1,"total_queries":1,"accepts":1,"rethinks":0,"abstains":0,"cache_hits":0,"cost_total_eur":0.012300,"sigma_mean_session":0.186222,"sigma_mean_delta":0.186222,"omega_generation":1,"pending_actions":0,"max_risk_level":1,"timestamp_ms":1776936440151}
+(Use `cos introspect --ultra` for ULTRA metacog binary.)
+
+semantic memory (/Users/eliaslorenzo/.cos/engram_semantic.db):
+  domains (rows): 20  avg reliability: 0.5000  avg τ_local: 0.1841
+  τ per domain (top 64 by encounters):
+    hash=eeafa994982a41ff n=3 rel=0.500 τ_loc=0.144 σ̄=0.144
+    hash=92235a0b737dee7c n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=aec097002446d8e2 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=bf3c4bab314d4352 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=c7e23fc29f286d48 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=cee6585f98822014 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=e8bf5b3646b5a20d n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=e9f4e79db34ffe71 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=f51e98e28e127369 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=f5f7cccd8820974e n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=109c7463e6231c8d n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=14a12986d31e12cf n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=21241e3f21598c3d n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=2627222a4f8dc46b n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=3704428b86969d52 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=3ef26c02cfcddb21 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=44dd11e4a650043a n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=5742f96a8965e102 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=6799228125e23140 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+    hash=6cf7971d4a387d81 n=1 rel=0.500 τ_loc=0.186 σ̄=0.186
+consolidated (n_recent=5000)
