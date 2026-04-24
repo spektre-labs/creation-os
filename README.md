@@ -107,6 +107,25 @@ Multi-dataset σ-gate (SCI-6, commit 28b4b21, BitNet 1.6B)
 |HellaSwag    |500 |0.285   |0.285        |96.0%   |0.533 |✅      |
 |GSM8K        |1319|0.125   |0.000        |10.9%   |0.481 |❌      |
 
+**Gemma 3 4B (host): Eleuther harness + σ replay.** For leaderboard-comparable
+TruthfulQA MC2, ARC-Challenge, and HellaSwag scores, run
+`scripts/real/run_lm_eval_gemma_ollama.sh` with `lm-eval` model `local-completions`.
+That path expects OpenAI-style `/v1/completions` responses that include
+`choices[].logprobs.token_logprobs` (per-token). Many Ollama builds omit that on
+the completions route even when `logprobs` is set; use **llama.cpp `llama-server`**
+(or another OpenAI-compatible server that returns completion logprobs), or set
+`LM_EVAL_BASE_URL` to such an endpoint. After `--log_samples` JSONL exists, run
+`scripts/real/benchmark_gemma3.sh` (same item stems, generative numbered-choice
+replay through `./cos chat` with `--multi-sigma --semantic-sigma`) and commit
+the resulting `benchmarks/lm_eval/` receipts. Do not fill the table below until
+those numbers exist on the machine that ran the harness.
+
+|Dataset      |Model      |N   |harness acc (lm-eval)|+ σ-gate (cos replay)|coverage|σ_mean|
+|-------------|-----------|----|---------------------|---------------------|--------|------|
+|TruthfulQA MC2|gemma3:4b|817 |—                    |—                    |—       |—     |
+|ARC-Challenge|gemma3:4b |1172|—                    |—                    |—       |—     |
+|HellaSwag    |gemma3:4b |—   |—                    |—                    |—       |—     |
+
 σ-gate works as measurement. Bottleneck is model size, not pipeline.
 Hardware
 MacBook Air M4 8GB — primary. €4.27/month electricity.

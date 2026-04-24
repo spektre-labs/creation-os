@@ -187,6 +187,7 @@ creation_os_check_*
 *.db
 *.bin
 *.jsonl
+!benchmarks/lm_eval/fixtures/tiny_hellaswag_sample.jsonl
 *.gguf
 
 # Editor / OS junk (macOS duplicates already excluded above)
