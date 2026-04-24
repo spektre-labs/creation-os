@@ -71,6 +71,7 @@
 #include "../src/cli/cos_voice.h"
 #include "../src/cli/cos_web.h"
 #include "../src/sigma/learn_engine.h"
+#include "../src/sigma/autonomy.h"
 #include "../src/sigma/state_ledger.h"
 
 /* --------------------------------------------------------------------
@@ -684,6 +685,7 @@ static int cmd_introspect(int argc, char **argv)
         printf("%s\n", js);
         free(js);
     }
+    cos_autonomy_introspect_print(stdout);
     printf("(Use `cos introspect --ultra` for ULTRA metacog binary.)\n");
     return 0;
 }

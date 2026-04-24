@@ -6334,7 +6334,8 @@ COS_THINK_CLI_AUX = src/sigma/pipeline/engram_persist.c \
           src/cli/escalation.c
 
 COS_LEARN_WEB_SRCS = src/sigma/learn_engine.c src/sigma/living_weights.c \
-		     src/cli/cos_web.c
+		     src/cli/cos_web.c \
+		     src/sigma/curiosity.c src/sigma/autonomy.c
 
 cos-think: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/knowledge_graph.c src/sigma/world_model.c \

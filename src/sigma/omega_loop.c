@@ -35,6 +35,8 @@
 #include "world_model.h"
 #include "learn_engine.h"
 #include "living_weights.h"
+#include "curiosity.h"
+#include "autonomy.h"
 
 #include "../cli/cos_think.h"
 
@@ -81,6 +83,7 @@ static int                           g_omega_sigma_streak;
 static int                           g_omega_cache_info_done;
 
 static struct cos_living_weights g_lw;
+static struct cos_autonomy_state g_autonomy;
 static int64_t                   g_omega_last_learn_ms;
 
 static int64_t omega_now_ms(void)
@@ -126,6 +129,7 @@ static void omega_cfg_defaults(struct cos_omega_config *c)
     c->enable_learning        = 0;
     c->adapt_interval         = 20;
     c->idle_learn_cooldown_ms = 60000LL;
+    c->enable_autonomy        = 0;
 }
 
 static int omega_home_subdir(char *buf, size_t cap, const char *leaf)
@@ -370,7 +374,9 @@ static void omega_try_idle_learn(struct cos_omega_state *state)
         memset(&res, 0, sizeof res);
         if (cos_learn_research(&tasks[k], &res) != 0)
             continue;
-        (void)cos_learn_store(&res);
+        if (cos_learn_store(&res) == 0 && g_cfg.enable_autonomy)
+            cos_autonomy_note_learn(&g_autonomy, tasks[k].domain_hash,
+                                    res.sigma_before, res.sigma_after);
     }
 }
 
@@ -502,6 +508,12 @@ int cos_omega_init(const struct cos_omega_config *config,
                 g_cfg.idle_learn_cooldown_ms = v;
         }
     }
+    if (getenv("COS_OMEGA_AUTONOMY") != NULL
+        && getenv("COS_OMEGA_AUTONOMY")[0] == '1')
+        g_cfg.enable_autonomy = 1;
+    cos_autonomy_configure(g_cfg.enable_autonomy);
+    if (cos_autonomy_init(&g_autonomy) != 0)
+        omega_skip("autonomy_init");
     if (cos_living_weights_init(&g_lw) != 0)
         omega_skip("living_weights_init");
     if (cos_learn_init() != 0)
@@ -820,6 +832,9 @@ common_tail:
 
     omega_try_idle_learn(state);
 
+    if (g_cfg.enable_autonomy)
+        cos_autonomy_omega_tick(&g_autonomy, state, sigma_proof, goal, output);
+
     if (g_cfg.enable_learning && g_cfg.adapt_interval > 0 && g_cfg.enable_ttt
         && state->turn > 0 && state->turn % g_cfg.adapt_interval == 0) {
         struct cos_engram_episode eps[50];
@@ -990,6 +1005,7 @@ int cos_omega_finish_session(struct cos_omega_state *state)
         fclose(g_omega_events_fp);
         g_omega_events_fp = NULL;
     }
+    cos_curiosity_shutdown();
     cos_learn_shutdown();
     return 0;
 }
@@ -1148,6 +1164,10 @@ int cos_omega_self_test(void)
         return 5;
     if (cos_living_weights_self_test() != 0)
         return 6;
+    if (cos_curiosity_self_test() != 0)
+        return 7;
+    if (cos_autonomy_self_test() != 0)
+        return 8;
 #endif
     return 0;
 }

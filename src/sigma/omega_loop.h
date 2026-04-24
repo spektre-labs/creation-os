@@ -44,6 +44,9 @@ struct cos_omega_config {
     int       enable_learning;
     int       adapt_interval; /* turns between living-weight adaptation */
     int64_t   idle_learn_cooldown_ms;
+
+    /** Curiosity + autonomy brain (COS_OMEGA_AUTONOMY=1). */
+    int       enable_autonomy;
 };
 
 /** Per-turn fields for JSONL (not all duplicated in cos_omega_state). */
