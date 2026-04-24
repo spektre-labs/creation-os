@@ -123,7 +123,7 @@ int main(void) {
     fails += assert_parse("case2: null probs → σ=1", json2,
                           1.0f, 1.0f, "@@", 2);
 
-    /* Case 3: empty completion_probabilities → fallback σ = 1.0.
+    /* Case 3: empty completion_probabilities → neutral σ = 0.5.
      * Happens when server aborts with 0 tokens or returns a bare
      * choices array (e.g. non-logprobs request). */
     const char *json3 =
