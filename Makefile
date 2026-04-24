@@ -6780,7 +6780,7 @@ check-state-ledger: creation_os_check_state_ledger
 creation_os_check_error_attribution: src/sigma/error_attribution.c \
                                     tests/agi/check_error_attribution_main.c
 	$(CC) $(CFLAGS) -Isrc/sigma -o $@ src/sigma/error_attribution.c \
-	    tests/agi/check_error_attribution_main.c $(LDFLAGS) -lm
+	    tests/agi/check_error_attribution_main.c $(LDFLAGS)
 
 check-error-attribution: creation_os_check_error_attribution
 	@./creation_os_check_error_attribution

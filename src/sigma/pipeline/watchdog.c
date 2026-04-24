@@ -3,7 +3,9 @@
  *
  * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
  */
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include "watchdog.h"
 
 #include <math.h>

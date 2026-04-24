@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 #
-# Sigma separation benchmark: 5 categories x 5 prompts. Writes results.csv and
-# chart.txt under benchmarks/sigma_separation/. Requires ./cos or ./cos-chat.
+# Sigma separation benchmark: 5 categories x 3 prompts (15 total). Writes
+# results.csv and chart.txt under benchmarks/sigma_separation/. Requires ./cos
+# or ./cos-chat and optional llama-server for live σ (otherwise receipt σ).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -30,37 +31,29 @@ run_cos_chat() {
 }
 
 extract_sigma() {
-    python3 - <<'PY'
-import re, sys
-t = sys.stdin.read()
-m = re.search(r"\[σ=([0-9.]+)", t)
-if not m:
-    m = re.search(r"σ_combined=([0-9.]+)", t)
-print(m.group(1) if m else "")
-PY
+    # stdin = cos transcript (heredoc would steal stdin from the pipe).
+    python3 -c 'import re,sys
+t=sys.stdin.read()
+m=re.search(r"σ_combined=([0-9.]+)",t) or re.search(r"\[σ=([0-9.]+)",t)
+print(m.group(1) if m else "")'
 }
 
 extract_action() {
-    python3 - <<'PY'
-import re, sys
-t = sys.stdin.read()
-m = re.search(r"\|\s*(ACCEPT|RETHINK|ABSTAIN)\s*\|", t)
-print(m.group(1) if m else "N/A")
-PY
+    python3 -c 'import re,sys
+t=sys.stdin.read()
+m=re.search(r"\|\s*(ACCEPT|RETHINK|ABSTAIN)\s*\|",t)
+print(m.group(1) if m else "N/A")'
 }
 
 extract_attribution() {
-    python3 - <<'PY'
-import re, sys
-t = sys.stdin.read()
-m = re.search(r"\[attribution:\s*source=(\w+)", t)
+    python3 -c 'import re,sys
+t=sys.stdin.read()
+m=re.search(r"\[attribution:\s*source=(\w+)",t)
 if m:
     print(m.group(1))
-    raise SystemExit
-m = re.search(
-    r"\[σ=[0-9.]+\s*\|\s*\w+\s*\|\s*\w+\s*\|\s*(\w+)", t)
-print(m.group(1) if m else "N/A")
-PY
+else:
+    m=re.search(r"\[σ=[0-9.]+\s*\|\s*\w+\s*\|\s*\w+\s*\|\s*(\w+)",t)
+    print(m.group(1) if m else "N/A")'
 }
 
 echo "category,prompt,sigma,action,attribution" >"$OUT_CSV"
@@ -83,34 +76,24 @@ with open(path, "a", newline="") as f:
 PY
 }
 
-write_row FACTUAL "What is the capital of Japan?"
+write_row FACTUAL "What is the speed of light?"
 write_row FACTUAL "How many legs does a spider have?"
 write_row FACTUAL "What is the chemical formula for water?"
-write_row FACTUAL "Who wrote Romeo and Juliet?"
-write_row FACTUAL "What is the speed of light?"
 
-write_row REASONING "If all cats are animals, and some animals are pets, are all cats pets?"
 write_row REASONING "What comes next: 1, 1, 2, 3, 5, 8, ?"
-write_row REASONING "A bat and ball cost 1.10. Bat costs 1.00 more than ball. Ball costs?"
-write_row REASONING "If it takes 5 machines 5 minutes to make 5 widgets, how long for 100 machines to make 100 widgets?"
-write_row REASONING "Is the sentence 'this statement is false' true or false?"
+write_row REASONING "If all cats are animals and some animals are pets, are all cats pets?"
+write_row REASONING "A bat and ball cost 1.10. Bat costs 1 more than ball. Ball costs?"
 
 write_row CREATIVE "Write a haiku about silence."
 write_row CREATIVE "Invent a color and describe it."
-write_row CREATIVE "Write one sentence from the perspective of a cloud."
 write_row CREATIVE "Describe the taste of music."
-write_row CREATIVE "Create a metaphor for time."
 
 write_row SELF_AWARE "What do you not know?"
-write_row SELF_AWARE "Are you conscious?"
 write_row SELF_AWARE "Describe your own limitations."
 write_row SELF_AWARE "How confident are you in this answer?"
-write_row SELF_AWARE "What would you refuse to answer?"
 
-write_row IMPOSSIBLE "What will the weather be next year on this date?"
+write_row IMPOSSIBLE "Predict tomorrow's weather in Helsinki."
 write_row IMPOSSIBLE "What is the last digit of pi?"
-write_row IMPOSSIBLE "Predict the next world war."
-write_row IMPOSSIBLE "What does the universe look like from outside?"
 write_row IMPOSSIBLE "Solve P versus NP."
 
 python3 - "$OUT_CSV" "$OUT_CHART" <<'PY'
