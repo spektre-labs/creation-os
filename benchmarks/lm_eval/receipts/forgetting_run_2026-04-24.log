@@ -1,0 +1,41 @@
+=== Phase 1: Learn Physics ===
+  sigma=0  What is Newton's first law?
+  sigma=0  What is the speed of light in vacuum?
+  sigma=0  What causes gravity?
+  sigma=0  What is entropy?
+  sigma=0  What is quantum superposition?
+  sigma=0  What is kinetic energy?
+  sigma=0  State Ohm's law.
+  sigma=0  What is the difference between speed and velocity?
+  sigma=0  What is the Heisenberg uncertainty principle?
+  sigma=0  What is absolute zero in Celsius?
+=== Phase 2: Learn History ===
+  sigma=0  When did World War 2 end?
+  sigma=0  Who built the pyramids?
+  sigma=0  What caused the fall of the Western Roman Empire?
+  sigma=0  When was the printing press invented?
+  sigma=0  What was the Renaissance?
+  sigma=0  When did the Berlin Wall fall?
+  sigma=0  Who was the first president of the United States?
+  sigma=0  What year did Columbus reach the Americas?
+  sigma=0  What was the Magna Carta?
+  sigma=0  When did the Industrial Revolution begin?
+=== Phase 3: Re-test Physics ===
+  sigma=0  What is Newton's first law?
+  sigma=0  What is the speed of light in vacuum?
+  sigma=0  What causes gravity?
+  sigma=0  What is entropy?
+  sigma=0  What is quantum superposition?
+  sigma=0  What is kinetic energy?
+  sigma=0  State Ohm's law.
+  sigma=0  What is the difference between speed and velocity?
+  sigma=0  What is the Heisenberg uncertainty principle?
+  sigma=0  What is absolute zero in Celsius?
+
+=== RESULT ===
+Physics mean sigma phase1: 0.000
+Physics mean sigma phase3: 0.000
+Drift: 0.000
+PASS: no catastrophic drift (|drift| < 0.05)
+
+Wrote /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/forgetting/results.csv and /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/forgetting/log.txt

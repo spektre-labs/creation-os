@@ -13,17 +13,31 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 cd "$ROOT"
 
-BIN="$ROOT/creation_os_v132_persona"
-if [ ! -x "$BIN" ]; then
+BIN_SRC="$ROOT/creation_os_v132_persona"
+if [ ! -x "$BIN_SRC" ]; then
     echo "check-v132: building creation_os_v132_persona..." >&2
     make -s creation_os_v132_persona
 fi
 
+# Run from a temp path: on some hosts (e.g. Desktop synced by File Provider),
+# dyld can stall indefinitely when executing the same bytes from the workspace
+# path; copying to /tmp avoids the hang while preserving identical behavior.
+run_v132() {
+    local tmp ec
+    tmp="$(mktemp /tmp/cos_v132_persona_XXXXXX)"
+    cp "$BIN_SRC" "$tmp"
+    chmod +x "$tmp"
+    "$tmp" "$@"
+    ec=$?
+    rm -f "$tmp"
+    return "$ec"
+}
+
 echo "check-v132-persona-adaptation: --self-test"
-"$BIN" --self-test >/dev/null
+run_v132 --self-test >/dev/null
 
 echo "check-v132-persona-adaptation: 10 low-σ math observations"
-OUT_M="$("$BIN" --adapt math 0.10 10)"
+OUT_M="$(run_v132 --adapt math 0.10 10)"
 echo "  $OUT_M"
 python3 - <<EOF
 import json, re
@@ -38,7 +52,7 @@ print(f"  math ema={d['ema_sigma']:.4f} level={d['level']} ok")
 EOF
 
 echo "check-v132-persona-adaptation: 10 high-σ biology observations"
-OUT_B="$("$BIN" --adapt biology 0.85 10)"
+OUT_B="$(run_v132 --adapt biology 0.85 10)"
 echo "  $OUT_B"
 python3 - <<EOF
 import json, re
@@ -51,7 +65,7 @@ print(f"  biology ema={d['ema_sigma']:.4f} level={d['level']} ok")
 EOF
 
 echo "check-v132-persona-adaptation: feedback too-long → concise"
-OUT_F="$("$BIN" --feedback too-long)"
+OUT_F="$(run_v132 --feedback too-long)"
 echo "  $OUT_F"
 python3 - <<EOF
 import json, re
@@ -62,7 +76,7 @@ print(f"  too-long → length={d['length']} ok")
 EOF
 
 echo "check-v132-persona-adaptation: demo emits JSON + TOML"
-OUT_D="$("$BIN" --demo)"
+OUT_D="$(run_v132 --demo)"
 echo "$OUT_D" | head -5
 python3 - <<EOF
 import re, json

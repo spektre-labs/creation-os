@@ -1,0 +1,5 @@
+Turns: 20 | σ̄=0.290 | k̄=0.710 | Cache: 0%
+Energy: 1.25J | CO2: 0.0001g | Grade: C
+σ trend (last): 0.3104/turn
+Consciousness: Level 0 → Level 0 (stable)
+σ: ▃▃▂▃▃▃▂▃▃▃▂▃▃▃▂▃▃▃▂▃ (flat)

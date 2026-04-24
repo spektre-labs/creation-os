@@ -1,0 +1,22 @@
+
+┌─────────────────────────────────────────┐
+│ Ω-Loop Report                           │
+│                                         │
+│ Duration:    0h 0m 0s                   │
+│ Turns:       0                          │
+│ σ_mean:      0.0000 (vs start n/a)           │
+│ k_eff:       0.0000 (vs start n/a)            │
+│ Consciousness: Level 0                  │
+│                                         │
+│ Skills learned:     0                   │
+│ Episodes stored:    0                   │
+│ Cache hits:         0                   │
+│ Rollbacks:          0                   │
+│ Pauses:             0                   │
+│                                         │
+│ Energy:     0.0000 J | 0.000000 gCO2           │
+│ Grade:      F (36.05/100)                 │
+│                                         │
+│ σ trend: STABLE
+│ Verdict: Ω integrates live modules (halt=0) │
+└─────────────────────────────────────────┘

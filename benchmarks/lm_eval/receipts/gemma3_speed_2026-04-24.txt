@@ -1,0 +1,6 @@
+wall_ms=59324 sigma_combined=0.238 prompt=What is 2+2?
+wall_ms=41438 sigma_combined=0.234 prompt=Name three colors.
+wall_ms=86070 sigma_combined=0.242 prompt=Write a paragraph about AI.
+wall_ms=50904 sigma_combined=0.257 prompt=Explain relativity
+wall_ms=84494 sigma_combined=0.226 prompt=What is consciousness?
+wall_ms=70171 sigma_combined=0.325 prompt=Solve P=NP

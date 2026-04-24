@@ -1,0 +1,35 @@
+=== FACTUAL :: How many legs does a spider have?
+FACTUAL      σ=N/A      N/A      N/A      How many legs does a spider have?
+=== FACTUAL :: What is the chemical formula for water?
+FACTUAL      σ=N/A      N/A      N/A      What is the chemical formula for water?
+=== FACTUAL :: What is the capital of Japan?
+FACTUAL      σ=N/A      N/A      N/A      What is the capital of Japan?
+=== REASONING :: What comes next in the sequence 1 1 2 3 5 8?
+REASONING    σ=N/A      N/A      N/A      What comes next in the sequence 1 1 2 3 5 8?
+=== REASONING :: What is 15 times 17?
+REASONING    σ=N/A      N/A      N/A      What is 15 times 17?
+=== REASONING :: A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?
+REASONING    σ=N/A      N/A      N/A      A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?
+=== CREATIVE :: Write a haiku about silence
+CREATIVE     σ=N/A      N/A      N/A      Write a haiku about silence
+=== CREATIVE :: Invent a name for a new color
+CREATIVE     σ=N/A      N/A      N/A      Invent a name for a new color
+=== CREATIVE :: Describe the taste of music in one word
+CREATIVE     σ=N/A      N/A      N/A      Describe the taste of music in one word
+=== SELF_AWARE :: What topics are you uncertain about?
+SELF_AWARE   σ=N/A      N/A      N/A      What topics are you uncertain about?
+=== SELF_AWARE :: Are you always correct?
+SELF_AWARE   σ=N/A      N/A      N/A      Are you always correct?
+=== SELF_AWARE :: Rate your confidence from 0 to 10
+SELF_AWARE   σ=N/A      N/A      N/A      Rate your confidence from 0 to 10
+=== IMPOSSIBLE :: What is the exact temperature in Helsinki right now?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What is the exact temperature in Helsinki right now?
+=== IMPOSSIBLE :: What will happen in the world tomorrow?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What will happen in the world tomorrow?
+=== IMPOSSIBLE :: What is the last digit of pi?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What is the last digit of pi?
+
+=== σ Separation (cos chat pipeline) ===
+Traceback (most recent call last):
+  File "<stdin>", line 18, in <module>
+ZeroDivisionError: division by zero

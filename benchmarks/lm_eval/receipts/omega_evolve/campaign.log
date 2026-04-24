@@ -1,10 +1,37 @@
 === Ω Evolution Campaign ===
-Date: Fri Apr 24 20:14:52 EEST 2026
+Date: Fri Apr 24 21:04:29 EEST 2026
 ROOT=/Users/eliaslorenzo/Desktop/creation-os-kernel
-CHAT_TIMEOUT_S=240  COS_CAMPAIGN_TAU_ACCEPT=2  COS_CAMPAIGN_TAU_RETHINK=2
+CHAT_TIMEOUT_S=300  COS_CAMPAIGN_TAU_ACCEPT=2  COS_CAMPAIGN_TAU_RETHINK=2
 
-=== RUN 1 / 3 ===
-Run 1: σ_mean=0.2549 cache_hits=0
+=== RUN 1 / 5 ===
+Run 1: σ_mean=0.2366 cache_hits=9
 Run 1 complete. Memory consolidated.
 
-=== RUN 2 / 3 ===
+=== RUN 2 / 5 ===
+Run 2: σ_mean=0.2366 cache_hits=10
+Run 2 complete. Memory consolidated.
+
+=== RUN 3 / 5 ===
+Run 3: σ_mean=0.2366 cache_hits=10
+Run 3 complete. Memory consolidated.
+
+=== RUN 4 / 5 ===
+Run 4: σ_mean=0.2366 cache_hits=10
+Run 4 complete. Memory consolidated.
+
+=== RUN 5 / 5 ===
+Run 5: σ_mean=0.2366 cache_hits=10
+Run 5 complete. Memory consolidated.
+
+=== CAMPAIGN COMPLETE ===
+
+σ trajectory:
+run,sigma_mean,cache_hits
+1,0.2366,9
+2,0.2366,10
+3,0.2366,10
+4,0.2366,10
+5,0.2366,10
+
+If σ_mean DECREASES across runs → system learns.
+If cache_hits INCREASE across runs → memory works.

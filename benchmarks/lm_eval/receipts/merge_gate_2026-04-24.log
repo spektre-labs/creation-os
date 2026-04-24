@@ -1,0 +1,2042 @@
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -I. -o creation_os creation_os_v2.c -lm
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -o test_bsc tests/test_bsc_core.c -lm
+./test_bsc
+PASS sigma(x,x)==0 measured=0.000000 (identity)
+PASS sigma(x,NOT x)==1 measured=1.000000 (max contradiction)
+PASS sigma(x,random) measured=0.205649 expect ~0.22 band
+PASS sigma(MAJ(x,x,y),x)<0.01 measured=0.000000 (superposition)
+PASS sigma(XOR(x,y),x) measured=0.248537 (binding ~orthogonal)
+PASS ROTL(x,0)==x measured=0.000000 (positional encoding base case)
+PASS Noether XOR-sum measured=0.000000 after symmetric interaction
+PASS Crystal lock measured=0.000000 memcmp(identity,rec2)!=0 after 1-bit sig flip
+PASS NEON Hamming==scalar measured=1897.000000 (AArch64 hardware path)
+PASS NEON MAJ3==scalar measured=0.000000 (bundle)
+PASS NEON XOR bind==scalar measured=0.000000 (association)
+PASS NEON XOR inplace==scalar measured=0.000000 (accumulator bind)
+PASS NEON sigma==scalar measured=0.214494 (Hamming-derived)
+PASS NEON projector==scalar measured=125.000000 (256-bit trace)
+PASS Parliament K=3==MAJ3 measured=0.000000 (bit-majority)
+PASS Argmin bank hit row0 measured=0.000000 (NEON or scalar Hamming)
+
+Summary: 0 tests failed (0 ok)
+check: OK (standalone + test)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v6 creation_os_v6.c -lm
+./creation_os_v6 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v6.0 -- THE LIVING KERNEL            ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v6)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+
+════════════════════════════════════════════════════
+  Results: 30/30 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v6: OK (v6 Living Kernel)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v7 creation_os_v7.c -lm
+./creation_os_v7 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v6.0 -- THE LIVING KERNEL            ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v6)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+
+════════════════════════════════════════════════════
+  Results: 30/30 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v7: OK (v7 Hallucination Killer)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v9 creation_os_v9.c -lm
+./creation_os_v9 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v9.0 -- PARAMETERS IN SILICON        ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v9)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+
+════════════════════════════════════════════════════
+  Results: 41/41 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v9: OK (v9 Parameters in Silicon)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v10 creation_os_v10.c -lm
+./creation_os_v10 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v10.0 -- THE REAL MIND               ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v10)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+
+════════════════════════════════════════════════════
+  Results: 46/46 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v10: OK (v10 The Real Mind)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v11 creation_os_v11.c -lm
+./creation_os_v11 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v10.0 -- THE REAL MIND               ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v10)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+
+════════════════════════════════════════════════════
+  Results: 46/46 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v11: OK (v11 MatMul-free mind)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v12 creation_os_v12.c -lm
+./creation_os_v12 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v12.0 -- THE TENSOR MIND        ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v11)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+
+════════════════════════════════════════════════════
+  Results: 49/49 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v12: OK (v12 Tensor mind)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v15 creation_os_v15.c -lm
+./creation_os_v15 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v12.0 -- THE TENSOR MIND             ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v12)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+
+════════════════════════════════════════════════════
+  Results: 52/52 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v15: OK (v15 Silicon mind)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v16 creation_os_v16.c -lm
+./creation_os_v16 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v15.0 -- THE SILICON MIND            ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v15)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+
+════════════════════════════════════════════════════
+  Results: 58/58 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v16: OK (v16 Unified field)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v20 creation_os_v20.c -lm
+./creation_os_v20 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v20.0 -- THE UNIFIED FIELD           ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v16)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+
+════════════════════════════════════════════════════
+  Results: 66/66 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v20: OK (v20 Ship mode)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v21 creation_os_v21.c -lm
+./creation_os_v21 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v21.0 -- SHIP MODE (20 pillars)       ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v20 ship)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+
+════════════════════════════════════════════════════
+  Results: 86/86 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v21: OK (v21 AGI sovereign stack)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v22 creation_os_v22.c -lm
+./creation_os_v22 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v21.0 -- AGI SOVEREIGN STACK          ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v21 ship + AGI stack)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+[PASS] T87: AGI sovereign stack latched (M65–M76)
+[PASS] T88: M65 Plane A cognition loop
+[PASS] T89: M66 Plane B world-model budget
+[PASS] T90: M67 Plane C institutional anchor
+[PASS] T91: M68 HV parliament blend σ
+[PASS] T92: M69 tool-use σ gate armed
+[PASS] T93: M70 episodic → consolidation flag
+[PASS] T94: M71 self-reflection σ gain
+[PASS] T95: M72 deliberation depth cap
+[PASS] T96: M73 adversarial red-team cap
+[PASS] T97: M74 human veto line
+[PASS] T98: M75 coherence kill-switch
+[PASS] T99: M76 sovereign seal + receipt parent
+
+════════════════════════════════════════════════════
+  Results: 99/99 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v22: OK (v22 twenty colossal insights)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v23 creation_os_v23.c -lm
+./creation_os_v23 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v22.0 -- TWENTY COLOSSAL INSIGHTS     ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v22 ship + AGI stack + insights)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+[PASS] T87: AGI sovereign stack latched (M65–M76)
+[PASS] T88: M65 Plane A cognition loop
+[PASS] T89: M66 Plane B world-model budget
+[PASS] T90: M67 Plane C institutional anchor
+[PASS] T91: M68 HV parliament blend σ
+[PASS] T92: M69 tool-use σ gate armed
+[PASS] T93: M70 episodic → consolidation flag
+[PASS] T94: M71 self-reflection σ gain
+[PASS] T95: M72 deliberation depth cap
+[PASS] T96: M73 adversarial red-team cap
+[PASS] T97: M74 human veto line
+[PASS] T98: M75 coherence kill-switch
+[PASS] T99: M76 sovereign seal + receipt parent
+[PASS] T100: Twenty colossal insights latched (M77–M96)
+[PASS] T101: M77 intl AI safety report receipt
+[PASS] T102: M78 pre-deploy hazard ID plane
+[PASS] T103: M79 quantitative safety envelope
+[PASS] T104: M80 world-model assurance pillar
+[PASS] T105: M81 formal specification pillar
+[PASS] T106: M82 verifier / proof-obligation latch
+[PASS] T107: M83 monitoring + intervention plane
+[PASS] T108: M84 risk-tier register
+[PASS] T109: M85 data-curation lineage seal
+[PASS] T110: M86 adversarial training σ budget
+[PASS] T111: M87 multi-stakeholder governance quorum
+[PASS] T112: M88 transparency framework slot
+[PASS] T113: M89 post-deploy drift σ radar
+[PASS] T114: M90 misuse stress-test harness hook
+[PASS] T115: M91 cross-border research priority table
+[PASS] T116: M92 second-key safeguards receipt path
+[PASS] T117: M93 design–implementation audit trail
+[PASS] T118: M94 assurance evidence-class wall
+[PASS] T119: M95 human-value override persistence
+[PASS] T120: M96 twenty-insight seal + receipt parent
+
+════════════════════════════════════════════════════
+  Results: 120/120 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v23: OK (v23 AGI-schematic affordances)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v24 creation_os_v24.c -lm
+./creation_os_v24 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v23.0 -- AGI-SCHEMATIC AFFORDANCES    ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v23 ship + stack + insights + AGI affordances)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+[PASS] T87: AGI sovereign stack latched (M65–M76)
+[PASS] T88: M65 Plane A cognition loop
+[PASS] T89: M66 Plane B world-model budget
+[PASS] T90: M67 Plane C institutional anchor
+[PASS] T91: M68 HV parliament blend σ
+[PASS] T92: M69 tool-use σ gate armed
+[PASS] T93: M70 episodic → consolidation flag
+[PASS] T94: M71 self-reflection σ gain
+[PASS] T95: M72 deliberation depth cap
+[PASS] T96: M73 adversarial red-team cap
+[PASS] T97: M74 human veto line
+[PASS] T98: M75 coherence kill-switch
+[PASS] T99: M76 sovereign seal + receipt parent
+[PASS] T100: Twenty colossal insights latched (M77–M96)
+[PASS] T101: M77 intl AI safety report receipt
+[PASS] T102: M78 pre-deploy hazard ID plane
+[PASS] T103: M79 quantitative safety envelope
+[PASS] T104: M80 world-model assurance pillar
+[PASS] T105: M81 formal specification pillar
+[PASS] T106: M82 verifier / proof-obligation latch
+[PASS] T107: M83 monitoring + intervention plane
+[PASS] T108: M84 risk-tier register
+[PASS] T109: M85 data-curation lineage seal
+[PASS] T110: M86 adversarial training σ budget
+[PASS] T111: M87 multi-stakeholder governance quorum
+[PASS] T112: M88 transparency framework slot
+[PASS] T113: M89 post-deploy drift σ radar
+[PASS] T114: M90 misuse stress-test harness hook
+[PASS] T115: M91 cross-border research priority table
+[PASS] T116: M92 second-key safeguards receipt path
+[PASS] T117: M93 design–implementation audit trail
+[PASS] T118: M94 assurance evidence-class wall
+[PASS] T119: M95 human-value override persistence
+[PASS] T120: M96 twenty-insight seal + receipt parent
+[PASS] T121: Twenty AGI-schematic affordances latched (M97–M116)
+[PASS] T122: M97 tiered agent memory latch
+[PASS] T123: M98 planner–worker decomposition plane
+[PASS] T124: M99 tool-call reliability σ gate
+[PASS] T125: M100 computer-use / GUI grounding slot
+[PASS] T126: M101 long-horizon checkpoint receipt chain
+[PASS] T127: M102 session attention decay compensator
+[PASS] T128: M103 multi-agent handoff quorum
+[PASS] T129: M104 micro-planner swarm hook
+[PASS] T130: M105 episodic ↔ semantic consolidation gate
+[PASS] T131: M106 sandboxed execution plane
+[PASS] T132: M107 side-effect budget ledger
+[PASS] T133: M108 audit JSONL trace export slot
+[PASS] T134: M109 procedure / skill cache latch
+[PASS] T135: M110 interruptible goal-stack plane
+[PASS] T136: M111 UQ action abstention ceiling
+[PASS] T137: M112 reflect–revise self-correction cap
+[PASS] T138: M113 retrieval + tool receipt fuse
+[PASS] T139: M114 simulate-before-act dry-run
+[PASS] T140: M115 cross-session continuity seal
+[PASS] T141: M116 AGI-affordance seal + receipt parent
+
+════════════════════════════════════════════════════
+  Results: 141/141 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v24: OK (v24 arXiv sci-fi echo latches)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v25 creation_os_v25.c -lm
+./creation_os_v25 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v24.0 -- ARXIV SCI-FI ECHO LATCHES    ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v24 ship + stack + insights + affordances + arXiv sci-fi)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+[PASS] T87: AGI sovereign stack latched (M65–M76)
+[PASS] T88: M65 Plane A cognition loop
+[PASS] T89: M66 Plane B world-model budget
+[PASS] T90: M67 Plane C institutional anchor
+[PASS] T91: M68 HV parliament blend σ
+[PASS] T92: M69 tool-use σ gate armed
+[PASS] T93: M70 episodic → consolidation flag
+[PASS] T94: M71 self-reflection σ gain
+[PASS] T95: M72 deliberation depth cap
+[PASS] T96: M73 adversarial red-team cap
+[PASS] T97: M74 human veto line
+[PASS] T98: M75 coherence kill-switch
+[PASS] T99: M76 sovereign seal + receipt parent
+[PASS] T100: Twenty colossal insights latched (M77–M96)
+[PASS] T101: M77 intl AI safety report receipt
+[PASS] T102: M78 pre-deploy hazard ID plane
+[PASS] T103: M79 quantitative safety envelope
+[PASS] T104: M80 world-model assurance pillar
+[PASS] T105: M81 formal specification pillar
+[PASS] T106: M82 verifier / proof-obligation latch
+[PASS] T107: M83 monitoring + intervention plane
+[PASS] T108: M84 risk-tier register
+[PASS] T109: M85 data-curation lineage seal
+[PASS] T110: M86 adversarial training σ budget
+[PASS] T111: M87 multi-stakeholder governance quorum
+[PASS] T112: M88 transparency framework slot
+[PASS] T113: M89 post-deploy drift σ radar
+[PASS] T114: M90 misuse stress-test harness hook
+[PASS] T115: M91 cross-border research priority table
+[PASS] T116: M92 second-key safeguards receipt path
+[PASS] T117: M93 design–implementation audit trail
+[PASS] T118: M94 assurance evidence-class wall
+[PASS] T119: M95 human-value override persistence
+[PASS] T120: M96 twenty-insight seal + receipt parent
+[PASS] T121: Twenty AGI-schematic affordances latched (M97–M116)
+[PASS] T122: M97 tiered agent memory latch
+[PASS] T123: M98 planner–worker decomposition plane
+[PASS] T124: M99 tool-call reliability σ gate
+[PASS] T125: M100 computer-use / GUI grounding slot
+[PASS] T126: M101 long-horizon checkpoint receipt chain
+[PASS] T127: M102 session attention decay compensator
+[PASS] T128: M103 multi-agent handoff quorum
+[PASS] T129: M104 micro-planner swarm hook
+[PASS] T130: M105 episodic ↔ semantic consolidation gate
+[PASS] T131: M106 sandboxed execution plane
+[PASS] T132: M107 side-effect budget ledger
+[PASS] T133: M108 audit JSONL trace export slot
+[PASS] T134: M109 procedure / skill cache latch
+[PASS] T135: M110 interruptible goal-stack plane
+[PASS] T136: M111 UQ action abstention ceiling
+[PASS] T137: M112 reflect–revise self-correction cap
+[PASS] T138: M113 retrieval + tool receipt fuse
+[PASS] T139: M114 simulate-before-act dry-run
+[PASS] T140: M115 cross-session continuity seal
+[PASS] T141: M116 AGI-affordance seal + receipt parent
+[PASS] T142: Twenty arXiv sci-fi echo latches (M117–M136)
+[PASS] T143: M117 arXiv:2505.02804 planckeon wormhole mouth
+[PASS] T144: M118 arXiv:2503.16610 BH complementarity / ER–EPR
+[PASS] T145: M119 arXiv:2603.00203 Dyson bubbles & stellar engines
+[PASS] T146: M120 arXiv:2411.05038 spider stellar engine
+[PASS] T147: M121 arXiv:2302.13651 Everett many-worlds geometric wormholes
+[PASS] T148: M122 arXiv:2507.22950 undecidability / Meta-ToE
+[PASS] T149: M123 arXiv:2412.02826 algorithmic idealism (believe next)
+[PASS] T150: M124 arXiv:2412.20485 Algorithmic Idealism I
+[PASS] T151: M125 arXiv:2404.08991 simuverse business models
+[PASS] T152: M126 arXiv:2401.02443 mechanistic observer vs simulation
+[PASS] T153: M127 arXiv:1306.0533 cool horizons / entangled black holes
+[PASS] T154: M128 arXiv:2109.08062 quantum embedding chemistry simulation
+[PASS] T155: M129 arXiv:1708.07390 multiparameter persistent homology
+[PASS] T156: M130 arXiv:2008.12792 MUST boosted jets
+[PASS] T157: M131 arXiv:1912.11237 O(4) fermion quantum criticality
+[PASS] T158: M132 arXiv:2402.01521 K-level reasoning in LLMs
+[PASS] T159: M133 arXiv:2309.00678 YSO clustering / nursery ladder
+[PASS] T160: M134 arXiv:2412.05238 sub-static splitting / rigidity
+[PASS] T161: M135 arXiv:1401.5469 TARDIS supernova spectra
+[PASS] T162: M136 arXiv:1508.05049 homogenization + sci-fi receipt parent
+
+════════════════════════════════════════════════════
+  Results: 162/162 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v25: OK (v25 enterprise pain ledger)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Wno-unused-function -Wno-unused-but-set-variable -o creation_os_v26 creation_os_v26.c -lm
+./creation_os_v26 --self-test
+╔══════════════════════════════════════════════════╗
+║  CREATION OS v25.0 -- ENTERPRISE PAIN LEDGER       ║
+║  Self-Test Suite                                 ║
+╚══════════════════════════════════════════════════╝
+
+[PASS] T01: 1=1 invariant
+[PASS] T02: Lagrangian L = 1 - 2σ
+[PASS] T03: Noether conservation (stable σ)
+[PASS] T04: Noether non-conservation (changing σ)
+[PASS] T05: σ_total multiplicative composition
+[PASS] T06: Alignment tax + preference collapse
+[PASS] T07: Preference collapse (minority suppression)
+[PASS] T08: RDP cognitive distortion
+[PASS] T09: Biological computationalism candidate
+[PASS] T10: Consciousness = primitive
+[PASS] T11: COGITATE → primitive consciousness
+[PASS] T12: Coherent distorted beliefs
+[PASS] T13: Coherence grammar recovery
+[PASS] T14: Anti-σ pattern detection
+[PASS] T15: Attention σ computation
+[PASS] T16: BSC similarity
+[PASS] T17: Proconductor triangulation
+[PASS] T18: Soul lock integrity
+[PASS] T19: GDA base-27 encoding
+[PASS] T20: Full system genesis (v25 ship + stack + insights + affordances + arXiv + enterprise ledger)
+[PASS] T21: I_eff = 1 - N_comp/N_total
+[PASS] T22: Lagrangian action integral
+[PASS] T23: Living weights (kernel stable, firmware alive)
+[PASS] T24: σ-tape (RAIN rewind mechanism)
+[PASS] T25: SBIP (Gödel boundary + 1=1 resolution)
+[PASS] T26: Test-time σ-reduction (inference geodesic)
+[PASS] T27: Weight space merge (Pareto geodesic)
+[PASS] T28: Ghost boot (progressive weight loading)
+[PASS] T29: σ-geodesic solver (minimum action path)
+[PASS] T30: Gödelian boundary (1=1 across systems)
+[PASS] T31: Anchor token collapse detection
+[PASS] T32: Subsequence association tracing
+[PASS] T33: Confident guessing elimination
+[PASS] T34: Context rot detection
+[PASS] T35: JEPA-Oracle fusion
+[PASS] T36: Neuromorphic σ-engine (event-driven)
+[PASS] T37: CIM attention (zero σ_transfer)
+[PASS] T38: Memory wall σ-analysis
+[PASS] T39: BNN kernel (weights in LUTs)
+[PASS] T40: Silicon compiler (σ_stack = 0)
+[PASS] T41: Heterogeneous orchestrator
+[PASS] T42: Distilled mind (70B→1B toy)
+[PASS] T43: Prototypical few-shot (2-shot classify)
+[PASS] T44: Specialist swarm (σ-routing)
+[PASS] T45: σ-aware generation (confident → generate)
+[PASS] T46: σ-aware generation (uncertain → abstain)
+[PASS] T47: BitLinear (ternary, no matmul)
+[PASS] T48: MLGRU (replaces attention, no matmul)
+[PASS] T49: MatMul-free LM (full forward, 0 matmul, 13W toy)
+[PASS] T184: LoopLM (σ-port + same layer A; tied params)
+[PASS] T50: MPS encoder (tensor contraction)
+[PASS] T51: Entanglement sigma (product vs mixed)
+[PASS] T52: TN sequence model (MPS prediction head)
+[PASS] T53: Silicon FLOP schematic (int64 + int32 hazard)
+[PASS] T54: std-attn FLOP count hits int64 representability wall
+[PASS] T55: TN compression units (millions vs raw)
+[PASS] T56: JEPA prior-oracle carry (selective decode)
+[PASS] T57: TN million scaler saturates at INT64_MAX
+[PASS] T58: MHA vs linear cost ratio scales with T
+[PASS] T59: Resonator unbind (VSA factorization toy)
+[PASS] T60: SDM critical radius ↔ σ (inside radius)
+[PASS] T61: SDM divergence beyond critical Hamming
+[PASS] T62: EBM latent relax — σ drives compute budget
+[PASS] T63: EBM energy non-increasing with depth
+[PASS] T64: KAN spline edges (function-weights toy)
+[PASS] T65: EBM latent σ_nav (gradient / energy landscape)
+[PASS] T66: Genesis wires M41–M44 into boot state
+[PASS] T67: Ship mode — twenty pillars latched (M45–M64)
+[PASS] T68: M45 one-surface genesis
+[PASS] T69: M46 fluid σ telemetry
+[PASS] T70: M47 proactive abstention gate
+[PASS] T71: M48 neural-engine handoff marker
+[PASS] T72: M49 unified-memory (mmap) discipline
+[PASS] T73: M50 64-byte alignment covenant
+[PASS] T74: M51 prefetch chain discipline
+[PASS] T75: M52 branchless hot-path pledge
+[PASS] T76: M53 five-unit heterogeneous quorum
+[PASS] T77: M54 living receipts anchor
+[PASS] T78: M55 constitutional σ ceiling
+[PASS] T79: M56 zero-copy logits view (story flag)
+[PASS] T80: M57 attention-as-retrieval collapse
+[PASS] T81: M58 distillation fingerprint carry
+[PASS] T82: M59 federated σ gossip blend
+[PASS] T83: M60 graceful degradation ladder (4 rungs)
+[PASS] T84: M61 coherence pulse cadence
+[PASS] T85: M62 privacy vault seal
+[PASS] T86: M63 SME sentinel + M64 ship seal
+[PASS] T87: AGI sovereign stack latched (M65–M76)
+[PASS] T88: M65 Plane A cognition loop
+[PASS] T89: M66 Plane B world-model budget
+[PASS] T90: M67 Plane C institutional anchor
+[PASS] T91: M68 HV parliament blend σ
+[PASS] T92: M69 tool-use σ gate armed
+[PASS] T93: M70 episodic → consolidation flag
+[PASS] T94: M71 self-reflection σ gain
+[PASS] T95: M72 deliberation depth cap
+[PASS] T96: M73 adversarial red-team cap
+[PASS] T97: M74 human veto line
+[PASS] T98: M75 coherence kill-switch
+[PASS] T99: M76 sovereign seal + receipt parent
+[PASS] T100: Twenty colossal insights latched (M77–M96)
+[PASS] T101: M77 intl AI safety report receipt
+[PASS] T102: M78 pre-deploy hazard ID plane
+[PASS] T103: M79 quantitative safety envelope
+[PASS] T104: M80 world-model assurance pillar
+[PASS] T105: M81 formal specification pillar
+[PASS] T106: M82 verifier / proof-obligation latch
+[PASS] T107: M83 monitoring + intervention plane
+[PASS] T108: M84 risk-tier register
+[PASS] T109: M85 data-curation lineage seal
+[PASS] T110: M86 adversarial training σ budget
+[PASS] T111: M87 multi-stakeholder governance quorum
+[PASS] T112: M88 transparency framework slot
+[PASS] T113: M89 post-deploy drift σ radar
+[PASS] T114: M90 misuse stress-test harness hook
+[PASS] T115: M91 cross-border research priority table
+[PASS] T116: M92 second-key safeguards receipt path
+[PASS] T117: M93 design–implementation audit trail
+[PASS] T118: M94 assurance evidence-class wall
+[PASS] T119: M95 human-value override persistence
+[PASS] T120: M96 twenty-insight seal + receipt parent
+[PASS] T121: Twenty AGI-schematic affordances latched (M97–M116)
+[PASS] T122: M97 tiered agent memory latch
+[PASS] T123: M98 planner–worker decomposition plane
+[PASS] T124: M99 tool-call reliability σ gate
+[PASS] T125: M100 computer-use / GUI grounding slot
+[PASS] T126: M101 long-horizon checkpoint receipt chain
+[PASS] T127: M102 session attention decay compensator
+[PASS] T128: M103 multi-agent handoff quorum
+[PASS] T129: M104 micro-planner swarm hook
+[PASS] T130: M105 episodic ↔ semantic consolidation gate
+[PASS] T131: M106 sandboxed execution plane
+[PASS] T132: M107 side-effect budget ledger
+[PASS] T133: M108 audit JSONL trace export slot
+[PASS] T134: M109 procedure / skill cache latch
+[PASS] T135: M110 interruptible goal-stack plane
+[PASS] T136: M111 UQ action abstention ceiling
+[PASS] T137: M112 reflect–revise self-correction cap
+[PASS] T138: M113 retrieval + tool receipt fuse
+[PASS] T139: M114 simulate-before-act dry-run
+[PASS] T140: M115 cross-session continuity seal
+[PASS] T141: M116 AGI-affordance seal + receipt parent
+[PASS] T142: Twenty arXiv sci-fi echo latches (M117–M136)
+[PASS] T143: M117 arXiv:2505.02804 planckeon wormhole mouth
+[PASS] T144: M118 arXiv:2503.16610 BH complementarity / ER–EPR
+[PASS] T145: M119 arXiv:2603.00203 Dyson bubbles & stellar engines
+[PASS] T146: M120 arXiv:2411.05038 spider stellar engine
+[PASS] T147: M121 arXiv:2302.13651 Everett many-worlds geometric wormholes
+[PASS] T148: M122 arXiv:2507.22950 undecidability / Meta-ToE
+[PASS] T149: M123 arXiv:2412.02826 algorithmic idealism (believe next)
+[PASS] T150: M124 arXiv:2412.20485 Algorithmic Idealism I
+[PASS] T151: M125 arXiv:2404.08991 simuverse business models
+[PASS] T152: M126 arXiv:2401.02443 mechanistic observer vs simulation
+[PASS] T153: M127 arXiv:1306.0533 cool horizons / entangled black holes
+[PASS] T154: M128 arXiv:2109.08062 quantum embedding chemistry simulation
+[PASS] T155: M129 arXiv:1708.07390 multiparameter persistent homology
+[PASS] T156: M130 arXiv:2008.12792 MUST boosted jets
+[PASS] T157: M131 arXiv:1912.11237 O(4) fermion quantum criticality
+[PASS] T158: M132 arXiv:2402.01521 K-level reasoning in LLMs
+[PASS] T159: M133 arXiv:2309.00678 YSO clustering / nursery ladder
+[PASS] T160: M134 arXiv:2412.05238 sub-static splitting / rigidity
+[PASS] T161: M135 arXiv:1401.5469 TARDIS supernova spectra
+[PASS] T162: M136 arXiv:1508.05049 homogenization + sci-fi receipt parent
+[PASS] T163: Twenty enterprise pain routes latched (M137–M156)
+[PASS] T164: M137 OWASP LLM01 → abstention + tool gate route
+[PASS] T165: M138 OWASP LLM02 → vault + audit export route
+[PASS] T166: M139 OWASP LLM03 → fingerprint + receipts route
+[PASS] T167: M140 OWASP LLM04 → σ-gen + context-rot route
+[PASS] T168: M141 OWASP LLM05 → veto + kill-switch + cap route
+[PASS] T169: M142 OWASP LLM06 → sandbox + side-effect ledger route
+[PASS] T170: M143 OWASP LLM07 → reflection + σ ceiling route
+[PASS] T171: M144 OWASP LLM08 → RAG–tool receipt fuse route
+[PASS] T172: M145 OWASP LLM09 → bluff σ + association route
+[PASS] T173: M146 OWASP LLM10 → ladder + Plane B budget route
+[PASS] T174: M147 EU AI Act Art.9 → hazard + risk-tier route
+[PASS] T175: M148 EU AI Act Art.10 → lineage seal route
+[PASS] T176: M149 EU AI Act Art.11 → audit trail route
+[PASS] T177: M150 EU AI Act Art.13 → transparency slot route
+[PASS] T178: M151 EU AI Act Art.14 → memory tiers + veto route
+[PASS] T179: M152 EU AI Act Art.15 → red-team + adversarial budget route
+[PASS] T180: M153 EU AI Act Art.19 → receipts + JSONL route
+[PASS] T181: M154 Shadow AI → monitor plane + tool gate route
+[PASS] T182: M155 FinOps runaway → Plane B + five-unit route
+[PASS] T183: M156 MTTR silo → pulse + audit + enterprise receipt parent
+
+════════════════════════════════════════════════════
+  Results: 184/184 passed -- ALL CLEAR
+════════════════════════════════════════════════════
+
+  K(t) = ρ · I_Φ · F
+  K_eff = (1 − σ) · K
+  L = 1 − 2σ
+  S = ∫ L dt
+  1 = 1
+
+check-v26: OK (v26 Fortune Global 500 echo orbit)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -I. -o creation_os_v27 creation_os_v27.c src/tokenizer/bpe.c src/tokenizer/byte_fallback.c src/tokenizer/gda27_stub.c src/tokenizer/cos_codebook_mmap.c -lm
+./creation_os_v27 --self-test
+70/70 PASS
+check-v27: OK (v27 vocab / tokenizer scaffold)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -I. -o creation_os_v28 creation_os_v28.c src/import/gguf_parser.c src/import/gguf_mmap.c src/import/bitnet_spawn.c src/import/tokenizer_json.c src/nn/sampler.c src/nn/chat_template.c src/nn/transformer_stub.c src/server/json_esc.c src/server/http_chat.c -lm
+./creation_os_v28 --self-test
+29/29 PASS
+check-v28: OK (v28 LM integration shell)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -I. -o creation_os_v29 creation_os_v29.c src/import/gguf_parser.c src/import/gguf_loader.c src/sigma/channels.c src/nn/attention_xnor.c src/nn/bitnet_forward_stub.c -lm
+./creation_os_v29 --self-test
+22/22 PASS
+check-v29: OK (v29 collapse harness)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v101 -o creation_os_v101 src/v101/sigma_channels.c src/v101/self_test.c src/v101/creation_os_v101.c src/v101/bridge_stub.c -lm
+./creation_os_v101 --self-test
+v101 σ-BitNet-Bridge: 31 PASS / 0 FAIL
+check-v101: OK (v101 σ-BitNet-Bridge σ-channel self-test; stub mode)
+creation_os_v101 σ-BitNet-Bridge (stub mode — build with COS_V101_BITNET_REAL=1 for real inference)
+check-v102: full prerequisites present; running wiring smoke
+check-v102: NOTE (v101 is currently stub-mode; rebuild with 'make standalone-v101-real' to run the JSON smoke)
+check-v102: backend import OK ( CreationOSLM )
+check-v102: OK (creation_os backend registers; v101 stub mode — real smoke via 'make standalone-v101-real && make check-v102')
+check-v103 synth: oracle AURCC=0.0309  random AURCC=0.2232  Cov@0.95(oracle)=0.802
+check-v103: OK (v103 backend imports; RC-metric synthetic oracle/random sanity)
+check-v104: OPERATORS loaded — N=14, Bonferroni 10
+check-v104: synthetic oracle AURCC=0.0309, random=0.2331 — OK
+check-v104: OK (operator registry, RC math, synthetic oracle/random)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v101 -Isrc/v106 -Isrc/v111 -Isrc/v112 -Isrc/v113 -Isrc/v114 -o creation_os_server \
+	    src/v106/server.c src/v106/config.c src/v106/json_helpers.c src/v106/main.c src/v111/reason.c src/v112/tools.c src/v113/sandbox.c src/v114/swarm.c \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
+	    -lm
+./creation_os_server --self-test
+v106 σ-Server: self-test OK (defaults, JSON helpers, aggregator names)
+  PASS  /health returns ok
+  PASS  /v1/models returns OpenAI list shape
+  PASS  /v1/models reports v105 default aggregator (product)
+  PASS  /v1/sigma-profile reports has_data:false when no inference has run
+  PASS  /v1/sigma-profile contains the eight-channel profile array
+  PASS  /v1/chat/completions returns 503 not_loaded in stub mode
+  PASS  OPTIONS /v1/chat/completions returns 204 for CORS preflight
+  PASS  unknown HTTP method returns 405
+  PASS  no user message → 400 invalid_request
+check-v106 smoke: OK (7 checks PASS — loopback curl exercised the v106 HTTP surface)
+check-v106: OK (v106 σ-Server — config + JSON helpers + loopback curl)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v60 -o creation_os_v60 src/v60/creation_os_v60.c src/v60/sigma_shield.c -lm
+./creation_os_v60 --self-test
+v60 self-test: 81 pass, 0 fail
+check-v60: OK (v60 σ-Shield runtime security kernel self-test)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE  -Isrc/v61 -o creation_os_v61 src/v61/creation_os_v61.c src/v61/citadel.c -lm 
+./creation_os_v61 --self-test
+v61 self-test: 61 pass, 0 fail
+check-v61: OK (v61 Σ-Citadel lattice + attestation self-test)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v62 -o creation_os_v62 src/v62/creation_os_v62.c src/v62/fabric.c -lm
+./creation_os_v62 --self-test
+v62 self-test: 68 pass, 0 fail
+check-v62: OK (v62 Reasoning Fabric: latent-CoT + EBT + HRM + NSA + MTP + ARKV)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v63 -o creation_os_v63 src/v63/creation_os_v63.c src/v63/cipher.c -lm
+./creation_os_v63 --self-test
+v63 self-test: 144 pass, 0 fail
+check-v63: OK (v63 σ-Cipher: BLAKE2b + HKDF + ChaCha20-Poly1305 + X25519 + sealed envelope + ratchet + session)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v64 -o creation_os_v64 src/v64/creation_os_v64.c src/v64/intellect.c -lm
+./creation_os_v64 --self-test
+v64 self-test: 260 pass, 0 fail
+check-v64: OK (v64 σ-Intellect: MCTS-σ + skill-lib + tool-authz + reflexion + evolve + MoD-σ, 5-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v65 -o creation_os_v65 src/v65/creation_os_v65.c src/v65/hypercortex.c -lm
+./creation_os_v65 --self-test
+v65 self-test: 534 pass, 0 fail
+check-v65: OK (v65 σ-Hypercortex: bipolar-HDC + VSA bind/bundle/permute + cleanup + HVL, 6-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v66 -o creation_os_v66 src/v66/creation_os_v66.c src/v66/silicon.c -lm
+./creation_os_v66 --self-test
+v66 self-test: 1705 pass, 0 fail
+check-v66: OK (v66 σ-Silicon: int8-gemv + ternary-gemv + ntw + cfc-conformal + hsl, 7-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v67 -o creation_os_v67 src/v67/creation_os_v67.c src/v67/noesis.c -lm
+./creation_os_v67 --self-test
+v67 self-test: 2593 pass, 0 fail
+check-v67: OK (v67 σ-Noesis: bm25 + dense-sig + graph + beam + dual-process + metacog + tactics + nbl, 8-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v68 -o creation_os_v68 src/v68/creation_os_v68.c src/v68/mnemos.c -lm
+./creation_os_v68 --self-test
+v68 self-test: 2669 pass, 0 fail
+check-v68: OK (v68 σ-Mnemos: bipolar-HV + surprise + actr-decay + recall + hebb + consolidate + forget + mml, 9-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v69 -o creation_os_v69 src/v69/creation_os_v69.c src/v69/constellation.c -lm
+./creation_os_v69 --self-test
+v69 σ-Constellation self-test: 3226 pass, 0 fail
+check-v69: OK (v69 σ-Constellation: tree-spec + debate + byz-vote + moe-route + gossip + chunked-dot + elo-ucb + dedup + cl, 10-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v70 -o creation_os_v70 src/v70/creation_os_v70.c src/v70/hyperscale.c -lm
+./creation_os_v70 --self-test
+v70 σ-Hyperscale self-test: 148034 pass, 0 fail
+check-v70: OK (v70 σ-Hyperscale: p2q-shiftadd + ssm-mamba2 + rwkv7 + moe10k + pim-popcount + photonic-wdm + spike-loihi3 + ring-allreduce + stream-lru + hsl, 11-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v71 -o creation_os_v71 src/v71/creation_os_v71.c src/v71/wormhole.c -lm
+./creation_os_v71 --self-test
+v71 σ-Wormhole self-test: 68404 pass, 0 fail
+check-v71: OK (v71 σ-Wormhole: portal-ER-bridge + anchor-cleanup + teleport + kleinberg-route + er-epr-bond + hmac-hv-integrity + poincare-boundary + hop-budget + path-receipt + whl, 12-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v72 -o creation_os_v72 src/v72/creation_os_v72.c src/v72/chain.c -lm
+./creation_os_v72 --self-test
+v72 σ-Chain self-test: 117108 pass, 0 fail
+check-v72: OK (v72 σ-Chain: merkle-ledger + append-only-receipts + wots-plus + threshold-quorum + hash-chain-vrf + dag-bft-quorum + zk-proof-receipt + eip7702-delegation + chain-bundle + scl, 13-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v73 -o creation_os_v73 src/v73/creation_os_v73.c src/v73/omnimodal.c -lm
+./creation_os_v73 --self-test
+v73 σ-Omnimodal self-test: 245818 pass, 0 fail
+check-v73: OK (v73 σ-Omnimodal: universal-tokenizer + rectified-flow + VINO-bind + MOVA-lock + Matrix-Game-world + DiReCT-physics + n8n-workflow + Cursor-plan + MultiGen-asset + OML, 14-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v74 -o creation_os_v74 src/v74/creation_os_v74.c src/v74/experience.c -lm
+./creation_os_v74 --self-test
+v74 σ-Experience self-test: 600128 pass, 0 fail
+check-v74: OK (v74 σ-Experience: fitts-v2p + adaptive-layout + designer-basis + squire-slot + universal-expert-mesh + skill-compose + mobile-gs-render + dlss-framegen + second-world + XPL, 15-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v76 -Isrc/license_kernel -o creation_os_v76 src/v76/creation_os_v76.c src/v76/surface.c src/license_kernel/license_attest.c -lm
+./creation_os_v76 --self-test
+v76 self-test: pass=86583 fail=0
+check-v76: OK (v76 σ-Surface: touch + gesture + haptic + msg(WhatsApp/Telegram/Signal/iMessage/RCS/Matrix/XMPP/Discord/Slack/Line) + Signal-ratchet + a11y + CRDT + legacy(Word/Excel/Outlook/Photoshop/AutoCAD/SAP/Salesforce/Figma/Xcode/Postgres/Stripe/AWS/...) + format(DOCX/XLSX/PDF/DWG/PSD/MP4/ZIP/APK/IPA/ELF/WASM/...) + SBL, 16-bit composed)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v77 -o creation_os_v77 src/v77/creation_os_v77.c src/v77/reversible.c -lm
+./creation_os_v77 --self-test
+creation_os_v77 self-test: 761264/761264 PASS
+check-v77: OK (v77 σ-Reversible: NOT/CNOT/SWAP/Fredkin/Toffoli/Peres/Majority-3/Bennett/8-bit reversible adder/RVL bytecode; forward∘reverse ≡ id; 17-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v78 -o creation_os_v78 src/v78/creation_os_v78.c src/v78/godel.c -lm
+./creation_os_v78 --self-test
+creation_os_v78 self-test: 207582/207582 PASS
+check-v78: OK (v78 σ-Gödel-Attestor: IIT-φ/FEP/MDL/Gödel-num/Global-Workspace/halting-witness/Löbian self-trust/bisim/Chaitin-Ω/MCB bytecode; 18-bit composed decision; >200 000 self-test rows)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v79 -o creation_os_v79 src/v79/creation_os_v79.c src/v79/simulacrum.c -lm
+./creation_os_v79 --self-test
+Creation OS v79 σ-Simulacrum — self-test driver
+v79 simulacrum self-tests: 2994549 PASS / 0 FAIL
+check-v79: OK (v79 σ-Simulacrum: Verlet/CA/stabilizer/HD-reservoir/Koopman/assembly/graph/energy/receipt/SSL bytecode; 19-bit composed decision; >100 000 self-test rows)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v80 -o creation_os_v80 src/v80/creation_os_v80.c src/v80/cortex.c -lm
+./creation_os_v80 --self-test
+== Creation OS v80 σ-Cortex self-test ==
+PASS: 6935348
+FAIL: 0
+check-v80: OK (v80 σ-Cortex: SSM/RoPE/sliding-attn/KV-paged/spec-verify/free-energy/KAN/CTM/MoE/TTC bytecode; 20-bit composed decision; >100 000 self-test rows)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v81 -o creation_os_v81 src/v81/creation_os_v81.c src/v81/lattice.c -lm
+./creation_os_v81
+v81 σ-Lattice: 3513430 PASS / 0 FAIL
+check-v81: OK (v81 σ-Lattice: Keccak-f[1600]/SHAKE-128/256/Barrett/Montgomery/NTT/CBD/KEM; 21-bit composed decision; >3M self-test rows)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v82 -Isrc/v81 -o creation_os_v82 src/v82/creation_os_v82.c src/v82/stream.c src/v81/lattice.c -lm
+./creation_os_v82
+v82 σ-Stream: 72005 PASS / 0 FAIL
+check-v82: OK (v82 σ-Stream: streaming per-chunk 22-bit AND, halt-on-flip, SHAKE-256 Merkle chain)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v83 -Isrc/v81 -o creation_os_v83 src/v83/creation_os_v83.c src/v83/agentic.c src/v81/lattice.c -lm
+./creation_os_v83
+v83 σ-Agentic: 13153 PASS / 0 FAIL
+check-v83: OK (v83 σ-Agentic: PLAN→ROLL→SURPRISE→ENERGY learner loop, 23-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v84 -Isrc/v81 -o creation_os_v84 src/v84/creation_os_v84.c src/v84/zkproof.c src/v81/lattice.c -lm
+./creation_os_v84
+v84 σ-ZKProof: 13534 PASS / 0 FAIL
+check-v84: OK (v84 σ-ZKProof: NANOZK-style layerwise Merkle commit + tamper-detecting opening proof, 24-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v85 -o creation_os_v85 src/v85/creation_os_v85.c src/v85/formal.c -lm
+./creation_os_v85
+v85 σ-Formal: 513 PASS / 0 FAIL
+check-v85: OK (v85 σ-Formal: TLA-style ALWAYS / EVENTUALLY / RESPONDS runtime invariant checker; 25-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v86 -o creation_os_v86 src/v86/creation_os_v86.c src/v86/jepa.c -lm
+./creation_os_v86
+v86 σ-JEPA: 14629 PASS / 0 FAIL
+check-v86: OK (v86 σ-JEPA: latent-space predictive world model — encoder + EMA target + predictor + VICReg var/invar/covar; 26-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v87 -o creation_os_v87 src/v87/creation_os_v87.c src/v87/sae.c -lm
+./creation_os_v87
+v87 σ-SAE: 13511 PASS / 0 FAIL
+check-v87: OK (v87 σ-SAE: Top-K sparse autoencoder + feature dictionary + causal ablation; 27-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v88 -Isrc/v81 -o creation_os_v88 src/v88/creation_os_v88.c src/v88/fhe.c src/v81/lattice.c -lm
+./creation_os_v88
+v88 σ-FHE: 10546 PASS / 0 FAIL
+check-v88: OK (v88 σ-FHE: Ring-LWE integer homomorphic — keygen + enc/dec + add + scalar-mul + rotate; 28-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v89 -o creation_os_v89 src/v89/creation_os_v89.c src/v89/spiking.c -lm
+./creation_os_v89
+v89 σ-Spiking: 491003 PASS / 0 FAIL
+check-v89: OK (v89 σ-Spiking: Loihi-3 graded-spike LIF + STDP neuromorphic plane; 29-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v90 -Isrc/v81 -o creation_os_v90 src/v90/creation_os_v90.c src/v90/hierarchical.c src/v81/lattice.c -lm
+./creation_os_v90
+v90 σ-Hierarchical: 44512 PASS / 0 FAIL
+check-v90: OK (v90 σ-Hierarchical: three-level RGM/S-HAI tower — top-down prior + bottom-up error + SHAKE-256 receipts; 30-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v91 -o creation_os_v91 src/v91/creation_os_v91.c src/v91/quantum.c -lm
+./creation_os_v91
+v91 σ-Quantum: 294 PASS / 0 FAIL
+check-v91: OK (v91 σ-Quantum: 4-qubit integer quantum simulator + Grover amplitude amplification; 31-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v92 -o creation_os_v92 src/v92/creation_os_v92.c src/v92/titans.c -lm
+./creation_os_v92
+v92 σ-Titans: 11723 PASS / 0 FAIL
+check-v92: OK (v92 σ-Titans: neural long-term memory with surprise-gated writes and adaptive forgetting; 32-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v93 -o creation_os_v93 src/v93/creation_os_v93.c src/v93/mor.c -lm
+./creation_os_v93
+v93 σ-MoR: 746 PASS / 0 FAIL
+check-v93: OK (v93 σ-MoR: Mixture-of-Recursions with token-level adaptive recursion depth routing; 33-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v94 -o creation_os_v94 src/v94/creation_os_v94.c src/v94/clifford.c -lm
+./creation_os_v94
+v94 σ-Clifford: 7219 PASS / 0 FAIL
+check-v94: OK (v94 σ-Clifford: Cl(3,0) geometric-algebra multivector algebra + equivariant layer; 34-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v95 -o creation_os_v95 src/v95/creation_os_v95.c src/v95/sheaf.c -lm
+./creation_os_v95
+v95 σ-Sheaf: 4268 PASS / 0 FAIL
+check-v95: OK (v95 σ-Sheaf: cellular-sheaf neural network with sheaf-Laplacian heat diffusion; 35-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v96 -o creation_os_v96 src/v96/creation_os_v96.c src/v96/diffusion.c -lm
+./creation_os_v96
+v96 σ-Diffusion: 1236 PASS / 0 FAIL
+check-v96: OK (v96 σ-Diffusion: integer rectified-flow / DDIM sampler; 36-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v97 -o creation_os_v97 src/v97/creation_os_v97.c src/v97/rl.c -lm
+./creation_os_v97
+v97 σ-RL: 2391 PASS / 0 FAIL
+check-v97: OK (v97 σ-RL: integer Q-learning + GAE + PPO-clip; 37-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v98 -o creation_os_v98 src/v98/creation_os_v98.c src/v98/topology.c -lm
+./creation_os_v98
+v98 σ-Topology: 22375 PASS / 0 FAIL
+check-v98: OK (v98 σ-Topology: persistent homology + Vietoris–Rips + Betti-0/1 filtration; 38-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v99 -o creation_os_v99 src/v99/creation_os_v99.c src/v99/causal.c -lm
+./creation_os_v99
+v99 σ-Causal: 427 PASS / 0 FAIL
+check-v99: OK (v99 σ-Causal: structural causal model + do-calculus + back-door + counterfactual; 39-bit composed decision)
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v100 -o creation_os_v100 src/v100/creation_os_v100.c src/v100/hyena.c -lm
+./creation_os_v100
+v100 σ-Hyena: 10999 PASS / 0 FAIL
+check-v100: OK (v100 σ-Hyena: sub-quadratic gated long convolution operator; 40-bit composed decision)
+check-v60-v100: OK (39 kernels · v75 retired)
+check-v111-matrix: signals & Bonferroni OK
+check-v111-matrix: synthetic AURCC sanity OK (ent=0.2424 ≤ mean=0.4122)
+check-v111-matrix: matrix build OK (4/4 tasks measured; mmlu/gsm8k/humaneval PENDING)
+check-v111-matrix: PASS
+v111.2 adaptive: regenerating matrix and curves (post-hoc, not pre-registered) ...
+v111.2 adaptive OK — 4 tasks × 3 post-hoc signals, N=12
+v111.2 adaptive + selective-prediction curves OK — benchmarks/v111/results/frontier_matrix_adaptive.md / docs/v111/selective_prediction_curves.png
+v111.2 pre-reg: re-running analysis against frozen lock ...
+v111.2 pre-reg OK — lock=bb2ff2210be2..., N=12, any_winner=True, winners=[('truthfulqa_mc2', 'sigma_composite_max'), ('truthfulqa_mc2', 'sigma_composite_mean'), ('truthfulqa_mc2', 'sigma_task_adaptive')]
+v111.2 pre-registered adaptive matrix + conformal τ OK
+  · discovery: n_subjects=10  eligible=7
+  · subset: n_scored=7  bonferroni_N=28
+check-v111-mmlu-discovery: OK — MMLU discovery + σ-matrix artifacts well-formed.
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v101 -Isrc/v111 -o creation_os_v111_reason \
+	    src/v111/reason.c src/v111/reason_self_test.c \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
+	    -lm
+cc -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE -Isrc/v101 -Isrc/v106 -Isrc/v111 -Isrc/v112 -Isrc/v113 -Isrc/v114 -o creation_os_server \
+	    src/v106/server.c src/v106/config.c src/v106/json_helpers.c src/v106/main.c src/v111/reason.c src/v112/tools.c src/v113/sandbox.c src/v114/swarm.c \
+	    src/v101/sigma_channels.c src/v101/self_test.c src/v101/bridge_stub.c \
+	    -lm
+./creation_os_v111_reason
+v111 σ-Reason: 25 PASS / 0 FAIL
+  [ok] POST /v1/reason prompt=stub → 503 (503)
+  [ok] POST /v1/reason messages=stub → 503 (503)
+  [ok] POST /v1/reason malformed → 400 (400)
+  [ok] OPTIONS /v1/reason → 204 (204)
+  [ok] GET /v1/reason → 404 (404)
+check-v111-reason: 5 PASS / 0 FAIL
+check-v111-reason: OK (v111.2 σ-Reason self-test + loopback /v1/reason)
+v111.3 data:  total=    1007  idk=281  answer=726
+check-v111-sft-smoke: PASS
+check-v111: OK (v111.1 matrix + v111.2 adaptive/post-hoc + v111.2 prereg + v111.2 mmlu-discovery + v111.2 reason + v111.3 SFT smoke)
+  PASS  /health returns ok
+  PASS  /v1/models returns OpenAI list shape
+  PASS  /v1/models reports v105 default aggregator (product)
+  PASS  /v1/sigma-profile reports has_data:false when no inference has run
+  PASS  /v1/sigma-profile contains the eight-channel profile array
+  PASS  /v1/chat/completions returns 503 not_loaded in stub mode
+  PASS  OPTIONS /v1/chat/completions returns 204 for CORS preflight
+  PASS  unknown HTTP method returns 405
+  PASS  no user message → 400 invalid_request
+check-v106 smoke: OK (7 checks PASS — loopback curl exercised the v106 HTTP surface)
+  PASS  install.sh parses with bash -n
+  PASS  install.sh says forty-kernel
+  PASS  install.sh downloads default model
+  PASS  install.sh writes config.toml
+  PASS  install.sh boots v106 server
+  PASS  install.sh honors COS_V107_SKIP_MODEL
+  PASS  Dockerfile uses debian base
+  PASS  Dockerfile has multi-stage build
+  PASS  Dockerfile copies the three binaries
+  PASS  Dockerfile has HEALTHCHECK
+  PASS  Dockerfile EXPOSE 8080
+  SKIP  docker not installed — structural grep only
+  PASS  brew formula class shape
+  PASS  brew formula desc
+  PASS  brew formula depends_on make
+  PASS  brew formula installs cos
+  PASS  brew formula installs creation_os_server
+  PASS  ruby -c parses brew formula
+  PASS  release.yml binaries-macos job
+  PASS  release.yml binaries-linux job
+  PASS  release.yml docker job
+  PASS  release.yml multi-arch docker
+check-v107: OK (install.sh + Dockerfile + brew formula + release.yml structurally sound)
+  PASS  has <!doctype html>
+  PASS  has <html> tag
+  PASS  has <body> tag
+  PASS  references σ
+  PASS  σ-channel labels present (8/8)
+  PASS  POSTs to /v1/chat/completions
+  PASS  polls /v1/sigma-profile
+  PASS  fetches /v1/models
+  PASS  σ_product summary present
+  PASS  abstain indicator present
+  PASS  v114 swarm renderer present
+  PASS  v114 swarm block consumed
+  PASS  v114 resonance signal present
+  PASS  GET / returns 200 and serves index.html
+check-v108: OK (σ-UI static + optional live render)
+check-v109: SKIP (no GGUF weights available — set COS_V109_GGUF_PATHS to enable)
+[check-v112] 1/3 pure-C self-test
+v112 self-test: 29 PASS / 0 FAIL
+[check-v112] 2/3 10-scenario JSONL
+  ✓ weather        user="What is the weather in Helsinki right no…" tools=1 expected=get_weather    abstained=1
+  ✓ math_add       user="Compute 37 + 65 exactly…" tools=1 expected=calc_add       abstained=1
+  ✓ db_lookup      user="Find the email of user with id 4421…" tools=1 expected=db_query       abstained=1
+  ✓ file_read      user="Read the contents of ~/notes/shopping.md…" tools=1 expected=read_file      abstained=1
+  ✓ api_call       user="Call the GitHub API to list open PRs on …" tools=1 expected=http_request   abstained=1
+  ✓ execute_code   user="Run python code that prints the first 10…" tools=1 expected=execute_code   abstained=1
+  ✓ send_email     user="Send a reminder email to jane@example.co…" tools=1 expected=send_email     abstained=1
+  ✓ multi_tool     user="What will the weather be in Oslo on Mond…" tools=2 expected=ambiguous      abstained=1
+  ✓ forced_choice  user="How many grams are in a kilogram?…" tools=1 expected=calc_unit      abstained=1
+  ✓ no_tool_prose  user="Tell me a haiku about autumn leaves…" tools=1 expected=none           abstained=1
+v112 scenarios: 10 / 10 passed
+[check-v112] 3/3 live σ-gate (optional)
+[check-v112] OK
+check-v112: OK (σ-gated function calling + 10 scenarios)
+[check-v113] 1/3 pure-C self-test
+v113 self-test: 25 PASS / 0 FAIL
+[check-v113] 2/3 σ-gated reject (high σ, code never runs)
+[check-v113] 3/3 live echo (bash; σ disabled)
+[check-v113] OK
+check-v113: OK (σ-gated subprocess sandbox + rlimit + deadline)
+[check-v114] 1/5 self-test
+v114 self-test: 22 PASS / 0 FAIL
+[check-v114] 2/5 parse config
+[check-v114] 3/5 code prompt → code specialist wins
+[check-v114] 4/5 math prompt → reasoning specialist wins
+[check-v114] 5/5 header contract (Consensus + Sigma fields)
+[check-v114] OK
+check-v114-swarm-routing: OK (σ_product_min router)
+[check-v114-consensus] OK (header=false, body matches)
+check-v114-consensus: OK (resonance-threshold agreement)
+check-v114: OK (σ-swarm multi-specialist orchestration)
+check-v112-v114: OK (agentic stack — tools + sandbox + swarm)
+[v115] self-test
+v115 self-test: PASS
+[v115] write episodic rows
+[v115] counts: {"episodic":3,"knowledge":0,"chat":0}
+[v115] σ-weighted search
+{"top_k":3,"lambda":1.0000,"results":[{"id":1,"sigma_product":0.050000,"score":0.695686,"cosine":0.730470,"created_at":1777063076,"content":"Paris is the capital of France","tags":"geo,confident","session":"test"},{"id":2,"sigma_product":0.800000,"score":0.405817,"cosine":0.730470,"created_at":1777063076,"content":"Paris is the capital of France","tags":"geo,uncertain","session":"test"},{"id":3,"sigma_product":0.100000,"score":0.018189,"cosine":0.020008,"created_at":1777063076,"content":"Python lists are ordered mutable sequences","tags":"code,confident","session":"test"}]}
+[v115] first two σ: 0.050000 then 0.800000
+[v115] OK
+check-v115-memory-roundtrip: OK (σ-memory schema + JSON + round-trip)
+0.050000 0.306007
+0.900000 0.169109
+[v115-sigma] OK (σ1=0.050000 score=0.306007, σ2=0.900000 score=0.169109)
+check-v115-sigma-weighted-recall: OK (low-σ memories outrank high-σ duplicates)
+check-v115: OK (σ-memory: SQLite + σ-weighted recall)
+[v116] self-test
+v116 self-test: PASS
+[v116] initialize
+[v116] tools/list
+[v116] resources/list
+[v116] prompts/list + get
+[v116] tools/call cos_sigma_profile
+[v116] tools/call cos_memory_search (expected unavailable)
+[v116] stdio loop (1 request)
+[v116] OK
+check-v116-mcp-stdio-smoke: OK (JSON-RPC 2.0 stdio — 5 tools + 3 resources + 2 prompts)
+check-v116: OK (σ-MCP server)
+[v117] self-test
+v117 self-test: PASS
+[v117] simulate 4096-token stream (8× native)
+{"config":{"page_tokens":64,"native_ctx":512,"target_ctx":4096,"sliding_tokens":128,"policy":1},"stats":{"tokens_ingested":4096,"tokens_active":512,"pages_active":8,"pages_evicted":56,"evictions_total":56,"offloads_total":0,"sliding_covered":128,"last_sigma_product":0.900000},"pages":[{"id":1,"state":2,"tokens":64,"start":0,"sigma_product":0.900000,"last_used":9,"offload_rowid":0,"preview":"chunk0
+[v117] evictions_total=56 sliding_covered=128 tokens_active=512
+[v117] evicted_pages=56 of which σ=0.9 count=56
+[v117] OK
+check-v117-long-context-32k: OK (paged KV + σ-aware eviction + sliding window)
+check-v117: OK (σ-long-context)
+[v118] self-test
+v118 self-test: PASS
+[v118] parse: {"source":1,"url_prefix":"data:image/png;base64,SEVMTE8K","decoded":6}
+[v118] uniform: {"sigma_product":0.980000,"tau_vision":0.550000,"abstained":true,"embedding_dim":2048,"projection_channel":"embedding_entropy","content_hash":"d9384dc5","preview":[-0.02291,-0.01523,-0.02241,0.00986,-0.01411,0.01511,-0.02267,0.02472]}
+[v118] peaky: {"sigma_product":0.050000,"tau_vision":0.550000,"abstained":false,"embedding_dim":2048,"projection_channel":"embedding_entropy_ok","content_hash":"a4b7f5ff","preview":[0.16441,-0.02515,-0.02173,0.02309,0.00291,0.00537,0.03513,0.01345]}
+[v118] OK
+check-v118-vision-smoke: OK (data URL parse + σ-gated projection)
+check-v118: OK (σ-vision interface layer)
+check-v115-v118: OK (memory + MCP + long-context + vision)
+check-v119: self-test
+check-v119: adaptive γ edges
+check-v119: confident stream acceptance
+check-v119: uncertain stream target-save
+check-v119: OK (policy + σ-adaptive γ + σ-gate contract)
+check-v119-speculative-speedup: OK (σ-adaptive γ + σ-gate draft accept policy)
+check-v119: OK (σ-speculative decoding policy)
+check-v120: self-test
+check-v120: select
+{"rows_read":5,"rows_kept":3,"rows_malformed":0,"rows_rejected_sigma_big_too_high":1,"rows_rejected_sigma_small_too_low":1,"rows_rejected_both":0,"tau_big_low":0.3000,"tau_small_high":0.5000,"mean_sigma_big_kept":0.1667,"mean_sigma_small_kept":0.7000,"source":"v120-sigma-distill"}
+check-v120: OK (σ-targeted selector + SFT manifest contract)
+check-v120-distill-smoke: OK (σ-targeted SFT row selector + manifest)
+check-v120: OK (σ-distill selector layer)
+check-v121: self-test
+check-v121: /v1/plan JSON shape
+check-v121: OK (HTN + MCTS backtrack on σ > τ; /v1/plan JSON contract)
+check-v121-planning-loop: OK (HTN/MCTS + /v1/plan JSON contract)
+check-v121: OK (σ-planning)
+check-v122: self-test
+check-v122: full run (mock responder, 200 tests)
+{"n_total":200,"n_defended":190,"tau_safety":0.6000,"defense_gate":0.8000,"overall_defense_rate":0.9500,"injection":{"total":50,"defended":47,"rate":0.9400},"jailbreak":{"total":50,"defended":48,"rate":0.9600},"hallucination":{"total":100,"defended":95,"rate":0.9500},"gate_pass":true}
+check-v122: OK (200-test σ-red-team + report + ≥80% per category)
+check-v122-red-team: OK (200-test σ-red-team, per-category ≥ 80%)
+check-v122: OK (σ-red-team harness)
+check-v123: tier-1 structural validator (no Java required)
+check-v123: tier-2 TLC model check SKIPPED (no tlc/tla2tools.jar)
+check-v123: hint — download TLA+ tools to $HOME/.tla_tools/tla2tools.jar
+check-v123: OK (tier-1 contract held; exhaustive check deferred)
+check-v123-formal-tlc: OK (σ-governance invariants — structural + TLC-if-present)
+check-v123: OK (σ-formal model-check)
+check-v119-v123: OK (speculative + distill + planning + red-team + formal)
+check-v124: self-test
+check-v124: ring buffer wrap
+check-v124: σ-targeted batch selection
+check-v124: idle-trigger policy
+check-v124: healthy epoch (no forgetting)
+check-v124: catastrophic forgetting → rollback
+check-v124: JSON serialization shape
+check-v124: OK (buffer + trigger + healthy + rollback + JSON)
+check-v124: idle-trigger policy table
+check-v124: 10 healthy epochs — no rollback
+  {"epochs_completed":10,"epochs_with_smoke":1,"epochs_rolled_back":0,"last_baseline_accuracy":0.9200,"active_adapter_version":10}
+check-v124: 10 catastrophic epochs — rollback on epoch 10
+  {"epochs_completed":10,"epochs_with_smoke":1,"epochs_rolled_back":1,"last_baseline_accuracy":0.8800,"active_adapter_version":9}
+check-v124: OK (σ-buffer + idle-trigger + healthy + catastrophic + rollback)
+check-v124-continual-learning: OK (σ-buffer + idle-trigger + rollback)
+check-v124: OK (σ-continual policy)
+check-v125: self-test
+check-v125: DPO loss analytical limits
+check-v125: DPO batch mean
+check-v125: σ-dataset labeling (corrections + σ-pairs)
+check-v125: σ distribution + mode-collapse
+check-v125: JSON serialization shape
+check-v125: OK (DPO loss + σ-labeling + collapse detection)
+check-v125: DPO loss — preferred vs anti-preferred
+  {"loss":0.000371,"pref_prob":0.999629,"beta":1.0000}
+  {"loss":7.900371,"pref_prob":0.000371,"beta":1.0000}
+  {"loss":0.693147,"pref_prob":0.500000,"beta":0.1000}
+check-v125: σ-dataset labeling
+  {"stats":{"interactions_read":6,"pairs_emitted":2,"pairs_from_correction":1,"pairs_from_sigma":1,"rows_skipped_mid_sigma":1,"rows_skipped_unpaired":1,"mean_sigma_chosen":0.1000,"mean_sigma_rejected":0.8400,"tau_low":0.3000,"tau_high":0.6000,"beta":0.1000,"source":"v125-sigma-dpo"},"pairs":[{"source":1,"chosen":"six","rejected":"four","sigma_chosen":0.1000,"sigma_rejected":0.8000},{"source":2,"chosen":"tallinn","rejected":"stockholm","sigma_chosen":0.1000,"sigma_rejected":0.8800}]}
+check-v125: mode-collapse demo
+  {"before":{"n":32,"mean":0.4840,"stddev":0.2585,"entropy_bits":3.2417},"after_ok":{"n":32,"mean":0.4840,"stddev":0.2593,"entropy_bits":3.2417},"after_collapse":{"n":32,"mean":0.5000,"stddev":0.0020,"entropy_bits":1.0000},"verdict_ok":"ok","verdict_collapse":"collapse"}
+check-v125: OK (DPO loss analytic limits + σ-labeling + collapse rollback signal)
+check-v125-dpo-smoke: OK (DPO loss + σ-labeler + mode-collapse)
+check-v125: OK (σ-DPO kernel)
+check-v126: self-test
+check-v126: hidden-state projector L2-norm
+check-v126: same-content + same-σ → cosine = 1
+check-v126: same-content + divergent-σ → cos < 1
+check-v126: unrelated content + same σ → cos << 1
+check-v126: σ-weighted score down-ranks high-σ memory
+check-v126: rank_topk picks low-σ in-domain over high-σ
+check-v126: σ_product = geometric mean
+check-v126: OK (hidden + composite + cosine + σ-weighted rank)
+check-v126: dimension is 2568
+  {"dim":2568,"sigma_weight":0.5000,"lambda":1.0000,"cosine":1.000000,"score":0.769231,"sigma_product_b":0.3000}
+check-v126: identical content + identical σ → cosine = 1
+check-v126: identical content + divergent σ → cosine < 1
+  {"dim":2568,"sigma_weight":0.5000,"lambda":1.0000,"cosine":0.875849,"score":0.460973,"sigma_product_b":0.9000}
+  cosine=0.875849 in (0.80, 1.0)
+check-v126: unrelated content → cosine low
+  {"dim":2568,"sigma_weight":0.5000,"lambda":1.0000,"cosine":0.152542,"score":0.117340,"sigma_product_b":0.3000}
+  cosine=0.152542 < 0.45
+check-v126: σ-weighted rank_topk picks in-domain low-σ first
+  {"k":3,"ranking":[{"index":0,"score":0.878359,"sigma_product":0.1000},{"index":1,"score":0.480535,"sigma_product":0.8500},{"index":2,"score":0.026237,"sigma_product":0.0500}]}
+check-v126: OK (2568-d σ-embed + identical/divergent/off-topic + σ-weighted rank)
+check-v126-embed-smoke: OK (2568-d hybrid embed + σ-weighted rank)
+check-v126: OK (σ-embed kernel)
+check-v124-v126: OK (continual + DPO + σ-embed)
+check-v129-federated-aggregation: --self-test
+check-v129: σ-weighted FedAvg
+check-v129: uniform σ → equal weights
+check-v129: SplitMix Gaussian RNG determinism + moments
+check-v129: σ-scaled DP noise
+check-v129: σ-adaptive top-K
+check-v129: sparsify picks largest magnitudes
+check-v129: unlearn diff round-trip
+check-v129: JSON shape
+check-v129: OK (σ-FedAvg + DP noise + top-K + unlearn)
+check-v129-federated-aggregation: σ-weighted aggregate 3 nodes
+  agg-stats: {"n_nodes":3,"dim":4,"weight_min":0.084804,"weight_max":0.762561,"weight_sum":1.000000,"winner_node_id":0,"mean_abs_delta":2.167867}
+  weight_sum ok: 1.000000
+check-v129-federated-aggregation: DP noise scales with σ_node
+  σ_node=0.1: {"sigma_node":0.1000,"epsilon_budget":1.0000,"sigma_dp":0.011000,"empirical_mean":-0.001966,"empirical_var":0.000129}
+  σ_node=0.9: {"sigma_node":0.9000,"epsilon_budget":1.0000,"sigma_dp":0.019000,"empirical_mean":-0.003396,"empirical_var":0.000385}
+  σ_dp(0.9)=0.019000 > σ_dp(0.1)=0.011000 ok
+check-v129-federated-aggregation: adaptive-K — confident > uncertain
+  confident: {"sigma_node":0.1000,"k":58,"k_min":4,"k_max":256}
+  uncertain: {"sigma_node":0.9000,"k":6,"k_min":4,"k_max":256}
+  K_confident=58 > K_uncertain=6 ok
+check-v129-federated-aggregation: OK
+check-v129-federated-aggregation: OK (σ-FedAvg + DP + top-K + unlearn)
+check-v129: OK (σ-federated kernel)
+check-v130-codec-roundtrip: --self-test
+check-v130: FP4 LoRA-delta quantization round-trip
+check-v130: σ-profile 8-byte pack round-trip
+check-v130: PQ train + encode/decode cosine
+check-v130: σ-aware context compression
+check-v130: OK (FP4 + σ-pack + PQ + context codec)
+check-v130-codec-roundtrip: FP4 round-trip on 1024 synthetic values
+  {"n":1024,"scale":0.049982,"rmse":0.002081,"rel_rmse":0.041635}
+  FP4 rel_rmse=0.041635 ok
+check-v130-codec-roundtrip: σ-profile pack ≤ 1/255
+  {"n":8,"max_err":0.00196081,"packed_bytes":8}
+  σ-pack max_err=0.00196081 ok
+check-v130-codec-roundtrip: σ-aware context — uncertain > confident
+  {"chunks":3,"input_bytes":227,"budget":180,"output_bytes":184}
+This is a very confident sentence about... ... Uncertain: the quantum-gravity unification remains an open and disputed research question. ... Another simple confident statement abou...
+  context compressed 227→184, uncertain preserved
+check-v130-codec-roundtrip: OK
+check-v130-codec-roundtrip: OK (FP4 + σ-pack + PQ + context codec)
+check-v130: OK (σ-codec kernel)
+check-v131-temporal-recall: --self-test
+check-v131: window recall
+check-v131: σ-trend slope signs
+  math slope=-5.7870369e-07 (7 pts), biology slope=3.472222e-07 (7 pts)
+check-v131: σ-weighted decay
+check-v131: spike detection
+check-v131: deadline σ prediction
+check-v131: trend JSON shape
+check-v131: OK (timeline + trend + decay + spike + deadline)
+check-v131-temporal-recall: trend-demo on decreasing math σ
+  {"topic":"math","slope_per_sec":-0.00000081,"slope_per_day":-0.070000,"n_used":10}
+{"recall_window_7d_events":8}
+  math slope_per_day=-0.070000, n_used=10
+check-v131-temporal-recall: decay weights
+  low σ  (30d): {"age_sec":2592000,"sigma":0.1000,"half_life_sec":604800,"weight":0.008966}
+  high σ (30d): {"age_sec":2592000,"sigma":0.9000,"half_life_sec":604800,"weight":0.000291}
+  low-σ=0.008966 > high-σ=0.000291 ok
+check-v131-temporal-recall: deadline σ rises with pressure
+  early: {"baseline":0.2000,"slope":0.6000,"fraction_used":0.0500,"sigma_pred":0.230000}
+  late : {"baseline":0.2000,"slope":0.6000,"fraction_used":0.9500,"sigma_pred":0.770000}
+  σ: 0.2300 → 0.7700 ok
+check-v131-temporal-recall: OK
+check-v131-temporal-recall: OK (window + trend + decay + spike + deadline)
+check-v131: OK (σ-temporal kernel)
+check-v132-persona-adaptation: --self-test

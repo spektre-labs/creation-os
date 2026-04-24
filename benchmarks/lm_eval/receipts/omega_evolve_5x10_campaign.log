@@ -1,0 +1,291 @@
+=== Ω Evolution Campaign ===
+Date: Fri Apr 24 21:04:29 EEST 2026
+ROOT=/Users/eliaslorenzo/Desktop/creation-os-kernel
+CHAT_TIMEOUT_S=300  COS_CAMPAIGN_TAU_ACCEPT=2  COS_CAMPAIGN_TAU_RETHINK=2
+
+=== RUN 1 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[speed: 1 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.230 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.897 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28824ms | 0.2 tok/s | TTFT 28824ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28824ms | €0.0123]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 1: σ_mean=0.2366 cache_hits=9
+Run 1 complete. Memory consolidated.
+
+=== RUN 2 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[speed: 1 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.230 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.897 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 2: σ_mean=0.2366 cache_hits=10
+Run 2 complete. Memory consolidated.
+
+=== RUN 3 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[speed: 1 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.230 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.897 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 3: σ_mean=0.2366 cache_hits=10
+Run 3 complete. Memory consolidated.
+
+=== RUN 4 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[speed: 1 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.230 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.897 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 4: σ_mean=0.2366 cache_hits=10
+Run 4 complete. Memory consolidated.
+
+=== RUN 5 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+[speed: 1 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.063 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.230 | σ_logprob=0.063 σ_entropy=0.063 σ_perplexity=0.063 σ_consistency=0.897 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
+[speed: 7 tok | 0ms | 0.0 tok/s | TTFT 0ms]
+[σ=0.080 | ACCEPT | CACHE | LOCAL | 0.0 tok/s | TTFT 0ms | €0.0000]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 5: σ_mean=0.2366 cache_hits=10
+Run 5 complete. Memory consolidated.
+
+=== CAMPAIGN COMPLETE ===
+
+σ trajectory:
+run,sigma_mean,cache_hits
+1,0.2366,9
+2,0.2366,10
+3,0.2366,10
+4,0.2366,10
+5,0.2366,10
+
+If σ_mean DECREASES across runs → system learns.
+If cache_hits INCREASE across runs → memory works.
+
+Full results: benchmarks/lm_eval/receipts/omega_evolve/
+Trajectory:   benchmarks/lm_eval/receipts/omega_evolve/sigma_trajectory.csv
+Log:          benchmarks/lm_eval/receipts/omega_evolve/campaign.log
