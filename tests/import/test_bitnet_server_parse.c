@@ -81,8 +81,8 @@ static int assert_parse(const char *label, const char *json, float sigma_max,
 int main(void) {
     int fails = 0;
 
-    /* Case 1: three tokens at probs 1.0, 0.5, 0.8 → σ_max = 0.5,
-     * σ_mean = (0.0 + 0.5 + 0.2) / 3 ≈ 0.2333 */
+    /* Case 1: three tokens at probs 1.0, 0.5, 0.8 → aggregate σ from
+     * bns_sigma_from_logprobs_agg (0.4·(1−mean p)+0.3·(1−exp min_lp)+0.3·low). */
     const char *json1 =
         "{\"choices\":[{\"finish_reason\":\"length\","
         "\"message\":{\"content\":\"Paris is France\"}}],"
@@ -96,7 +96,7 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" France\",\"prob\":0.8}]}"
         "]}";
     fails += assert_parse("case1: mixed probs", json1,
-                          0.34f,
+                          0.2433f,
                           (1.0f - (1.0f + 0.5f + 0.8f)/3.0f),
                           "Paris is France", 3);
 
@@ -148,7 +148,7 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" world\",\"prob\":0.6}]}"
         "]}";
     fails += assert_parse("case4: /completion shape", json4,
-                          0.31f, (1.0f - (0.9f + 0.6f)/2.0f),
+                          0.2200f, (1.0f - (0.9f + 0.6f)/2.0f),
                           "hello world", 2);
 
     /* Case 5: UTF-8 string with a \uXXXX escape inside the text. */
@@ -161,13 +161,13 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\"Helsinki\",\"prob\":0.95}]}"
         "]}";
     fails += assert_parse("case5: text + single tok", json5,
-                          1.0f - 0.95f, 1.0f - 0.95f,
+                          0.0350f, 1.0f - 0.95f,
                           "Helsinki is the capital of Finland.", 1);
 
     /* Case 6: OpenAI chat + llama-server — message.content empty,
      * reasoning_content holds text; σ from logprobs.content[].logprob
      * (not completion_probabilities). */
-    const float seq6 = 0.47103317f; /* 0.6·σ_mean + 0.4·σ_min on [-0.1,-1] */
+    const float seq6 = 0.3351f; /* 0.4·σ_mean + 0.3·σ_min + 0.3·low on [-0.1,-1] */
     char json6[1536];
     int j6 = snprintf(json6, sizeof(json6),
                       "{\"choices\":[{\"finish_reason\":\"stop\","
@@ -179,7 +179,7 @@ int main(void) {
     if (j6 < 0 || (size_t)j6 >= sizeof(json6))
         return 99;
     fails += assert_parse(
-        "case6: logprobs.content σ (reasoning-only → 0.6 mean + 0.4 min)",
+        "case6: logprobs.content σ (reasoning-only tail)",
         json6,
         seq6,
         0.36364157f,
@@ -191,9 +191,9 @@ int main(void) {
         "{\"choices\":[{\"message\":{\"content\":\"hi\"},\"logprobs\":"
         "{\"content\":[{\"logprob\":-0.1},{\"logprob\":-0.69}]}}],"
         "\"usage\":{\"completion_tokens\":2}}";
-    fails += assert_parse("case7: logprobs.content σ (plain content → 0.6+0.4)",
+    fails += assert_parse("case7: logprobs.content σ (plain content)",
                           json7,
-                          0.37744553f,
+                          0.2682f,
                           0.29679325f,
                           "hi",
                           2);
@@ -211,7 +211,7 @@ int main(void) {
     if (j8 < 0 || (size_t)j8 >= sizeof(json8))
         return 98;
     fails += assert_parse(
-        "case8: logprobs + Ollama reasoning key → 0.6+0.4",
+        "case8: logprobs + Ollama reasoning key",
         json8,
         seq8,
         0.36364157f,
@@ -219,18 +219,18 @@ int main(void) {
         2);
 
     /* Case 9: Ollama native /api/chat top-level logprobs array. */
-    const float s9 = 1.0f - (float)exp(-0.69);
+    const float s9 = 0.3489f;
     const char *json9 =
         "{\"message\":{\"role\":\"assistant\",\"content\":\"Z\"},"
         "\"logprobs\":["
         "  {\"token\":\"Z\",\"logprob\":-0.69}"
         "]}";
     fails += assert_parse("case9: Ollama native logprobs[]", json9,
-                          s9, s9, "Z", 1);
+                          s9, 1.0f - (float)exp(-0.69f), "Z", 1);
 
     /* Case 10: both content + reasoning → σ uses answer tail of logprobs
      * (length-ratio skip of reasoning tokens). */
-    const float s10 = 0.49842393f;
+    const float s10 = 0.3489f;
     const char *json10 =
         "{\"choices\":[{\"message\":{\"content\":\"hi\","
         "\"reasoning\":\"ab\"},\"logprobs\":{\"content\":["
@@ -238,7 +238,7 @@ int main(void) {
         "\"usage\":{\"completion_tokens\":2}}";
     fails += assert_parse("case10: content+reasoning → answer-only logprobs",
                           json10,
-                          s10, s10, "hi", 2);
+                          s10, 1.0f - (float)exp(-0.69f), "hi", 2);
 
     if (fails == 0) {
         fprintf(stdout, "OK: all 10 cases passed\n");

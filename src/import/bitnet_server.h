@@ -60,8 +60,8 @@
  *                                Ollama and other peers are not tripped).
  *
  *    COS_INFERENCE_BACKEND    "llama-server" (default) or "ollama" — when
- *                             ollama: POST http://host:port/api/chat (local
- *                             Metal/MLX via Ollama on Apple Silicon).
+ *                             ollama: POST http://host:port/v1/chat/completions
+ *                             (OpenAI shape, logprobs + top_logprobs ≤ 3).
  *                             Requires a running `ollama serve`; this module
  *                             does not spawn Ollama.
  *    COS_OLLAMA_HOST          bind host when backend is ollama (optional)
@@ -70,14 +70,13 @@
  *                             avoids Qwen thinking-mode empty `content`)
  *    COS_OLLAMA_DEFAULT_SIGMA fallback σ when logprobs are unavailable
  *                             (default "0.5", neutral unknown)
- *    COS_OLLAMA_ENABLE_THINKING  set to "1" to pass enable_thinking:true
- *                             in /api/chat options (default off for Qwen3).
- *    COS_OLLAMA_CHAT_THINK_FALSE  set to "1" to append root-level \"think\":false
- *                             on Ollama /api/chat (Qwen3.5+; keeps answers in
- *                             `message.content` when the runtime supports it).
+ *    COS_OLLAMA_ENABLE_THINKING  legacy Qwen /api/chat knob (ignored for the
+ *                             default Ollama OpenAI-compat path).
+ *    COS_OLLAMA_CHAT_THINK_FALSE  legacy /api/chat extension (ignored when
+ *                             using /v1/chat/completions).
  *    COS_OLLAMA_APPEND_NO_THINK  "0" disables appending " /no_think" to the
- *                             user message on /api/chat (default: append for
- *                             Qwen3 unless set to "0").
+ *                             user message (default: append for non-Gemma
+ *                             model ids unless set to "0").
  *    COS_BITNET_SIGMA_ADAPTIVE  set to "1" for extra HTTP round-trips when
  *                             per-token logprobs are missing: a verbal
  *                             0–100 confidence follow-up, optionally blended

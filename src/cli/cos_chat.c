@@ -231,6 +231,7 @@ static int load_conformal_tau(const char *path,
  * ---------------------------------------------------------------------- */
 #define COS_CHAT_MULTI_K_REGEN 2  /* total regenerations = K_REGEN + 1 */
 #define COS_CHAT_MULTI_TEXT_CAP 2048
+#define COS_CHAT_SEM_SHADOW_MAX 5
 
 typedef struct {
     cos_multi_sigma_t ens;
@@ -238,60 +239,124 @@ typedef struct {
     int   k_used;
 } chat_multi_t;
 
+static void chat_metacog_levels(const char *prompt,
+                                const cos_pipeline_result_t *r,
+                                int max_rethink,
+                                cos_ultra_metacog_levels_t *lv);
+
 static int chat_multi_shadow(cos_pipeline_config_t *cfg,
+                             int semantic_sigma_triple,
                              const char *input,
+                             const cos_pipeline_result_t *r_meta,
                              const char *primary_text,
                              float primary_sigma,
                              chat_multi_t *out) {
-    if (out == NULL) return -1;
+    if (out == NULL || cfg == NULL) return -1;
     memset(out, 0, sizeof(*out));
 
-    /* Collect up to K+1 texts: [primary, regen_1, regen_2, ...]. */
-    const int K = COS_CHAT_MULTI_K_REGEN;
-    const char *texts[1 + COS_CHAT_MULTI_K_REGEN];
-    char        copies[1 + COS_CHAT_MULTI_K_REGEN][COS_CHAT_MULTI_TEXT_CAP];
-    int n = 0;
+    int   n_lp_snap = 0;
+    float lp_sig_snap[8];
+    (void)cos_bitnet_server_copy_last_token_sigmas(lp_sig_snap, 8,
+                                                  &n_lp_snap);
+    int   has_lp = (n_lp_snap > 0);
+
+    float sigma_meta = 0.10f;
+    if (r_meta != NULL && input != NULL) {
+        cos_ultra_metacog_levels_t lv;
+        chat_metacog_levels(input, r_meta, cfg->max_rethink, &lv);
+        sigma_meta =
+            0.25f
+            * (lv.sigma_perception + lv.sigma_self + lv.sigma_social
+               + lv.sigma_situational);
+        if (sigma_meta < 0.0f) sigma_meta = 0.0f;
+        if (sigma_meta > 1.0f) sigma_meta = 1.0f;
+    }
+
+    const int    K = COS_CHAT_MULTI_K_REGEN;
+    const char *texts[COS_CHAT_SEM_SHADOW_MAX];
+    char         copies[COS_CHAT_SEM_SHADOW_MAX][COS_CHAT_MULTI_TEXT_CAP];
+    int          n = 0;
     if (primary_text != NULL) {
         snprintf(copies[n], sizeof(copies[n]), "%s", primary_text);
         texts[n] = copies[n];
         n++;
     }
 
-    for (int k = 0; k < K; ++k) {
-        if (cfg->generate == NULL) break;
-        const char *t = NULL;
-        float       s = 1.0f;
-        double      c = 0.0;
-        /* Use round = k+1 so the generator seeds a different trajectory;
-         * the K extra calls are local electricity only and are not
-         * forwarded to the sovereign ledger (shadow mode). */
-        if (cfg->generate(input, k + 1, cfg->generate_ctx,
-                          &t, &s, &c) != 0 || t == NULL) break;
-        snprintf(copies[n], sizeof(copies[n]), "%s", t);
-        texts[n] = copies[n];
-        n++;
+    int want_sem = semantic_sigma_triple != 0 && cos_cli_use_bitnet_http() != 0;
+
+    if (want_sem && input != NULL && n >= 1) {
+        const char *sysp =
+            (cfg->codex != NULL && cfg->codex->bytes != NULL
+             && cfg->codex->size > 0)
+                ? cfg->codex->bytes
+                : NULL;
+        const float temps[2] = { 0.5f, 1.0f };
+        for (int ti = 0; ti < 2 && n < COS_CHAT_SEM_SHADOW_MAX; ++ti) {
+            cos_bitnet_server_params_t pp;
+            memset(&pp, 0, sizeof(pp));
+            pp.n_predict     = 96;
+            pp.n_probs       = 3;
+            pp.seed          = 700 + ti * 7919;
+            pp.temperature   = temps[ti];
+            pp.system_prompt = sysp;
+            cos_bitnet_server_result_t rr;
+            memset(&rr, 0, sizeof(rr));
+            if (cos_bitnet_server_complete(input, &pp, &rr) == 0
+                && rr.text != NULL && rr.text[0] != '\0') {
+                snprintf(copies[n], sizeof(copies[n]), "%s", rr.text);
+                texts[n] = copies[n];
+                n++;
+            }
+        }
+    } else {
+        for (int k = 0; k < K; ++k) {
+            if (cfg->generate == NULL) break;
+            const char *t = NULL;
+            float       s = 1.0f;
+            double      c = 0.0;
+            if (cfg->generate(input, k + 1, cfg->generate_ctx,
+                              &t, &s, &c) != 0
+                || t == NULL)
+                break;
+            snprintf(copies[n], sizeof(copies[n]), "%s", t);
+            texts[n] = copies[n];
+            n++;
+        }
     }
 
     float sigma_consistency =
         (n >= 2) ? cos_multi_sigma_consistency(texts, n) : 0.0f;
     if (sigma_consistency < 0.0f) sigma_consistency = 0.0f;
 
-    /* Defensive clamp on the scalar. */
     float s_lp = primary_sigma;
     if (s_lp < 0.0f) s_lp = 0.0f;
     if (s_lp > 1.0f) s_lp = 1.0f;
 
-    /* In the absence of per-token top-k logprobs we conservatively feed
-     * the scalar into σ_entropy and σ_perplexity; the ensemble weights
-     * (w_entropy=0.20, w_perplexity=0.10, w_consistency=0.20) keep the
-     * ensemble under the scalar unless consistency genuinely diverges. */
     if (cos_multi_sigma_combine(s_lp, s_lp, s_lp,
-                                sigma_consistency, NULL, &out->ens) == 0) {
-        out->have   = 1;
-        out->k_used = n;
-        return 0;
+                                sigma_consistency, NULL, &out->ens) != 0)
+        return -1;
+
+    if (want_sem && n >= 2) {
+        float s_sem        = cos_multi_sigma_consistency(texts, n);
+        if (s_sem < 0.0f) s_sem = 0.0f;
+        int   has_sem_full = (n >= 3);
+        float blend;
+        if (has_lp && has_sem_full) {
+            blend = 0.5f * s_lp + 0.3f * s_sem + 0.2f * sigma_meta;
+        } else if (has_lp) {
+            blend = 0.7f * s_lp + 0.3f * sigma_meta;
+        } else {
+            blend = 0.7f * s_sem + 0.3f * sigma_meta;
+        }
+        if (blend < 0.0f) blend = 0.0f;
+        if (blend > 1.0f) blend = 1.0f;
+        out->ens.sigma_consistency = s_sem;
+        out->ens.sigma_combined    = blend;
     }
-    return -1;
+
+    out->have   = 1;
+    out->k_used = n;
+    return 0;
 }
 
 /* ----------------------------------------------------------------------
@@ -556,25 +621,23 @@ static void fprint_json_string(FILE *fp, const char *s) {
     fputc('"', fp);
 }
 
-/* FINAL-2 per-turn toggles carried through to the --once / REPL paths.
- * Kept in a small config struct so the function signatures do not grow
- * an unbounded number of arguments. */
+/* FINAL-2 per-turn toggles carried through to the --once / REPL paths. */
 typedef struct {
-    int   multi_sigma;          /* Phase A   */
-    int   conformal_active;     /* Phase B on (τ loaded from bundle)   */
-    float conformal_alpha;      /* Phase B pinned α (for receipt)     */
-    int   verbose;              /* Phase C: emit metacog banner       */
-    int   coherence_active;     /* Phase D: track σ in session window */
-    chat_coh_t *coh;            /* Phase D window state               */
-    int   semantic_cache;       /* BSC Hamming inference cache        */
-    int   speculative_sigma;    /* predict σ before full pipeline     */
-    int   knowledge_graph;     /* extract relations to ~/.cos kg DB   */
-    int   spike_mode;           /* neuromorphic σ spike layer         */
-    int   adaptive_compute;     /* σ-guided kernel / rethink budget   */
-    int   energy_report;        /* print compute / energy receipt     */
-    int   proof_receipt_echo;   /* print proof JSON line              */
-    int   semantic_entropy;     /* multi-sample meaning entropy σ     */
-    int   semantic_sigma;      /* BSC semantic σ (preferred vs entropy)*/
+    int   multi_sigma;
+    int   conformal_active;
+    float conformal_alpha;
+    int   verbose;
+    int   coherence_active;
+    chat_coh_t *coh;
+    int   semantic_cache;
+    int   speculative_sigma;
+    int   knowledge_graph;
+    int   spike_mode;
+    int   adaptive_compute;
+    int   energy_report;
+    int   proof_receipt_echo;
+    int   semantic_entropy;
+    int   semantic_sigma;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -1223,10 +1286,12 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             || feat->adaptive_compute))
         cos_speculative_sigma_observe(domain_h, r.sigma);
 
-    if (feat != NULL && feat->semantic_sigma)
-        chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r, early_spec_abstain,
-                                  semantic_hit, prc, 0);
-    else if (feat != NULL && feat->semantic_entropy)
+    if (feat != NULL && feat->semantic_sigma) {
+        const char *leg = getenv("COS_CHAT_BSC_SEMANTIC_SIGMA");
+        if (leg != NULL && leg[0] == '1' && leg[1] == '\0')
+            chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
+                                      early_spec_abstain, semantic_hit, prc, 0);
+    } else if (feat != NULL && feat->semantic_entropy)
         chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r, early_spec_abstain,
                                     semantic_hit, prc, 0);
 
@@ -1266,8 +1331,9 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             feat != NULL && feat->multi_sigma && !skip_multi_verify
             && (!feat->adaptive_compute || kernel_cap >= 10);
         if (allow_multi) {
-            if (chat_multi_shadow(cfg_rw, prompt,
-                                  r.response, r.sigma, &ms) == 0) {
+            if (chat_multi_shadow(cfg_rw,
+                                  feat != NULL && feat->semantic_sigma,
+                                  prompt, &r, r.response, r.sigma, &ms) == 0) {
                 have_ms = 1;
             }
         }
@@ -1649,7 +1715,8 @@ int main(int argc, char **argv) {
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
                 "  --no-semantic-entropy  disable (overrides COS_CHAT_SEMANTIC_ENTROPY=1)\n"
-                "  --semantic-sigma    BSC multi-answer σ (overrides --semantic-entropy)\n"
+                "  --semantic-sigma    triple-sample σ (T=0.5/1.0) + blend into σ_combined\n"
+                "                      with --multi-sigma (HTTP backend); 2 extra inferences\n"
                 "  --no-semantic-sigma disable (overrides COS_CHAT_SEMANTIC_SIGMA=1)\n"
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
@@ -1681,7 +1748,8 @@ int main(int argc, char **argv) {
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
                 "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n"
-                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n");
+                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n"
+                "  COS_CHAT_BSC_SEMANTIC_SIGMA=1 legacy BSC path (extra HTTP; rare)\n");
             return 0;
         }
     }
@@ -2270,11 +2338,13 @@ int main(int argc, char **argv) {
             && (speculative_sigma || spike_mode || adaptive_compute))
             cos_speculative_sigma_observe(domain_h, r.sigma);
 
-        if (rfeat.semantic_sigma)
-            chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
-                                       early_spec_abstain, semantic_hit, prc,
-                                       use_tui ? 1 : 0);
-        else if (rfeat.semantic_entropy)
+        if (rfeat.semantic_sigma) {
+            const char *leg = getenv("COS_CHAT_BSC_SEMANTIC_SIGMA");
+            if (leg != NULL && leg[0] == '1' && leg[1] == '\0')
+                chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
+                                          early_spec_abstain, semantic_hit, prc,
+                                          use_tui ? 1 : 0);
+        } else if (rfeat.semantic_entropy)
             chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r,
                                         early_spec_abstain, semantic_hit, prc,
                                         use_tui ? 1 : 0);
@@ -2326,8 +2396,9 @@ int main(int argc, char **argv) {
                 && (!adaptive_compute || kernel_cap >= 10);
             if (allow_ms)
                 ms_ok =
-                    (chat_multi_shadow(&cfg, line, r.response, r.sigma,
-                                       &ms) == 0)
+                    (chat_multi_shadow(&cfg,
+                                       rfeat.semantic_sigma, line, &r,
+                                       r.response, r.sigma, &ms) == 0)
                         ? 1
                         : 0;
         }

@@ -78,6 +78,9 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                           const char **out_text, float *out_sigma,
                           double *out_cost_eur);
 
+/** True when COS_BITNET_SERVER=1 or COS_BITNET_SERVER_EXTERNAL=1 (HTTP path). */
+int cos_cli_use_bitnet_http(void);
+
 #ifdef __cplusplus
 }
 #endif

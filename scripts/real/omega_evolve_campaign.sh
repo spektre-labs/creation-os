@@ -63,7 +63,8 @@ for RUN in $(seq 1 "$N_RUNS"); do
             COS_BITNET_SERVER="${COS_BITNET_SERVER:-1}" \
             COS_CODEX_PATH="${COS_CODEX_PATH:-data/codex/atlantean_codex_compact.txt}" \
             COS_BITNET_SERVER_EXTERNAL="${COS_BITNET_SERVER_EXTERNAL:-1}" \
-            COS_BITNET_SERVER_PORT="${COS_BITNET_SERVER_PORT:-8088}" \
+            COS_BITNET_SERVER_PORT="${COS_BITNET_SERVER_PORT:-11434}" \
+            COS_BITNET_CHAT_MODEL="${COS_BITNET_CHAT_MODEL:-gemma3:4b}" \
             COS_BITNET_CHAT_CTX="${COS_BITNET_CHAT_CTX:-2048}" \
             perl -e '$SIG{ALRM}=sub{die "CHAT_TIMEOUT\n"}; alarm shift; exec @ARGV' \
                 "$CHAT_TIMEOUT_S" \

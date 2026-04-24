@@ -144,12 +144,6 @@ static int bns_env_int_clamp(const char *name, int def, int lo, int hi) {
     return x;
 }
 
-/** COS_OLLAMA_ENABLE_THINKING=1 opts into Qwen3 extended thinking (default off). */
-static int bns_ollama_enable_thinking_from_env(void) {
-    const char *v = getenv("COS_OLLAMA_ENABLE_THINKING");
-    return (v != NULL && v[0] == '1' && v[1] == '\0') ? 1 : 0;
-}
-
 static double now_ms(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -264,6 +258,16 @@ static void bns_load_config(void) {
 
     bns_alloc_scratch();
     g_bns.initialized = 1;
+}
+
+/** Default JSON `model` for /v1/chat/completions when COS_BITNET_CHAT_MODEL
+ *  is unset: Gemma on Ollama-shaped ports (11434), BitNet id otherwise. */
+static const char *bns_default_openai_compat_chat_model(void) {
+    bns_load_config();
+    if (g_bns.backend_ollama
+        || (g_bns.external && g_bns.http_port == 11434))
+        return "gemma3:4b";
+    return "bitnet";
 }
 
 /** Per-socket recv/send wall clock (default BNS_IO_TIMEOUT_S). Override with
@@ -687,24 +691,29 @@ static float bns_clamp_lp_for_exp(float lp) {
     return lp;
 }
 
-/** σ from natural-log token scores: 0.6·(1−mean p) + 0.4·(1−exp min_lp).
- *  n==0 → neutral 0.5. */
+/** σ from natural-log token scores (Ollama / OpenAI logprob channel):
+ *  0.4·(1−mean p) + 0.3·(1−exp min_lp) + 0.3·(low_conf_ratio), where
+ *  low_conf counts tokens with logprob < −3.  n==0 → neutral 0.5. */
 static float bns_sigma_from_logprobs_agg(const float *lp, int n) {
     if (n <= 0) return 0.5f;
     float sum_prob = 0.0f;
     float min_lp     = lp[0];
+    int   low_conf   = 0;
     for (int i = 0; i < n; i++) {
         float lpv = bns_clamp_lp_for_exp(lp[i]);
         if (lp[i] < min_lp) min_lp = lp[i];
+        if (lp[i] < -3.0f) low_conf++;
         float p = expf(lpv);
         if (p > 1.0f) p = 1.0f;
         if (p < 0.0f) p = 0.0f;
         sum_prob += p;
     }
-    float mean_prob  = sum_prob / (float)n;
-    float sigma_mean = 1.0f - mean_prob;
-    float sigma_min  = 1.0f - expf(bns_clamp_lp_for_exp(min_lp));
-    float sigma      = 0.6f * sigma_mean + 0.4f * sigma_min;
+    float mean_prob       = sum_prob / (float)n;
+    float sigma_mean      = 1.0f - mean_prob;
+    float sigma_min       = 1.0f - expf(bns_clamp_lp_for_exp(min_lp));
+    float sigma_lowconf   = (float)low_conf / (float)n;
+    float sigma           = 0.4f * sigma_mean + 0.3f * sigma_min
+                  + 0.3f * sigma_lowconf;
     if (sigma < 0.0f) sigma = 0.0f;
     if (sigma > 1.0f) sigma = 1.0f;
     return sigma;
@@ -807,7 +816,7 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
     if (model == NULL || model[0] == '\0')
         model = getenv("COS_BITNET_CHAT_MODEL");
     if (model == NULL || model[0] == '\0')
-        model = g_bns.backend_ollama ? "gemma3:4b" : "bitnet";
+        model = bns_default_openai_compat_chat_model();
 
     char *jb  = g_bns.req_buf + 4096;
     size_t w  = 0;
@@ -836,21 +845,17 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
         }
         if (want_logprobs) {
             n = snprintf(jb + w, JSON_CAP - w,
-                          "}],\"logprobs\":true,\"top_logprobs\":5,"
-                          "\"options\":{\"num_predict\":%d,\"temperature\":%.3f",
+                          "}],\"max_tokens\":%d,\"logprobs\":true,"
+                          "\"top_logprobs\":3,\"temperature\":%.3f",
                           max_tok, (double)temperature);
         } else {
             n = snprintf(jb + w, JSON_CAP - w,
-                          "}],\"options\":{\"num_predict\":%d,\"temperature\":%.3f",
+                          "}],\"max_tokens\":%d,\"temperature\":%.3f",
                           max_tok, (double)temperature);
         }
         if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
         w += (size_t)n;
-        if (bns_env_flag1("COS_OLLAMA_CHAT_THINK_FALSE")) {
-            n = snprintf(jb + w, JSON_CAP - w, "},\"think\":false}");
-        } else {
-            n = snprintf(jb + w, JSON_CAP - w, "}}");
-        }
+        n = snprintf(jb + w, JSON_CAP - w, "}");
         if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
         w += (size_t)n;
     } else {
@@ -859,7 +864,8 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
         w += (size_t)n;
         {
             const char *mid = getenv("COS_BITNET_CHAT_MODEL");
-            if (mid == NULL || mid[0] == '\0') mid = "bitnet";
+            if (mid == NULL || mid[0] == '\0')
+                mid = bns_default_openai_compat_chat_model();
             size_t mw = json_encode_string(jb + w, JSON_CAP - w, mid);
             if (mw == 0) goto fail;
             w += mw;
@@ -877,7 +883,7 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
         }
         if (want_logprobs) {
             n = snprintf(jb + w, JSON_CAP - w,
-                          "}],\"max_tokens\":%d,\"logprobs\":true,\"top_logprobs\":5",
+                          "}],\"max_tokens\":%d,\"logprobs\":true,\"top_logprobs\":3",
                           max_tok);
         } else {
             n = snprintf(jb + w, JSON_CAP - w, "}],\"max_tokens\":%d", max_tok);
@@ -901,7 +907,7 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
 
     const char *resp = NULL;
     size_t      rlen = 0;
-    const char *path = g_bns.backend_ollama ? "/api/chat" : "/v1/chat/completions";
+    const char *path = "/v1/chat/completions";
     if (bns_http_post_json(path, json_tmp, w, &resp, &rlen) != 0
         || resp == NULL) {
         memcpy(g_bns.text_buf, hold_main, strlen(hold_main) + 1);
@@ -1719,7 +1725,7 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     int top_lp = (params && params->n_probs > 0) ? params->n_probs
                                                  : g_bns.n_probs_default;
     if (top_lp < 1) top_lp = 1;
-    if (top_lp > 20) top_lp = 20;
+    if (top_lp > 3) top_lp = 3;
 
     int         n_predict = params && params->n_predict > 0 ? params->n_predict
                                                             : g_bns.n_predict_default;
@@ -1729,11 +1735,6 @@ static int bns_ollama_chat_complete(const char                       *prompt,
                                   : bns_env_float_default("COS_TEMPERATURE", 0.7f);
     if (temp_o < 0.0f) temp_o = 0.0f;
     if (temp_o > 2.0f) temp_o = 2.0f;
-    float top_po = bns_env_float_default("COS_TOP_P", 0.8f);
-    if (top_po < 0.0f) top_po = 0.0f;
-    if (top_po > 1.0f) top_po = 1.0f;
-    int top_ko = bns_env_int_clamp("COS_TOP_K", 20, 1, 1000000);
-    int         ollama_think = bns_ollama_enable_thinking_from_env();
     const char *syspr = params ? params->system_prompt : NULL;
     const char *model = getenv("COS_OLLAMA_MODEL");
     if (model == NULL || model[0] == '\0')
@@ -1744,9 +1745,17 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     char *b = g_bns.req_buf;
     const char *enc_prompt = prompt;
     {
-        /* Qwen3: default append " /no_think" unless COS_OLLAMA_APPEND_NO_THINK=0 */
+        /* Qwen3: append " /no_think" unless disabled; skip for Gemma models. */
+        int is_gemma = 0;
+        for (const char *q = model; q != NULL && *q; ++q) {
+            if ((q[0] == 'g' || q[0] == 'G') && (q[1] == 'e' || q[1] == 'E')
+                && (q[2] == 'm' || q[2] == 'M')) {
+                is_gemma = 1;
+                break;
+            }
+        }
         const char *nt = getenv("COS_OLLAMA_APPEND_NO_THINK");
-        int append_nt = (nt == NULL || nt[0] != '0');
+        int append_nt = (nt == NULL || nt[0] != '0') && !is_gemma;
         if (append_nt && prompt != NULL) {
             size_t pl = strlen(prompt);
             if (pl + 12u < 4096u) {
@@ -1792,18 +1801,20 @@ static int bns_ollama_chat_complete(const char                       *prompt,
         w += sw;
     }
     n = snprintf(jb + w, JSON_CAP - w,
-                  "}],\"logprobs\":true,\"top_logprobs\":%d,"
-                  "\"options\":{\"num_predict\":%d,\"temperature\":%.3f,"
-                  "\"top_p\":%.3f,\"top_k\":%d,\"enable_thinking\":%s",
-                  top_lp, n_predict, (double)temp_o, (double)top_po, top_ko,
-                  ollama_think ? "true" : "false");
+                  "}],\"max_tokens\":%d,\"logprobs\":true,\"top_logprobs\":%d,"
+                  "\"temperature\":%.3f",
+                  n_predict, top_lp, (double)temp_o);
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
-    if (bns_env_flag1("COS_OLLAMA_CHAT_THINK_FALSE")) {
-        n = snprintf(jb + w, JSON_CAP - w, "},\"think\":false}");
-    } else {
-        n = snprintf(jb + w, JSON_CAP - w, "}}");
+    {
+        int top_ko = bns_env_int_clamp("COS_TOP_K", 0, 0, 1000000);
+        if (top_ko > 0) {
+            n = snprintf(jb + w, JSON_CAP - w, ",\"top_k\":%d", top_ko);
+            if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
+            w += (size_t)n;
+        }
     }
+    n = snprintf(jb + w, JSON_CAP - w, "}");
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
 
@@ -1814,7 +1825,8 @@ static int bns_ollama_chat_complete(const char                       *prompt,
 
     const char *body = NULL;
     size_t      blen = 0;
-    int         rc   = bns_http_post_json("/api/chat", json_tmp, w, &body, &blen);
+    int         rc   = bns_http_post_json("/v1/chat/completions", json_tmp, w,
+                                          &body, &blen);
     if (rc == -5) {
         fprintf(stderr, "[timeout] Ollama inference exceeded %ds\n",
                 bns_io_timeout_sec());
@@ -1837,8 +1849,7 @@ static int bns_ollama_chat_complete(const char                       *prompt,
         if (pe != NULL && out->token_count <= 0)
             out->token_count = atoi(pe);
     }
-    /* /api/chat usually has no per-token probs; only replace σ when the
-     * parser found no token-level signal (preserve logprob path if added). */
+    /* OpenAI-compat: if the response carried no token logprobs, use neutral σ. */
     if (g_bns_last_tok_n == 0) {
         float sd = strtof(env_or("COS_OLLAMA_DEFAULT_SIGMA", "0.5"), NULL);
         if (sd < 0.0f) sd = 0.0f;
@@ -1927,7 +1938,8 @@ int cos_bitnet_server_complete(const char                       *prompt,
     w += (size_t)n;
     {
         const char *mid = getenv("COS_BITNET_CHAT_MODEL");
-        if (mid == NULL || mid[0] == '\0') mid = "bitnet";
+        if (mid == NULL || mid[0] == '\0')
+            mid = bns_default_openai_compat_chat_model();
         size_t mw = json_encode_string(jb + w, JSON_CAP - w, mid);
         if (mw == 0) return -3;
         w += mw;

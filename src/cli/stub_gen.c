@@ -106,7 +106,7 @@ typedef struct {
  * was easy to omit when COS_BITNET_SERVER_EXTERNAL=1 already pins a remote
  * llama-server — falling through to cos_bitnet_spawn_capture() passes -p,
  * which llama-server rejects (that flag is for llama-cli). */
-static int cos_cli_use_bitnet_http(void) {
+int cos_cli_use_bitnet_http(void) {
     const char *s = getenv("COS_BITNET_SERVER");
     if (s != NULL && s[0] == '1') return 1;
     const char *e = getenv("COS_BITNET_SERVER_EXTERNAL");
@@ -276,7 +276,8 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
         cos_bitnet_server_params_t p;
         memset(&p, 0, sizeof(p));
         p.n_predict   = cos_cli_bitnet_chat_max_tokens();
-        p.n_probs     = 5;
+        /* Ollama + OpenAI-compat peers: keep top_logprobs small (latency). */
+        p.n_probs     = 3;
         p.seed        = -1;  /* round 0 → server-random (empirically
                               * needed; seed=0 hits a degenerate
                               * BitNet sampler path that emits
