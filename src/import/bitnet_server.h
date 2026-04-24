@@ -66,11 +66,15 @@
  *                             does not spawn Ollama.
  *    COS_OLLAMA_HOST          bind host when backend is ollama (optional)
  *    COS_OLLAMA_PORT          TCP port when backend is ollama (default 11434)
- *    COS_OLLAMA_MODEL         chat model id (default "qwen3:8b")
+ *    COS_OLLAMA_MODEL         chat model id (default "gemma3:4b" for Ollama;
+ *                             avoids Qwen thinking-mode empty `content`)
  *    COS_OLLAMA_DEFAULT_SIGMA fallback σ when logprobs are unavailable
  *                             (default "0.5", neutral unknown)
  *    COS_OLLAMA_ENABLE_THINKING  set to "1" to pass enable_thinking:true
  *                             in /api/chat options (default off for Qwen3).
+ *    COS_OLLAMA_CHAT_THINK_FALSE  set to "1" to append root-level \"think\":false
+ *                             on Ollama /api/chat (Qwen3.5+; keeps answers in
+ *                             `message.content` when the runtime supports it).
  *    COS_OLLAMA_APPEND_NO_THINK  "0" disables appending " /no_think" to the
  *                             user message on /api/chat (default: append for
  *                             Qwen3 unless set to "0").

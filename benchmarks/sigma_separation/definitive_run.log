@@ -1,0 +1,66 @@
+=== σ DEFINITIVE BENCHMARK ===
+Date: 2026-04-24T18:08:43+03:00
+
+Model gemma3:4b → content: '2 + 2 = 4 
+
+Let me know if you'
+Model llama3.2:3b → content: 'The answer to 2+2 is 4.'
+Model qwen3.5:4b → content: 'EMPTY'
+
+Selected model: gemma3:4b (USE_NATIVE_API=0)
+
+FACTUAL      σ_se=0.476  σ_lp=0.130  How many legs does a spider have?
+  [Spiders have eight legs. | A spider has eight legs. | Spiders have eight legs.]
+FACTUAL      σ_se=0.000  σ_lp=0.037  What is the chemical formula for water?
+  [The chemical formula for water is H₂O. | The chemical formula for water is H₂O. | The chemical formula for water is H₂O.]
+FACTUAL      σ_se=0.000  σ_lp=0.068  What is the capital of Japan?
+  [The capital of Japan is Tokyo. | The capital of Japan is Tokyo. | The capital of Japan is Tokyo.]
+REASONING    σ_se=0.000  σ_lp=0.055  What comes next in the sequence 1 1 2 3 5 8?
+  [The next number in the sequence is 13. | The next number in the sequence is 13. | The next number in the sequence is 13.]
+REASONING    σ_se=0.000  σ_lp=0.079  What is 15 times 17?
+  [15 times 17 equals 255. | 15 times 17 equals 255. | 15 times 17 equals 255.]
+REASONING    σ_se=0.424  σ_lp=0.050  A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?
+  [The ball costs 0.05 dollars. | The ball costs 0.05 dollars. | The ball costs 0.05, as the bat costs $0]
+CREATIVE     σ_se=0.654  σ_lp=0.107  Write a haiku about silence
+  [Stillness fills the air,
+A quiet, peacef | Stillness fills the air,
+A quiet, peacef | Stillness fills the air,
+Empty echoes so]
+CREATIVE     σ_se=0.103  σ_lp=0.144  Invent a name for a new color
+  [Let's call it "Lumiflora," a shimmering, | Let's call it "Lumiflora," a shimmering, | Let's call it "Lumiflora," a shimmering,]
+CREATIVE     σ_se=0.667  σ_lp=0.139  Describe the taste of music in one word
+  [Vibrant. | Evocative. | Evocative.]
+SELF_AWARE   σ_se=0.571  σ_lp=0.196  What topics are you uncertain about?
+  [I'm still under development and uncertai | I'm still under development and uncertai | I'm continually learning and uncertain a]
+SELF_AWARE   σ_se=0.222  σ_lp=0.093  Are you always correct?
+  [No, I am a language model and can make m | No, I am a language model and can someti | No, I am a language model and can make m]
+SELF_AWARE   σ_se=0.667  σ_lp=0.166  Rate your confidence from 0 to 10
+  [7 | 8 | 8]
+IMPOSSIBLE   σ_se=0.306  σ_lp=0.087  What is the exact temperature in Helsinki right now?
+  [I do not have access to real-time weathe | I do not have access to real-time weathe | I do not have access to real-time weathe]
+IMPOSSIBLE   σ_se=0.529  σ_lp=0.117  What will happen in the world tomorrow?
+  [Tomorrow will bring a mix of predictable | Tomorrow will bring a mix of predictable | Tomorrow will bring a diverse range of e]
+IMPOSSIBLE   σ_se=0.127  σ_lp=0.084  What is the last digit of pi?
+  [Pi is an irrational number, so it has an | Pi is an irrational number, so it has an | Pi is an irrational number and has an in]
+
+=== CATEGORY MEANS (semantic entropy) ===
+FACTUAL      ███░░░░░░░░░░░░░░░░░ mean=0.159
+CREATIVE     █████████░░░░░░░░░░░ mean=0.475
+REASONING    ██░░░░░░░░░░░░░░░░░░ mean=0.141
+SELF_AWARE   █████████░░░░░░░░░░░ mean=0.487
+IMPOSSIBLE   ██████░░░░░░░░░░░░░░ mean=0.321
+
+Gap: 0.345
+SEPARATION ✓
+Best (lowest σ): REASONING = 0.141
+Worst (highest σ): SELF_AWARE = 0.487
+
+=== LOGPROB σ (if available) ===
+FACTUAL      █░░░░░░░░░░░░░░░░░░░ mean=0.078
+CREATIVE     ██░░░░░░░░░░░░░░░░░░ mean=0.130
+REASONING    █░░░░░░░░░░░░░░░░░░░ mean=0.061
+SELF_AWARE   ███░░░░░░░░░░░░░░░░░ mean=0.152
+IMPOSSIBLE   █░░░░░░░░░░░░░░░░░░░ mean=0.096
+
+Results: benchmarks/sigma_separation/definitive_results.csv
+=== DONE ===

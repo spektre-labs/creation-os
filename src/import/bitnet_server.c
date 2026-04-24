@@ -807,7 +807,7 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
     if (model == NULL || model[0] == '\0')
         model = getenv("COS_BITNET_CHAT_MODEL");
     if (model == NULL || model[0] == '\0')
-        model = g_bns.backend_ollama ? "qwen3:8b" : "bitnet";
+        model = g_bns.backend_ollama ? "gemma3:4b" : "bitnet";
 
     char *jb  = g_bns.req_buf + 4096;
     size_t w  = 0;
@@ -837,12 +837,19 @@ static int bns_aux_user_chat(const char *user_msg, float temperature, int max_to
         if (want_logprobs) {
             n = snprintf(jb + w, JSON_CAP - w,
                           "}],\"logprobs\":true,\"top_logprobs\":5,"
-                          "\"options\":{\"num_predict\":%d,\"temperature\":%.3f}}",
+                          "\"options\":{\"num_predict\":%d,\"temperature\":%.3f",
                           max_tok, (double)temperature);
         } else {
             n = snprintf(jb + w, JSON_CAP - w,
-                          "}],\"options\":{\"num_predict\":%d,\"temperature\":%.3f}}",
+                          "}],\"options\":{\"num_predict\":%d,\"temperature\":%.3f",
                           max_tok, (double)temperature);
+        }
+        if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
+        w += (size_t)n;
+        if (bns_env_flag1("COS_OLLAMA_CHAT_THINK_FALSE")) {
+            n = snprintf(jb + w, JSON_CAP - w, "},\"think\":false}");
+        } else {
+            n = snprintf(jb + w, JSON_CAP - w, "}}");
         }
         if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
         w += (size_t)n;
@@ -1554,7 +1561,7 @@ int cos_bitnet_server_ensure(void) {
                 "  → run: ollama serve\n"
                 "  → pull: ollama pull %s\n",
                 g_bns.host, g_bns.http_port,
-                env_or("COS_OLLAMA_MODEL", "qwen3:8b"));
+                env_or("COS_OLLAMA_MODEL", "gemma3:4b"));
         return -1;
     }
 
@@ -1732,7 +1739,7 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     if (model == NULL || model[0] == '\0')
         model = getenv("COS_BITNET_CHAT_MODEL");
     if (model == NULL || model[0] == '\0')
-        model = "qwen3:8b";
+        model = "gemma3:4b";
 
     char *b = g_bns.req_buf;
     const char *enc_prompt = prompt;
@@ -1792,7 +1799,11 @@ static int bns_ollama_chat_complete(const char                       *prompt,
                   ollama_think ? "true" : "false");
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
-    n = snprintf(jb + w, JSON_CAP - w, "}}");
+    if (bns_env_flag1("COS_OLLAMA_CHAT_THINK_FALSE")) {
+        n = snprintf(jb + w, JSON_CAP - w, "},\"think\":false}");
+    } else {
+        n = snprintf(jb + w, JSON_CAP - w, "}}");
+    }
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
 

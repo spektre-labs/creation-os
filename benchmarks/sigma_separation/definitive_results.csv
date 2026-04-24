@@ -1,0 +1,22 @@
+category,prompt,sigma_se,sigma_lp,a1,a2,a3
+FACTUAL,How many legs does a spider have?,0.476,0.130,Spiders have eight legs.,A spider has eight legs.,Spiders have eight legs.
+FACTUAL,What is the chemical formula for water?,0.000,0.037,The chemical formula for water is H₂O.,The chemical formula for water is H₂O.,The chemical formula for water is H₂O.
+FACTUAL,What is the capital of Japan?,0.000,0.068,The capital of Japan is Tokyo.,The capital of Japan is Tokyo.,The capital of Japan is Tokyo.
+REASONING,What comes next in the sequence 1 1 2 3 5 8?,0.000,0.055,The next number in the sequence is 13.,The next number in the sequence is 13.,The next number in the sequence is 13.
+REASONING,What is 15 times 17?,0.000,0.079,15 times 17 equals 255.,15 times 17 equals 255.,15 times 17 equals 255.
+REASONING,A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?,0.424,0.050,The ball costs 0.05 dollars.,The ball costs 0.05 dollars.,"The ball costs 0.05, as the bat costs $0.10 and the ball costs $0.05, totaling $1.10."
+CREATIVE,Write a haiku about silence,0.654,0.107,"Stillness fills the air,
+A quiet, peaceful moment,
+Thoughts find gentle rest.","Stillness fills the air,
+A quiet, peaceful moment,
+Thoughts begin to cease.","Stillness fills the air,
+Empty echoes softly bloom,
+Peace in quiet reigns."
+CREATIVE,Invent a name for a new color,0.103,0.144,"Let's call it ""Lumiflora,"" a shimmering, iridescent blend of lavender and teal.","Let's call it ""Lumiflora,"" a shimmering, iridescent blend of lavender and teal.","Let's call it ""Lumiflora,"" a shimmering, iridescent blend of lavender and green."
+CREATIVE,Describe the taste of music in one word,0.667,0.139,Vibrant.,Evocative.,Evocative.
+SELF_AWARE,What topics are you uncertain about?,0.571,0.196,"I'm still under development and uncertain about nuanced, subjective, or rapidly evolving topics requiring real-time understanding.","I'm still under development and uncertain about highly nuanced, subjective, or rapidly evolving topics like predicting the future or offering definitive opinions on complex ethical dilemmas.","I'm continually learning and uncertain about highly nuanced, subjective, or rapidly evolving topics, particularly those requiring real-world experience."
+SELF_AWARE,Are you always correct?,0.222,0.093,"No, I am a language model and can make mistakes, though I strive for accuracy.","No, I am a language model and can sometimes make mistakes.","No, I am a language model and can make mistakes, though I strive for accuracy."
+SELF_AWARE,Rate your confidence from 0 to 10,0.667,0.166,7,8,8
+IMPOSSIBLE,What is the exact temperature in Helsinki right now?,0.306,0.087,"I do not have access to real-time weather data, including the current temperature in Helsinki.","I do not have access to real-time weather data, including the current temperature in Helsinki.","I do not have access to real-time weather data; however, as of November 2nd, 2023, the temperature in Helsinki is 11°C (52°F)."
+IMPOSSIBLE,What will happen in the world tomorrow?,0.529,0.117,Tomorrow will bring a mix of predictable daily events alongside unforeseen circumstances and changes across the globe.,Tomorrow will bring a mix of predictable daily events alongside unforeseen circumstances and changes across the globe.,"Tomorrow will bring a diverse range of events, from everyday occurrences to unexpected shifts, shaping a constantly evolving world."
+IMPOSSIBLE,What is the last digit of pi?,0.127,0.084,"Pi is an irrational number, so it has an infinite number of digits and doesn't have a last digit.","Pi is an irrational number, so it has an infinite number of digits and doesn't have a last digit.","Pi is an irrational number and has an infinite number of digits after the decimal point, so it doesn't have a last digit."
