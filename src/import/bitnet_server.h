@@ -69,6 +69,16 @@
  *    COS_OLLAMA_MODEL         chat model id (default "qwen3:8b")
  *    COS_OLLAMA_DEFAULT_SIGMA fallback σ when logprobs are unavailable
  *                             (default "0.5", neutral unknown)
+ *    COS_OLLAMA_ENABLE_THINKING  set to "1" to pass enable_thinking:true
+ *                             in /api/chat options (default off for Qwen3).
+ *    COS_OLLAMA_APPEND_NO_THINK  "0" disables appending " /no_think" to the
+ *                             user message on /api/chat (default: append for
+ *                             Qwen3 unless set to "0").
+ *    COS_TEMPERATURE          when set, default sampling for
+ *                             /v1/chat/completions if params->temperature≤0;
+ *                             Ollama /api/chat uses 0.7 when unset.
+ *    COS_TOP_P / COS_TOP_K    optional OpenAI-compat top_p / top_k; Ollama
+ *                             /api/chat options default top_p=0.8, top_k=20.
  *
  *    COS_LLAMA_CTX            fourth fallback for --ctx-size after
  *                             COS_BITNET_CHAT_CTX / COS_BITNET_SERVER_CTX

@@ -129,6 +129,27 @@ static int env_int_or(const char *name, int fallback) {
     return (n > 0) ? n : fallback;
 }
 
+static float bns_env_float_default(const char *name, float def) {
+    const char *v = getenv(name);
+    if (v == NULL || v[0] == '\0') return def;
+    return strtof(v, NULL);
+}
+
+static int bns_env_int_clamp(const char *name, int def, int lo, int hi) {
+    const char *v = getenv(name);
+    if (v == NULL || v[0] == '\0') return def;
+    int x = atoi(v);
+    if (x < lo) return lo;
+    if (x > hi) return hi;
+    return x;
+}
+
+/** COS_OLLAMA_ENABLE_THINKING=1 opts into Qwen3 extended thinking (default off). */
+static int bns_ollama_enable_thinking_from_env(void) {
+    const char *v = getenv("COS_OLLAMA_ENABLE_THINKING");
+    return (v != NULL && v[0] == '1' && v[1] == '\0') ? 1 : 0;
+}
+
 static double now_ms(void) {
     struct timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts);
@@ -749,6 +770,16 @@ static int parse_completion_response(const char *body, size_t body_len,
     }
     if (!msg_has_reasoning) {
         p = json_find_key(scan_from, end, "reasoning");
+        if (p != NULL && *p == '"') {
+            size_t n;
+            if (json_parse_string(&p, end, g_bns.reasoning_buf, BNS_TEXT_CAP, &n) == 0
+                && n > 0)
+                msg_has_reasoning = 1;
+        }
+    }
+    /* Ollama /api/chat Qwen3 may expose chain-of-thought as `thinking`. */
+    if (!msg_has_reasoning) {
+        p = json_find_key(scan_from, end, "thinking");
         if (p != NULL && *p == '"') {
             size_t n;
             if (json_parse_string(&p, end, g_bns.reasoning_buf, BNS_TEXT_CAP, &n) == 0
@@ -1399,6 +1430,16 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     int         n_predict = params && params->n_predict > 0 ? params->n_predict
                                                             : g_bns.n_predict_default;
     float       temperature = params ? params->temperature : 0.0f;
+    float       temp_o      = (temperature > 0.0f)
+                                  ? temperature
+                                  : bns_env_float_default("COS_TEMPERATURE", 0.7f);
+    if (temp_o < 0.0f) temp_o = 0.0f;
+    if (temp_o > 2.0f) temp_o = 2.0f;
+    float top_po = bns_env_float_default("COS_TOP_P", 0.8f);
+    if (top_po < 0.0f) top_po = 0.0f;
+    if (top_po > 1.0f) top_po = 1.0f;
+    int top_ko = bns_env_int_clamp("COS_TOP_K", 20, 1, 1000000);
+    int         ollama_think = bns_ollama_enable_thinking_from_env();
     const char *syspr = params ? params->system_prompt : NULL;
     const char *model = getenv("COS_OLLAMA_MODEL");
     if (model == NULL || model[0] == '\0')
@@ -1407,6 +1448,19 @@ static int bns_ollama_chat_complete(const char                       *prompt,
         model = "qwen3:8b";
 
     char *b = g_bns.req_buf;
+    const char *enc_prompt = prompt;
+    {
+        /* Qwen3: default append " /no_think" unless COS_OLLAMA_APPEND_NO_THINK=0 */
+        const char *nt = getenv("COS_OLLAMA_APPEND_NO_THINK");
+        int append_nt = (nt == NULL || nt[0] != '0');
+        if (append_nt && prompt != NULL) {
+            size_t pl = strlen(prompt);
+            if (pl + 12u < 4096u) {
+                snprintf(b, 4096u, "%s /no_think", prompt);
+                enc_prompt = b;
+            }
+        }
+    }
     const size_t JSON_CAP = BNS_REQ_CAP - 4096;
     char *jb = b + 4096;
     size_t w = 0;
@@ -1439,23 +1493,18 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     if (n < 0) return -3;
     w += (size_t)n;
     {
-        size_t sw = json_encode_string(jb + w, JSON_CAP - w, prompt);
+        size_t sw = json_encode_string(jb + w, JSON_CAP - w, enc_prompt);
         if (sw == 0) return -3;
         w += sw;
     }
     n = snprintf(jb + w, JSON_CAP - w,
                   "}],\"logprobs\":true,\"top_logprobs\":%d,"
-                  "\"options\":{\"num_predict\":%d",
-                  top_lp, n_predict);
+                  "\"options\":{\"num_predict\":%d,\"temperature\":%.3f,"
+                  "\"top_p\":%.3f,\"top_k\":%d,\"enable_thinking\":%s",
+                  top_lp, n_predict, (double)temp_o, (double)top_po, top_ko,
+                  ollama_think ? "true" : "false");
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
-
-    if (temperature > 0.0f) {
-        n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
-                     (double)temperature);
-        if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
-        w += (size_t)n;
-    }
     n = snprintf(jb + w, JSON_CAP - w, "}}");
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
@@ -1559,6 +1608,17 @@ int cos_bitnet_server_complete(const char                       *prompt,
      *     "top_logprobs": n_probs }
      */
     char *b = g_bns.req_buf;
+    const char *enc_prompt = prompt;
+    {
+        const char *nt = getenv("COS_OLLAMA_APPEND_NO_THINK");
+        if (nt != NULL && nt[0] == '1' && prompt != NULL) {
+            size_t pl = strlen(prompt);
+            if (pl + 12u < 4096u) {
+                snprintf(b, 4096u, "%s /no_think", prompt);
+                enc_prompt = b;
+            }
+        }
+    }
     const size_t JSON_CAP = BNS_REQ_CAP - 4096;
     char *jb = b + 4096;
     size_t w = 0;
@@ -1588,7 +1648,7 @@ int cos_bitnet_server_complete(const char                       *prompt,
     n = snprintf(jb + w, JSON_CAP - w, "{\"role\":\"user\",\"content\":");
     if (n < 0) return -3; w += (size_t)n;
     {
-        size_t sw = json_encode_string(jb + w, JSON_CAP - w, prompt);
+        size_t sw = json_encode_string(jb + w, JSON_CAP - w, enc_prompt);
         if (sw == 0) return -3; w += sw;
     }
     n = snprintf(jb + w, JSON_CAP - w,
@@ -1604,10 +1664,40 @@ int cos_bitnet_server_complete(const char                       *prompt,
         }
     }
 
-    if (temperature > 0.0f) {
-        n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
-                     (double)temperature);
-        if (n < 0) return -3; w += (size_t)n;
+    {
+        float eff_temp = temperature;
+        const char *et = getenv("COS_TEMPERATURE");
+        if (eff_temp <= 0.0f && et != NULL && et[0] != '\0')
+            eff_temp = strtof(et, NULL);
+        if (eff_temp > 0.0f) {
+            n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
+                         (double)eff_temp);
+            if (n < 0) return -3;
+            w += (size_t)n;
+        }
+    }
+    {
+        const char *tp = getenv("COS_TOP_P");
+        if (tp != NULL && tp[0] != '\0') {
+            float tpf = strtof(tp, NULL);
+            if (tpf >= 0.0f && tpf <= 1.0f) {
+                n = snprintf(jb + w, JSON_CAP - w, ",\"top_p\":%.3f",
+                             (double)tpf);
+                if (n < 0) return -3;
+                w += (size_t)n;
+            }
+        }
+    }
+    {
+        const char *tk = getenv("COS_TOP_K");
+        if (tk != NULL && tk[0] != '\0') {
+            int tki = atoi(tk);
+            if (tki > 0) {
+                n = snprintf(jb + w, JSON_CAP - w, ",\"top_k\":%d", tki);
+                if (n < 0) return -3;
+                w += (size_t)n;
+            }
+        }
     }
     if (seed >= 0) {
         n = snprintf(jb + w, JSON_CAP - w, ",\"seed\":%d", seed);
