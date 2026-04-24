@@ -87,6 +87,7 @@ static int self_play_sess_init(cos_self_play_sess_t *S, int max_rethink,
     S->cfg.agent        = &S->agent;
     S->cfg.generate     = cos_cli_chat_generate;
     S->cfg.generate_ctx = &S->genctx;
+    S->cfg.escalate_ctx   = &S->genctx;
     S->cfg.escalate     = cos_cli_escalate_api;
     if (S->persist != NULL) {
         S->cfg.on_engram_store     = cos_engram_persist_store;

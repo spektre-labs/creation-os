@@ -4,8 +4,9 @@
  *  src/cli/escalation.c — see escalation.h.
  *
  *  Transport:    libcurl easy (SSL via system stack)
- *  Dispatch:     CREATION_OS_ESCALATION_PROVIDER ∈ {claude, openai,
- *                                                   gpt, deepseek}
+ *  Dispatch:     COS_ESCALATION_BACKEND / CREATION_OS_ESCALATION_PROVIDER
+ *                ∈ {claude, openai, gpt, deepseek}; DeepSeek default when
+ *                COS_DEEPSEEK_API_KEY is set and no explicit provider.
  *  Logging:      ~/.cos/distill_pairs.jsonl (one row per call)
  *
  *  This module intentionally keeps JSON handling minimal: we build
@@ -24,6 +25,7 @@
 #include "escalation.h"
 #include "cost_log.h"
 #include "stub_gen.h"
+#include "bitnet_sigma.h"
 
 #include <errno.h>
 #include <math.h>
@@ -31,6 +33,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
@@ -78,37 +81,97 @@ typedef enum {
     PROV_DEEPSEEK,
 } provider_t;
 
+/* Receipt tag for polished cos chat line (set only on successful API). */
+static char g_esc_route_receipt[80];
+
+const char *cos_cli_escalation_route_receipt(void) {
+    return (g_esc_route_receipt[0] != '\0') ? g_esc_route_receipt : NULL;
+}
+
+void cos_cli_escalation_route_receipt_clear(void) {
+    g_esc_route_receipt[0] = '\0';
+}
+
+static const char *env_deepseek_key(void) {
+    const char *k = getenv("COS_DEEPSEEK_API_KEY");
+    if (k != NULL && k[0] != '\0') return k;
+    return getenv("CREATION_OS_DEEPSEEK_API_KEY");
+}
+
+static void esc_set_route_tag(provider_t p) {
+    switch (p) {
+    case PROV_DEEPSEEK:
+        snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
+                 "CLOUD(DS-V4)");
+        break;
+    case PROV_CLAUDE:
+        snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
+                 "CLOUD(Claude)");
+        break;
+    case PROV_OPENAI:
+        snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
+                 "CLOUD(OpenAI)");
+        break;
+    default:
+        g_esc_route_receipt[0] = '\0';
+        break;
+    }
+}
+
 static provider_t resolve_provider(const char **name_out,
                                    const char **key_out,
                                    const char **model_out) {
-    const char *prov = getenv("CREATION_OS_ESCALATION_PROVIDER");
     const char *model_override = getenv("CREATION_OS_ESCALATION_MODEL");
-    if (prov == NULL || prov[0] == '\0') return PROV_NONE;
+    const char *back = getenv("COS_ESCALATION_BACKEND");
+    const char *leg  = getenv("CREATION_OS_ESCALATION_PROVIDER");
+    const char *choice = NULL;
 
-    if (strcmp(prov, "claude") == 0 || strcmp(prov, "anthropic") == 0) {
-        const char *k = getenv("CREATION_OS_CLAUDE_API_KEY");
-        if (k == NULL || k[0] == '\0') return PROV_NONE;
-        *name_out  = "claude";
-        *key_out   = k;
-        *model_out = model_override ? model_override
-                                    : "claude-3-5-haiku-20241022";
-        return PROV_CLAUDE;
+    if (back != NULL && back[0] != '\0')
+        choice = back;
+    else if (leg != NULL && leg[0] != '\0')
+        choice = leg;
+
+    if (choice != NULL) {
+        if (strcasecmp(choice, "deepseek") == 0) {
+            const char *k = env_deepseek_key();
+            if (k == NULL || k[0] == '\0') return PROV_NONE;
+            *name_out  = "deepseek";
+            *key_out   = k;
+            *model_out = model_override ? model_override : "deepseek-chat";
+            return PROV_DEEPSEEK;
+        }
+        if (strcasecmp(choice, "claude") == 0
+            || strcasecmp(choice, "anthropic") == 0) {
+            const char *k = getenv("CREATION_OS_CLAUDE_API_KEY");
+            if (k == NULL || k[0] == '\0') return PROV_NONE;
+            *name_out  = "claude";
+            *key_out   = k;
+            *model_out = model_override ? model_override
+                                        : "claude-3-5-haiku-20241022";
+            return PROV_CLAUDE;
+        }
+        if (strcasecmp(choice, "openai") == 0
+            || strcasecmp(choice, "gpt") == 0) {
+            const char *k = getenv("CREATION_OS_OPENAI_API_KEY");
+            if (k == NULL || k[0] == '\0') return PROV_NONE;
+            *name_out  = "openai";
+            *key_out   = k;
+            *model_out = model_override ? model_override : "gpt-4o-mini";
+            return PROV_OPENAI;
+        }
+        return PROV_NONE;
     }
-    if (strcmp(prov, "openai") == 0 || strcmp(prov, "gpt") == 0) {
-        const char *k = getenv("CREATION_OS_OPENAI_API_KEY");
-        if (k == NULL || k[0] == '\0') return PROV_NONE;
-        *name_out  = "openai";
-        *key_out   = k;
-        *model_out = model_override ? model_override : "gpt-4o-mini";
-        return PROV_OPENAI;
-    }
-    if (strcmp(prov, "deepseek") == 0) {
-        const char *k = getenv("CREATION_OS_DEEPSEEK_API_KEY");
-        if (k == NULL || k[0] == '\0') return PROV_NONE;
-        *name_out  = "deepseek";
-        *key_out   = k;
-        *model_out = model_override ? model_override : "deepseek-chat";
-        return PROV_DEEPSEEK;
+
+    /* No explicit backend: prefer DeepSeek when a key is present (cheap
+     * frontier default).  Otherwise remain offline (stub). */
+    {
+        const char *k = env_deepseek_key();
+        if (k != NULL && k[0] != '\0') {
+            *name_out  = "deepseek";
+            *key_out   = k;
+            *model_out = model_override ? model_override : "deepseek-chat";
+            return PROV_DEEPSEEK;
+        }
     }
     return PROV_NONE;
 }
@@ -360,28 +423,67 @@ static int call_claude(const char *prompt, const char *key, const char *model,
 
 /* --- provider: OpenAI / DeepSeek (shared OpenAI-compat shape) ----- */
 
-static int call_openai_compat(const char *url, const char *prompt,
-                              const char *key, const char *model,
-                              int max_tokens, int enable_logprobs,
-                              char *out_text, size_t text_cap,
-                              float *out_sigma,
-                              uint64_t *bytes_sent, uint64_t *bytes_recv) {
-    static char body[32768];
+static int call_openai_compat_ex(const char *url,
+                                 const char *system_opt,
+                                 int include_temperature,
+                                 float temperature,
+                                 const char *prompt,
+                                 const char *key, const char *model,
+                                 int max_tokens, int enable_logprobs,
+                                 char *out_text, size_t text_cap,
+                                 float *out_sigma,
+                                 uint64_t *bytes_sent,
+                                 uint64_t *bytes_recv) {
+    static char body[65536];
     size_t bw = 0;
     int n;
+
+    if (include_temperature) {
+        n = snprintf(body + bw, sizeof body - bw,
+                     "{\"model\":\"%s\",\"temperature\":%.2f,\"max_tokens\":%d,"
+                     "\"messages\":[",
+                     model, (double)temperature, max_tokens);
+    } else {
+        n = snprintf(body + bw, sizeof body - bw,
+                     "{\"model\":\"%s\",\"max_tokens\":%d,\"messages\":[",
+                     model, max_tokens);
+    }
+    if (n <= 0 || (size_t)n >= sizeof body) return -1;
+    bw += (size_t)n;
+
+    if (system_opt != NULL && system_opt[0] != '\0') {
+        n = snprintf(body + bw, sizeof body - bw,
+                     "{\"role\":\"system\",\"content\":");
+        if (n <= 0 || bw + (size_t)n >= sizeof body) return -1;
+        bw += (size_t)n;
+        {
+            size_t sw = json_encode_str(body + bw, sizeof body - bw,
+                                        system_opt);
+            if (sw == 0) return -1;
+            bw += sw;
+        }
+        n = snprintf(body + bw, sizeof body - bw, "},");
+        if (n <= 0 || bw + (size_t)n >= sizeof body) return -1;
+        bw += (size_t)n;
+    }
+
     n = snprintf(body + bw, sizeof body - bw,
-                 "{\"model\":\"%s\",\"max_tokens\":%d,\"messages\":[{\"role\":\"user\",\"content\":",
-                 model, max_tokens);
-    if (n <= 0) return -1; bw += (size_t)n;
-    size_t sw = json_encode_str(body + bw, sizeof body - bw, prompt);
-    if (sw == 0) return -1; bw += sw;
+                 "{\"role\":\"user\",\"content\":");
+    if (n <= 0 || bw + (size_t)n >= sizeof body) return -1;
+    bw += (size_t)n;
+    {
+        size_t sw = json_encode_str(body + bw, sizeof body - bw, prompt);
+        if (sw == 0) return -1;
+        bw += sw;
+    }
     if (enable_logprobs) {
         n = snprintf(body + bw, sizeof body - bw,
                      "}],\"logprobs\":true,\"top_logprobs\":5}");
     } else {
         n = snprintf(body + bw, sizeof body - bw, "}]}");
     }
-    if (n <= 0) return -1; bw += (size_t)n;
+    if (n <= 0 || bw + (size_t)n >= sizeof body) return -1;
+    bw += (size_t)n;
 
     resp_buf_t resp = {0};
     CURL *c = curl_easy_init();
@@ -413,11 +515,11 @@ static int call_openai_compat(const char *url, const char *prompt,
     *out_sigma = 1.0f;
 
     if (rc == CURLE_OK && status >= 200 && status < 300 && resp.data != NULL) {
-        /* OpenAI: choices[0].message.content */
         const char *mp = js_find_key(resp.data, resp.len, "message");
         const char *tp = NULL;
         if (mp != NULL) {
-            tp = js_find_key(mp, resp.len - (mp - resp.data), "content");
+            tp = js_find_key(mp, resp.len - (size_t)(mp - resp.data),
+                             "content");
         }
         if (tp == NULL) {
             tp = js_find_key(resp.data, resp.len, "content");
@@ -428,22 +530,17 @@ static int call_openai_compat(const char *url, const char *prompt,
                 result = 0;
             }
         }
-        /* σ from logprobs if present.  Structure:
-         *   "logprobs":{"content":[{"token":"x","logprob":-0.1,
-         *       "top_logprobs":[...]}, ...]}
-         * σ_token = 1 - exp(logprob_chosen).  We take max over
-         * content[] entries. */
         if (enable_logprobs) {
             const char *lp = js_find_key(resp.data, resp.len, "logprobs");
             if (lp != NULL) {
-                const char *cp = js_find_key(lp, resp.len - (lp - resp.data),
+                const char *cp = js_find_key(lp, resp.len - (size_t)(lp - resp.data),
                                              "content");
                 if (cp != NULL && *cp == '[') {
                     float max_sigma = 0.0f;
                     const char *q = cp;
                     while (q < resp.data + resp.len) {
                         const char *lgp = js_find_key(q,
-                                            resp.len - (q - resp.data),
+                                            resp.len - (size_t)(q - resp.data),
                                             "logprob");
                         if (lgp == NULL) break;
                         double lg = strtod(lgp, NULL);
@@ -458,7 +555,7 @@ static int call_openai_compat(const char *url, const char *prompt,
                 }
             }
         }
-        if (*out_sigma >= 1.0f) *out_sigma = 0.10f;  /* fallback floor */
+        if (*out_sigma >= 1.0f) *out_sigma = 0.10f;
     } else {
         if (resp.data != NULL) {
             size_t n0 = resp.len < text_cap - 1 ? resp.len : text_cap - 1;
@@ -474,6 +571,18 @@ static int call_openai_compat(const char *url, const char *prompt,
     curl_easy_cleanup(c);
     free(resp.data);
     return result;
+}
+
+static int call_openai_compat(const char *url, const char *prompt,
+                              const char *key, const char *model,
+                              int max_tokens, int enable_logprobs,
+                              char *out_text, size_t text_cap,
+                              float *out_sigma,
+                              uint64_t *bytes_sent, uint64_t *bytes_recv) {
+    return call_openai_compat_ex(url, NULL, 0, 0.0f, prompt, key, model,
+                                 max_tokens, enable_logprobs,
+                                 out_text, text_cap, out_sigma,
+                                 bytes_sent, bytes_recv);
 }
 
 /* --- cost estimates (EUR) ---------------------------------------- */
@@ -499,9 +608,9 @@ static double estimate_cost(provider_t p,
             in_eur_per_mtok  = 0.15 * 0.93;
             out_eur_per_mtok = 0.60 * 0.93;
             break;
-        case PROV_DEEPSEEK:
-            in_eur_per_mtok  = 0.14 * 0.93;
-            out_eur_per_mtok = 0.28 * 0.93;
+        case PROV_DEEPSEEK:   /* public list: ~$0.30/M in, $0.70/M out */
+            in_eur_per_mtok  = 0.30 * 0.93;
+            out_eur_per_mtok = 0.70 * 0.93;
             break;
         default: return 0.0;
     }
@@ -559,6 +668,26 @@ static void append_distill_pair(const char *prompt,
     fclose(f);
 }
 
+/* --- Codex → DeepSeek system message (ctx from cos chat) ---------- */
+
+static char g_codex_esc_system[7808];
+
+static const char *esc_build_codex_system(void *ctx) {
+    g_codex_esc_system[0] = '\0';
+    if (ctx == NULL) return NULL;
+    const cos_cli_generate_ctx_t *gx = (const cos_cli_generate_ctx_t *)ctx;
+    if (gx->magic != COS_CLI_GENERATE_CTX_MAGIC) return NULL;
+    if (gx->codex == NULL || gx->codex->bytes == NULL
+        || gx->codex->bytes[0] == '\0')
+        return NULL;
+    size_t n = gx->codex->size;
+    size_t cap = sizeof g_codex_esc_system - 1u;
+    if (n > cap) n = cap;
+    memcpy(g_codex_esc_system, gx->codex->bytes, n);
+    g_codex_esc_system[n] = '\0';
+    return g_codex_esc_system;
+}
+
 /* --- main dispatch ----------------------------------------------- */
 
 int cos_cli_escalate_api(const char *prompt, void *ctx,
@@ -566,6 +695,8 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
                          double *out_cost_eur,
                          uint64_t *out_bytes_sent,
                          uint64_t *out_bytes_recv) {
+    cos_cli_escalation_route_receipt_clear();
+
     const char *name  = NULL;
     const char *key   = NULL;
     const char *model = NULL;
@@ -608,13 +739,23 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
                 &teacher_sigma, &sent, &recv);
             break;
         case PROV_DEEPSEEK:
-            rc = call_openai_compat(
-                "https://api.deepseek.com/chat/completions",
+            rc = call_openai_compat_ex(
+                "https://api.deepseek.com/v1/chat/completions",
+                esc_build_codex_system(ctx),
+                /*temperature*/1, 0.6f,
                 prompt, key, model, max_tokens, /*logprobs*/0,
                 teacher_buf, sizeof teacher_buf,
                 &teacher_sigma, &sent, &recv);
             break;
         default: break;
+    }
+
+    if (prov == PROV_DEEPSEEK && rc == 0 && teacher_buf[0] != '\0') {
+        float ls = cos_bitnet_sigma_for_prompt_and_output(prompt,
+                                                            teacher_buf);
+        if (ls < 0.0f) ls = 0.0f;
+        if (ls > 1.0f) ls = 1.0f;
+        teacher_sigma = ls;
     }
 
     double cost = estimate_cost(prov, sent, recv);
@@ -656,5 +797,6 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
     cos_cost_log_append(name, "API",
                         (int)sent, (int)recv,
                         teacher_sigma, cost);
+    esc_set_route_tag(prov);
     return 0;
 }

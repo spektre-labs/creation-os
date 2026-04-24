@@ -15,17 +15,25 @@
  *  time we retrain / quantize BitNet we mine this log to pick up
  *  the prompts where the local model fell off a cliff.
  *
- *  Providers (selected by CREATION_OS_ESCALATION_PROVIDER):
+ *  Providers (priority):
+ *    COS_ESCALATION_BACKEND — optional explicit tier: deepseek | claude |
+ *                openai | gpt (case-insensitive).  When unset,
+ *                CREATION_OS_ESCALATION_PROVIDER is consulted for the
+ *                same strings (legacy).  When both are unset but
+ *                COS_DEEPSEEK_API_KEY or CREATION_OS_DEEPSEEK_API_KEY is
+ *                set, DeepSeek V4 (deepseek-chat) is the default cloud
+ *                teacher — cheapest OpenAI-compatible frontier tier.
+ *
  *    claude    → POST https://api.anthropic.com/v1/messages
  *                CREATION_OS_CLAUDE_API_KEY (required)
  *                default model: claude-3-5-haiku-20241022 (cheap tier)
  *    openai    → POST https://api.openai.com/v1/chat/completions
  *                CREATION_OS_OPENAI_API_KEY (required)
  *                default model: gpt-4o-mini
- *    deepseek  → POST https://api.deepseek.com/chat/completions
- *                (OpenAI-compatible)
- *                CREATION_OS_DEEPSEEK_API_KEY (required)
- *                default model: deepseek-chat
+ *    deepseek  → POST https://api.deepseek.com/v1/chat/completions
+ *                (OpenAI-compatible; Bearer COS_DEEPSEEK_API_KEY or
+ *                CREATION_OS_DEEPSEEK_API_KEY)
+ *                default model: deepseek-chat (V4-class API surface)
  *
  *  Overrides:
  *    CREATION_OS_ESCALATION_MODEL  — override per-provider default
@@ -36,7 +44,9 @@
  *  σ on the teacher side:
  *    OpenAI  + logprobs=true → max(1 - exp(top_logprob)) per token
  *    Claude                  → flat 0.10 (API does not expose logprobs)
- *    DeepSeek + logprobs=true → same as OpenAI
+ *    DeepSeek                → σ recomputed locally on (prompt, answer)
+ *                              after the HTTP response (text-shape
+ *                              heuristic; no provider logprobs).
  *
  *  Distill pair (one line per escalation):
  *    {"ts":<int>,"prompt":"...","student":"...","student_sigma":<f>,
@@ -97,6 +107,13 @@ int cos_cli_escalation_diag(char *provider_out, size_t prov_cap,
  * or CREATION_OS_DISTILL_LOG).  Returns pointer to a static buffer;
  * never NULL.  Not thread-safe. */
 const char *cos_cli_escalation_distill_path(void);
+
+/* Last successful API-escalation route label for receipts, e.g.
+ * "CLOUD(DS-V4)" | "CLOUD(Claude)" | "CLOUD(OpenAI)".  NULL when the
+ * last escalation was stub-only or failed before a teacher answer. */
+const char *cos_cli_escalation_route_receipt(void);
+
+void cos_cli_escalation_route_receipt_clear(void);
 
 #ifdef __cplusplus
 }

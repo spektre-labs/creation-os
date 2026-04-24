@@ -206,3 +206,5 @@ benchmarks/omega_campaign/*.csv
 benchmarks/speed/
 benchmarks/forgetting/*.csv
 benchmarks/forgetting/*.txt
+benchmarks/**/*.txt
+benchmarks/**/*.csv

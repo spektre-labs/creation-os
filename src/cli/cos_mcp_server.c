@@ -218,6 +218,7 @@ static void cos_mcp2_state_init(cos_mcp2_state_t *st) {
     st->genctx.persist = st->persist;
     st->genctx.icl_exemplar_max_sigma = st->cfg.tau_accept;
     st->cfg.generate_ctx = &st->genctx;
+    st->cfg.escalate_ctx   = &st->genctx;
 
     st->cfg.escalate = cos_cli_escalate_api;
     if (st->persist != NULL) {

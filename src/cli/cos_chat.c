@@ -439,7 +439,10 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                      : r->engram_hit     ? "CACHE"
                                          : "FRESH";
     const char *route = r->escalated ? "CLOUD" : "LOCAL";
-    if (!r->escalated) {
+    if (r->escalated) {
+        const char *ert = cos_cli_escalation_route_receipt();
+        if (ert != NULL) route = ert;
+    } else {
         const char *sdr = getenv("COS_SPEC_DECODE_ROUTE");
         if (sdr != NULL && strcmp(sdr, "DRAFT") == 0)
             route = "DRAFT(2B)";
@@ -1682,13 +1685,15 @@ int main(int argc, char **argv) {
         genctx.icl_k = 0;
     }
     cfg.generate_ctx = &genctx;
+    cfg.escalate_ctx   = &genctx;
     /* DEV-5: dispatch via the API escalation module.  When
-     * CREATION_OS_ESCALATION_PROVIDER + matching API key are set in
-     * the environment, this reaches out to Claude/OpenAI/DeepSeek
-     * over HTTPS and appends a (student → teacher) distill pair to
-     * ~/.cos/distill_pairs.jsonl.  With no provider configured,
-     * cos_cli_escalate_api falls through to cos_cli_stub_escalate
-     * so CI and offline sessions keep the deterministic shape. */
+     * COS_ESCALATION_BACKEND / CREATION_OS_ESCALATION_PROVIDER + keys
+     * are set, this reaches out to Claude / OpenAI / DeepSeek over
+     * HTTPS and appends a (student → teacher) distill pair to
+     * ~/.cos/distill_pairs.jsonl.  If COS_DEEPSEEK_API_KEY is set and
+     * no explicit backend is chosen, DeepSeek V4 (deepseek-chat) is
+     * the default teacher.  With no keys, cos_cli_escalate_api falls
+     * through to cos_cli_stub_escalate so CI stays deterministic. */
     cfg.escalate     = cos_cli_escalate_api;
     if (persist != NULL) {
         cfg.on_engram_store     = cos_engram_persist_store;
