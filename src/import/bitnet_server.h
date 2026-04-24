@@ -49,7 +49,11 @@
  *    COS_BITNET_SERVER_EXTERNAL  if "1": skip spawn, assume external
  *                                server already running on host:port
  *    COS_BITNET_CHAT_MODEL    JSON "model" id for /v1/chat/completions
- *                                (default: "bitnet")
+ *                                (default: "bitnet"); when
+ *                                COS_INFERENCE_BACKEND=ollama, also the
+ *                                default for COS_OLLAMA_MODEL if unset.
+ *    COS_BITNET_IO_TIMEOUT_S  recv/send timeout seconds for inference HTTP
+ *                                (default 60; clamped 30..600).
  *
  *    COS_INFERENCE_BACKEND    "llama-server" (default) or "ollama" — when
  *                             ollama: POST http://host:port/api/chat (local

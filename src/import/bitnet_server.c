@@ -224,7 +224,15 @@ static void bns_load_config(void) {
             strncpy(g_bns.host, oh, sizeof(g_bns.host) - 1);
             g_bns.host[sizeof(g_bns.host) - 1] = '\0';
         }
-        g_bns.http_port = env_int_or("COS_OLLAMA_PORT", 11434);
+        /* Prefer COS_OLLAMA_PORT; else COS_BITNET_SERVER_PORT when not the
+         * llama default (8088) so `COS_BITNET_SERVER_PORT=11434` alone works. */
+        const char *op = getenv("COS_OLLAMA_PORT");
+        if (op != NULL && op[0] != '\0')
+            g_bns.http_port = atoi(op);
+        else if (g_bns.port != BNS_DEFAULT_PORT)
+            g_bns.http_port = g_bns.port;
+        else
+            g_bns.http_port = 11434;
     } else {
         g_bns.http_port = g_bns.port;
     }
@@ -233,9 +241,23 @@ static void bns_load_config(void) {
     g_bns.initialized = 1;
 }
 
+/** Per-socket recv/send wall clock (default BNS_IO_TIMEOUT_S). Override with
+ * COS_BITNET_IO_TIMEOUT_S (seconds, clamped 30..600) for slow hosts or
+ * Ollama + logprobs cold starts. */
+static int bns_io_timeout_sec(void) {
+    const char *e = getenv("COS_BITNET_IO_TIMEOUT_S");
+    if (e == NULL || e[0] == '\0')
+        return BNS_IO_TIMEOUT_S;
+    int v = atoi(e);
+    if (v < 30)  v = 30;
+    if (v > 600) v = 600;
+    return v;
+}
+
 /* --- socket helpers --------------------------------------------- */
 
-/** Blocking TCP to llama-server: connect ≤5 s, recv/send each ≤60 s. */
+/** Blocking TCP to llama-server: connect ≤5 s, recv/send each ≤60 s
+ * (or COS_BITNET_IO_TIMEOUT_S). */
 static int bns_tcp_connect(void) {
     int fd = socket(AF_INET, SOCK_STREAM, 0);
     if (fd < 0)
@@ -285,7 +307,7 @@ static int bns_tcp_connect(void) {
     }
 
     struct timeval tv;
-    tv.tv_sec = BNS_IO_TIMEOUT_S;
+    tv.tv_sec = bns_io_timeout_sec();
     tv.tv_usec = 0;
     setsockopt(fd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     setsockopt(fd, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof(tv));
@@ -937,7 +959,15 @@ int cos_bitnet_server_is_healthy(void) {
         return (strstr(body, "\"models\"") != NULL
                 || strstr(body, "models") != NULL) ? 1 : 0;
     }
-    if (bns_http_get("/health", body, sizeof(body)) != 0) return 0;
+    if (bns_http_get("/health", body, sizeof(body)) != 0) {
+        /* External Ollama: OpenAI-compat on :11434 has no /health; /api/tags
+         * proves the daemon when COS_BITNET_SERVER_EXTERNAL=1. */
+        if (g_bns.external
+            && bns_http_get("/api/tags", body, sizeof(body)) == 0
+            && strstr(body, "models") != NULL)
+            return 1;
+        return 0;
+    }
     return (strstr(body, "\"status\":\"ok\"") != NULL) ? 1 : 0;
 }
 
@@ -1089,9 +1119,9 @@ int cos_bitnet_server_ensure(void) {
         /* Caller promised an external server; propagate failure. */
         fprintf(stderr,
                 "cos: COS_BITNET_SERVER_EXTERNAL=1 but no server answers "
-                "http://%s:%d/health\n"
-                "  → start llama-server manually, or unset the variable\n",
-                g_bns.host, g_bns.port);
+                "http://%s:%d/health (llama-server) or /api/tags (Ollama)\n"
+                "  → start llama-server or `ollama serve`, or unset the variable\n",
+                g_bns.host, g_bns.http_port);
         return -1;
     }
 
@@ -1239,8 +1269,12 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     int         n_predict = params && params->n_predict > 0 ? params->n_predict
                                                             : g_bns.n_predict_default;
     float       temperature = params ? params->temperature : 0.0f;
-    const char *syspr       = params ? params->system_prompt : NULL;
-    const char *model       = env_or("COS_OLLAMA_MODEL", "qwen3:8b");
+    const char *syspr = params ? params->system_prompt : NULL;
+    const char *model = getenv("COS_OLLAMA_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = getenv("COS_BITNET_CHAT_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = "qwen3:8b";
 
     char *b = g_bns.req_buf;
     const size_t JSON_CAP = BNS_REQ_CAP - 4096;
@@ -1303,7 +1337,8 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     size_t      blen = 0;
     int         rc   = bns_http_post_json("/api/chat", json_tmp, w, &body, &blen);
     if (rc == -5) {
-        fputs("[timeout] Ollama inference exceeded 60s\n", stderr);
+        fprintf(stderr, "[timeout] Ollama inference exceeded %ds\n",
+                bns_io_timeout_sec());
         memset(out, 0, sizeof(*out));
         out->sigma      = 1.0f;
         out->mean_sigma = 1.0f;
@@ -1318,15 +1353,19 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     out->cost_eur   = 0.0001;
 
     {
+        const char *end = body + blen;
+        const char *pe  = json_find_key(body, end, "eval_count");
+        if (pe != NULL && out->token_count <= 0)
+            out->token_count = atoi(pe);
+    }
+    /* /api/chat usually has no per-token probs; only replace σ when the
+     * parser found no token-level signal (preserve logprob path if added). */
+    if (g_bns_last_tok_n == 0) {
         float sd = strtof(env_or("COS_OLLAMA_DEFAULT_SIGMA", "0.35"), NULL);
         if (sd < 0.0f) sd = 0.0f;
         if (sd > 1.0f) sd = 1.0f;
         out->sigma      = sd;
         out->mean_sigma = sd;
-        const char *end = body + blen;
-        const char *pe  = json_find_key(body, end, "eval_count");
-        if (pe != NULL && out->token_count <= 0)
-            out->token_count = atoi(pe);
     }
 
     return rc;
@@ -1457,7 +1496,8 @@ int cos_bitnet_server_complete(const char                       *prompt,
     int rc = bns_http_post_json("/v1/chat/completions",
                                 json_tmp, w, &body, &blen);
     if (rc == -5) {
-        fputs("[timeout] inference exceeded 60s, σ=1.0\n", stderr);
+        fprintf(stderr, "[timeout] inference exceeded %ds, σ=1.0\n",
+                bns_io_timeout_sec());
         memset(out, 0, sizeof(*out));
         out->sigma      = 1.0f;
         out->mean_sigma = 1.0f;
@@ -1921,7 +1961,8 @@ int cos_bitnet_server_complete_stream(
 
     /* Finalize summary. */
     if (io_timed_out) {
-        fputs("[timeout] inference exceeded 60s, σ=1.0\n", stderr);
+        fprintf(stderr, "[timeout] inference exceeded %ds, σ=1.0\n",
+                bns_io_timeout_sec());
         g_bns.text_buf[0] = '\0';
         max_sigma = 1.0f;
         n_tokens  = 0;

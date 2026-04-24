@@ -20,10 +20,10 @@ run_cos_chat() {
     local prompt="$1"
     if [[ -x ./cos ]]; then
         ./cos chat --once --prompt "$prompt" --no-stream --no-tui \
-            --no-coherence --no-transcript --verbose 2>&1 || true
+            --no-coherence --no-transcript --local-only --verbose 2>&1 || true
     elif [[ -x ./cos-chat ]]; then
         ./cos-chat --once --prompt "$prompt" --no-stream --no-tui \
-            --no-coherence --no-transcript --verbose 2>&1 || true
+            --no-coherence --no-transcript --local-only --verbose 2>&1 || true
     else
         echo "sigma_separation.sh: build ./cos or ./cos-chat first" >&2
         exit 1

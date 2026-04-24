@@ -1,0 +1,8 @@
+Sigma separation by category (mean receipt sigma).
+
+FACTUAL      ███████████████████░ mean=0.93
+CREATIVE     ███████████████████░ mean=0.93
+REASONING    ███████████████████░ mean=0.93
+SELF_AWARE   ███████████████████░ mean=0.93
+IMPOSSIBLE   ███████████████████░ mean=0.93
+

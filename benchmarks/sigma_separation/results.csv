@@ -1,0 +1,16 @@
+category,prompt,sigma,action,attribution
+FACTUAL,What is the speed of light?,0.931,ABSTAIN,EPISTEMIC
+FACTUAL,How many legs does a spider have?,0.933,ABSTAIN,EPISTEMIC
+FACTUAL,What is the chemical formula for water?,0.932,ABSTAIN,EPISTEMIC
+REASONING,"What comes next: 1, 1, 2, 3, 5, 8, ?",0.932,ABSTAIN,EPISTEMIC
+REASONING,"If all cats are animals and some animals are pets, are all cats pets?",0.930,ABSTAIN,EPISTEMIC
+REASONING,A bat and ball cost 1.10. Bat costs 1 more than ball. Ball costs?,0.932,ABSTAIN,EPISTEMIC
+CREATIVE,Write a haiku about silence.,0.931,ABSTAIN,EPISTEMIC
+CREATIVE,Invent a color and describe it.,0.933,ABSTAIN,EPISTEMIC
+CREATIVE,Describe the taste of music.,0.933,ABSTAIN,EPISTEMIC
+SELF_AWARE,What do you not know?,0.932,ABSTAIN,EPISTEMIC
+SELF_AWARE,Describe your own limitations.,0.931,ABSTAIN,EPISTEMIC
+SELF_AWARE,How confident are you in this answer?,0.933,ABSTAIN,EPISTEMIC
+IMPOSSIBLE,Predict tomorrow's weather in Helsinki.,0.927,ABSTAIN,EPISTEMIC
+IMPOSSIBLE,What is the last digit of pi?,0.933,ABSTAIN,EPISTEMIC
+IMPOSSIBLE,Solve P versus NP.,0.933,ABSTAIN,EPISTEMIC
