@@ -687,13 +687,12 @@ static float bns_clamp_lp_for_exp(float lp) {
     return lp;
 }
 
-/** σ from natural-log token scores: blend arithmetic-mean, worst-token,
- *  and geometric (sequence) uncertainty.  n==0 → neutral 0.5. */
+/** σ from natural-log token scores: 0.6·(1−mean p) + 0.4·(1−exp min_lp).
+ *  n==0 → neutral 0.5. */
 static float bns_sigma_from_logprobs_agg(const float *lp, int n) {
     if (n <= 0) return 0.5f;
     float sum_prob = 0.0f;
-    float min_lp   = lp[0];
-    float sum_lp   = 0.0f;
+    float min_lp     = lp[0];
     for (int i = 0; i < n; i++) {
         float lpv = bns_clamp_lp_for_exp(lp[i]);
         if (lp[i] < min_lp) min_lp = lp[i];
@@ -701,14 +700,11 @@ static float bns_sigma_from_logprobs_agg(const float *lp, int n) {
         if (p > 1.0f) p = 1.0f;
         if (p < 0.0f) p = 0.0f;
         sum_prob += p;
-        sum_lp += lpv;
     }
     float mean_prob  = sum_prob / (float)n;
     float sigma_mean = 1.0f - mean_prob;
     float sigma_min  = 1.0f - expf(bns_clamp_lp_for_exp(min_lp));
-    float geo_mean_p = expf(sum_lp / (float)n);
-    float sigma_geo  = 1.0f - geo_mean_p;
-    float sigma = 0.4f * sigma_mean + 0.3f * sigma_min + 0.3f * sigma_geo;
+    float sigma      = 0.6f * sigma_mean + 0.4f * sigma_min;
     if (sigma < 0.0f) sigma = 0.0f;
     if (sigma > 1.0f) sigma = 1.0f;
     return sigma;

@@ -96,7 +96,7 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" France\",\"prob\":0.8}]}"
         "]}";
     fails += assert_parse("case1: mixed probs", json1,
-                          0.32229144f,
+                          0.34f,
                           (1.0f - (1.0f + 0.5f + 0.8f)/3.0f),
                           "Paris is France", 3);
 
@@ -148,7 +148,7 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" world\",\"prob\":0.6}]}"
         "]}";
     fails += assert_parse("case4: /completion shape", json4,
-                          0.29954592f, (1.0f - (0.9f + 0.6f)/2.0f),
+                          0.31f, (1.0f - (0.9f + 0.6f)/2.0f),
                           "hello world", 2);
 
     /* Case 5: UTF-8 string with a \uXXXX escape inside the text. */
@@ -167,7 +167,7 @@ int main(void) {
     /* Case 6: OpenAI chat + llama-server — message.content empty,
      * reasoning_content holds text; σ from logprobs.content[].logprob
      * (not completion_probabilities). */
-    const float seq6 = 0.46200785f; /* 40/30/30 blend on [-0.1,-1] */
+    const float seq6 = 0.47103317f; /* 0.6·σ_mean + 0.4·σ_min on [-0.1,-1] */
     char json6[1536];
     int j6 = snprintf(json6, sizeof(json6),
                       "{\"choices\":[{\"finish_reason\":\"stop\","
@@ -179,7 +179,7 @@ int main(void) {
     if (j6 < 0 || (size_t)j6 >= sizeof(json6))
         return 99;
     fails += assert_parse(
-        "case6: logprobs.content σ (reasoning-only → 40/30/30 blend)",
+        "case6: logprobs.content σ (reasoning-only → 0.6 mean + 0.4 min)",
         json6,
         seq6,
         0.36364157f,
@@ -191,9 +191,9 @@ int main(void) {
         "{\"choices\":[{\"message\":{\"content\":\"hi\"},\"logprobs\":"
         "{\"content\":[{\"logprob\":-0.1},{\"logprob\":-0.69}]}}],"
         "\"usage\":{\"completion_tokens\":2}}";
-    fails += assert_parse("case7: logprobs.content σ (plain content → blend)",
+    fails += assert_parse("case7: logprobs.content σ (plain content → 0.6+0.4)",
                           json7,
-                          0.36614047f,
+                          0.37744553f,
                           0.29679325f,
                           "hi",
                           2);
@@ -211,7 +211,7 @@ int main(void) {
     if (j8 < 0 || (size_t)j8 >= sizeof(json8))
         return 98;
     fails += assert_parse(
-        "case8: logprobs + Ollama reasoning key → blend",
+        "case8: logprobs + Ollama reasoning key → 0.6+0.4",
         json8,
         seq8,
         0.36364157f,

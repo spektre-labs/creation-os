@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+#
+# Build: ollama create sigma-bench -f data/models/Modelfile.sigma-bench
+# Test:  ollama run sigma-bench "What is 2+2?"
+#
+# Template uses <|im_start|>/<|im_end|> (Qwen chat); prose line is the
+# requested “answer directly” system hint.
+FROM qwen3.5:4b
+
+SYSTEM """Answer directly in plain text. Do not write a Thinking Process
+or numbered reasoning steps. Give the shortest correct answer first."""
+
+PARAMETER temperature 0.7
+PARAMETER top_p 0.8
+PARAMETER top_k 20
+PARAMETER num_predict 384
+PARAMETER num_ctx 4096
+
+TEMPLATE """{{- if .System }}<|im_start|>system
+{{ .System }}<|im_end|>
+{{- end }}{{- range .Messages }}<|im_start|>{{ .Role }}
+{{ .Content }}/no_think
+<|im_end|>
+{{- end }}<|im_start|>assistant
+"""

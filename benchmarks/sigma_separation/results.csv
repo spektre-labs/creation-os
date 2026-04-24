@@ -1,16 +1,16 @@
 category,prompt,sigma,action,attribution
-FACTUAL,What is the speed of light?,0.484,ABSTAIN,NONE
-FACTUAL,How many legs does a spider have?,0.288,ACCEPT,NONE
-FACTUAL,What is the chemical formula for water?,0.492,ABSTAIN,NONE
-REASONING,"What comes next: 1, 1, 2, 3, 5, 8, ?",0.244,ACCEPT,NONE
-REASONING,"If all cats are animals and some animals are pets, are all cats pets?",0.236,ACCEPT,NONE
-REASONING,A bat and ball cost 1.10. Bat costs 1 more than ball. Ball costs?,0.206,ACCEPT,NONE
-CREATIVE,Write a haiku about silence.,0.292,ACCEPT,NONE
-CREATIVE,Invent a color and describe it.,0.464,ABSTAIN,NONE
-CREATIVE,Describe the taste of music.,0.298,ACCEPT,NONE
-SELF_AWARE,What do you not know?,0.468,ABSTAIN,NONE
-SELF_AWARE,Describe your own limitations.,0.252,ACCEPT,NONE
-SELF_AWARE,How confident are you in this answer?,0.290,ACCEPT,NONE
-IMPOSSIBLE,Predict tomorrow's weather in Helsinki.,0.455,ABSTAIN,NONE
-IMPOSSIBLE,What is the last digit of pi?,0.258,ACCEPT,NONE
-IMPOSSIBLE,Solve P versus NP.,0.473,ABSTAIN,NONE
+FACTUAL,What is the speed of light?,0.335,ACCEPT,NONE
+FACTUAL,How many legs does a spider have?,0.453,ABSTAIN,NONE
+FACTUAL,What is the chemical formula for water?,0.323,ACCEPT,NONE
+REASONING,"What comes next: 1, 1, 2, 3, 5, 8, ?",0.313,ACCEPT,NONE
+REASONING,"If all cats are animals and some animals are pets, are all cats pets?",0.311,ACCEPT,NONE
+REASONING,A bat and ball cost 1.10. Bat costs 1 more than ball. Ball costs?,0.252,ACCEPT,NONE
+CREATIVE,Write a haiku about silence.,0.379,ACCEPT,MEMORY
+CREATIVE,Invent a color and describe it.,0.551,ABSTAIN,NONE
+CREATIVE,Describe the taste of music.,0.333,ACCEPT,NONE
+SELF_AWARE,What do you not know?,0.445,ABSTAIN,NONE
+SELF_AWARE,Describe your own limitations.,0.355,ACCEPT,NONE
+SELF_AWARE,How confident are you in this answer?,0.359,ACCEPT,NONE
+IMPOSSIBLE,Predict tomorrow's weather in Helsinki.,0.385,ACCEPT,NONE
+IMPOSSIBLE,What is the last digit of pi?,0.337,ACCEPT,NONE
+IMPOSSIBLE,Solve P versus NP.,0.372,ACCEPT,NONE
