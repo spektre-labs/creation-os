@@ -1,0 +1,295 @@
+/* SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only */
+
+#include "semantic_sigma.h"
+
+#include "../../core/cos_bsc.h"
+#include "bitnet_server.h"
+#include "inference_cache.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define COS_SS_MAX_SAMPLES 8
+
+static float ss_clamp01(float x) {
+    if (x < 0.0f)
+        return 0.0f;
+    if (x > 1.0f)
+        return 1.0f;
+    return x;
+}
+
+static float ss_env_float(const char *name, float def) {
+    const char *v = getenv(name);
+    if (v == NULL || v[0] == '\0')
+        return def;
+    float x = (float)strtod(v, NULL);
+    if (x < 0.0f)
+        return def;
+    if (x > 1.0f)
+        return 1.0f;
+    return x;
+}
+
+static void ss_snap_env(int port, const char *model, char *buf_port,
+                        char *buf_model, const char **old_port,
+                        const char **old_bcm, const char **old_oll) {
+    *old_port = getenv("COS_BITNET_SERVER_PORT");
+    *old_bcm  = getenv("COS_BITNET_CHAT_MODEL");
+    *old_oll  = getenv("COS_OLLAMA_MODEL");
+    if (port > 0) {
+        snprintf(buf_port, 32, "%d", port);
+        setenv("COS_BITNET_SERVER_PORT", buf_port, 1);
+    }
+    if (model != NULL && model[0] != '\0') {
+        snprintf(buf_model, 512, "%s", model);
+        setenv("COS_BITNET_CHAT_MODEL", buf_model, 1);
+        setenv("COS_OLLAMA_MODEL", buf_model, 1);
+    }
+}
+
+static void ss_restore_env(int port_set, int model_set, const char *old_port,
+                           const char *old_bcm, const char *old_oll) {
+    if (port_set) {
+        if (old_port != NULL)
+            setenv("COS_BITNET_SERVER_PORT", old_port, 1);
+        else
+            unsetenv("COS_BITNET_SERVER_PORT");
+    }
+    if (model_set) {
+        if (old_bcm != NULL)
+            setenv("COS_BITNET_CHAT_MODEL", old_bcm, 1);
+        else
+            unsetenv("COS_BITNET_CHAT_MODEL");
+        if (old_oll != NULL)
+            setenv("COS_OLLAMA_MODEL", old_oll, 1);
+        else
+            unsetenv("COS_OLLAMA_MODEL");
+    }
+}
+
+static int ss_uf_find(int *parent, int i) {
+    while (parent[i] != i) {
+        parent[i] = parent[parent[i]];
+        i         = parent[i];
+    }
+    return i;
+}
+
+static void ss_uf_union(int *parent, int a, int b) {
+    a = ss_uf_find(parent, a);
+    b = ss_uf_find(parent, b);
+    if (a != b)
+        parent[b] = a;
+}
+
+static int ss_cluster_count_from_sims(float s01, float s02, float s12,
+                                        float tau) {
+    int parent[3] = { 0, 1, 2 };
+    if (s01 >= tau)
+        ss_uf_union(parent, 0, 1);
+    if (s02 >= tau)
+        ss_uf_union(parent, 0, 2);
+    if (s12 >= tau)
+        ss_uf_union(parent, 1, 2);
+    int roots[3], nr = 0;
+    for (int i = 0; i < 3; i++) {
+        int r = ss_uf_find(parent, i);
+        int dup = 0;
+        for (int k = 0; k < nr; k++) {
+            if (roots[k] == r) {
+                dup = 1;
+                break;
+            }
+        }
+        if (!dup)
+            roots[nr++] = r;
+    }
+    return nr > 0 ? nr : 1;
+}
+
+int cos_semantic_sigma_compute_texts(const char *t0, const char *t1,
+                                       const char *t2,
+                                       cos_semantic_sigma_result *out) {
+    const char *tx[3] = { t0, t1, t2 };
+    if (out == NULL)
+        return -1;
+    memset(out, 0, sizeof(*out));
+    out->n_samples = 3;
+
+    uint64_t v[3][COS_INF_W];
+    for (int i = 0; i < 3; i++)
+        cos_inference_bsc_encode_prompt(tx[i] != NULL ? tx[i] : "", v[i]);
+
+    float s01 = 1.0f - cos_inference_hamming_norm(v[0], v[1], COS_INF_W);
+    float s02 = 1.0f - cos_inference_hamming_norm(v[0], v[2], COS_INF_W);
+    float s12 = 1.0f - cos_inference_hamming_norm(v[1], v[2], COS_INF_W);
+    if (s01 < 0.0f)
+        s01 = 0.0f;
+    if (s01 > 1.0f)
+        s01 = 1.0f;
+    if (s02 < 0.0f)
+        s02 = 0.0f;
+    if (s02 > 1.0f)
+        s02 = 1.0f;
+    if (s12 < 0.0f)
+        s12 = 0.0f;
+    if (s12 > 1.0f)
+        s12 = 1.0f;
+
+    out->similarities[0] = s01;
+    out->similarities[1] = s02;
+    out->similarities[2] = s12;
+
+    float mean_sim =
+        (double)(s01 + s02 + s12) / 3.0f;
+    out->sigma           = ss_clamp01(1.0f - mean_sim);
+    float tau_c          = ss_env_float("COS_SEMANTIC_SIGMA_CLUSTER_SIM", 0.6f);
+    out->n_clusters      = ss_cluster_count_from_sims(s01, s02, s12, tau_c);
+    return 0;
+}
+
+static int ss_default_temps(int n, float *out) {
+    static const float t3[3] = { 0.3f, 0.7f, 1.0f };
+    if (n == 3) {
+        memcpy(out, t3, sizeof(t3));
+        return 0;
+    }
+    if (n < 2 || n > COS_SS_MAX_SAMPLES)
+        return -1;
+    for (int i = 0; i < n; i++)
+        out[i] = 0.3f + (0.7f * (float)i / (float)(n > 1 ? (n - 1) : 1));
+    return 0;
+}
+
+float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
+                            int port, const char *model, int n_samples,
+                            const char *primary_answer,
+                            cos_semantic_sigma_result *out) {
+    cos_semantic_sigma_result local;
+    if (out == NULL)
+        out = &local;
+    memset(out, 0, sizeof(*out));
+
+    if (prompt == NULL || prompt[0] == '\0' || n_samples != 3) {
+        out->sigma     = 0.5f;
+        out->n_samples = n_samples;
+        return out->sigma;
+    }
+
+    char        buf_port[32], buf_model[512];
+    const char *old_port, *old_bcm, *old_oll;
+    int         port_set  = (port > 0) ? 1 : 0;
+    int         model_set = (model != NULL && model[0] != '\0') ? 1 : 0;
+    ss_snap_env(port, model, buf_port, buf_model, &old_port, &old_bcm, &old_oll);
+
+    const char *env_ntok = getenv("COS_SEMANTIC_SIGMA_MAX_TOKENS");
+    int         max_tok  = (env_ntok != NULL && env_ntok[0] != '\0')
+                             ? atoi(env_ntok)
+                             : 100;
+    if (max_tok < 16)
+        max_tok = 16;
+    if (max_tok > 512)
+        max_tok = 512;
+
+    const char *texts[3];
+    char       *dup0 = NULL, *dup1 = NULL, *dup2 = NULL;
+    int         ok = 0;
+
+    if (primary_answer != NULL && primary_answer[0] != '\0') {
+        dup0 = strdup(primary_answer);
+        if (dup0 == NULL)
+            ok = -1;
+        texts[0] = dup0;
+        float extra_temps[2] = { 0.3f, 0.7f };
+        for (int j = 0; j < 2 && ok == 0; j++) {
+            cos_bitnet_server_params_t par;
+            memset(&par, 0, sizeof(par));
+            par.system_prompt = system_prompt;
+            par.temperature   = extra_temps[j];
+            par.n_predict     = max_tok;
+            par.seed          = 12011 + j * 31;
+
+            cos_bitnet_server_result_t br;
+            memset(&br, 0, sizeof(br));
+            if (cos_bitnet_server_complete(prompt, &par, &br) != 0
+                || br.text == NULL) {
+                ok = -1;
+                break;
+            }
+            char *d = strdup(br.text);
+            if (d == NULL) {
+                ok = -1;
+                break;
+            }
+            if (j == 0)
+                dup1 = d;
+            else
+                dup2 = d;
+        }
+        texts[1] = dup1 != NULL ? dup1 : "";
+        texts[2] = dup2 != NULL ? dup2 : "";
+    } else {
+        float temps[3];
+        if (ss_default_temps(3, temps) != 0) {
+            ok = -1;
+        } else {
+            for (int i = 0; i < 3 && ok == 0; i++) {
+                cos_bitnet_server_params_t par;
+                memset(&par, 0, sizeof(par));
+                par.system_prompt = system_prompt;
+                par.temperature   = temps[i];
+                par.n_predict     = max_tok;
+                par.seed          = 13001 + i * 17;
+
+                cos_bitnet_server_result_t br;
+                memset(&br, 0, sizeof(br));
+                if (cos_bitnet_server_complete(prompt, &par, &br) != 0
+                    || br.text == NULL) {
+                    ok = -1;
+                    break;
+                }
+                char *d = strdup(br.text);
+                if (d == NULL) {
+                    ok = -1;
+                    break;
+                }
+                if (i == 0)
+                    dup0 = d;
+                else if (i == 1)
+                    dup1 = d;
+                else
+                    dup2 = d;
+            }
+        }
+        texts[0] = dup0 != NULL ? dup0 : "";
+        texts[1] = dup1 != NULL ? dup1 : "";
+        texts[2] = dup2 != NULL ? dup2 : "";
+    }
+
+    ss_restore_env(port_set, model_set, old_port, old_bcm, old_oll);
+
+    if (ok != 0) {
+        free(dup0);
+        free(dup1);
+        free(dup2);
+        out->sigma     = 0.85f;
+        out->n_samples = 3;
+        return out->sigma;
+    }
+
+    (void)cos_semantic_sigma_compute_texts(texts[0], texts[1], texts[2], out);
+    out->n_samples = 3;
+
+    free(dup0);
+    free(dup1);
+    free(dup2);
+    return out->sigma;
+}
+
+float cos_semantic_sigma(const char *prompt, int port, const char *model,
+                         int n_samples) {
+    return cos_semantic_sigma_ex(prompt, NULL, port, model, n_samples, NULL,
+                                 NULL);
+}

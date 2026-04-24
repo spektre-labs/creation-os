@@ -83,6 +83,7 @@
 #include "license_attest.h"
 #include "speed_metrics.h"
 #include "semantic_entropy.h"
+#include "semantic_sigma.h"
 #include "bitnet_server.h"
 #include "cos_tui.h"
 #include "speculative_decode.h"
@@ -573,6 +574,7 @@ typedef struct {
     int   energy_report;        /* print compute / energy receipt     */
     int   proof_receipt_echo;   /* print proof JSON line              */
     int   semantic_entropy;     /* multi-sample meaning entropy σ     */
+    int   semantic_sigma;      /* BSC semantic σ (preferred vs entropy)*/
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -631,6 +633,77 @@ static void chat_maybe_semantic_entropy(cos_pipeline_config_t *cfg_rw,
             "mode=%s]\n",
             (double)se, ncl, (double)prior_sigma,
             (mode != NULL && mode[0] != '\0') ? mode : "replace");
+}
+
+/** BSC multi-answer σ; blends with logprob / metacog; two extra HTTP when primary set. */
+static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
+                                      const chat_feat_t     *feat,
+                                      const char            *user_prompt,
+                                      cos_pipeline_result_t *r,
+                                      int early_spec, int semantic_hit, int prc,
+                                      int repl_use_tui) {
+    if (cfg_rw == NULL || r == NULL || feat == NULL || !feat->semantic_sigma)
+        return;
+    if (early_spec || semantic_hit || prc != 0)
+        return;
+    if (r->response == NULL || r->response[0] == '\0')
+        return;
+    if (strcmp(r->response, COS_CHAT_PIPELINE_ABSTAIN) == 0)
+        return;
+
+    const char *sysp =
+        (cfg_rw->codex != NULL && cfg_rw->codex->bytes != NULL
+         && cfg_rw->codex->size > 0)
+            ? cfg_rw->codex->bytes
+            : NULL;
+
+    int         port = 0;
+    const char *pe   = getenv("COS_BITNET_SERVER_PORT");
+    if (pe != NULL && pe[0] != '\0')
+        port = atoi(pe);
+    const char *model = getenv("COS_BITNET_CHAT_MODEL");
+
+    cos_ultra_metacog_levels_t lv;
+    chat_metacog_levels(user_prompt, r, cfg_rw->max_rethink, &lv);
+    float meta = 0.25f * (lv.sigma_perception + lv.sigma_self + lv.sigma_social
+                          + lv.sigma_situational);
+    if (meta < 0.0f)
+        meta = 0.0f;
+    if (meta > 1.0f)
+        meta = 1.0f;
+
+    float prior = r->sigma;
+    float tokbuf[64];
+    int   ntok = 0;
+    (void)cos_bitnet_server_copy_last_token_sigmas(tokbuf, 64, &ntok);
+    int has_lp = (ntok > 0) ? 1 : 0;
+
+    cos_semantic_sigma_result det;
+    memset(&det, 0, sizeof(det));
+    /* Snapshot per-token σ before auxiliary completes overwrite server state. */
+    float se = cos_semantic_sigma_ex(user_prompt, sysp, port,
+                                       (model != NULL && model[0] != '\0')
+                                           ? model
+                                           : NULL,
+                                       3, r->response, &det);
+
+    float combined =
+        has_lp ? (0.5f * prior + 0.3f * se + 0.2f * meta)
+               : (0.7f * se + 0.3f * meta);
+    combined         = (combined < 0.0f) ? 0.0f : combined;
+    combined         = (combined > 1.0f) ? 1.0f : combined;
+    r->sigma         = combined;
+    r->final_action  = cos_sigma_reinforce_round(
+        combined, cfg_rw->tau_accept, cfg_rw->tau_rethink, r->rethink_count);
+
+    FILE *out = (repl_use_tui != 0) ? stderr : stdout;
+    fprintf(out,
+            "[semantic-sigma σ=%.3f sim01=%.3f sim02=%.3f sim12=%.3f "
+            "n_cl=%d logprobs=%d blend=%s]\n",
+            (double)se, (double)det.similarities[0],
+            (double)det.similarities[1], (double)det.similarities[2],
+            det.n_clusters, has_lp, has_lp ? "0.5·σ+0.3·σ_se+0.2·meta"
+                                           : "0.7·σ_se+0.3·meta");
 }
 
 typedef struct {
@@ -1150,8 +1223,12 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             || feat->adaptive_compute))
         cos_speculative_sigma_observe(domain_h, r.sigma);
 
-    chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r, early_spec_abstain,
-                                semantic_hit, prc, 0);
+    if (feat != NULL && feat->semantic_sigma)
+        chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r, early_spec_abstain,
+                                  semantic_hit, prc, 0);
+    else if (feat != NULL && feat->semantic_entropy)
+        chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r, early_spec_abstain,
+                                    semantic_hit, prc, 0);
 
     if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
         memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));
@@ -1442,8 +1519,10 @@ int main(int argc, char **argv) {
     int         adaptive_compute   = 0;
     int         energy_report      = 0;
     int         want_proof_receipt = 0;
-    int         semantic_entropy   = 0;
+    int         semantic_entropy     = 0;
     int         no_semantic_entropy  = 0;
+    int         semantic_sigma       = 0;
+    int         no_semantic_sigma    = 0;
     int         stream_cli         = -1; /* unset: REPL on, --once off */
     int         tui_cli            = -1; /* unset: TTY REPL on, --once/pipe off */
     int         use_tui            = 0;
@@ -1500,6 +1579,13 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[i], "--no-semantic-entropy") == 0) {
             semantic_entropy    = 0;
             no_semantic_entropy = 1;
+        } else if (strcmp(argv[i], "--semantic-sigma") == 0) {
+            semantic_sigma      = 1;
+            semantic_entropy      = 0;
+            no_semantic_sigma     = 0;
+        } else if (strcmp(argv[i], "--no-semantic-sigma") == 0) {
+            semantic_sigma     = 0;
+            no_semantic_sigma   = 1;
         } else if (strcmp(argv[i], "--conformal") == 0) {
             conformal_enabled = 1;
         } else if (strcmp(argv[i], "--no-conformal") == 0) {
@@ -1563,6 +1649,8 @@ int main(int argc, char **argv) {
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
                 "  --no-semantic-entropy  disable (overrides COS_CHAT_SEMANTIC_ENTROPY=1)\n"
+                "  --semantic-sigma    BSC multi-answer σ (overrides --semantic-entropy)\n"
+                "  --no-semantic-sigma disable (overrides COS_CHAT_SEMANTIC_SIGMA=1)\n"
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
                 "  --calibration-path PATH  override the conformal bundle path\n"
@@ -1592,7 +1680,8 @@ int main(int argc, char **argv) {
                 "  COS_KG_ENABLE=1            same as --graph (per-turn graph extract)\n"
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
-                "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n");
+                "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n"
+                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n");
             return 0;
         }
     }
@@ -1696,6 +1785,13 @@ int main(int argc, char **argv) {
         if (se != NULL && se[0] == '1' && se[1] == '\0')
             semantic_entropy = 1;
     }
+    if (!no_semantic_sigma) {
+        const char *ss = getenv("COS_CHAT_SEMANTIC_SIGMA");
+        if (ss != NULL && ss[0] == '1' && ss[1] == '\0')
+            semantic_sigma = 1;
+    }
+    if (semantic_sigma)
+        semantic_entropy = 0;
 
     /* FINAL-2 Phase B: resolve conformal τ (overrides static defaults
      * unless the user explicitly passed --tau-accept). */
@@ -1932,6 +2028,7 @@ int main(int argc, char **argv) {
         feat.energy_report        = energy_report;
         feat.proof_receipt_echo   = want_proof_receipt;
         feat.semantic_entropy     = semantic_entropy;
+        feat.semantic_sigma       = semantic_sigma;
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
@@ -2036,6 +2133,7 @@ int main(int argc, char **argv) {
         rfeat.energy_report        = energy_report;
         rfeat.proof_receipt_echo   = want_proof_receipt;
         rfeat.semantic_entropy     = semantic_entropy;
+        rfeat.semantic_sigma       = semantic_sigma;
 
         cos_pipeline_result_t r;
         memset(&r, 0, sizeof(r));
@@ -2172,8 +2270,14 @@ int main(int argc, char **argv) {
             && (speculative_sigma || spike_mode || adaptive_compute))
             cos_speculative_sigma_observe(domain_h, r.sigma);
 
-        chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r, early_spec_abstain,
-                                    semantic_hit, prc, use_tui ? 1 : 0);
+        if (rfeat.semantic_sigma)
+            chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
+                                       early_spec_abstain, semantic_hit, prc,
+                                       use_tui ? 1 : 0);
+        else if (rfeat.semantic_entropy)
+            chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r,
+                                        early_spec_abstain, semantic_hit, prc,
+                                        use_tui ? 1 : 0);
 
         if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
             memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));

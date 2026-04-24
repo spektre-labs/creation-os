@@ -6249,6 +6249,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
           src/sigma/speed_metrics.c \
           src/sigma/semantic_entropy.c \
+          src/sigma/semantic_sigma.c \
           $(COS_PROOF_LIB) src/cli/escalation.c src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
@@ -6268,6 +6269,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    $(COS_SPIKE_ADAPT_SRCS) \
 	    src/sigma/speed_metrics.c \
 	    src/sigma/semantic_entropy.c \
+	    src/sigma/semantic_sigma.c \
 	    $(COS_PROOF_LIB) \
 	    src/cli/escalation.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
