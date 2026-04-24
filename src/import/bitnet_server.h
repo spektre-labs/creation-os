@@ -68,7 +68,7 @@
  *    COS_OLLAMA_PORT          TCP port when backend is ollama (default 11434)
  *    COS_OLLAMA_MODEL         chat model id (default "qwen3:8b")
  *    COS_OLLAMA_DEFAULT_SIGMA fallback σ when logprobs are unavailable
- *                             (default "0.35")
+ *                             (default "0.5", neutral unknown)
  *
  *    COS_LLAMA_CTX            fourth fallback for --ctx-size after
  *                             COS_BITNET_CHAT_CTX / COS_BITNET_SERVER_CTX

@@ -96,7 +96,8 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" France\",\"prob\":0.8}]}"
         "]}";
     fails += assert_parse("case1: mixed probs", json1,
-                          0.5f, (1.0f - (1.0f + 0.5f + 0.8f)/3.0f),
+                          0.32229144f,
+                          (1.0f - (1.0f + 0.5f + 0.8f)/3.0f),
                           "Paris is France", 3);
 
     /* Case 2: all null probs → σ_max = 1.0, σ_mean = 1.0.
@@ -131,7 +132,7 @@ int main(void) {
         "\"usage\":{\"completion_tokens\":0},"
         "\"completion_probabilities\":[]}";
     fails += assert_parse("case3: empty probs", json3,
-                          1.0f, 1.0f, "", 0);
+                          0.5f, 0.5f, "", 0);
 
     /* Case 4: /completion raw shape (content at top level, no
      * chat wrapping) — proves the fallback scan finds both the
@@ -147,7 +148,7 @@ int main(void) {
         "   \"probs\":[{\"tok_str\":\" world\",\"prob\":0.6}]}"
         "]}";
     fails += assert_parse("case4: /completion shape", json4,
-                          0.4f, (1.0f - (0.9f + 0.6f)/2.0f),
+                          0.29954592f, (1.0f - (0.9f + 0.6f)/2.0f),
                           "hello world", 2);
 
     /* Case 5: UTF-8 string with a \uXXXX escape inside the text. */
@@ -166,9 +167,7 @@ int main(void) {
     /* Case 6: OpenAI chat + llama-server — message.content empty,
      * reasoning_content holds text; σ from logprobs.content[].logprob
      * (not completion_probabilities). */
-    const float s1 = 1.0f - (float)exp(-0.1);
-    const float s2 = 1.0f - (float)exp(-1.0);
-    const float seq6 = 1.0f - (float)exp(-0.55); /* mean_lp = (-0.1 + -1)/2 */
+    const float seq6 = 0.46200785f; /* 40/30/30 blend on [-0.1,-1] */
     char json6[1536];
     int j6 = snprintf(json6, sizeof(json6),
                       "{\"choices\":[{\"finish_reason\":\"stop\","
@@ -180,24 +179,22 @@ int main(void) {
     if (j6 < 0 || (size_t)j6 >= sizeof(json6))
         return 99;
     fails += assert_parse(
-        "case6: logprobs.content σ (reasoning → σ=1−exp(mean_lp))",
+        "case6: logprobs.content σ (reasoning-only → 40/30/30 blend)",
         json6,
         seq6,
-        (s1 + s2) * 0.5f,
+        0.36364157f,
         "xy",
         2);
 
-    /* Case 7: visible message.content + logprobs.content → σ=max. */
-    const float s7a = 1.0f - (float)exp(-0.1);
-    const float s7b = 1.0f - (float)exp(-0.69);
+    /* Case 7: visible message.content + logprobs.content (no reasoning). */
     const char *json7 =
         "{\"choices\":[{\"message\":{\"content\":\"hi\"},\"logprobs\":"
         "{\"content\":[{\"logprob\":-0.1},{\"logprob\":-0.69}]}}],"
         "\"usage\":{\"completion_tokens\":2}}";
-    fails += assert_parse("case7: logprobs.content σ (plain content → σ=max)",
+    fails += assert_parse("case7: logprobs.content σ (plain content → blend)",
                           json7,
-                          (s7a > s7b ? s7a : s7b),
-                          (s7a + s7b) * 0.5f,
+                          0.36614047f,
+                          0.29679325f,
                           "hi",
                           2);
 
@@ -214,10 +211,10 @@ int main(void) {
     if (j8 < 0 || (size_t)j8 >= sizeof(json8))
         return 98;
     fails += assert_parse(
-        "case8: logprobs + Ollama reasoning key → σ=1−exp(mean_lp)",
+        "case8: logprobs + Ollama reasoning key → blend",
         json8,
         seq8,
-        (s1 + s2) * 0.5f,
+        0.36364157f,
         "xy",
         2);
 
@@ -231,8 +228,20 @@ int main(void) {
     fails += assert_parse("case9: Ollama native logprobs[]", json9,
                           s9, s9, "Z", 1);
 
+    /* Case 10: both content + reasoning → σ uses answer tail of logprobs
+     * (length-ratio skip of reasoning tokens). */
+    const float s10 = 0.49842393f;
+    const char *json10 =
+        "{\"choices\":[{\"message\":{\"content\":\"hi\","
+        "\"reasoning\":\"ab\"},\"logprobs\":{\"content\":["
+        "{\"logprob\":-0.1},{\"logprob\":-0.69}]}}],"
+        "\"usage\":{\"completion_tokens\":2}}";
+    fails += assert_parse("case10: content+reasoning → answer-only logprobs",
+                          json10,
+                          s10, s10, "hi", 2);
+
     if (fails == 0) {
-        fprintf(stdout, "OK: all 9 cases passed\n");
+        fprintf(stdout, "OK: all 10 cases passed\n");
         return 0;
     }
     fprintf(stderr, "FAIL: %d assertion(s)\n", fails);

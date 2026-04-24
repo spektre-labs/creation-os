@@ -6,8 +6,8 @@
 # HTTP client so logprobs can populate σ when the Ollama build supports them.
 #
 # Prereq: `ollama serve` and `ollama pull` for the chosen model.
-# Do not set COS_INFERENCE_BACKEND=ollama for this script — that backend
-# uses /api/chat and does not expose per-token logprobs to the parser.
+# Optional: COS_INFERENCE_BACKEND=ollama uses /api/chat; bitnet_server
+# requests logprobs there and parses the native top-level logprobs array.
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

@@ -92,12 +92,14 @@ typedef struct {
     char *resp_buf;        /* BNS_RESP_CAP */
     char *req_buf;         /* BNS_REQ_CAP  */
     char *text_buf;        /* BNS_TEXT_CAP */
+    char *reasoning_buf;   /* BNS_TEXT_CAP — parallel parse for σ split */
 } bns_state_t;
 
 static bns_state_t g_bns = {0};
 
 static float g_bns_last_tok_sigma[COS_BITNET_SERVER_MAX_TOKENS];
 static int   g_bns_last_tok_n;
+static float g_bns_lp_scratch[COS_BITNET_SERVER_MAX_TOKENS];
 
 static char bns_spawn_batch_s[16];
 static char bns_spawn_ubatch_s[16];
@@ -141,6 +143,8 @@ static void bns_alloc_scratch(void) {
         g_bns.req_buf  = (char *)malloc(BNS_REQ_CAP);
     if (g_bns.text_buf == NULL)
         g_bns.text_buf = (char *)malloc(BNS_TEXT_CAP);
+    if (g_bns.reasoning_buf == NULL)
+        g_bns.reasoning_buf = (char *)malloc(BNS_TEXT_CAP);
 }
 
 static int bns_model_path_exists(const char *p) {
@@ -656,15 +660,64 @@ static const char *bns_find_bytes(const char *s, const char *end,
     return NULL;
 }
 
+static float bns_clamp_lp_for_exp(float lp) {
+    if (lp < -80.0f) return -80.0f;
+    if (lp > 0.0f) return 0.0f;
+    return lp;
+}
+
+/** σ from natural-log token scores: blend arithmetic-mean, worst-token,
+ *  and geometric (sequence) uncertainty.  n==0 → neutral 0.5. */
+static float bns_sigma_from_logprobs_agg(const float *lp, int n) {
+    if (n <= 0) return 0.5f;
+    float sum_prob = 0.0f;
+    float min_lp   = lp[0];
+    float sum_lp   = 0.0f;
+    for (int i = 0; i < n; i++) {
+        float lpv = bns_clamp_lp_for_exp(lp[i]);
+        if (lp[i] < min_lp) min_lp = lp[i];
+        float p = expf(lpv);
+        if (p > 1.0f) p = 1.0f;
+        if (p < 0.0f) p = 0.0f;
+        sum_prob += p;
+        sum_lp += lpv;
+    }
+    float mean_prob  = sum_prob / (float)n;
+    float sigma_mean = 1.0f - mean_prob;
+    float sigma_min  = 1.0f - expf(bns_clamp_lp_for_exp(min_lp));
+    float geo_mean_p = expf(sum_lp / (float)n);
+    float sigma_geo  = 1.0f - geo_mean_p;
+    float sigma = 0.4f * sigma_mean + 0.3f * sigma_min + 0.3f * sigma_geo;
+    if (sigma < 0.0f) sigma = 0.0f;
+    if (sigma > 1.0f) sigma = 1.0f;
+    return sigma;
+}
+
+static float bns_mean_sigma_from_lps(const float *lp, int n) {
+    if (n <= 0) return 0.5f;
+    double acc = 0.0;
+    for (int i = 0; i < n; i++) {
+        float lpv = bns_clamp_lp_for_exp(lp[i]);
+        float p   = expf(lpv);
+        if (p > 1.0f) p = 1.0f;
+        if (p < 0.0f) p = 0.0f;
+        acc += (double)(1.0f - p);
+    }
+    return (float)(acc / (double)n);
+}
+
 static int parse_completion_response(const char *body, size_t body_len,
                                      cos_bitnet_server_result_t *out) {
     g_bns_last_tok_n = 0;
     const char *end = body + body_len;
     const char *p;
-    int          text_from_reasoning     = 0;
-    int          sigmas_from_chat_logprobs = 0;
-    double       sum_selected_logprob = 0.0;
-    int          have_sum_lp            = 0;
+    int msg_has_content       = 0; /* non-empty message.content JSON */
+    int msg_has_reasoning     = 0;
+    int n_lp                  = 0;
+
+    bns_alloc_scratch();
+    g_bns.text_buf[0]      = '\0';
+    g_bns.reasoning_buf[0] = '\0';
 
     /* content: /v1/chat/completions nests it under
      * choices[0].message.content; /completion puts it at the top.
@@ -676,6 +729,7 @@ static int parse_completion_response(const char *body, size_t body_len,
         size_t n;
         if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
             out->text = g_bns.text_buf;
+            if (n > 0) msg_has_content = 1;
         } else {
             g_bns.text_buf[0] = '\0';
             out->text = g_bns.text_buf;
@@ -684,29 +738,29 @@ static int parse_completion_response(const char *body, size_t body_len,
         g_bns.text_buf[0] = '\0';
         out->text = g_bns.text_buf;
     }
-    /* "Thinking" models (Qwen, etc.) may return an empty `content` and
-     * place text in `reasoning_content` (llama.cpp OpenAI shape). */
-    if (g_bns.text_buf[0] == '\0') {
-        p = json_find_key(scan_from, end, "reasoning_content");
-        if (p != NULL && *p == '"') {
-            size_t n;
-            if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
-                out->text = g_bns.text_buf;
-                text_from_reasoning = 1;
-            }
-        }
+    /* Parse reasoning into a side buffer so we can split logprobs when
+     * both reasoning and visible content are present (Qwen thinking). */
+    p = json_find_key(scan_from, end, "reasoning_content");
+    if (p != NULL && *p == '"') {
+        size_t n;
+        if (json_parse_string(&p, end, g_bns.reasoning_buf, BNS_TEXT_CAP, &n) == 0
+            && n > 0)
+            msg_has_reasoning = 1;
     }
-    /* Ollama OpenAI shape uses `reasoning` instead of `reasoning_content`. */
-    if (g_bns.text_buf[0] == '\0') {
+    if (!msg_has_reasoning) {
         p = json_find_key(scan_from, end, "reasoning");
         if (p != NULL && *p == '"') {
             size_t n;
-            if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
-                out->text = g_bns.text_buf;
-                text_from_reasoning = 1;
-            }
+            if (json_parse_string(&p, end, g_bns.reasoning_buf, BNS_TEXT_CAP, &n) == 0
+                && n > 0)
+                msg_has_reasoning = 1;
         }
     }
+    if (!msg_has_content && msg_has_reasoning) {
+        memcpy(g_bns.text_buf, g_bns.reasoning_buf, BNS_TEXT_CAP);
+        g_bns.text_buf[BNS_TEXT_CAP - 1] = '\0';
+    }
+    out->text = g_bns.text_buf;
 
     /* tokens_predicted (llama.cpp extension; also present on chat path) */
     out->token_count = 0;
@@ -733,20 +787,14 @@ static int parse_completion_response(const char *body, size_t body_len,
     }
 
     /* completion_probabilities: array of { content, probs:[{prob},...] }.
-     * Walk the array; for each inner probs[0] pick the prob. */
-    float max_sigma = 0.0f;
-    double sum_sigma = 0.0;
-    int n_tokens = 0;
-
+     * Collect natural log of the sampled token into g_bns_lp_scratch. */
     p = json_find_key(body, end, "completion_probabilities");
     if (p != NULL && *p == '[') {
         const char *q = p + 1;
-        /* iterate elements */
         while (q < end) {
             if (!json_skip_ws(&q, end)) break;
             if (*q == ']') break;
             if (*q != '{') break;
-            /* one token object */
             const char *obj_start = q;
             int depth = 0;
             const char *obj_end = q;
@@ -767,14 +815,12 @@ static int parse_completion_response(const char *body, size_t body_len,
             }
             if (obj_end > end) obj_end = end;
 
-            /* Find probs array inside [obj_start .. obj_end). */
             const char *pp = json_find_key(obj_start, obj_end, "probs");
-            float chosen_prob = 1.0f;
+            float lg_store = -80.0f;
             if (pp != NULL && *pp == '[') {
                 const char *pq = pp + 1;
                 json_skip_ws(&pq, obj_end);
                 if (pq < obj_end && *pq == '{') {
-                    /* first probs entry — the sampled token */
                     const char *fo_start = pq;
                     int d = 0;
                     const char *fo_end = pq;
@@ -795,35 +841,33 @@ static int parse_completion_response(const char *body, size_t body_len,
                     }
                     const char *pr = json_find_key(fo_start, fo_end, "prob");
                     if (pr != NULL) {
-                        chosen_prob = (float)strtod(pr, NULL);
-                        if (chosen_prob > 1e-12f && chosen_prob <= 1.0f) {
-                            sum_selected_logprob += log((double)chosen_prob);
-                            have_sum_lp++;
+                        while (pr < fo_end
+                               && (*pr == ' ' || *pr == '\t')) pr++;
+                        if (pr + 4 <= fo_end && pr[0] == 'n' && pr[1] == 'u'
+                            && pr[2] == 'l' && pr[3] == 'l'
+                            && (pr + 4 >= fo_end || pr[4] == ',' || pr[4] == '}'
+                                || pr[4] == ' ' || pr[4] == '\n' || pr[4] == '\r'
+                                || pr[4] == '\t')) {
+                            lg_store = -80.0f;
+                        } else {
+                            double cprob = strtod(pr, NULL);
+                            if (cprob > 1e-12 && cprob <= 1.0)
+                                lg_store = (float)log(cprob);
+                            else
+                                lg_store = -80.0f;
                         }
                     } else {
-                        /* post_sampling_probs=false case: logprob */
-                        const char *lp = json_find_key(fo_start, fo_end, "logprob");
-                        if (lp != NULL) {
-                            double lg = strtod(lp, NULL);
-                            /* logprob is in natural log */
-                            chosen_prob = (float)exp(lg);
-                            /* fallback if still invalid */
-                            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
-                            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
-                            sum_selected_logprob += lg;
-                            have_sum_lp++;
+                        const char *lpk =
+                            json_find_key(fo_start, fo_end, "logprob");
+                        if (lpk != NULL) {
+                            double lg = strtod(lpk, NULL);
+                            lg_store = (float)lg;
                         }
                     }
                 }
             }
-            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
-            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
-            float sigma_tok = 1.0f - chosen_prob;
-            if (sigma_tok > max_sigma) max_sigma = sigma_tok;
-            sum_sigma += (double)sigma_tok;
-            n_tokens++;
-            if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
-                g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
+            if (n_lp < COS_BITNET_SERVER_MAX_TOKENS)
+                g_bns_lp_scratch[n_lp++] = lg_store;
 
             q = obj_end;
             json_skip_ws(&q, end);
@@ -831,10 +875,8 @@ static int parse_completion_response(const char *body, size_t body_len,
         }
     }
 
-    /* OpenAI-style chat (llama.cpp Qwen, etc.): per-token fields live in
-     * choices[].logprobs.content[] with a scalar `logprob` on each item,
-     * not in top-level completion_probabilities. */
-    if (n_tokens == 0) {
+    /* OpenAI-style chat: choices[].logprobs.content[].logprob */
+    if (n_lp == 0) {
         const char *anchor = bns_find_bytes(body, end, "\"logprobs\"", 10);
         if (anchor != NULL) {
             const char *cq =
@@ -851,7 +893,6 @@ static int parse_completion_response(const char *body, size_t body_len,
                 }
             }
             if (arr_in != NULL) {
-                sigmas_from_chat_logprobs = 1;
                 const char *q = arr_in;
                 while (q < end) {
                     if (!json_skip_ws(&q, end)) break;
@@ -883,7 +924,6 @@ static int parse_completion_response(const char *body, size_t body_len,
                     }
                     if (obj_end > end) obj_end = end;
 
-                    float chosen_prob = 1.0f;
                     const char *lpr =
                         json_find_key(obj_start, obj_end, "logprob");
                     if (lpr != NULL) {
@@ -892,19 +932,10 @@ static int parse_completion_response(const char *body, size_t body_len,
                         if (lpr < obj_end
                             && (*lpr == '-' || (*lpr >= '0' && *lpr <= '9'))) {
                             double lg = strtod(lpr, NULL);
-                            chosen_prob = (float)exp(lg);
-                            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
-                            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
-                            sum_selected_logprob += lg;
-                            have_sum_lp++;
+                            if (n_lp < COS_BITNET_SERVER_MAX_TOKENS)
+                                g_bns_lp_scratch[n_lp++] = (float)lg;
                         }
                     }
-                    float sigma_tok = 1.0f - chosen_prob;
-                    if (sigma_tok > max_sigma) max_sigma = sigma_tok;
-                    sum_sigma += (double)sigma_tok;
-                    n_tokens++;
-                    if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
-                        g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
 
                     q = obj_end;
                     json_skip_ws(&q, end);
@@ -914,16 +945,14 @@ static int parse_completion_response(const char *body, size_t body_len,
         }
     }
 
-    /* Ollama native /api/chat: "logprobs":[{ "token":"...", "logprob":-0.5 },…]
-     * (array of objects; no choices[].logprobs.content wrapper). */
-    if (n_tokens == 0) {
+    /* Ollama native /api/chat: top-level "logprobs":[{...},…] */
+    if (n_lp == 0) {
         p = json_find_key(body, end, "logprobs");
         if (p != NULL) {
             const char *t0 = p;
             json_skip_ws(&t0, end);
             if (t0 < end && *t0 == '[') {
                 const char *q = t0 + 1;
-                sigmas_from_chat_logprobs = 1;
                 while (q < end) {
                     if (!json_skip_ws(&q, end)) break;
                     if (*q == ']') break;
@@ -954,7 +983,6 @@ static int parse_completion_response(const char *body, size_t body_len,
                     }
                     if (obj_end > end) obj_end = end;
 
-                    float chosen_prob = 1.0f;
                     const char *lpr =
                         json_find_key(obj_start, obj_end, "logprob");
                     if (lpr != NULL) {
@@ -963,19 +991,10 @@ static int parse_completion_response(const char *body, size_t body_len,
                         if (lpr < obj_end
                             && (*lpr == '-' || (*lpr >= '0' && *lpr <= '9'))) {
                             double lg = strtod(lpr, NULL);
-                            chosen_prob = (float)exp(lg);
-                            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
-                            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
-                            sum_selected_logprob += lg;
-                            have_sum_lp++;
+                            if (n_lp < COS_BITNET_SERVER_MAX_TOKENS)
+                                g_bns_lp_scratch[n_lp++] = (float)lg;
                         }
                     }
-                    float sigma_tok = 1.0f - chosen_prob;
-                    if (sigma_tok > max_sigma) max_sigma = sigma_tok;
-                    sum_sigma += (double)sigma_tok;
-                    n_tokens++;
-                    if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
-                        g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
 
                     q = obj_end;
                     json_skip_ws(&q, end);
@@ -985,32 +1004,36 @@ static int parse_completion_response(const char *body, size_t body_len,
         }
     }
 
-    if (n_tokens == 0) {
-        out->sigma      = 1.0f;
-        out->mean_sigma = 1.0f;
+    int n_skip = 0;
+    if (msg_has_content && msg_has_reasoning && n_lp > 0) {
+        size_t nr = strlen(g_bns.reasoning_buf);
+        size_t nc = strlen(g_bns.text_buf);
+        double den = (double)nr + (double)nc;
+        if (den > 1e-12) {
+            long ns = lround((double)n_lp * (double)nr / den);
+            if (ns < 0) ns = 0;
+            if (ns > n_lp - 1) ns = (long)(n_lp > 0 ? n_lp - 1 : 0);
+            n_skip = (int)ns;
+        }
+    }
+
+    const float *lp_use = g_bns_lp_scratch + n_skip;
+    int            n_use = n_lp - n_skip;
+
+    g_bns_last_tok_n = 0;
+    for (int i = n_skip; i < n_lp && g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS;
+         i++) {
+        float lpv = bns_clamp_lp_for_exp(g_bns_lp_scratch[i]);
+        g_bns_last_tok_sigma[g_bns_last_tok_n++] = 1.0f - expf(lpv);
+    }
+
+    if (n_lp <= 0) {
+        out->sigma      = 0.5f;
+        out->mean_sigma = 0.5f;
     } else {
-        float mean_s = (float)(sum_sigma / (double)n_tokens);
-        /* Sequence-level log score (Ollama / thinking models): average
-         * token log-probability drives a smooth σ that separates easy
-         * prompts (mean_lp ≈ 0 → σ≈0) from hard ones (mean_lp ≪ 0 → σ→1).
-         * Per-token max is kept for non-reasoning chat completions. */
-        float sigma_seq = 0.0f;
-        if (have_sum_lp > 0) {
-            double mlp = sum_selected_logprob / (double)have_sum_lp;
-            if (mlp < -80.0) mlp = -80.0;
-            if (mlp > 0.0) mlp = 0.0;
-            sigma_seq = 1.0f - (float)exp(mlp);
-            if (sigma_seq < 0.0f) sigma_seq = 0.0f;
-            if (sigma_seq > 1.0f) sigma_seq = 1.0f;
-        }
-        if (text_from_reasoning && sigmas_from_chat_logprobs && have_sum_lp > 0) {
-            out->sigma      = sigma_seq;
-            out->mean_sigma = mean_s;
-        } else {
-            out->sigma      = max_sigma;
-            out->mean_sigma = mean_s;
-        }
-        if (out->token_count == 0) out->token_count = n_tokens;
+        out->sigma      = bns_sigma_from_logprobs_agg(lp_use, n_use);
+        out->mean_sigma = bns_mean_sigma_from_lps(lp_use, n_use);
+        if (out->token_count == 0) out->token_count = n_lp;
     }
     return 0;
 }
@@ -1470,7 +1493,7 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     /* /api/chat usually has no per-token probs; only replace σ when the
      * parser found no token-level signal (preserve logprob path if added). */
     if (g_bns_last_tok_n == 0) {
-        float sd = strtof(env_or("COS_OLLAMA_DEFAULT_SIGMA", "0.35"), NULL);
+        float sd = strtof(env_or("COS_OLLAMA_DEFAULT_SIGMA", "0.5"), NULL);
         if (sd < 0.0f) sd = 0.0f;
         if (sd > 1.0f) sd = 1.0f;
         out->sigma      = sd;

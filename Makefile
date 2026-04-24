@@ -6868,7 +6868,7 @@ test_bitnet_server_parse: src/import/bitnet_server.c \
 
 check-bitnet-server-parse: test_bitnet_server_parse
 	@./test_bitnet_server_parse
-	@echo "check-bitnet-server-parse: OK (9 cases: mixed / null / empty / /completion / utf8 / chat logprobs mean|max)"
+	@echo "check-bitnet-server-parse: OK (10 cases: mixed / null / empty / /completion / utf8 / chat logprobs blend + split)"
 
 test_bitnet_server: src/import/bitnet_server.c tests/import/test_bitnet_server.c
 	$(CC) $(CFLAGS) -Isrc/import -o $@ \
