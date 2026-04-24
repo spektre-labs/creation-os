@@ -6218,6 +6218,7 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
 COS_EDGE_INF = src/sigma/inference_cache.c
 COS_SPIKE_ADAPT_SRCS = src/sigma/spike_engine.c src/sigma/adaptive_compute.c
 COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
+		     src/sigma/constitution.c src/sigma/eu_compliance.c \
 		     src/license_kernel/license_attest.c
 
 # DEV-8 purge: src/import/bitnet_ppl.c (llama-perplexity σ heuristic)
@@ -6311,6 +6312,19 @@ check-proof-receipt: creation_os_check_proof_receipt
 check-compliance: creation_os_check_compliance
 	@./creation_os_check_compliance
 	@echo "check-compliance: OK (compliance self-test)"
+
+creation_os_check_constitution: tests/agi/check_constitution_main.c \
+		src/sigma/constitution.c src/sigma/proof_receipt.c \
+		src/license_kernel/license_attest.c
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 \
+	    -o $@ tests/agi/check_constitution_main.c \
+	    src/sigma/constitution.c src/sigma/proof_receipt.c \
+	    src/license_kernel/license_attest.c $(LDFLAGS)
+
+check-constitution: creation_os_check_constitution
+	@./creation_os_check_constitution
+	@echo "check-constitution: OK (Codex RULE pragma parser self-test)"
 
 cos-receipts: src/cli/cos_receipts.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
@@ -6890,9 +6904,10 @@ check-cos-agent: cos-agent
 	@bash benchmarks/sigma_pipeline/check_cos_agent.sh
 	@echo "check-cos-agent: OK (plan compile + gate ALLOW/CONFIRM/BLOCK + budget + flags)"
 
-check-cos-cli: cos-chat cos-benchmark cos-cost cos-think
+check-cos-cli: cos cos-chat cos-benchmark cos-cost cos-think creation_os_check_constitution
 	@bash benchmarks/sigma_pipeline/check_cos_cli.sh
 	@./cos-think --self-test
+	@$(MAKE) check-constitution
 	@echo "check-cos-cli: OK (cos chat banner + cos benchmark table + cos cost ledger + cos think)"
 
 # --- σ-pipeline: Sovereign (zero-cloud accounting, v264 live) ---

@@ -42,6 +42,12 @@ struct cos_proof_receipt {
     char    codex_version[32];
     int64_t timestamp_ms;
 
+    int constitutional_valid;
+    int constitutional_compliant;
+    int constitutional_checks;
+    int constitutional_violations;
+    int constitutional_mandatory_halts;
+
     uint8_t receipt_hash[32];
 };
 
@@ -55,6 +61,12 @@ struct cos_proof_receipt_options {
     const char *model_id;
     const char *codex_version;
     int64_t timestamp_ms;
+
+    int constitutional_valid;
+    int constitutional_compliant;
+    int constitutional_checks;
+    int constitutional_violations;
+    int constitutional_mandatory_halts;
 };
 
 int cos_proof_receipt_generate(

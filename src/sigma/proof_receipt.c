@@ -216,6 +216,13 @@ int cos_proof_receipt_generate_with(
         cv                            = opts->codex_version ? opts->codex_version
                                                             : "";
         tms                           = opts->timestamp_ms;
+        if (opts->constitutional_valid) {
+            receipt->constitutional_valid           = 1;
+            receipt->constitutional_compliant       = opts->constitutional_compliant;
+            receipt->constitutional_checks          = opts->constitutional_checks;
+            receipt->constitutional_violations      = opts->constitutional_violations;
+            receipt->constitutional_mandatory_halts = opts->constitutional_mandatory_halts;
+        }
     } else {
         receipt->kernels_run = 40;
         receipt->within_compute_budget = 1;
@@ -320,7 +327,7 @@ char *cos_proof_receipt_to_json(const struct cos_proof_receipt *r)
 
     if (r == NULL)
         return NULL;
-    out = malloc(2048);
+    out = malloc(2560);
     if (out == NULL)
         return NULL;
 
@@ -330,7 +337,7 @@ char *cos_proof_receipt_to_json(const struct cos_proof_receipt *r)
     spektre_hex_lower(r->codex_hash, cx);
     spektre_hex_lower(r->license_hash, lx);
 
-    n = snprintf(out, 2048,
+    n = snprintf(out, 2560,
                  "{\"proof_receipt\":{"
                  "\"receipt_hash\":\"%s\","
                  "\"prev_receipt_hash\":\"%s\","
@@ -351,7 +358,12 @@ char *cos_proof_receipt_to_json(const struct cos_proof_receipt *r)
                  "\"kernels_passed\":%d,"
                  "\"model_id\":\"%s\","
                  "\"codex_version\":\"%s\","
-                 "\"timestamp_ms\":%lld}}",
+                 "\"timestamp_ms\":%lld,"
+                 "\"constitutional_valid\":%d,"
+                 "\"constitutional_compliant\":%d,"
+                 "\"constitutional_checks\":%d,"
+                 "\"constitutional_violations\":%d,"
+                 "\"constitutional_mandatory_halts\":%d}}",
                  rh, prev, cx, lx, ox, (double)r->sigma_combined,
                  (double)r->sigma_channels[0], (double)r->sigma_channels[1],
                  (double)r->sigma_channels[2], (double)r->sigma_channels[3],
@@ -362,8 +374,10 @@ char *cos_proof_receipt_to_json(const struct cos_proof_receipt *r)
                  r->within_compute_budget,
                  (unsigned long long)r->kernel_pass_bitmap, r->kernels_run,
                  r->kernels_passed, r->model_id, r->codex_version,
-                 (long long)r->timestamp_ms);
-    if (n < 0 || (size_t)n >= 2048) {
+                 (long long)r->timestamp_ms, r->constitutional_valid,
+                 r->constitutional_compliant, r->constitutional_checks,
+                 r->constitutional_violations, r->constitutional_mandatory_halts);
+    if (n < 0 || (size_t)n >= 2560) {
         free(out);
         return NULL;
     }
@@ -525,6 +539,22 @@ static int parse_json_receipt(const char *json, struct cos_proof_receipt *r)
     p = strstr(json, "\"timestamp_ms\":");
     if (p)
         r->timestamp_ms = (int64_t)strtoll(p + 17, NULL, 10);
+
+    p = strstr(json, "\"constitutional_valid\":");
+    if (p)
+        r->constitutional_valid = atoi(p + 25);
+    p = strstr(json, "\"constitutional_compliant\":");
+    if (p)
+        r->constitutional_compliant = atoi(p + 30);
+    p = strstr(json, "\"constitutional_checks\":");
+    if (p)
+        r->constitutional_checks = atoi(p + 26);
+    p = strstr(json, "\"constitutional_violations\":");
+    if (p)
+        r->constitutional_violations = atoi(p + 30);
+    p = strstr(json, "\"constitutional_mandatory_halts\":");
+    if (p)
+        r->constitutional_mandatory_halts = atoi(p + 35);
 
     /* Arrays/model strings: skipped for verify hash — must match writer;
      * full verify uses marshal fields filled above;
@@ -763,6 +793,11 @@ int cos_proof_receipt_self_test(void)
         memcpy(r2.model_id, r.model_id, sizeof r2.model_id);
         memcpy(r2.codex_version, r.codex_version, sizeof r2.codex_version);
         r2.timestamp_ms = r.timestamp_ms;
+        r2.constitutional_valid           = r.constitutional_valid;
+        r2.constitutional_compliant       = r.constitutional_compliant;
+        r2.constitutional_checks          = r.constitutional_checks;
+        r2.constitutional_violations      = r.constitutional_violations;
+        r2.constitutional_mandatory_halts = r.constitutional_mandatory_halts;
         memcpy(r2.receipt_hash, r.receipt_hash, 32);
         if (cos_proof_receipt_verify(&r2) == 0)
             return pr_fail("tamper detect");

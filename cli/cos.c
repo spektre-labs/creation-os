@@ -73,6 +73,8 @@
 #include "../src/sigma/learn_engine.h"
 #include "../src/sigma/autonomy.h"
 #include "../src/sigma/state_ledger.h"
+#include "../src/sigma/constitution.h"
+#include "../src/sigma/eu_compliance.h"
 
 /* --------------------------------------------------------------------
  *  Colour & style — Apple SF-inspired terminal palette.
@@ -589,9 +591,85 @@ static int cmd_receipts_sibling(int argc, char **argv)
     return prefer_c_or_hint("cos-receipts", argc - 2, argv + 2);
 }
 
-static int cmd_compliance_sibling(int argc, char **argv)
+static int cmd_compliance(int argc, char **argv)
 {
-    return prefer_c_or_hint("cos-compliance", argc - 2, argv + 2);
+    int i, want_selftest = 0, eu_only = 0, nist = 0;
+
+    for (i = 2; i < argc; ++i) {
+        if (strcmp(argv[i], "--self-test") == 0)
+            want_selftest = 1;
+        else if (strcmp(argv[i], "--eu") == 0)
+            eu_only = 1;
+        else if (strcmp(argv[i], "--nist") == 0)
+            nist = 1;
+        else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            fprintf(stdout,
+                    "usage: cos compliance [--eu] [--nist] [--self-test]\n"
+                    "  default   EU AI Act–oriented compliance snapshot + JSON\n"
+                    "  --eu      print Article mapping (human-readable)\n"
+                    "  --nist    NIST AI RMF mapping (human-readable)\n"
+                    "  --self-test  run legacy cos-compliance binary self-test\n");
+            return 0;
+        }
+    }
+    if (want_selftest)
+        return prefer_c_or_hint("cos-compliance", argc - 2, argv + 2);
+
+    {
+        struct cos_eu_compliance c = cos_eu_check();
+        char                    *js;
+
+        if (nist)
+            fputs(cos_nist_rmf_report(), stdout);
+        if (eu_only || !nist)
+            fputs(c.report, stdout);
+        fputc('\n', stdout);
+        js = cos_eu_report(&c);
+        if (js == NULL)
+            return 2;
+        fputs(js, stdout);
+        free(js);
+        return c.compliant ? 0 : 1;
+    }
+}
+
+static int cmd_constitution(int argc, char **argv)
+{
+    int i, want_audit = 0, want_viol = 0;
+
+    for (i = 2; i < argc; ++i) {
+        if (strcmp(argv[i], "--audit") == 0)
+            want_audit = 1;
+        else if (strcmp(argv[i], "--violations") == 0)
+            want_viol = 1;
+        else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+            fprintf(stdout,
+                    "usage: cos constitution [--audit] [--violations]\n"
+                    "  default        print live counters from loaded Codex rules\n"
+                    "  --audit        tail ~/.cos/constitution/audit.jsonl\n"
+                    "  --violations   audit lines with compliant=false only\n");
+            return 0;
+        }
+    }
+
+    (void)cos_constitution_init("data/codex/atlantean_codex_compact.txt");
+    if (want_audit || want_viol) {
+        char *t = cos_constitution_audit_tail(48, want_viol ? 1 : 0);
+        if (t != NULL) {
+            fputs(t, stdout);
+            free(t);
+        }
+        return 0;
+    }
+    cos_constitution_print_status(cos_constitution_get());
+    {
+        char *rep = cos_constitution_report(cos_constitution_get());
+        if (rep != NULL) {
+            fputs(rep, stdout);
+            free(rep);
+        }
+    }
+    return 0;
 }
 
 static int cmd_self_play_cli(int argc, char **argv)
@@ -3137,7 +3215,9 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "receipts") == 0)
         return cmd_receipts_sibling(argc, argv);
     if (strcmp(argv[1], "compliance") == 0)
-        return cmd_compliance_sibling(argc, argv);
+        return cmd_compliance(argc, argv);
+    if (strcmp(argv[1], "constitution") == 0)
+        return cmd_constitution(argc, argv);
     if (strcmp(argv[1], "federation") == 0)
         return cmd_federation_sibling(argc, argv);
     if (strcmp(argv[1], "embody") == 0)

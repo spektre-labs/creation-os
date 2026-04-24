@@ -79,6 +79,8 @@
 #include "spike_engine.h"
 #include "adaptive_compute.h"
 #include "proof_receipt.h"
+#include "constitution.h"
+#include "license_attest.h"
 #include "speed_metrics.h"
 #include "bitnet_server.h"
 #include "cos_tui.h"
@@ -835,6 +837,8 @@ static uint64_t chat_proof_kernel_mask(const chat_feat_t           *feat,
     return bm & 0xFFFFFFFFFFULL;
 }
 
+static char g_cos_chat_const_halt[768];
+
 static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
                                  const char *prompt,
                                  const cos_pipeline_result_t *r,
@@ -842,7 +846,13 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
                                  int                       have_ms,
                                  const chat_feat_t        *feat,
                                  const chat_sigma_layer_t *SL,
-                                 double                    elapsed_ms)
+                                 double                    elapsed_ms,
+                                 const char *receipt_body,
+                                 int         constitutional_valid,
+                                 int         constitutional_compliant,
+                                 int         constitutional_checks,
+                                 int         constitutional_violations,
+                                 int         constitutional_mandatory_halts)
 {
     struct cos_proof_receipt               rec;
     struct cos_proof_receipt_options       opt;
@@ -856,7 +866,10 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
     const char                     *resp;
 
     memset(&opt, 0, sizeof opt);
-    resp = (r != NULL && r->response != NULL) ? r->response : "";
+    if (receipt_body != NULL)
+        resp = receipt_body;
+    else
+        resp = (r != NULL && r->response != NULL) ? r->response : "";
 
     if (have_ms && ms != NULL) {
         mc = ms->ens;
@@ -907,6 +920,14 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
                  (unsigned long long)(cfg->codex->hash_fnv1a64 & 0xffffULL));
     }
     opt.codex_version = codex_ver;
+
+    if (constitutional_valid) {
+        opt.constitutional_valid           = 1;
+        opt.constitutional_compliant       = constitutional_compliant;
+        opt.constitutional_checks          = constitutional_checks;
+        opt.constitutional_violations      = constitutional_violations;
+        opt.constitutional_mandatory_halts = constitutional_mandatory_halts;
+    }
 
     kbmp = chat_proof_kernel_mask(feat, SL);
 
@@ -1118,38 +1139,77 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         && cos_ttt_last_verbose_line()[0] != '\0')
         fprintf(stdout, "%s\n", cos_ttt_last_verbose_line());
 
-    fprintf(stdout,
-            "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
-            cos_chat_stream_env_on()
-                ? "(streamed above)"
-                : (r.response != NULL ? r.response : ""),
-            (double)r.sigma,
-            cos_sigma_action_label(r.final_action),
-            route);
-
-    /* NEXT-1 polished receipt (shared with REPL path).  Harness only
-     * requires ACCEPT/RETHINK/ABSTAIN to appear somewhere in the
-     * output; the "round 0" line already satisfied that, so the
-     * receipt is free to adopt the visual format. */
     {
-        float ttft_pass = -1.0f;
-        if (cos_chat_stream_env_on()) {
-            double g = cos_bitnet_server_last_ttft_ms();
-            if (g >= 0.0)
-                ttft_pass = (float)g;
+        const char *deliver_txt =
+            (r.response != NULL) ? r.response : "";
+        int c_valid = 0, c_compl = 1, c_checks = 0, c_viol = 0,
+            c_mhalts = 0, c_mv = 0;
+        char crep[1024];
+
+        crep[0] = '\0';
+        if (!early_spec_abstain && r.response != NULL
+            && r.final_action != COS_SIGMA_ACTION_ABSTAIN) {
+            struct cos_proof_receipt pr;
+            memset(&pr, 0, sizeof pr);
+            spektre_sha256((const uint8_t *)r.response, strlen(r.response),
+                           pr.output_hash);
+            pr.sigma_combined = r.sigma;
+            pr.within_compute_budget = 1;
+            if (feat != NULL && feat->adaptive_compute != 0) {
+                pr.within_compute_budget =
+                    (elapsed_ms <= (double)SL.bu.time_budget_ms + 1e-3) ? 1
+                                                                        : 0;
+            }
+            (void)cos_constitution_check(r.response, r.sigma, &pr, &c_viol,
+                                          &c_mv, crep, (int)sizeof crep);
+            c_valid  = 1;
+            c_checks = cos_constitution_get()->n_rules;
+            c_compl  = (c_viol == 0) ? 1 : 0;
+            c_mhalts = (c_mv > 0) ? 1 : 0;
+            if (c_mv > 0) {
+                snprintf(g_cos_chat_const_halt, sizeof g_cos_chat_const_halt,
+                         "[CONSTITUTIONAL HALT] %s", crep);
+                fprintf(stdout, "%s\n", g_cos_chat_const_halt);
+                deliver_txt = g_cos_chat_const_halt;
+            } else if (c_viol > 0) {
+                fprintf(stdout, "[CONSTITUTIONAL WARNING] %s\n", crep);
+            }
         }
-        struct cos_speed_metrics spd = cos_speed_measure_ex(
-            r.response != NULL ? r.response : "", (float)elapsed_ms,
-            ttft_pass);
-        cos_speed_print(&spd);
-        fputc('\n', stdout);
-        print_receipt_polished(&r, elapsed_ms,
-                               feat != NULL ? feat->conformal_active : 0,
-                               feat != NULL ? feat->conformal_alpha  : 0.0f,
-                               semantic_hit, &spd);
+        fprintf(stdout,
+                "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
+                cos_chat_stream_env_on()
+                    ? "(streamed above)"
+                    : deliver_txt,
+                (double)r.sigma,
+                cos_sigma_action_label(r.final_action),
+                route);
+
+        /* NEXT-1 polished receipt (shared with REPL path).  Harness only
+         * requires ACCEPT/RETHINK/ABSTAIN to appear somewhere in the
+         * output; the "round 0" line already satisfied that, so the
+         * receipt is free to adopt the visual format. */
+        {
+            float ttft_pass = -1.0f;
+            if (cos_chat_stream_env_on()) {
+                double g = cos_bitnet_server_last_ttft_ms();
+                if (g >= 0.0)
+                    ttft_pass = (float)g;
+            }
+            struct cos_speed_metrics spd = cos_speed_measure_ex(
+                r.response != NULL ? r.response : "", (float)elapsed_ms,
+                ttft_pass);
+            cos_speed_print(&spd);
+            fputc('\n', stdout);
+            print_receipt_polished(&r, elapsed_ms,
+                                   feat != NULL ? feat->conformal_active : 0,
+                                   feat != NULL ? feat->conformal_alpha  : 0.0f,
+                                   semantic_hit, &spd);
+        }
+        chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
+                             elapsed_ms, deliver_txt, c_valid, c_compl,
+                             c_checks, c_viol, c_mhalts);
     }
-    chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
-                         elapsed_ms);
+
     if (have_ms) {
         fprintf(stdout,
                 "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
@@ -1609,6 +1669,8 @@ int main(int argc, char **argv) {
                             "continuing without soul\n", rc);
     }
 
+    (void)cos_constitution_init("data/codex/atlantean_codex_compact.txt");
+
     /* Shared state. */
     enum { N_SLOTS = 64 };
     cos_sigma_engram_entry_t slots[N_SLOTS];
@@ -2052,26 +2114,6 @@ int main(int argc, char **argv) {
                     (double)lv.sigma_social, (double)lv.sigma_situational);
         }
 
-        if (r.final_action == COS_SIGMA_ACTION_ABSTAIN) {
-            if (use_tui)
-                fputs("│ (no answer — abstained)\n", stdout);
-            else
-                fprintf(stdout, "(no answer — abstained)\n");
-        } else if (!cos_chat_stream_env_on()) {
-            /* Semantic-cache + TUI: response already printed above. */
-            if (semantic_hit && use_tui)
-                ;
-            else if (r.response != NULL) {
-                if (use_tui) {
-                    cos_tui_begin_ai_line();
-                    fputs(r.response, stdout);
-                    cos_tui_stream_newline();
-                } else {
-                    fprintf(stdout, "%s\n", r.response);
-                }
-            }
-        }
-
         /* FINAL-2 Phase A: optional σ_combined shadow ensemble.
          * NEXT-1 auto-enables this under --verbose so the full ULTRA
          * stack shows without requiring a second flag. */
@@ -2113,48 +2155,111 @@ int main(int argc, char **argv) {
         }
 
         {
-            float ttft_pass = -1.0f;
-            if (cos_chat_stream_env_on()) {
-                double g = cos_bitnet_server_last_ttft_ms();
-                if (g >= 0.0)
-                    ttft_pass = (float)g;
-            }
-            struct cos_speed_metrics spd = cos_speed_measure_ex(
-                r.response != NULL ? r.response : "", (float)elapsed_ms,
-                ttft_pass);
-            if (!use_tui) {
-                cos_speed_print(&spd);
-                fputc('\n', stdout);
-                print_receipt_polished(&r, elapsed_ms,
-                                       conformal_active, conformal_alpha,
-                                       semantic_hit, &spd);
-            } else {
-                cos_tui_print_receipt(
-                    r.sigma, cos_sigma_action_label(r.final_action),
-                    spd.tokens_per_second, spd.ttft_ms, (float)r.cost_eur);
-                sigma_sess_sum += r.sigma;
-                sigma_sess_n++;
-                if (semantic_hit || r.engram_hit)
-                    cache_sess_hits++;
-                {
-                    float smean = sigma_sess_n
-                                      ? sigma_sess_sum / (float)sigma_sess_n
-                                      : 0.f;
-                    float k_eff_h = 1.f - smean;
-                    if (coherence_enabled && coh.n >= 1) {
-                        float mn = 0.f, sl = 0.f;
-                        coh_summary(&coh, &mn, &sl);
-                        (void)sl;
-                        k_eff_h = 1.f - mn;
-                    }
-                    cos_tui_status_bar(turn, cache_sess_hits,
-                                       0.001f * (float)turn, smean);
-                    cos_tui_header(smean, k_eff_h);
+            const char *repl_deliver =
+                (r.response != NULL) ? r.response : "";
+            int rcv = 0, rc_compl = 1, rc_chk = 0, rc_viol = 0,
+                rc_mhalts = 0, rc_mv = 0;
+            char rcrep[1024];
+
+            rcrep[0] = '\0';
+            if (!early_spec_abstain && r.response != NULL
+                && r.final_action != COS_SIGMA_ACTION_ABSTAIN) {
+                struct cos_proof_receipt pr;
+                memset(&pr, 0, sizeof pr);
+                spektre_sha256((const uint8_t *)r.response, strlen(r.response),
+                               pr.output_hash);
+                pr.sigma_combined = r.sigma;
+                pr.within_compute_budget = 1;
+                if (adaptive_compute) {
+                    pr.within_compute_budget =
+                        (elapsed_ms <= (double)SL.bu.time_budget_ms + 1e-3)
+                            ? 1
+                            : 0;
+                }
+                (void)cos_constitution_check(r.response, r.sigma, &pr,
+                                              &rc_viol, &rc_mv, rcrep,
+                                              (int)sizeof rcrep);
+                rcv       = 1;
+                rc_chk    = cos_constitution_get()->n_rules;
+                rc_compl  = (rc_viol == 0) ? 1 : 0;
+                rc_mhalts = (rc_mv > 0) ? 1 : 0;
+                if (rc_mv > 0) {
+                    snprintf(g_cos_chat_const_halt,
+                             sizeof g_cos_chat_const_halt,
+                             "[CONSTITUTIONAL HALT] %s", rcrep);
+                    fprintf(use_tui ? stderr : stdout, "%s\n",
+                            g_cos_chat_const_halt);
+                    repl_deliver = g_cos_chat_const_halt;
+                } else if (rc_viol > 0) {
+                    fprintf(use_tui ? stderr : stdout,
+                            "[CONSTITUTIONAL WARNING] %s\n", rcrep);
                 }
             }
+
+            if (r.final_action == COS_SIGMA_ACTION_ABSTAIN) {
+                if (use_tui)
+                    fputs("│ (no answer — abstained)\n", stdout);
+                else
+                    fprintf(stdout, "(no answer — abstained)\n");
+            } else if (!cos_chat_stream_env_on()) {
+                if (semantic_hit && use_tui)
+                    ;
+                else if (repl_deliver[0] != '\0') {
+                    if (use_tui) {
+                        cos_tui_begin_ai_line();
+                        fputs(repl_deliver, stdout);
+                        cos_tui_stream_newline();
+                    } else {
+                        fprintf(stdout, "%s\n", repl_deliver);
+                    }
+                }
+            }
+
+            {
+                float ttft_pass = -1.0f;
+                if (cos_chat_stream_env_on()) {
+                    double g = cos_bitnet_server_last_ttft_ms();
+                    if (g >= 0.0)
+                        ttft_pass = (float)g;
+                }
+                struct cos_speed_metrics spd = cos_speed_measure_ex(
+                    r.response != NULL ? r.response : "", (float)elapsed_ms,
+                    ttft_pass);
+                if (!use_tui) {
+                    cos_speed_print(&spd);
+                    fputc('\n', stdout);
+                    print_receipt_polished(&r, elapsed_ms,
+                                           conformal_active, conformal_alpha,
+                                           semantic_hit, &spd);
+                } else {
+                    cos_tui_print_receipt(
+                        r.sigma, cos_sigma_action_label(r.final_action),
+                        spd.tokens_per_second, spd.ttft_ms, (float)r.cost_eur);
+                    sigma_sess_sum += r.sigma;
+                    sigma_sess_n++;
+                    if (semantic_hit || r.engram_hit)
+                        cache_sess_hits++;
+                    {
+                        float smean = sigma_sess_n
+                                          ? sigma_sess_sum / (float)sigma_sess_n
+                                          : 0.f;
+                        float k_eff_h = 1.f - smean;
+                        if (coherence_enabled && coh.n >= 1) {
+                            float mn = 0.f, sl = 0.f;
+                            coh_summary(&coh, &mn, &sl);
+                            (void)sl;
+                            k_eff_h = 1.f - mn;
+                        }
+                        cos_tui_status_bar(turn, cache_sess_hits,
+                                           0.001f * (float)turn, smean);
+                        cos_tui_header(smean, k_eff_h);
+                    }
+                }
+                chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
+                                     elapsed_ms, repl_deliver, rcv, rc_compl,
+                                     rc_chk, rc_viol, rc_mhalts);
+            }
         }
-        chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
-                             elapsed_ms);
 
         /* FINAL-2 Phase D: session window for coherence. */
         if (coherence_enabled) coh_push(&coh, r.sigma);
