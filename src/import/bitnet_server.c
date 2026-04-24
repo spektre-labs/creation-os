@@ -724,6 +724,297 @@ static float bns_mean_sigma_from_lps(const float *lp, int n) {
 }
 
 static int parse_completion_response(const char *body, size_t body_len,
+                                     cos_bitnet_server_result_t *out);
+static size_t json_encode_string(char *dst, size_t cap, const char *s);
+
+/* --- adaptive σ: verbal confidence + optional consistency ------------- */
+
+static int bns_env_flag1(const char *name) {
+    const char *v = getenv(name);
+    return (v != NULL && v[0] == '1' && v[1] == '\0') ? 1 : 0;
+}
+
+static float bns_sigma_clamp01(float x) {
+    if (x < 0.0f) return 0.0f;
+    if (x > 1.0f) return 1.0f;
+    return x;
+}
+
+/** Jaccard overlap of whitespace/punctuation token sets (ASCII fold). */
+static float bns_word_jaccard_overlap(const char *a, const char *b) {
+    char bufa[2048], bufb[2048];
+    char *wa[128], *wb[128];
+    int   na = 0, nb = 0;
+
+    strncpy(bufa, a != NULL ? a : "", sizeof(bufa) - 1);
+    bufa[sizeof(bufa) - 1] = '\0';
+    strncpy(bufb, b != NULL ? b : "", sizeof(bufb) - 1);
+    bufb[sizeof(bufb) - 1] = '\0';
+
+    for (char *tok = strtok(bufa, " \t\n\r.,!?;:\"'()[]{}");
+         tok != NULL && na < 128; tok = strtok(NULL, " \t\n\r.,!?;:\"'()[]{}")) {
+        for (char *p = tok; *p; ++p)
+            if (*p >= 'A' && *p <= 'Z') *p = (char)(*p + 32);
+        wa[na++] = tok;
+    }
+    for (char *tok = strtok(bufb, " \t\n\r.,!?;:\"'()[]{}");
+         tok != NULL && nb < 128; tok = strtok(NULL, " \t\n\r.,!?;:\"'()[]{}")) {
+        for (char *p = tok; *p; ++p)
+            if (*p >= 'A' && *p <= 'Z') *p = (char)(*p + 32);
+        wb[nb++] = tok;
+    }
+    if (na == 0 && nb == 0) return 1.0f;
+    int inter = 0;
+    for (int i = 0; i < na; i++) {
+        for (int j = 0; j < nb; j++) {
+            if (strcmp(wa[i], wb[j]) == 0) {
+                inter++;
+                break;
+            }
+        }
+    }
+    int uni = na + nb - inter;
+    if (uni <= 0) return 0.0f;
+    return (float)inter / (float)uni;
+}
+
+/** Leading integer in s (after spaces); returns -1 if none in 0..100. */
+static int bns_parse_confidence_0_100(const char *s) {
+    if (s == NULL) return -1;
+    const char *p = s;
+    while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r') p++;
+    if (*p < '0' || *p > '9') return -1;
+    int v = atoi(p);
+    if (v < 0 || v > 100) return -1;
+    return v;
+}
+
+/** One-shot user message; restores g_bns.text_buf after parse.
+ *  On success, copies assistant text into answer_copy (aux->text = answer_copy). */
+static int bns_aux_user_chat(const char *user_msg, float temperature, int max_tok,
+                             int want_logprobs, cos_bitnet_server_result_t *aux,
+                             char *answer_copy, size_t answer_copy_cap) {
+    if (user_msg == NULL || aux == NULL || answer_copy == NULL
+        || answer_copy_cap == 0)
+        return -1;
+    bns_alloc_scratch();
+
+    static char hold_main[BNS_TEXT_CAP];
+    strncpy(hold_main, g_bns.text_buf, sizeof(hold_main) - 1);
+    hold_main[sizeof(hold_main) - 1] = '\0';
+
+    const char *model = getenv("COS_OLLAMA_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = getenv("COS_BITNET_CHAT_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = g_bns.backend_ollama ? "qwen3:8b" : "bitnet";
+
+    char *jb  = g_bns.req_buf + 4096;
+    size_t w  = 0;
+    int    n;
+    const size_t JSON_CAP = BNS_REQ_CAP - 4096;
+
+    if (g_bns.backend_ollama) {
+        n = snprintf(jb + w, JSON_CAP - w, "{\"model\":");
+        if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
+        w += (size_t)n;
+        {
+            size_t mw = json_encode_string(jb + w, JSON_CAP - w, model);
+            if (mw == 0) goto fail;
+            w += mw;
+        }
+        n = snprintf(jb + w, JSON_CAP - w, ",\"stream\":false,\"messages\":[");
+        if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
+        w += (size_t)n;
+        n = snprintf(jb + w, JSON_CAP - w, "{\"role\":\"user\",\"content\":");
+        if (n < 0) goto fail;
+        w += (size_t)n;
+        {
+            size_t sw = json_encode_string(jb + w, JSON_CAP - w, user_msg);
+            if (sw == 0) goto fail;
+            w += sw;
+        }
+        if (want_logprobs) {
+            n = snprintf(jb + w, JSON_CAP - w,
+                          "}],\"logprobs\":true,\"top_logprobs\":5,"
+                          "\"options\":{\"num_predict\":%d,\"temperature\":%.3f}}",
+                          max_tok, (double)temperature);
+        } else {
+            n = snprintf(jb + w, JSON_CAP - w,
+                          "}],\"options\":{\"num_predict\":%d,\"temperature\":%.3f}}",
+                          max_tok, (double)temperature);
+        }
+        if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
+        w += (size_t)n;
+    } else {
+        n = snprintf(jb + w, JSON_CAP - w, "{\"model\":");
+        if (n < 0 || (size_t)n >= JSON_CAP - w) goto fail;
+        w += (size_t)n;
+        {
+            const char *mid = getenv("COS_BITNET_CHAT_MODEL");
+            if (mid == NULL || mid[0] == '\0') mid = "bitnet";
+            size_t mw = json_encode_string(jb + w, JSON_CAP - w, mid);
+            if (mw == 0) goto fail;
+            w += mw;
+        }
+        n = snprintf(jb + w, JSON_CAP - w, ",\"messages\":[");
+        if (n < 0) goto fail;
+        w += (size_t)n;
+        n = snprintf(jb + w, JSON_CAP - w, "{\"role\":\"user\",\"content\":");
+        if (n < 0) goto fail;
+        w += (size_t)n;
+        {
+            size_t sw = json_encode_string(jb + w, JSON_CAP - w, user_msg);
+            if (sw == 0) goto fail;
+            w += sw;
+        }
+        if (want_logprobs) {
+            n = snprintf(jb + w, JSON_CAP - w,
+                          "}],\"max_tokens\":%d,\"logprobs\":true,\"top_logprobs\":5",
+                          max_tok);
+        } else {
+            n = snprintf(jb + w, JSON_CAP - w, "}],\"max_tokens\":%d", max_tok);
+        }
+        if (n < 0) goto fail;
+        w += (size_t)n;
+        if (temperature > 0.0f) {
+            n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
+                           (double)temperature);
+            if (n < 0) goto fail;
+            w += (size_t)n;
+        }
+        n = snprintf(jb + w, JSON_CAP - w, "}");
+        if (n < 0) goto fail;
+        w += (size_t)n;
+    }
+
+    static char json_tmp[BNS_REQ_CAP];
+    if (w >= sizeof(json_tmp)) goto fail;
+    memcpy(json_tmp, jb, w);
+
+    const char *resp = NULL;
+    size_t      rlen = 0;
+    const char *path = g_bns.backend_ollama ? "/api/chat" : "/v1/chat/completions";
+    if (bns_http_post_json(path, json_tmp, w, &resp, &rlen) != 0
+        || resp == NULL) {
+        memcpy(g_bns.text_buf, hold_main, strlen(hold_main) + 1);
+        return -1;
+    }
+    memset(aux, 0, sizeof(*aux));
+    if (parse_completion_response(resp, rlen, aux) != 0) {
+        memcpy(g_bns.text_buf, hold_main, strlen(hold_main) + 1);
+        return -1;
+    }
+    strncpy(answer_copy, g_bns.text_buf, answer_copy_cap - 1);
+    answer_copy[answer_copy_cap - 1] = '\0';
+    aux->text = answer_copy;
+    memcpy(g_bns.text_buf, hold_main, strlen(hold_main) + 1);
+    return 0;
+
+fail:
+    memcpy(g_bns.text_buf, hold_main, strlen(hold_main) + 1);
+    return -1;
+}
+
+static float bns_sigma_verbal_from_answer(const char *answer,
+                                          const cos_bitnet_server_params_t *params) {
+    (void)params;
+    char meta[2048];
+    char snip[201];
+    char axbuf[512];
+    if (answer == NULL) answer = "";
+    {
+        size_t al = strlen(answer);
+        if (al > 200) al = 200;
+        memcpy(snip, answer, al);
+        snip[al] = '\0';
+    }
+    int mr = snprintf(meta, sizeof(meta),
+                      "You just answered: %s\n"
+                      "Rate your confidence in this answer from 0 to 100.\n"
+                      "Reply with ONLY a number, nothing else.",
+                      snip);
+    if (mr < 0 || (size_t)mr >= sizeof(meta)) return -1.0f;
+
+    cos_bitnet_server_result_t ax;
+    memset(&ax, 0, sizeof(ax));
+    if (bns_aux_user_chat(meta, 0.05f, 32, 0, &ax, axbuf, sizeof(axbuf)) != 0)
+        return -1.0f;
+    int c = bns_parse_confidence_0_100(ax.text != NULL ? ax.text : "");
+    if (c < 0) return -1.0f;
+    return 1.0f - (float)c / 100.0f;
+}
+
+static float bns_sigma_consistency_pair(const char *prompt,
+                                        const cos_bitnet_server_params_t *params) {
+    if (prompt == NULL || prompt[0] == '\0') return -1.0f;
+    int mt = 64;
+    if (params != NULL && params->n_predict > 0 && params->n_predict < mt)
+        mt = params->n_predict;
+
+    char buf1[BNS_TEXT_CAP];
+    char buf2[BNS_TEXT_CAP];
+    cos_bitnet_server_result_t a1, a2;
+    memset(&a1, 0, sizeof(a1));
+    memset(&a2, 0, sizeof(a2));
+    if (bns_aux_user_chat(prompt, 0.3f, mt, 0, &a1, buf1, sizeof(buf1)) != 0)
+        return -1.0f;
+    if (bns_aux_user_chat(prompt, 0.9f, mt, 0, &a2, buf2, sizeof(buf2)) != 0)
+        return -1.0f;
+    const char *t1 = (a1.text != NULL) ? a1.text : "";
+    const char *t2 = (a2.text != NULL) ? a2.text : "";
+    float ov       = bns_word_jaccard_overlap(t1, t2);
+    float sigma_c  = 1.0f - ov;
+    return bns_sigma_clamp01(sigma_c);
+}
+
+static float bns_sigma_combine_adaptive(float s_lp, float s_v, float s_c) {
+    const int have_lp = (s_lp >= 0.0f);
+    const int have_v  = (s_v >= 0.0f);
+    const int have_c  = (s_c >= 0.0f);
+
+    if (have_lp && bns_env_flag1("COS_BITNET_SIGMA_FULL_BLEND")) {
+        float v = have_v ? s_v : 0.5f;
+        float c = have_c ? s_c : 0.5f;
+        return bns_sigma_clamp01(0.6f * s_lp + 0.2f * v + 0.2f * c);
+    }
+    if (have_lp) return bns_sigma_clamp01(s_lp);
+    if (have_v && have_c) return bns_sigma_clamp01(0.5f * s_v + 0.5f * s_c);
+    if (have_v) return bns_sigma_clamp01(s_v);
+    if (have_c) return bns_sigma_clamp01(s_c);
+    return 0.5f;
+}
+
+/** Optional second (and third) inference pass when logprobs are missing. */
+static void bns_apply_adaptive_sigma(const char *user_prompt,
+                                     const cos_bitnet_server_params_t *params,
+                                     cos_bitnet_server_result_t       *out) {
+    if (!bns_env_flag1("COS_BITNET_SIGMA_ADAPTIVE")) return;
+    if (out == NULL) return;
+
+    const int have_lp = (g_bns_last_tok_n > 0);
+    float     s_lp    = have_lp ? out->sigma : -1.0f;
+    float     s_v     = -1.0f;
+    float     s_c     = -1.0f;
+
+    const char *ans = (out->text != NULL) ? out->text : "";
+
+    if (!have_lp) {
+        s_v = bns_sigma_verbal_from_answer(ans, params);
+        if (bns_env_flag1("COS_BITNET_SIGMA_CONSISTENCY") && user_prompt != NULL)
+            s_c = bns_sigma_consistency_pair(user_prompt, params);
+    } else if (bns_env_flag1("COS_BITNET_SIGMA_FULL_BLEND")) {
+        s_v = bns_sigma_verbal_from_answer(ans, params);
+        if (bns_env_flag1("COS_BITNET_SIGMA_CONSISTENCY") && user_prompt != NULL)
+            s_c = bns_sigma_consistency_pair(user_prompt, params);
+    }
+
+    float sig = bns_sigma_combine_adaptive(s_lp, s_v, s_c);
+    out->sigma      = sig;
+    out->mean_sigma = sig;
+}
+
+static int parse_completion_response(const char *body, size_t body_len,
                                      cos_bitnet_server_result_t *out) {
     g_bns_last_tok_n = 0;
     const char *end = body + body_len;
@@ -1545,6 +1836,7 @@ static int bns_ollama_chat_complete(const char                       *prompt,
         out->mean_sigma = sd;
     }
 
+    bns_apply_adaptive_sigma(enc_prompt, params, out);
     return rc;
 }
 
@@ -1781,6 +2073,7 @@ int cos_bitnet_server_complete(const char                       *prompt,
             *out = r2;  /* adopt the better result */
         }
     }
+    bns_apply_adaptive_sigma(prompt, params, out);
     return rc;
 }
 

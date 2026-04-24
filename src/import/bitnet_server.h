@@ -74,6 +74,16 @@
  *    COS_OLLAMA_APPEND_NO_THINK  "0" disables appending " /no_think" to the
  *                             user message on /api/chat (default: append for
  *                             Qwen3 unless set to "0").
+ *    COS_BITNET_SIGMA_ADAPTIVE  set to "1" for extra HTTP round-trips when
+ *                             per-token logprobs are missing: a verbal
+ *                             0–100 confidence follow-up, optionally blended
+ *                             with a two-temperature consistency probe.
+ *    COS_BITNET_SIGMA_CONSISTENCY  set to "1" with adaptive: same prompt at
+ *                             temp 0.3 vs 0.9, σ_consistency = 1 − Jaccard
+ *                             token overlap (two extra inferences).
+ *    COS_BITNET_SIGMA_FULL_BLEND  set to "1" with adaptive: when logprobs
+ *                             exist, combine 0.6·σ_logprob + 0.2·verbal +
+ *                             0.2·consistency (consistency still optional).
  *    COS_TEMPERATURE          when set, default sampling for
  *                             /v1/chat/completions if params->temperature≤0;
  *                             Ollama /api/chat uses 0.7 when unset.
