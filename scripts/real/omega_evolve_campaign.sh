@@ -4,6 +4,8 @@
 # BitNet defaults mirror scripts/real/qwen_first_contact.sh (τ 2/2 helps local completions ACCEPT).
 # Each prompt is bounded by CHAT_TIMEOUT_S (perl alarm; macOS has no `timeout` by default).
 # Note: COS_OMEGA_SIM applies to `./cos-omega`, not `./cos chat`.
+# Optional: COS_EVOLVE_SEMANTIC_CACHE=1 adds --semantic-cache (default: off so each
+# prompt hits the backend instead of BSC neighbour reuse).
 #
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 set -euo pipefail
@@ -73,7 +75,7 @@ for RUN in $(seq 1 "$N_RUNS"); do
                     --tau-accept "$TA_ACCEPT" \
                     --tau-rethink "$TA_RETHINK" \
                     --multi-sigma \
-                    --semantic-cache \
+                    ${COS_EVOLVE_SEMANTIC_CACHE:+--semantic-cache} \
                     --speculative \
                     --no-coherence \
                     --no-transcript \

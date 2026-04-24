@@ -7,7 +7,10 @@
 # from POST /v1/completions. Stock Ollama (tested with /v1/completions + numeric
 # logprobs) does not return that structure, so loglikelihood tasks fail there.
 # Point LM_EVAL_BASE_URL at llama.cpp llama-server, vLLM, or any server that
-# returns OpenAI-style completion logprobs, or run generative benchmarks only.
+# returns OpenAI-style completion logprobs. If the server only returns the
+# chat-style logprobs.content[] array, run scripts/real/lm_eval_logprobs_proxy.py
+# and aim LM_EVAL_BASE_URL at the proxy. For cos replay without lm-eval, export
+# stems with scripts/real/export_eval_samples_jsonl.py.
 #
 # Usage:
 #   TASK=truthfulqa_mc2 LIMIT=200 ./scripts/real/run_lm_eval_gemma_ollama.sh

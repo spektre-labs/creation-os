@@ -1,0 +1,24 @@
+Ω-loop: ./cos-omega --turns 10
+COS_BITNET_SERVER_EXTERNAL=1 COS_BITNET_SERVER_PORT=11434 COS_BITNET_CHAT_MODEL=gemma3:4b
+
+┌─────────────────────────────────────────┐
+│ Ω-Loop Report                           │
+│                                         │
+│ Duration:    0h 16m 25s                 │
+│ Turns:       10                         │
+│ σ_mean:      0.3104 (vs start 0.3104)   │
+│ k_eff:       0.6896 (vs start 0.6896)   │
+│ Consciousness: Level 0                  │
+│                                         │
+│ Skills learned:     0                   │
+│ Episodes stored:    10                  │
+│ Cache hits:         0                   │
+│ Rollbacks:          0                   │
+│ Pauses:             10                  │
+│                                         │
+│ Energy:     0.9026 J | 0.000058 gCO2    │
+│ Grade:      C (62.05/100)               │
+│                                         │
+│ σ trend: RISING (σ̄ increasing)          │
+│ Verdict: Ω integrates live modules (halt=0) │
+└─────────────────────────────────────────┘

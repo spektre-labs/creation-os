@@ -165,7 +165,7 @@ def run_cos_chat(cos_bin: Path, prompt: str, timeout_s: int) -> str:
 def is_correct(gold: Any, picked: Optional[int]) -> bool:
     if picked is None:
         return False
-    if isinstance(gold, set):
+    if isinstance(gold, (set, list, tuple)):
         return picked in gold
     return picked == int(gold)
 
@@ -198,7 +198,11 @@ def main() -> int:
     ap.add_argument("--timeout", type=int, default=300)
     args = ap.parse_args()
 
-    paths = sorted(glob.glob(args.samples))
+    sp = Path(args.samples).expanduser()
+    if sp.is_file():
+        paths = [str(sp)]
+    else:
+        paths = sorted(glob.glob(args.samples))
     if not paths:
         print("error: no files match --samples", file=sys.stderr)
         return 2
@@ -216,34 +220,47 @@ def main() -> int:
         cand = sorted(glob.glob(args.results_json))
         results_path = Path(cand[-1]) if cand else None
 
+    def iter_rows(path: str):
+        p = Path(path)
+        if p.suffix.lower() == ".json":
+            data = json.loads(p.read_text(encoding="utf-8"))
+            if not isinstance(data, list):
+                raise ValueError("JSON samples file must be a list of objects")
+            for row in data:
+                yield row
+        else:
+            with open(path, encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    yield json.loads(line)
+
     rows_out: List[Dict[str, Any]] = []
     n = 0
     for path in paths:
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                if args.limit and n >= args.limit:
-                    break
-                line = line.strip()
-                if not line:
-                    continue
-                row = json.loads(line)
-                doc = row["doc"]
-                prompt, gold = build_prompt(doc)
-                raw = run_cos_chat(cos_bin, prompt, args.timeout)
-                picked = parse_first_int(raw)
-                sigma, action = parse_cos_verbose(raw)
-                ok = is_correct(gold, picked)
-                rows_out.append(
-                    {
-                        "doc_id": row.get("doc_id", n),
-                        "picked": picked if picked is not None else "",
-                        "gold": gold if not isinstance(gold, set) else ",".join(str(x) for x in sorted(gold)),
-                        "correct": int(ok),
-                        "sigma": sigma if sigma is not None else "",
-                        "action": action,
-                    }
-                )
-                n += 1
+        for row in iter_rows(path):
+            if args.limit and n >= args.limit:
+                break
+            doc = row["doc"]
+            prompt, gold = build_prompt(doc)
+            raw = run_cos_chat(cos_bin, prompt, args.timeout)
+            picked = parse_first_int(raw)
+            sigma, action = parse_cos_verbose(raw)
+            ok = is_correct(gold, picked)
+            rows_out.append(
+                {
+                    "doc_id": row.get("doc_id", n),
+                    "picked": picked if picked is not None else "",
+                    "gold": ",".join(str(x) for x in sorted(gold))
+                    if isinstance(gold, (set, list, tuple))
+                    else str(gold),
+                    "correct": int(ok),
+                    "sigma": sigma if sigma is not None else "",
+                    "action": action,
+                }
+            )
+            n += 1
         if args.limit and n >= args.limit:
             break
 

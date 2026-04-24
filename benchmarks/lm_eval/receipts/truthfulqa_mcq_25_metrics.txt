@@ -1,0 +1,7 @@
+samples_rows 25
+harness_acc_official n/a
+cos_generative_acc_all 0.7600
+cos_generative_acc_accepted 0.7600
+cos_coverage_accept 1.0000
+cos_sigma_mean_accepted 0.0330
+wrote_csv benchmarks/lm_eval/receipts/truthfulqa_mcq_25_coschat.csv

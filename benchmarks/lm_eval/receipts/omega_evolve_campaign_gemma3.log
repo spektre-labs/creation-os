@@ -1,0 +1,93 @@
+=== Ω Evolution Campaign ===
+Date: Fri Apr 24 20:14:52 EEST 2026
+ROOT=/Users/eliaslorenzo/Desktop/creation-os-kernel
+CHAT_TIMEOUT_S=240  COS_CAMPAIGN_TAU_ACCEPT=2  COS_CAMPAIGN_TAU_RETHINK=2
+
+=== RUN 1 / 3 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 25452ms | 0.3 tok/s | TTFT 25452ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 25452ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 40453ms | 0.2 tok/s | TTFT 40453ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 40453ms | €0.0123]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 34899ms | 0.2 tok/s | TTFT 34899ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 34899ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.35 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 12029ms | 4.2 tok/s | TTFT 12029ms]
+[σ=0.350 | ACCEPT | FRESH | LOCAL | 4.2 tok/s | TTFT 12029ms | €0.0001]
+[σ_combined=0.414 | σ_logprob=0.350 σ_entropy=0.350 σ_perplexity=0.350 σ_consistency=0.667 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35789ms | 0.2 tok/s | TTFT 35789ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35789ms | €0.0123]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35380ms | 0.2 tok/s | TTFT 35380ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35380ms | €0.0123]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35670ms | 0.2 tok/s | TTFT 35670ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35670ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 24338ms | 0.3 tok/s | TTFT 24338ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 24338ms | €0.0123]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.899 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 37357ms | 0.2 tok/s | TTFT 37357ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 37357ms | €0.0123]
+[σ_combined=0.248 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.921 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35412ms | 0.2 tok/s | TTFT 35412ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35412ms | €0.0123]
+[σ_combined=0.247 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.916 | k=3]
+Run 1: σ_mean=0.2549 cache_hits=0
+Run 1 complete. Memory consolidated.
+
+=== RUN 2 / 3 ===
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30957ms | 0.2 tok/s | TTFT 30957ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30957ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35878ms | 0.2 tok/s | TTFT 35878ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35878ms | €0.0123]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.742 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35223ms | 0.2 tok/s | TTFT 35223ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35223ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.36 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 12315ms | 4.1 tok/s | TTFT 12315ms]
+[σ=0.364 | ACCEPT | FRESH | LOCAL | 4.1 tok/s | TTFT 12315ms | €0.0001]
+[σ_combined=0.445 | σ_logprob=0.364 σ_entropy=0.364 σ_perplexity=0.364 σ_consistency=0.770 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35777ms | 0.2 tok/s | TTFT 35777ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35777ms | €0.0123]
+[σ_combined=0.236 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.861 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 35464ms | 0.2 tok/s | TTFT 35464ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 35464ms | €0.0123]
+[σ_combined=0.244 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.898 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=2  τ_rethink=2

@@ -1,0 +1,50 @@
+{
+  "model": "gemma3:4b",
+  "backend": "Ollama localhost:11434 via ./cos chat",
+  "protocol": "Generative numbered-choice replay (first 25 validation rows per task). Not Eleuther loglikelihood MC2.",
+  "cos_flags": ["--multi-sigma", "--semantic-sigma", "--verbose"],
+  "runs": [
+    {
+      "dataset": "TruthfulQA MC2 (subset)",
+      "n": 25,
+      "cos_generative_acc_all": 0.76,
+      "cos_generative_acc_accepted": 0.76,
+      "cos_coverage_accept": 1.0,
+      "cos_sigma_mean_accepted": 0.033,
+      "csv": "benchmarks/lm_eval/receipts/truthfulqa_mcq_25_coschat.csv"
+    },
+    {
+      "dataset": "ARC-Challenge (subset)",
+      "n": 25,
+      "cos_generative_acc_all": 0.24,
+      "cos_generative_acc_accepted": 0.24,
+      "cos_coverage_accept": 1.0,
+      "cos_sigma_mean_accepted": 0.006,
+      "csv": "benchmarks/lm_eval/receipts/arc_challenge_25_coschat.csv"
+    },
+    {
+      "dataset": "HellaSwag (subset)",
+      "n": 25,
+      "cos_generative_acc_all": 0.24,
+      "cos_generative_acc_accepted": 0.24,
+      "cos_coverage_accept": 1.0,
+      "cos_sigma_mean_accepted": 0.0576,
+      "csv": "benchmarks/lm_eval/receipts/hellaswag_25_coschat.csv"
+    }
+  ],
+  "omega_loop": {
+    "command": "./cos-omega --turns 10",
+    "env": "COS_BITNET_SERVER_EXTERNAL=1 COS_BITNET_SERVER_PORT=11434 COS_BITNET_CHAT_MODEL=gemma3:4b",
+    "duration_s": 985,
+    "turns": 10,
+    "sigma_mean": 0.3104,
+    "log": "benchmarks/lm_eval/receipts/omega_gemma3_10turns.log"
+  },
+  "omega_evolve_campaign": {
+    "note": "Partial 3-run campaign interrupted; run 1 σ_mean=0.2549 (10 prompts, no semantic cache). See benchmarks/lm_eval/receipts/omega_evolve_campaign_gemma3.log and omega_evolve/sigma_trajectory.csv.",
+    "sigma_trajectory_partial": [
+      {"run": 1, "sigma_mean": 0.2549, "cache_hits": 0}
+    ]
+  },
+  "date_utc": "2026-04-24"
+}

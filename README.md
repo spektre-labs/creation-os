@@ -107,24 +107,29 @@ Multi-dataset σ-gate (SCI-6, commit 28b4b21, BitNet 1.6B)
 |HellaSwag    |500 |0.285   |0.285        |96.0%   |0.533 |✅      |
 |GSM8K        |1319|0.125   |0.000        |10.9%   |0.481 |❌      |
 
-**Gemma 3 4B (host): Eleuther harness + σ replay.** For leaderboard-comparable
-TruthfulQA MC2, ARC-Challenge, and HellaSwag scores, run
-`scripts/real/run_lm_eval_gemma_ollama.sh` with `lm-eval` model `local-completions`.
-That path expects OpenAI-style `/v1/completions` responses that include
-`choices[].logprobs.token_logprobs` (per-token). Many Ollama builds omit that on
-the completions route even when `logprobs` is set; use **llama.cpp `llama-server`**
-(or another OpenAI-compatible server that returns completion logprobs), or set
-`LM_EVAL_BASE_URL` to such an endpoint. After `--log_samples` JSONL exists, run
-`scripts/real/benchmark_gemma3.sh` (same item stems, generative numbered-choice
-replay through `./cos chat` with `--multi-sigma --semantic-sigma`) and commit
-the resulting `benchmarks/lm_eval/` receipts. Do not fill the table below until
-those numbers exist on the machine that ran the harness.
+**Gemma 3 4B (host): harness + σ replay.** Leaderboard-comparable Eleuther scores
+use `lm-eval run` with `local-completions` (`scripts/real/run_lm_eval_gemma_ollama.sh`).
+That expects legacy `choices[].logprobs.token_logprobs` on `/v1/completions`; stock
+Ollama often omits it. Use **llama.cpp `llama-server`**, or run
+`scripts/real/lm_eval_logprobs_proxy.py` in front of a server that returns the
+chat-style `logprobs.content[]` layout so lm-eval can parse loglikelihoods.
+For the same dataset stems without a full harness run, export rows with
+`scripts/real/export_eval_samples_jsonl.py`, then
+`scripts/real/benchmark_gemma3.py` (generative numbered-choice replay via
+`./cos chat --multi-sigma --semantic-sigma`). Receipts:
+`benchmarks/lm_eval/receipts/gemma3_4b_replay_summary.json` (subset N=25 per
+task, Ollama `gemma3:4b`, 2026-04-24). Ω-loop 10 turns log:
+`benchmarks/lm_eval/receipts/omega_gemma3_10turns.log`.
 
-|Dataset      |Model      |N   |harness acc (lm-eval)|+ σ-gate (cos replay)|coverage|σ_mean|
-|-------------|-----------|----|---------------------|---------------------|--------|------|
-|TruthfulQA MC2|gemma3:4b|817 |—                    |—                    |—       |—     |
-|ARC-Challenge|gemma3:4b |1172|—                    |—                    |—       |—     |
-|HellaSwag    |gemma3:4b |—   |—                    |—                    |—       |—     |
+|Dataset      |Model      |N  |lm-eval harness|acc (all prompts)|acc (ACCEPT only)|coverage|σ_mean (ACCEPT)|
+|-------------|-----------|---|---------------|-----------------|-----------------|--------|---------------|
+|TruthfulQA MC2|gemma3:4b|25 |—              |0.760            |0.760            |100%    |0.033          |
+|ARC-Challenge|gemma3:4b |25 |—              |0.240            |0.240            |100%    |0.006          |
+|HellaSwag    |gemma3:4b |25 |—              |0.240            |0.240            |100%    |0.058          |
+
+*Subset: first 25 validation rows per task; generative integer-pick scoring (not
+Eleuther MC2 loglikelihood mass). Harness column stays empty until a host run
+archives full `lm-eval` JSON for the same model.*
 
 σ-gate works as measurement. Bottleneck is model size, not pipeline.
 Hardware

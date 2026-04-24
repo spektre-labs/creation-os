@@ -209,3 +209,6 @@ benchmarks/forgetting/*.csv
 benchmarks/forgetting/*.txt
 benchmarks/**/*.txt
 benchmarks/**/*.csv
+# Tracked lm-eval receipts (subset runs + σ replay summaries)
+!benchmarks/lm_eval/receipts/
+!benchmarks/lm_eval/receipts/**
