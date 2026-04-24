@@ -10,7 +10,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
-for bin in cos-chat cos-benchmark cos-cost; do
+for bin in cos cos-chat cos-benchmark cos-cost; do
     [[ -x "./$bin" ]] || { echo "missing ./$bin" >&2; exit 2; }
 done
 
@@ -69,4 +69,9 @@ grep -q "Creation OS — zero-cloud sovereignty ledger" <<<"$CT" \
 grep -q "1 = 1"                                      <<<"$CT" \
     || { echo "no invariant"     >&2; exit 26; }
 
-echo "check-cos-cli: PASS (chat banner + benchmark table + cost ledger)"
+echo "  · cos life --status"
+LS="$(./cos life --status)"
+grep -q "cos life: tasks=" <<<"$LS" || { echo "no cos life status" >&2; exit 30; }
+grep -q "Autonomy mode:" <<<"$LS" || { echo "no autonomy line" >&2; exit 31; }
+
+echo "check-cos-cli: PASS (chat banner + benchmark table + cost ledger + cos life)"

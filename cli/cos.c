@@ -70,6 +70,7 @@
 #include "../src/cli/cos_demo.h"
 #include "../src/cli/cos_voice.h"
 #include "../src/cli/cos_web.h"
+#include "../src/cli/cos_life.h"
 #include "../src/sigma/learn_engine.h"
 #include "../src/sigma/autonomy.h"
 #include "../src/sigma/state_ledger.h"
@@ -3218,6 +3219,8 @@ int main(int argc, char **argv)
         return cmd_compliance(argc, argv);
     if (strcmp(argv[1], "constitution") == 0)
         return cmd_constitution(argc, argv);
+    if (strcmp(argv[1], "life") == 0)
+        return cos_life_main(argc, argv);
     if (strcmp(argv[1], "federation") == 0)
         return cmd_federation_sibling(argc, argv);
     if (strcmp(argv[1], "embody") == 0)

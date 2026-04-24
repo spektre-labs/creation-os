@@ -10089,6 +10089,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	src/sigma/energy_accounting.c src/sigma/green_score.c \
 	src/cli/cos_energy_green_cli.c \
 	src/cli/cos_demo.c \
+	src/cli/cos_life.c \
 	$(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline \
@@ -10105,6 +10106,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	    src/sigma/energy_accounting.c src/sigma/green_score.c \
 	    src/cli/cos_energy_green_cli.c \
 	    src/cli/cos_demo.c \
+	    src/cli/cos_life.c \
 	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	    $(COS_PROOF_LIB) \
 	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
