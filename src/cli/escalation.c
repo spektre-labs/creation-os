@@ -7,6 +7,10 @@
  *  Dispatch:     COS_ESCALATION_BACKEND / CREATION_OS_ESCALATION_PROVIDER
  *                ∈ {claude, openai, gpt, deepseek}; DeepSeek default when
  *                COS_DEEPSEEK_API_KEY is set and no explicit provider.
+ *  Keys:         COS_DEEPSEEK_API_KEY; Claude via COS_CLAUDE_API_KEY or
+ *                CREATION_OS_CLAUDE_API_KEY. Optional DeepSeek→Claude chain
+ *                when local σ exceeds COS_ESCALATION_CHAIN_TAU (disable with
+ *                COS_ESCALATION_CHAIN=0).
  *  Logging:      ~/.cos/distill_pairs.jsonl (one row per call)
  *
  *  This module intentionally keeps JSON handling minimal: we build
@@ -98,6 +102,17 @@ static const char *env_deepseek_key(void) {
     return getenv("CREATION_OS_DEEPSEEK_API_KEY");
 }
 
+static const char *env_claude_api_key(void) {
+    const char *k = getenv("COS_CLAUDE_API_KEY");
+    if (k != NULL && k[0] != '\0') return k;
+    return getenv("CREATION_OS_CLAUDE_API_KEY");
+}
+
+static int escalation_chain_disabled(void) {
+    const char *e = getenv("COS_ESCALATION_CHAIN");
+    return (e != NULL && e[0] == '0');
+}
+
 static void esc_set_route_tag(provider_t p) {
     switch (p) {
     case PROV_DEEPSEEK:
@@ -106,7 +121,7 @@ static void esc_set_route_tag(provider_t p) {
         break;
     case PROV_CLAUDE:
         snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
-                 "CLOUD(Claude)");
+                 "CLOUD(CLAUDE)");
         break;
     case PROV_OPENAI:
         snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
@@ -142,7 +157,7 @@ static provider_t resolve_provider(const char **name_out,
         }
         if (strcasecmp(choice, "claude") == 0
             || strcasecmp(choice, "anthropic") == 0) {
-            const char *k = getenv("CREATION_OS_CLAUDE_API_KEY");
+            const char *k = env_claude_api_key();
             if (k == NULL || k[0] == '\0') return PROV_NONE;
             *name_out  = "claude";
             *key_out   = k;
@@ -722,6 +737,11 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
     }
 
     uint64_t sent = 0, recv = 0;
+    uint64_t ds_sent = 0, ds_recv = 0;
+    uint64_t c_sent = 0, c_recv = 0;
+    int      chain_claude = 0;
+    const char *log_name  = name;
+    const char *log_model = model;
     float teacher_sigma = 1.0f;
     int rc = -1;
 
@@ -750,6 +770,11 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
         default: break;
     }
 
+    if (prov == PROV_DEEPSEEK && rc == 0) {
+        ds_sent = sent;
+        ds_recv = recv;
+    }
+
     if (prov == PROV_DEEPSEEK && rc == 0 && teacher_buf[0] != '\0') {
         float ls = cos_bitnet_sigma_for_prompt_and_output(prompt,
                                                             teacher_buf);
@@ -758,7 +783,40 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
         teacher_sigma = ls;
     }
 
-    double cost = estimate_cost(prov, sent, recv);
+    if (!escalation_chain_disabled() && prov == PROV_DEEPSEEK && rc == 0
+        && teacher_buf[0] != '\0') {
+        float tau_c = 0.40f;
+        const char *te = getenv("COS_ESCALATION_CHAIN_TAU");
+        if (te != NULL && te[0] != '\0')
+            tau_c = (float)atof(te);
+        const char *ck = env_claude_api_key();
+        const char *cm = getenv("CREATION_OS_ESCALATION_MODEL");
+        if (ck != NULL && ck[0] != '\0' && teacher_sigma > tau_c) {
+            const char *cmodel = (cm != NULL && cm[0] != '\0')
+                ? cm : "claude-3-5-haiku-20241022";
+            float       csig = 0.10f;
+            char        clb[16384];
+            int         r2 = call_claude(prompt, ck, cmodel, max_tokens, clb,
+                                         sizeof clb, &csig, &c_sent, &c_recv);
+            if (r2 == 0 && clb[0] != '\0') {
+                snprintf(teacher_buf, sizeof teacher_buf, "%s", clb);
+                teacher_sigma = csig;
+                sent            = ds_sent + c_sent;
+                recv            = ds_recv + c_recv;
+                chain_claude    = 1;
+                log_name        = "claude";
+                log_model       = cmodel;
+            }
+        }
+    }
+
+    double cost;
+    if (chain_claude) {
+        cost = estimate_cost(PROV_DEEPSEEK, ds_sent, ds_recv)
+             + estimate_cost(PROV_CLAUDE, c_sent, c_recv);
+    } else {
+        cost = estimate_cost(prov, sent, recv);
+    }
 
     if (rc != 0) {
         /* API call failed → fall back to stub so the session keeps
@@ -782,7 +840,7 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
         g_cos_escalation_ctx.student_valid
             ? g_cos_escalation_ctx.student_sigma : 1.0f,
         teacher_buf, teacher_sigma,
-        name, model, cost, sent, recv);
+        log_name, log_model, cost, sent, recv);
 
     *out_text       = teacher_buf;
     *out_sigma      = teacher_sigma;
@@ -794,9 +852,14 @@ int cos_cli_escalate_api(const char *prompt, void *ctx,
      * cost log so `cos cost --from-log` reports it alongside LOCAL
      * calls.  Provider string matches CREATION_OS_ESCALATION_PROVIDER
      * (claude / openai / deepseek). */
-    cos_cost_log_append(name, "API",
+    cos_cost_log_append(log_name, "API",
                         (int)sent, (int)recv,
                         teacher_sigma, cost);
-    esc_set_route_tag(prov);
+    if (chain_claude) {
+        snprintf(g_esc_route_receipt, sizeof g_esc_route_receipt,
+                 "CLOUD(CLAUDE)");
+    } else {
+        esc_set_route_tag(prov);
+    }
     return 0;
 }

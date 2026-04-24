@@ -10053,7 +10053,7 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 # Linked with creation_os cos_think (libsqlite3 + libcurl) for
 # `cos think --goal ...`.  NO_COLOR / TERM=dumb respected; isatty
 # auto-detect for colour.
-cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	src/cli/cos_search.c \
@@ -10069,7 +10069,7 @@ cos: cli/cos.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	$(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline \
-	    -o cos cli/cos.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    -o cos cli/cos.c src/cli/cos_voice.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	    src/cli/cos_search.c \

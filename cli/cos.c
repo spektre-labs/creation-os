@@ -68,6 +68,7 @@
 #include "../src/cli/cos_omega_cli.h"
 #include "../src/cli/cos_monitor.h"
 #include "../src/cli/cos_demo.h"
+#include "../src/cli/cos_voice.h"
 #include "../src/sigma/state_ledger.h"
 
 /* --------------------------------------------------------------------
@@ -77,6 +78,9 @@
 
 static int g_color   = 1;
 static int g_unicode = 1;
+
+/* argv[0] for cos voice re-exec path resolution */
+static const char *g_cos_exe0;
 
 static const char *C_RESET = "\033[0m";
 static const char *C_DIM   = "\033[2m";
@@ -729,7 +733,10 @@ static int cmd_mcp     (int argc, char **argv) { return exec_preferred("cos-mcp"
 static int cmd_a2a     (int argc, char **argv) { return exec_preferred("cos-a2a",      "creation_os_sigma_a2a",      argc, argv); }
 static int cmd_team    (int argc, char **argv) { return exec_preferred("cos-team",     "creation_os_sigma_team",     argc, argv); }
 static int cmd_lora    (int argc, char **argv) { return exec_preferred("cos-lora",     "creation_os_sigma_lora",     argc, argv); }
-static int cmd_voice   (int argc, char **argv) { return exec_preferred("cos-voice",    "creation_os_sigma_voice",    argc, argv); }
+static int cmd_voice(int argc, char **argv)
+{
+    return cos_voice_main(argc, argv, g_cos_exe0 != NULL ? g_cos_exe0 : "cos");
+}
 static int cmd_offline (int argc, char **argv) { return exec_preferred("cos-offline",  "creation_os_sigma_offline",  argc, argv); }
 static int cmd_watchdog(int argc, char **argv) { return exec_preferred("cos-watchdog", "creation_os_sigma_watchdog", argc, argv); }
 
@@ -2618,7 +2625,7 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "team",     C_RESET);
     printf("  %s%-12s%s  LoRA/QLoRA adapter stack: load + compose + σ-gate + export\n",
            C_BOLD, "lora",     C_RESET);
-    printf("  %s%-12s%s  Voice I/O: σ-gated ASR + TTS + barge-in guard\n",
+    printf("  %s%-12s%s  Voice: whisper.cpp STT → cos-chat → say (see scripts/real/setup_whisper.sh)\n",
            C_BOLD, "voice",    C_RESET);
     printf("  %s%-12s%s  Offline corpus ingest + σ-gated retrieval (no network required)\n",
            C_BOLD, "offline",  C_RESET);
@@ -3081,6 +3088,7 @@ int main(int argc, char **argv)
     setvbuf(stdout, NULL, _IOLBF, 0);
     setlocale(LC_NUMERIC, ""); /* so '%lld → 1,234,567 with grouping if locale supports it */
     colour_init();
+    if (argc > 0) g_cos_exe0 = argv[0];
 
     if (argc < 2 || strcmp(argv[1], "status") == 0) return cmd_status();
     if (strcmp(argv[1], "welcome") == 0 ||

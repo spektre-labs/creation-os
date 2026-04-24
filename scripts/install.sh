@@ -274,7 +274,10 @@ start_qwen_llama_server_optional() {
         --temp 0.6 \
         --top-k 20 \
         --top-p 0.95 \
-        -c 8192 \
+        -c 2048 \
+        --flash-attn \
+        -b 512 -ub 512 \
+        --cache-type-k q8_0 --cache-type-v q8_0 \
         --parallel 1 \
         -ngl 0 \
         >"$INSTALL_DIR/qwen-llama-server.log" 2>&1 &
