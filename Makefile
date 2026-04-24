@@ -6333,6 +6333,9 @@ COS_THINK_CLI_AUX = src/sigma/pipeline/engram_persist.c \
           src/sigma/engram_episodic.c \
           src/cli/escalation.c
 
+COS_LEARN_WEB_SRCS = src/sigma/learn_engine.c src/sigma/living_weights.c \
+		     src/cli/cos_web.c
+
 cos-think: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/knowledge_graph.c src/sigma/world_model.c \
 	    $(COS_EDGE_INF) src/cli/cos_think.c
@@ -6547,6 +6550,7 @@ COS_OMEGA_STATE_DEPS = src/sigma/sovereign_limits.c \
 creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
 		$(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 		src/sigma/knowledge_graph.c src/sigma/world_model.c $(COS_EDGE_INF) \
+		src/cli/cos_search.c $(COS_LEARN_WEB_SRCS) \
 		src/cli/cos_think.c $(COS_OMEGA_SUPPORT_SRCS) $(COS_OMEGA_STATE_DEPS)
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/cli \
 	    -Isrc/sigma/tools -Isrc/sigma/pipeline \
@@ -6562,6 +6566,7 @@ creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 
@@ -6571,6 +6576,7 @@ check-omega: creation_os_check_omega
 
 cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	src/sigma/knowledge_graph.c src/sigma/world_model.c $(COS_EDGE_INF) \
+	src/cli/cos_search.c $(COS_LEARN_WEB_SRCS) \
 	src/cli/cos_think.c $(COS_OMEGA_SUPPORT_SRCS) $(COS_OMEGA_STATE_DEPS) \
 	include/cos_version.h
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/cli \
@@ -6586,6 +6592,7 @@ cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 
@@ -10089,6 +10096,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c src/cli/cos_monitor.c \
+	    $(COS_LEARN_WEB_SRCS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 
 cos-demo: cos

@@ -33,6 +33,8 @@
 #include "sovereign_limits.h"
 #include "state_ledger.h"
 #include "world_model.h"
+#include "learn_engine.h"
+#include "living_weights.h"
 
 #include "../cli/cos_think.h"
 
@@ -78,6 +80,9 @@ static float                         g_omega_prev_co2_g;
 static int                           g_omega_sigma_streak;
 static int                           g_omega_cache_info_done;
 
+static struct cos_living_weights g_lw;
+static int64_t                   g_omega_last_learn_ms;
+
 static int64_t omega_now_ms(void)
 {
 #if defined(CLOCK_REALTIME)
@@ -118,6 +123,9 @@ static void omega_cfg_defaults(struct cos_omega_config *c)
     c->enable_physical        = 0;
     c->enable_consciousness   = 1;
     c->simulation_mode        = 0;
+    c->enable_learning        = 0;
+    c->adapt_interval         = 20;
+    c->idle_learn_cooldown_ms = 60000LL;
 }
 
 static int omega_home_subdir(char *buf, size_t cap, const char *leaf)
@@ -343,6 +351,29 @@ static void omega_consolidate_turn(struct cos_omega_state *st)
     }
 }
 
+static void omega_try_idle_learn(struct cos_omega_state *state)
+{
+    int64_t                 now = omega_now_ms();
+    struct cos_learn_task   tasks[4];
+    int                     nt, k;
+
+    (void)state;
+    if (!g_cfg.enable_learning || !g_cfg.enable_search)
+        return;
+    if ((now - g_omega_last_learn_ms) < g_cfg.idle_learn_cooldown_ms)
+        return;
+    g_omega_last_learn_ms = now;
+    if (cos_learn_identify_gaps(tasks, 3, &nt) != 0)
+        return;
+    for (k = 0; k < nt && k < 3; ++k) {
+        struct cos_learn_result res;
+        memset(&res, 0, sizeof res);
+        if (cos_learn_research(&tasks[k], &res) != 0)
+            continue;
+        (void)cos_learn_store(&res);
+    }
+}
+
 int cos_omega_init(const struct cos_omega_config *config,
                    struct cos_omega_state          *state)
 {
@@ -450,6 +481,32 @@ int cos_omega_init(const struct cos_omega_config *config,
                 setvbuf(g_omega_events_fp, NULL, _IONBF, 0);
         }
     }
+
+    g_omega_last_learn_ms = omega_now_ms();
+    if (getenv("COS_OMEGA_ENABLE_LEARNING") != NULL
+        && getenv("COS_OMEGA_ENABLE_LEARNING")[0] == '1')
+        g_cfg.enable_learning = 1;
+    {
+        const char *ai = getenv("COS_OMEGA_ADAPT_INTERVAL");
+        if (ai != NULL && ai[0] != '\0') {
+            int v = atoi(ai);
+            if (v > 0)
+                g_cfg.adapt_interval = v;
+        }
+    }
+    {
+        const char *ic = getenv("COS_OMEGA_IDLE_LEARN_MS");
+        if (ic != NULL && ic[0] != '\0') {
+            long long v = atoll(ic);
+            if (v > 1000LL)
+                g_cfg.idle_learn_cooldown_ms = v;
+        }
+    }
+    if (cos_living_weights_init(&g_lw) != 0)
+        omega_skip("living_weights_init");
+    if (cos_learn_init() != 0)
+        fprintf(stderr,
+                "[omega] learn_engine: learning_log.db unavailable (optional)\n");
 
     g_inited                        = 1;
     return 0;
@@ -761,6 +818,28 @@ common_tail:
 
     omega_consolidate_turn(state);
 
+    omega_try_idle_learn(state);
+
+    if (g_cfg.enable_learning && g_cfg.adapt_interval > 0 && g_cfg.enable_ttt
+        && state->turn > 0 && state->turn % g_cfg.adapt_interval == 0) {
+        struct cos_engram_episode eps[50];
+        int                       ne = 0;
+        if (cos_engram_episode_fetch_recent(eps, 50, &ne) == 0 && ne > 0) {
+            if (cos_living_weights_adapt(&g_lw, eps, ne) == 0) {
+                if (cos_living_weights_test_forgetting(&g_lw)) {
+                    cos_living_weights_revert(&g_lw);
+                    fprintf(stderr,
+                            "[omega] weight update reverted — forgetting detected\n");
+                } else if (cos_living_weights_apply(&g_lw) == 0) {
+                    fprintf(stderr,
+                            "[omega] weights adapted — σ before=%.3f after=%.3f\n",
+                            (double)g_lw.sigma_before_update,
+                            (double)g_lw.sigma_after_update);
+                }
+            }
+        }
+    }
+
     if (g_cfg.human_review_interval > 0
         && state->turn % g_cfg.human_review_interval == 0) {
         cos_mission_pause(&g_mission, "scheduled human review");
@@ -911,6 +990,7 @@ int cos_omega_finish_session(struct cos_omega_state *state)
         fclose(g_omega_events_fp);
         g_omega_events_fp = NULL;
     }
+    cos_learn_shutdown();
     return 0;
 }
 
@@ -1064,6 +1144,10 @@ int cos_omega_self_test(void)
     if (!rep || !strstr(rep, "Ω-Loop"))
         return 4;
     free(rep);
+    if (cos_learn_engine_self_test() != 0)
+        return 5;
+    if (cos_living_weights_self_test() != 0)
+        return 6;
 #endif
     return 0;
 }

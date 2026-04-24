@@ -49,6 +49,25 @@ void cos_engram_sqlite_shutdown(void);
 
 int cos_engram_episodic_self_test(void);
 
+/** Top semantic rows by descending σ_mean (highest uncertainty first). */
+int cos_engram_semantic_weakest(uint64_t *pattern_hashes, float *sigma_means,
+                                int max, int *n_out);
+
+/** Recent episodes, newest first (prompt text not stored; hash only). */
+int cos_engram_episode_fetch_recent(struct cos_engram_episode *eps, int max,
+                                    int *n_out);
+
+/** Random semantic pattern hashes (for anti-forgetting probes). */
+int cos_engram_semantic_sample_hashes(uint64_t *pattern_hashes, int max,
+                                      int *n_out);
+
+/**
+ * Merge web-learned evidence into semantic row. verified=1 applies a
+ * stronger σ pull and reliability bump.
+ */
+int cos_engram_semantic_merge_learn(uint64_t pattern_hash, float evidence_sigma,
+                                    int verified);
+
 #ifdef __cplusplus
 }
 #endif

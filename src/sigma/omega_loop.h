@@ -39,6 +39,11 @@ struct cos_omega_config {
     int enable_physical;
     int enable_consciousness;
     int simulation_mode;
+
+    /** Idle web learning (cos learn) — spaced by idle_learn_cooldown_ms. */
+    int       enable_learning;
+    int       adapt_interval; /* turns between living-weight adaptation */
+    int64_t   idle_learn_cooldown_ms;
 };
 
 /** Per-turn fields for JSONL (not all duplicated in cos_omega_state). */

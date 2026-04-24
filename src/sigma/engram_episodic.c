@@ -320,6 +320,135 @@ float cos_engram_get_local_tau(uint64_t domain_hash) {
     return -1.f;
 }
 
+int cos_engram_semantic_weakest(uint64_t *pattern_hashes, float *sigma_means,
+                                int max, int *n_out) {
+    if (!pattern_hashes || !sigma_means || max <= 0 || !n_out)
+        return -1;
+    *n_out = 0;
+    if (ensure_open() != 0)
+        return -1;
+    sqlite3_stmt *st = NULL;
+    const char *sql =
+        "SELECT pattern_hash, sigma_mean FROM semantic "
+        "ORDER BY sigma_mean DESC LIMIT ?";
+    if (sqlite3_prepare_v2(db_sem, sql, -1, &st, NULL) != SQLITE_OK)
+        return -1;
+    sqlite3_bind_int(st, 1, max);
+    while (sqlite3_step(st) == SQLITE_ROW && *n_out < max) {
+        pattern_hashes[*n_out] =
+            (uint64_t)sqlite3_column_int64(st, 0);
+        sigma_means[*n_out] = (float)sqlite3_column_double(st, 1);
+        (*n_out)++;
+    }
+    sqlite3_finalize(st);
+    return 0;
+}
+
+int cos_engram_episode_fetch_recent(struct cos_engram_episode *eps, int max,
+                                    int *n_out) {
+    if (!eps || max <= 0 || !n_out)
+        return -1;
+    *n_out = 0;
+    if (ensure_open() != 0)
+        return -1;
+    sqlite3_stmt *st = NULL;
+    const char *sql =
+        "SELECT ts,prompt_hash,sigma,action,was_correct,attribution,"
+        "ttt_applied,turn_timeout FROM episode ORDER BY id DESC LIMIT ?";
+    if (sqlite3_prepare_v2(db_ep, sql, -1, &st, NULL) != SQLITE_OK)
+        return -1;
+    sqlite3_bind_int(st, 1, max);
+    while (sqlite3_step(st) == SQLITE_ROW && *n_out < max) {
+        struct cos_engram_episode *e = &eps[*n_out];
+        e->timestamp_ms   = (int64_t)sqlite3_column_int64(st, 0);
+        e->prompt_hash    = (uint64_t)sqlite3_column_int64(st, 1);
+        e->sigma_combined = (float)sqlite3_column_double(st, 2);
+        e->action         = sqlite3_column_int(st, 3);
+        e->was_correct    = sqlite3_column_int(st, 4);
+        e->attribution    = (enum cos_error_source)sqlite3_column_int(st, 5);
+        e->ttt_applied    = sqlite3_column_int(st, 6);
+        e->turn_timeout   = sqlite3_column_int(st, 7);
+        (*n_out)++;
+    }
+    sqlite3_finalize(st);
+    return 0;
+}
+
+int cos_engram_semantic_sample_hashes(uint64_t *pattern_hashes, int max,
+                                      int *n_out) {
+    if (!pattern_hashes || max <= 0 || !n_out)
+        return -1;
+    *n_out = 0;
+    if (ensure_open() != 0)
+        return -1;
+    sqlite3_stmt *st = NULL;
+    const char *sql =
+        "SELECT pattern_hash FROM semantic ORDER BY RANDOM() LIMIT ?";
+    if (sqlite3_prepare_v2(db_sem, sql, -1, &st, NULL) != SQLITE_OK)
+        return -1;
+    sqlite3_bind_int(st, 1, max);
+    while (sqlite3_step(st) == SQLITE_ROW && *n_out < max) {
+        pattern_hashes[*n_out] =
+            (uint64_t)sqlite3_column_int64(st, 0);
+        (*n_out)++;
+    }
+    sqlite3_finalize(st);
+    return 0;
+}
+
+int cos_engram_semantic_merge_learn(uint64_t pattern_hash, float evidence_sigma,
+                                    int verified) {
+    struct cos_engram_semantic *old;
+    float                         sm;
+    int                           ec;
+    float                         rel, tau;
+    sqlite3_stmt                 *up = NULL;
+
+    if (ensure_open() != 0)
+        return -1;
+    if (evidence_sigma < 0.f)
+        evidence_sigma = 0.f;
+    if (evidence_sigma > 1.f)
+        evidence_sigma = 1.f;
+
+    old = cos_engram_query_semantic(pattern_hash);
+    if (old) {
+        sm = verified ? (old->sigma_mean * 0.65f + evidence_sigma * 0.35f)
+                      : (old->sigma_mean * 0.92f + evidence_sigma * 0.08f);
+        ec  = old->encounter_count + 1;
+        rel = verified ? old->reliability + 0.08f : old->reliability * 0.995f;
+        tau = old->tau_local;
+        free(old);
+    } else {
+        sm  = evidence_sigma;
+        ec  = 1;
+        rel = verified ? 0.75f : 0.45f;
+        tau = 0.65f;
+    }
+    if (sm < 0.02f)
+        sm = 0.02f;
+    if (sm > 0.98f)
+        sm = 0.98f;
+    if (rel > 1.f)
+        rel = 1.f;
+    if (rel < 0.01f)
+        rel = 0.01f;
+
+    const char *isql =
+        "INSERT OR REPLACE INTO semantic(pattern_hash,sigma_mean,"
+        "encounter_count,reliability,tau_local) VALUES(?,?,?,?,?)";
+    if (sqlite3_prepare_v2(db_sem, isql, -1, &up, NULL) != SQLITE_OK)
+        return -1;
+    sqlite3_bind_int64(up, 1, (sqlite3_int64)pattern_hash);
+    sqlite3_bind_double(up, 2, (double)sm);
+    sqlite3_bind_int(up, 3, ec);
+    sqlite3_bind_double(up, 4, (double)rel);
+    sqlite3_bind_double(up, 5, (double)tau);
+    int rc = sqlite3_step(up);
+    sqlite3_finalize(up);
+    return rc == SQLITE_DONE ? 0 : -1;
+}
+
 int cos_engram_forget(int64_t older_than_ms, float reliability_below) {
     if (ensure_open() != 0) return -1;
     sqlite3_stmt *st = NULL;
@@ -411,6 +540,32 @@ int cos_engram_episodic_self_test(void) {
     if (!(tl > 0.f && tl <= 1.f)) {
         cos_engram_sqlite_shutdown();
         return 7;
+    }
+
+    {
+        uint64_t wh[4];
+        float    ws[4];
+        int      nw = 0;
+        if (cos_engram_semantic_weakest(wh, ws, 4, &nw) != 0 || nw < 1) {
+            cos_engram_sqlite_shutdown();
+            return 20;
+        }
+        struct cos_engram_episode erec[8];
+        int ne = 0;
+        if (cos_engram_episode_fetch_recent(erec, 8, &ne) != 0 || ne < 1) {
+            cos_engram_sqlite_shutdown();
+            return 21;
+        }
+        if (cos_engram_semantic_merge_learn(12345ULL, 0.25f, 1) != 0) {
+            cos_engram_sqlite_shutdown();
+            return 22;
+        }
+        uint64_t samp[5];
+        int      ns = 0;
+        if (cos_engram_semantic_sample_hashes(samp, 5, &ns) != 0 || ns < 1) {
+            cos_engram_sqlite_shutdown();
+            return 23;
+        }
     }
 
     if (cos_engram_forget(wall_ms() + 1000000, 0.99f) != 0) {
