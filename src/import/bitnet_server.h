@@ -54,6 +54,10 @@
  *                                default for COS_OLLAMA_MODEL if unset.
  *    COS_BITNET_IO_TIMEOUT_S  recv/send timeout seconds for inference HTTP
  *                                (default 60; clamped 30..600).
+ *    COS_BITNET_CHAT_CACHE_PROMPT  set to "1" to append `"cache_prompt":true`
+ *                                to /v1/chat/completions and streaming
+ *                                /completion bodies (off by default so
+ *                                Ollama and other peers are not tripped).
  *
  *    COS_INFERENCE_BACKEND    "llama-server" (default) or "ollama" — when
  *                             ollama: POST http://host:port/api/chat (local

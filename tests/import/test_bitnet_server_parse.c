@@ -168,6 +168,7 @@ int main(void) {
      * (not completion_probabilities). */
     const float s1 = 1.0f - (float)exp(-0.1);
     const float s2 = 1.0f - (float)exp(-1.0);
+    const float seq6 = 1.0f - (float)exp(-0.55); /* mean_lp = (-0.1 + -1)/2 */
     char json6[1536];
     int j6 = snprintf(json6, sizeof(json6),
                       "{\"choices\":[{\"finish_reason\":\"stop\","
@@ -179,9 +180,9 @@ int main(void) {
     if (j6 < 0 || (size_t)j6 >= sizeof(json6))
         return 99;
     fails += assert_parse(
-        "case6: logprobs.content σ (reasoning_text → σ=mean)",
+        "case6: logprobs.content σ (reasoning → σ=1−exp(mean_lp))",
         json6,
-        (s1 + s2) * 0.5f,
+        seq6,
         (s1 + s2) * 0.5f,
         "xy",
         2);
@@ -200,8 +201,38 @@ int main(void) {
                           "hi",
                           2);
 
+    /* Case 8: Ollama-style `reasoning` key (not reasoning_content). */
+    const float seq8 = seq6;
+    char json8[1536];
+    int j8 = snprintf(json8, sizeof(json8),
+                      "{\"choices\":[{\"finish_reason\":\"stop\","
+                      "\"message\":{\"content\":\"\",\"reasoning\":\"xy\"}"
+                      ",\"logprobs\":{\"content\":["
+                      "{\"logprob\":%.4f},{\"logprob\":%.4f}]}],"
+                      "\"usage\":{\"completion_tokens\":2}}"
+                      ,(double)-0.1, (double)-1.0);
+    if (j8 < 0 || (size_t)j8 >= sizeof(json8))
+        return 98;
+    fails += assert_parse(
+        "case8: logprobs + Ollama reasoning key → σ=1−exp(mean_lp)",
+        json8,
+        seq8,
+        (s1 + s2) * 0.5f,
+        "xy",
+        2);
+
+    /* Case 9: Ollama native /api/chat top-level logprobs array. */
+    const float s9 = 1.0f - (float)exp(-0.69);
+    const char *json9 =
+        "{\"message\":{\"role\":\"assistant\",\"content\":\"Z\"},"
+        "\"logprobs\":["
+        "  {\"token\":\"Z\",\"logprob\":-0.69}"
+        "]}";
+    fails += assert_parse("case9: Ollama native logprobs[]", json9,
+                          s9, s9, "Z", 1);
+
     if (fails == 0) {
-        fprintf(stdout, "OK: all 7 cases passed\n");
+        fprintf(stdout, "OK: all 9 cases passed\n");
         return 0;
     }
     fprintf(stderr, "FAIL: %d assertion(s)\n", fails);

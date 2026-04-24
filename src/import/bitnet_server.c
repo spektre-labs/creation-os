@@ -663,6 +663,8 @@ static int parse_completion_response(const char *body, size_t body_len,
     const char *p;
     int          text_from_reasoning     = 0;
     int          sigmas_from_chat_logprobs = 0;
+    double       sum_selected_logprob = 0.0;
+    int          have_sum_lp            = 0;
 
     /* content: /v1/chat/completions nests it under
      * choices[0].message.content; /completion puts it at the top.
@@ -686,6 +688,17 @@ static int parse_completion_response(const char *body, size_t body_len,
      * place text in `reasoning_content` (llama.cpp OpenAI shape). */
     if (g_bns.text_buf[0] == '\0') {
         p = json_find_key(scan_from, end, "reasoning_content");
+        if (p != NULL && *p == '"') {
+            size_t n;
+            if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
+                out->text = g_bns.text_buf;
+                text_from_reasoning = 1;
+            }
+        }
+    }
+    /* Ollama OpenAI shape uses `reasoning` instead of `reasoning_content`. */
+    if (g_bns.text_buf[0] == '\0') {
+        p = json_find_key(scan_from, end, "reasoning");
         if (p != NULL && *p == '"') {
             size_t n;
             if (json_parse_string(&p, end, g_bns.text_buf, BNS_TEXT_CAP, &n) == 0) {
@@ -783,6 +796,10 @@ static int parse_completion_response(const char *body, size_t body_len,
                     const char *pr = json_find_key(fo_start, fo_end, "prob");
                     if (pr != NULL) {
                         chosen_prob = (float)strtod(pr, NULL);
+                        if (chosen_prob > 1e-12f && chosen_prob <= 1.0f) {
+                            sum_selected_logprob += log((double)chosen_prob);
+                            have_sum_lp++;
+                        }
                     } else {
                         /* post_sampling_probs=false case: logprob */
                         const char *lp = json_find_key(fo_start, fo_end, "logprob");
@@ -793,6 +810,8 @@ static int parse_completion_response(const char *body, size_t body_len,
                             /* fallback if still invalid */
                             if (chosen_prob < 0.0f) chosen_prob = 0.0f;
                             if (chosen_prob > 1.0f) chosen_prob = 1.0f;
+                            sum_selected_logprob += lg;
+                            have_sum_lp++;
                         }
                     }
                 }
@@ -876,6 +895,79 @@ static int parse_completion_response(const char *body, size_t body_len,
                             chosen_prob = (float)exp(lg);
                             if (chosen_prob < 0.0f) chosen_prob = 0.0f;
                             if (chosen_prob > 1.0f) chosen_prob = 1.0f;
+                            sum_selected_logprob += lg;
+                            have_sum_lp++;
+                        }
+                    }
+                    float sigma_tok = 1.0f - chosen_prob;
+                    if (sigma_tok > max_sigma) max_sigma = sigma_tok;
+                    sum_sigma += (double)sigma_tok;
+                    n_tokens++;
+                    if (g_bns_last_tok_n < COS_BITNET_SERVER_MAX_TOKENS)
+                        g_bns_last_tok_sigma[g_bns_last_tok_n++] = sigma_tok;
+
+                    q = obj_end;
+                    json_skip_ws(&q, end);
+                    if (q < end && *q == ',') q++;
+                }
+            }
+        }
+    }
+
+    /* Ollama native /api/chat: "logprobs":[{ "token":"...", "logprob":-0.5 },…]
+     * (array of objects; no choices[].logprobs.content wrapper). */
+    if (n_tokens == 0) {
+        p = json_find_key(body, end, "logprobs");
+        if (p != NULL) {
+            const char *t0 = p;
+            json_skip_ws(&t0, end);
+            if (t0 < end && *t0 == '[') {
+                const char *q = t0 + 1;
+                sigmas_from_chat_logprobs = 1;
+                while (q < end) {
+                    if (!json_skip_ws(&q, end)) break;
+                    if (*q == ']') break;
+                    if (*q != '{') break;
+                    const char *obj_start = q;
+                    int depth = 0;
+                    const char *obj_end = q;
+                    while (obj_end < end) {
+                        if (*obj_end == '"') {
+                            obj_end++;
+                            while (obj_end < end && *obj_end != '"') {
+                                if (*obj_end == '\\'
+                                    && obj_end + 1 < end) obj_end += 2;
+                                else obj_end++;
+                            }
+                            if (obj_end >= end) break;
+                            obj_end++;
+                            continue;
+                        }
+                        if (*obj_end == '{') depth++;
+                        if (*obj_end == '}') {
+                            depth--;
+                            obj_end++;
+                            if (depth == 0) break;
+                            continue;
+                        }
+                        obj_end++;
+                    }
+                    if (obj_end > end) obj_end = end;
+
+                    float chosen_prob = 1.0f;
+                    const char *lpr =
+                        json_find_key(obj_start, obj_end, "logprob");
+                    if (lpr != NULL) {
+                        while (lpr < obj_end && (*lpr == ' ' || *lpr == '\t'))
+                            lpr++;
+                        if (lpr < obj_end
+                            && (*lpr == '-' || (*lpr >= '0' && *lpr <= '9'))) {
+                            double lg = strtod(lpr, NULL);
+                            chosen_prob = (float)exp(lg);
+                            if (chosen_prob < 0.0f) chosen_prob = 0.0f;
+                            if (chosen_prob > 1.0f) chosen_prob = 1.0f;
+                            sum_selected_logprob += lg;
+                            have_sum_lp++;
                         }
                     }
                     float sigma_tok = 1.0f - chosen_prob;
@@ -898,16 +990,26 @@ static int parse_completion_response(const char *body, size_t body_len,
         out->mean_sigma = 1.0f;
     } else {
         float mean_s = (float)(sum_sigma / (double)n_tokens);
-        /* Thinking streams: max σ over raw logprob slots spikes on template
-         * / metadata tokens while reasoning_content reads coherently.  Mean
-         * tracks usable uncertainty for the σ-gate without touching gate
-         * logic itself. */
-        if (text_from_reasoning && sigmas_from_chat_logprobs) {
-            out->sigma = mean_s;
-        } else {
-            out->sigma = max_sigma;
+        /* Sequence-level log score (Ollama / thinking models): average
+         * token log-probability drives a smooth σ that separates easy
+         * prompts (mean_lp ≈ 0 → σ≈0) from hard ones (mean_lp ≪ 0 → σ→1).
+         * Per-token max is kept for non-reasoning chat completions. */
+        float sigma_seq = 0.0f;
+        if (have_sum_lp > 0) {
+            double mlp = sum_selected_logprob / (double)have_sum_lp;
+            if (mlp < -80.0) mlp = -80.0;
+            if (mlp > 0.0) mlp = 0.0;
+            sigma_seq = 1.0f - (float)exp(mlp);
+            if (sigma_seq < 0.0f) sigma_seq = 0.0f;
+            if (sigma_seq > 1.0f) sigma_seq = 1.0f;
         }
-        out->mean_sigma = mean_s;
+        if (text_from_reasoning && sigmas_from_chat_logprobs && have_sum_lp > 0) {
+            out->sigma      = sigma_seq;
+            out->mean_sigma = mean_s;
+        } else {
+            out->sigma      = max_sigma;
+            out->mean_sigma = mean_s;
+        }
         if (out->token_count == 0) out->token_count = n_tokens;
     }
     return 0;
@@ -1266,6 +1368,11 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     if (cos_bitnet_server_ensure() != 0)
         return -2;
 
+    int top_lp = (params && params->n_probs > 0) ? params->n_probs
+                                                 : g_bns.n_probs_default;
+    if (top_lp < 1) top_lp = 1;
+    if (top_lp > 20) top_lp = 20;
+
     int         n_predict = params && params->n_predict > 0 ? params->n_predict
                                                             : g_bns.n_predict_default;
     float       temperature = params ? params->temperature : 0.0f;
@@ -1314,7 +1421,9 @@ static int bns_ollama_chat_complete(const char                       *prompt,
         w += sw;
     }
     n = snprintf(jb + w, JSON_CAP - w,
-                  "}],\"options\":{\"num_predict\":%d", n_predict);
+                  "}],\"logprobs\":true,\"top_logprobs\":%d,"
+                  "\"options\":{\"num_predict\":%d",
+                  top_lp, n_predict);
     if (n < 0 || (size_t)n >= JSON_CAP - w) return -3;
     w += (size_t)n;
 
@@ -1461,9 +1570,16 @@ int cos_bitnet_server_complete(const char                       *prompt,
     }
     n = snprintf(jb + w, JSON_CAP - w,
                  "}],\"max_tokens\":%d,\"logprobs\":true,"
-                 "\"top_logprobs\":%d,\"cache_prompt\":true",
+                 "\"top_logprobs\":%d",
                  n_predict, n_probs);
     if (n < 0) return -3; w += (size_t)n;
+    {
+        const char *cp = getenv("COS_BITNET_CHAT_CACHE_PROMPT");
+        if (cp != NULL && strcmp(cp, "1") == 0) {
+            n = snprintf(jb + w, JSON_CAP - w, ",\"cache_prompt\":true");
+            if (n < 0) return -3; w += (size_t)n;
+        }
+    }
 
     if (temperature > 0.0f) {
         n = snprintf(jb + w, JSON_CAP - w, ",\"temperature\":%.3f",
@@ -1671,10 +1787,16 @@ static size_t build_stream_request_json(char *dst, size_t cap,
     }
 
     n = snprintf(dst + w, cap - w,
-                 ",\"n_predict\":%d,\"n_probs\":%d,\"stream\":true,"
-                 "\"cache_prompt\":true",
+                 ",\"n_predict\":%d,\"n_probs\":%d,\"stream\":true",
                  n_predict, n_probs);
     if (n < 0) return 0; w += (size_t)n;
+    {
+        const char *cp = getenv("COS_BITNET_CHAT_CACHE_PROMPT");
+        if (cp != NULL && strcmp(cp, "1") == 0) {
+            n = snprintf(dst + w, cap - w, ",\"cache_prompt\":true");
+            if (n < 0) return 0; w += (size_t)n;
+        }
+    }
 
     if (temperature > 0.0f) {
         n = snprintf(dst + w, cap - w, ",\"temperature\":%.3f",
