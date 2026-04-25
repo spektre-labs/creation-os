@@ -37,10 +37,36 @@ static int64_t wall_ms(void) {
 static sqlite3 *db_ep = NULL;
 static sqlite3 *db_sem = NULL;
 
+/** ASCII normalize before FNV: lowercase, trim, collapse whitespace. */
+static void cos_ep_ascii_normalize(const char *in, char *out, size_t cap) {
+    if (!out || cap < 2) return;
+    out[0] = '\0';
+    if (!in) return;
+    size_t j = 0;
+    int    in_space = 0;
+    for (size_t i = 0; in[i] != '\0' && j + 1 < cap; ++i) {
+        unsigned char c = (unsigned char)in[i];
+        if (c >= 'A' && c <= 'Z') c = (unsigned char)(c + 32u);
+        if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+            if (j > 0 && !in_space) {
+                out[j++] = ' ';
+                in_space = 1;
+            }
+        } else {
+            out[j++] = (char)c;
+            in_space = 0;
+        }
+    }
+    while (j > 0 && out[j - 1] == ' ') j--;
+    out[j] = '\0';
+}
+
 uint64_t cos_engram_prompt_hash(const char *prompt_utf8) {
-    const unsigned char *s = (const unsigned char *)prompt_utf8;
-    uint64_t h = 14695981039346656037ULL;
-    while (s && *s) {
+    char           norm[2048];
+    cos_ep_ascii_normalize(prompt_utf8, norm, sizeof norm);
+    const unsigned char *s = (const unsigned char *)norm;
+    uint64_t             h = 14695981039346656037ULL;
+    while (*s) {
         h ^= (uint64_t)*s++;
         h *= 1099511628211ULL;
     }
@@ -498,6 +524,11 @@ int cos_engram_episodic_self_test(void) {
 
     if (cos_engram_prompt_hash("abc") != cos_engram_prompt_hash("abc"))
         return 1;
+    if (cos_engram_prompt_hash("AbC") != cos_engram_prompt_hash("abc"))
+        return 30;
+    if (cos_engram_prompt_hash("  hello   world  ")
+        != cos_engram_prompt_hash("hello world"))
+        return 31;
     if (cos_engram_prompt_hash("x") == cos_engram_prompt_hash("y"))
         return 2;
 

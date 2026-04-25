@@ -180,6 +180,15 @@ float cos_multi_sigma_consistency(const char *const *regen_texts, int k) {
     return clamp01(1.0f - mean_sim);
 }
 
+float cos_text_jaccard(const char *a, const char *b) {
+    const char *pair[2] = { a, b };
+    if (!a || !b) return 0.0f;
+    float cs = cos_multi_sigma_consistency(pair, 2);
+    if (cs < 0.0f) return 0.0f;
+    /* cos_multi_sigma_consistency = 1 − Jaccard for one pair. */
+    return clamp01(1.0f - cs);
+}
+
 /* ========================================================================
  * Ensemble.
  * ======================================================================== */

@@ -32,6 +32,18 @@ Wall time for the chained block (sequential): **~93 s** end-to-end for the list 
 | `make check-green-score` | **PASS** |
 | `make merge-gate` | **PASS** |
 
+### Master σ fix (2026-04-25 — code)
+
+| Item | Change |
+|------|--------|
+| `cos_chat.c` | With **HTTP** + **`--multi-sigma`** (and **`--fast` off**): three `cos_bitnet_server_complete` calls at **T = 0.3, 0.7, 1.0** on the user prompt; shadow **σ_combined = 0.7·σ_consistency + 0.3·σ_logprob**, where **σ_logprob** comes from the **T = 0.3** completion and **σ_consistency** is the existing word-bag **1 − mean pairwise Jaccard** over the three texts. **`--fast`**: skip the triple (cheaper logprob-oriented shadow). |
+| `multi_sigma.h/c` | **`cos_text_jaccard(a, b)`** — public pairwise Jaccard similarity (same tokenizer as σ_consistency). |
+| `engram.c`, `engram_episodic.c` | **Normalize** prompts before FNV (ASCII lowercase, trim, collapse whitespace) for **`cos_sigma_engram_hash`** and **`cos_engram_prompt_hash`**. |
+| `forgetting_benchmark.sh` | σ extraction uses **`COS_FORGET_CHAT_OUT`** + Python (no stdin/heredoc bug); matches **`σ_combined=`** / **`sigma_combined=`** / **`[σ=`**. |
+| Gates after change | **`make merge-gate`: PASS** (~**46 s**) on **`~/Projects/creation-os-kernel`**. |
+
+Re-run **`scripts/real/sigma_separation_pipeline_coschat.sh`**, **`omega_evolve_final.sh`**, and **`forgetting_benchmark.sh`** with Ollama to refresh CSVs; older numeric blocks in this file are **pre–semantic-primary** unless noted.
+
 Smoke from the same tree (no `/tmp` wrapper needed):
 
 - `./cos help` — **OK** (instant).

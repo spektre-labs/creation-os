@@ -7,12 +7,38 @@
 #include <stdio.h>
 #include <string.h>
 
+/** Lowercase ASCII, trim, collapse runs of whitespace — stable prompt key. */
+static void cos_engram_ascii_normalize(const char *in, char *out, size_t cap) {
+    if (!out || cap < 2) return;
+    out[0] = '\0';
+    if (!in) return;
+    size_t j = 0;
+    int    in_space = 0;
+    for (size_t i = 0; in[i] != '\0' && j + 1 < cap; ++i) {
+        unsigned char c = (unsigned char)in[i];
+        if (c >= 'A' && c <= 'Z') c = (unsigned char)(c + 32u);
+        if (c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+            if (j > 0 && !in_space) {
+                out[j++] = ' ';
+                in_space = 1;
+            }
+        } else {
+            out[j++] = (char)c;
+            in_space = 0;
+        }
+    }
+    while (j > 0 && out[j - 1] == ' ') j--;
+    out[j] = '\0';
+}
+
 uint64_t cos_sigma_engram_hash(const char *s) {
     const uint64_t FNV_OFFSET = 1469598103934665603ULL;
     const uint64_t FNV_PRIME  = 1099511628211ULL;
-    uint64_t h = FNV_OFFSET;
+    char           norm[2048];
+    uint64_t       h = FNV_OFFSET;
     if (!s) return 1ULL;
-    for (const unsigned char *p = (const unsigned char *)s; *p; ++p) {
+    cos_engram_ascii_normalize(s, norm, sizeof norm);
+    for (const unsigned char *p = (const unsigned char *)norm; *p; ++p) {
         h ^= (uint64_t)(*p);
         h *= FNV_PRIME;
     }
@@ -243,6 +269,10 @@ static int check_hash_never_zero(void) {
     /* Same input → same hash. */
     if (cos_sigma_engram_hash("hello")
       != cos_sigma_engram_hash("hello")) return 13;
+    if (cos_sigma_engram_hash("HELLO")
+      != cos_sigma_engram_hash("hello")) return 15;
+    if (cos_sigma_engram_hash("  What  is  2+2? ")
+      != cos_sigma_engram_hash("what is 2+2?")) return 16;
     /* Different input → different hash (probabilistic, but these two
      * are known-distinct). */
     if (cos_sigma_engram_hash("abc")
