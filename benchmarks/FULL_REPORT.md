@@ -55,6 +55,27 @@ Full hardening log (local): `/tmp/hardening_projects_2026-04-25.log` (if preserv
 
 ---
 
+## Distribution (Homebrew tap + install script)
+
+**In-tree artifacts (no new benchmark numbers in this subsection):**
+
+| Path | Purpose |
+|------|---------|
+| `packaging/homebrew-cos/Formula/creation-os.rb` | Template for **[spektre-labs/homebrew-cos](https://github.com/spektre-labs/homebrew-cos)** — replace **`sha256 "PLACEHOLDER"`** after the **`v3.3.0`** source archive exists on GitHub. |
+| `packaging/homebrew-cos/README.md` | Maintainer steps: copy formula into the tap repo, audit, publish. |
+| `scripts/install_cos.sh` | **macOS:** `brew tap spektre-labs/cos` + `brew install creation-os`. **Linux:** shallow clone `spektre-labs/creation-os` (ref **`CREATION_OS_REF`**, default **`main`**), `make cos cos-demo`, copy into **`CREATION_OS_PREFIX`** (default **`/usr/local/bin`**). |
+| `scripts/release.sh` | Runs **`make check-agi`**, **`make merge-gate`**, **`./cos demo --batch`**, then creates an **annotated git tag** locally; **does not `git push`** — push the tag after review. Optional escape hatch: **`CREATION_OS_RELEASE_SKIP_MERGE_GATE=1`** (not for release hygiene). |
+
+**One-liner (raw GitHub):**
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scripts/install_cos.sh | bash
+```
+
+**Tag `v3.3.0`:** create only after **`make merge-gate`** PASS on the commit you intend to ship, then **`bash scripts/release.sh v3.3.0`** and **`git push origin v3.3.0`**. Prebuilt macOS arm64 bottles are optional CI follow-up (not claimed here).
+
+---
+
 ## Git push (canonical remote)
 
 After merge-gate **PASS**, from **`~/Projects/creation-os-kernel`**:
