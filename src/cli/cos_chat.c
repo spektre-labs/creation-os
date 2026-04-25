@@ -224,7 +224,10 @@ static void chat_emit_pipeline_failure_help(void)
 /* NEXT-1 polish: backend detection + one-line action decorator. */
 static const char *cos_chat_backend_label(void) {
     const char *exe = getenv("CREATION_OS_BITNET_EXE");
-    if (exe != NULL && exe[0] != '\0') return "bridge · BitNet b1.58 2B · Local · CPU";
+    if (exe != NULL && exe[0] != '\0')
+        return "bridge · BitNet b1.58 2B · Local · CPU";
+    if (cos_cli_use_bitnet_http() != 0)
+        return "external · OpenAI-compat HTTP (Ollama / llama-server)";
     return "stub · deterministic (no weights)";
 }
 
@@ -352,13 +355,16 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
              && cfg->codex->size > 0)
                 ? cfg->codex->bytes
                 : NULL;
-        const float temps[3] = { 0.3f, 0.7f, 1.2f };
+        static const char k_shadow_follow_sysp[] =
+            "Give only the direct answer. Maximum one sentence. No explanation.";
+        const float temps[3] = { 0.3f, 0.1f, 1.5f };
+        enum { k_shadow_np = 60 };
         n = 0;
         for (int ti = 0; ti < 3 && n < COS_CHAT_SEM_SHADOW_MAX; ++ti) {
             if (ti == 0) {
                 cos_bitnet_server_params_t pp;
                 memset(&pp, 0, sizeof(pp));
-                pp.n_predict     = 96;
+                pp.n_predict     = k_shadow_np;
                 pp.n_probs       = 3;
                 pp.seed          = 700 + ti * 7919;
                 pp.temperature   = temps[ti];
@@ -373,8 +379,8 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
                     n++;
                 }
             } else {
-                char *tx =
-                    cos_bitnet_query_temp(0, input, sysp, temps[ti]);
+                char *tx = cos_bitnet_query_temp_with_options(
+                    0, input, k_shadow_follow_sysp, temps[ti], k_shadow_np);
                 if (tx != NULL) {
                     if (tx[0] != '\0') {
                         snprintf(copies[n], sizeof(copies[n]), "%s", tx);
@@ -413,9 +419,13 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
 
     float sigma_consistency = 0.0f;
     if (want_http_triple && !triple_fail_null && n == 3) {
-        float s01 = cos_text_jaccard(texts[0], texts[1]);
-        float s02 = cos_text_jaccard(texts[0], texts[2]);
-        float s12 = cos_text_jaccard(texts[1], texts[2]);
+        char fs0[512], fs1[512], fs2[512];
+        cos_text_first_sentence(texts[0], fs0, sizeof fs0);
+        cos_text_first_sentence(texts[1], fs1, sizeof fs1);
+        cos_text_first_sentence(texts[2], fs2, sizeof fs2);
+        float s01 = cos_text_jaccard(fs0, fs1);
+        float s02 = cos_text_jaccard(fs0, fs2);
+        float s12 = cos_text_jaccard(fs1, fs2);
         float mean_sim = (s01 + s02 + s12) / 3.0f;
         float sigma_sem = 1.0f - mean_sim;
         if (mean_sim > 0.95f)
@@ -424,7 +434,10 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
             sigma_sem = 0.95f;
         sigma_consistency = sigma_sem;
     } else if (want_http_triple && !triple_fail_null && n == 2) {
-        float s01      = cos_text_jaccard(texts[0], texts[1]);
+        char fa[512], fb[512];
+        cos_text_first_sentence(texts[0], fa, sizeof fa);
+        cos_text_first_sentence(texts[1], fb, sizeof fb);
+        float s01      = cos_text_jaccard(fa, fb);
         float mean_sim = s01;
         float sigma_sem = 1.0f - mean_sim;
         if (mean_sim > 0.95f)
@@ -816,7 +829,8 @@ static void chat_maybe_semantic_entropy(cos_pipeline_config_t *cfg_rw,
             (mode != NULL && mode[0] != '\0') ? mode : "replace");
 }
 
-/** BSC multi-answer σ; blends with logprob / metacog; two extra HTTP when primary set. */
+/** Jaccard multi-answer σ; two extra HTTP at 0.7 / 1.2 when primary set;
+ *  blend 0.7·σ_semantic + 0.3·prior (prior = logprob σ before completes). */
 static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
                                       const chat_feat_t     *feat,
                                       const char            *user_prompt,
@@ -844,20 +858,7 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
         port = atoi(pe);
     const char *model = getenv("COS_BITNET_CHAT_MODEL");
 
-    cos_ultra_metacog_levels_t lv;
-    chat_metacog_levels(user_prompt, r, cfg_rw->max_rethink, &lv);
-    float meta = 0.25f * (lv.sigma_perception + lv.sigma_self + lv.sigma_social
-                          + lv.sigma_situational);
-    if (meta < 0.0f)
-        meta = 0.0f;
-    if (meta > 1.0f)
-        meta = 1.0f;
-
     float prior = r->sigma;
-    float tokbuf[64];
-    int   ntok = 0;
-    (void)cos_bitnet_server_copy_last_token_sigmas(tokbuf, 64, &ntok);
-    int has_lp = (ntok > 0) ? 1 : 0;
 
     cos_semantic_sigma_result det;
     memset(&det, 0, sizeof(det));
@@ -868,9 +869,7 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
                                            : NULL,
                                        3, r->response, &det);
 
-    float combined =
-        has_lp ? (0.5f * prior + 0.3f * se + 0.2f * meta)
-               : (0.7f * se + 0.3f * meta);
+    float combined = 0.7f * se + 0.3f * prior;
     combined         = (combined < 0.0f) ? 0.0f : combined;
     combined         = (combined > 1.0f) ? 1.0f : combined;
     r->sigma         = combined;
@@ -879,12 +878,11 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
 
     FILE *out = (repl_use_tui != 0) ? stderr : stdout;
     fprintf(out,
-            "[semantic-sigma σ=%.3f sim01=%.3f sim02=%.3f sim12=%.3f "
-            "n_cl=%d logprobs=%d blend=%s]\n",
+            "[semantic-sigma σ=%.3f j01=%.3f j02=%.3f j12=%.3f "
+            "n_cl=%d blend=0.7·σ_se+0.3·σ_prior]\n",
             (double)se, (double)det.similarities[0],
             (double)det.similarities[1], (double)det.similarities[2],
-            det.n_clusters, has_lp, has_lp ? "0.5·σ+0.3·σ_se+0.2·meta"
-                                           : "0.7·σ_se+0.3·meta");
+            det.n_clusters);
 }
 
 typedef struct {
@@ -1405,10 +1403,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         cos_speculative_sigma_observe(domain_h, r.sigma);
 
     if (feat != NULL && feat->semantic_sigma) {
-        const char *leg = getenv("COS_CHAT_BSC_SEMANTIC_SIGMA");
-        if (leg != NULL && leg[0] == '1' && leg[1] == '\0')
-            chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
-                                      early_spec_abstain, semantic_hit, prc, 0);
+        chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
+                                  early_spec_abstain, semantic_hit, prc, 0);
     } else if (feat != NULL && feat->semantic_entropy)
         chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r, early_spec_abstain,
                                     semantic_hit, prc, 0);
@@ -1497,7 +1493,11 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                 snprintf(g_cos_chat_const_halt, sizeof g_cos_chat_const_halt,
                          "[CONSTITUTIONAL HALT] %s", crep);
                 fprintf(stdout, "%s\n", g_cos_chat_const_halt);
-                deliver_txt = g_cos_chat_const_halt;
+                /* --multi-sigma benchmarks: σ was computed on the real model
+                 * string; keep the visible answer + receipts on that text
+                 * and only surface the halt as a warning line above. */
+                if (feat == NULL || !feat->multi_sigma)
+                    deliver_txt = g_cos_chat_const_halt;
             } else if (c_viol > 0) {
                 fprintf(stdout, "[CONSTITUTIONAL WARNING] %s\n", crep);
             }
@@ -1532,9 +1532,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                    feat != NULL ? feat->conformal_alpha  : 0.0f,
                                    semantic_hit, &spd);
         }
-        chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
-                             elapsed_ms, deliver_txt, c_valid, c_compl,
-                             c_checks, c_viol, c_mhalts);
+        {
+            const char *proof_body = deliver_txt;
+            if (feat != NULL && feat->multi_sigma && c_mhalts != 0
+                && r.response != NULL && r.response[0] != '\0')
+                proof_body = r.response;
+            chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
+                                 elapsed_ms, proof_body, c_valid, c_compl,
+                                 c_checks, c_viol, c_mhalts);
+        }
     }
 
     if (have_ms) {
@@ -1692,6 +1698,7 @@ int main(int argc, char **argv) {
     /* FINAL-2 feature toggles (all off by default to keep existing
      * harnesses byte-identical; opt-in via flags or env). */
     int         multi_sigma        = 0;
+    int         multi_sigma_cli    = 0; /* argv --multi-sigma only (not --verbose) */
     int         want_ttt           = 0;
     int         conformal_enabled  = 1;  /* auto-load bundle if present */
     int         coherence_enabled  = 1;  /* REPL-only; --once is a single
@@ -1757,13 +1764,15 @@ int main(int argc, char **argv) {
         } else if (strcmp(argv[i], "--icl-rethink-only") == 0) {
             icl_rethink = 1;
         }         else if (strcmp(argv[i], "--multi-sigma") == 0) {
-            multi_sigma = 1;
+            multi_sigma     = 1;
+            multi_sigma_cli = 1;
         } else if (strcmp(argv[i], "--fast") == 0) {
             fast_sigma = 1;
         } else if (strcmp(argv[i], "--ttt") == 0) {
             want_ttt = 1;
         } else if (strcmp(argv[i], "--no-multi-sigma") == 0) {
-            multi_sigma = 0;
+            multi_sigma     = 0;
+            multi_sigma_cli = 0;
         } else if (strcmp(argv[i], "--semantic-entropy") == 0) {
             semantic_entropy  = 1;
             no_semantic_entropy = 0;
@@ -1835,15 +1844,16 @@ int main(int argc, char **argv) {
                 "  --no-icl            disable ICL even if COS_ENGRAM_ICL=1\n"
                 "  --icl-k N           number of exemplars (default 3, max 8)\n"
                 "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
-                "  --multi-sigma       emit σ_combined (SCI-5) shadow per turn\n"
+                "  --multi-sigma       σ_combined shadow + Jaccard semantic σ\n"
+                "                      (primary + HTTP samples @ 0.7 / 1.2) unless --fast\n"
                 "  --fast              with --multi-sigma + HTTP: logprob-only shadow\n"
-                "                      (skip 3×temperature semantic sampling)\n"
+                "                      (skip semantic multi-sample completes)\n"
                 "  --ttt               ULTRA-8: test-time sketch on RETHINK (Qwen path)\n"
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
                 "  --no-semantic-entropy  disable (overrides COS_CHAT_SEMANTIC_ENTROPY=1)\n"
-                "  --semantic-sigma    force HTTP triple-sample path (same as default\n"
-                "                      when --fast is off); legacy env COS_CHAT_SEMANTIC_SIGMA\n"
+                "  --semantic-sigma    force Jaccard semantic σ path (same as --multi-sigma\n"
+                "                      without --fast); env COS_CHAT_SEMANTIC_SIGMA=1\n"
                 "  --no-semantic-sigma disable (overrides COS_CHAT_SEMANTIC_SIGMA=1)\n"
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
@@ -1875,8 +1885,7 @@ int main(int argc, char **argv) {
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
                 "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n"
-                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n"
-                "  COS_CHAT_BSC_SEMANTIC_SIGMA=1 legacy BSC path (extra HTTP; rare)\n");
+                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n");
             return 0;
         }
     }
@@ -1988,6 +1997,11 @@ int main(int argc, char **argv) {
     if (semantic_sigma)
         semantic_entropy = 0;
 
+    if (multi_sigma_cli && !fast_sigma && !no_semantic_sigma) {
+        semantic_sigma     = 1;
+        semantic_entropy = 0;
+    }
+
     /* FINAL-2 Phase B: resolve conformal τ (overrides static defaults
      * unless the user explicitly passed --tau-accept). */
     int   conformal_active = 0;
@@ -2078,6 +2092,13 @@ int main(int argc, char **argv) {
     cos_sigma_sovereign_init(&sv, 0.85f);
     cos_sigma_agent_t ag;
     cos_sigma_agent_init(&ag, 0.80f, 0.10f);
+
+    /* OpenAI-compat HTTP (Ollama / llama-server): the primary path already
+     * uses cos_bitnet_server_complete.  HYBRID + no API keys would call
+     * cos_cli_stub_escalate and replace the real model output with a fake
+     * cloud string — force LOCAL_ONLY unless swarm (cloud consensus). */
+    if (cos_cli_use_bitnet_http() != 0 && !swarm_mode)
+        local_only = 1;
 
     cos_pipeline_config_t cfg;
     cos_sigma_pipeline_config_defaults(&cfg);
@@ -2186,8 +2207,11 @@ int main(int argc, char **argv) {
             return 2;
         }
         const char *exe = getenv("CREATION_OS_BITNET_EXE");
-        const char *backend =
-            (exe != NULL && exe[0] != '\0') ? "bridge" : "stub";
+        const char *backend = "stub";
+        if (exe != NULL && exe[0] != '\0')
+            backend = "bridge";
+        else if (cos_cli_use_bitnet_http() != 0)
+            backend = "external";
         fprintf(stdout,
                 "cos chat  ·  backend=%s  ·  τ_accept=%g  τ_rethink=%g\n",
                 backend, (double)tau_accept, (double)tau_rethink);
@@ -2486,11 +2510,9 @@ int main(int argc, char **argv) {
             cos_speculative_sigma_observe(domain_h, r.sigma);
 
         if (rfeat.semantic_sigma) {
-            const char *leg = getenv("COS_CHAT_BSC_SEMANTIC_SIGMA");
-            if (leg != NULL && leg[0] == '1' && leg[1] == '\0')
-                chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
-                                          early_spec_abstain, semantic_hit, prc,
-                                          use_tui ? 1 : 0);
+            chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
+                                      early_spec_abstain, semantic_hit, prc,
+                                      use_tui ? 1 : 0);
         } else if (rfeat.semantic_entropy)
             chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r,
                                         early_spec_abstain, semantic_hit, prc,
@@ -2604,7 +2626,8 @@ int main(int argc, char **argv) {
                              "[CONSTITUTIONAL HALT] %s", rcrep);
                     fprintf(use_tui ? stderr : stdout, "%s\n",
                             g_cos_chat_const_halt);
-                    repl_deliver = g_cos_chat_const_halt;
+                    if (!(multi_sigma && rc_mv > 0))
+                        repl_deliver = g_cos_chat_const_halt;
                 } else if (rc_viol > 0) {
                     fprintf(use_tui ? stderr : stdout,
                             "[CONSTITUTIONAL WARNING] %s\n", rcrep);
@@ -2670,9 +2693,16 @@ int main(int argc, char **argv) {
                         cos_tui_header(smean, k_eff_h);
                     }
                 }
-                chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
-                                     elapsed_ms, repl_deliver, rcv, rc_compl,
-                                     rc_chk, rc_viol, rc_mhalts);
+                {
+                    const char *repl_proof = repl_deliver;
+                    if (multi_sigma && rc_mhalts != 0 && r.response != NULL
+                        && r.response[0] != '\0')
+                        repl_proof = r.response;
+                    chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat,
+                                         &SL, elapsed_ms, repl_proof, rcv,
+                                         rc_compl, rc_chk, rc_viol,
+                                         rc_mhalts);
+                }
             }
         }
 

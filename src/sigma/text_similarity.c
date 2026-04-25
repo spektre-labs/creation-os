@@ -1,6 +1,7 @@
 /* SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only */
 #include "text_similarity.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -27,6 +28,60 @@ static const char *NUM_WORDS[][2] = {
     {"hundred", "100"}, {"thousand", "1000"},
     {NULL, NULL}
 };
+
+void cos_text_first_sentence(const char *in, char *out, size_t out_cap)
+{
+    const size_t max_run = 100u;
+
+    if (out == NULL || out_cap < 1u)
+        return;
+    out[0] = '\0';
+    if (in == NULL)
+        return;
+    while (*in != '\0' && isspace((unsigned char)*in))
+        ++in;
+    if (*in == '\0')
+        return;
+
+    size_t i = 0;
+    for (; in[i] != '\0'; ++i) {
+        char c = in[i];
+        if (c == '\n' || c == '\r') {
+            size_t n = i;
+            if (n >= out_cap)
+                n = out_cap - 1u;
+            if (n > 0u)
+                memcpy(out, in, n);
+            out[n] = '\0';
+            while (n > 0u && isspace((unsigned char)out[n - 1u]))
+                out[--n] = '\0';
+            return;
+        }
+        if (c == '.' || c == '?' || c == '!') {
+            size_t n = i + 1u;
+            if (n >= out_cap)
+                n = out_cap - 1u;
+            memcpy(out, in, n);
+            out[n] = '\0';
+            return;
+        }
+        if (i + 1u >= max_run) {
+            size_t n = max_run;
+            if (n >= out_cap)
+                n = out_cap - 1u;
+            memcpy(out, in, n);
+            out[n] = '\0';
+            return;
+        }
+    }
+    {
+        size_t n = i;
+        if (n >= out_cap)
+            n = out_cap - 1u;
+        memcpy(out, in, n);
+        out[n] = '\0';
+    }
+}
 
 void cos_text_normalize(const char *in, char *out, int out_len)
 {
@@ -260,6 +315,31 @@ int cos_text_similarity_self_check(void)
     else {
         fail++;
         fprintf(stderr, "FAIL unrelated (got %g)\n", (double)s);
+    }
+
+    {
+        char buf[256];
+        cos_text_first_sentence("Hello. World", buf, sizeof buf);
+        if (strcmp(buf, "Hello.") == 0)
+            pass++;
+        else {
+            fail++;
+            fprintf(stderr, "FAIL first_sentence_period (got '%s')\n", buf);
+        }
+        cos_text_first_sentence("Line1\nLine2", buf, sizeof buf);
+        if (strcmp(buf, "Line1") == 0)
+            pass++;
+        else {
+            fail++;
+            fprintf(stderr, "FAIL first_sentence_nl (got '%s')\n", buf);
+        }
+        cos_text_first_sentence("", buf, sizeof buf);
+        if (buf[0] == '\0')
+            pass++;
+        else {
+            fail++;
+            fprintf(stderr, "FAIL first_sentence_empty\n");
+        }
     }
 
     fprintf(stderr, "text_similarity: %d pass, %d fail\n", pass, fail);

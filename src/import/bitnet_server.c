@@ -2692,8 +2692,9 @@ int cos_bitnet_server_copy_last_token_sigmas(float *dst, int cap,
     return 0;
 }
 
-char *cos_bitnet_query_temp(int port, const char *prompt,
-                            const char *system, float temperature)
+char *cos_bitnet_query_temp_with_options(int port, const char *prompt,
+                                         const char *system,
+                                         float temperature, int max_tokens)
 {
     if (prompt == NULL)
         return NULL;
@@ -2715,9 +2716,15 @@ char *cos_bitnet_query_temp(int port, const char *prompt,
         cos_bitnet_server_invalidate_config();
     }
 
+    int np = max_tokens;
+    if (np < 8)
+        np = 8;
+    if (np > 512)
+        np = 512;
+
     cos_bitnet_server_params_t pp;
     memset(&pp, 0, sizeof(pp));
-    pp.n_predict     = 96;
+    pp.n_predict     = np;
     pp.n_probs       = 3;
     pp.temperature   = temperature;
     pp.system_prompt = system;
@@ -2739,4 +2746,11 @@ char *cos_bitnet_query_temp(int port, const char *prompt,
         cos_bitnet_server_invalidate_config();
     }
     return out;
+}
+
+char *cos_bitnet_query_temp(int port, const char *prompt,
+                            const char *system, float temperature)
+{
+    return cos_bitnet_query_temp_with_options(port, prompt, system,
+                                              temperature, 96);
 }

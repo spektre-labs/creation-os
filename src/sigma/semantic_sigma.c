@@ -2,9 +2,8 @@
 
 #include "semantic_sigma.h"
 
-#include "../../core/cos_bsc.h"
 #include "bitnet_server.h"
-#include "inference_cache.h"
+#include "text_similarity.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -112,19 +111,18 @@ static int ss_cluster_count_from_sims(float s01, float s02, float s12,
 int cos_semantic_sigma_compute_texts(const char *t0, const char *t1,
                                        const char *t2,
                                        cos_semantic_sigma_result *out) {
-    const char *tx[3] = { t0, t1, t2 };
     if (out == NULL)
         return -1;
     memset(out, 0, sizeof(*out));
     out->n_samples = 3;
 
-    uint64_t v[3][COS_INF_W];
-    for (int i = 0; i < 3; i++)
-        cos_inference_bsc_encode_prompt(tx[i] != NULL ? tx[i] : "", v[i]);
+    const char *a = (t0 != NULL) ? t0 : "";
+    const char *b = (t1 != NULL) ? t1 : "";
+    const char *c = (t2 != NULL) ? t2 : "";
 
-    float s01 = 1.0f - cos_inference_hamming_norm(v[0], v[1], COS_INF_W);
-    float s02 = 1.0f - cos_inference_hamming_norm(v[0], v[2], COS_INF_W);
-    float s12 = 1.0f - cos_inference_hamming_norm(v[1], v[2], COS_INF_W);
+    float s01 = cos_text_jaccard(a, b);
+    float s02 = cos_text_jaccard(a, c);
+    float s12 = cos_text_jaccard(b, c);
     if (s01 < 0.0f)
         s01 = 0.0f;
     if (s01 > 1.0f)
@@ -151,7 +149,8 @@ int cos_semantic_sigma_compute_texts(const char *t0, const char *t1,
 }
 
 static int ss_default_temps(int n, float *out) {
-    static const float t3[3] = { 0.3f, 0.7f, 1.0f };
+    /* Wide spread (curl-style) for three independent samples. */
+    static const float t3[3] = { 0.1f, 0.7f, 1.5f };
     if (n == 3) {
         memcpy(out, t3, sizeof(t3));
         return 0;
@@ -197,36 +196,29 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
     char       *dup0 = NULL, *dup1 = NULL, *dup2 = NULL;
     int         ok = 0;
 
+    static const char k_semantic_extra_sysp[] =
+        "Give only the direct answer. Maximum one sentence. No explanation.";
+    enum { k_semantic_extra_np = 60 };
+
     if (primary_answer != NULL && primary_answer[0] != '\0') {
         dup0 = strdup(primary_answer);
         if (dup0 == NULL)
             ok = -1;
         texts[0] = dup0;
-        float extra_temps[2] = { 0.3f, 0.7f };
-        for (int j = 0; j < 2 && ok == 0; j++) {
-            cos_bitnet_server_params_t par;
-            memset(&par, 0, sizeof(par));
-            par.system_prompt = system_prompt;
-            par.temperature   = extra_temps[j];
-            par.n_predict     = max_tok;
-            par.seed          = 12011 + j * 31;
-
-            cos_bitnet_server_result_t br;
-            memset(&br, 0, sizeof(br));
-            if (cos_bitnet_server_complete(prompt, &par, &br) != 0
-                || br.text == NULL) {
+        if (ok == 0) {
+            dup1 = cos_bitnet_query_temp_with_options(
+                port, prompt, k_semantic_extra_sysp, 0.1f, k_semantic_extra_np);
+            if (dup1 == NULL || dup1[0] == '\0')
                 ok = -1;
-                break;
+        }
+        if (ok == 0) {
+            dup2 = cos_bitnet_query_temp_with_options(
+                port, prompt, k_semantic_extra_sysp, 1.5f, k_semantic_extra_np);
+            if (dup2 == NULL || dup2[0] == '\0') {
+                free(dup1);
+                dup1 = NULL;
+                ok     = -1;
             }
-            char *d = strdup(br.text);
-            if (d == NULL) {
-                ok = -1;
-                break;
-            }
-            if (j == 0)
-                dup1 = d;
-            else
-                dup2 = d;
         }
         texts[1] = dup1 != NULL ? dup1 : "";
         texts[2] = dup2 != NULL ? dup2 : "";
@@ -238,9 +230,11 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
             for (int i = 0; i < 3 && ok == 0; i++) {
                 cos_bitnet_server_params_t par;
                 memset(&par, 0, sizeof(par));
-                par.system_prompt = system_prompt;
+                /* Three fresh samples: same short sysp as curl harness so
+                 * temperature spread dominates, not Codex framing. */
+                par.system_prompt = k_semantic_extra_sysp;
                 par.temperature   = temps[i];
-                par.n_predict     = max_tok;
+                par.n_predict     = k_semantic_extra_np;
                 par.seed          = 13001 + i * 17;
 
                 cos_bitnet_server_result_t br;
@@ -279,7 +273,13 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         return out->sigma;
     }
 
-    (void)cos_semantic_sigma_compute_texts(texts[0], texts[1], texts[2], out);
+    {
+        char fs0[512], fs1[512], fs2[512];
+        cos_text_first_sentence(texts[0], fs0, sizeof fs0);
+        cos_text_first_sentence(texts[1], fs1, sizeof fs1);
+        cos_text_first_sentence(texts[2], fs2, sizeof fs2);
+        (void)cos_semantic_sigma_compute_texts(fs0, fs1, fs2, out);
+    }
     out->n_samples = 3;
 
     free(dup0);

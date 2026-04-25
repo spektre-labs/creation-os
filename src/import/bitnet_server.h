@@ -259,7 +259,13 @@ void cos_bitnet_server_diag(const char **out_host, int *out_port,
 
 /* One chat completion at `temperature`; returns malloc'd text (caller
  * frees) or NULL.  port <= 0 keeps the current COS_BITNET_SERVER_PORT
- * snapshot; port > 0 temporarily overrides the port for this call. */
+ * snapshot; port > 0 temporarily overrides the port for this call.
+ * `max_tokens` is clamped to [8, 512] and maps to the HTTP max_tokens /
+ * n_predict field. */
+char *cos_bitnet_query_temp_with_options(int port, const char *prompt,
+                                         const char *system,
+                                         float temperature, int max_tokens);
+
 char *cos_bitnet_query_temp(int port, const char *prompt,
                             const char *system, float temperature);
 
