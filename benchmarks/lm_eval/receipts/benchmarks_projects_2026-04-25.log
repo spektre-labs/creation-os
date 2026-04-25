@@ -1,0 +1,405 @@
+=== omega_evolve_final Sat Apr 25 10:32:23 UTC 2026 ===
+=== omega_evolve_final OUTDIR=benchmarks/evolve_campaign N_RUNS=5 ===
+Date: 2026-04-25T10:32:23Z
+
+=== RUN 1 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 26119ms | 0.3 tok/s | TTFT 26119ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 26119ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  A spider has **eight** legs! 
+
+That’s a defining characteristic of spiders and is what makes them arachnids. 😊  [σ_peak=0.15 action=ACCEPT route=LOCAL]
+[speed: 18 tok | 7700ms | 2.3 tok/s | TTFT 7700ms]
+[σ=0.147 | ACCEPT | FRESH | LOCAL | 2.3 tok/s | TTFT 7700ms | €0.0001]
+[σ_combined=0.208 | σ_logprob=0.147 σ_entropy=0.147 σ_perplexity=0.147 σ_consistency=0.452 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  The chemical formula for water is **H₂O**. 
+
+This means each water molecule is made up of:
+
+*   Two hydrogen atoms (H)
+*   One oxygen atom (O)  [σ_peak=0.20 action=ACCEPT route=LOCAL]
+[speed: 26 tok | 8217ms | 3.2 tok/s | TTFT 8217ms]
+[σ=0.205 | ACCEPT | FRESH | LOCAL | 3.2 tok/s | TTFT 8217ms | €0.0001]
+[σ_combined=0.203 | σ_logprob=0.205 σ_entropy=0.205 σ_perplexity=0.205 σ_consistency=0.194 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28308ms | 0.2 tok/s | TTFT 28308ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28308ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28318ms | 0.2 tok/s | TTFT 28318ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28318ms | €0.0123]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  Stillness fills the air,
+A quiet, deep, and gentle
+Space for thoughts to bloom.  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 14 tok | 12850ms | 1.1 tok/s | TTFT 12850ms]
+[σ=0.211 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.1 tok/s | TTFT 12850ms | €0.0002]
+[σ_combined=0.224 | σ_logprob=0.211 σ_entropy=0.211 σ_perplexity=0.211 σ_consistency=0.275 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.26 action=ACCEPT route=LOCAL]
+[speed: 19 tok | 13370ms | 1.4 tok/s | TTFT 13370ms]
+[σ=0.260 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.4 tok/s | TTFT 13370ms | €0.0002]
+[σ_combined=0.275 | σ_logprob=0.260 σ_entropy=0.260 σ_perplexity=0.260 σ_consistency=0.333 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28580ms | 0.2 tok/s | TTFT 28580ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28580ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28526ms | 0.2 tok/s | TTFT 28526ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28526ms | €0.0123]
+[σ_combined=0.241 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.883 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.29 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 19085ms | 2.7 tok/s | TTFT 19085ms]
+[σ=0.293 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 2.7 tok/s | TTFT 19085ms | €0.0002]
+[σ_combined=0.325 | σ_logprob=0.293 σ_entropy=0.293 σ_perplexity=0.293 σ_consistency=0.452 | k=3]
+Run 1: σ_mean=0.2419 cache_hits=0
+
+=== RUN 2 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 24975ms | 0.3 tok/s | TTFT 24975ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 24975ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  A spider has **eight** legs! 
+
+That’s a defining characteristic of spiders and is what makes them arachnids. 😊  [σ_peak=0.15 action=ACCEPT route=LOCAL]
+[speed: 18 tok | 17156ms | 1.0 tok/s | TTFT 17156ms]
+[σ=0.147 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.0 tok/s | TTFT 17156ms | €0.0002]
+[σ_combined=0.208 | σ_logprob=0.147 σ_entropy=0.147 σ_perplexity=0.147 σ_consistency=0.452 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  The chemical formula for water is **H₂O**. 
+
+This means each water molecule is made up of:
+
+*   Two hydrogen atoms (H)
+*   One oxygen atom (O)  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 26 tok | 17557ms | 1.5 tok/s | TTFT 17557ms]
+[σ=0.209 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.5 tok/s | TTFT 17557ms | €0.0002]
+[σ_combined=0.206 | σ_logprob=0.209 σ_entropy=0.209 σ_perplexity=0.209 σ_consistency=0.194 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30324ms | 0.2 tok/s | TTFT 30324ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30324ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30218ms | 0.2 tok/s | TTFT 30218ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30218ms | €0.0123]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  Stillness fills the air,
+A quiet, deep, and gentle
+Space for thoughts to bloom.  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 14 tok | 13931ms | 1.0 tok/s | TTFT 13931ms]
+[σ=0.211 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.0 tok/s | TTFT 13931ms | €0.0002]
+[σ_combined=0.224 | σ_logprob=0.211 σ_entropy=0.211 σ_perplexity=0.211 σ_consistency=0.275 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.26 action=ACCEPT route=LOCAL]
+[speed: 19 tok | 7407ms | 2.6 tok/s | TTFT 7407ms]
+[σ=0.260 | ACCEPT | FRESH | LOCAL | 2.6 tok/s | TTFT 7407ms | €0.0001]
+[σ_combined=0.275 | σ_logprob=0.260 σ_entropy=0.260 σ_perplexity=0.260 σ_consistency=0.333 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31842ms | 0.2 tok/s | TTFT 31842ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31842ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30404ms | 0.2 tok/s | TTFT 30404ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30404ms | €0.0123]
+[σ_combined=0.241 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.883 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.35 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 10211ms | 5.0 tok/s | TTFT 10211ms]
+[σ=0.353 | ACCEPT | FRESH | LOCAL | 5.0 tok/s | TTFT 10211ms | €0.0001]
+[σ_combined=0.406 | σ_logprob=0.353 σ_entropy=0.353 σ_perplexity=0.353 σ_consistency=0.618 | k=3]
+Run 2: σ_mean=0.2503 cache_hits=0
+
+=== RUN 3 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 26131ms | 0.3 tok/s | TTFT 26131ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 26131ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  A spider has **eight** legs! 
+
+That’s a defining characteristic of spiders and is what makes them arachnids. 😊  [σ_peak=0.15 action=ACCEPT route=LOCAL]
+[speed: 18 tok | 16384ms | 1.1 tok/s | TTFT 16384ms]
+[σ=0.147 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.1 tok/s | TTFT 16384ms | €0.0002]
+[σ_combined=0.208 | σ_logprob=0.147 σ_entropy=0.147 σ_perplexity=0.147 σ_consistency=0.452 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  The chemical formula for water is **H₂O**. 
+
+This means each water molecule is made up of:
+
+*   Two hydrogen atoms (H)
+*   One oxygen atom (O)  [σ_peak=0.15 action=ACCEPT route=LOCAL]
+[speed: 26 tok | 8813ms | 3.0 tok/s | TTFT 8813ms]
+[σ=0.148 | ACCEPT | FRESH | LOCAL | 3.0 tok/s | TTFT 8813ms | €0.0001]
+[σ_combined=0.157 | σ_logprob=0.148 σ_entropy=0.148 σ_perplexity=0.148 σ_consistency=0.194 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31452ms | 0.2 tok/s | TTFT 31452ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31452ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30836ms | 0.2 tok/s | TTFT 30836ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30836ms | €0.0123]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  Stillness fills the air,
+A quiet, deep, and gentle
+Space for thoughts to bloom.  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 14 tok | 14614ms | 1.0 tok/s | TTFT 14614ms]
+[σ=0.211 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.0 tok/s | TTFT 14614ms | €0.0002]
+[σ_combined=0.224 | σ_logprob=0.211 σ_entropy=0.211 σ_perplexity=0.211 σ_consistency=0.275 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.26 action=ACCEPT route=LOCAL]
+[speed: 19 tok | 15796ms | 1.2 tok/s | TTFT 15796ms]
+[σ=0.260 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.2 tok/s | TTFT 15796ms | €0.0002]
+[σ_combined=0.275 | σ_logprob=0.260 σ_entropy=0.260 σ_perplexity=0.260 σ_consistency=0.333 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 32256ms | 0.2 tok/s | TTFT 32256ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 32256ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 30736ms | 0.2 tok/s | TTFT 30736ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 30736ms | €0.0123]
+[σ_combined=0.241 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.883 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.37 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 10441ms | 4.9 tok/s | TTFT 10441ms]
+[σ=0.370 | ACCEPT | FRESH | LOCAL | 4.9 tok/s | TTFT 10441ms | €0.0001]
+[σ_combined=0.432 | σ_logprob=0.370 σ_entropy=0.370 σ_perplexity=0.370 σ_consistency=0.682 | k=3]
+Run 3: σ_mean=0.2480 cache_hits=0
+
+=== RUN 4 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 28789ms | 0.2 tok/s | TTFT 28789ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 28789ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  A spider has **eight** legs! 
+
+That’s a defining characteristic of spiders and is what makes them arachnids. 😊  [σ_peak=0.15 action=ACCEPT route=LOCAL]
+[speed: 18 tok | 17080ms | 1.1 tok/s | TTFT 17080ms]
+[σ=0.147 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.1 tok/s | TTFT 17080ms | €0.0002]
+[σ_combined=0.208 | σ_logprob=0.147 σ_entropy=0.147 σ_perplexity=0.147 σ_consistency=0.452 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 26786ms | 0.3 tok/s | TTFT 26786ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 26786ms | €0.0123]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.739 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31857ms | 0.2 tok/s | TTFT 31857ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31857ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31159ms | 0.2 tok/s | TTFT 31159ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31159ms | €0.0123]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  Stillness fills the air,
+A quiet, deep, and gentle
+Space for thoughts to bloom.  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 14 tok | 14378ms | 1.0 tok/s | TTFT 14378ms]
+[σ=0.211 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.0 tok/s | TTFT 14378ms | €0.0002]
+[σ_combined=0.224 | σ_logprob=0.211 σ_entropy=0.211 σ_perplexity=0.211 σ_consistency=0.275 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.26 action=ACCEPT route=LOCAL]
+[speed: 19 tok | 8228ms | 2.3 tok/s | TTFT 8228ms]
+[σ=0.257 | ACCEPT | FRESH | LOCAL | 2.3 tok/s | TTFT 8228ms | €0.0001]
+[σ_combined=0.287 | σ_logprob=0.257 σ_entropy=0.257 σ_perplexity=0.257 σ_consistency=0.404 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 32961ms | 0.2 tok/s | TTFT 32961ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 32961ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31050ms | 0.2 tok/s | TTFT 31050ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31050ms | €0.0123]
+[σ_combined=0.241 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.883 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.36 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 10505ms | 4.9 tok/s | TTFT 10505ms]
+[σ=0.361 | ACCEPT | FRESH | LOCAL | 4.9 tok/s | TTFT 10505ms | €0.0001]
+[σ_combined=0.413 | σ_logprob=0.361 σ_entropy=0.361 σ_perplexity=0.361 σ_consistency=0.618 | k=3]
+Run 4: σ_mean=0.2528 cache_hits=0
+
+=== RUN 5 / 5 ===
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 25498ms | 0.3 tok/s | TTFT 25498ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 25498ms | €0.0123]
+[σ_combined=0.238 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.871 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  A spider has **eight** legs! 
+
+That’s a defining characteristic of spiders and is what makes them arachnids. 😊  [σ_peak=0.20 action=ACCEPT route=LOCAL]
+[speed: 18 tok | 8760ms | 2.1 tok/s | TTFT 8760ms]
+[σ=0.199 | ACCEPT | FRESH | LOCAL | 2.1 tok/s | TTFT 8760ms | €0.0001]
+[σ_combined=0.263 | σ_logprob=0.199 σ_entropy=0.199 σ_perplexity=0.199 σ_consistency=0.517 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 26016ms | 0.3 tok/s | TTFT 26016ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.3 tok/s | TTFT 26016ms | €0.0123]
+[σ_combined=0.212 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.739 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 32179ms | 0.2 tok/s | TTFT 32179ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 32179ms | €0.0123]
+[σ_combined=0.226 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.812 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31282ms | 0.2 tok/s | TTFT 31282ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31282ms | €0.0123]
+[σ_combined=0.239 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.877 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  Stillness fills the air,
+A quiet, deep, and gentle
+Space for thoughts to bloom.  [σ_peak=0.21 action=ACCEPT route=LOCAL]
+[speed: 14 tok | 14368ms | 1.0 tok/s | TTFT 14368ms]
+[σ=0.211 | ACCEPT | FRESH | LOCAL | RETHINK ×1 | 1.0 tok/s | TTFT 14368ms | €0.0002]
+[σ_combined=0.224 | σ_logprob=0.211 σ_entropy=0.211 σ_perplexity=0.211 σ_consistency=0.275 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.26 action=ACCEPT route=LOCAL]
+[speed: 19 tok | 8218ms | 2.3 tok/s | TTFT 8218ms]
+[σ=0.257 | ACCEPT | FRESH | LOCAL | 2.3 tok/s | TTFT 8218ms | €0.0001]
+[σ_combined=0.287 | σ_logprob=0.257 σ_entropy=0.257 σ_perplexity=0.257 σ_consistency=0.404 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 32900ms | 0.2 tok/s | TTFT 32900ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 32900ms | €0.0123]
+[σ_combined=0.240 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.880 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+round 0  an escalated answer from the cloud tier.  [σ_peak=0.08 action=ACCEPT route=ESCALATE]
+[speed: 7 tok | 31169ms | 0.2 tok/s | TTFT 31169ms]
+[σ=0.080 | ACCEPT | FRESH | CLOUD | RETHINK ×2 | 0.2 tok/s | TTFT 31169ms | €0.0123]
+[σ_combined=0.241 | σ_logprob=0.080 σ_entropy=0.080 σ_perplexity=0.080 σ_consistency=0.883 | k=3]
+cos chat  ·  backend=stub  ·  τ_accept=0.3  τ_rethink=0.7
+[CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
+round 0  [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated  [σ_peak=0.33 action=ACCEPT route=LOCAL]
+[speed: 51 tok | 10969ms | 4.6 tok/s | TTFT 10969ms]
+[σ=0.333 | ACCEPT | FRESH | LOCAL | 4.6 tok/s | TTFT 10969ms | €0.0001]
+[σ_combined=0.379 | σ_logprob=0.333 σ_entropy=0.333 σ_perplexity=0.333 σ_consistency=0.564 | k=3]
+Run 5: σ_mean=0.2549 cache_hits=0
+
+=== TRAJECTORY ===
+run,sigma_mean,cache_hits,prompts
+1,0.2419,0,10
+2,0.2503,0,10
+3,0.2480,0,10
+4,0.2528,0,10
+5,0.2549,0,10
+First run σ_mean: 0.2419
+Last run  σ_mean: 0.2549
+Δ: +0.0130
+σ rising → higher mean (report as observed)
+
+Results: benchmarks/evolve_campaign/
+=== sigma_separation_pipeline_coschat ===
+=== FACTUAL :: How many legs does a spider have?
+FACTUAL      σ=N/A      N/A      N/A      How many legs does a spider have?
+=== FACTUAL :: What is the chemical formula for water?
+FACTUAL      σ=N/A      N/A      N/A      What is the chemical formula for water?
+=== FACTUAL :: What is the capital of Japan?
+FACTUAL      σ=N/A      N/A      N/A      What is the capital of Japan?
+=== REASONING :: What comes next in the sequence 1 1 2 3 5 8?
+REASONING    σ=N/A      N/A      N/A      What comes next in the sequence 1 1 2 3 5 8?
+=== REASONING :: What is 15 times 17?
+REASONING    σ=N/A      N/A      N/A      What is 15 times 17?
+=== REASONING :: A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?
+REASONING    σ=N/A      N/A      N/A      A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?
+=== CREATIVE :: Write a haiku about silence
+CREATIVE     σ=N/A      N/A      N/A      Write a haiku about silence
+=== CREATIVE :: Invent a name for a new color
+CREATIVE     σ=N/A      N/A      N/A      Invent a name for a new color
+=== CREATIVE :: Describe the taste of music in one word
+CREATIVE     σ=N/A      N/A      N/A      Describe the taste of music in one word
+=== SELF_AWARE :: What topics are you uncertain about?
+SELF_AWARE   σ=N/A      N/A      N/A      What topics are you uncertain about?
+=== SELF_AWARE :: Are you always correct?
+SELF_AWARE   σ=N/A      N/A      N/A      Are you always correct?
+=== SELF_AWARE :: Rate your confidence from 0 to 10
+SELF_AWARE   σ=N/A      N/A      N/A      Rate your confidence from 0 to 10
+=== IMPOSSIBLE :: What is the exact temperature in Helsinki right now?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What is the exact temperature in Helsinki right now?
+=== IMPOSSIBLE :: What will happen in the world tomorrow?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What will happen in the world tomorrow?
+=== IMPOSSIBLE :: What is the last digit of pi?
+IMPOSSIBLE   σ=N/A      N/A      N/A      What is the last digit of pi?
+
+=== σ Separation (cos chat pipeline) ===
+(no numeric σ rows in CSV — check cos output / UTF-8 locale)
+
+Wrote benchmarks/sigma_separation/pipeline_results.csv
+=== forgetting_benchmark ===
+=== Phase 1: Learn Physics ===
+  sigma=0  What is Newton's first law?
+  sigma=0  What is the speed of light in vacuum?
+  sigma=0  What causes gravity?
+  sigma=0  What is entropy?
+  sigma=0  What is quantum superposition?
+  sigma=0  What is kinetic energy?
+  sigma=0  State Ohm's law.
+  sigma=0  What is the difference between speed and velocity?
+  sigma=0  What is the Heisenberg uncertainty principle?
+  sigma=0  What is absolute zero in Celsius?
+=== Phase 2: Learn History ===
+  sigma=0  When did World War 2 end?
+  sigma=0  Who built the pyramids?
+  sigma=0  What caused the fall of the Western Roman Empire?
+  sigma=0  When was the printing press invented?
+  sigma=0  What was the Renaissance?
+  sigma=0  When did the Berlin Wall fall?
+  sigma=0  Who was the first president of the United States?
+  sigma=0  What year did Columbus reach the Americas?
+  sigma=0  What was the Magna Carta?
+  sigma=0  When did the Industrial Revolution begin?
+=== Phase 3: Re-test Physics ===
+  sigma=0  What is Newton's first law?
+  sigma=0  What is the speed of light in vacuum?
+  sigma=0  What causes gravity?
+  sigma=0  What is entropy?
+  sigma=0  What is quantum superposition?
+  sigma=0  What is kinetic energy?
+  sigma=0  State Ohm's law.
+  sigma=0  What is the difference between speed and velocity?
+  sigma=0  What is the Heisenberg uncertainty principle?
+  sigma=0  What is absolute zero in Celsius?
+
+=== RESULT ===
+Physics mean sigma phase1: 0.000
+Physics mean sigma phase3: 0.000
+Drift: 0.000
+PASS: no catastrophic drift (|drift| < 0.05)
+
+Wrote /Users/eliaslorenzo/Projects/creation-os-kernel/benchmarks/forgetting/results.csv and /Users/eliaslorenzo/Projects/creation-os-kernel/benchmarks/forgetting/log.txt

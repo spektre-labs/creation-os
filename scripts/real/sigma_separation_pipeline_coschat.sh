@@ -24,14 +24,18 @@ LOG="${OUTDIR}/pipeline_coschat_run.log"
 : >"$LOG"
 echo "category,prompt,sigma,action,route" >"$CSV"
 
+# Do not use `python3 - <<PY` with stdin from a pipe: stdin is the heredoc,
+# so sys.stdin.read() inside the script is empty.  Read cos output from env.
 extract_fields() {
-  python3 - <<'PY'
-import re, sys
-t = sys.stdin.read()
+  python3 -c '
+import os, re
+t = os.environ.get("COS_PIPELINE_CHAT_OUT", "") or ""
 sig = ""
-m = re.search(r"σ_combined=([0-9.]+)", t)
-if m:
-    sig = m.group(1)
+for pat in (r"σ_combined=([0-9.]+)", r"sigma_combined=([0-9.]+)"):
+    m = re.search(pat, t)
+    if m:
+        sig = m.group(1)
+        break
 if not sig:
     m = re.search(r"\[σ=([0-9.]+)", t)
     if m:
@@ -49,7 +53,7 @@ m = re.search(r"route=([A-Z0-9_()]+)", t)
 if m:
     rte = m.group(1)
 print(sig or "N/A", act, rte, sep="\t")
-PY
+'
 }
 
 for entry in \
@@ -75,7 +79,9 @@ for entry in \
   OUT="$(./cos chat --once --prompt "$PROMPT" --multi-sigma --verbose \
     --no-coherence --no-transcript 2>&1)" || true
   printf '%s\n' "$OUT" >>"$LOG"
-  read -r SIGMA ACTION ROUTE <<<"$(printf '%s' "$OUT" | extract_fields)"
+  export COS_PIPELINE_CHAT_OUT="$OUT"
+  read -r SIGMA ACTION ROUTE <<<"$(extract_fields)"
+  unset COS_PIPELINE_CHAT_OUT
   CAT="$CAT" PROMPT="$PROMPT" SIGMA="$SIGMA" ACTION="$ACTION" ROUTE="$ROUTE" python3 - <<'PY' >>"$CSV"
 import csv, os, sys
 w = csv.writer(sys.stdout, lineterminator="\n", quoting=csv.QUOTE_MINIMAL)

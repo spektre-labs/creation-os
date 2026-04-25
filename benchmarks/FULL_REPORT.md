@@ -1,146 +1,124 @@
 # Creation OS — Full Benchmark Report
 
-**Date (UTC):** 2026-04-24  
-**Model:** `gemma3:4b` via Ollama on `localhost:11434` (where noted in receipts).
+**Date (UTC):** 2026-04-25 (updated); prior Desktop receipts dated 2026-04-24 retained where referenced.  
+**Canonical tree for builds and gates:** `~/Projects/creation-os-kernel` (local APFS data volume, **not** iCloud Desktop).  
+**Model:** `gemma3:4b` via Ollama on `localhost:11434`.
 
-This report records **measured artifacts on disk** and **honest failures** for this runner. No fabricated throughput or harness scores.
-
----
-
-## Host constraint (merge gate and P9)
-
-On this machine, native `creation_os_*` binaries launched **from the Desktop workspace path** repeatedly stall in `_dyld_start` (dynamic loader) for extended periods; sampling shows 100% of samples in dyld before `main`. Copying the **same executable bytes** to `/tmp` and running from there completes in under one second (for example `creation_os_v132_persona --self-test`, `creation_os_check_state_ledger --help`, `./cos help`). `git archive HEAD` from this tree failed with **`fatal: mmap failed: Operation timed out`**, and full-directory `rsync` to `/tmp` was impractically slow from this path.
-
-**Consequence:** `make merge-gate` and the full P9 `make check-*` chain were **not brought to a green completion on this host**. Do not treat merge-gate as verified here; re-run from a clone on a **local, non–File-Provider** path (for example `~/Projects/creation-os-kernel`) or from a successful `git archive` extract on `/tmp`.
-
-**Mitigation committed in-repo:** `benchmarks/v132/check_v132_persona_adaptation.sh` runs the v132 binary via a **`mktemp` + `cp` + `/tmp/...` exec** wrapper so the v132 merge-gate script is reliable on affected hosts.
-
-| Gate | This runner |
-|------|-------------|
-| `make check-agi` | **Not completed** (stalled on `creation_os_check_state_ledger` from workspace path) |
-| `make check-inference-cache` | **Not run** (blocked by above) |
-| `make check-speculative-sigma` | **Not run** |
-| `make check-omega` | **Not run** |
-| `make check-energy-accounting` | **Not run** |
-| `make check-green-score` | **Not run** |
-| `make merge-gate` | **Not completed** |
-| `./cos help` / `./cos demo --batch` | **OK** when invoked from a **`/tmp` copy** of the `cos` binary (same bytes as workspace) |
-
-Partial merge-gate log (interrupted earlier run): `benchmarks/lm_eval/receipts/merge_gate_2026-04-24.log`.
+This report records **measured artifacts** and **honest limits**. No fabricated harness scores.
 
 ---
 
-## σ-Separation (`./cos chat` pipeline, gemma3:4b)
+## Host layout (iCloud vs local)
 
-Source log: `benchmarks/sigma_separation/pipeline_coschat_run.log`. CSV: `benchmarks/sigma_separation/pipeline_results.csv`.
+**Issue (Desktop / File Provider):** Running `creation_os_*` and some `git` operations from **`~/Desktop/creation-os-kernel`** caused `_dyld_start` stalls, `git archive` / `mmap` timeouts, and impractically slow full-tree `cp -R`.
+
+**Resolution:** Use **`~/Projects/creation-os-kernel`** as the working clone. A full **`cp -R` from Desktop was started but abandoned after ~45 min** (incomplete `.git`); the tree was populated with **`git clone file:///Users/eliaslorenzo/Desktop/creation-os-kernel`** (~6.5 min), then **`git remote set-url origin https://github.com/spektre-labs/creation-os.git`**. The Desktop copy remains as backup (**`cp`, not `mv`**).
+
+**Rule going forward:** run **`make`**, **`./cos`**, and **`make merge-gate`** only under **`~/Projects/creation-os-kernel`** (or another non-iCloud path).
+
+---
+
+## Quality gate (`~/Projects/creation-os-kernel`, 2026-04-25)
+
+Wall time for the chained block (sequential): **~93 s** end-to-end for the list below plus **`make merge-gate`**.
+
+| Target | Result |
+|--------|--------|
+| `make check-agi` | **PASS** |
+| `make check-inference-cache` | **PASS** |
+| `make check-speculative-sigma` | **PASS** |
+| `make check-omega` | **PASS** |
+| `make check-energy-accounting` | **PASS** |
+| `make check-green-score` | **PASS** |
+| `make merge-gate` | **PASS** |
+
+Smoke from the same tree (no `/tmp` wrapper needed):
+
+- `./cos help` — **OK** (instant).
+- `./cos demo --batch` — **OK**.
+
+Full hardening log (local): `/tmp/hardening_projects_2026-04-25.log` (if preserved on the machine that ran the suite).
+
+---
+
+## Git push (canonical remote)
+
+After merge-gate **PASS**, from **`~/Projects/creation-os-kernel`**:
+
+```text
+To https://github.com/spektre-labs/creation-os.git
+   88d6ce8..44149d5  main -> main
+```
+
+---
+
+## Ollama smoke
+
+```bash
+curl -sf http://localhost:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gemma3:4b","messages":[{"role":"user","content":"test"}],"stream":false,"max_tokens":10}'
+```
+
+**OK** — response body contained model text (prefix: `Okay! It looks like you're testing the`).
+
+---
+
+## Evolve campaign (`omega_evolve_final.sh`, 5×10)
+
+**Receipt:** `benchmarks/lm_eval/receipts/benchmarks_projects_2026-04-25.log` (full stdout).  
+**Trajectory:** `benchmarks/evolve_campaign/sigma_trajectory.csv`
+
+```csv
+run,sigma_mean,cache_hits,prompts
+1,0.2419,0,10
+2,0.2503,0,10
+3,0.2480,0,10
+4,0.2528,0,10
+5,0.2549,0,10
+```
+
+**Δ (run 5 − run 1):** **+0.0130** → **σ_mean rising** in this session (reported as observed). **`cache_hits=0`** for every run in this script’s accounting (no inference-cache hits on these prompts in this run).
+
+---
+
+## σ-Separation (`./cos chat` pipeline, 15 prompts)
+
+**Log:** `benchmarks/sigma_separation/pipeline_coschat_run.log` (2026-04-25 run from Projects).  
+**CSV:** `benchmarks/sigma_separation/pipeline_results.csv` was **rebuilt from the log** after fixing a bug in `scripts/real/sigma_separation_pipeline_coschat.sh` (heredoc Python previously read empty stdin instead of `cos` output).
 
 ```
-=== σ Separation (cos chat pipeline, gemma3:4b) ===
-FACTUAL      ████░░░░░░░░░░░░░░░░ mean=0.238 (n=3)
-REASONING    ████░░░░░░░░░░░░░░░░ mean=0.206 (n=3)
-CREATIVE     █████░░░░░░░░░░░░░░░ mean=0.270 (n=3)
-SELF_AWARE   █████░░░░░░░░░░░░░░░ mean=0.271 (n=3)
+=== σ Separation (backfilled from log, 2026-04-25) ===
+FACTUAL      ████░░░░░░░░░░░░░░░░ mean=0.210 (n=3)
+CREATIVE     ████░░░░░░░░░░░░░░░░ mean=0.227 (n=3)
+REASONING    ████░░░░░░░░░░░░░░░░ mean=0.204 (n=3)
+SELF_AWARE   █████░░░░░░░░░░░░░░░ mean=0.264 (n=3)
 IMPOSSIBLE   ████░░░░░░░░░░░░░░░░ mean=0.229 (n=3)
 
-Gap: 0.064
+Gap: 0.060
 No separation (threshold 0.15) ✗
 ```
 
 ---
 
-## σ-Separation (logprobs channel, same numeric run)
+## Ω-Loop (20 turns, prior receipt)
 
-After P5 showed different σ for an easy vs hard prompt, `pipeline_results_logprobs.csv` was saved as a **copy** of `pipeline_results.csv` for traceability (no second full 15-prompt sweep in this session). Charts match the block above.
-
----
-
-## Evolve campaign (5 runs × 10 prompts, engram on)
-
-Trajectory: `benchmarks/lm_eval/receipts/omega_evolve/sigma_trajectory.csv`  
-Campaign log: `benchmarks/lm_eval/receipts/omega_evolve_5x10_campaign.log`
-
-```csv
-run,sigma_mean,cache_hits
-1,0.2366,9
-2,0.2366,10
-3,0.2366,10
-4,0.2366,10
-5,0.2366,10
-```
-
-**Interpretation:** σ_mean is **flat** across all five runs (not declining). Cache hits rise after run 1, so most prompts hit **CACHE** in later runs; treat trajectory as dominated by cache + fixed prompts, not evidence of σ_mean learning.
-
----
-
-## Ω-Loop (20 turns, gemma3:4b)
-
-Transcript / embedded report tail: `benchmarks/lm_eval/receipts/omega_20turns_gemma3.txt` (excerpt):
-
-- Duration **0h 21m 59s**, **20** turns, **σ_mean 0.3104**, **k_eff 0.6896**, **20** episodes stored, grade **C (62.05/100)**.
-
-`./cos omega --report` redirected to `benchmarks/lm_eval/receipts/omega_20turns_report.txt` shows **0 turns** (empty / sim snapshot) — that file reflects the **CLI report path**, not the live `cos-omega` transcript; prefer **`omega_20turns_gemma3.txt`** and **`./cos monitor`** for the real 20-turn run.
-
-Monitor snapshot: `benchmarks/lm_eval/receipts/omega_20turns_monitor.txt`:
-
-```
-Turns: 20 | σ̄=0.290 | k̄=0.710 | Cache: 0%
-Energy: 1.25J | CO2: 0.0001g | Grade: C
-```
-
----
-
-## Logprobs in `cos chat` σ (P4)
-
-`src/import/bitnet_server.c` already requests **`logprobs` / `top_logprobs`**, parses token **`logprob`** values, aggregates with **`bns_sigma_from_logprobs_agg`** (`0.4·(1−mean p)+0.3·(1−exp min_lp)+0.3·low_conf_ratio`), and uses **0.5** when **`n <= 0`**. No code change was required for the formula stated in the task brief.
-
----
-
-## Quick verify (easy vs hard, P5)
-
-From **`benchmarks/lm_eval/receipts/gemma3_speed_2026-04-24.txt`** (wall clock includes model + pipeline):
-
-| Prompt | σ_combined (approx.) |
-|--------|------------------------|
-| What is 2+2? | **0.238** |
-| Solve P=NP | **0.325** |
-
-Different σ for easy vs hard in this snapshot; not a proof of separation across all categories (see gap **0.064** above).
+Unchanged from the 2026-04-24 Desktop-side receipt: **`benchmarks/lm_eval/receipts/omega_20turns_gemma3.txt`** — **20** turns, **σ_mean 0.3104**, grade **C (62.05/100)**. **`./cos omega --report`** snapshot with **0** turns is still **`benchmarks/lm_eval/receipts/omega_20turns_report.txt`** (CLI snapshot, not the live `cos-omega` transcript).
 
 ---
 
 ## Forgetting benchmark
 
-Run log: `benchmarks/forgetting/forgetting_run_2026-04-24.log` (and `benchmarks/lm_eval/receipts/forgetting_run_2026-04-24.log` if present).
-
-Script outcome: **PASS** (`|drift| < 0.05`) with physics mean σ **0.000** in both phases because the shell-side σ extractor printed **`sigma=0`** for every line (likely **UTF-8 / `σ_combined=`** parsing in the script, not necessarily zero model σ). Treat the **PASS/FAIL** line as authoritative for the scripted drift check; treat printed per-line σ as **untrusted** until the script is fixed.
+**PASS** on drift check (`|drift| < 0.05`) per script; per-line **`sigma=0`** in script output is still consistent with a **shell-side σ extraction bug** (UTF-8 / `σ_combined=`), not necessarily zero model σ. CSV: **`benchmarks/forgetting/results.csv`**.
 
 ---
 
-## Speed (six prompts, wall + σ)
+## Script fix (pipeline σ CSV)
 
-File: `benchmarks/lm_eval/receipts/gemma3_speed_2026-04-24.txt`
-
-```
-wall_ms=59324 sigma_combined=0.238 prompt=What is 2+2?
-wall_ms=41438 sigma_combined=0.234 prompt=Name three colors.
-wall_ms=86070 sigma_combined=0.242 prompt=Write a paragraph about AI.
-wall_ms=50904 sigma_combined=0.257 prompt=Explain relativity
-wall_ms=84494 sigma_combined=0.226 prompt=What is consciousness?
-wall_ms=70171 sigma_combined=0.325 prompt=Solve P=NP
-```
-
-Rough tok/s was not recomputed here; the receipt file records wall_ms and σ only.
+`scripts/real/sigma_separation_pipeline_coschat.sh`: `extract_fields` now reads **`COS_PIPELINE_CHAT_OUT`** from the environment (heredoc no longer steals stdin). Added **`sigma_combined=`** as an ASCII fallback pattern.
 
 ---
 
-## Scripts touched this session
+## Historical note (2026-04-24 Desktop-only receipts)
 
-- `benchmarks/v132/check_v132_persona_adaptation.sh` — `/tmp` exec wrapper for v132.
-- `scripts/real/omega_evolve_final.sh` — alternate 5×10 campaign (portable σ extraction).
-- `scripts/real/sigma_separation_pipeline_coschat.sh` — pipeline CSV + chart (no `grep -P`).
-
----
-
-## Git push policy
-
-**No `git push`** from this session: **`make merge-gate` was not verified green** on this host (per project rules). Re-run gates from a healthy clone path, then push.
+Earlier **`benchmarks/lm_eval/receipts/omega_evolve/sigma_trajectory.csv`** (flat **0.2366** with cache hits) and **`gemma3_speed_2026-04-24.txt`** remain valid as **that session’s** numbers; they differ from the 2026-04-25 **`benchmarks/evolve_campaign/`** run above.
