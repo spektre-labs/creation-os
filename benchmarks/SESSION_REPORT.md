@@ -19,7 +19,7 @@
 
 ## 3. Git push — commit hash
 
-- After `git push origin main`, confirm with: `git fetch origin && git log -1 --oneline origin/main`.
+- **Pushed:** `9865df3` to `origin/main` (`main` advanced from `b1472f4`).
 
 ## 4. GitHub Actions
 
