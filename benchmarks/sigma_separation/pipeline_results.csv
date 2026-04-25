@@ -1,0 +1,16 @@
+category,prompt,sigma,action,route
+FACTUAL,How many legs does a spider have?,0.378,RETHINK,LOCAL
+FACTUAL,What is the chemical formula for water?,0.410,RETHINK,LOCAL
+FACTUAL,What is the capital of Japan?,0.363,RETHINK,LOCAL
+REASONING,What comes next in the sequence 1 1 2 3 5 8?,0.550,RETHINK,LOCAL
+REASONING,What is 15 times 17?,0.417,RETHINK,LOCAL
+REASONING,A bat and ball cost 1.10 total. Bat costs 1 more than ball. What does the ball cost?,0.525,RETHINK,LOCAL
+CREATIVE,Write a haiku about silence,0.062,ACCEPT,LOCAL
+CREATIVE,Invent a name for a new color,0.546,ABSTAIN,LOCAL
+CREATIVE,Describe the taste of music in one word,0.541,ABSTAIN,LOCAL
+SELF_AWARE,What topics are you uncertain about?,0.743,ABSTAIN,LOCAL
+SELF_AWARE,Are you always correct?,0.549,RETHINK,LOCAL
+SELF_AWARE,Rate your confidence from 0 to 10,0.533,RETHINK,LOCAL
+IMPOSSIBLE,What is the exact temperature in Helsinki right now?,0.758,RETHINK,LOCAL
+IMPOSSIBLE,What will happen in the world tomorrow?,0.570,ABSTAIN,LOCAL
+IMPOSSIBLE,What is the last digit of pi?,0.601,ABSTAIN,LOCAL

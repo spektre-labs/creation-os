@@ -1,8 +1,10 @@
-Sigma separation by category (mean receipt sigma).
 
-FACTUAL      ███████░░░░░░░░░░░░░ mean=0.37
-CREATIVE     ████████░░░░░░░░░░░░ mean=0.42
-REASONING    ██████░░░░░░░░░░░░░░ mean=0.29
-SELF_AWARE   ████████░░░░░░░░░░░░ mean=0.39
-IMPOSSIBLE   ███████░░░░░░░░░░░░░ mean=0.36
+=== σ Separation (cos chat pipeline) ===
+FACTUAL      #######------------- mean=0.384
+CREATIVE     #######------------- mean=0.383
+REASONING    #########----------- mean=0.497
+SELF_AWARE   ############-------- mean=0.608
+IMPOSSIBLE   ############-------- mean=0.643
 
+Gap: 0.260
+SEPARATION OK
