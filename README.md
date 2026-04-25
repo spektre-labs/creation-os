@@ -5,6 +5,7 @@
 <h1 align="center">Creation OS</h1>
 
 <p align="center">
+  <a href="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml"><img src="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   <a href="docs/CLAIM_DISCIPLINE.md" title="Evidence classes — read before citing numbers"><img src="https://img.shields.io/badge/claims-CLAIM__DISCIPLINE-94a3b8?style=flat-square&labelColor=0f172a" alt="Claim discipline"/></a>
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/release-v3.2.0--HORIZON-0ea5e9?style=flat-square&labelColor=1e293b" alt="Release v3.2.0 HORIZON"/></a>
   <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-6%2F6-34d399?style=flat-square&labelColor=065f46" alt="Lean 6/6"/></a>

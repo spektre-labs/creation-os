@@ -1,5 +1,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-name: CI
+# Primary CI: fast smoke + full merge-gate (no Ollama; no model download).
+# Heavy stack / formal / ASan jobs live in ci-stack.yml (manual + weekly).
+name: Creation OS CI
 
 concurrency:
   group: creation-os-ci-${{ github.workflow }}-${{ github.ref }}
@@ -7,58 +9,72 @@ concurrency:
 
 on:
   push:
-    branches: [main, master]
+    branches: [main]
   pull_request:
-    branches: [main, master]
+    branches: [main]
 
 jobs:
-  c11-linux:
+  build-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 20
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Verilator and Yosys (RTL gate)
-        run: sudo apt-get update -qq && sudo apt-get install -qq -y verilator yosys
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
-      - name: Merge gate + stack-ultimate + Rust iron lint
-        run: make merge-gate && make stack-ultimate && make rust-iron-lint
-
-  oss-cad-formal:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: YosysHQ/setup-oss-cad-suite@v4
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-
-      - name: OSS formal extreme (SBY prove+cover, Yosys SAT, EQY, Rust iron lint)
+      - name: Install C build dependencies
         run: |
-          set -e
-          yosys --version
-          sby --version
-          command -v eqy && eqy --version || true
-          make oss-formal-extreme
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
 
-  c11-asan-ubsan:
+      - name: Build cos + cos-demo
+        run: |
+          make cos cos-demo
+          echo "BUILD OK"
+
+      - name: cos demo --batch
+        run: |
+          ./cos demo --batch
+          echo "DEMO OK"
+
+      - name: cos help
+        run: |
+          ./cos help
+          echo "HELP OK"
+
+      - name: make check-agi
+        run: |
+          make check-agi
+          echo "AGI CHECKS OK"
+
+      - name: make check-inference-cache
+        run: make check-inference-cache
+
+      - name: make check-speculative-sigma
+        run: make check-speculative-sigma
+
+      - name: make check-omega
+        run: make check-omega
+
+      - name: make check-energy-accounting
+        run: make check-energy-accounting
+
+      - name: make check-green-score
+        run: make check-green-score
+
+  merge-gate:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
+    needs: build-and-test
+
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install clang
-        run: sudo apt-get update -qq && sudo apt-get install -qq -y clang
+      - name: Install C build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
 
-      - name: ASan + UBSan make check
-        env:
-          CC: clang
-          CFLAGS: -O1 -g -std=c11 -Wall -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -march=native -D_GNU_SOURCE -D_DARWIN_C_SOURCE
-          LDFLAGS: -lm -fsanitize=address,undefined
-        run: make clean && make check
+      - name: make merge-gate
+        run: |
+          make merge-gate
+          echo "MERGE GATE PASS"

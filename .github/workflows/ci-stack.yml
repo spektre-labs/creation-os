@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Extended CI: formal RTL, OSS CAD suite, ASan/UBSan, stack-ultimate + Rust lint.
+# Not run on every PR (too heavy for free minutes). Use workflow_dispatch or weekly schedule.
+name: CI stack
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: creation-os-ci-stack-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  c11-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Verilator and Yosys (RTL gate)
+        run: sudo apt-get update -qq && sudo apt-get install -qq -y verilator yosys
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install C build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
+
+      - name: Stack ultimate + Rust iron lint
+        run: make stack-ultimate && make rust-iron-lint
+
+  oss-cad-formal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: YosysHQ/setup-oss-cad-suite@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Install C build dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
+
+      - name: OSS formal extreme (SBY prove+cover, Yosys SAT, EQY, Rust iron lint)
+        run: |
+          set -e
+          yosys --version
+          sby --version
+          command -v eqy && eqy --version || true
+          make oss-formal-extreme
+
+  c11-asan-ubsan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang + C deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang build-essential libsqlite3-dev libcurl4-openssl-dev
+
+      - name: ASan + UBSan make check
+        env:
+          CC: clang
+          CFLAGS: -O1 -g -std=c11 -Wall -fsanitize=address,undefined -fno-omit-frame-pointer -fno-sanitize-recover=all -march=native -D_GNU_SOURCE -D_DARWIN_C_SOURCE
+          LDFLAGS: -lm -fsanitize=address,undefined
+        run: make clean && make check

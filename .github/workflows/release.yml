@@ -112,11 +112,25 @@ jobs:
     needs: [binaries-macos, binaries-linux]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
+      - uses: actions/checkout@v4
+
+      - name: Install C build dependencies (bare linux cos attach)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
+
+      - name: Build cos + cos-demo for release upload
+        run: make cos cos-demo
+
       - uses: actions/download-artifact@v4
         with:
           path: dist
+
       - name: Attach to release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/**/*.tar.gz
+          files: |
+            dist/**/*.tar.gz
+            cos
+            cos-demo
           generate_release_notes: true
