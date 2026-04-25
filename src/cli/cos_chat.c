@@ -85,6 +85,7 @@
 #include "semantic_entropy.h"
 #include "semantic_sigma.h"
 #include "bitnet_server.h"
+#include "text_similarity.h"
 #include "cos_tui.h"
 #include "speculative_decode.h"
 
@@ -245,7 +246,7 @@ static void chat_metacog_levels(const char *prompt,
                                 cos_ultra_metacog_levels_t *lv);
 
 static int chat_multi_shadow(cos_pipeline_config_t *cfg,
-                             int semantic_sigma_triple,
+                             int http_sem_triple,
                              const char *input,
                              const cos_pipeline_result_t *r_meta,
                              const char *primary_text,
@@ -258,7 +259,7 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
     float lp_sig_snap[8];
     (void)cos_bitnet_server_copy_last_token_sigmas(lp_sig_snap, 8,
                                                   &n_lp_snap);
-    int   has_lp = (n_lp_snap > 0);
+    int has_lp = (n_lp_snap > 0);
 
     float sigma_meta = 0.10f;
     if (r_meta != NULL && input != NULL) {
@@ -276,39 +277,59 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
     const char *texts[COS_CHAT_SEM_SHADOW_MAX];
     char         copies[COS_CHAT_SEM_SHADOW_MAX][COS_CHAT_MULTI_TEXT_CAP];
     int          n = 0;
-    if (primary_text != NULL) {
-        snprintf(copies[n], sizeof(copies[n]), "%s", primary_text);
-        texts[n] = copies[n];
-        n++;
-    }
 
-    int want_sem = semantic_sigma_triple != 0 && cos_cli_use_bitnet_http() != 0;
+    int want_http_triple =
+        (http_sem_triple != 0) && (cos_cli_use_bitnet_http() != 0)
+        && (input != NULL);
+    float sigma_lp_triple = -1.0f;
 
-    if (want_sem && input != NULL && n >= 1) {
+    if (want_http_triple) {
         const char *sysp =
             (cfg->codex != NULL && cfg->codex->bytes != NULL
              && cfg->codex->size > 0)
                 ? cfg->codex->bytes
                 : NULL;
-        const float temps[2] = { 0.5f, 1.0f };
-        for (int ti = 0; ti < 2 && n < COS_CHAT_SEM_SHADOW_MAX; ++ti) {
-            cos_bitnet_server_params_t pp;
-            memset(&pp, 0, sizeof(pp));
-            pp.n_predict     = 96;
-            pp.n_probs       = 3;
-            pp.seed          = 700 + ti * 7919;
-            pp.temperature   = temps[ti];
-            pp.system_prompt = sysp;
-            cos_bitnet_server_result_t rr;
-            memset(&rr, 0, sizeof(rr));
-            if (cos_bitnet_server_complete(input, &pp, &rr) == 0
-                && rr.text != NULL && rr.text[0] != '\0') {
-                snprintf(copies[n], sizeof(copies[n]), "%s", rr.text);
-                texts[n] = copies[n];
-                n++;
+        const float temps[3] = { 0.3f, 0.7f, 1.2f };
+        n = 0;
+        for (int ti = 0; ti < 3 && n < COS_CHAT_SEM_SHADOW_MAX; ++ti) {
+            if (ti == 0) {
+                cos_bitnet_server_params_t pp;
+                memset(&pp, 0, sizeof(pp));
+                pp.n_predict     = 96;
+                pp.n_probs       = 3;
+                pp.seed          = 700 + ti * 7919;
+                pp.temperature   = temps[ti];
+                pp.system_prompt = sysp;
+                cos_bitnet_server_result_t rr;
+                memset(&rr, 0, sizeof(rr));
+                if (cos_bitnet_server_complete(input, &pp, &rr) == 0
+                    && rr.text != NULL && rr.text[0] != '\0') {
+                    snprintf(copies[n], sizeof(copies[n]), "%s", rr.text);
+                    texts[n] = copies[n];
+                    sigma_lp_triple = rr.sigma;
+                    n++;
+                }
+            } else {
+                char *tx =
+                    cos_bitnet_query_temp(0, input, sysp, temps[ti]);
+                if (tx != NULL && tx[0] != '\0') {
+                    snprintf(copies[n], sizeof(copies[n]), "%s", tx);
+                    texts[n] = copies[n];
+                    n++;
+                }
+                if (tx != NULL)
+                    free(tx);
             }
         }
+        (void)cos_bitnet_server_copy_last_token_sigmas(lp_sig_snap, 8,
+                                                      &n_lp_snap);
+        has_lp = (n_lp_snap > 0);
     } else {
+        if (primary_text != NULL) {
+            snprintf(copies[n], sizeof(copies[n]), "%s", primary_text);
+            texts[n] = copies[n];
+            n++;
+        }
         for (int k = 0; k < K; ++k) {
             if (cfg->generate == NULL) break;
             const char *t = NULL;
@@ -324,38 +345,46 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
         }
     }
 
-    float sigma_consistency =
-        (n >= 2) ? cos_multi_sigma_consistency(texts, n) : 0.0f;
+    float sigma_consistency = 0.0f;
+    if (want_http_triple && n == 3) {
+        float s01 = cos_text_jaccard(texts[0], texts[1]);
+        float s02 = cos_text_jaccard(texts[0], texts[2]);
+        float s12 = cos_text_jaccard(texts[1], texts[2]);
+        float mean_sim = (s01 + s02 + s12) / 3.0f;
+        sigma_consistency = 1.0f - mean_sim;
+    } else if (n >= 2) {
+        sigma_consistency = cos_multi_sigma_consistency(texts, n);
+    }
     if (sigma_consistency < 0.0f) sigma_consistency = 0.0f;
 
     float s_lp = primary_sigma;
+    if (want_http_triple && n >= 1 && sigma_lp_triple >= 0.0f)
+        s_lp = sigma_lp_triple;
     if (s_lp < 0.0f) s_lp = 0.0f;
     if (s_lp > 1.0f) s_lp = 1.0f;
 
-    if (cos_multi_sigma_combine(s_lp, s_lp, s_lp,
-                                sigma_consistency, NULL, &out->ens) != 0)
-        return -1;
-
-    if (want_sem && n >= 2) {
-        float s_sem        = cos_multi_sigma_consistency(texts, n);
+    if (want_http_triple && n >= 2) {
+        float s_sem = sigma_consistency;
         if (s_sem < 0.0f) s_sem = 0.0f;
-        int   has_sem_full = (n >= 3);
-        float blend;
-        if (has_lp && has_sem_full) {
-            blend = 0.5f * s_lp + 0.3f * s_sem + 0.2f * sigma_meta;
-        } else if (has_lp) {
-            blend = 0.7f * s_lp + 0.3f * sigma_meta;
-        } else {
-            blend = 0.7f * s_sem + 0.3f * sigma_meta;
-        }
+        float blend = 0.7f * s_sem + 0.3f * s_lp;
         if (blend < 0.0f) blend = 0.0f;
         if (blend > 1.0f) blend = 1.0f;
+        out->ens.sigma_logprob     = s_lp;
+        out->ens.sigma_entropy     = s_lp;
+        out->ens.sigma_perplexity  = s_lp;
         out->ens.sigma_consistency = s_sem;
         out->ens.sigma_combined    = blend;
+    } else {
+        if (cos_multi_sigma_combine(s_lp, s_lp, s_lp,
+                                    sigma_consistency, NULL, &out->ens)
+            != 0)
+            return -1;
     }
 
     out->have   = 1;
     out->k_used = n;
+    (void)sigma_meta;
+    (void)has_lp; /* retained for future weighting vs token logprobs */
     return 0;
 }
 
@@ -638,6 +667,8 @@ typedef struct {
     int   proof_receipt_echo;
     int   semantic_entropy;
     int   semantic_sigma;
+    /** 1 = skip HTTP triple-sample σ (single logprob shadow only). */
+    int   fast_sigma;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -1331,9 +1362,12 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             feat != NULL && feat->multi_sigma && !skip_multi_verify
             && (!feat->adaptive_compute || kernel_cap >= 10);
         if (allow_multi) {
-            if (chat_multi_shadow(cfg_rw,
-                                  feat != NULL && feat->semantic_sigma,
-                                  prompt, &r, r.response, r.sigma, &ms) == 0) {
+            int hmt = (cos_cli_use_bitnet_http() != 0)
+                      && (feat != NULL)
+                      && ((feat->semantic_sigma != 0)
+                          || (feat->fast_sigma == 0));
+            if (chat_multi_shadow(cfg_rw, hmt, prompt, &r, r.response, r.sigma,
+                                  &ms) == 0) {
                 have_ms = 1;
             }
         }
@@ -1593,6 +1627,7 @@ int main(int argc, char **argv) {
     int         tui_cli            = -1; /* unset: TTY REPL on, --once/pipe off */
     int         use_tui            = 0;
     int         spec_decode        = 0;
+    int         fast_sigma         = 0;
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -1635,6 +1670,8 @@ int main(int argc, char **argv) {
             icl_rethink = 1;
         }         else if (strcmp(argv[i], "--multi-sigma") == 0) {
             multi_sigma = 1;
+        } else if (strcmp(argv[i], "--fast") == 0) {
+            fast_sigma = 1;
         } else if (strcmp(argv[i], "--ttt") == 0) {
             want_ttt = 1;
         } else if (strcmp(argv[i], "--no-multi-sigma") == 0) {
@@ -1711,12 +1748,14 @@ int main(int argc, char **argv) {
                 "  --icl-k N           number of exemplars (default 3, max 8)\n"
                 "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
                 "  --multi-sigma       emit σ_combined (SCI-5) shadow per turn\n"
+                "  --fast              with --multi-sigma + HTTP: logprob-only shadow\n"
+                "                      (skip 3×temperature semantic sampling)\n"
                 "  --ttt               ULTRA-8: test-time sketch on RETHINK (Qwen path)\n"
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
                 "  --no-semantic-entropy  disable (overrides COS_CHAT_SEMANTIC_ENTROPY=1)\n"
-                "  --semantic-sigma    triple-sample σ (T=0.5/1.0) + blend into σ_combined\n"
-                "                      with --multi-sigma (HTTP backend); 2 extra inferences\n"
+                "  --semantic-sigma    force HTTP triple-sample path (same as default\n"
+                "                      when --fast is off); legacy env COS_CHAT_SEMANTIC_SIGMA\n"
                 "  --no-semantic-sigma disable (overrides COS_CHAT_SEMANTIC_SIGMA=1)\n"
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
@@ -2097,6 +2136,7 @@ int main(int argc, char **argv) {
         feat.proof_receipt_echo   = want_proof_receipt;
         feat.semantic_entropy     = semantic_entropy;
         feat.semantic_sigma       = semantic_sigma;
+        feat.fast_sigma           = fast_sigma;
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
@@ -2202,6 +2242,7 @@ int main(int argc, char **argv) {
         rfeat.proof_receipt_echo   = want_proof_receipt;
         rfeat.semantic_entropy     = semantic_entropy;
         rfeat.semantic_sigma       = semantic_sigma;
+        rfeat.fast_sigma           = fast_sigma;
 
         cos_pipeline_result_t r;
         memset(&r, 0, sizeof(r));
@@ -2387,6 +2428,9 @@ int main(int argc, char **argv) {
         xf.semantic_cache     = semantic_cache;
         xf.speculative_sigma  = speculative_sigma;
         xf.knowledge_graph   = knowledge_graph;
+        xf.semantic_entropy  = semantic_entropy;
+        xf.semantic_sigma    = semantic_sigma;
+        xf.fast_sigma        = fast_sigma;
 
         chat_multi_t ms;
         memset(&ms, 0, sizeof(ms));
@@ -2394,13 +2438,15 @@ int main(int argc, char **argv) {
         {
             int allow_ms = (multi_sigma || verbose) && !skip_multi_verify
                 && (!adaptive_compute || kernel_cap >= 10);
-            if (allow_ms)
-                ms_ok =
-                    (chat_multi_shadow(&cfg,
-                                       rfeat.semantic_sigma, line, &r,
-                                       r.response, r.sigma, &ms) == 0)
-                        ? 1
-                        : 0;
+            if (allow_ms) {
+                int hmt = (cos_cli_use_bitnet_http() != 0)
+                          && ((rfeat.semantic_sigma != 0)
+                              || (rfeat.fast_sigma == 0));
+                ms_ok = (chat_multi_shadow(&cfg, hmt, line, &r, r.response,
+                                           r.sigma, &ms) == 0)
+                            ? 1
+                            : 0;
+            }
         }
         chat_agi_after_turn(&cfg, line, &r, &xf, &ms, ms_ok);
         if (ms_ok) {

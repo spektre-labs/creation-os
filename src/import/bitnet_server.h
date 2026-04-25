@@ -248,6 +248,12 @@ int  cos_bitnet_server_is_healthy(void);
 void cos_bitnet_server_diag(const char **out_host, int *out_port,
                             int *out_pid);
 
+/* One chat completion at `temperature`; returns malloc'd text (caller
+ * frees) or NULL.  port <= 0 keeps the current COS_BITNET_SERVER_PORT
+ * snapshot; port > 0 temporarily overrides the port for this call. */
+char *cos_bitnet_query_temp(int port, const char *prompt,
+                            const char *system, float temperature);
+
 #ifdef __cplusplus
 }
 #endif

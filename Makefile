@@ -304,8 +304,8 @@ help:
 	@echo "  all        — standalone + oracle + bench + physics + test"
 	@echo "  clean      — remove build artifacts"
 
-check: standalone test
-	@echo "check: OK (standalone + test)"
+check: standalone test check-text-similarity
+	@echo "check: OK (standalone + test + text_similarity)"
 
 # Portable kernel test + all standalone --self-test matrices (184 @ v26; +70 @ v27; +29 @ v28; +22 @ v29). CI and publish script use this.
 merge-gate:
@@ -6235,6 +6235,7 @@ COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
 # — it's only ever invoked from cos_chat's escalate callback, which
 # lives in cos-chat's link closure.
 cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+          src/sigma/text_similarity.c \
           src/sigma/ttt/inplace_ttt.c \
           src/sigma/pipeline/conformal.c \
           src/sigma/pipeline/multi_sigma.c \
@@ -6254,6 +6255,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/sigma/text_similarity.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
 	    src/sigma/pipeline/multi_sigma.c \
@@ -6349,6 +6351,7 @@ COS_THINK_CLI_AUX = src/sigma/pipeline/engram_persist.c \
           src/sigma/state_ledger.c \
           src/sigma/error_attribution.c \
           src/sigma/engram_episodic.c \
+          src/sigma/text_similarity.c \
           src/cli/escalation.c
 
 COS_LEARN_WEB_SRCS = src/sigma/learn_engine.c src/sigma/living_weights.c \
@@ -6427,7 +6430,8 @@ check-world-model: creation_os_check_world_model
 # --- σ-multimodal perception (vision / audio HTTP clients + fusion) -----
 PERCEPTION_LINK_SRCS = src/sigma/perception.c src/sigma/error_attribution.c \
 	src/import/bitnet_server.c src/import/bitnet_sigma.c $(COS_EDGE_INF) \
-	src/sigma/knowledge_graph.c src/sigma/engram_episodic.c
+	src/sigma/knowledge_graph.c src/sigma/engram_episodic.c \
+	src/sigma/text_similarity.c
 
 creation_os_check_sensor_fusion: tests/agi/check_sensor_fusion_main.c \
 		src/sigma/sensor_fusion.c $(COS_EDGE_INF)
@@ -6497,7 +6501,8 @@ FED_LIB_SRCS = src/sigma/federation.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
 	src/sigma/channels.c \
 	src/sigma/state_ledger.c src/sigma/pipeline/reinforce.c \
-	src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	src/sigma/engram_episodic.c src/sigma/text_similarity.c \
+	src/sigma/error_attribution.c \
 	src/sigma/knowledge_graph.c src/sigma/skill_distill.c \
 	$(COS_EDGE_INF)
 
@@ -6618,7 +6623,8 @@ cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 EMBODY_CHECK_SRCS = src/sigma/embodiment.c src/sigma/physics_model.c \
 	src/sigma/sovereign_limits.c src/sigma/state_ledger.c \
 	src/sigma/pipeline/reinforce.c src/sigma/knowledge_graph.c \
-	src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	src/sigma/engram_episodic.c src/sigma/text_similarity.c \
+	src/sigma/error_attribution.c \
 	$(COS_EDGE_INF)
 
 creation_os_check_physics_model: tests/agi/check_physics_model_main.c \
@@ -6765,9 +6771,10 @@ check-agi-icl: creation_os_inplace_ttt cos-chat
 	@echo "check-agi-icl: OK (inplace_ttt self-test + cos-chat links)"
 
 creation_os_cos_memory: src/cli/cos_memory_cli.c src/sigma/engram_episodic.c \
-                       src/sigma/error_attribution.c
+                       src/sigma/text_similarity.c src/sigma/error_attribution.c
 	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline -o $@ \
 	    src/cli/cos_memory_cli.c src/sigma/engram_episodic.c \
+	    src/sigma/text_similarity.c \
 	    src/sigma/error_attribution.c $(LDFLAGS) -lsqlite3
 
 creation_os_check_state_ledger: src/sigma/state_ledger.c \
@@ -6794,15 +6801,27 @@ creation_os_check_engram_episodic: src/sigma/engram_episodic.c \
                                   src/sigma/error_attribution.c \
                                   tests/agi/check_engram_episodic_main.c
 	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline -o $@ \
-	    src/sigma/engram_episodic.c src/sigma/error_attribution.c \
+	    src/sigma/engram_episodic.c src/sigma/text_similarity.c \
+	    src/sigma/error_attribution.c \
 	    tests/agi/check_engram_episodic_main.c $(LDFLAGS) -lsqlite3
 
 check-engram-episodic: creation_os_check_engram_episodic
 	@./creation_os_check_engram_episodic
 	@echo "check-engram-episodic: OK"
 
-check-agi: check-state-ledger check-error-attribution check-engram-episodic
-	@echo "check-agi: OK (state ledger + error attribution + episodic memory)"
+creation_os_check_text_similarity: tests/agi/check_text_similarity_main.c \
+		src/sigma/text_similarity.c
+	$(CC) $(CFLAGS) -Isrc/sigma -o $@ \
+	    tests/agi/check_text_similarity_main.c src/sigma/text_similarity.c \
+	    $(LDFLAGS)
+
+check-text-similarity: creation_os_check_text_similarity
+	@./creation_os_check_text_similarity
+	@echo "check-text-similarity: OK (Jaccard + normalize self-test)"
+
+check-agi: check-state-ledger check-error-attribution check-engram-episodic \
+	check-text-similarity
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c
@@ -7811,7 +7830,7 @@ check-sigma-coverage-curve: creation_os_sigma_coverage_curve
 # perplexity, regeneration consistency) weighted into one combined
 # score that feeds into the same conformal calibration surface as
 # the scalar σ.  Library + demo CLI.  No network, libm only.
-SIGMA_MULTI_INC  = -Isrc/sigma/pipeline
+SIGMA_MULTI_INC  = -Isrc/sigma/pipeline -Isrc/sigma
 SIGMA_MULTI_SRCS = src/sigma/pipeline/multi_sigma.c
 
 creation_os_sigma_multi: $(SIGMA_MULTI_SRCS) \
@@ -7957,7 +7976,8 @@ check-cos-mcp: cos-mcp
 SIGMA_A2A_INC  = -Isrc/sigma/pipeline -Isrc/sigma -Isrc/sigma/tools
 SIGMA_A2A_SRCS = src/sigma/pipeline/a2a.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
-	src/sigma/channels.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
+	src/sigma/channels.c src/sigma/engram_episodic.c \
+	src/sigma/text_similarity.c src/sigma/error_attribution.c
 
 creation_os_sigma_a2a: $(SIGMA_A2A_SRCS) \
                       src/sigma/pipeline/a2a_main.c
@@ -10187,17 +10207,19 @@ chace:
 
 # v36: MCP-native σ server (JSON-RPC over STDIO + optional HTTP shim).
 MCP_SRCS = src/mcp/sigma_server.c src/mcp/sigma_server_http.c src/sigma/decompose.c src/sigma/calibrate.c src/sigma/channels.c src/sigma/channels_v34.c src/server/json_esc.c \
-	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
+	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c src/sigma/engram_episodic.c src/sigma/text_similarity.c src/sigma/error_attribution.c
 
 standalone-mcp: $(MCP_SRCS)
 	$(CC) $(CFLAGS) -I. -Isrc/sigma -Isrc/sigma/tools -o creation_os_mcp $(MCP_SRCS) $(LDFLAGS) -lsqlite3
 
 creation_os_check_mcp_sigma: tests/agi/check_mcp_sigma_main.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c \
-	src/sigma/channels.c src/sigma/engram_episodic.c src/sigma/error_attribution.c
+	src/sigma/channels.c src/sigma/engram_episodic.c src/sigma/text_similarity.c \
+	src/sigma/error_attribution.c
 	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/tools -o $@ tests/agi/check_mcp_sigma_main.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/tools/sigma_tools.c src/sigma/channels.c \
-	    src/sigma/engram_episodic.c src/sigma/error_attribution.c $(LDFLAGS) -lsqlite3
+	    src/sigma/engram_episodic.c src/sigma/text_similarity.c \
+	    src/sigma/error_attribution.c $(LDFLAGS) -lsqlite3
 
 check-mcp-sigma: standalone-mcp creation_os_check_mcp_sigma
 	@./creation_os_mcp --self-test

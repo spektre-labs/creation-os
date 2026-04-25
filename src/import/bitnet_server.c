@@ -2580,3 +2580,52 @@ int cos_bitnet_server_copy_last_token_sigmas(float *dst, int cap,
         memcpy(dst, g_bns_last_tok_sigma, (size_t)c * sizeof(float));
     return 0;
 }
+
+char *cos_bitnet_query_temp(int port, const char *prompt,
+                            const char *system, float temperature)
+{
+    if (prompt == NULL)
+        return NULL;
+
+    char        prev_buf[96];
+    int         had_prev = 0;
+    const char *prev = NULL;
+
+    if (port > 0) {
+        prev = getenv("COS_BITNET_SERVER_PORT");
+        if (prev != NULL && prev[0] != '\0') {
+            (void)snprintf(prev_buf, sizeof prev_buf, "%s", prev);
+            had_prev = 1;
+        }
+        char portbuf[32];
+        (void)snprintf(portbuf, sizeof portbuf, "%d", port);
+        if (setenv("COS_BITNET_SERVER_PORT", portbuf, 1) != 0)
+            return NULL;
+        cos_bitnet_server_invalidate_config();
+    }
+
+    cos_bitnet_server_params_t pp;
+    memset(&pp, 0, sizeof(pp));
+    pp.n_predict     = 96;
+    pp.n_probs       = 3;
+    pp.temperature   = temperature;
+    pp.system_prompt = system;
+    pp.seed          = -1;
+
+    cos_bitnet_server_result_t rr;
+    memset(&rr, 0, sizeof(rr));
+    int rc = cos_bitnet_server_complete(prompt, &pp, &rr);
+
+    char *out = NULL;
+    if (rc == 0 && rr.text != NULL && rr.text[0] != '\0')
+        out = strdup(rr.text);
+
+    if (port > 0) {
+        if (had_prev)
+            (void)setenv("COS_BITNET_SERVER_PORT", prev_buf, 1);
+        else
+            (void)unsetenv("COS_BITNET_SERVER_PORT");
+        cos_bitnet_server_invalidate_config();
+    }
+    return out;
+}

@@ -1,5 +1,6 @@
 /* Persistent episodic→semantic SQLite memory. */
 #include "engram_episodic.h"
+#include "text_similarity.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -38,9 +39,12 @@ static sqlite3 *db_ep = NULL;
 static sqlite3 *db_sem = NULL;
 
 uint64_t cos_engram_prompt_hash(const char *prompt_utf8) {
-    const unsigned char *s = (const unsigned char *)prompt_utf8;
-    uint64_t h = 14695981039346656037ULL;
-    while (s && *s) {
+    char norm[2048];
+    cos_text_normalize(prompt_utf8 != NULL ? prompt_utf8 : "", norm,
+                       (int)sizeof norm);
+    const unsigned char *s = (const unsigned char *)norm;
+    uint64_t             h = 14695981039346656037ULL;
+    while (*s) {
         h ^= (uint64_t)*s++;
         h *= 1099511628211ULL;
     }
@@ -498,6 +502,11 @@ int cos_engram_episodic_self_test(void) {
 
     if (cos_engram_prompt_hash("abc") != cos_engram_prompt_hash("abc"))
         return 1;
+    if (cos_engram_prompt_hash("AbC") != cos_engram_prompt_hash("abc"))
+        return 30;
+    if (cos_engram_prompt_hash("  hello   world  ")
+        != cos_engram_prompt_hash("hello world"))
+        return 31;
     if (cos_engram_prompt_hash("x") == cos_engram_prompt_hash("y"))
         return 2;
 

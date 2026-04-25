@@ -26,15 +26,18 @@ run_chat() {
 }
 
 extract_sigma() {
-    python3 - <<'PY'
-import re, sys
-t = sys.stdin.read()
-# Prefer SCI-5 shadow line when --multi-sigma
+    python3 -c '
+import os, re
+t = os.environ.get("COS_FORGET_CHAT_OUT", "") or ""
 m = re.search(r"σ_combined=([0-9.]+)", t)
+if not m:
+    m = re.search(r"sigma_combined=([0-9.]+)", t, re.I)
+if not m:
+    m = re.search(r"σ=([0-9.]+)", t)
 if not m:
     m = re.search(r"\[σ=([0-9.]+)", t)
 print(m.group(1) if m else "")
-PY
+'
 }
 
 memory_consolidate() {
@@ -76,7 +79,9 @@ echo "phase,prompt,sigma" >"$OUTDIR/results.csv"
     for P in "${PHYSICS[@]}"; do
         OUT="$(run_chat --once --prompt "$P" --multi-sigma \
             --no-coherence --no-transcript --no-stream --no-tui)"
-        S="$(echo "$OUT" | extract_sigma)"
+        export COS_FORGET_CHAT_OUT="$OUT"
+        S="$(extract_sigma)"
+        unset COS_FORGET_CHAT_OUT
         [[ -n "$S" ]] || S="0"
         ep="$(echo "$P" | sed 's/"/\\"/g')"
         echo "physics_phase1,\"$ep\",$S" >>"$OUTDIR/results.csv"
@@ -88,7 +93,9 @@ echo "phase,prompt,sigma" >"$OUTDIR/results.csv"
     for P in "${HISTORY[@]}"; do
         OUT="$(run_chat --once --prompt "$P" --multi-sigma \
             --no-coherence --no-transcript --no-stream --no-tui)"
-        S="$(echo "$OUT" | extract_sigma)"
+        export COS_FORGET_CHAT_OUT="$OUT"
+        S="$(extract_sigma)"
+        unset COS_FORGET_CHAT_OUT
         [[ -n "$S" ]] || S="0"
         ep="$(echo "$P" | sed 's/"/\\"/g')"
         echo "history,\"$ep\",$S" >>"$OUTDIR/results.csv"
@@ -101,7 +108,9 @@ echo "phase,prompt,sigma" >"$OUTDIR/results.csv"
         OUT="$(run_chat --once --prompt "$P" --multi-sigma \
             --semantic-cache --no-coherence --no-transcript --no-stream \
             --no-tui)"
-        S="$(echo "$OUT" | extract_sigma)"
+        export COS_FORGET_CHAT_OUT="$OUT"
+        S="$(extract_sigma)"
+        unset COS_FORGET_CHAT_OUT
         [[ -n "$S" ]] || S="0"
         ep="$(echo "$P" | sed 's/"/\\"/g')"
         echo "physics_phase3,\"$ep\",$S" >>"$OUTDIR/results.csv"
