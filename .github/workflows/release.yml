@@ -78,6 +78,32 @@ jobs:
           name: creation-os-linux-${{ matrix.arch }}
           path: creation-os-*-linux-*.tar.gz
 
+  # Extra tarball: cos + cos-demo only (glibc), for users who want the CLI without the full server bundle.
+  linux-cos-cli:
+    name: Linux · cos CLI (amd64 tarball)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq build-essential libsqlite3-dev libcurl4-openssl-dev
+      - name: Build cos + cos-demo
+        run: |
+          set -eux
+          make -j"$(nproc)" cos cos-demo
+          strip cos cos-demo 2>/dev/null || true
+          mkdir -p dist
+          mv cos cos-demo dist/
+      - name: Tarball
+        run: |
+          cd dist
+          tar czf ../creation-os-${GITHUB_REF_NAME}-linux-cos-amd64.tar.gz cos cos-demo
+      - uses: actions/upload-artifact@v4
+        with:
+          name: creation-os-linux-cos-amd64
+          path: creation-os-*-linux-cos-amd64.tar.gz
+
   docker:
     name: Docker · multi-arch
     runs-on: ubuntu-24.04
@@ -109,7 +135,7 @@ jobs:
   release:
     name: GitHub release
     runs-on: ubuntu-24.04
-    needs: [binaries-macos, binaries-linux]
+    needs: [binaries-macos, binaries-linux, linux-cos-cli]
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4

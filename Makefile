@@ -10146,6 +10146,11 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 cos-demo: cos
 	@ln -f cos cos-demo && echo "cos-demo -> cos (run ./cos demo)"
 
+# Fat Mach-O (arm64 + x86_64) for macOS distribution.  Darwin + Apple clang only.
+cos-universal:
+	@chmod +x scripts/build_cos_universal.sh
+	@./scripts/build_cos_universal.sh
+
 cos-monitor: src/cli/cos_monitor.c
 	$(CC) -O2 -Wall -std=c11 -o cos-monitor src/cli/cos_monitor.c \
 	    -DCOS_MONITOR_MAIN

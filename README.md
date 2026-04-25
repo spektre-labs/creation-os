@@ -20,6 +20,28 @@ This one doesn't.</strong></p>
 <p align="center"><sub><strong>A local AI runtime that proves every answer before it shows it to you.</strong><br/>
 Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
 
+## Install
+
+```bash
+# One-liner (ephemeral clone + build + `cos demo --batch`)
+curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scripts/try_cos.sh | bash
+
+# Homebrew (macOS) — tap repo: spektre-labs/homebrew-cos (Formula lives under packaging/homebrew-cos/)
+brew tap spektre-labs/cos
+brew install creation-os
+
+# Docker — minimal cos image (separate from the main v106 HTTP Dockerfile)
+docker build -f Dockerfile.cos -t creation-os:cos .
+docker run --rm creation-os:cos
+# When published: docker run --rm ghcr.io/spektre-labs/creation-os:<tag>
+
+# From source
+git clone https://github.com/spektre-labs/creation-os.git
+cd creation-os && make cos cos-demo && ./cos demo --batch
+```
+
+Tagged releases also attach **macOS universal** and **Linux** tarballs from `.github/workflows/release.yml`.
+
 ## AGI Core (April 23, 2026)
 
 Creation OS crossed from measurement runtime to learning organism.

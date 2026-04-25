@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# Minimal Alpine image: `cos` + `cos-demo` + bundled codex snippets.
+# Does not replace the main v106 Dockerfile at repo root.
+#
+#   docker build -f Dockerfile.cos -t creation-os:cos .
+#   docker run --rm creation-os:cos
+#   docker run --rm creation-os:cos chat --once --prompt "What is 2+2?"
+#
+# syntax=docker/dockerfile:1.6
+FROM alpine:3.19 AS build
+RUN apk add --no-cache gcc musl-dev make sqlite-dev curl-dev pkgconf linux-headers ca-certificates
+WORKDIR /src
+COPY . .
+RUN make -j"$(nproc)" cos cos-demo
+
+FROM alpine:3.19
+RUN apk add --no-cache sqlite-libs curl ca-certificates
+COPY --from=build /src/cos /usr/local/bin/cos
+COPY --from=build /src/cos-demo /usr/local/bin/cos-demo
+COPY data/codex/ /opt/creation-os/codex/
+ENV PATH="/usr/local/bin:${PATH}"
+ENTRYPOINT ["/usr/local/bin/cos"]
+CMD ["demo", "--batch"]

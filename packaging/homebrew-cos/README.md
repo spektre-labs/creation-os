@@ -6,7 +6,7 @@ The canonical application source remains **[spektre-labs/creation-os](https://gi
 
 ## Publish the tap (maintainers)
 
-1. Create (once) the empty GitHub repo `spektre-labs/homebrew-cos` if it does not exist.
+1. Create (once) the GitHub repo **[spektre-labs/homebrew-cos](https://github.com/spektre-labs/homebrew-cos)** if it does not exist (empty `main` is fine).
 2. Copy `Formula/creation-os.rb` from here into that repo on `main`.
 3. Replace **`sha256 "PLACEHOLDER"`** with the digest of the published archive:
    - After tagging `vX.Y.Z` on `creation-os`, run  
