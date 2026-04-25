@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Creation OS — σ Chat</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#121c30; --blue:#2a4a7a; --gold:#c9a227;
+    --txt:#e8eef8; --dim:#8a9ab8; --ok:#2ecc71; --mid:#f1c40f; --bad:#e74c3c;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font:15px/1.45 system-ui,sans-serif;background:var(--bg);color:var(--txt);}
+  header{padding:12px 16px;background:linear-gradient(90deg,var(--panel),#0f1830);border-bottom:1px solid var(--blue);}
+  h1{margin:0;font-size:1.1rem;letter-spacing:.02em;color:var(--gold);}
+  #spark{height:48px;width:100%;display:block;background:var(--panel);}
+  #log{max-width:720px;margin:0 auto;padding:12px 16px 100px;min-height:50vh;}
+  .row{display:flex;gap:10px;margin:12px 0;align-items:flex-start;}
+  .bubble{flex:1;padding:10px 12px;border-radius:10px;background:var(--panel);border:1px solid #1f2d4d;}
+  .user .bubble{background:#182238;border-color:var(--blue);}
+  .sigma{width:52px;text-align:center;font-size:.72rem;color:var(--dim);}
+  .gauge{height:6px;border-radius:3px;margin-top:4px;background:#333;}
+  .g0{background:var(--ok);} .g1{background:var(--mid);} .g2{background:var(--bad);}
+  .abstain{border-color:var(--bad);color:#ffb4b4;}
+  footer{position:fixed;bottom:0;left:0;right:0;padding:8px;text-align:center;font-size:.75rem;color:var(--dim);background:#070b14;border-top:1px solid #1a2438;}
+  #bar{position:fixed;bottom:36px;left:0;right:0;padding:10px 12px;background:#0a101c;border-top:1px solid var(--blue);display:flex;gap:8px;max-width:720px;margin:0 auto;width:100%;}
+  textarea{flex:1;resize:none;min-height:44px;max-height:120px;padding:8px;border-radius:8px;border:1px solid var(--blue);background:#0e1628;color:var(--txt);}
+  button{padding:0 16px;border-radius:8px;border:1px solid var(--gold);background:var(--blue);color:var(--gold);font-weight:600;cursor:pointer;}
+  button:disabled{opacity:.5;cursor:wait;}
+  a{color:var(--gold);}
+</style>
+</head>
+<body>
+<header>
+  <h1>Creation OS · σ in the browser</h1>
+  <div style="font-size:.8rem;color:var(--dim);margin-top:4px;">Sparkline = gate σ per turn (lower is calmer)</div>
+</header>
+<canvas id="spark" height="48" width="800"></canvas>
+<div id="log"></div>
+<div id="bar">
+  <textarea id="q" rows="2" placeholder="Ask anything…"></textarea>
+  <button id="go" type="button">Send</button>
+</div>
+<footer>Powered by <strong>Creation OS</strong> · honest σ · API <code id="api"></code></footer>
+<script>
+(function(){
+  const API = (location.search.match(/api=([^&]+)/)||[])[1] || 'http://127.0.0.1:3001';
+  document.getElementById('api').textContent = API;
+  const sigmas = [];
+  const log = document.getElementById('log');
+  const spark = document.getElementById('spark');
+  const ctx = spark.getContext('2d');
+
+  function cls(s){
+    if(s==null) return 'g1';
+    if(s<0.2) return 'g0';
+    if(s<0.5) return 'g1';
+    return 'g2';
+  }
+  function drawSpark(){
+    const dpr = window.devicePixelRatio || 1;
+    const cw = spark.clientWidth;
+    spark.width = Math.max(320, cw) * dpr;
+    spark.height = 48 * dpr;
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.scale(dpr, dpr);
+    const W = spark.width / dpr;
+    ctx.clearRect(0,0,W,48);
+    ctx.strokeStyle = '#2a4a7a';
+    ctx.beginPath();
+    for(let x=0;x<W;x+=40){ ctx.moveTo(x,0); ctx.lineTo(x,48); }
+    ctx.stroke();
+    if(!sigmas.length) return;
+    const pad=6, mw=W-pad*2, mh=48-pad*2;
+    ctx.beginPath();
+    ctx.strokeStyle = '#c9a227';
+    sigmas.forEach((v,i)=>{
+      const x = pad + (i/(sigmas.length-1||1))*mw;
+      const y = pad + (1-Math.min(1,v))*mh;
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  window.addEventListener('resize', drawSpark);
+
+  function addRow(role, text, sigma, abst){
+    const row = document.createElement('div');
+    row.className = 'row ' + role;
+    const b = document.createElement('div');
+    b.className = 'bubble' + (abst ? ' abstain' : '');
+    b.textContent = text;
+    row.appendChild(b);
+    if(role==='ai'){
+      const s = document.createElement('div');
+      s.className = 'sigma';
+      const v = (sigma==null)?'—':sigma.toFixed(3);
+      s.innerHTML = 'σ<br><strong style="color:#e8eef8">'+v+'</strong>';
+      const g = document.createElement('div');
+      g.className = 'gauge ' + cls(sigma);
+      g.style.width = '100%';
+      s.appendChild(g);
+      row.appendChild(s);
+    }
+    log.appendChild(row);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  async function send(){
+    const q = document.getElementById('q');
+    const go = document.getElementById('go');
+    const prompt = q.value.trim();
+    if(!prompt) return;
+    go.disabled = true;
+    addRow('user', prompt, null, false);
+    q.value='';
+    try{
+      const r = await fetch(API + '/v1/chat', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({prompt, multi_sigma:true, verbose:true})
+      });
+      const j = await r.json();
+      const s = (typeof j.sigma==='number') ? j.sigma : null;
+      const act = (j.action||'').toUpperCase();
+      const abst = act.includes('ABSTAIN');
+      const body = abst ? ('ABSTAIN · ' + (j.response||'').slice(0,400)) : (j.response||'(empty)');
+      sigmas.push(s!=null?s:1);
+      if(sigmas.length>48) sigmas.shift();
+      drawSpark();
+      addRow('ai', body, s, abst);
+    }catch(e){
+      addRow('ai', 'Network error: ' + e, 1, true);
+      sigmas.push(1);
+      drawSpark();
+    }
+    go.disabled = false;
+  }
+  document.getElementById('go').addEventListener('click', send);
+  document.getElementById('q').addEventListener('keydown', e=>{
+    if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); send(); }
+  });
+  drawSpark();
+})();
+</script>
+</body>
+</html>
