@@ -282,6 +282,7 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
         (http_sem_triple != 0) && (cos_cli_use_bitnet_http() != 0)
         && (input != NULL);
     float sigma_lp_triple = -1.0f;
+    int   triple_fail_null = 0; /* ti>0: transport/timeout or empty body */
 
     if (want_http_triple) {
         const char *sysp =
@@ -312,13 +313,16 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
             } else {
                 char *tx =
                     cos_bitnet_query_temp(0, input, sysp, temps[ti]);
-                if (tx != NULL && tx[0] != '\0') {
-                    snprintf(copies[n], sizeof(copies[n]), "%s", tx);
-                    texts[n] = copies[n];
-                    n++;
-                }
-                if (tx != NULL)
+                if (tx != NULL) {
+                    if (tx[0] != '\0') {
+                        snprintf(copies[n], sizeof(copies[n]), "%s", tx);
+                        texts[n] = copies[n];
+                        n++;
+                    } else
+                        triple_fail_null = 1;
                     free(tx);
+                } else
+                    triple_fail_null = 1;
             }
         }
         (void)cos_bitnet_server_copy_last_token_sigmas(lp_sig_snap, 8,
@@ -346,12 +350,26 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
     }
 
     float sigma_consistency = 0.0f;
-    if (want_http_triple && n == 3) {
+    if (want_http_triple && !triple_fail_null && n == 3) {
         float s01 = cos_text_jaccard(texts[0], texts[1]);
         float s02 = cos_text_jaccard(texts[0], texts[2]);
         float s12 = cos_text_jaccard(texts[1], texts[2]);
         float mean_sim = (s01 + s02 + s12) / 3.0f;
-        sigma_consistency = 1.0f - mean_sim;
+        float sigma_sem = 1.0f - mean_sim;
+        if (mean_sim > 0.95f)
+            sigma_sem = 0.0f;
+        else if (mean_sim < 0.05f)
+            sigma_sem = 0.95f;
+        sigma_consistency = sigma_sem;
+    } else if (want_http_triple && !triple_fail_null && n == 2) {
+        float s01      = cos_text_jaccard(texts[0], texts[1]);
+        float mean_sim = s01;
+        float sigma_sem = 1.0f - mean_sim;
+        if (mean_sim > 0.95f)
+            sigma_sem = 0.0f;
+        else if (mean_sim < 0.05f)
+            sigma_sem = 0.95f;
+        sigma_consistency = sigma_sem;
     } else if (n >= 2) {
         sigma_consistency = cos_multi_sigma_consistency(texts, n);
     }
@@ -363,7 +381,14 @@ static int chat_multi_shadow(cos_pipeline_config_t *cfg,
     if (s_lp < 0.0f) s_lp = 0.0f;
     if (s_lp > 1.0f) s_lp = 1.0f;
 
-    if (want_http_triple && n >= 2) {
+    if (want_http_triple && triple_fail_null) {
+        /* Timeout / transport / empty follow-up: shadow = logprob only. */
+        out->ens.sigma_logprob     = s_lp;
+        out->ens.sigma_entropy     = s_lp;
+        out->ens.sigma_perplexity  = s_lp;
+        out->ens.sigma_consistency = s_lp;
+        out->ens.sigma_combined    = s_lp;
+    } else if (want_http_triple && n >= 2) {
         float s_sem = sigma_consistency;
         if (s_sem < 0.0f) s_sem = 0.0f;
         float blend = 0.7f * s_sem + 0.3f * s_lp;
@@ -1452,9 +1477,10 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     if (have_ms) {
         fprintf(stdout,
-                "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
-                "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
+                "[σ_combined=%.3f | σ_semantic=%.3f | σ_logprob=%.3f "
+                "σ_entropy=%.3f σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
                 (double)ms.ens.sigma_combined,
+                (double)ms.ens.sigma_consistency,
                 (double)ms.ens.sigma_logprob,
                 (double)ms.ens.sigma_entropy,
                 (double)ms.ens.sigma_perplexity,
@@ -2452,9 +2478,10 @@ int main(int argc, char **argv) {
         if (ms_ok) {
             FILE *msf = use_tui ? stderr : stdout;
             fprintf(msf,
-                    "[σ_combined=%.3f | σ_logprob=%.3f σ_entropy=%.3f "
-                    "σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
+                    "[σ_combined=%.3f | σ_semantic=%.3f | σ_logprob=%.3f "
+                    "σ_entropy=%.3f σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
                     (double)ms.ens.sigma_combined,
+                    (double)ms.ens.sigma_consistency,
                     (double)ms.ens.sigma_logprob,
                     (double)ms.ens.sigma_entropy,
                     (double)ms.ens.sigma_perplexity,
