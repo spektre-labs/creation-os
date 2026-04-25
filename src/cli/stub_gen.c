@@ -161,6 +161,93 @@ static int cos_chat_stream_cb(const char *tok, float sigma,
     return 0;
 }
 
+/* After BitNet HTTP / stream returns non-zero: cancel UX, optional
+ * cloud rescue, engram cache, or a single user-visible ABSTAIN line.
+ * Returns 1 if `out_*` were filled and the caller should return 0. */
+static int cos_cli_chat_recover_http_fail(const char *prompt, int round,
+                                          cos_cli_generate_ctx_t *wrap,
+                                          const cos_sigma_codex_t *codex,
+                                          int rc,
+                                          const char **out_text,
+                                          float *out_sigma,
+                                          double *out_cost_eur) {
+    if (rc == -17) {
+        snprintf(g_cos_chat_bitnet_buf, sizeof g_cos_chat_bitnet_buf,
+                 "[cancelled]");
+        *out_text     = g_cos_chat_bitnet_buf;
+        *out_sigma    = 1.0f;
+        *out_cost_eur = 0.0;
+        cos_cli_escalation_record_student(g_cos_chat_bitnet_buf, 1.0f);
+        cos_cost_log_append("bitnet", "LOCAL", 0, 0, 1.0f, 0.0);
+        return 1;
+    }
+    if (round != 0)
+        return 0;
+
+    if (wrap == NULL || wrap->pipeline_local_only == 0) {
+        char prov[32], mod[96];
+        if (cos_cli_escalation_diag(prov, sizeof prov, mod, sizeof mod)
+            == 1) {
+            const char *t = NULL;
+            float       s = 1.0f;
+            double      cst = 0.0;
+            uint64_t    bs = 0, br = 0;
+            void *ectx = (wrap != NULL) ? (void *)wrap : (void *)codex;
+            if (cos_cli_escalate_api(prompt, ectx, &t, &s, &cst, &bs, &br)
+                == 0 && t != NULL && t[0] != '\0'
+                && strcmp(t, "escalation failed") != 0) {
+                static const char stub_esc[] =
+                    "an escalated answer from the cloud tier.";
+                if (strncmp(t, stub_esc, sizeof(stub_esc) - 1u) != 0) {
+                    size_t n = strlen(t);
+                    if (n >= sizeof(g_cos_chat_bitnet_buf))
+                        n = sizeof(g_cos_chat_bitnet_buf) - 1;
+                    memcpy(g_cos_chat_bitnet_buf, t, n);
+                    g_cos_chat_bitnet_buf[n] = '\0';
+                    *out_text     = g_cos_chat_bitnet_buf;
+                    *out_sigma    = s;
+                    *out_cost_eur = cst;
+                    fprintf(stderr,
+                            "[degrade] local inference failed; using "
+                            "cloud (%s / %s)\n",
+                            prov, mod);
+                    cos_cli_escalation_record_student(g_cos_chat_bitnet_buf, s);
+                    cos_cost_log_append(prov, "API",
+                                        (int)bs, (int)br, s, cst);
+                    return 1;
+                }
+            }
+        }
+    }
+
+    if (wrap != NULL && wrap->runtime_engram != NULL) {
+        cos_sigma_engram_entry_t ent;
+        memset(&ent, 0, sizeof(ent));
+        uint64_t ph = cos_sigma_engram_hash(prompt);
+        if (cos_sigma_engram_get(wrap->runtime_engram, ph, &ent) == 1
+            && ent.value != NULL) {
+            const char *val = (const char *)ent.value;
+            size_t       n  = strlen(val);
+            if (n >= sizeof(g_cos_chat_bitnet_buf))
+                n = sizeof(g_cos_chat_bitnet_buf) - 1;
+            memcpy(g_cos_chat_bitnet_buf, val, n);
+            g_cos_chat_bitnet_buf[n] = '\0';
+            *out_text     = g_cos_chat_bitnet_buf;
+            *out_sigma    = ent.sigma_at_store;
+            *out_cost_eur = 0.0;
+            fprintf(stderr,
+                    "[degrade] using cached engram answer for prompt\n");
+            cos_cli_escalation_record_student(g_cos_chat_bitnet_buf,
+                                              ent.sigma_at_store);
+            cos_cost_log_append("engram", "CACHE", 0, 1,
+                                ent.sigma_at_store, 0.0);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 /* Backend selection (DEV-1 / DEV-4):
  *
  *   COS_BITNET_SERVER=1 or
@@ -333,9 +420,10 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                                 r.sigma, r.cost_eur);
             return 0;
         }
-        /* Server failed → fall through to legacy path.  This keeps
-         * the CLI usable when the model file is missing or the
-         * server crashed mid-session. */
+        if (cos_cli_chat_recover_http_fail(prompt, round, wrap, codex, rc,
+                                           out_text, out_sigma, out_cost_eur))
+            return 0;
+        /* Else: fall through to legacy subprocess / stub paths. */
     }
 
     /* Branch B — legacy subprocess capture with heuristic σ.

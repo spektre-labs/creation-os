@@ -92,6 +92,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <time.h>
 #include <math.h>
 
@@ -112,11 +113,72 @@ static int cos_chat_stream_env_on(void)
 }
 #include <unistd.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <stdint.h>
 
 #ifndef COS_CHAT_VERSION_STRING
 #define COS_CHAT_VERSION_STRING "v3.0.0"
 #endif
+
+static volatile sig_atomic_t g_cos_chat_sigint = 0;
+static void (*g_cos_chat_prev_sigint)(int) = SIG_DFL;
+
+static void cos_chat_sigint_handler(int signo)
+{
+    (void)signo;
+    g_cos_chat_sigint = 1;
+    cos_bitnet_server_io_cancel_request();
+}
+
+static void cos_chat_jsonl_turn(const char *prompt_line,
+                                const cos_pipeline_result_t *r,
+                                double elapsed_ms)
+{
+    const char *en = getenv("COS_CHAT_JSONL_LOG");
+    if (en == NULL || en[0] != '1' || prompt_line == NULL || r == NULL)
+        return;
+    const char *home = getenv("HOME");
+    if (home == NULL || home[0] == '\0')
+        return;
+    char dir[512], path[640];
+    if (snprintf(dir, sizeof dir, "%s/.cos/logs", home) >= (int)sizeof dir)
+        return;
+#if defined(__unix__) || defined(__APPLE__)
+    mkdir(dir, 0700);
+#endif
+    if (snprintf(path, sizeof path, "%s/cos_chat.jsonl", dir) >= (int)sizeof path)
+        return;
+    FILE *fp = fopen(path, "a");
+    if (fp == NULL)
+        return;
+    struct timespec ts;
+    long long ms_wall = 0;
+    if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
+        ms_wall = (long long)ts.tv_sec * 1000LL
+                + (long long)ts.tv_nsec / 1000000LL;
+    uint64_t ph = cos_sigma_engram_hash(prompt_line);
+    const char *route = getenv("COS_SPEC_DECODE_ROUTE");
+    if (route == NULL || route[0] == '\0')
+        route = r->escalated ? "CLOUD" : "LOCAL";
+    const char *act = "ABSTAIN";
+    if (r->final_action == COS_SIGMA_ACTION_ACCEPT)
+        act = "ACCEPT";
+    else if (r->final_action == COS_SIGMA_ACTION_RETHINK)
+        act = "RETHINK";
+    const char *model = getenv("COS_OLLAMA_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = getenv("COS_BITNET_CHAT_MODEL");
+    if (model == NULL || model[0] == '\0')
+        model = "default";
+    fprintf(fp,
+            "{\"t\":%lld,\"prompt_hash\":%llu,\"sigma\":%.4f,"
+            "\"action\":\"%s\",\"route\":\"%s\",\"model\":\"%s\","
+            "\"latency_ms\":%.0f,\"tokens\":%d,\"cost_eur\":%.6f,"
+            "\"degradation_level\":0,\"retries\":0,\"error\":null}\n",
+            ms_wall, (unsigned long long)ph, (double)r->sigma, act, route,
+            model, elapsed_ms, 0, r->cost_eur);
+    fclose(fp);
+}
 
 /* Mirrors pipeline.c ABSTAIN_TEXT for speculative early-abstain path only. */
 static const char COS_CHAT_PIPELINE_ABSTAIN[] =
@@ -2037,6 +2099,8 @@ int main(int argc, char **argv) {
     genctx.magic                   = COS_CLI_GENERATE_CTX_MAGIC;
     genctx.codex                   = have_codex ? &codex : NULL;
     genctx.persist                 = persist;
+    genctx.runtime_engram          = &engram;
+    genctx.pipeline_local_only     = local_only ? 1 : 0;
     genctx.icl_exemplar_max_sigma  = tau_accept;
     const char *icl_tau_env = getenv("COS_ENGRAM_ICL_TAU");
     if (icl_tau_env != NULL && icl_tau_env[0] != '\0')
@@ -2205,6 +2269,11 @@ int main(int argc, char **argv) {
     float  sigma_sess_sum    = 0.f;
     int    sigma_sess_n      = 0;
     int    cache_sess_hits   = 0;
+    int    sig_tty = (isatty(fileno(stdin)) != 0);
+    if (sig_tty) {
+        g_cos_chat_prev_sigint = signal(SIGINT, cos_chat_sigint_handler);
+        g_cos_chat_sigint      = 0;
+    }
     for (;;) {
         if (!use_tui) {
             fprintf(stdout, "\n> ");
@@ -2364,9 +2433,20 @@ int main(int argc, char **argv) {
         if (!early_spec_abstain && !semantic_hit) {
             if (use_tui && cos_chat_stream_env_on())
                 cos_tui_begin_ai_line();
+            g_cos_chat_sigint = 0;
+            cos_bitnet_server_io_cancel_clear();
             w0 = chat_wall_ms();
             prc = cos_sigma_pipeline_run(&cfg, line, &r);
             w1 = chat_wall_ms();
+            if (g_cos_chat_sigint) {
+                fprintf(use_tui ? stderr : stdout, "\n[cancelled]\n");
+                g_cos_chat_sigint = 0;
+                cos_bitnet_server_io_cancel_clear();
+                cfg.tau_accept = tau_sv;
+                if (SL.did_budget)
+                    chat_sigma_layer_restore(&cfg, &SL);
+                continue;
+            }
         }
 
         if (use_tui && semantic_hit && r.response != NULL
@@ -2618,7 +2698,13 @@ int main(int argc, char **argv) {
         }
         if (knowledge_graph && r.response != NULL)
             chat_kg_store_turn(line, r.response);
+
+        if (!early_spec_abstain && prc == 0)
+            cos_chat_jsonl_turn(line, &r, elapsed_ms);
     }
+
+    if (sig_tty)
+        signal(SIGINT, g_cos_chat_prev_sigint);
 
     fprintf(stdout, "\n─── Session summary ───\n");
     fprintf(stdout, "  turns: %d\n", turn);

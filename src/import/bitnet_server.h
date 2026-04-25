@@ -243,6 +243,15 @@ void cos_bitnet_server_invalidate_config(void);
  * Returns 1 on "ok", 0 otherwise.  Does NOT spawn the server. */
 int  cos_bitnet_server_is_healthy(void);
 
+/* Ollama HTTP path: circuit breaker (5 consecutive failures -> 60s pause).
+ * Returns 0 when requests may proceed, -1 when the circuit is open. */
+int  cos_bitnet_circuit_check(void);
+void cos_bitnet_circuit_update(int success);
+
+/* Ask in-flight HTTP recv to abort at next EINTR (cos chat Ctrl+C). */
+void cos_bitnet_server_io_cancel_request(void);
+void cos_bitnet_server_io_cancel_clear(void);
+
 /* Resolve the effective host/port/pid (for diagnostics / cos health).
  * pid is 0 if the server is external or not running. */
 void cos_bitnet_server_diag(const char **out_host, int *out_port,

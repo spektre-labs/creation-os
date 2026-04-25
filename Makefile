@@ -6824,14 +6824,16 @@ check-agi: check-state-ledger check-error-attribution check-engram-episodic \
 	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
-               src/sigma/metrics/energy_metric.c
+               src/sigma/metrics/energy_metric.c src/cli/escalation.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma/metrics -o $@ \
 	    $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
-	    src/sigma/metrics/energy_metric.c $(LDFLAGS)
+	    src/sigma/metrics/energy_metric.c src/cli/escalation.c \
+	    $(LDFLAGS) -lcurl
 
-cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c
+cos-cost: $(COS_CLI_SRCS) src/cli/cos_cost.c src/cli/escalation.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -o $@ \
-	    $(COS_CLI_SRCS) src/cli/cos_cost.c $(LDFLAGS)
+	    $(COS_CLI_SRCS) src/cli/cos_cost.c src/cli/escalation.c \
+	    $(LDFLAGS) -lcurl
 
 # HORIZON-2: digital twin preflight + guarded /bin/sh -c execution.
 cos-exec: src/sigma/twin/digital_twin.c src/cli/cos_exec.c

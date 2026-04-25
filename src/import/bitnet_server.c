@@ -107,6 +107,16 @@ static char bns_spawn_threads_s[16];
 
 static double g_bns_last_ttft_ms = -1.0;
 
+/* Ollama HTTP production hardening: circuit breaker + cooperative cancel. */
+static int               g_bns_consecutive_fail   = 0;
+static time_t            g_bns_circuit_open_until = 0;
+static volatile sig_atomic_t g_bns_io_cancel        = 0;
+
+#define BNS_CIRCUIT_FAIL_MAX   5
+#define BNS_CIRCUIT_PAUSE_SEC  60
+/* Internal recv sentinel; mapped to public -17 from bns_http_post_json_once. */
+#define BNS_HTTP_RECV_INTR_STOP ((ssize_t)-77)
+
 /* --- utilities --------------------------------------------------- */
 
 double cos_bitnet_server_last_ttft_ms(void) {
@@ -366,8 +376,11 @@ static ssize_t bns_recv_response(int fd, const char **out_body) {
         ssize_t r = recv(fd, g_bns.resp_buf + total,
                          BNS_RESP_CAP - 1 - total, 0);
         if (r < 0) {
-            if (errno == EINTR)
+            if (errno == EINTR) {
+                if (g_bns_io_cancel)
+                    return BNS_HTTP_RECV_INTR_STOP;
                 continue;
+            }
 #ifdef EAGAIN
             if (errno == EAGAIN)
                 return -2;
@@ -464,6 +477,8 @@ static int bns_http_post_json_once(const char *path,
     const char *body = NULL;
     ssize_t len = bns_recv_response(fd, &body);
     close(fd);
+    if (len == BNS_HTTP_RECV_INTR_STOP)
+        return -17;
     if (len == -2)
         return -5;
     if (len < 0 || body == NULL)
@@ -482,6 +497,7 @@ static int bns_http_post_json_once(const char *path,
 static int bns_http_post_json(const char *path,
                               const char *json_body, size_t json_len,
                               const char **out_body, size_t *out_len) {
+    bns_load_config();
     const int MAX_ATTEMPTS = 3;
     for (int attempt = 1; attempt <= MAX_ATTEMPTS; ++attempt) {
         int once = bns_http_post_json_once(path, json_body, json_len,
@@ -490,16 +506,30 @@ static int bns_http_post_json(const char *path,
             return 0;
         if (once == -5)
             return -5;
+        if (once == -17)
+            return -17;
         if (attempt == MAX_ATTEMPTS)
             break;
-        /* transient failure → pause, re-probe health, maybe restart. */
-        struct timespec sl = { 0, 250 * 1000 * 1000 };  /* 250 ms */
+        unsigned ms = 250u;
+        if (g_bns.external || g_bns.backend_ollama) {
+            ms = 500u * (1u << (unsigned)(attempt - 1));
+            if (ms > 8000u)
+                ms = 8000u;
+            fprintf(stderr,
+                    "[retry] HTTP POST %s attempt %d/%d failed "
+                    "(backoff %ums)\n",
+                    path, attempt, MAX_ATTEMPTS, ms);
+        }
+        struct timespec sl;
+        sl.tv_sec  = (time_t)(ms / 1000u);
+        sl.tv_nsec = (long)((ms % 1000u) * 1000000u);
         nanosleep(&sl, NULL);
-        if (!cos_bitnet_server_is_healthy()) {
+        /* External / Ollama: never fork-restart a peer we do not own. */
+        if (!g_bns.external && !g_bns.backend_ollama
+            && !cos_bitnet_server_is_healthy()) {
             fprintf(stderr,
                     "cos: llama-server unresponsive (attempt %d/%d), restarting…\n",
                     attempt, MAX_ATTEMPTS);
-            /* Reap old child if it died. */
             cos_bitnet_server_shutdown();
             if (cos_bitnet_server_ensure() != 0) {
                 return -1;
@@ -1675,7 +1705,42 @@ int cos_bitnet_server_ensure(void) {
 
 void cos_bitnet_server_invalidate_config(void) {
     g_bns.initialized = 0;
+    g_bns_consecutive_fail   = 0;
+    g_bns_circuit_open_until = 0;
+    g_bns_io_cancel          = 0;
 }
+
+int cos_bitnet_circuit_check(void)
+{
+    time_t now = time(NULL);
+    if (g_bns_circuit_open_until != 0 && now < g_bns_circuit_open_until)
+        return -1;
+    if (g_bns_circuit_open_until != 0 && now >= g_bns_circuit_open_until) {
+        g_bns_circuit_open_until = 0;
+        g_bns_consecutive_fail   = 0;
+    }
+    return 0;
+}
+
+void cos_bitnet_circuit_update(int success)
+{
+    if (success) {
+        g_bns_consecutive_fail = 0;
+        return;
+    }
+    g_bns_consecutive_fail++;
+    if (g_bns_consecutive_fail >= BNS_CIRCUIT_FAIL_MAX) {
+        g_bns_circuit_open_until = time(NULL) + (time_t)BNS_CIRCUIT_PAUSE_SEC;
+        fprintf(stderr,
+                "[circuit] Ollama HTTP: %d consecutive failures "
+                "-> pause %ds\n",
+                g_bns_consecutive_fail, BNS_CIRCUIT_PAUSE_SEC);
+    }
+}
+
+void cos_bitnet_server_io_cancel_request(void) { g_bns_io_cancel = 1; }
+
+void cos_bitnet_server_io_cancel_clear(void) { g_bns_io_cancel = 0; }
 
 void cos_bitnet_server_shutdown(void) {
     if (g_bns.child > 0) {
@@ -1721,6 +1786,14 @@ static int bns_ollama_chat_complete(const char                       *prompt,
 {
     if (cos_bitnet_server_ensure() != 0)
         return -2;
+
+    cos_bitnet_server_io_cancel_clear();
+    if (cos_bitnet_circuit_check() != 0) {
+        fprintf(stderr,
+                "[circuit] Ollama HTTP paused after recent failures; "
+                "skipping request (no socket I/O)\n");
+        return -4;
+    }
 
     int top_lp = (params && params->n_probs > 0) ? params->n_probs
                                                  : g_bns.n_probs_default;
@@ -1827,17 +1900,28 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     size_t      blen = 0;
     int         rc   = bns_http_post_json("/v1/chat/completions", json_tmp, w,
                                           &body, &blen);
+    if (rc == -17) {
+        cos_bitnet_server_io_cancel_clear();
+        memset(out, 0, sizeof(*out));
+        out->sigma      = 1.0f;
+        out->mean_sigma = 1.0f;
+        out->elapsed_ms = now_ms() - t0;
+        return -17;
+    }
     if (rc == -5) {
         fprintf(stderr, "[timeout] Ollama inference exceeded %ds\n",
                 bns_io_timeout_sec());
+        cos_bitnet_circuit_update(0);
         memset(out, 0, sizeof(*out));
         out->sigma      = 1.0f;
         out->mean_sigma = 1.0f;
         out->elapsed_ms = now_ms() - t0;
         return 0;
     }
-    if (rc != 0 || body == NULL)
+    if (rc != 0 || body == NULL) {
+        cos_bitnet_circuit_update(0);
         return -4;
+    }
 
     rc = parse_completion_response(body, blen, out);
     out->elapsed_ms = now_ms() - t0;
@@ -1859,6 +1943,10 @@ static int bns_ollama_chat_complete(const char                       *prompt,
     }
 
     bns_apply_adaptive_sigma(enc_prompt, params, out);
+    if (rc == 0)
+        cos_bitnet_circuit_update(1);
+    else
+        cos_bitnet_circuit_update(0);
     return rc;
 }
 
@@ -2035,6 +2123,10 @@ int cos_bitnet_server_complete(const char                       *prompt,
     memcpy(json_tmp, jb, w);
     int rc = bns_http_post_json("/v1/chat/completions",
                                 json_tmp, w, &body, &blen);
+    if (rc == -17) {
+        cos_bitnet_server_io_cancel_clear();
+        return -17;
+    }
     if (rc == -5) {
         fprintf(stderr, "[timeout] inference exceeded %ds, σ=1.0\n",
                 bns_io_timeout_sec());
@@ -2297,6 +2389,7 @@ int cos_bitnet_server_complete_stream(
 
     double t0 = now_ms();
     cos_bitnet_server_clear_ttft();
+    cos_bitnet_server_io_cancel_clear();
 
     /* --- read + parse phase --- */
     char   netbuf[BNS_STREAM_NETBUF];
@@ -2315,6 +2408,7 @@ int cos_bitnet_server_complete_stream(
     int    aborted   = 0;
     int    hit_terminal = 0;
     int    io_timed_out = 0;
+    int    io_user_cancel = 0;
 
     /* text accumulator (owned by module; caller sees out->text) */
     g_bns.text_buf[0] = '\0';
@@ -2323,8 +2417,13 @@ int cos_bitnet_server_complete_stream(
     for (;;) {
         ssize_t r = recv(fd, netbuf, sizeof netbuf, 0);
         if (r < 0) {
-            if (errno == EINTR)
+            if (errno == EINTR) {
+                if (g_bns_io_cancel) {
+                    io_user_cancel = 1;
+                    break;
+                }
                 continue;
+            }
             {
                 int timed = 0;
 #ifdef EAGAIN
@@ -2505,6 +2604,18 @@ int cos_bitnet_server_complete_stream(
         if (hit_terminal) break;
     }
     close(fd);
+
+    if (io_user_cancel) {
+        cos_bitnet_server_io_cancel_clear();
+        memset(out, 0, sizeof(*out));
+        out->sigma       = 1.0f;
+        out->mean_sigma  = 1.0f;
+        out->text        = g_bns.text_buf;
+        out->elapsed_ms  = now_ms() - t0;
+        out->cost_eur    = 0.0001;
+        out->stopped_limit = 1;
+        return -17;
+    }
 
     /* Finalize summary. */
     if (io_timed_out) {

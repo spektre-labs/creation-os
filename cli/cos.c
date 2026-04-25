@@ -52,6 +52,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
@@ -76,6 +77,7 @@
 #include "../src/sigma/state_ledger.h"
 #include "../src/sigma/constitution.h"
 #include "../src/sigma/eu_compliance.h"
+#include "../src/import/bitnet_server.h"
 
 /* --------------------------------------------------------------------
  *  Colour & style — Apple SF-inspired terminal palette.
@@ -860,10 +862,76 @@ static int cmd_sandbox(int argc, char **argv)
     return exec_sibling("cos-sandbox", argc, argv);
 }
 
-/* cos health — runtime health snapshot (PROD-4).  Falls back to
- * the classic repo-health `cmd_doctor` if `./cos-health` hasn't
- * been built yet, so the command never loses a home. */
+/* cos health — runtime health snapshot (PROD-4).  Prefers `./cos-health`
+ * when built; otherwise prints an embedded probe (inference /health,
+ * circuit state, ~/.cos, persisted ledger) plus a pointer to `cos doctor`. */
 static int cmd_doctor(void);
+
+static void cmd_health_embedded(void)
+{
+    const char *ok = check();
+    const char *bad = cross();
+
+    const char *inf = getenv("COS_INFERENCE_BACKEND");
+    int           ollama = (inf != NULL && strcasecmp(inf, "ollama") == 0);
+    const char   *host = NULL;
+    int           port = 0, pid = 0;
+    cos_bitnet_server_diag(&host, &port, &pid);
+    int circ = cos_bitnet_circuit_check();
+    int alive = cos_bitnet_server_is_healthy();
+
+    printf("  %s %-9s  %s:%d", bullet(),
+           ollama ? "Ollama" : "Inference",
+           host != NULL ? host : "?", port);
+    if (circ != 0) {
+        printf("  %s %scircuit open (backoff)%s\n",
+               bad, C_RED, C_RESET);
+    } else if (alive) {
+        printf("  %s %sok /health%s\n", ok, C_GREEN, C_RESET);
+    } else {
+        printf("  %s %sno TCP response%s\n", bad, C_AMBER, C_RESET);
+    }
+
+    const char *home = getenv("HOME");
+    if (home != NULL && home[0] != '\0') {
+        char ep[768];
+        snprintf(ep, sizeof ep, "%s/.cos/engram.db", home);
+        struct stat st;
+        if (stat(ep, &st) == 0)
+            printf("  %s  Engram DB   %s (~%lld KiB)%s\n",
+                   ok, C_GREEN, (long long)(st.st_size / 1024), C_RESET);
+        else
+            printf("  %s  Engram DB   %s(no ~/.cos/engram.db)%s\n",
+                   bad, C_DIM, C_RESET);
+        char dirc[768];
+        snprintf(dirc, sizeof dirc, "%s/.cos", home);
+        if (stat(dirc, &st) == 0)
+            printf("  %s  ~/.cos/     present (mode 0%o)%s\n",
+                   ok, (unsigned)(st.st_mode & 0777), C_RESET);
+        else
+            printf("  %s  ~/.cos/     %smissing%s\n", bad, C_DIM, C_RESET);
+    }
+
+    struct cos_state_ledger led;
+    cos_state_ledger_init(&led);
+    char lpath[512];
+    if (cos_state_ledger_default_path(lpath, sizeof lpath) == 0
+        && cos_state_ledger_load(&led, lpath) == 0) {
+        printf("  %s  State ledger snapshot:%s\n", ok, C_RESET);
+        cos_state_ledger_print_summary(stdout, &led);
+    } else {
+        printf("  %s  State ledger  %s(no persisted ledger)%s\n",
+               bad, C_DIM, C_RESET);
+    }
+
+    const char *m = getenv("COS_OLLAMA_MODEL");
+    if (m == NULL || m[0] == '\0')
+        m = getenv("COS_BITNET_CHAT_MODEL");
+    if (m == NULL || m[0] == '\0')
+        m = "(env default)";
+    printf("  %s  Model id     %s%s%s\n", ok, C_DIM, m, C_RESET);
+}
+
 static int cmd_health(int argc, char **argv)
 {
     char path[512];
@@ -872,7 +940,13 @@ static int cmd_health(int argc, char **argv)
     {
         return exec_sibling("cos-health", argc, argv);
     }
-    return cmd_doctor();
+    colour_init();
+    print_header();
+    section("runtime health (embedded — build ./cos-health for extended)");
+    cmd_health_embedded();
+    printf("\n  %sTip:%s `cos doctor` — repository license, harness, receipts.\n\n",
+           C_DIM, C_RESET);
+    return 0;
 }
 
 /* cos sigma-meta — deterministic σ-meta summary (H6).

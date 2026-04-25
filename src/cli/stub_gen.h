@@ -57,6 +57,9 @@ typedef struct {
     uint32_t                   _pad;
     const cos_sigma_codex_t   *codex;
     cos_engram_persist_t      *persist; /* optional SQLite engram   */
+    cos_sigma_engram_t        *runtime_engram; /* in-memory σ-engram;
+                    * optional degrade path when local HTTP fails      */
+    int                        pipeline_local_only; /* 1 = cos --local-only */
     float                      icl_exemplar_max_sigma; /* σ < this    */
     int                        icl_k;      /* 0 = off                  */
     int                        icl_rethink_only; /* 1 = round>0 only    */
