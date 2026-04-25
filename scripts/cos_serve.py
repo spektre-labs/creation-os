@@ -55,6 +55,7 @@ def _run_cos_chat(
     verbose: bool,
     cwd: Path,
     timeout: int,
+    env_extra: Optional[Dict[str, str]] = None,
 ) -> Tuple[int, str, str]:
     cmd = [
         _cos_bin(),
@@ -77,7 +78,7 @@ def _run_cos_chat(
         capture_output=True,
         text=True,
         timeout=timeout,
-        env=_subprocess_env(),
+        env=_subprocess_env(env_extra),
     )
     return p.returncode, p.stdout, p.stderr
 
