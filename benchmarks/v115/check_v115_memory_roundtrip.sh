@@ -12,21 +12,44 @@
 # exits 0 with a "memory unavailable" diagnostic; this script treats
 # that as a clean SKIP rather than a failure so merge-gate never stalls
 # on missing libsqlite3-dev.
+#
+# Run the binary from a copy under /tmp: on some hosts (e.g. Desktop
+# synced by iCloud File Provider), dyld can stall indefinitely when
+# executing from the workspace path — same pattern as v132.
 
 set -euo pipefail
 
-BIN=${BIN:-./creation_os_v115_memory}
-if [ ! -x "$BIN" ]; then
-    echo "[v115] $BIN missing — build with 'make creation_os_v115_memory'" >&2
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT"
+
+BIN_REL="${BIN:-./creation_os_v115_memory}"
+if [[ "$BIN_REL" = /* ]]; then
+    BIN_SRC="$BIN_REL"
+else
+    BIN_SRC="$ROOT/${BIN_REL#./}"
+fi
+if [ ! -x "$BIN_SRC" ]; then
+    echo "[v115] $BIN_SRC missing — build with 'make creation_os_v115_memory'" >&2
     exit 1
 fi
+
+run_v115() {
+    local tmp ec
+    tmp="$(mktemp /tmp/cos_v115_memory_XXXXXX)"
+    cp "$BIN_SRC" "$tmp"
+    chmod +x "$tmp"
+    "$tmp" "$@"
+    ec=$?
+    rm -f "$tmp"
+    return "$ec"
+}
 
 TMP=$(mktemp -d -t cos_v115.XXXXXX)
 trap 'rm -rf "$TMP"' EXIT
 DB="$TMP/mem.sqlite"
 
 echo "[v115] self-test"
-if ! OUT=$("$BIN" --self-test 2>&1); then
+if ! OUT=$(run_v115 --self-test 2>&1); then
     echo "$OUT" >&2
     echo "[v115] self-test FAIL" >&2
     exit 1
@@ -39,20 +62,20 @@ if echo "$OUT" | grep -q "memory unavailable on this build"; then
 fi
 
 echo "[v115] write episodic rows"
-"$BIN" --db "$DB" --write-episodic "Paris is the capital of France" \
+run_v115 --db "$DB" --write-episodic "Paris is the capital of France" \
        --sigma 0.05 --session test --tags "geo,confident" >/dev/null
-"$BIN" --db "$DB" --write-episodic "Paris is the capital of France" \
+run_v115 --db "$DB" --write-episodic "Paris is the capital of France" \
        --sigma 0.80 --session test --tags "geo,uncertain" >/dev/null
-"$BIN" --db "$DB" --write-episodic "Python lists are ordered mutable sequences" \
+run_v115 --db "$DB" --write-episodic "Python lists are ordered mutable sequences" \
        --sigma 0.10 --session test --tags "code,confident" >/dev/null
 
-COUNTS=$("$BIN" --db "$DB" --counts)
+COUNTS=$(run_v115 --db "$DB" --counts)
 echo "[v115] counts: $COUNTS"
 echo "$COUNTS" | grep -q '"episodic":3' \
     || { echo "[v115] FAIL: expected episodic=3 got $COUNTS" >&2; exit 1; }
 
 echo "[v115] σ-weighted search"
-RES=$("$BIN" --db "$DB" --search "What is the capital of France?" --top-k 3)
+RES=$(run_v115 --db "$DB" --search "What is the capital of France?" --top-k 3)
 printf '%s\n' "$RES"
 
 for needle in '"top_k":3' '"lambda":' '"results":' 'capital of France'; do
