@@ -122,6 +122,24 @@ static double chat_wall_ms(void)
     return (double)ts.tv_sec * 1000.0 + (double)ts.tv_nsec / 1.0e6;
 }
 
+/** Per-turn wall time: main generation vs extra σ paths (semantic + shadow). */
+static void chat_print_latency_budget(FILE *fp, int json_once, int fast_only,
+                                      double infer_ms, double sigma_gate_ms,
+                                      float sigma, cos_sigma_action_t act)
+{
+    if (json_once || fp == NULL)
+        return;
+    double r = infer_ms * 1e-3;
+    double s = sigma_gate_ms * 1e-3;
+    double t = (infer_ms + sigma_gate_ms) * 1e-3;
+    if (fast_only)
+        fprintf(fp, "[response: %.1fs | σ-gate: SKIP | σ=N/A]\n", r);
+    else
+        fprintf(fp,
+                "[response: %.1fs | σ-gate: %.1fs | total: %.1fs | σ=%.2f %s]\n",
+                r, s, t, (double)sigma, cos_sigma_action_label(act));
+}
+
 /** COS_BITNET_STREAM=1 → tokens printed live in stub_gen; skip duplicate body. */
 static int cos_chat_stream_env_on(void)
 {
@@ -1954,10 +1972,12 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                       && (feat != NULL)
                       && ((feat->semantic_sigma != 0)
                           || (feat->fast_sigma == 0));
+            double t_ms0 = chat_wall_ms();
             if (chat_multi_shadow(cfg_rw, hmt, prompt, &r, r.response, r.sigma,
                                   &ms) == 0) {
                 have_ms = 1;
             }
+            g_cos_chat_semantic_phase_ms += chat_wall_ms() - t_ms0;
         }
     }
 
@@ -2016,6 +2036,11 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                     (double)r.sigma,
                     cos_sigma_action_label(r.final_action),
                     route);
+            if (feat != NULL)
+                chat_print_latency_budget(stderr, 0, feat->fast_sigma != 0,
+                                          elapsed_ms,
+                                          g_cos_chat_semantic_phase_ms, r.sigma,
+                                          r.final_action);
         }
 
         /* NEXT-1 polished receipt (shared with REPL path).  Harness only
@@ -2233,6 +2258,7 @@ static int chat_tools_dispatch_line(const char *line, int dry_run, FILE *confirm
 }
 
 int main(int argc, char **argv) {
+    cos_chat_apply_backend_argv(argc, argv);
     cos_ollama_autodetect_apply_env();
 
     int     use_codex     = 1;
@@ -2316,7 +2342,9 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
         else if (strcmp(argv[i], "--stream")     == 0) stream_cli = 1;
         else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
-        else if (strcmp(argv[i], "--tui")       == 0) tui_cli = 1;
+        else if (strcmp(argv[i], "--backend") == 0 && i + 1 < argc) {
+            ++i; /* applied in cos_chat_apply_backend_argv before autodetect */
+        } else if (strcmp(argv[i], "--tui")       == 0) tui_cli = 1;
         else if (strcmp(argv[i], "--no-tui")    == 0) tui_cli = 0;
         else if (strcmp(argv[i], "--speculative-decode") == 0
                  || strcmp(argv[i], "--spec") == 0)
@@ -2462,6 +2490,8 @@ int main(int argc, char **argv) {
                 "stdout (stderr for logs)\n"
                 "  --stream            stream tokens (default: on in REPL)\n"
                 "  --no-stream         full response at once (default with --once)\n"
+                "  --backend NAME      llama-server (8080) | ollama (11434) | stub\n"
+                "                      (before autodetect; default: probe 8080 then 11434)\n"
                 "  --tui               ANSI live layout (default on interactive TTY)\n"
                 "  --no-tui            plain transcript text\n"
                 "  --spec|--speculative-decode  dual-model σ decode (2B draft / 9B verify)\n"
@@ -2478,10 +2508,10 @@ int main(int argc, char **argv) {
                 "  --no-icl            disable ICL even if COS_ENGRAM_ICL=1\n"
                 "  --icl-k N           number of exemplars (default 3, max 8)\n"
                 "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
-                "  --multi-sigma       σ_combined shadow + Jaccard semantic σ\n"
-                "                      (primary + HTTP samples @ 0.7 / 1.2) unless --fast\n"
-                "  --fast              with --multi-sigma + HTTP: logprob-only shadow\n"
-                "                      (skip semantic multi-sample completes)\n"
+                "  --multi-sigma       σ_combined shadow + semantic σ extras\n"
+                "                      (extra HTTP samples) unless --fast\n"
+                "  --fast              raw speed: skip semantic σ, shadow ensemble,\n"
+                "                      and cross-model σ (pipeline gate only)\n"
                 "  --ttt               ULTRA-8: test-time sketch on RETHINK (Qwen path)\n"
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
@@ -2653,7 +2683,8 @@ int main(int argc, char **argv) {
      * REPL and --once paths so the full ULTRA stack is visible with one
      * flag.  Users who want the ensemble without the verbose banner can
      * still pass --multi-sigma explicitly. */
-    if (verbose) multi_sigma = 1;
+    if (verbose && !fast_sigma)
+        multi_sigma = 1;
 
     if (!no_semantic_entropy) {
         const char *se = getenv("COS_CHAT_SEMANTIC_ENTROPY");
@@ -2677,6 +2708,18 @@ int main(int argc, char **argv) {
     if (multi_sigma_cli && !fast_sigma && !no_semantic_sigma) {
         semantic_sigma     = 1;
         semantic_entropy = 0;
+    }
+
+    /* --fast: skip semantic multi-σ, σ_combined shadow, and cross-model σ;
+     * pipeline still runs (single-path inference + gate). */
+    if (fast_sigma) {
+        multi_sigma       = 0;
+        multi_sigma_cli   = 0;
+        semantic_sigma    = 0;
+        semantic_entropy  = 0;
+        cross_model_sigma = 0;
+        no_semantic_sigma   = 1;
+        no_semantic_entropy = 1;
     }
 
     /* FINAL-2 Phase B: resolve conformal τ (overrides static defaults
@@ -3239,7 +3282,8 @@ int main(int argc, char **argv) {
 
         chat_feat_t rfeat;
         memset(&rfeat, 0, sizeof(rfeat));
-        rfeat.multi_sigma       = (multi_sigma || verbose) ? 1 : 0;
+        rfeat.multi_sigma =
+            ((multi_sigma || verbose) && !fast_sigma) ? 1 : 0;
         rfeat.verbose           = verbose;
         rfeat.conformal_active  = conformal_active;
         rfeat.conformal_alpha   = conformal_alpha;
@@ -3580,7 +3624,8 @@ int main(int argc, char **argv) {
          * stack shows without requiring a second flag. */
         chat_feat_t xf;
         memset(&xf, 0, sizeof(xf));
-        xf.multi_sigma        = (multi_sigma || verbose) ? 1 : 0;
+        xf.multi_sigma =
+            ((multi_sigma || verbose) && !fast_sigma) ? 1 : 0;
         xf.verbose            = verbose;
         xf.conformal_active   = conformal_active;
         xf.conformal_alpha    = conformal_alpha;
@@ -3599,16 +3644,19 @@ int main(int argc, char **argv) {
         memset(&ms, 0, sizeof(ms));
         int ms_ok = 0;
         {
-            int allow_ms = (multi_sigma || verbose) && !skip_multi_verify
+            int allow_ms = (multi_sigma || verbose) && !fast_sigma
+                && !skip_multi_verify
                 && (!adaptive_compute || kernel_cap >= 10);
             if (allow_ms) {
                 int hmt = (cos_cli_use_bitnet_http() != 0)
                           && ((rfeat.semantic_sigma != 0)
                               || (rfeat.fast_sigma == 0));
+                double t_ms0 = chat_wall_ms();
                 ms_ok = (chat_multi_shadow(&cfg, hmt, line, &r, r.response,
                                            r.sigma, &ms) == 0)
                             ? 1
                             : 0;
+                g_cos_chat_semantic_phase_ms += chat_wall_ms() - t_ms0;
             }
         }
         chat_agi_after_turn(&cfg, line, &r, &xf, &ms, ms_ok);
@@ -3723,6 +3771,10 @@ int main(int argc, char **argv) {
                             spd.tokens_generated, (double)elapsed_ms,
                             (double)spd.tokens_per_second,
                             g_cos_chat_semantic_phase_ms);
+                    chat_print_latency_budget(stderr, 0, fast_sigma != 0,
+                                              elapsed_ms,
+                                              g_cos_chat_semantic_phase_ms,
+                                              r.sigma, r.final_action);
                     print_receipt_polished(&r, elapsed_ms,
                                            conformal_active, conformal_alpha,
                                            semantic_hit, &spd, receipt_prefix);

@@ -25,17 +25,18 @@ void cos_ollama_pick_model_from_tags(const char *http, char *model, size_t mcap)
 char *cos_ollama_first_model(uint16_t port);
 
 /**
- * If COS_BITNET_SERVER_EXTERNAL is unset, probe 127.0.0.1:8080 (llama-server)
- * then 11434 (Ollama). On match, set COS_BITNET_SERVER_EXTERNAL=1, port,
- * COS_INFERENCE_BACKEND=ollama, and model from Ollama /api/tags when applicable.
+ * If COS_BITNET_SERVER_EXTERNAL is unset, probe OpenAI-compatible backends:
+ * 127.0.0.1:8080 (llama-server) first, then 127.0.0.1:11434 (Ollama).
+ * Sets COS_BITNET_SERVER_EXTERNAL, port, COS_INFERENCE_BACKEND=ollama,
+ * and chat model (Ollama /api/tags on 11434 only; default gemma3:4b on 8080).
  */
 void cos_ollama_autodetect_apply_env(void);
 
-/** 1 if host:port accepts TCP within timeout_ms, else 0. */
-int cos_http_check_port(const char *host, uint16_t port, int timeout_ms);
+/** TCP probe order: 8080 then 11434. \return 2 llama-server, 1 Ollama, 0 none. */
+int cos_detect_backend(void);
 
-/** Apply explicit HTTP backend: "llama-server" (8080) or "ollama" (11434). Returns 0 or -1 if unknown. */
-int cos_inference_backend_apply_cli(const char *name);
+/** Apply first `--backend llama-server|ollama|stub` from argv (before autodetect). */
+void cos_chat_apply_backend_argv(int argc, char **argv);
 
 #ifdef __cplusplus
 }

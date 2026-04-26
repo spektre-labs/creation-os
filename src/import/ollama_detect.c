@@ -152,98 +152,88 @@ void cos_ollama_pick_model_from_tags(const char *http, char *model, size_t mcap)
     }
 }
 
-int cos_http_check_port(const char *host, uint16_t port, int timeout_ms)
+int cos_detect_backend(void)
 {
-    if (host == NULL || host[0] == '\0')
-        return 0;
-    return (cos_tcp_probe_ipv4(host, port, timeout_ms) == 0) ? 1 : 0;
+    const char *host = "127.0.0.1";
+    if (cos_tcp_probe_ipv4(host, 8080, 800) == 0)
+        return 2;
+    if (cos_tcp_probe_ipv4(host, 11434, 800) == 0)
+        return 1;
+    return 0;
 }
 
-static void cos_apply_llama_server_env(const char *host, uint16_t port,
-                                       const char *detect_msg)
+void cos_chat_apply_backend_argv(int argc, char **argv)
 {
-    (void)setenv("COS_BITNET_SERVER_EXTERNAL", "1", 1);
-    {
-        char pbuf[16];
-        (void)snprintf(pbuf, sizeof pbuf, "%u", (unsigned)port);
-        (void)setenv("COS_BITNET_SERVER_PORT", pbuf, 1);
-    }
-    (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
-    if (getenv("COS_OLLAMA_HOST") == NULL || getenv("COS_OLLAMA_HOST")[0] == '\0')
-        (void)setenv("COS_OLLAMA_HOST", host, 1);
-    {
-        char pbuf[16];
-        (void)snprintf(pbuf, sizeof pbuf, "%u", (unsigned)port);
-        if (getenv("COS_OLLAMA_PORT") == NULL || getenv("COS_OLLAMA_PORT")[0] == '\0')
-            (void)setenv("COS_OLLAMA_PORT", pbuf, 1);
-    }
-
-    int have_chat = getenv("COS_BITNET_CHAT_MODEL") != NULL
-                    && getenv("COS_BITNET_CHAT_MODEL")[0] != '\0';
-    int have_ollama_m = getenv("COS_OLLAMA_MODEL") != NULL
-                        && getenv("COS_OLLAMA_MODEL")[0] != '\0';
-
-    if (have_chat) {
-        if (!have_ollama_m)
-            (void)setenv("COS_OLLAMA_MODEL", getenv("COS_BITNET_CHAT_MODEL"), 1);
-        if (detect_msg != NULL)
-            fprintf(stderr, "%s (%s)\n", detect_msg,
-                    getenv("COS_BITNET_CHAT_MODEL"));
+    if (argv == NULL || argc < 2)
+        return;
+    for (int i = 1; i < argc; ++i) {
+        if (strcmp(argv[i], "--backend") != 0 || i + 1 >= argc)
+            continue;
+        const char *b     = argv[++i];
+        const char *host = "127.0.0.1";
+        if (strcmp(b, "llama-server") == 0) {
+            (void)setenv("COS_BITNET_SERVER_EXTERNAL", "1", 1);
+            (void)setenv("COS_BITNET_SERVER_PORT", "8080", 1);
+            (void)setenv("COS_OLLAMA_PORT", "8080", 1);
+            (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
+            if (getenv("COS_OLLAMA_HOST") == NULL
+                || getenv("COS_OLLAMA_HOST")[0] == '\0')
+                (void)setenv("COS_OLLAMA_HOST", host, 1);
+            return;
+        }
+        if (strcmp(b, "ollama") == 0) {
+            (void)setenv("COS_BITNET_SERVER_EXTERNAL", "1", 1);
+            (void)setenv("COS_BITNET_SERVER_PORT", "11434", 1);
+            (void)setenv("COS_OLLAMA_PORT", "11434", 1);
+            (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
+            if (getenv("COS_OLLAMA_HOST") == NULL
+                || getenv("COS_OLLAMA_HOST")[0] == '\0')
+                (void)setenv("COS_OLLAMA_HOST", host, 1);
+            return;
+        }
+        if (strcmp(b, "stub") == 0) {
+            (void)setenv("COS_BITNET_SERVER_EXTERNAL", "0", 1);
+            return;
+        }
+        fprintf(stderr,
+                "cos chat: unknown --backend %s (use llama-server|ollama|stub)\n",
+                b);
         return;
     }
-
-    if (port == 11434u) {
-        char tags[65536];
-        char m[128];
-        m[0] = '\0';
-        if (cos_ollama_http_get_tags(host, port, tags, sizeof tags) == 0)
-            cos_ollama_pick_model_from_tags(tags, m, sizeof m);
-        if (!m[0])
-            snprintf(m, sizeof m, "gemma3:4b");
-        (void)setenv("COS_OLLAMA_MODEL", m, 1);
-        (void)setenv("COS_BITNET_CHAT_MODEL", m, 1);
-        if (detect_msg != NULL)
-            fprintf(stderr, "%s (%s)\n", detect_msg, m);
-        return;
-    }
-
-    /* llama-server: no Ollama /api/tags; keep env or default model id. */
-    if (!have_ollama_m) {
-        (void)setenv("COS_OLLAMA_MODEL", "gemma3:4b", 1);
-        (void)setenv("COS_BITNET_CHAT_MODEL", "gemma3:4b", 1);
-    } else {
-        (void)setenv("COS_BITNET_CHAT_MODEL", getenv("COS_OLLAMA_MODEL"), 1);
-    }
-    if (detect_msg != NULL)
-        fprintf(stderr, "%s (%s)\n", detect_msg, getenv("COS_BITNET_CHAT_MODEL"));
-}
-
-int cos_inference_backend_apply_cli(const char *name)
-{
-    if (name == NULL || name[0] == '\0')
-        return -1;
-    if (strcmp(name, "llama-server") == 0) {
-        cos_apply_llama_server_env("127.0.0.1", 8080,
-                                   "cos chat: backend llama-server");
-        return 0;
-    }
-    if (strcmp(name, "ollama") == 0) {
-        cos_apply_llama_server_env("127.0.0.1", 11434, "cos chat: backend Ollama");
-        return 0;
-    }
-    return -1;
 }
 
 void cos_ollama_autodetect_apply_env(void)
 {
     const char *ext = getenv("COS_BITNET_SERVER_EXTERNAL");
-    if (ext != NULL && ext[0] != '\0')
+    if (ext != NULL)
         return;
 
     const char *host = "127.0.0.1";
 
+    /* llama-server (OpenAI-compatible) often listens on :8080. */
     if (cos_tcp_probe_ipv4(host, 8080, 800) == 0) {
-        cos_apply_llama_server_env(host, 8080, "llama-server detected");
+        (void)setenv("COS_BITNET_SERVER_EXTERNAL", "1", 1);
+        (void)setenv("COS_BITNET_SERVER_PORT", "8080", 1);
+        (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
+        if (getenv("COS_OLLAMA_HOST") == NULL || getenv("COS_OLLAMA_HOST")[0] == '\0')
+            (void)setenv("COS_OLLAMA_HOST", host, 1);
+        if (getenv("COS_OLLAMA_PORT") == NULL || getenv("COS_OLLAMA_PORT")[0] == '\0')
+            (void)setenv("COS_OLLAMA_PORT", "8080", 1);
+
+        int have_chat = getenv("COS_BITNET_CHAT_MODEL") != NULL
+                        && getenv("COS_BITNET_CHAT_MODEL")[0] != '\0';
+        const char *lm = getenv("COS_LLAMA_SERVER_MODEL");
+        if (!have_chat && lm != NULL && lm[0] != '\0') {
+            (void)setenv("COS_BITNET_CHAT_MODEL", lm, 1);
+            (void)setenv("COS_OLLAMA_MODEL", lm, 1);
+        } else if (!have_chat) {
+            (void)setenv("COS_OLLAMA_MODEL", "gemma3:4b", 1);
+            (void)setenv("COS_BITNET_CHAT_MODEL", "gemma3:4b", 1);
+        } else if (getenv("COS_OLLAMA_MODEL") == NULL
+                   || getenv("COS_OLLAMA_MODEL")[0] == '\0')
+            (void)setenv("COS_OLLAMA_MODEL", getenv("COS_BITNET_CHAT_MODEL"), 1);
+
+        fprintf(stderr, "llama-server detected (port 8080)\n");
         return;
     }
 
@@ -281,5 +271,5 @@ void cos_ollama_autodetect_apply_env(void)
         snprintf(m, sizeof m, "gemma3:4b");
     (void)setenv("COS_OLLAMA_MODEL", m, 1);
     (void)setenv("COS_BITNET_CHAT_MODEL", m, 1);
-    fprintf(stderr, "Ollama detected (%s)\n", m);
+    fprintf(stderr, "Ollama detected (port 11434)\n");
 }

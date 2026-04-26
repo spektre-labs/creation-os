@@ -55,5 +55,6 @@ Run `cos serve` (with a healthy local OpenAI-compatible inference backend) on th
 
 ## Operational notes
 
-- **Latency:** verification may add HTTP and sampling cost; see `cos chat` stderr latency budget lines.
+- **Inference autodetect (C):** `cos chat` probes **127.0.0.1:8080** (llama-server–shaped OpenAI API) **before** **127.0.0.1:11434** (Ollama). Override with `--backend llama-server|ollama|stub` (applied before autodetect). Optional model for 8080: `COS_LLAMA_SERVER_MODEL` or `COS_BITNET_CHAT_MODEL`.
+- **Latency:** each non-`--json` turn prints a stderr budget line after the answer, for example `[response: … | σ-gate: … | total: … | σ=… ACCEPT]`. Use `cos chat --fast` to skip semantic / shadow σ extras (pipeline gate only); line shows `σ-gate: SKIP`.
 - **Evidence class:** integration behavior is **repository reality** (stdio / HTTP wiring); headline AUROC or harness claims belong in separate benchmark artifacts — see [CLAIM_DISCIPLINE.md](../CLAIM_DISCIPLINE.md).

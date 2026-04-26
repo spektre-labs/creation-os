@@ -31,7 +31,6 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-COS_MCP2_PROTOCOL_VERSION = "2026-03-26"
 _DEFAULT_SERVER_VERSION = "3.3.0"
 
 
@@ -155,13 +154,31 @@ def _tools_list() -> list:
     ]
 
 
-def _handle_initialize(msg_id: Any) -> Dict[str, Any]:
+def _mcp_tool_result(body: Dict[str, Any]) -> Dict[str, Any]:
+    """MCP tools/call result shape (content + isError) for Claude Desktop / Cursor."""
+    is_error = isinstance(body, dict) and "error" in body
+    text = json.dumps(body, ensure_ascii=False)
+    out: Dict[str, Any] = {
+        "content": [{"type": "text", "text": text}],
+        "isError": bool(is_error),
+    }
+    if isinstance(body, dict) and not is_error:
+        out["structuredContent"] = body
+    return out
+
+
+def _handle_initialize(msg_id: Any, params: Dict[str, Any]) -> Dict[str, Any]:
     ver = os.environ.get("COS_MCP_SERVER_VERSION", _DEFAULT_SERVER_VERSION)
+    protocol_version = "2024-11-05"
+    if isinstance(params, dict):
+        cv = params.get("protocolVersion")
+        if isinstance(cv, str) and cv.strip():
+            protocol_version = cv.strip()
     return {
         "jsonrpc": "2.0",
         "id": msg_id,
         "result": {
-            "protocolVersion": COS_MCP2_PROTOCOL_VERSION,
+            "protocolVersion": protocol_version,
             "serverInfo": {"name": "creation-os-sigma-mcp", "version": ver},
             "capabilities": {"tools": {"listChanged": False}},
         },
@@ -213,16 +230,24 @@ def _handle_tools_call(msg_id: Any, params: Dict[str, Any]) -> Dict[str, Any]:
     else:
         body = {"error": "unknown tool", "name": name}
 
-    return {"jsonrpc": "2.0", "id": msg_id, "result": body}
+    return {
+        "jsonrpc": "2.0",
+        "id": msg_id,
+        "result": _mcp_tool_result(body),
+    }
 
 
 def _dispatch_line(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     if msg.get("jsonrpc") != "2.0":
         return None
-    if "id" not in msg:
-        return None
-    msg_id = msg["id"]
+    has_id = "id" in msg
+    msg_id = msg.get("id")
     method = msg.get("method")
+    if not has_id:
+        # JSON-RPC notifications (no response).
+        if isinstance(method, str) and method.startswith("notifications/"):
+            return None
+        return None
     if not method:
         return {
             "jsonrpc": "2.0",
@@ -230,7 +255,10 @@ def _dispatch_line(msg: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             "error": {"code": -32600, "message": "missing method"},
         }
     if method == "initialize":
-        return _handle_initialize(msg_id)
+        p = msg.get("params")
+        if not isinstance(p, dict):
+            p = {}
+        return _handle_initialize(msg_id, p)
     if method == "tools/list":
         return _handle_tools_list(msg_id)
     if method == "tools/call":

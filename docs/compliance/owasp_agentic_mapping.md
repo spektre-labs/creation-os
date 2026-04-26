@@ -4,8 +4,8 @@
 
 The OWASP naming for agentic AI evolves; rows below use the **ASI01–ASI10** style labels requested by integrators. Adjust identifiers to match your internal OWASP release when auditing.
 
-| OWASP ASI | Risk theme | Creation OS–related mitigation (informative) |
-|-----------|------------|-----------------------------------------------|
+| OWASP ASI | Risk | Creation OS mitigation (informative) |
+|-----------|------|----------------------------------------|
 | ASI01 | Goal hijacking | σ-gate and semantic checks surface off-topic or unstable completions; policy layers can tie goals to signed prompts. |
 | ASI02 | Tool misuse | σ-gated tool path (`cos chat --tools`), risk tiers, and operator confirmation for high-risk commands. |
 | ASI03 | Memory poisoning | Engram store with σ at write time; decay / consolidation policies reduce weight of unreliable memories. |

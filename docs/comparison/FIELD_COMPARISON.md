@@ -4,23 +4,26 @@
 
 ## Measured row (this repository)
 
-| System | Method | AUROC | N | Notes |
-|--------|--------|-------|---|--------|
+| System | Method | AUROC | N | Hardware |
+|--------|--------|-------|---|----------|
 | Creation OS (graded CSV) | σ-gate reporting on one graded run | **0.8123** | 50 prompts (43 / 7 split in report) | **Harness-style reporting** on `benchmarks/graded/graded_results.csv`; see `benchmarks/graded/RESULTS.md` (generated artifact). Host metadata belongs in a repro bundle per [REPRO_BUNDLE_TEMPLATE.md](../REPRO_BUNDLE_TEMPLATE.md). |
 
 ## Literature anchors (not repository evidence)
 
-The rows below are **placeholders for external baselines**. Do not treat quoted numbers as maintained in git unless you attach the paper PDF, official leaderboard snapshot, and matching evaluation script revision.
+The rows below are **external benchmarks** cited for integrator-facing comparison. They are **not** re-run or maintained as in-repo harness numbers unless you attach the primary citation, split, and frozen evaluation script revision per [CLAIM_DISCIPLINE.md](../CLAIM_DISCIPLINE.md).
 
-| System (illustrative) | Method (illustrative) | AUROC (order-of-magnitude anchor) | N | Hardware |
-|-----------------------|------------------------|-----------------------------------|---|----------|
-| Community / survey work on verbalized confidence | verbalized probability | fill from primary citation | varies | cloud typical |
-| SelfCheck-style checks | NLI or consistency probes | fill from primary citation | varies | cloud typical |
-| Semantic-entropy style estimators | sampling-based disagreement | fill from primary citation | varies | cloud typical |
+| System | Method | AUROC (reported) | N | Hardware |
+|--------|--------|------------------|---|----------|
+| Cacioli et al. (valid subset, verbalized confidence; illustrative mean) | verbalized | **0.624** | 524 | cloud (typical) |
+| Cacioli et al. (invalid subset; illustrative mean) | verbalized | **0.357** | 524 | cloud (typical) |
+| SelfCheckGPT-class (survey anchor) | NLI / consistency probes | **~0.70** | varies | cloud typical |
+| Semantic entropy–class (survey anchor; e.g. Nature-style sampling) | sampling / disagreement | **~0.79** | varies | cloud typical |
 
-## How to extend honestly
+### Notes (read before citing)
 
-1. Freeze **one** Creation OS AUROC line to a `make …` command + CSV + `uname` / SoC string in the repro bundle.
-2. For each external system, add a footnote with **paper + version + split**; never merge microbench throughput into the same headline sentence as AUROC.
+- **Creation OS N=50 is small**; a larger prompt set (for example 200 prompts) should be archived with the same CSV discipline before treating AUROC as stable.
+- **Creation OS runs locally** on consumer-class hardware in the reported graded bundle; **no cloud API** is required for that artifact path.
+- **Pure C** applies to the σ-gate **control plane** in this tree; local inference may still use an external OpenAI-compatible server (Ollama, llama-server, etc.) when enabled.
+- Replace Cacioli / SelfCheck / semantic-entropy numbers with **your frozen citation row** (paper + version + split) before publication; do not merge microbench throughput into the same headline sentence as AUROC.
 
-See [CLAIM_DISCIPLINE.md](../CLAIM_DISCIPLINE.md) § forbidden merges.
+See [CLAIM_DISCIPLINE.md](../CLAIM_DISCIPLINE.md) and [EXTERNAL_EVIDENCE_AND_POSITIONING.md](../EXTERNAL_EVIDENCE_AND_POSITIONING.md) for claim hygiene.
