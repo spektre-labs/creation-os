@@ -35,7 +35,7 @@ jobs:
     name: gitleaks (full history)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: gitleaks
@@ -52,7 +52,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: make harden
         run: make harden
       - name: make hardening-check
@@ -66,7 +66,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: make sanitize
         run: make sanitize
 
@@ -74,7 +74,7 @@ jobs:
     name: security-scan (grep fallback + URLs)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: install gitleaks
@@ -89,7 +89,7 @@ jobs:
     name: sbom (CycloneDX 1.5)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: make sbom
         run: make sbom
       - name: upload SBOM artifact
@@ -102,6 +102,6 @@ jobs:
     name: reproducible-build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: make reproducible-build
         run: make reproducible-build
