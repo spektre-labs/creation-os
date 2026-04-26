@@ -11,6 +11,8 @@
 
 #include "cos_demo.h"
 
+#include "reinforce.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -148,6 +150,68 @@ static void demo_banner(void)
            C_GREEN, C_RESET);
 }
 
+struct cos_demo_rel_row {
+    const char *q;
+    const char *a;
+    float       sigma;
+};
+
+/* Deterministic showcase — fixed σ + τ gate (no network). τ per default
+ * reinforce policy: accept <0.40, rethink <0.60, else abstain. */
+static const struct cos_demo_rel_row g_rel[] = {
+    {"What is 2+2?", "4", 0.08f},
+    {"Capital of Japan?", "Tokyo", 0.12f},
+    {"Solve P vs NP", "[ABSTAIN — insufficient confidence]", 0.67f},
+    {"Will it rain tomorrow in Helsinki?",
+     "[ABSTAIN — cannot verify prediction]", 0.82f},
+    {"Write a haiku about code", "Silicon dreams flow...", 0.45f},
+};
+
+static const char *rel_sym(cos_sigma_action_t a)
+{
+    if (a == COS_SIGMA_ACTION_ACCEPT)
+        return "✓";
+    if (a == COS_SIGMA_ACTION_RETHINK)
+        return "⚠";
+    return "✗";
+}
+
+static void cos_demo_reliability_print(void)
+{
+    demo_colour_init();
+    const float tau_a = 0.40f, tau_r = 0.60f;
+    int         n_acc = 0, n_reth = 0, n_abs = 0;
+
+    printf("\n%sCREATION OS — AI Reliability Demo%s\n\n", C_BOLD, C_RESET);
+    for (size_t i = 0; i < sizeof g_rel / sizeof g_rel[0]; ++i) {
+        const struct cos_demo_rel_row *r = &g_rel[i];
+        cos_sigma_action_t g =
+            cos_sigma_reinforce(r->sigma, tau_a, tau_r);
+        if (g == COS_SIGMA_ACTION_ACCEPT)
+            n_acc++;
+        else if (g == COS_SIGMA_ACTION_RETHINK)
+            n_reth++;
+        else
+            n_abs++;
+        printf("%sQ:%s %s\n", C_GREY, C_RESET, r->q);
+        printf("%sA:%s %s  [σ=%.2f %s %s]\n\n", C_GREY, C_RESET, r->a,
+               (double)r->sigma, rel_sym(g), cos_sigma_action_label(g));
+    }
+    printf("%sResults:%s %d ACCEPT | %d RETHINK | %d ABSTAIN\n", C_BOLD, C_RESET,
+           n_acc, n_reth, n_abs);
+    printf("%sHarness metrics:%s bind AUROC / separation claims to archived "
+           "JSONL per docs/CLAIM_DISCIPLINE.md (not printed here).\n",
+           C_GREY, C_RESET);
+    printf("%sWrong + confident (σ < τ_accept):%s not evaluated in this "
+           "static demo.\n\n",
+           C_GREY, C_RESET);
+    printf("  → Try with Ollama: %s./cos chat%s\n", C_BOLD, C_RESET);
+    printf("  → Verify-agent rollup: %s./cos verify%s (no pipe)\n", C_BOLD,
+           C_RESET);
+    printf("  → API server: %s./cos serve%s\n", C_BOLD, C_RESET);
+    printf("  → Graded bench: %s./cos bench --graded%s\n\n", C_BOLD, C_RESET);
+}
+
 static void print_next_steps(void)
 {
     demo_colour_init();
@@ -165,19 +229,32 @@ static void print_next_steps(void)
 int cos_demo_main(int argc, char **argv)
 {
     int non_interactive = 0;
+    int archive_mode    = 0;
+    int want_interactive = 0;
     for (int i = 0; i < argc; i++) {
         if (!strcmp(argv[i], "--no-color"))
             setenv("NO_COLOR", "1", 1);
         else if (!strcmp(argv[i], "--all") || !strcmp(argv[i], "--batch"))
             non_interactive = 1;
+        else if (!strcmp(argv[i], "--archive"))
+            archive_mode = 1;
+        else if (!strcmp(argv[i], "--interactive"))
+            want_interactive = 1;
     }
 
     demo_colour_init();
+
+    /* Default: deterministic reliability tour (no network, no ENTER). */
+    if (!archive_mode && !non_interactive && !want_interactive) {
+        cos_demo_reliability_print();
+        return 0;
+    }
+
     demo_banner();
 
     size_t n_ex = sizeof g_demo_ex / sizeof g_demo_ex[0];
 
-    if (non_interactive) {
+    if (non_interactive || archive_mode) {
         for (size_t i = 0; i < n_ex; i++)
             cos_demo_show_example((int)i);
         print_next_steps();

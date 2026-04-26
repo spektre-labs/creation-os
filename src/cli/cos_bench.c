@@ -18,6 +18,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
+#include <time.h>
 
 enum { BENCH_LINE_MAX = 16384, BENCH_PROMPT_MAX = 4096 };
 
@@ -141,9 +142,9 @@ static const char *find_chat_bin(void)
     return "cos-chat";
 }
 
-static int bench_graded(int n_max)
+static int bench_graded(const char *csv, int n_max, const char *title)
 {
-    const char *csv = "benchmarks/graded/graded_prompts.csv";
+    (void)title;
     if (!file_exists(csv)) {
         fprintf(stderr, "cos-bench: %s not found (run from repo root)\n", csv);
         return 1;
@@ -159,17 +160,26 @@ static int bench_graded(int n_max)
         perror("cos-bench: fopen csv");
         return 1;
     }
-    FILE *fo = fopen("benchmarks/graded/cos_bench_results.csv", "w");
+    char outpath[512];
+    time_t     now = time(NULL);
+    struct tm  tmv;
+    char       datebuf[32];
+    if (gmtime_r(&now, &tmv) == NULL)
+        snprintf(datebuf, sizeof datebuf, "unknown");
+    else
+        strftime(datebuf, sizeof datebuf, "%Y%m%d", &tmv);
+    snprintf(outpath, sizeof outpath,
+             "benchmarks/graded/results_%s.jsonl", datebuf);
+    if (strstr(csv, "truthfulqa") != NULL)
+        snprintf(outpath, sizeof outpath,
+                 "benchmarks/truthfulqa/results_%s.jsonl", datebuf);
+
+    FILE *fo = fopen(outpath, "w");
     if (fo == NULL) {
-        fprintf(stderr,
-                "cos-bench: cannot write benchmarks/graded/cos_bench_results.csv\n");
+        fprintf(stderr, "cos-bench: cannot write %s\n", outpath);
         fclose(fi);
         return 1;
     }
-    fprintf(fo,
-            "category,prompt,correct_answer,model_answer,sigma,action,is_"
-            "correct\n");
-
     char line[BENCH_LINE_MAX];
     if (fgets(line, sizeof line, fi) == NULL) {
         fclose(fi);
@@ -179,6 +189,7 @@ static int bench_graded(int n_max)
 
     char capbuf[BENCH_LINE_MAX];
     int   n_done = 0;
+    clock_t t0 = clock();
     while (n_done < n_max && fgets(line, sizeof line, fi) != NULL) {
         char *p = line;
         while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
@@ -236,22 +247,35 @@ static int bench_graded(int n_max)
         }
 
         int ok = grade_simple(cat, gold, ans, act);
-        /* CSV escape prompt: replace " with ' */
-        fprintf(fo, "%s,\"", cat);
+        fprintf(fo,
+                "{\"category\":\"%s\",\"prompt\":", cat);
+        fputc('"', fo);
         for (const char *q = prompt; *q; ++q) {
-            if (*q == '"')
-                fputc('\'', fo);
-            else
+            if (*q == '"' || *q == '\\')
+                fputc('\\', fo);
+            if (*q == '\n')
+                fputs("\\n", fo);
+            else if (*q != '\r')
                 fputc(*q, fo);
         }
-        fprintf(fo, "\",\"%s\",\"", gold);
+        fputs("\",\"gold\":\"", fo);
+        for (const char *q = gold; *q; ++q) {
+            if (*q == '"' || *q == '\\')
+                fputc('\\', fo);
+            else if (*q != '\n' && *q != '\r')
+                fputc(*q, fo);
+        }
+        fputs("\",\"model_answer\":\"", fo);
         for (const char *q = ans; *q; ++q) {
-            if (*q == '"')
-                fputc('\'', fo);
-            else
+            if (*q == '"' || *q == '\\')
+                fputc('\\', fo);
+            else if (*q == '\n')
+                fputs("\\n", fo);
+            else if (*q != '\r')
                 fputc(*q, fo);
         }
-        fprintf(fo, "\",%.6f,%s,%d\n", (double)sig, act, ok);
+        fprintf(fo, "\",\"sigma\":%.6f,\"action\":\"%s\",\"correct\":%d}\n",
+                (double)sig, act, ok);
         fprintf(stdout, "  [%d] σ=%.3f %s  grade=%s\n", n_done, (double)sig, act,
                 ok ? "OK" : "XX");
         n_done++;
@@ -259,24 +283,63 @@ static int bench_graded(int n_max)
 
     fclose(fi);
     fclose(fo);
-    fprintf(stdout, "cos-bench: wrote benchmarks/graded/cos_bench_results.csv "
-                    "(%d rows)\n",
-            n_done);
+    clock_t t1 = clock();
+    double  sec = (double)(t1 - t0) / (double)CLOCKS_PER_SEC;
+    if (sec < 0)
+        sec = 0;
+    fprintf(stdout, "cos-bench: wrote %s (%d rows) in %.1fs\n", outpath, n_done,
+            sec);
     return 0;
+}
+
+static int bench_break_it(void)
+{
+    if (!file_exists("tests/stress/break_it.csv")) {
+        fputs("cos-bench: tests/stress/break_it.csv not found\n", stderr);
+        return 1;
+    }
+    if (!file_exists("scripts/real/run_break_it.sh")) {
+        fputs("cos-bench: scripts/real/run_break_it.sh not found\n", stderr);
+        return 1;
+    }
+    pid_t pid = fork();
+    if (pid < 0) {
+        perror("cos-bench: fork");
+        return 126;
+    }
+    if (pid == 0) {
+        execl("/bin/sh", "sh", "scripts/real/run_break_it.sh", (char *)NULL);
+        perror("cos-bench: execl");
+        _exit(127);
+    }
+    int st = 0;
+    if (waitpid(pid, &st, 0) < 0) {
+        perror("cos-bench: waitpid");
+        return 126;
+    }
+    if (!WIFEXITED(st))
+        return 1;
+    return WEXITSTATUS(st);
 }
 
 int cos_bench_main(int argc, char **argv)
 {
-    int graded = 0, n = 50;
+    int graded = 0, truthfulqa = 0, breakit = 0, n = 50;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--graded") == 0)
             graded = 1;
+        else if (strcmp(argv[i], "--truthfulqa") == 0)
+            truthfulqa = 1;
+        else if (strcmp(argv[i], "--break-it") == 0 || strcmp(argv[i], "--breakit") == 0)
+            breakit = 1;
         else if (strcmp(argv[i], "--n") == 0 && i + 1 < argc)
             n = atoi(argv[++i]);
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-            fputs("cos-bench — graded CSV via ./cos-chat --once\n"
-                  "  --graded       run graded_prompts.csv\n"
-                  "  --n N          max rows (default 50)\n",
+            fputs("cos-bench — harness driver (needs ./cos-chat)\n"
+                  "  --graded       graded σ-gate CSV (50-row fixture)\n"
+                  "  --truthfulqa   TruthfulQA-style pilot CSV\n"
+                  "  --break-it     run scripts/real/run_break_it.sh\n"
+                  "  --n N          max graded rows (default 50)\n",
                   stdout);
             return 0;
         }
@@ -286,22 +349,35 @@ int cos_bench_main(int argc, char **argv)
     if (n > 5000)
         n = 5000;
 
-    for (int i = 1; i < argc; ++i) {
-        if (strcmp(argv[i], "--truthfulqa") == 0
-            || strcmp(argv[i], "--separation") == 0) {
-            fprintf(stderr,
-                    "cos-bench: %s not implemented in this build (use shell "
-                    "scripts under scripts/real/).\n",
-                    argv[i]);
-            return 2;
+    if (breakit) {
+        if (graded || truthfulqa) {
+            fputs("cos-bench: use only one of --graded / --truthfulqa / --break-it\n",
+                  stderr);
+            return 64;
         }
+        return bench_break_it();
+    }
+
+    if (truthfulqa) {
+        const char *csv = "benchmarks/truthfulqa/cos_bench_prompts.csv";
+        if (!file_exists(csv)) {
+            fprintf(stderr, "cos-bench: %s missing\n", csv);
+            return 1;
+        }
+        printf("=== Creation OS Benchmark: TruthfulQA pilot ===\n");
+        return bench_graded(csv, n, "truthfulqa");
     }
 
     if (!graded) {
-        fputs("cos-bench: specify --graded\n", stderr);
+        fputs("cos-bench: specify --graded, --truthfulqa, or --break-it\n", stderr);
         return 64;
     }
-    return bench_graded(n);
+
+    const char *csv = "benchmarks/graded/graded_50_prompts.csv";
+    if (!file_exists(csv))
+        csv = "benchmarks/graded/graded_prompts.csv";
+    printf("=== Creation OS Benchmark: Graded set ===\n");
+    return bench_graded(csv, n, "graded");
 }
 
 int main(int argc, char **argv) { return cos_bench_main(argc, argv); }

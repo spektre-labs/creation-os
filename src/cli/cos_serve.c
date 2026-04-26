@@ -2,7 +2,8 @@
  *
  * Endpoints (HTTP/1.1, JSON bodies):
  *   POST /v1/gate   { "prompt", "model"? }
- *   POST /v1/verify { "text", "model"? }  — same pipeline path; input is the string to score.
+ *   POST /v1/sigma — alias of /v1/gate (OpenAI-shaped body with "prompt")
+ *   POST /v1/verify { "text", "model"? } — per-sentence semantic-entropy σ (JSON array)
  *   GET  /v1/health
  *   GET  /v1/audit/{audit_id}
  *
@@ -26,7 +27,10 @@
 #include "constitution.h"
 #include "license_attest.h"
 #include "audit_log.h"
+#include "../../include/cos_version.h"
 #include "../vendor/picohttpparser.h"
+#include "bitnet_server.h"
+#include "cos_verify_claims.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -553,8 +557,16 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
         pathz[pl] = '\0';
     }
 
-    if (phr_eq(method, method_len, "OPTIONS"))
-        return http_reply_json(cfd, 200, "{}");
+    if (phr_eq(method, method_len, "OPTIONS")) {
+        static const char opt[] =
+            "HTTP/1.1 204 No Content\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Methods: GET, POST, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"
+            "Content-Length: 0\r\n"
+            "\r\n";
+        return http_send_all(cfd, opt, sizeof opt - 1u);
+    }
 
     if (phr_eq(method, method_len, "GET") && strcmp(pathz, "/v1/health") == 0) {
         char js[SERVE_JSON_MAX];
@@ -565,9 +577,11 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
             m = "default";
         double up = difftime(time(NULL), st->started);
         snprintf(js, sizeof js,
-                 "{\"status\":\"ok\",\"model\":\"%s\",\"auroc\":%.3f,\"uptime\":%.0f,"
+                 "{\"status\":\"ok\",\"model\":\"%s\",\"version\":\"%s\","
+                 "\"auroc\":%.3f,\"uptime\":%.0f,"
                  "\"tau_accept\":%.4f,\"conformal_loaded\":%s}",
-                 m, (double)st->health_auroc, up, (double)st->cfg.tau_accept,
+                 m, COS_VERSION_STRING, (double)st->health_auroc, up,
+                 (double)st->cfg.tau_accept,
                  st->conformal_loaded ? "true" : "false");
         return http_reply_json(cfd, 200, js);
     }
@@ -589,7 +603,8 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
     if (!phr_eq(method, method_len, "POST") && !phr_eq(method, method_len, "PUT"))
         return http_reply_json(cfd, 404, "{\"error\":\"not_found\"}");
 
-    if (strcmp(pathz, "/v1/gate") != 0 && strcmp(pathz, "/v1/verify") != 0)
+    if (strcmp(pathz, "/v1/gate") != 0 && strcmp(pathz, "/v1/sigma") != 0
+        && strcmp(pathz, "/v1/verify") != 0)
         return http_reply_json(cfd, 404, "{\"error\":\"not_found\"}");
 
     if (!body || body_len == 0)
@@ -630,6 +645,22 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
     if (model[0])
         (void)setenv("COS_BITNET_CHAT_MODEL", model, 1);
 
+    if (strcmp(pathz, "/v1/verify") == 0) {
+        if (!cos_bitnet_server_is_healthy())
+            return http_reply_json(cfd, 503,
+                                   "{\"error\":\"ollama_unavailable\"}");
+        char vjs[SERVE_JSON_MAX];
+        int  vrc = cos_verify_claims_sentences_json(prompt, vjs, sizeof vjs);
+        if (vrc == -2)
+            return http_reply_json(cfd, 400, "{\"error\":\"text_too_large\"}");
+        if (vrc != 0)
+            return http_reply_json(cfd, 500, "{\"error\":\"verify_encode_failed\"}");
+        return http_reply_json(cfd, 200, vjs);
+    }
+
+    if (!cos_bitnet_server_is_healthy())
+        return http_reply_json(cfd, 503, "{\"error\":\"ollama_unavailable\"}");
+
     cos_pipeline_result_t r;
     memset(&r, 0, sizeof r);
     clock_t t0 = clock();
@@ -669,9 +700,16 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
                                          st->cfg.tau_rethink, 0, codexh);
     }
 
+    const char *mod_json = model[0] ? model : getenv("COS_BITNET_CHAT_MODEL");
+    if (mod_json == NULL || mod_json[0] == '\0')
+        mod_json = "gemma3:4b";
+
+    char receipt_disp[24];
+    snprintf(receipt_disp, sizeof receipt_disp, "%.16s", rh);
+
     char js[SERVE_JSON_MAX];
-    if (strcmp(pathz, "/v1/gate") == 0) {
-        /* Escape response for JSON */
+    /* Only /v1/gate and /v1/sigma reach here */
+    {
         char esc[8192];
         size_t w = 0;
         const char *s = resp;
@@ -691,30 +729,10 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
         esc[w] = '\0';
         snprintf(js, sizeof js,
                  "{\"response\":\"%s\",\"sigma\":%.6f,\"action\":\"%s\","
+                 "\"receipt\":\"%s\",\"model\":\"%s\","
                  "\"gated\":true,\"audit_id\":\"%s\",\"latency_ms\":%.1f}",
-                 esc, (double)r.sigma, action_label(r.final_action), audit_id,
-                 ms);
-    } else {
-        float conf = 1.0f - r.sigma;
-        if (conf < 0.f)
-            conf = 0.f;
-        if (conf > 1.f)
-            conf = 1.f;
-        char ac_ctx[200];
-        size_t ai = 0;
-        for (const char *p = st->auroc_ctx; *p && ai + 1 < sizeof ac_ctx; ++p) {
-            if (*p == '"' || *p == '\\' || *p < 0x20)
-                ac_ctx[ai++] = ' ';
-            else
-                ac_ctx[ai++] = *p;
-        }
-        ac_ctx[ai] = '\0';
-        snprintf(js, sizeof js,
-                 "{\"sigma\":%.6f,\"action\":\"%s\","
-                 "\"calibrated_sigma\":%.6f,\"confidence\":%.6f,"
-                 "\"auroc_context\":\"%s\",\"audit_id\":\"%s\",\"latency_ms\":%.1f}",
-                 (double)r.sigma, action_label(r.final_action), (double)r.sigma,
-                 (double)conf, ac_ctx, audit_id, ms);
+                 esc, (double)r.sigma, action_label(r.final_action), receipt_disp,
+                 mod_json, audit_id, ms);
     }
     return http_reply_json(cfd, 200, js);
 }

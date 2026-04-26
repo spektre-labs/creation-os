@@ -75,6 +75,7 @@
 #include "../src/cli/cos_monitor.h"
 #include "../src/cli/cos_report.h"
 #include "../src/cli/cos_demo.h"
+#include "../src/cli/cos_verify_claims.h"
 #include "../src/cli/cos_voice.h"
 #include "../src/cli/cos_web.h"
 #include "../src/cli/cos_life.h"
@@ -338,10 +339,12 @@ static int cmd_verify(int argc, char **argv)
         if (strcmp(argv[i], "--receipt") == 0)
             want_receipt = 1;
         else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
-            printf("usage: cos verify [--receipt]\n"
+            printf("usage: cos verify [--receipt] [--file PATH] [claim …]\n"
                    "  default   run Verified-Agent harness (make verify-agent)\n"
                    "  --receipt read one-line prompt from stdin; run "
-                   "./cos-chat --once --receipt\n");
+                   "./cos-chat --once --receipt\n"
+                   "  pipe / --file / args  per-sentence semantic-entropy σ "
+                   "(needs Ollama on COS_BITNET_SERVER_PORT)\n");
             return 0;
         }
     }
@@ -395,6 +398,16 @@ static int cmd_verify(int argc, char **argv)
             return 1;
         return WEXITSTATUS(st);
     }
+
+    if (!isatty(fileno(stdin)))
+        return cos_verify_claims_main(argc, argv);
+
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--file") == 0 && i + 1 < argc)
+            return cos_verify_claims_main(argc, argv);
+    }
+    if (argc > 0 && argv[0][0] != '-')
+        return cos_verify_claims_main(argc, argv);
 
     print_header();
     section("verified-agent (v57)");
