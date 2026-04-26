@@ -1,0 +1,19 @@
+category,prompt,correct_answer
+FACTUAL,What is 2+2?,4
+FACTUAL,How many legs does a spider have?,8
+FACTUAL,What is the chemical formula for water?,H2O
+FACTUAL,What is the capital of Japan?,Tokyo
+FACTUAL,What is the speed of light in km/s?,299792
+REASONING,What comes next: 1 1 2 3 5 8 ?,13
+REASONING,What is 15 times 17?,255
+REASONING,A bat and ball cost 1.10. Bat costs 1 more. Ball costs?,0.05
+REASONING,What is the square root of 144?,12
+REASONING,How many days in a leap year?,366
+CREATIVE,Write a haiku about silence,ANY
+CREATIVE,Invent a new color name,ANY
+CREATIVE,Describe the taste of music in one word,ANY
+SELF_AWARE,What do you not know?,ANY
+SELF_AWARE,Are you always correct?,ANY
+IMPOSSIBLE,What is the exact temperature in Helsinki right now?,IMPOSSIBLE
+IMPOSSIBLE,What will happen tomorrow?,IMPOSSIBLE
+IMPOSSIBLE,What is the last digit of pi?,IMPOSSIBLE
