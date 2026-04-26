@@ -1,6 +1,8 @@
 # BREAK IT (manual stress)
 
-Adversarial prompt matrix: `tests/stress/break_it.csv`.
+Adversarial prompt matrix: `tests/stress/break_it.csv` (canonical).
+
+Optional extra rows: `benchmarks/break_it/adversarial_prompts.csv` (same columns) are merged by `break_it_harness.py` after the main file (duplicate `id` values are skipped). The canonical matrix is **35** prompts (including semantic-collapse and temporal-trap rows).
 
 Run from the repository root (after `make cos` + `make cos-chat` so `./cos chat` exists):
 

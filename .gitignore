@@ -223,6 +223,8 @@ benchmarks/forgetting/*.csv
 benchmarks/forgetting/*.txt
 benchmarks/**/*.txt
 benchmarks/**/*.csv
+# BREAK IT optional adversarial slice (merged by scripts/real/break_it_harness.py)
+!benchmarks/break_it/adversarial_prompts.csv
 # Tracked σ separation pipeline artifacts (canonical run for REPORT.md)
 !benchmarks/sigma_separation/pipeline_results.csv
 !benchmarks/sigma_separation/chart.txt

@@ -210,6 +210,35 @@ static int ss_pipe_read_dup(int rd, char **out)
     return 0;
 }
 
+/** One completion σ from token logprobs (Ollama); used when Jaccard σ≈0. */
+static float ss_semantic_energy_probe_sigma(int port, const char *prompt,
+                                             const char *system_prompt)
+{
+    cos_bitnet_server_params_t par;
+    cos_bitnet_server_result_t br;
+    memset(&par, 0, sizeof par);
+    par.system_prompt =
+        (system_prompt != NULL && system_prompt[0] != '\0') ? system_prompt
+        : "Give only the direct answer. Maximum one sentence. No explanation.";
+    par.temperature = 0.35f;
+    par.n_predict   = 80;
+    par.n_probs     = 3;
+    par.seed        = -1;
+    memset(&br, 0, sizeof br);
+    if (cos_bitnet_server_complete(prompt, &par, &br) != 0)
+        return 0.0f;
+    {
+        float s = br.mean_sigma;
+        if (!(s == s) || s <= 0.0f)
+            s = br.sigma;
+        if (!(s == s) || s < 0.0f)
+            s = 0.0f;
+        if (s > 1.0f)
+            s = 1.0f;
+        return s;
+    }
+}
+
 static pid_t ss_fork_query_pipe(int pair[2], int port, const char *prompt,
                                 const char *sysp, float temp, int max_tok)
 {
@@ -513,6 +542,23 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         (void)cos_semantic_sigma_compute_texts(fs0, fs1, fs2, out);
     }
     out->n_samples = 3;
+
+    /* Semantic-energy style fallback: identical wrong text at all temps
+     * yields Jaccard σ≈0; use a single logprob-based σ probe as tiebreaker. */
+    if (out->sigma < 0.1f) {
+        float energy_fallback =
+            ss_semantic_energy_probe_sigma(port, prompt, system_prompt);
+        if (energy_fallback > 0.4f) {
+            float adj = 0.3f + energy_fallback * 0.3f;
+            if (adj > 1.0f)
+                adj = 1.0f;
+            out->sigma = adj;
+            fprintf(stderr,
+                    "[semantic-energy fallback: text agrees but logits uncertain "
+                    "-> sigma_semantic=%.3f]\n",
+                    (double)out->sigma);
+        }
+    }
 
     free(dup0);
     free(dup1);

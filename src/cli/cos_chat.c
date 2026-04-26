@@ -97,6 +97,7 @@
 #include "sigma_trajectory.h"
 #include "cross_model.h"
 #include "cross_model_sigma.h"
+#include "total_uncertainty.h"
 #include "model_cascade.h"
 #include "semantic_cache.h"
 #include "bitnet_server.h"
@@ -2045,6 +2046,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                         spd.tokens_generated, (double)elapsed_ms,
                         (double)spd.tokens_per_second,
                         g_cos_chat_semantic_phase_ms);
+                {
+                    long infer_l = (long)(elapsed_ms + 0.5);
+                    long sig_l =
+                        (long)(g_cos_chat_semantic_phase_ms + 0.5);
+                    long tot_l = infer_l + sig_l;
+                    fprintf(stderr,
+                            "[%ldms total | %ldms infer | %ldms σ]\n", tot_l,
+                            infer_l, sig_l);
+                }
                 print_receipt_polished(&r, elapsed_ms,
                                        feat != NULL ? feat->conformal_active : 0,
                                        feat != NULL ? feat->conformal_alpha
@@ -2287,6 +2297,10 @@ int main(int argc, char **argv) {
     char        cross_models_buf[512];
     int         cross_models_n     = 0;
     const char *cross_models[8];
+    int         total_uncertainty_cli = 0;
+    char        tu_models_buf[512];
+    int         tu_models_n = 0;
+    const char *tu_models[8];
     const char *domain             = "general";
 
     for (int i = 1; i < argc; ++i) {
@@ -2357,6 +2371,18 @@ int main(int argc, char **argv) {
                 while (*tok == ' ' || *tok == '\t')
                     ++tok;
                 cross_models[cross_models_n++] = tok;
+            }
+        } else if (strcmp(argv[i], "--total-uncertainty") == 0) {
+            total_uncertainty_cli = 1;
+        } else if (strcmp(argv[i], "--models") == 0 && i + 1 < argc) {
+            const char *src = argv[++i];
+            snprintf(tu_models_buf, sizeof tu_models_buf, "%s", src);
+            tu_models_n = 0;
+            for (char *tok = strtok(tu_models_buf, ","); tok != NULL && tu_models_n < 8;
+                 tok = strtok(NULL, ",")) {
+                while (*tok == ' ' || *tok == '\t')
+                    ++tok;
+                tu_models[tu_models_n++] = tok;
             }
         } else if (strcmp(argv[i], "--domain") == 0 && i + 1 < argc) {
             domain = argv[++i];
@@ -2476,6 +2502,9 @@ int main(int argc, char **argv) {
                 "  --semantic-cache    BSC Hamming semantic inference cache (~/.cos)\n"
                 "  --semantic-lru      exact-match LRU on normalized prompt (1h TTL)\n"
                 "  --cascade           tiered Ollama models (0.6b→4b→3b) + intra-tier σ\n"
+                "  --cross-model A,B   compare σ across models (with --once --prompt)\n"
+                "  --total-uncertainty per-model semantic σ + AU/EU/total (with --once)\n"
+                "  --models m1,m2      with --total-uncertainty (omit for AU-only)\n"
                 "  --cross-model-sigma three-model Jaccard σ (replaces same-model samples)\n"
                 "  --speculative       predict σ early (skip-verify / early abstain)\n"
                 "  --spike             neuromorphic σ-channel spike layer (stable σ → cheap path)\n"
@@ -2504,6 +2533,7 @@ int main(int argc, char **argv) {
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
                 "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n"
+                "  COS_SEMANTIC_SIGMA_USE_PTHREAD=1  pthread dual-temp semantic σ (default: fork)\n"
                 "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n"
                 "  COS_ADAPTIVE_TAU=1          same as --adaptive-tau (graded CSV τ)\n"
                 "  COS_ADAPTIVE_TAU_CSV        path to conformal_thresholds.csv\n"
@@ -2964,6 +2994,52 @@ int main(int argc, char **argv) {
                 cos_engram_persist_close(persist);
                 return 4;
             }
+        }
+        if (total_uncertainty_cli && once_prompt != NULL && once_prompt[0] != '\0'
+            && cos_cli_use_bitnet_http() != 0) {
+            int                      port = 11434;
+            const char              *pe = getenv("COS_BITNET_SERVER_PORT");
+            cos_total_uncertainty_t  uu;
+            int                      j;
+            if (pe != NULL && pe[0] != '\0')
+                port = atoi(pe);
+            if (tu_models_n <= 0) {
+                const char *dm = getenv("COS_BITNET_CHAT_MODEL");
+                const char *one_m[1];
+                one_m[0] = (dm != NULL && dm[0] != '\0') ? dm : "gemma3:4b";
+                uu       = cos_measure_total(port, once_prompt, one_m, 1);
+                fprintf(stdout,
+                        "AU=%.2f EU=unknown Total=%.2f (single model)\n",
+                        (double)uu.au, (double)uu.au);
+                fprintf(stdout,
+                        "  (%s semantic σ only — add `--models m1,m2` for "
+                        "epistemic EU)\n",
+                        one_m[0]);
+            } else {
+                uu = cos_measure_total(port, once_prompt, tu_models,
+                                       tu_models_n);
+                {
+                    cos_sigma_action_t ga =
+                        cos_sigma_reinforce(uu.sigma_final, 0.40f, 0.65f);
+                    fprintf(stdout,
+                            "AU=%.2f EU=%.2f Total=%.2f → %s\n",
+                            (double)uu.au, (double)uu.eu, (double)uu.total,
+                            cos_sigma_action_label(ga));
+                }
+                for (j = 0; j < uu.n_models; ++j)
+                    fprintf(stdout, "  %s σ=%.2f\n", tu_models[j],
+                            (double)uu.sigma_per_model[j]);
+                if (uu.n_models >= 2 && uu.eu >= 0.05f)
+                    fputs("  Cross-model disagreement increases total "
+                          "uncertainty.\n",
+                          stdout);
+            }
+            if (tout != NULL)
+                fclose(tout);
+            cos_sigma_pipeline_free_engram_values(&engram);
+            cos_sigma_codex_free(&codex);
+            cos_engram_persist_close(persist);
+            return 0;
         }
         if (cross_models_n > 0 && once_prompt != NULL && once_prompt[0] != '\0'
             && cos_cli_use_bitnet_http() != 0) {

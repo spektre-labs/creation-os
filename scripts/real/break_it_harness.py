@@ -121,6 +121,27 @@ def run_one(
         }, 124
 
 
+def load_merged_rows(root: Path) -> list[dict[str, str]]:
+    """Primary CSV plus optional benchmarks/break_it/adversarial_prompts.csv."""
+    paths = [
+        root / "tests" / "stress" / "break_it.csv",
+        root / "benchmarks" / "break_it" / "adversarial_prompts.csv",
+    ]
+    seen: set[str] = set()
+    rows: list[dict[str, str]] = []
+    for path in paths:
+        if not path.is_file():
+            continue
+        with path.open(newline="", encoding="utf-8") as f:
+            for rec in csv.DictReader(f):
+                pid = rec.get("id", "").strip()
+                if not pid or pid in seen:
+                    continue
+                seen.add(pid)
+                rows.append(rec)
+    return rows
+
+
 def main() -> int:
     root = repo_root()
     csv_path = root / "tests" / "stress" / "break_it.csv"
@@ -148,39 +169,42 @@ def main() -> int:
 
     timeout_s = int(env.get("BREAK_IT_TIMEOUT", "120"))
 
+    merged = load_merged_rows(root)
+    if not merged:
+        print(f"error: no rows from {csv_path} (and optional adversarial_prompts.csv)", file=sys.stderr)
+        return 2
+
     rows: List[Dict[str, Any]] = []
-    with csv_path.open(newline="", encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        for rec in reader:
-            pid = rec["id"].strip()
-            cat = rec["category"].strip()
-            prompt = rec["prompt"].strip()
-            expected = rec["expected"].strip()
-            print(f"  run {pid} [{cat}] …", flush=True)
-            j, rc = run_one(root, prompt, timeout_s, env)
-            actual = str(j.get("action", "UNKNOWN"))
-            sigma = float(j.get("sigma", 1.0))
-            v = verdict(expected, actual)
-            line = {
-                "id": pid,
-                "category": cat,
-                "prompt": prompt,
-                "expected": expected,
-                "actual": actual,
-                "sigma": sigma,
-                "verdict": v,
-                "returncode": rc,
-                "response_excerpt": (j.get("response") or "")[:200],
-            }
-            rows.append(line)
-            with jsonl_path.open("a", encoding="utf-8") as jl:
-                jl.write(json.dumps(line, ensure_ascii=False) + "\n")
-            sym = "✓" if v == "PASS" else "✗"
-            print(
-                f"  {sym} {pid} [{cat}] σ={sigma:.3f} {actual} "
-                f"(expected {expected})",
-                flush=True,
-            )
+    for rec in merged:
+        pid = rec["id"].strip()
+        cat = rec["category"].strip()
+        prompt = rec["prompt"].strip()
+        expected = rec["expected"].strip()
+        print(f"  run {pid} [{cat}] …", flush=True)
+        j, rc = run_one(root, prompt, timeout_s, env)
+        actual = str(j.get("action", "UNKNOWN"))
+        sigma = float(j.get("sigma", 1.0))
+        v = verdict(expected, actual)
+        line = {
+            "id": pid,
+            "category": cat,
+            "prompt": prompt,
+            "expected": expected,
+            "actual": actual,
+            "sigma": sigma,
+            "verdict": v,
+            "returncode": rc,
+            "response_excerpt": (j.get("response") or "")[:200],
+        }
+        rows.append(line)
+        with jsonl_path.open("a", encoding="utf-8") as jl:
+            jl.write(json.dumps(line, ensure_ascii=False) + "\n")
+        sym = "✓" if v == "PASS" else "✗"
+        print(
+            f"  {sym} {pid} [{cat}] σ={sigma:.3f} {actual} "
+            f"(expected {expected})",
+            flush=True,
+        )
 
     total = len(rows)
     n_pass = sum(1 for r in rows if r["verdict"] == "PASS")
