@@ -24,6 +24,7 @@
  *   --swarm            — escalate path uses swarm consensus (stub)
  *   --verbose          — append a one-liner diagnostic per turn
  *   --dual-process     — print System 1 / System 2 audit (informative)
+ *   --json             — with --once: one machine JSON line on stdout
  *   --tau-accept F     — override τ_accept (default 0.40)
  *   --tau-rethink F    — override τ_rethink (default 0.60)
  *   --banner-only      — print the banner and exit (smoke-test hook)
@@ -918,6 +919,8 @@ typedef struct {
     int   semantic_lru;
     /** Print neural + symbolic audit line (informative; not a second model). */
     int   dual_process;
+    /** One-line machine JSON on stdout (--once); human chatter on stderr. */
+    int   json_once;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -1170,7 +1173,7 @@ static void chat_agi_after_turn(cos_pipeline_config_t *cfg_rw,
     if (ev > 0 && (g_ag_turns % ev) == 0)
         cos_engram_consolidate(ev * 100);
 
-    if (feat != NULL && feat->verbose) {
+    if (feat != NULL && feat->verbose && !feat->json_once) {
         fprintf(stdout,
                 "[attribution: source=%s confidence=%.2f]\n"
                 "  reason=\"%s\"\n"
@@ -1330,6 +1333,42 @@ static uint64_t chat_proof_kernel_mask(const chat_feat_t           *feat,
 
 static char g_cos_chat_const_halt[768];
 static char g_cos_chat_stamp_path[512];
+
+static void cos_chat_emit_result_json(FILE *out, const char *response_text,
+                                       const cos_pipeline_result_t *r,
+                                       const char *route,
+                                       const struct cos_proof_receipt *turn_rec)
+{
+    const char *model = getenv("COS_BITNET_CHAT_MODEL");
+    char        model_buf[128];
+
+    if (out == NULL)
+        out = stdout;
+    if (r == NULL || turn_rec == NULL)
+        return;
+    if (model == NULL || model[0] == '\0') {
+        snprintf(model_buf, sizeof model_buf, "%s", cos_chat_backend_label());
+        model = model_buf;
+    }
+    {
+        char hx[65];
+        char audit[9];
+
+        spektre_hex_lower(turn_rec->receipt_hash, hx);
+        memcpy(audit, hx, 8);
+        audit[8] = '\0';
+        fputs("{\"response\":", out);
+        fprint_json_string(out, response_text != NULL ? response_text : "");
+        fprintf(out,
+                ",\"sigma\":%.6f,\"action\":\"%s\",\"route\":\"%s\","
+                "\"model\":",
+                (double)r->sigma, cos_sigma_action_label(r->final_action),
+                route != NULL ? route : "LOCAL");
+        fprint_json_string(out, model);
+        fprintf(out, ",\"audit_id\":\"%s\"}\n", audit);
+        fflush(out);
+    }
+}
 
 static void chat_dual_process_report(const char *prompt,
                                      const cos_pipeline_config_t *cfg,
@@ -1549,6 +1588,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     cos_pipeline_result_t r;
     memset(&r, 0, sizeof(r));
     g_cos_chat_semantic_phase_ms = 0.0;
+    int  jo = (feat != NULL && feat->json_once);
+    FILE *co = jo ? stderr : stdout;
 
     chat_sigma_layer_t SL;
     int early_spec_abstain = 0;
@@ -1604,7 +1645,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                         ? cfg_rw->codex->hash_fnv1a64
                                         : 0ULL;
             r.ttt_applied         = 0;
-            fprintf(stdout, "[CACHE_LRU] hit σ=%.3f (normalized prompt)\n",
+            fprintf(co, "[CACHE_LRU] hit σ=%.3f (normalized prompt)\n",
                     (double)cs);
         }
     }
@@ -1628,7 +1669,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                         ? cfg_rw->codex->hash_fnv1a64
                                         : 0ULL;
             r.ttt_applied         = 0;
-            fprintf(stdout,
+            fprintf(co,
                     "[CACHE_SEMANTIC] hit  σ=%.3f  (BSC neighbour reuse)\n",
                     (double)hit.sigma);
         }
@@ -1662,7 +1703,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                      ? cfg_rw->codex->hash_fnv1a64
                                      : 0ULL;
             r.ttt_applied      = 0;
-            fprintf(stdout,
+            fprintf(co,
                     "[CACHE_SPIKE] hit  hamming_norm=%.4f  σ=%.3f\n",
                     (double)hm, (double)r.sigma);
         }
@@ -1833,10 +1874,10 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     /* FINAL-2 Phase C: metacog banner (verbose only; before the round
      * line so the diagnostic precedes the answer). */
-    if (feat != NULL && feat->verbose) {
+    if (feat != NULL && feat->verbose && !jo) {
         cos_ultra_metacog_levels_t lv;
         chat_metacog_levels(prompt, &r, cfg_rw->max_rethink, &lv);
-        fprintf(stdout,
+        fprintf(co,
                 "[meta: perception=%.2f self=%.2f social=%.2f "
                 "situational=%.2f]\n",
                 (double)lv.sigma_perception, (double)lv.sigma_self,
@@ -1865,9 +1906,9 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     chat_agi_after_turn(cfg_rw, prompt, &r, feat, &ms, have_ms);
 
-    if (feat != NULL && feat->verbose && r.ttt_applied != 0
+    if (feat != NULL && feat->verbose && !jo && r.ttt_applied != 0
         && cos_ttt_last_verbose_line()[0] != '\0')
-        fprintf(stdout, "%s\n", cos_ttt_last_verbose_line());
+        fprintf(co, "%s\n", cos_ttt_last_verbose_line());
 
     {
         const char *deliver_txt =
@@ -1899,24 +1940,26 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             if (c_mv > 0) {
                 snprintf(g_cos_chat_const_halt, sizeof g_cos_chat_const_halt,
                          "[CONSTITUTIONAL HALT] %s", crep);
-                fprintf(stdout, "%s\n", g_cos_chat_const_halt);
+                fprintf(co, "%s\n", g_cos_chat_const_halt);
                 /* --multi-sigma benchmarks: σ was computed on the real model
                  * string; keep the visible answer + receipts on that text
                  * and only surface the halt as a warning line above. */
                 if (feat == NULL || !feat->multi_sigma)
                     deliver_txt = g_cos_chat_const_halt;
             } else if (c_viol > 0) {
-                fprintf(stdout, "[CONSTITUTIONAL WARNING] %s\n", crep);
+                fprintf(co, "[CONSTITUTIONAL WARNING] %s\n", crep);
             }
         }
-        fprintf(stdout,
-                "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
-                cos_chat_stream_env_on()
-                    ? "(streamed above)"
-                    : deliver_txt,
-                (double)r.sigma,
-                cos_sigma_action_label(r.final_action),
-                route);
+        if (!jo) {
+            fprintf(co,
+                    "round 0  %s  [σ_peak=%.2f action=%s route=%s]\n",
+                    cos_chat_stream_env_on()
+                        ? "(streamed above)"
+                        : deliver_txt,
+                    (double)r.sigma,
+                    cos_sigma_action_label(r.final_action),
+                    route);
+        }
 
         /* NEXT-1 polished receipt (shared with REPL path).  Harness only
          * requires ACCEPT/RETHINK/ABSTAIN to appear somewhere in the
@@ -1948,26 +1991,32 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             struct cos_speed_metrics spd = cos_speed_measure_ex(
                 r.response != NULL ? r.response : "", (float)elapsed_ms,
                 ttft_pass);
-            cos_speed_print(&spd);
-            fputc('\n', stdout);
-            fprintf(stderr,
-                    "[speed: %d tok | %.0fms | %.1f tok/s | σ_time %.0fms]\n",
-                    spd.tokens_generated, (double)elapsed_ms,
-                    (double)spd.tokens_per_second,
-                    g_cos_chat_semantic_phase_ms);
-            print_receipt_polished(&r, elapsed_ms,
-                                   feat != NULL ? feat->conformal_active : 0,
-                                   feat != NULL ? feat->conformal_alpha  : 0.0f,
-                                   semantic_hit, &spd, receipt_prefix);
-            if (feat != NULL && feat->dual_process != 0)
-                chat_dual_process_report(prompt, cfg_rw, &r, feat, stdout);
-            chat_write_c2pa_stamp_if_requested(cfg_rw, &r, &ms, have_ms, feat,
-                                                 &turn_rec);
+            if (!jo) {
+                cos_speed_print(&spd);
+                fputc('\n', co);
+                fprintf(stderr,
+                        "[speed: %d tok | %.0fms | %.1f tok/s | σ_time %.0fms]\n",
+                        spd.tokens_generated, (double)elapsed_ms,
+                        (double)spd.tokens_per_second,
+                        g_cos_chat_semantic_phase_ms);
+                print_receipt_polished(&r, elapsed_ms,
+                                       feat != NULL ? feat->conformal_active : 0,
+                                       feat != NULL ? feat->conformal_alpha
+                                                    : 0.0f,
+                                       semantic_hit, &spd, receipt_prefix);
+                if (feat != NULL && feat->dual_process != 0)
+                    chat_dual_process_report(prompt, cfg_rw, &r, feat, co);
+                chat_write_c2pa_stamp_if_requested(cfg_rw, &r, &ms, have_ms,
+                                                   feat, &turn_rec);
+            } else {
+                cos_chat_emit_result_json(stdout, deliver_txt, &r, route,
+                                          &turn_rec);
+            }
         }
     }
 
-    if (have_ms) {
-        fprintf(stdout,
+    if (have_ms && !jo) {
+        fprintf(co,
                 "[σ_combined=%.3f | σ_semantic=%.3f | σ_logprob=%.3f "
                 "σ_entropy=%.3f σ_perplexity=%.3f σ_consistency=%.3f | k=%d]\n",
                 (double)ms.ens.sigma_combined,
@@ -2109,6 +2158,7 @@ int main(int argc, char **argv) {
     int     swarm_mode    = 0;
     int     verbose       = 0;
     int     dual_process  = 0;
+    int     json_stdout   = 0;
     int     banner_only   = 0;
     int     once_mode     = 0;
     const char *once_prompt = NULL;
@@ -2168,6 +2218,7 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--swarm")      == 0) swarm_mode = 1;
         else if (strcmp(argv[i], "--verbose")    == 0) verbose = 1;
         else if (strcmp(argv[i], "--dual-process") == 0) dual_process = 1;
+        else if (strcmp(argv[i], "--json") == 0) json_stdout = 1;
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
         else if (strcmp(argv[i], "--stream")     == 0) stream_cli = 1;
         else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
@@ -2283,6 +2334,8 @@ int main(int argc, char **argv) {
                 "  --verbose           print a per-turn diagnostic\n"
                 "  --dual-process      print neural + symbolic audit line "
                 "(after receipt)\n"
+                "  --json              with --once: emit one JSON object on "
+                "stdout (stderr for logs)\n"
                 "  --stream            stream tokens (default: on in REPL)\n"
                 "  --no-stream         full response at once (default with --once)\n"
                 "  --tui               ANSI live layout (default on interactive TTY)\n"
@@ -2763,6 +2816,14 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    if (json_stdout && !once_mode) {
+        fprintf(stderr, "cos chat: --json requires --once\n");
+        cos_sigma_pipeline_free_engram_values(&engram);
+        cos_sigma_codex_free(&codex);
+        cos_engram_persist_close(persist);
+        return 2;
+    }
+
     if (once_mode) {
         if (once_prompt == NULL || once_prompt[0] == '\0') {
             fprintf(stderr, "cos chat: --once requires --prompt\n");
@@ -2771,16 +2832,26 @@ int main(int argc, char **argv) {
             cos_engram_persist_close(persist);
             return 2;
         }
+        if (json_stdout)
+            no_transcript = 1;
         const char *exe = getenv("CREATION_OS_BITNET_EXE");
         const char *backend = "stub";
         if (exe != NULL && exe[0] != '\0')
             backend = "bridge";
         else if (cos_cli_use_bitnet_http() != 0)
             backend = "external";
-        fprintf(stdout,
-                "cos chat  ·  backend=%s  ·  τ_accept=%g  τ_rethink=%g\n",
-                backend, (double)tau_accept, (double)tau_rethink);
-        fflush(stdout);
+        if (!json_stdout) {
+            fprintf(stdout,
+                    "cos chat  ·  backend=%s  ·  τ_accept=%g  τ_rethink=%g\n",
+                    backend, (double)tau_accept, (double)tau_rethink);
+            fflush(stdout);
+        } else {
+            fprintf(stderr,
+                    "cos chat  ·  backend=%s  ·  τ_accept=%g  τ_rethink=%g "
+                    "(JSON on stdout)\n",
+                    backend, (double)tau_accept, (double)tau_rethink);
+            fflush(stderr);
+        }
 
         FILE *tout = NULL;
         if (!no_transcript) {
@@ -2820,6 +2891,7 @@ int main(int argc, char **argv) {
         feat.cross_model_sigma    = cross_model_sigma;
         feat.semantic_lru         = semantic_lru;
         feat.dual_process         = dual_process;
+        feat.json_once            = json_stdout;
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
