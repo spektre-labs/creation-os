@@ -14,6 +14,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#define COS_LEDGER_DRIFT_CAP 100
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -53,6 +55,19 @@ struct cos_state_ledger {
     int max_risk_level;
 
     int64_t timestamp_ms;
+
+    /** Passive σ drift monitor (rolling window vs calibration baseline). */
+    float drift_ring[COS_LEDGER_DRIFT_CAP];
+    int   drift_ring_fill;
+    int   drift_ring_head;
+    float drift_first20[20];
+    int   drift_n_first20;
+    float drift_baseline_mean;
+    float drift_baseline_std;
+    signed char drift_baseline_ready;
+    signed char drift_baseline_from_env;
+    signed char drift_detected;
+    signed char drift_stderr_latched;
 };
 
 void cos_state_ledger_init(struct cos_state_ledger *l);

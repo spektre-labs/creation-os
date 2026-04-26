@@ -70,6 +70,7 @@
 #include "coherence.h"
 #include "sigma_tools.h"
 #include "state_ledger.h"
+#include "adaptive_tau.h"
 #include "error_attribution.h"
 #include "engram_episodic.h"
 #include "ttt_runtime.h"
@@ -133,7 +134,8 @@ static void cos_chat_sigint_handler(int signo)
 
 static void cos_chat_jsonl_turn(const char *prompt_line,
                                 const cos_pipeline_result_t *r,
-                                double elapsed_ms)
+                                double elapsed_ms,
+                                int sigma_drift)
 {
     const char *en = getenv("COS_CHAT_JSONL_LOG");
     if (en == NULL || en[0] != '1' || prompt_line == NULL || r == NULL)
@@ -175,9 +177,10 @@ static void cos_chat_jsonl_turn(const char *prompt_line,
             "{\"t\":%lld,\"prompt_hash\":%llu,\"sigma\":%.4f,"
             "\"action\":\"%s\",\"route\":\"%s\",\"model\":\"%s\","
             "\"latency_ms\":%.0f,\"tokens\":%d,\"cost_eur\":%.6f,"
+            "\"sigma_drift\":%d,"
             "\"degradation_level\":0,\"retries\":0,\"error\":null}\n",
             ms_wall, (unsigned long long)ph, (double)r->sigma, act, route,
-            model, elapsed_ms, 0, r->cost_eur);
+            model, elapsed_ms, 0, r->cost_eur, sigma_drift);
     fclose(fp);
 }
 
@@ -1578,7 +1581,9 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                 cos_sigma_action_label(r.final_action),
                 route);
         fprint_json_string(tout, r.response != NULL ? r.response : "");
-        fprintf(tout, "}\n");
+        fprintf(tout,
+                ",\"sigma_drift\":%d}\n",
+                (g_ag_ledger_ready && g_ag_ledger.drift_detected) ? 1 : 0);
         fflush(tout);
     }
     if (feat != NULL && feat->knowledge_graph && r.response != NULL)
@@ -1724,6 +1729,9 @@ int main(int argc, char **argv) {
     int         use_tui            = 0;
     int         spec_decode        = 0;
     int         fast_sigma         = 0;
+    int         adaptive_tau_csv   = 0;
+    const char *adaptive_csv_path = NULL;
+    const char *domain             = "general";
 
     for (int i = 1; i < argc; ++i) {
         if      (strcmp(argv[i], "--no-codex")   == 0) use_codex = 0;
@@ -1769,6 +1777,14 @@ int main(int argc, char **argv) {
             multi_sigma_cli = 1;
         } else if (strcmp(argv[i], "--fast") == 0) {
             fast_sigma = 1;
+        } else if (strcmp(argv[i], "--adaptive-tau") == 0) {
+            adaptive_tau_csv = 1;
+        } else if (strcmp(argv[i], "--adaptive-tau-csv") == 0
+                   && i + 1 < argc) {
+            adaptive_csv_path = argv[++i];
+            adaptive_tau_csv  = 1;
+        } else if (strcmp(argv[i], "--domain") == 0 && i + 1 < argc) {
+            domain = argv[++i];
         } else if (strcmp(argv[i], "--ttt") == 0) {
             want_ttt = 1;
         } else if (strcmp(argv[i], "--no-multi-sigma") == 0) {
@@ -1859,6 +1875,10 @@ int main(int argc, char **argv) {
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
                 "  --calibration-path PATH  override the conformal bundle path\n"
+                "  --adaptive-tau        load τ_accept from graded conformal CSV\n"
+                "                        (COS_ADAPTIVE_TAU_CSV or repo path; ~90%% row)\n"
+                "  --adaptive-tau-csv PATH  explicit conformal_thresholds.csv\n"
+                "  --domain MODE         scale τ: medical|creative|code|general\n"
                 "  --coherence         track per-session σ window (ULTRA-9, default)\n"
                 "  --no-coherence      disable the session coherence summary\n"
                 "  --tools             σ-gated shell tool REPL (HORIZON-1)\n"
@@ -1886,7 +1906,11 @@ int main(int argc, char **argv) {
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
                 "  COS_SEMANTIC_ENTROPY_METRIC jaccard (default) or bsc (BSC + Hamming)\n"
-                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n");
+                "  COS_CHAT_SEMANTIC_SIGMA=1   same as --semantic-sigma (wins over entropy)\n"
+                "  COS_ADAPTIVE_TAU=1          same as --adaptive-tau (graded CSV τ)\n"
+                "  COS_ADAPTIVE_TAU_CSV        path to conformal_thresholds.csv\n"
+                "  CREATION_OS_ROOT            repo root for default graded CSV path\n"
+                "  COS_SIGMA_DRIFT_BASELINE_MEAN / _STD  optional σ drift z-score baseline\n");
             return 0;
         }
     }
@@ -2030,6 +2054,36 @@ int main(int argc, char **argv) {
         }
     }
 
+    {
+        const char *atau = getenv("COS_ADAPTIVE_TAU");
+        if (atau != NULL && atau[0] == '1' && atau[1] == '\0')
+            adaptive_tau_csv = 1;
+    }
+
+    if (adaptive_tau_csv && !have_tau_accept) {
+        const char *usep = adaptive_csv_path;
+        char        default_csv[1024];
+
+        if (usep == NULL || usep[0] == '\0') {
+            if (cos_adaptive_tau_default_csv_path(default_csv,
+                                                  sizeof(default_csv))
+                == 0)
+                usep = default_csv;
+        }
+        if (usep != NULL && usep[0] != '\0') {
+            tau_accept = cos_adaptive_tau_accept_from_csv(usep, 0.3f);
+            if (!have_tau_rethink)
+                tau_rethink =
+                    cos_adaptive_tau_rethink_from_accept(tau_accept);
+            conformal_active = 0;
+        } else {
+            fprintf(stderr,
+                    "cos chat: adaptive τ enabled but no CSV path "
+                    "(use --adaptive-tau-csv PATH or COS_ADAPTIVE_TAU_CSV / "
+                    "CREATION_OS_ROOT)\n");
+        }
+    }
+
     if (!icl_user_disabled) {
         const char *env_icl = getenv("COS_ENGRAM_ICL");
         if (env_icl != NULL && env_icl[0] == '1') want_icl = 1;
@@ -2100,6 +2154,35 @@ int main(int argc, char **argv) {
      * cloud string — force LOCAL_ONLY unless swarm (cloud consensus). */
     if (cos_cli_use_bitnet_http() != 0 && !swarm_mode)
         local_only = 1;
+
+    if (domain == NULL || domain[0] == '\0')
+        domain = "general";
+    if (strcmp(domain, "medical") != 0 && strcmp(domain, "creative") != 0
+        && strcmp(domain, "code") != 0 && strcmp(domain, "general") != 0) {
+        fprintf(stderr,
+                "cos chat: unknown --domain \"%s\" "
+                "(use medical|creative|code|general)\n",
+                domain);
+        domain = "general";
+    }
+    if (strcmp(domain, "medical") == 0) {
+        tau_accept *= 0.5f;
+        tau_rethink *= 0.7f;
+    } else if (strcmp(domain, "creative") == 0) {
+        tau_accept *= 1.5f;
+        tau_rethink *= 1.3f;
+    } else if (strcmp(domain, "code") == 0) {
+        tau_accept *= 0.625f;
+        tau_rethink *= 0.85f;
+    }
+    if (tau_accept < 0.01f)
+        tau_accept = 0.01f;
+    if (tau_accept > 0.99f)
+        tau_accept = 0.99f;
+    if (tau_rethink <= tau_accept)
+        tau_rethink = tau_accept + 0.01f;
+    if (tau_rethink > 0.99f)
+        tau_rethink = 0.99f;
 
     cos_pipeline_config_t cfg;
     cos_sigma_pipeline_config_defaults(&cfg);
@@ -2278,6 +2361,13 @@ int main(int argc, char **argv) {
             fprintf(stdout,
                     "  σ-ensemble: shadow (SCI-5), K_regen=%d per turn\n",
                     COS_CHAT_MULTI_K_REGEN);
+        }
+        if (strcmp(domain, "general") != 0) {
+            fprintf(stdout, "  domain: %s (τ scaled)\n", domain);
+        }
+        if (adaptive_tau_csv && !have_tau_accept) {
+            fprintf(stdout,
+                    "  adaptive τ: graded conformal CSV (~90%% target row)\n");
         }
     } else {
         cos_tui_init();
@@ -2731,7 +2821,9 @@ int main(int argc, char **argv) {
             chat_kg_store_turn(line, r.response);
 
         if (!early_spec_abstain && prc == 0)
-            cos_chat_jsonl_turn(line, &r, elapsed_ms);
+            cos_chat_jsonl_turn(
+                line, &r, elapsed_ms,
+                (g_ag_ledger_ready && g_ag_ledger.drift_detected) ? 1 : 0);
     }
 
     if (sig_tty)

@@ -6,7 +6,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdlib.h>
 #include <math.h>
 #include <time.h>
 
@@ -43,6 +42,99 @@ typedef struct {
 } roll_t;
 
 static roll_t g_roll;
+
+static void drift_ensure_env_baseline(struct cos_state_ledger *l)
+{
+    if (!l || l->drift_baseline_from_env)
+        return;
+    const char *bm = getenv("COS_SIGMA_DRIFT_BASELINE_MEAN");
+    const char *bs = getenv("COS_SIGMA_DRIFT_BASELINE_STD");
+    if (bm == NULL || bs == NULL || bm[0] == '\0' || bs[0] == '\0')
+        return;
+    l->drift_baseline_mean     = (float)strtod(bm, NULL);
+    l->drift_baseline_std      = (float)strtod(bs, NULL);
+    l->drift_baseline_from_env = 1;
+    l->drift_baseline_ready    = 1;
+    if (l->drift_baseline_std < 1e-5f)
+        l->drift_baseline_std = 1e-5f;
+}
+
+static void drift_push(struct cos_state_ledger *l, float s)
+{
+    if (!l)
+        return;
+    if (s < 0.f)
+        s = 0.f;
+    if (s > 1.f)
+        s = 1.f;
+
+    drift_ensure_env_baseline(l);
+
+    if (!l->drift_baseline_from_env && l->drift_n_first20 < 20) {
+        l->drift_first20[l->drift_n_first20++] = s;
+        if (l->drift_n_first20 == 20) {
+            float sum = 0.f;
+            for (int i = 0; i < 20; ++i)
+                sum += l->drift_first20[i];
+            l->drift_baseline_mean = sum * (1.f / 20.f);
+            float v = 0.f;
+            for (int i = 0; i < 20; ++i) {
+                float d = l->drift_first20[i] - l->drift_baseline_mean;
+                v += d * d;
+            }
+            l->drift_baseline_std = sqrtf(v * (1.f / 20.f));
+            if (l->drift_baseline_std < 1e-5f)
+                l->drift_baseline_std = 1e-5f;
+            l->drift_baseline_ready = 1;
+        }
+    }
+
+    if (l->drift_ring_fill < COS_LEDGER_DRIFT_CAP) {
+        l->drift_ring[l->drift_ring_fill++] = s;
+    } else {
+        l->drift_ring[l->drift_ring_head] = s;
+        l->drift_ring_head = (l->drift_ring_head + 1) % COS_LEDGER_DRIFT_CAP;
+    }
+}
+
+static float drift_window_mean(const struct cos_state_ledger *l)
+{
+    if (!l || l->drift_ring_fill <= 0)
+        return 0.f;
+    int n = l->drift_ring_fill;
+    if (n < COS_LEDGER_DRIFT_CAP) {
+        float sum = 0.f;
+        for (int i = 0; i < n; ++i)
+            sum += l->drift_ring[i];
+        return sum / (float)n;
+    }
+    float sum = 0.f;
+    for (int i = 0; i < COS_LEDGER_DRIFT_CAP; ++i)
+        sum += l->drift_ring[(l->drift_ring_head + i) % COS_LEDGER_DRIFT_CAP];
+    return sum * (1.f / (float)COS_LEDGER_DRIFT_CAP);
+}
+
+static void drift_evaluate(struct cos_state_ledger *l)
+{
+    if (!l || !l->drift_baseline_ready)
+        return;
+    if (l->drift_baseline_std <= 1e-6f)
+        return;
+    if (l->drift_ring_fill < 20)
+        return;
+
+    float cur = drift_window_mean(l);
+    float z   = (cur - l->drift_baseline_mean) / l->drift_baseline_std;
+    if (z > 2.0f || z < -2.0f) {
+        l->drift_detected = 1;
+        if (!l->drift_stderr_latched) {
+            fprintf(stderr,
+                    "[DRIFT] σ_mean=%.3f baseline=%.3f z=%.1f → RECALIBRATE\n",
+                    (double)cur, (double)l->drift_baseline_mean, (double)z);
+            l->drift_stderr_latched = 1;
+        }
+    }
+}
 
 void cos_state_ledger_init(struct cos_state_ledger *l) {
     if (!l) return;
@@ -139,6 +231,9 @@ void cos_state_ledger_update(struct cos_state_ledger *l,
         (l->rethinks > 0) ? 1 : 0;
     l->max_risk_level = (l->coherence_status > 1) ? 2 : l->coherence_status;
 
+    drift_push(l, sigma_combined);
+    drift_evaluate(l);
+
     l->timestamp_ms = cos_now_ms();
 }
 
@@ -152,9 +247,9 @@ int cos_state_ledger_default_path(char *buf, size_t cap) {
 
 char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
     if (!l) return NULL;
-    char *out = (char *)malloc(2560);
+    char *out = (char *)malloc(3000);
     if (!out) return NULL;
-    snprintf(out, 2560,
+    snprintf(out, 3000,
         "{"
         "\"sigma_logprob\":%.6f,\"sigma_entropy\":%.6f,"
         "\"sigma_perplexity\":%.6f,\"sigma_consistency\":%.6f,"
@@ -170,6 +265,8 @@ char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
         "\"sigma_mean_session\":%.6f,\"sigma_mean_delta\":%.6f,"
         "\"omega_generation\":%d,"
         "\"pending_actions\":%d,\"max_risk_level\":%d,"
+        "\"sigma_drift\":%d,"
+        "\"drift_baseline_mean\":%.6f,\"drift_baseline_std\":%.6f,"
         "\"timestamp_ms\":%lld"
         "}",
         (double)l->sigma_logprob, (double)l->sigma_entropy,
@@ -186,6 +283,8 @@ char *cos_state_ledger_to_json(const struct cos_state_ledger *l) {
         (double)l->sigma_mean_session, (double)l->sigma_mean_delta,
         l->omega_generation,
         l->pending_actions, l->max_risk_level,
+        (int)l->drift_detected,
+        (double)l->drift_baseline_mean, (double)l->drift_baseline_std,
         (long long)l->timestamp_ms);
     return out;
 }
@@ -269,6 +368,9 @@ int cos_state_ledger_load(struct cos_state_ledger *l,
     l->omega_generation   = grab_int(buf, "omega_generation", 0);
     l->pending_actions    = grab_int(buf, "pending_actions", 0);
     l->max_risk_level     = grab_int(buf, "max_risk_level", 0);
+    l->drift_detected     = (signed char)grab_int(buf, "sigma_drift", 0);
+    l->drift_baseline_mean = grab_float(buf, "drift_baseline_mean", 0.f);
+    l->drift_baseline_std  = grab_float(buf, "drift_baseline_std", 0.f);
     l->timestamp_ms       = grab_i64(buf, "timestamp_ms", 0);
     free(buf);
     return 0;
@@ -313,6 +415,13 @@ void cos_state_ledger_print_summary(FILE *fp,
                 "        spec_decode: draft=%d verify=%d draft_ratio=%.2f\n",
                 l->spec_decode_drafts, l->spec_decode_verifies,
                 (double)ratio);
+    }
+    if (l->drift_detected) {
+        fprintf(fp,
+                "        σ_drift: RECALIBRATE recommended "
+                "(baseline=%.3f std=%.3f)\n",
+                (double)l->drift_baseline_mean,
+                (double)l->drift_baseline_std);
     }
 }
 

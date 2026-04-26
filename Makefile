@@ -6206,6 +6206,7 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/reinforce.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
+               src/sigma/adaptive_tau.c \
                src/sigma/ttt_runtime.c \
                src/cli/stub_gen.c \
                src/cli/cos_tui.c \
