@@ -1,0 +1,6 @@
+requirement_id,requirement,design_file,code_file,test_target,proof_or_formal_evidence
+SWR-001,Three-state sigma reinforce gate (ACCEPT RETHINK ABSTAIN),src/sigma/pipeline/reinforce.h,src/sigma/pipeline/reinforce.c,check-sigma-reinforce,benchmarks/v138/check_v138_prove_frama_c_wp.sh
+SWR-002,Semantic sigma shadow channel,src/sigma/semantic_sigma.h,src/sigma/semantic_sigma.c,check-cos-chat,benchmarks/sigma_pipeline/check_lean_t3_discharged.sh
+SWR-003,Codex load and RULE pragma surface,src/sigma/pipeline/codex.h,src/sigma/pipeline/codex.c,check-codex,n/a
+SWR-004,Cryptographic proof receipts and audit JSONL chain,src/sigma/proof_receipt.h,src/sigma/proof_receipt.c,check-proof-receipt,benchmarks/v138/check_v138_prove_frama_c_wp.sh
+SWR-005,HTTP serve path with audit log hooks,src/sigma/audit_log.h,src/sigma/audit_log.c,check-cos-serve,docs/do178c/traceability_matrix.md

@@ -6350,6 +6350,45 @@ cos-receipt-audit: src/cli/cos_receipt_audit.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
 	    -o $@ src/cli/cos_receipt_audit.c $(COS_PROOF_LIB) $(LDFLAGS)
 
+# DO-178C-oriented traceability (informative; not a certification).  Kept
+# separate from the top-level `verify` target (RTL / v47 Frama / property).
+.PHONY: verify-do178c verify-do178c-trace verify-do178c-lean verify-do178c-frama \
+	verify-do178c-receipts coverage-proof-receipt
+
+verify-do178c-trace:
+	@python3 "$(CURDIR)/scripts/do178c_verify_trace.py"
+
+verify-do178c-lean:
+	@$(MAKE) check-lean-t3-discharged
+
+verify-do178c-frama:
+	@$(MAKE) check-v138
+
+verify-do178c-receipts:
+	@if [ ! -x ./cos-receipt-audit ]; then \
+	    echo "verify-do178c-receipts: SKIP (run: make cos-receipt-audit)"; \
+	elif ls "$$HOME/.cos/audit/"*.jsonl >/dev/null 2>&1; then \
+	    for f in "$$HOME"/.cos/audit/*.jsonl; do \
+	        ./cos-receipt-audit "$$f" \
+	            || echo "verify-do178c-receipts: WARN ($$f — stale or non-canonical lines; remove file to silence)"; \
+	    done; \
+	else \
+	    echo "verify-do178c-receipts: SKIP (no $$HOME/.cos/audit/*.jsonl)"; \
+	fi
+
+verify-do178c: verify-do178c-trace verify-do178c-lean verify-do178c-frama verify-do178c-receipts
+	@echo "verify-do178c: OK (see SKIPs above; not a DO-178C certificate)"
+
+creation_os_check_proof_receipt_cov: tests/agi/check_proof_receipt_main.c $(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 --coverage \
+	    -o $@ tests/agi/check_proof_receipt_main.c $(COS_PROOF_LIB) $(LDFLAGS) -lm
+
+coverage-proof-receipt: creation_os_check_proof_receipt_cov
+	@./creation_os_check_proof_receipt_cov
+	@gcov -b "$(CURDIR)/src/sigma/proof_receipt.c" >/dev/null 2>&1 || true
+	@echo "coverage-proof-receipt: see proof_receipt.c.gcov in $$(pwd)"
+
 cos-compliance: src/cli/cos_compliance_cli.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
 	    -o $@ src/cli/cos_compliance_cli.c $(COS_PROOF_LIB) $(LDFLAGS)

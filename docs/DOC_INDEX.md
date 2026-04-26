@@ -27,6 +27,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [v47/INVARIANT_CHAIN.md](v47/INVARIANT_CHAIN.md) | Verification / claims hygiene readers | v47 lab: invariant chain (M/T/P) + `make verify` stack notes + ZK honesty |
 | [v48/RED_TEAM_REPORT.md](v48/RED_TEAM_REPORT.md) | Security / red-team readers | v48 lab: σ-armored attack surface table + honest limits + harness pointers |
 | [v49/certification/README.md](v49/certification/README.md) | Certification / assurance readers | v49 lab: DO-178C-aligned artifact pack index + `make certify` entrypoint |
+| [do178c/traceability_matrix.md](do178c/traceability_matrix.md) | Assurance / process readers | DO-178C-oriented bidirectional trace (informative); `make verify-do178c`, `cos certify --output` |
 | [v50/FAQ_CRITICS.md](v50/FAQ_CRITICS.md) | Public critique / review readers | v50: pre-baked answers to common dismissal patterns (tier-honest) |
 | [benchmarks/v50/FINAL_RESULTS.md](../benchmarks/v50/FINAL_RESULTS.md) | Benchmark readers | v50 rollup report (regenerate via `make v50-benchmark`) |
 | [v51/ARCHITECTURE.md](v51/ARCHITECTURE.md) | Integration / reviewer readers | v51: six-phase cognitive loop + σ-gated agent + full-stack diagram (scaffold tier) |

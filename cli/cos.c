@@ -13,6 +13,7 @@
  *     cos                        # status board (default)
  *     cos status                 # explicit status
  *     cos verify                 # the verified-agent report (v57)
+ *     cos certify --output DIR  # local DO-178C-oriented evidence templates
  *     cos chace                  # the CHACE-class 12-layer security gate
  *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
@@ -302,6 +303,8 @@ static int cmd_status(void)
 
 static int prefer_c_or_hint(const char *c_bin, int argc, char **argv);
 
+static int cmd_certify(int argc, char **argv);
+
 static int cmd_receipt(int argc, char **argv)
 {
     if (argc < 1 || strcmp(argv[0], "verify") != 0) {
@@ -390,6 +393,49 @@ static int cmd_verify(int argc, char **argv)
                C_RED, cross(), C_RESET, rc);
     }
     return rc;
+}
+
+/* --------------------------------------------------------------------
+ *  cos certify — local DO-178C-oriented evidence bundle (templates).
+ * -------------------------------------------------------------------- */
+
+static int cmd_certify(int argc, char **argv)
+{
+    char   outdir[512] = "docs/do178c/evidence";
+    int    i;
+    pid_t  pid;
+    int    st = 0;
+    char  *av[8];
+
+    for (i = 2; i < argc; ++i) {
+        if (strcmp(argv[i], "--output") == 0 && i + 1 < argc) {
+            snprintf(outdir, sizeof outdir, "%s", argv[i + 1]);
+            ++i;
+        }
+    }
+
+    av[0] = (char *)"bash";
+    av[1] = (char *)"./scripts/do178c_certify.sh";
+    av[2] = outdir;
+    av[3] = NULL;
+
+    pid = fork();
+    if (pid < 0) {
+        perror("cos certify: fork");
+        return 126;
+    }
+    if (pid == 0) {
+        execvp("bash", av);
+        perror("cos certify: execvp");
+        _exit(127);
+    }
+    if (waitpid(pid, &st, 0) < 0) {
+        perror("cos certify: waitpid");
+        return 126;
+    }
+    if (!WIFEXITED(st))
+        return 1;
+    return WEXITSTATUS(st);
 }
 
 /* --------------------------------------------------------------------
@@ -3395,6 +3441,8 @@ int main(int argc, char **argv)
         return cmd_receipts_sibling(argc, argv);
     if (strcmp(argv[1], "compliance") == 0)
         return cmd_compliance(argc, argv);
+    if (strcmp(argv[1], "certify") == 0)
+        return cmd_certify(argc, argv);
     if (strcmp(argv[1], "constitution") == 0)
         return cmd_constitution(argc, argv);
     if (strcmp(argv[1], "life") == 0)

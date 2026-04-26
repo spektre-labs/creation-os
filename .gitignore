@@ -147,6 +147,12 @@ training/v111/runs/
 
 # v49 certification coverage outputs (generated)
 docs/v49/certification/coverage/*.gcov
+
+# `make coverage-proof-receipt` (gcov probe binary + root artifacts)
+creation_os_check_proof_receipt_cov
+proof_receipt.gcda
+proof_receipt.gcno
+proof_receipt.c.gcov
 docs/v49/certification/coverage/html/
 
 # Paper PDF compile byproducts (the .tex sources ARE tracked)
