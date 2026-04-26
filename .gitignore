@@ -225,6 +225,8 @@ benchmarks/**/*.csv
 !benchmarks/graded/risk_coverage.csv
 !benchmarks/graded/conformal_thresholds.csv
 !benchmarks/graded/RESULTS.md
+!benchmarks/graded/temperature.txt
+!benchmarks/graded/platt.txt
 !benchmarks/truthfulqa/truthfulqa_results.csv
 !benchmarks/truthfulqa/prompts_preview.csv
 # Tracked lm-eval receipts (subset runs + σ replay summaries)

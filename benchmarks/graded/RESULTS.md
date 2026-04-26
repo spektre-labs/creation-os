@@ -1,6 +1,6 @@
 # Graded benchmark — full metrics
 
-**Generated (UTC):** 2026-04-26T05:23:28Z  
+**Generated (UTC):** 2026-04-26T08:24:10Z  
 **Source CSV:** `benchmarks/graded/graded_results.csv`  
 
 ## Scope and honesty
@@ -9,10 +9,12 @@
 - **Split τ search** uses half the shuffled rows for threshold selection and half for reporting test accuracy; finite-sample **test** accuracy can fail the target — the table marks **OK/FAIL**.
 - This is **not** a substitute for a full conformal prediction proof; exchangeability with future prompts is an **assumption**.
 
-## AUROC / AURC
+## AUROC / AURC / AUGRC / Brier
 
 - **AUROC:** 0.8123
 - **AURC:** 0.0425
+- **AUGRC:** 0.0322 (lower = better)
+- **Brier:** 0.2548 (lower = better; conf = 1−σ)
 - **Correct / incorrect:** 43 / 7
 
 ## Conformal-style split calibration
@@ -61,6 +63,29 @@ ECE = 0.3857
   (>0.20 = poorly calibrated on this proxy — report honestly)
 ```
 
+## Temperature scaling + Platt (60/40 split)
+
+```text
+=== TEMPERATURE SCALING (confidence = 1 − σ) ===
+Optimal T: 0.5159
+  T < 1: underconfident on this proxy → scale UP confidence spread
+  T > 1: overconfident → scale DOWN
+  T ≈ 1: close to identity in logit space
+
+=== BEFORE vs AFTER (test set, same 5-bin ECE) ===
+ECE before: 0.4113
+ECE after:  0.4857
+Change:     +0.0744  (negative = improvement)
+
+=== PLATT (logistic on raw conf = 1−σ, fit on cal) ===
+w=13.5000 b=-3.5000  (cal NLL=0.2002)
+  P(correct|σ) ≈ sigmoid(w·(1−σ) + b)
+ECE (test, Platt conf): 0.1649
+
+Wrote /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/graded/temperature.txt
+Wrote /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/graded/platt.txt
+```
+
 ## Definitive table
 
 ```text
@@ -86,4 +111,6 @@ Accuracy at that τ (prefix)                 100.0%
 
 - `benchmarks/graded/risk_coverage.csv`
 - `benchmarks/graded/conformal_thresholds.csv`
+- `benchmarks/graded/temperature.txt`
+- `benchmarks/graded/platt.txt`
 

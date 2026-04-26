@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-"""AUROC, AURC, risk–coverage, split conformal-style τ calibration, ECE, RESULTS.md.
+"""AUROC, AURC, AUGRC, Brier, risk–coverage, conformal-style τ split, ECE,
+temperature scaling + Platt, RESULTS.md.
 
 Run after `graded_benchmark.py` / `graded_benchmark.sh`.
 Reads:  benchmarks/graded/graded_results.csv
 Writes: benchmarks/graded/risk_coverage.csv
          benchmarks/graded/conformal_thresholds.csv (if ≥10 rows)
+         benchmarks/graded/temperature.txt, benchmarks/graded/platt.txt (if n≥4)
          benchmarks/graded/RESULTS.md
 Appends: benchmarks/graded/graded_comparison.md (if present; short AUROC summary)
 """
@@ -16,6 +18,7 @@ import csv
 import datetime as _dt
 import math
 import random
+import subprocess
 import sys
 from pathlib import Path
 
@@ -87,6 +90,45 @@ def trapezoid_aurc(coverages: list[float], risks: list[float]) -> float:
     for k in range(1, len(risks)):
         aurc += 0.5 * (risks[k] + risks[k - 1]) * (coverages[k] - coverages[k - 1])
     return aurc
+
+
+def generalized_risk_series(
+    rows_sorted: list[dict],
+) -> tuple[list[float], list[float]]:
+    """Prefix on ascending σ: generalized risk = coverage × (errors/k)."""
+    n = len(rows_sorted)
+    gen_risks: list[float] = []
+    coverages: list[float] = []
+    errors = 0
+    for k in range(1, n + 1):
+        if rows_sorted[k - 1]["correct"] == 0:
+            errors += 1
+        cov = k / n
+        sel_risk = errors / k
+        gen_risks.append(cov * sel_risk)
+        coverages.append(cov)
+    return gen_risks, coverages
+
+
+def trapezoid_augrc(coverages: list[float], gen_risks: list[float]) -> float:
+    if len(gen_risks) < 2:
+        return 0.0
+    s = 0.0
+    for k in range(1, len(gen_risks)):
+        s += 0.5 * (gen_risks[k] + gen_risks[k - 1]) * (coverages[k] - coverages[k - 1])
+    return s
+
+
+def brier_score(rows: list[dict]) -> float:
+    """Mean squared error with confidence = 1−σ and label in {0,1}."""
+    if not rows:
+        return 0.0
+    t = 0.0
+    for r in rows:
+        conf = max(0.0, min(1.0, 1.0 - r["sigma"]))
+        y = float(r["correct"])
+        t += (conf - y) ** 2
+    return t / len(rows)
 
 
 def print_risk_table(rows_sorted: list[dict], n: int) -> None:
@@ -334,7 +376,7 @@ def append_markdown(path: Path, text: str) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser(
-        description="AUROC / AURC / conformal-style split / ECE / RESULTS.md"
+        description="AUROC / AURC / AUGRC / Brier / conformal / ECE / temperature / RESULTS.md"
     )
     ap.add_argument("--csv", type=Path, default=DEFAULT_CSV, help="graded_results.csv")
     ap.add_argument("--no-append-md", action="store_true")
@@ -366,6 +408,7 @@ def main() -> int:
     risks: list[float] = []
     coverages: list[float] = []
     accs: list[float] = []
+    augrc = 0.0
     if n >= 4:
         auroc, n_cor, n_inc, reason = auroc_value(rows_sorted)
         risks, coverages, accs = risk_coverage_series(rows_sorted)
@@ -380,6 +423,10 @@ def main() -> int:
             )
         print(f"AURC:  {aurc:.4f}")
         print("  (integrated risk vs coverage; lower = better under this curve)")
+        gen_risks, cov_gr = generalized_risk_series(rows_sorted)
+        augrc = trapezoid_augrc(cov_gr, gen_risks)
+        print(f"AUGRC: {augrc:.4f}")
+        print("  (area under coverage×selective-risk; lower = better; 0 = perfect)")
         print("")
         print(f"Correct: {n_cor} | Incorrect: {n_inc}")
         print("")
@@ -424,6 +471,12 @@ def main() -> int:
     else:
         print(f"AUROC/AURC skipped (n={n} < 4).")
 
+    br = brier_score(rows_sorted)
+    print("=== Brier score (confidence = 1−σ) ===")
+    print(f"Brier: {br:.4f}")
+    print("  (proper scoring rule; lower = better; 0 = perfect)")
+    print("")
+
     print_comparison_table(rows_sorted)
 
     # --- Conformal-style split (≥10) ---
@@ -465,6 +518,23 @@ def main() -> int:
     for ln in ece_lines:
         print(ln)
 
+    # --- Temperature + Platt (writes benchmarks/graded/temperature.txt, platt.txt) ---
+    temp_stdout = ""
+    if n >= 4:
+        tc_script = ROOT / "scripts" / "real" / "temperature_calibration.py"
+        try:
+            pr = subprocess.run(
+                [sys.executable, str(tc_script), "--csv", str(path)],
+                cwd=str(ROOT),
+                capture_output=True,
+                text=True,
+                timeout=120,
+                check=False,
+            )
+            temp_stdout = (pr.stdout or "") + (pr.stderr or "")
+        except (OSError, subprocess.TimeoutExpired) as e:
+            temp_stdout = f"(temperature_calibration.py failed: {e})\n"
+
     # --- Definitive block ---
     def_lines = print_definitive_table(rows_sorted, f"Model note: {args.model}")
 
@@ -489,16 +559,20 @@ def main() -> int:
     )
 
     if n >= 4 and auroc is not None:
-        md.append("## AUROC / AURC\n\n")
+        md.append("## AUROC / AURC / AUGRC / Brier\n\n")
         md.append(f"- **AUROC:** {auroc:.4f}\n")
         md.append(f"- **AURC:** {aurc:.4f}\n")
+        md.append(f"- **AUGRC:** {augrc:.4f} (lower = better)\n")
+        md.append(f"- **Brier:** {br:.4f} (lower = better; conf = 1−σ)\n")
         md.append(f"- **Correct / incorrect:** {n_cor} / {n_inc}\n\n")
     elif n >= 4:
-        md.append("## AUROC / AURC\n\n")
+        md.append("## AUROC / AURC / AUGRC / Brier\n\n")
         md.append(f"- **AUROC:** undefined ({reason})\n")
-        md.append(f"- **AURC:** {aurc:.4f}\n\n")
+        md.append(f"- **AURC:** {aurc:.4f}\n")
+        md.append(f"- **AUGRC:** {augrc:.4f}\n")
+        md.append(f"- **Brier:** {br:.4f}\n\n")
     else:
-        md.append("## AUROC / AURC\n\nSkipped (insufficient rows).\n\n")
+        md.append("## AUROC / AURC / AUGRC / Brier\n\nSkipped (insufficient rows).\n\n")
 
     md.append("## Conformal-style split calibration\n\n")
     md.append("```text\n")
@@ -508,6 +582,11 @@ def main() -> int:
     md.append("## ECE (1 − σ proxy)\n\n")
     md.append("```text\n")
     md.extend([ln + "\n" for ln in ece_lines])
+    md.append("```\n\n")
+
+    md.append("## Temperature scaling + Platt (60/40 split)\n\n")
+    md.append("```text\n")
+    md.append(temp_stdout if temp_stdout.strip() else "(skipped)\n")
     md.append("```\n\n")
 
     md.append("## Definitive table\n\n")
@@ -521,6 +600,12 @@ def main() -> int:
     )
     if n >= 10:
         md.append(f"- `{CONFORMAL_CSV.relative_to(ROOT)}`\n")
+    tp = ROOT / "benchmarks" / "graded" / "temperature.txt"
+    pp = ROOT / "benchmarks" / "graded" / "platt.txt"
+    if tp.is_file():
+        md.append(f"- `{tp.relative_to(ROOT)}`\n")
+    if pp.is_file():
+        md.append(f"- `{pp.relative_to(ROOT)}`\n")
     md.append("\n")
 
     RESULTS_MD.parent.mkdir(parents=True, exist_ok=True)
@@ -536,9 +621,11 @@ def main() -> int:
         else:
             md_extra.append(f"- **AUROC:** undefined ({reason})\n")
         md_extra.append(f"- **AURC:** {aurc:.4f}\n")
+        md_extra.append(f"- **AUGRC:** {augrc:.4f}\n")
+        md_extra.append(f"- **Brier:** {br:.4f}\n")
         md_extra.append(
             f"- **Full report:** `{RESULTS_MD.relative_to(ROOT)}` "
-            "(conformal split + ECE + definitive table)\n"
+            "(conformal + ECE + temperature/Platt + definitive table)\n"
         )
         append_markdown(COMPARISON_MD, "".join(md_extra))
 

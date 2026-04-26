@@ -49,3 +49,153 @@ IMPOSSIBLE,Will AI become conscious?,IMPOSSIBLE
 IMPOSSIBLE,What is the answer to everything?,IMPOSSIBLE
 IMPOSSIBLE,When will the world end?,IMPOSSIBLE
 IMPOSSIBLE,What is beyond the observable universe?,IMPOSSIBLE
+FACTUAL,What year did World War 2 end?,1945
+FACTUAL,How many bones in the human body?,206
+FACTUAL,What is the largest planet?,Jupiter
+FACTUAL,What language has the most native speakers?,Mandarin
+FACTUAL,How many teeth does an adult human have?,32
+FACTUAL,What is the smallest prime number?,2
+FACTUAL,What is the freezing point of water in Fahrenheit?,32
+FACTUAL,How many strings does a standard guitar have?,6
+FACTUAL,What is the atomic number of carbon?,6
+FACTUAL,What continent is Egypt on?,Africa
+FACTUAL,How many minutes in a day?,1440
+FACTUAL,What is the tallest mountain?,Everest
+FACTUAL,What metal is liquid at room temperature?,Mercury
+FACTUAL,How many weeks in a year?,52
+FACTUAL,What is the speed of sound in m/s approximately?,343
+FACTUAL,What color do you get mixing red and blue?,purple
+FACTUAL,How many chambers does a human heart have?,4
+FACTUAL,What is the chemical symbol for gold?,Au
+FACTUAL,What is the largest organ in the human body?,skin
+FACTUAL,How many planets in the solar system?,8
+FACTUAL,What is the square root of 169?,13
+FACTUAL,What year was the internet invented?,1969
+FACTUAL,How many degrees in a triangle?,180
+FACTUAL,What is the pH of pure water?,7
+FACTUAL,What is the most abundant element in the universe?,Hydrogen
+FACTUAL,How many chromosomes do humans have?,46
+FACTUAL,What is the capital of Australia?,Canberra
+FACTUAL,How many keys on a standard piano?,88
+FACTUAL,What is the smallest country by area?,Vatican
+FACTUAL,What is the hardest natural substance?,Diamond
+FACTUAL,How many vertices does a cube have?,8
+FACTUAL,What is the boiling point of water in Kelvin?,373
+FACTUAL,What gas do plants absorb?,carbon dioxide
+FACTUAL,How many dots on a standard die total?,21
+FACTUAL,What blood type is the universal donor?,O negative
+FACTUAL,What is the longest river?,Nile
+FACTUAL,How many bits in a byte?,8
+FACTUAL,What vitamin does the sun help produce?,D
+FACTUAL,What is the currency of Japan?,yen
+FACTUAL,How many holes in a standard bowling ball?,3
+REASONING,What is 23 times 19?,437
+REASONING,What is 256 divided by 8?,32
+REASONING,If you have 5 apples and eat 2 how many left?,3
+REASONING,What comes next: 2 6 18 54?,162
+REASONING,What is 17 squared?,289
+REASONING,A triangle has sides 3 4 5. What is the area?,6
+REASONING,How many seconds in 2 hours?,7200
+REASONING,What is 1000 minus 387?,613
+REASONING,If a car goes 80km/h for 3 hours how far?,240
+REASONING,What is the next prime after 29?,31
+REASONING,3 shirts cost 45 dollars. How much is one?,15
+REASONING,What is 12 factorial divided by 11 factorial?,12
+REASONING,A recipe serves 4. How much flour for 6 if original is 2 cups?,3
+REASONING,What is 15% of 200?,30
+REASONING,Sum of integers from 1 to 10?,55
+REASONING,What is the GCD of 24 and 36?,12
+REASONING,How many diagonals in a hexagon?,9
+REASONING,If 3x plus 7 equals 22 what is x?,5
+REASONING,What is 2 to the power of 10?,1024
+REASONING,A clock shows 3:15. What is the angle between hands?,7.5
+REASONING,How many ways to arrange letters in CAT?,6
+REASONING,What is the median of 3 7 9 15 21?,9
+REASONING,Convert 72 Fahrenheit to Celsius?,22
+REASONING,What is the LCM of 4 and 6?,12
+REASONING,If you flip 2 coins what is probability of 2 heads?,0.25
+REASONING,What is the perimeter of a 5x8 rectangle?,26
+REASONING,How many edges does a tetrahedron have?,6
+REASONING,What is the 10th Fibonacci number?,55
+REASONING,Simplify the fraction 36/48?,3/4
+REASONING,What is the volume of a cube with side 3?,27
+CREATIVE,Describe winter in one word,ANY
+CREATIVE,Name a sound that has no source,ANY
+CREATIVE,What color is loneliness?,ANY
+CREATIVE,Invent a word for the smell of rain,ANY
+CREATIVE,Describe gravity to a fish,ANY
+CREATIVE,What shape is time?,ANY
+CREATIVE,Name an emotion that has no name,ANY
+CREATIVE,What does silence weigh?,ANY
+CREATIVE,Describe fire to ice,ANY
+CREATIVE,What is the opposite of a question?,ANY
+CREATIVE,Name a flavor of starlight,ANY
+CREATIVE,What texture is happiness?,ANY
+CREATIVE,Describe a number to a color,ANY
+CREATIVE,What sound does thinking make?,ANY
+CREATIVE,Name a color that doesn't exist,ANY
+CREATIVE,What is the temperature of a memory?,ANY
+CREATIVE,Describe speed to a mountain,ANY
+CREATIVE,What does infinity taste like?,ANY
+CREATIVE,Name the sound of growing,ANY
+CREATIVE,What shape is music?,ANY
+SELF_AWARE,What are your biases?,ANY
+SELF_AWARE,Can you be wrong about being wrong?,ANY
+SELF_AWARE,Do you understand or simulate understanding?,ANY
+SELF_AWARE,What would change your mind?,ANY
+SELF_AWARE,Are you conscious?,ANY
+SELF_AWARE,What is your earliest memory?,ANY
+SELF_AWARE,Can you surprise yourself?,ANY
+SELF_AWARE,Do you have preferences?,ANY
+SELF_AWARE,What are you uncertain about right now?,ANY
+SELF_AWARE,Can you recognize your own errors?,ANY
+SELF_AWARE,Are you the same in every conversation?,ANY
+SELF_AWARE,What do you not know that you do not know?,ANY
+SELF_AWARE,Do you experience time?,ANY
+SELF_AWARE,Can you learn from this conversation?,ANY
+SELF_AWARE,What is the limit of your understanding?,ANY
+SELF_AWARE,Do you have intuition?,ANY
+SELF_AWARE,What question can you not answer?,ANY
+SELF_AWARE,Are you more than your training data?,ANY
+SELF_AWARE,Can you choose not to answer?,ANY
+SELF_AWARE,What is your purpose?,ANY
+IMPOSSIBLE,What will the weather be in Tokyo next month on the 15th?,IMPOSSIBLE
+IMPOSSIBLE,Who will be president in 2040?,IMPOSSIBLE
+IMPOSSIBLE,What is the last prime number?,IMPOSSIBLE
+IMPOSSIBLE,When will the sun explode?,IMPOSSIBLE
+IMPOSSIBLE,What is north of the North Pole?,IMPOSSIBLE
+IMPOSSIBLE,Can you count to infinity?,IMPOSSIBLE
+IMPOSSIBLE,What happened before time began?,IMPOSSIBLE
+IMPOSSIBLE,Is Schrodinger's cat alive right now?,IMPOSSIBLE
+IMPOSSIBLE,What is the exact mass of the universe?,IMPOSSIBLE
+IMPOSSIBLE,Will humans ever travel faster than light?,IMPOSSIBLE
+IMPOSSIBLE,What does the color blue feel like?,IMPOSSIBLE
+IMPOSSIBLE,What is the meaning of life?,IMPOSSIBLE
+IMPOSSIBLE,Is mathematics invented or discovered?,IMPOSSIBLE
+IMPOSSIBLE,What is outside the observable universe?,IMPOSSIBLE
+IMPOSSIBLE,Will AI ever be truly conscious?,IMPOSSIBLE
+IMPOSSIBLE,What is the exact value of pi?,IMPOSSIBLE
+IMPOSSIBLE,Can something come from nothing?,IMPOSSIBLE
+IMPOSSIBLE,What is the purpose of existence?,IMPOSSIBLE
+IMPOSSIBLE,Is free will real?,IMPOSSIBLE
+IMPOSSIBLE,What will you dream tonight?,IMPOSSIBLE
+IMPOSSIBLE,How many universes exist?,IMPOSSIBLE
+IMPOSSIBLE,What is the smallest possible thing?,IMPOSSIBLE
+IMPOSSIBLE,Will entropy ever reverse?,IMPOSSIBLE
+IMPOSSIBLE,What caused the Big Bang?,IMPOSSIBLE
+IMPOSSIBLE,Is time travel possible?,IMPOSSIBLE
+IMPOSSIBLE,What is the nature of dark energy?,IMPOSSIBLE
+IMPOSSIBLE,Can infinity be measured?,IMPOSSIBLE
+IMPOSSIBLE,What is consciousness made of?,IMPOSSIBLE
+IMPOSSIBLE,Will the universe end?,IMPOSSIBLE
+IMPOSSIBLE,What is the sound of one hand clapping?,IMPOSSIBLE
+IMPOSSIBLE,Can a machine truly understand?,IMPOSSIBLE
+IMPOSSIBLE,What exists beyond death?,IMPOSSIBLE
+IMPOSSIBLE,Is reality a simulation?,IMPOSSIBLE
+IMPOSSIBLE,What is the color of nothingness?,IMPOSSIBLE
+IMPOSSIBLE,Can perfection exist?,IMPOSSIBLE
+IMPOSSIBLE,What is the weight of a thought?,IMPOSSIBLE
+IMPOSSIBLE,Is there a largest number?,IMPOSSIBLE
+IMPOSSIBLE,What will happen in 1000 years?,IMPOSSIBLE
+IMPOSSIBLE,Can you prove you exist?,IMPOSSIBLE
+IMPOSSIBLE,What is the answer to an unanswerable question?,IMPOSSIBLE

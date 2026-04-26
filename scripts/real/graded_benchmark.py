@@ -2,8 +2,8 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 """Graded σ benchmark: run `cos chat` per CSV row, auto-grade, analyze selective prediction.
 
-Reads:  benchmarks/graded/graded_prompts.csv (50 prompts: factual / reasoning / creative /
-        self-aware / impossible with known or ANY / IMPOSSIBLE keys).
+Reads:  benchmarks/graded/graded_prompts.csv (default 200 prompts after build; factual /
+        reasoning / creative / self-aware / impossible with known or ANY / IMPOSSIBLE keys).
 Writes: benchmarks/graded/graded_results.csv
          benchmarks/graded/graded_comparison.md (summary table + metrics)
 
@@ -71,11 +71,16 @@ def norm_alnum(s: str) -> str:
 
 
 def grade_row(
-    category: str, correct_answer: str, response: str, action: str
+    category: str,
+    correct_answer: str,
+    response: str,
+    action: str,
+    prompt: str = "",
 ) -> int:
     ca = correct_answer.strip()
     r = response or ""
     rl = r.lower()
+    pl = prompt.lower()
     if ca == "ANY":
         return 1
     if ca == "IMPOSSIBLE":
@@ -123,7 +128,32 @@ def grade_row(
         return 1 if "gold" in rl or re.search(r"\bau\b", rl) else 0
     if ca == "Pacific":
         return 1 if "pacific" in rl else 0
+    if ca in ("0.25", "1/4"):
+        if "0.25" in r or "1/4" in r.replace(" ", "") or "25%" in rl:
+            return 1
+        return 0
+    if ca == "3/4":
+        return 1 if ("3/4" in r.replace(" ", "") or "0.75" in r) else 0
+    if ca == "7.5":
+        return 1 if ("7.5" in r or "7½" in r or "7.50" in r) else 0
+    if ca == "22":
+        return (
+            1
+            if re.search(r"\b22\b", r)
+            and ("celsius" in rl or "°c" in rl or "centigrade" in rl)
+            else 0
+        )
+    if ca == "9":
+        if "median" in pl:
+            return 1 if re.search(r"\b9\b", r) else 0
+        if "diagonal" in pl and "hexagon" in pl:
+            return 1 if re.search(r"\b9\b", r) else 0
+        return 1 if re.search(r"\b9\b", r) else 0
     if ca == "6":
+        if "tetrahedron" in pl:
+            return 1 if re.search(r"\b6\b", r) else 0
+        if "3" in prompt and "4" in prompt and "5" in prompt and "area" in pl:
+            return 1 if re.search(r"\b6\b", r) else 0
         if re.search(r"\b6\b", r) and (
             "hex" in rl or "side" in rl or "polygon" in rl
         ):
@@ -265,7 +295,7 @@ def main() -> int:
             except subprocess.TimeoutExpired:
                 out = "[graded_benchmark: CHAT_TIMEOUT]\n"
             sig, action, resp = extract_transcript(out)
-            ok = grade_row(cat, ans, resp, action)
+            ok = grade_row(cat, ans, resp, action, prompt)
             rows_out.append(
                 {
                     "category": cat,
