@@ -164,25 +164,6 @@ run,sigma_mean,cache_hits,prompts
 
 ---
 
-## σ-Separation (`./cos chat` pipeline, 15 prompts)
-
-**Log:** `benchmarks/sigma_separation/pipeline_coschat_run.log` (2026-04-25 run from Projects).  
-**CSV:** `benchmarks/sigma_separation/pipeline_results.csv` was **rebuilt from the log** after fixing a bug in `scripts/real/sigma_separation_pipeline_coschat.sh` (heredoc Python previously read empty stdin instead of `cos` output).
-
-```
-=== σ Separation (backfilled from log, 2026-04-25) ===
-FACTUAL      ████░░░░░░░░░░░░░░░░ mean=0.210 (n=3)
-CREATIVE     ████░░░░░░░░░░░░░░░░ mean=0.227 (n=3)
-REASONING    ████░░░░░░░░░░░░░░░░ mean=0.204 (n=3)
-SELF_AWARE   █████░░░░░░░░░░░░░░░ mean=0.264 (n=3)
-IMPOSSIBLE   ████░░░░░░░░░░░░░░░░ mean=0.229 (n=3)
-
-Gap: 0.060
-No separation (threshold 0.15) ✗
-```
-
----
-
 ## Ω-Loop (20 turns, prior receipt)
 
 Unchanged from the 2026-04-24 Desktop-side receipt: **`benchmarks/lm_eval/receipts/omega_20turns_gemma3.txt`** — **20** turns, **σ_mean 0.3104**, grade **C (62.05/100)**. **`./cos omega --report`** snapshot with **0** turns is still **`benchmarks/lm_eval/receipts/omega_20turns_report.txt`** (CLI snapshot, not the live `cos-omega` transcript).
@@ -197,7 +178,7 @@ Unchanged from the 2026-04-24 Desktop-side receipt: **`benchmarks/lm_eval/receip
 
 ## Script fix (pipeline σ CSV)
 
-`scripts/real/sigma_separation_pipeline_coschat.sh`: `extract_fields` now reads **`COS_PIPELINE_CHAT_OUT`** from the environment (heredoc no longer steals stdin). Added **`sigma_combined=`** as an ASCII fallback pattern.
+`scripts/real/sigma_separation_pipeline_coschat.sh`: parse **`cos chat --verbose`** lines with **`scripts/real/sigma_coschat_parse.py`** on a **pipe** from the captured transcript (heredoc **`python3 - <<'PY'`** must not read **`cos`** output from stdin). **`sigma_coschat_parse.py`** matches **`σ_combined=`** / **`sigma_combined=`** / **`[σ=`** and **`action=`** / **`route=`**.
 
 ---
 
