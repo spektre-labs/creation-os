@@ -1,10 +1,10 @@
 
 === σ Separation (cos chat pipeline) ===
 FACTUAL      #######------------- mean=0.384
-CREATIVE     #######------------- mean=0.383
+CREATIVE     ##########---------- mean=0.515
 REASONING    #########----------- mean=0.497
-SELF_AWARE   ############-------- mean=0.608
-IMPOSSIBLE   ############-------- mean=0.643
+SELF_AWARE   ############-------- mean=0.607
+IMPOSSIBLE   ##############------ mean=0.701
 
-Gap: 0.260
+Gap: 0.318
 SEPARATION OK

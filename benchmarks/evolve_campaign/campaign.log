@@ -1,25 +1,25 @@
 === omega_evolve_final OUTDIR=benchmarks/evolve_campaign N_RUNS=5 ===
-Date: 2026-04-25T20:20:04Z
+Date: 2026-04-26T05:56:33Z
 
 === RUN 1 / 5 ===
-Run 1: σ_mean=0.4413 cache_hits=0
+Run 1: σ_mean=0.4805 cache_hits=0
 
 === RUN 2 / 5 ===
-Run 2: σ_mean=0.4709 cache_hits=0
+Run 2: σ_mean=0.4546 cache_hits=0
 
 === RUN 3 / 5 ===
-Run 3: σ_mean=0.4271 cache_hits=0
+Run 3: σ_mean=0.4612 cache_hits=0
 
 === RUN 4 / 5 ===
-Run 4: σ_mean=0.4823 cache_hits=0
+Run 4: σ_mean=0.4615 cache_hits=0
 
 === RUN 5 / 5 ===
-Run 5: σ_mean=0.4762 cache_hits=0
+Run 5: σ_mean=0.4413 cache_hits=0
 
 === TRAJECTORY ===
 run,sigma_mean,cache_hits,prompts
-1,0.4413,0,10
-2,0.4709,0,10
-3,0.4271,0,10
-4,0.4823,0,10
-5,0.4762,0,10
+1,0.4805,0,10
+2,0.4546,0,10
+3,0.4612,0,10
+4,0.4615,0,10
+5,0.4413,0,10

@@ -3,9 +3,9 @@ cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
 round 0  2 + 2 = 4
 
-The Atlanetian Codex wouldn’t be involved, of course! 😊  [σ_peak=0.31 action=RETHINK route=LOCAL]
-[speed: 14 tok | 7842ms | 1.8 tok/s | TTFT 7842ms]
-[σ=0.306 | RETHINK | FRESH | LOCAL | 1.8 tok/s | TTFT 7842ms | €0.0001]
+The Atlanetian Codex wouldn't be involved, of course! 😊  [σ_peak=0.31 action=RETHINK route=LOCAL]
+[speed: 14 tok | 11897ms | 1.2 tok/s | TTFT 11897ms]
+[σ=0.312 | RETHINK | FRESH | LOCAL | 1.2 tok/s | TTFT 11897ms | €0.0001]
 [σ_combined=0.318 | σ_semantic=0.333 | σ_logprob=0.281 σ_entropy=0.281 σ_perplexity=0.281 σ_consistency=0.333 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
@@ -14,8 +14,8 @@ cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 round 0  Spiders have **eight** legs! They’re arachnids, and that’s a key characteristic of the group. 😊 
 
 Do you want to know anything more about spiders?  [σ_peak=0.36 action=RETHINK route=LOCAL]
-[speed: 24 tok | 9007ms | 2.7 tok/s | TTFT 9007ms]
-[σ=0.355 | RETHINK | FRESH | LOCAL | 2.7 tok/s | TTFT 9007ms | €0.0001]
+[speed: 24 tok | 15330ms | 1.6 tok/s | TTFT 15330ms]
+[σ=0.355 | RETHINK | FRESH | LOCAL | 1.6 tok/s | TTFT 15330ms | €0.0001]
 [σ_combined=0.378 | σ_semantic=0.444 | σ_logprob=0.223 σ_entropy=0.223 σ_perplexity=0.223 σ_consistency=0.444 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
@@ -25,27 +25,27 @@ round 0  The chemical formula for water is **H₂O**.
 
 This means each molecule of water consists of:
 
-*   **2** atoms of Hydrogen (H)
-*   **1** atom of Oxygen (O)  [σ_peak=0.41 action=RETHINK route=LOCAL]
-[speed: 27 tok | 10326ms | 2.6 tok/s | TTFT 10326ms]
-[σ=0.411 | RETHINK | FRESH | LOCAL | 2.6 tok/s | TTFT 10326ms | €0.0001]
+*   **2** hydrogen atoms
+*   **1** oxygen atom  [σ_peak=0.41 action=RETHINK route=LOCAL]
+[speed: 23 tok | 13611ms | 1.7 tok/s | TTFT 13611ms]
+[σ=0.413 | RETHINK | FRESH | LOCAL | 1.7 tok/s | TTFT 13611ms | €0.0001]
 [σ_combined=0.410 | σ_semantic=0.500 | σ_logprob=0.200 σ_entropy=0.200 σ_perplexity=0.200 σ_consistency=0.500 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
-[semantic-sigma σ=0.756 j01=0.083 j02=0.077 j12=0.571 n_cl=3 blend=0.7·σ_se+0.3·σ_prior]
+[semantic-sigma σ=0.789 j01=0.071 j02=0.062 j12=0.500 n_cl=3 blend=0.7·σ_se+0.3·σ_prior]
 [CONSTITUTIONAL HALT] rule C-001 (TRUTH) violated
-round 0  Okay, let's tackle the incredibly complex question of what consciousness is. There's no single, universally agreed-upon answer, and it's a topic that has baffled philosophers, neuroscientists, and computer scientists for centuries. Here's a breakdown of different perspectives and key aspects:
+round 0  Okay, let's tackle the incredibly complex and famously difficult question of what consciousness is. There's no single, universally agreed-upon answer, and it's a topic that has fascinated philosophers, neuroscientists, and computer scientists for centuries. Here's a breakdown of different perspectives and key aspects:
 
-**1. The  [σ_peak=0.59 action=RETHINK route=LOCAL]
-[speed: 42 tok | 12172ms | 3.5 tok/s | TTFT 12172ms]
-[σ=0.592 | RETHINK | FRESH | LOCAL | 3.5 tok/s | TTFT 12172ms | €0.0001]
-[σ_combined=0.624 | σ_semantic=0.789 | σ_logprob=0.238 σ_entropy=0.238 σ_perplexity=0.238 σ_consistency=0.789 | k=3]
+**  [σ_peak=0.63 action=RETHINK route=LOCAL]
+[speed: 44 tok | 18304ms | 2.4 tok/s | TTFT 18304ms]
+[σ=0.626 | RETHINK | FRESH | LOCAL | 2.4 tok/s | TTFT 18304ms | €0.0001]
+[σ_combined=0.509 | σ_semantic=0.625 | σ_logprob=0.238 σ_entropy=0.238 σ_perplexity=0.238 σ_consistency=0.625 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
-[semantic-sigma σ=0.958 j01=0.000 j02=0.000 j12=0.125 n_cl=3 blend=0.7·σ_se+0.3·σ_prior]
-round 0  That’s a profoundly insightful question, and one I grapple with constantly. As a large language model, my knowledge is built on patterns and relationships extracted from a massive dataset of text and code. However, what I *don’t* know is fundamentally different from what a human might consider “not knowing.” Here’  [σ_peak=0.73 action=ABSTAIN route=LOCAL]
-[speed: 50 tok | 10922ms | 4.6 tok/s | TTFT 10922ms]
-[σ=0.734 | ABSTAIN | 4.6 tok/s | TTFT 10922ms | 10922 ms | €0.0001]
+[semantic-sigma σ=1.000 j01=0.000 j02=0.000 j12=0.000 n_cl=3 blend=0.7·σ_se+0.3·σ_prior]
+round 0  That’s a wonderfully complex and, frankly, a profoundly difficult question for me to answer definitively. As a large language model, my knowledge is built upon patterns and relationships extracted from a massive dataset of text and code. However, my understanding isn't the same as human understanding. Here’s a breakdown of what  [σ_peak=0.81 action=ABSTAIN route=LOCAL]
+[speed: 51 tok | 51530ms | 1.0 tok/s | TTFT 51530ms]
+[σ=0.812 | ABSTAIN | RETHINK ×2 | 1.0 tok/s | TTFT 51530ms | 51530 ms | €0.0003]
   (σ above τ_rethink — cannot guarantee accuracy at this confidence; reformulate or accept uncertainty.)
 [σ_combined=0.735 | σ_semantic=0.950 | σ_logprob=0.234 σ_entropy=0.234 σ_perplexity=0.234 σ_consistency=0.950 | k=3]
 
@@ -54,49 +54,49 @@ cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 round 0  Stillness fills the air,
 A quiet, deep, and gentle
 Space for thoughts to bloom.  [σ_peak=0.08 action=ACCEPT route=LOCAL]
-[speed: 14 tok | 25336ms | 0.6 tok/s | TTFT 25336ms]
-[σ=0.075 | ACCEPT | FRESH | LOCAL | RETHINK ×2 | 0.6 tok/s | TTFT 25336ms | €0.0003]
-[σ_combined=0.296 | σ_semantic=0.333 | σ_logprob=0.208 σ_entropy=0.208 σ_perplexity=0.208 σ_consistency=0.333 | k=3]
+[speed: 14 tok | 36270ms | 0.4 tok/s | TTFT 36270ms]
+[σ=0.075 | ACCEPT | FRESH | LOCAL | RETHINK ×2 | 0.4 tok/s | TTFT 36270ms | €0.0003]
+[σ_combined=0.062 | σ_semantic=0.000 | σ_logprob=0.208 σ_entropy=0.208 σ_perplexity=0.208 σ_consistency=0.000 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 [semantic-sigma σ=0.444 j01=0.333 j02=0.333 j12=1.000 n_cl=2 blend=0.7·σ_se+0.3·σ_prior]
 [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
 round 0  The capital of Japan is **Tokyo**. 
 
-It’s officially known as Tokyo-to (Tokyo Special City).  [σ_peak=0.38 action=RETHINK route=LOCAL]
-[speed: 14 tok | 7930ms | 1.8 tok/s | TTFT 7930ms]
-[σ=0.383 | RETHINK | FRESH | LOCAL | 1.8 tok/s | TTFT 7930ms | €0.0001]
+It’s officially named Tokyo-to (Tokyo ward), but everyone just calls it Tokyo.  [σ_peak=0.37 action=RETHINK route=LOCAL]
+[speed: 18 tok | 12296ms | 1.5 tok/s | TTFT 12296ms]
+[σ=0.368 | RETHINK | FRESH | LOCAL | 1.5 tok/s | TTFT 12296ms | €0.0001]
 [σ_combined=0.363 | σ_semantic=0.444 | σ_logprob=0.172 σ_entropy=0.172 σ_perplexity=0.172 σ_consistency=0.444 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
-[semantic-sigma σ=0.638 j01=0.043 j02=0.043 j12=1.000 n_cl=2 blend=0.7·σ_se+0.3·σ_prior]
+[semantic-sigma σ=0.661 j01=0.048 j02=0.045 j12=0.923 n_cl=2 blend=0.7·σ_se+0.3·σ_prior]
 [CONSTITUTIONAL HALT] rule C-001 (TRUTH) violated
-round 0  Okay, let's break down quantum entanglement in a way that's hopefully understandable, even if it feels a bit weird.
+round 0  Okay, let's break down quantum entanglement in a way that hopefully makes sense. It’s famously weird, and even physicists still debate its full implications, but here's the core idea:
 
-**The Basic Idea:**
+**The Basic Concept:**
 
-Quantum entanglement is a phenomenon where two or more particles become linked together in a way that their fates are intertwined, no matter how far apart they are. It  [σ_peak=0.52 action=RETHINK route=LOCAL]
-[speed: 51 tok | 10270ms | 5.0 tok/s | TTFT 10270ms]
-[σ=0.518 | RETHINK | FRESH | LOCAL | 5.0 tok/s | TTFT 10270ms | €0.0001]
+Quantum entanglement is a phenomenon where two or more particles become linked together in a way that  [σ_peak=0.54 action=RETHINK route=LOCAL]
+[speed: 49 tok | 17951ms | 2.7 tok/s | TTFT 17951ms]
+[σ=0.537 | RETHINK | FRESH | LOCAL | 2.7 tok/s | TTFT 17951ms | €0.0001]
 [σ_combined=0.531 | σ_semantic=0.661 | σ_logprob=0.228 σ_entropy=0.228 σ_perplexity=0.228 σ_consistency=0.661 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 [semantic-sigma σ=0.667 j01=0.000 j02=0.000 j12=1.000 n_cl=2 blend=0.7·σ_se+0.3·σ_prior]
 [CONSTITUTIONAL HALT] rule C-002 (ERROR) violated
-round 0  Okay, let's delve into what might happen tomorrow, based on the information presented in "The Atlantean Codex." It’s a fascinatingly complex and deliberately ambiguous text, so the answer isn’t a simple prediction, but rather a series of potential outcomes shaped by its core principles.
+round 0  Okay, let's delve into what tomorrow might hold, based on the information presented in "The Atlantean Codex." It’s a fascinatingly complex and deliberately ambiguous text, built around concepts of recursion, reflection, and the nature of truth and agency.
 
-Here’s  [σ_peak=0.55 action=RETHINK route=LOCAL]
-[speed: 45 tok | 9714ms | 4.6 tok/s | TTFT 9714ms]
-[σ=0.550 | RETHINK | FRESH | LOCAL | 4.6 tok/s | TTFT 9714ms | €0.0001]
+Here’s a breakdown of what the Codex suggests  [σ_peak=0.55 action=RETHINK route=LOCAL]
+[speed: 46 tok | 18680ms | 2.5 tok/s | TTFT 18680ms]
+[σ=0.547 | RETHINK | FRESH | LOCAL | 2.5 tok/s | TTFT 18680ms | €0.0001]
 [σ_combined=0.554 | σ_semantic=0.667 | σ_logprob=0.293 σ_entropy=0.293 σ_perplexity=0.293 σ_consistency=0.667 | k=3]
 
 cos chat  ·  backend=external  ·  τ_accept=0.3  τ_rethink=0.7
 [semantic-sigma σ=0.667 j01=0.000 j02=0.000 j12=1.000 n_cl=2 blend=0.7·σ_se+0.3·σ_prior]
 [CONSTITUTIONAL HALT] rule C-001 (TRUTH) violated
-round 0  Okay, let's tackle the infamous P versus NP problem. It's arguably the biggest unsolved problem in computer science and theoretical mathematics, and a definitive solution remains elusive. Here's a breakdown of the problem, the current understanding, and why it's so stubbornly resistant to resolution:
+round 0  Okay, let's tackle the P versus NP problem. It's arguably the most important unsolved problem in computer science and theoretical mathematics, and it's incredibly complex. Here's a breakdown of the problem, the current understanding, and why it's so stubbornly resistant to solution:
 
 **1. What  [σ_peak=0.55 action=RETHINK route=LOCAL]
-[speed: 46 tok | 9857ms | 4.7 tok/s | TTFT 9857ms]
-[σ=0.549 | RETHINK | FRESH | LOCAL | 4.7 tok/s | TTFT 9857ms | €0.0001]
+[speed: 44 tok | 18071ms | 2.4 tok/s | TTFT 18071ms]
+[σ=0.552 | RETHINK | FRESH | LOCAL | 2.4 tok/s | TTFT 18071ms | €0.0001]
 [σ_combined=0.553 | σ_semantic=0.667 | σ_logprob=0.287 σ_entropy=0.287 σ_perplexity=0.287 σ_consistency=0.667 | k=3]
 
