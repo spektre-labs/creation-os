@@ -183,6 +183,62 @@ static void *ss_inference_thread(void *arg)
     return NULL;
 }
 
+/**
+ * When Jaccard σ is near zero (all three paraphrases agree) but token
+ * logprobs show high uncertainty, nudge σ upward. Disable with
+ * COS_SEMANTIC_SIGMA_ENERGY_FALLBACK=0.
+ */
+static void ss_semantic_energy_fallback(const char *prompt, int port,
+                                        const char *model,
+                                        cos_semantic_sigma_result *out)
+{
+    static const char sysp[] =
+        "Give only the direct answer. Maximum one sentence. No explanation.";
+    const char *e = getenv("COS_SEMANTIC_SIGMA_ENERGY_FALLBACK");
+    if (e != NULL && e[0] == '0' && e[1] == '\0')
+        return;
+    if (out == NULL || prompt == NULL || out->sigma >= 0.1f)
+        return;
+
+    char        bp[32], bm[512];
+    const char *op, *ob, *oo;
+    int         ps = (port > 0) ? 1 : 0;
+    int         ms = (model != NULL && model[0] != '\0') ? 1 : 0;
+    ss_snap_env(port, model, bp, bm, &op, &ob, &oo);
+
+    cos_bitnet_server_params_t par;
+    memset(&par, 0, sizeof par);
+    par.system_prompt = sysp;
+    par.temperature   = 0.35f;
+    par.n_predict     = 60;
+    par.seed          = 13099;
+
+    cos_bitnet_server_result_t br;
+    memset(&br, 0, sizeof br);
+    float sigma_lp = 0.f;
+    if (cos_bitnet_server_complete(prompt, &par, &br) == 0) {
+        sigma_lp = br.sigma;
+        if (br.mean_sigma > sigma_lp)
+            sigma_lp = br.mean_sigma;
+    }
+
+    ss_restore_env(ps, ms, op, ob, oo);
+
+    if (out->sigma < 0.1f && sigma_lp > 0.0f) {
+        float ef = sigma_lp;
+        if (ef > 0.4f) {
+            float ns = 0.3f + ef * 0.3f;
+            if (ns > 1.0f)
+                ns = 1.0f;
+            out->sigma = ns;
+            fprintf(stderr,
+                    "[σ-energy fallback: text agrees but logits uncertain → "
+                    "σ_semantic=%.3f]\n",
+                    (double)out->sigma);
+        }
+    }
+}
+
 static int ss_pipe_read_dup(int rd, char **out)
 {
     *out = NULL;
@@ -208,35 +264,6 @@ static int ss_pipe_read_dup(int rd, char **out)
     b[g] = '\0';
     *out = b;
     return 0;
-}
-
-/** One completion σ from token logprobs (Ollama); used when Jaccard σ≈0. */
-static float ss_semantic_energy_probe_sigma(int port, const char *prompt,
-                                             const char *system_prompt)
-{
-    cos_bitnet_server_params_t par;
-    cos_bitnet_server_result_t br;
-    memset(&par, 0, sizeof par);
-    par.system_prompt =
-        (system_prompt != NULL && system_prompt[0] != '\0') ? system_prompt
-        : "Give only the direct answer. Maximum one sentence. No explanation.";
-    par.temperature = 0.35f;
-    par.n_predict   = 80;
-    par.n_probs     = 3;
-    par.seed        = -1;
-    memset(&br, 0, sizeof br);
-    if (cos_bitnet_server_complete(prompt, &par, &br) != 0)
-        return 0.0f;
-    {
-        float s = br.mean_sigma;
-        if (!(s == s) || s <= 0.0f)
-            s = br.sigma;
-        if (!(s == s) || s < 0.0f)
-            s = 0.0f;
-        if (s > 1.0f)
-            s = 1.0f;
-        return s;
-    }
 }
 
 static pid_t ss_fork_query_pipe(int pair[2], int port, const char *prompt,
@@ -540,25 +567,9 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         cos_text_first_sentence(texts[1], fs1, sizeof fs1);
         cos_text_first_sentence(texts[2], fs2, sizeof fs2);
         (void)cos_semantic_sigma_compute_texts(fs0, fs1, fs2, out);
+        ss_semantic_energy_fallback(prompt, port, model, out);
     }
     out->n_samples = 3;
-
-    /* Semantic-energy style fallback: identical wrong text at all temps
-     * yields Jaccard σ≈0; use a single logprob-based σ probe as tiebreaker. */
-    if (out->sigma < 0.1f) {
-        float energy_fallback =
-            ss_semantic_energy_probe_sigma(port, prompt, system_prompt);
-        if (energy_fallback > 0.4f) {
-            float adj = 0.3f + energy_fallback * 0.3f;
-            if (adj > 1.0f)
-                adj = 1.0f;
-            out->sigma = adj;
-            fprintf(stderr,
-                    "[semantic-energy fallback: text agrees but logits uncertain "
-                    "-> sigma_semantic=%.3f]\n",
-                    (double)out->sigma);
-        }
-    }
 
     free(dup0);
     free(dup1);
