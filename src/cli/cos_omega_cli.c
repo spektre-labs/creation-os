@@ -10,6 +10,7 @@
 #include "cos_omega_cli.h"
 
 #include "../sigma/omega_loop.h"
+#include "gvu_loop.h"
 
 #include <errno.h>
 #include <signal.h>
@@ -79,6 +80,9 @@ static int usage_omega(FILE *fp)
         "  cos omega --autonomous     rotate graded prompt bank (CREATION_OS_ROOT + CSV)\n"
         "  cos omega --minutes M      wall cap (sets COS_OMEGA_MINUTES_CAP; pairs with --hours)\n"
         "  cos omega --verbose        stderr detail for evolver / autonomous\n"
+        "  cos omega --gvu            Generator-Verifier-Updater loop (graded bank + κ)\n"
+        "  cos omega --episodes N     with --gvu: episode count (default 3)\n"
+        "  cos omega --port P         with --gvu: BitNet/Ollama HTTP port (else env)\n"
         "Env: COS_OMEGA_GOAL  per-turn goal string (optional)\n"
         "     COS_OMEGA_SIM=1       same as --sim\n"
         "     COS_OMEGA_HOURS_CAP  hours wall clock (alternative to --hours)\n"
@@ -96,6 +100,9 @@ int cos_omega_main(int argc, char **argv)
     struct cos_omega_state    st;
     char                     *rep;
     int                       verbose_cli = 0;
+    int                       gvu_mode      = 0;
+    int                       gvu_episodes  = 0;
+    int                       gvu_port      = 0;
 
     memset(&cfg, 0, sizeof cfg);
     {
@@ -133,6 +140,12 @@ int cos_omega_main(int argc, char **argv)
             cfg.enable_pattern_extract = 1;
         } else if (strcmp(argv[i], "--verbose") == 0) {
             verbose_cli = 1;
+        } else if (strcmp(argv[i], "--gvu") == 0) {
+            gvu_mode = 1;
+        } else if (strcmp(argv[i], "--episodes") == 0 && i + 1 < argc) {
+            gvu_episodes = atoi(argv[++i]);
+        } else if (strcmp(argv[i], "--port") == 0 && i + 1 < argc) {
+            gvu_port = atoi(argv[++i]);
         } else if (strcmp(argv[i], "--sim") == 0) {
             cfg.simulation_mode = 1;
         } else if (strcmp(argv[i], "--light") == 0) {
@@ -189,6 +202,20 @@ int cos_omega_main(int argc, char **argv)
 
     if (verbose_cli)
         cfg.verbose_evolver = 1;
+
+    if (gvu_mode) {
+        int ep    = (gvu_episodes > 0) ? gvu_episodes : 3;
+        int turns = (cfg.max_turns > 0) ? cfg.max_turns : 10;
+        int sim   = cfg.simulation_mode ? 1 : 0;
+        int rc;
+
+        rc = cos_gvu_run(ep, turns, gvu_port, verbose_cli, sim);
+        if (rc != 0) {
+            fprintf(stderr, "cos omega: GVU run failed (rc=%d)\n", rc);
+            return 31;
+        }
+        return 0;
+    }
 
     if (cos_omega_init(&cfg, &st) != 0) {
         fputs("cos omega: init failed\n", stderr);

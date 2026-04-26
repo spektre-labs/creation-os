@@ -3,6 +3,7 @@
  */
 #include "../../src/sigma/omega_loop.h"
 #include "evolver.h"
+#include "gvu_loop.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,5 +51,7 @@ int main(void)
 
     if (cos_evolver_self_test() != 0)
         return 19;
+    if (cos_gvu_self_test() != 0)
+        return 20;
     return cos_omega_self_test() != 0 ? 18 : 0;
 }

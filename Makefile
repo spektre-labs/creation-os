@@ -6574,7 +6574,8 @@ COS_OMEGA_SUPPORT_SRCS = src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
-	src/omega/evolver.c src/omega/pattern_extractor.c
+	src/omega/evolver.c src/omega/pattern_extractor.c \
+	src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c
 
 COS_OMEGA_STATE_DEPS = src/sigma/sovereign_limits.c \
 	src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
@@ -6602,6 +6603,8 @@ creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
+	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
+	    src/sigma/semantic_sigma.c \
 	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
@@ -6629,6 +6632,8 @@ cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
+	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
+	    src/sigma/semantic_sigma.c \
 	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
@@ -10188,6 +10193,8 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
+	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
+	    src/sigma/semantic_sigma.c \
 	    src/cli/cos_monitor.c \
 	    src/cli/cos_report.c \
 	    $(COS_LEARN_WEB_SRCS) \

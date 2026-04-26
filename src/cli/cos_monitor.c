@@ -65,6 +65,17 @@ static int mon_events_path(char *buf, size_t cap)
     return snprintf(buf, cap, "%s/.cos/omega/events.jsonl", h);
 }
 
+static int mon_gvu_jsonl_path(char *buf, size_t cap)
+{
+    const char *h = getenv("HOME");
+    const char *e = getenv("COS_GVU_JSONL");
+    if (e != NULL && e[0] != '\0')
+        return snprintf(buf, cap, "%s", e);
+    if (!h || !h[0])
+        h = "/tmp";
+    return snprintf(buf, cap, "%s/.cos/omega/gvu.jsonl", h);
+}
+
 static double mon_find_json_double(const char *ln, const char *key)
 {
     char       pat[48];
@@ -90,6 +101,45 @@ static int64_t mon_find_json_llong(const char *ln, const char *key)
 static int mon_find_json_int(const char *ln, const char *key)
 {
     return (int)mon_find_json_llong(ln, key);
+}
+
+static int mon_run_kappa(const char *path)
+{
+    FILE  *fp;
+    char   buf[8192];
+    int    n = 0;
+    double sum_k = 0., sum_a = 0.;
+
+    fp = fopen(path, "r");
+    if (!fp) {
+        fprintf(stderr, "cos monitor: cannot open GVU log %s: %s\n", path,
+                strerror(errno));
+        return 1;
+    }
+    printf("GVU kappa audit: %s\n", path);
+    while (fgets(buf, sizeof buf, fp) != NULL) {
+        if (strstr(buf, "\"gvu\"") == NULL)
+            continue;
+        {
+            int    ep  = mon_find_json_int(buf, "episode");
+            double acc = mon_find_json_double(buf, "accuracy");
+            double kap = mon_find_json_double(buf, "kappa");
+            if (acc == acc && kap == kap) {
+                printf("  ep=%4d  acc=%6.2f%%  kappa=%+.4f\n", ep,
+                       acc * 100.0, kap);
+                sum_a += acc;
+                sum_k += kap;
+                n++;
+            }
+        }
+    }
+    fclose(fp);
+    if (n > 0)
+        printf("Summary: n=%d  mean_acc=%.2f%%  mean_kappa=%+.4f\n", n,
+               (sum_a / (double)n) * 100.0, sum_k / (double)n);
+    else
+        fputs("(no GVU JSONL rows)\n", stdout);
+    return 0;
 }
 
 static int mon_parse_cache_hit(const char *ln)
@@ -547,6 +597,7 @@ int cos_monitor_main(int argc, char **argv)
     int   mode_plot    = 0;
     int   mode_html    = 0;
     int   mode_follow  = 0;
+    int   mode_kappa   = 0;
     const char *path_arg = NULL;
 
     for (i = base; i < argc; ++i) {
@@ -554,6 +605,8 @@ int cos_monitor_main(int argc, char **argv)
             mode_csv = 1, mode_default = 0;
         else if (strcmp(argv[i], "--summary") == 0)
             mode_summary = 1, mode_default = 0;
+        else if (strcmp(argv[i], "--kappa") == 0)
+            mode_kappa = 1, mode_default = 0;
         else if (strcmp(argv[i], "--sigma") == 0)
             mode_sigma = 1, mode_default = 0;
         else if (strcmp(argv[i], "--plot") == 0)
@@ -565,6 +618,17 @@ int cos_monitor_main(int argc, char **argv)
             mode_follow = 1;
         else if (argv[i][0] != '-')
             path_arg = argv[i];
+    }
+
+    if (mode_kappa) {
+        char kp[768];
+        if (path_arg)
+            snprintf(kp, sizeof kp, "%s", path_arg);
+        else if (mon_gvu_jsonl_path(kp, sizeof kp) >= (int)sizeof kp) {
+            fputs("cos monitor: GVU jsonl path too long\n", stderr);
+            return 2;
+        }
+        return mon_run_kappa(kp);
     }
 
     if (path_arg)
