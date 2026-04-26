@@ -40,6 +40,8 @@ struct cos_eu_compliance cos_eu_check(void)
         "  Art 14 human oversight      — sovereign brake + SERVING mode\n"
         "  Art 15 accuracy/robustness/cybersecurity — σ + conformal hooks + "
         "SHA-256 proof receipts + audit JSONL chain\n"
+        "  Art 50 transparency of AI-generated content — machine-readable "
+        "σ-credential sidecars (ai.creation-os.sigma; cos stamp / cos validate)\n"
         "  Art 52 transparency (GPAI) — open-source demo + CLI receipts\n"
         "\nSignals: audit_trail=%s risk_tier=%d human_oversight=%s "
         "data_governance=%s\n",

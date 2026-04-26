@@ -14,6 +14,8 @@
  *     cos status                 # explicit status
  *     cos verify                 # the verified-agent report (v57)
  *     cos certify --output DIR  # local DO-178C-oriented evidence templates
+ *     cos stamp --file PATH     # σ-credential JSON sidecar (C2PA-oriented assertion)
+ *     cos validate PATH.cos.json # schema + range checks on a σ sidecar
  *     cos chace                  # the CHACE-class 12-layer security gate
  *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
@@ -272,6 +274,10 @@ static void status_quickstart(void)
                 C_GREY, C_RESET);
     bullet_line("cos calibrate  %sconformal τ (try: --dataset truthfulqa → ~/.cos/calibration.json)%s",
                 C_GREY, C_RESET);
+    bullet_line("cos stamp      %swrite σ-credential sidecar (*.cos.json) for a file%s",
+                C_GREY, C_RESET);
+    bullet_line("cos validate   %scheck a σ-credential sidecar (schema + σ range + receipt hex)%s",
+                C_GREY, C_RESET);
     bullet_line("cos exec       %sdigital-twin preflight + guarded /bin/sh (cp modeled)%s",
                 C_GREY, C_RESET);
     bullet_line("cos plan       %slong-horizon σ-checkpoints + snapshot rollback (demo missions)%s",
@@ -304,6 +310,8 @@ static int cmd_status(void)
 static int prefer_c_or_hint(const char *c_bin, int argc, char **argv);
 
 static int cmd_certify(int argc, char **argv);
+static int cmd_stamp(int argc, char **argv);
+static int cmd_validate(int argc, char **argv);
 
 static int cmd_receipt(int argc, char **argv)
 {
@@ -661,6 +669,16 @@ static int prefer_c_or_hint(const char *c_bin, int argc, char **argv)
 static int cmd_chat(int argc, char **argv)
 {
     return prefer_c_or_hint("cos-chat", argc, argv);
+}
+
+static int cmd_stamp(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-stamp", argc, argv);
+}
+
+static int cmd_validate(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-validate", argc, argv);
 }
 
 /* --------------------------------------------------------------------
@@ -3416,6 +3434,10 @@ int main(int argc, char **argv)
         return cmd_verify(argc - 2, argv + 2);
     if (strcmp(argv[1], "receipt") == 0)
         return cmd_receipt(argc - 2, argv + 2);
+    if (strcmp(argv[1], "stamp") == 0)
+        return cmd_stamp(argc - 2, argv + 2);
+    if (strcmp(argv[1], "validate") == 0)
+        return cmd_validate(argc - 2, argv + 2);
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
     if (strcmp(argv[1], "think")     == 0) return cmd_think(argc - 2, argv + 2);

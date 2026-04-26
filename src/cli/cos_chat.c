@@ -35,6 +35,8 @@
  *   --prompt TEXT      — user line for --once
  *   --transcript PATH  — append one JSONL record (Python cos_chat shape)
  *   --no-transcript    — skip JSONL for --once
+ *   --stamp [PATH]     — after each turn, write C2PA-oriented σ sidecar JSON
+ *                        (default: cos-chat-turn.cos.json next to cwd)
  *   --max-tokens N     — accepted for CLI parity; C path ignores today
  *   --tools            — σ-gated shell tool REPL (HORIZON-1; no LLM)
  *   --tools-self-test  — 20-case classifier regression (exit 0/1)
@@ -81,6 +83,7 @@
 #include "spike_engine.h"
 #include "adaptive_compute.h"
 #include "proof_receipt.h"
+#include "c2pa_sigma.h"
 #include "constitution.h"
 #include "license_attest.h"
 #include "speed_metrics.h"
@@ -1322,6 +1325,58 @@ static uint64_t chat_proof_kernel_mask(const chat_feat_t           *feat,
 }
 
 static char g_cos_chat_const_halt[768];
+static char g_cos_chat_stamp_path[512];
+
+static void chat_write_c2pa_stamp_if_requested(
+    const cos_pipeline_config_t *cfg, const cos_pipeline_result_t *r,
+    const chat_multi_t *ms, int have_ms, const chat_feat_t *feat,
+    const struct cos_proof_receipt *turn_rec)
+{
+    cos_c2pa_sigma_assertion_t ca;
+    const char                *resp;
+
+    if (g_cos_chat_stamp_path[0] == '\0' || r == NULL || turn_rec == NULL)
+        return;
+
+    memset(&ca, 0, sizeof ca);
+    snprintf(ca.version, sizeof ca.version, "%s", "1.0");
+    ca.sigma_combined = r->sigma;
+    if (have_ms && ms != NULL) {
+        ca.sigma_semantic = ms->ens.sigma_consistency;
+        ca.sigma_logprob  = ms->ens.sigma_logprob;
+    } else {
+        ca.sigma_semantic = r->sigma;
+        ca.sigma_logprob  = r->sigma;
+    }
+    snprintf(ca.action, sizeof ca.action, "%s",
+             cos_sigma_action_label(r->final_action));
+    if (cfg != NULL) {
+        ca.tau_accept  = cfg->tau_accept;
+        ca.tau_rethink = cfg->tau_rethink;
+    } else {
+        ca.tau_accept  = 0.40f;
+        ca.tau_rethink = 0.60f;
+    }
+    if (feat != NULL && feat->semantic_entropy)
+        snprintf(ca.method, sizeof ca.method, "%s", "semantic_entropy");
+    else if (feat != NULL && feat->semantic_sigma)
+        snprintf(ca.method, sizeof ca.method, "%s", "semantic_sigma");
+    else
+        snprintf(ca.method, sizeof ca.method, "%s", "sigma_pipeline");
+    snprintf(ca.model, sizeof ca.model, "%s", turn_rec->model_id);
+    ca.n_samples = 3;
+    ca.temps[0]  = 0.1f;
+    ca.temps[1]  = 0.7f;
+    ca.temps[2]  = 1.5f;
+    resp = r->response != NULL ? r->response : "";
+    spektre_sha256(resp, strlen(resp), ca.content_sha256);
+    memcpy(ca.receipt_hash, turn_rec->receipt_hash, 32);
+    memcpy(ca.prev_receipt_hash, turn_rec->prev_receipt_hash, 32);
+    memcpy(ca.codex_sha256, turn_rec->codex_hash, 32);
+    ca.timestamp_ms = turn_rec->timestamp_ms;
+    if (cos_c2pa_sigma_write_sidecar(g_cos_chat_stamp_path, &ca) == 0)
+        fprintf(stdout, "[stamp] wrote %s\n", g_cos_chat_stamp_path);
+}
 
 static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
                                  const char *prompt,
@@ -1864,6 +1919,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                    feat != NULL ? feat->conformal_active : 0,
                                    feat != NULL ? feat->conformal_alpha  : 0.0f,
                                    semantic_hit, &spd, receipt_prefix);
+            chat_write_c2pa_stamp_if_requested(cfg_rw, &r, &ms, have_ms, feat,
+                                                 &turn_rec);
         }
     }
 
@@ -2045,6 +2102,8 @@ int main(int argc, char **argv) {
     int         adaptive_compute   = 0;
     int         energy_report      = 0;
     int         want_proof_receipt = 0;
+    int         want_stamp           = 0;
+    const char *stamp_path_opt      = NULL;
     int         semantic_entropy     = 0;
     int         no_semantic_entropy  = 0;
     int         semantic_sigma       = 0;
@@ -2165,6 +2224,10 @@ int main(int argc, char **argv) {
             energy_report = 1;
         } else if (strcmp(argv[i], "--receipt") == 0) {
             want_proof_receipt = 1;
+        } else if (strcmp(argv[i], "--stamp") == 0) {
+            want_stamp = 1;
+            if (i + 1 < argc && argv[i + 1][0] != '-')
+                stamp_path_opt = argv[++i];
         } else if (strcmp(argv[i], "--help") == 0) {
             fprintf(stdout,
                 "cos chat — σ-gated interactive inference\n"
@@ -2224,6 +2287,8 @@ int main(int argc, char **argv) {
                 "  --adaptive          σ-guided compute budget (kernels / rethink / TTT caps)\n"
                 "  --energy            print [compute: … kernels … mJ] receipt line\n"
                 "  --receipt           print SHA-256 proof receipt JSON for each output\n"
+                "  --stamp [PATH]      write ai.creation-os.sigma sidecar JSON per turn\n"
+                "                      (default PATH: cos-chat-turn.cos.json)\n"
                 "  --graph             after each turn, extract relations to σ-knowledge graph\n"
                 "  --help              this text\n"
                 "\n"
@@ -2256,6 +2321,16 @@ int main(int argc, char **argv) {
             return 0;
         }
     }
+
+    if (want_stamp) {
+        if (stamp_path_opt != NULL)
+            snprintf(g_cos_chat_stamp_path, sizeof g_cos_chat_stamp_path, "%s",
+                     stamp_path_opt);
+        else
+            snprintf(g_cos_chat_stamp_path, sizeof g_cos_chat_stamp_path, "%s",
+                     "cos-chat-turn.cos.json");
+    } else
+        g_cos_chat_stamp_path[0] = '\0';
 
     {
         int stream_on =
@@ -3321,6 +3396,8 @@ int main(int argc, char **argv) {
                         cos_tui_header(smean, k_eff_h);
                     }
                 }
+                chat_write_c2pa_stamp_if_requested(&cfg, &r, &ms, ms_ok, &rfeat,
+                                                   &turn_rec);
             }
         }
 

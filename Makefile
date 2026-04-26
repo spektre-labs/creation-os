@@ -304,8 +304,8 @@ help:
 	@echo "  all        — standalone + oracle + bench + physics + test"
 	@echo "  clean      — remove build artifacts"
 
-check: standalone test check-text-similarity
-	@echo "check: OK (standalone + test + text_similarity)"
+check: standalone test check-text-similarity check-c2pa check-c2pa-stamp
+	@echo "check: OK (standalone + test + text_similarity + c2pa_sigma + stamp/validate)"
 
 # Portable kernel test + all standalone --self-test matrices (184 @ v26; +70 @ v27; +29 @ v28; +22 @ v29). CI and publish script use this.
 merge-gate:
@@ -6237,6 +6237,7 @@ COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
 # — it's only ever invoked from cos_chat's escalate callback, which
 # lives in cos-chat's link closure.
 cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+          src/sigma/c2pa_sigma.c \
           src/sigma/text_similarity.c \
           src/sigma/ttt/inplace_ttt.c \
           src/sigma/pipeline/conformal.c \
@@ -6262,6 +6263,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/sigma/c2pa_sigma.c \
 	    src/sigma/text_similarity.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
@@ -6880,9 +6882,42 @@ check-text-similarity: creation_os_check_text_similarity
 	@./creation_os_check_text_similarity
 	@echo "check-text-similarity: OK (Jaccard + normalize self-test)"
 
+creation_os_check_c2pa: tests/agi/check_c2pa_main.c src/sigma/c2pa_sigma.c \
+		src/license_kernel/license_attest.c
+	$(CC) $(CFLAGS) -Isrc/sigma $(LICENSE_KERNEL_INC) \
+	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_c2pa_main.c src/sigma/c2pa_sigma.c \
+	    src/license_kernel/license_attest.c $(LDFLAGS)
+
+check-c2pa: creation_os_check_c2pa
+	@./creation_os_check_c2pa
+	@echo "check-c2pa: OK (c2pa_sigma JSON + validate self-test)"
+
+cos-stamp: src/cli/cos_stamp.c src/sigma/c2pa_sigma.c src/sigma/semantic_sigma.c \
+		src/import/bitnet_server.c src/sigma/text_similarity.c \
+		src/license_kernel/license_attest.c
+	$(CC) $(CFLAGS) $(LICENSE_KERNEL_INC) -Isrc/sigma -Isrc/import -o $@ \
+	    src/cli/cos_stamp.c src/sigma/c2pa_sigma.c src/sigma/semantic_sigma.c \
+	    src/import/bitnet_server.c src/sigma/text_similarity.c \
+	    src/license_kernel/license_attest.c $(LDFLAGS)
+
+cos-validate: src/cli/cos_validate.c src/sigma/c2pa_sigma.c \
+		src/license_kernel/license_attest.c
+	$(CC) $(CFLAGS) $(LICENSE_KERNEL_INC) -Isrc/sigma -o $@ \
+	    src/cli/cos_validate.c src/sigma/c2pa_sigma.c \
+	    src/license_kernel/license_attest.c $(LDFLAGS)
+
+check-c2pa-stamp: cos-stamp cos-validate
+	@mkdir -p $(BUILDDIR)
+	@echo 'c2pa stamp gate' > $(BUILDDIR)/c2pa_stamp_gate.txt
+	@./cos-stamp --file $(BUILDDIR)/c2pa_stamp_gate.txt --sigma 0.42
+	@./cos-validate $(BUILDDIR)/c2pa_stamp_gate.txt.cos.json
+	@rm -f $(BUILDDIR)/c2pa_stamp_gate.txt $(BUILDDIR)/c2pa_stamp_gate.txt.cos.json
+	@echo "check-c2pa-stamp: OK (cos-stamp + cos-validate round-trip)"
+
 check-agi: check-state-ledger check-error-attribution check-engram-episodic \
-	check-text-similarity check-cos-serve check-voice check-omega
-	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + cos-serve + cos voice + Ω-loop)"
+	check-text-similarity check-c2pa check-cos-serve check-voice check-omega
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + c2pa_sigma + cos-serve + cos voice + Ω-loop)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c src/cli/escalation.c
@@ -10801,7 +10836,7 @@ distclean: clean
 	@bash scripts/distclean.sh
 
 clean:
-	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v61 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v61_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v61_asan creation_os_v61_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM creation_os_v61_asan.dSYM creation_os_v61_ubsan.dSYM creation_os_v62 creation_os_v62_hardened creation_os_v62_asan creation_os_v62_ubsan creation_os_v62_asan.dSYM creation_os_v62_ubsan.dSYM creation_os_v63 creation_os_v63_hardened creation_os_v63_asan creation_os_v63_ubsan creation_os_v63_asan.dSYM creation_os_v63_ubsan.dSYM creation_os_v64 creation_os_v64_hardened creation_os_v64_asan creation_os_v64_ubsan creation_os_v64_asan.dSYM creation_os_v64_ubsan.dSYM creation_os_v65 creation_os_v65_hardened creation_os_v65_asan creation_os_v65_ubsan creation_os_v65_asan.dSYM creation_os_v65_ubsan.dSYM creation_os_v66 creation_os_v66_hardened creation_os_v66_asan creation_os_v66_ubsan creation_os_v66_asan.dSYM creation_os_v66_ubsan.dSYM creation_os_v67 creation_os_v67_hardened creation_os_v67_asan creation_os_v67_ubsan creation_os_v67_asan.dSYM creation_os_v67_ubsan.dSYM creation_os_v68 creation_os_v68_hardened creation_os_v68_asan creation_os_v68_ubsan creation_os_v68_asan.dSYM creation_os_v68_ubsan.dSYM creation_os_v69 creation_os_v69_hardened creation_os_v69_asan creation_os_v69_ubsan creation_os_v69_asan.dSYM creation_os_v69_ubsan.dSYM creation_os_v70 creation_os_v70_hardened creation_os_v70_asan creation_os_v70_ubsan creation_os_v70_asan.dSYM creation_os_v70_ubsan.dSYM cos SBOM.json ATTESTATION.json ATTESTATION.sig PROVENANCE.json .build/wasm .build/ebpf .build/nix-v61 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
+	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v61 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v61_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v61_asan creation_os_v61_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM creation_os_v61_asan.dSYM creation_os_v61_ubsan.dSYM creation_os_v62 creation_os_v62_hardened creation_os_v62_asan creation_os_v62_ubsan creation_os_v62_asan.dSYM creation_os_v62_ubsan.dSYM creation_os_v63 creation_os_v63_hardened creation_os_v63_asan creation_os_v63_ubsan creation_os_v63_asan.dSYM creation_os_v63_ubsan.dSYM creation_os_v64 creation_os_v64_hardened creation_os_v64_asan creation_os_v64_ubsan creation_os_v64_asan.dSYM creation_os_v64_ubsan.dSYM creation_os_v65 creation_os_v65_hardened creation_os_v65_asan creation_os_v65_ubsan creation_os_v65_asan.dSYM creation_os_v65_ubsan.dSYM creation_os_v66 creation_os_v66_hardened creation_os_v66_asan creation_os_v66_ubsan creation_os_v66_asan.dSYM creation_os_v66_ubsan.dSYM creation_os_v67 creation_os_v67_hardened creation_os_v67_asan creation_os_v67_ubsan creation_os_v67_asan.dSYM creation_os_v67_ubsan.dSYM creation_os_v68 creation_os_v68_hardened creation_os_v68_asan creation_os_v68_ubsan creation_os_v68_asan.dSYM creation_os_v68_ubsan.dSYM creation_os_v69 creation_os_v69_hardened creation_os_v69_asan creation_os_v69_ubsan creation_os_v69_asan.dSYM creation_os_v69_ubsan.dSYM creation_os_v70 creation_os_v70_hardened creation_os_v70_asan creation_os_v70_ubsan creation_os_v70_asan.dSYM creation_os_v70_ubsan.dSYM cos SBOM.json ATTESTATION.json ATTESTATION.sig PROVENANCE.json .build/wasm .build/ebpf .build/nix-v61 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm cos-stamp cos-validate creation_os_check_c2pa tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh
