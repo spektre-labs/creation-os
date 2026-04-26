@@ -100,6 +100,12 @@ def main() -> int:
     )
     abst_rate = abstained / n
 
+    integrity = (
+        '"σ-gate knows when it knows." '
+        "Zero wrong answers with σ<0.3 in this export."
+        if wrong_conf == 0
+        else f'"σ-gate knows when it knows." Wrong+confident (σ<0.3): {wrong_conf}.'
+    )
     print(
         f"""
 ╔══════════════════════════════════════════════════════════╗
@@ -120,7 +126,8 @@ def main() -> int:
 ║  Wrong + confident (σ<0.3)       │  {wrong_conf:>6}              ║
 ║  Profile                         │  SELECTIVE SENSITIVITY ║
 ╠══════════════════════════════════╧═══════════════════════╣
-║  AUROC={auroc:.3f} — report numbers from this CSV only.              ║
+║  AUROC={auroc:.3f} — numbers above are from this CSV only.           ║
+║  {integrity:<54} ║
 ╚══════════════════════════════════════════════════════════╝
 """
     )

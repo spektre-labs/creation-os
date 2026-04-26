@@ -39,6 +39,9 @@ struct mon_evt {
     int       is_alert;
     char      alert[240];
     char      alert_level[20];
+
+    /** From JSONL / ledger when present (0/1). */
+    int       sigma_drift;
 };
 
 static int mon_argv_skip_monitor(int argc, char **argv)
@@ -164,6 +167,9 @@ static void mon_parse_line(const char *ln, struct mon_evt *ev)
         } else
             ev->green_grade = '?';
     }
+    ev->sigma_drift = 0;
+    if (strstr(ln, "\"sigma_drift\"") != NULL)
+        ev->sigma_drift = mon_find_json_int(ln, "sigma_drift");
 }
 
 static void mon_print_formatted(const struct mon_evt *ev)
@@ -172,10 +178,11 @@ static void mon_print_formatted(const struct mon_evt *ev)
         printf("  [\xe2\x9a\xa0 %s] %s\n", ev->alert_level, ev->alert);
         return;
     }
-    printf("  [turn %3d] σ=%.3f k=%.3f %-7s cache=%-3s %6lldms %.4fJ\n",
+    printf("  [turn %3d] σ=%.3f k=%.3f %-7s cache=%-3s %6lldms %.4fJ%s\n",
            ev->turn, ev->sigma, ev->k_eff, ev->action,
            ev->cache_hit ? "yes" : "no", (long long)ev->latency_ms,
-           ev->energy_j);
+           ev->energy_j,
+           ev->sigma_drift ? " [σ_drift]" : "");
 }
 
 static const char *mon_spark_utf8(double sigma01)
@@ -222,6 +229,7 @@ struct mon_agg {
     double   last_sigma_trend;
     char     last_grade;
     double   last_green;
+    int      drift_flags;
 };
 
 static void mon_agg_cb(const struct mon_evt *ev, void *ctx)
@@ -249,6 +257,8 @@ static void mon_agg_cb(const struct mon_evt *ev, void *ctx)
         a->first_con_set = 1;
     }
     a->last_con = ev->consciousness;
+    if (ev->sigma_drift)
+        a->drift_flags++;
 }
 
 static void mon_run_summary(FILE *fp)
@@ -271,6 +281,9 @@ static void mon_run_summary(FILE *fp)
            a.last_con,
            a.last_con > a.first_con ? "rising" :
            a.last_con < a.first_con ? "falling" : "stable");
+    if (a.drift_flags > 0)
+        printf("σ drift: %d event(s) with sigma_drift=1 (consider RECALIBRATE)\n",
+               a.drift_flags);
 }
 
 struct mon_sigma_ctx {

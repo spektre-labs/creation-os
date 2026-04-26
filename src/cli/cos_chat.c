@@ -1910,6 +1910,8 @@ int main(int argc, char **argv) {
                 "  COS_ADAPTIVE_TAU=1          same as --adaptive-tau (graded CSV τ)\n"
                 "  COS_ADAPTIVE_TAU_CSV        path to conformal_thresholds.csv\n"
                 "  CREATION_OS_ROOT            repo root for default graded CSV path\n"
+                "  COS_ADAPTIVE_TAU_TEMPERATURE_BLEND=1  nudge τ using graded temperature.txt\n"
+                "  COS_ADAPTIVE_TEMPERATURE_TXT  override path to temperature.txt\n"
                 "  COS_SIGMA_DRIFT_BASELINE_MEAN / _STD  optional σ drift z-score baseline\n");
             return 0;
         }
