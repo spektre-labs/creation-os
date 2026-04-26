@@ -154,7 +154,8 @@ void cos_tui_reset_color(void)
 }
 
 void cos_tui_print_receipt(float sigma, const char *action, float tok_s,
-                           float ttft_ms, float cost_eur)
+                           float ttft_ms, float cost_eur,
+                           const char *receipt_hex16)
 {
     const char *act = action != NULL ? action : "?";
     const char *tier = "";
@@ -165,9 +166,13 @@ void cos_tui_print_receipt(float sigma, const char *action, float tok_s,
         tier = " VERIFY(9B)";
     cos_tui_color_sigma(sigma);
     fprintf(stdout,
-            "│ [\033[1mσ=%.3f %s%s %.1f tok/s TTFT:%.0fms €%.4f\033[0m]\033[K\n",
-            (double)sigma, act, tier, (double)tok_s, (double)ttft_ms,
-            (double)cost_eur);
+            "│ [\033[1mσ=%.3f %s%s%s%s %.1f tok/s TTFT:%.0fms €%.4f\033[0m]\033[K\n",
+            (double)sigma, act, tier,
+            (receipt_hex16 != NULL && receipt_hex16[0] != '\0') ? " receipt="
+                                                               : "",
+            (receipt_hex16 != NULL && receipt_hex16[0] != '\0') ? receipt_hex16
+                                                               : "",
+            (double)tok_s, (double)ttft_ms, (double)cost_eur);
     cos_tui_reset_color();
     fputs("│\033[K\n", stdout);
     fflush(stdout);

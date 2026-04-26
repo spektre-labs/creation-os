@@ -24,6 +24,8 @@
 
 static int mkdir_p(const char *dir);
 
+static int parse_json_receipt(const char *json, struct cos_proof_receipt *r);
+
 static void le32(uint8_t *p, uint32_t v)
 {
     p[0] = (uint8_t)(v & 0xff);
@@ -229,7 +231,19 @@ int cos_proof_receipt_generate_with(
     }
 
     memcpy(receipt->license_hash, spektre_license_sha256_bin, 32);
-    spektre_sha256(output_text, strlen(output_text), receipt->output_hash);
+    if (opts != NULL && opts->prompt_bind != NULL
+        && opts->prompt_bind[0] != '\0') {
+        spektre_sha256_ctx_t ctx;
+        static const uint8_t sep[1] = {0x1e};
+        spektre_sha256_init(&ctx);
+        spektre_sha256_update(&ctx, opts->prompt_bind,
+                              strlen(opts->prompt_bind));
+        spektre_sha256_update(&ctx, sep, sizeof sep);
+        spektre_sha256_update(&ctx, output_text, strlen(output_text));
+        spektre_sha256_final(&ctx, receipt->output_hash);
+    } else {
+        spektre_sha256(output_text, strlen(output_text), receipt->output_hash);
+    }
 
     read_chain_prev(receipt->prev_receipt_hash);
 
@@ -448,6 +462,160 @@ int cos_proof_receipt_persist_chain(struct cos_proof_receipt *receipt)
     return cos_proof_receipt_persist(receipt, path);
 }
 
+static int audit_dir(char *out, size_t cap)
+{
+    const char *env = getenv("COS_AUDIT_DIR");
+    const char *home = getenv("HOME");
+    if (env != NULL && env[0] != '\0') {
+        snprintf(out, cap, "%s", env);
+        return 0;
+    }
+    if (home == NULL || home[0] == '\0')
+        return -1;
+    snprintf(out, cap, "%s/.cos/audit", home);
+    return 0;
+}
+
+static int audit_path_today(char *out, size_t cap)
+{
+    char         dir[512];
+    struct timespec ts;
+    struct tm    tm;
+    time_t       sec;
+
+    if (audit_dir(dir, sizeof dir) != 0)
+        return -1;
+    if (mkdir_p(dir) != 0 && errno != EEXIST)
+        return -2;
+
+    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+        sec = time(NULL);
+        if (gmtime_r(&sec, &tm) == NULL)
+            return -3;
+    } else {
+        sec = ts.tv_sec;
+        if (gmtime_r(&sec, &tm) == NULL)
+            return -3;
+    }
+    snprintf(out, cap, "%s/%04d-%02d-%02d.jsonl", dir, tm.tm_year + 1900,
+             tm.tm_mon + 1, tm.tm_mday);
+    return 0;
+}
+
+int cos_proof_receipt_audit_default_path(char *out, size_t cap)
+{
+    return audit_path_today(out, cap);
+}
+
+int cos_proof_receipt_audit_append(const struct cos_proof_receipt *receipt)
+{
+    char  path[768];
+    char *js;
+    FILE *fp;
+
+    if (receipt == NULL)
+        return -1;
+    if (audit_path_today(path, sizeof path) != 0)
+        return -2;
+    js = cos_proof_receipt_to_json(receipt);
+    if (js == NULL)
+        return -3;
+    fp = fopen(path, "a");
+    if (fp == NULL) {
+        free(js);
+        return -4;
+    }
+    fputs(js, fp);
+    fputc('\n', fp);
+    fclose(fp);
+    free(js);
+    return 0;
+}
+
+int cos_proof_receipt_audit_verify_jsonl(const char *path, FILE *report)
+{
+    FILE *fp;
+    char  line[16384];
+    int    n_receipts = 0;
+    int    tampered   = 0;
+    int    chain_bad  = 0;
+    int    have_codex = 0;
+    uint8_t codex0[32];
+    uint8_t prev_receipt[32];
+    int     have_prev = 0;
+    int64_t ts_first = 0, ts_last = 0;
+
+    if (path == NULL || path[0] == '\0' || report == NULL)
+        return -1;
+    fp = fopen(path, "r");
+    if (fp == NULL)
+        return -2;
+
+    while (fgets(line, (int)sizeof line, fp) != NULL) {
+        struct cos_proof_receipt r;
+        const char *s = line;
+        while (*s == ' ' || *s == '\t' || *s == '\n' || *s == '\r')
+            ++s;
+        if (*s == '\0')
+            continue;
+
+        if (parse_json_receipt(s, &r) != 0) {
+            ++tampered;
+            continue;
+        }
+        if (cos_proof_receipt_verify(&r) != 0) {
+            ++tampered;
+            continue;
+        }
+        if (have_prev) {
+            if (memcmp(r.prev_receipt_hash, prev_receipt, 32) != 0)
+                ++chain_bad;
+        }
+        if (!have_codex) {
+            memcpy(codex0, r.codex_hash, 32);
+            have_codex = 1;
+        } else if (memcmp(r.codex_hash, codex0, 32) != 0) {
+            ++tampered;
+        }
+
+        memcpy(prev_receipt, r.receipt_hash, 32);
+        have_prev = 1;
+
+        if (n_receipts == 0)
+            ts_first = r.timestamp_ms;
+        ts_last = r.timestamp_ms;
+        ++n_receipts;
+    }
+    fclose(fp);
+
+    fprintf(report, "  Receipts: %d\n", n_receipts);
+    fprintf(report, "  Chain integrity: %s\n",
+            (n_receipts == 0 || chain_bad == 0) ? "VALID" : "INVALID");
+    fprintf(report, "  Cryptographic receipts (SHA-256 preimage): %s\n",
+            tampered == 0 ? "VALID" : "INVALID");
+    fprintf(report, "  Codex hash: %s\n",
+            have_codex ? "consistent" : "n/a");
+    fprintf(report, "  Tampered or unparseable entries: %d\n",
+            tampered + chain_bad);
+    if (n_receipts > 0) {
+        struct tm tm0, tm1;
+        time_t    t0 = (time_t)(ts_first / 1000LL);
+        time_t    t1 = (time_t)(ts_last / 1000LL);
+        char      b0[64], b1[64];
+        if (gmtime_r(&t0, &tm0) != NULL)
+            strftime(b0, sizeof b0, "%Y-%m-%dT%H:%M:%SZ", &tm0);
+        else
+            snprintf(b0, sizeof b0, "?");
+        if (gmtime_r(&t1, &tm1) != NULL)
+            strftime(b1, sizeof b1, "%Y-%m-%dT%H:%M:%SZ", &tm1);
+        else
+            snprintf(b1, sizeof b1, "?");
+        fprintf(report, "  First: %s\n  Last:  %s\n", b0, b1);
+    }
+
+    return (tampered == 0 && chain_bad == 0) ? 0 : 1;
+}
+
 static int hex_byte(char c)
 {
     if (c >= '0' && c <= '9')
@@ -497,64 +665,75 @@ static int parse_json_receipt(const char *json, struct cos_proof_receipt *r)
 
     p = strstr(json, "\"sigma_combined\":");
     if (p)
-        r->sigma_combined = (float)strtod(p + 17, NULL);
+        r->sigma_combined =
+            (float)strtod(p + strlen("\"sigma_combined\":"), NULL);
 
     p = strstr(json, "\"gate_decision\":");
     if (p)
-        r->gate_decision = atoi(p + 16);
+        r->gate_decision = atoi(p + strlen("\"gate_decision\":"));
 
     p = strstr(json, "\"attribution\":");
     if (p)
-        r->attribution = (cos_error_source_t)atoi(p + 14);
+        r->attribution =
+            (cos_error_source_t)atoi(p + strlen("\"attribution\":"));
 
     p = strstr(json, "\"injection_detected\":");
     if (p)
-        r->injection_detected = atoi(p + 23);
+        r->injection_detected =
+            atoi(p + strlen("\"injection_detected\":"));
 
     p = strstr(json, "\"risk_level\":");
     if (p)
-        r->risk_level = atoi(p + 13);
+        r->risk_level = atoi(p + strlen("\"risk_level\":"));
 
     p = strstr(json, "\"sovereign_brake\":");
     if (p)
-        r->sovereign_brake = atoi(p + 18);
+        r->sovereign_brake = atoi(p + strlen("\"sovereign_brake\":"));
 
     p = strstr(json, "\"within_compute_budget\":");
     if (p)
-        r->within_compute_budget = atoi(p + 25);
+        r->within_compute_budget =
+            atoi(p + strlen("\"within_compute_budget\":"));
 
     p = strstr(json, "\"kernels_run\":");
     if (p)
-        r->kernels_run = atoi(p + 14);
+        r->kernels_run = atoi(p + strlen("\"kernels_run\":"));
 
     p = strstr(json, "\"kernels_passed\":");
     if (p)
-        r->kernels_passed = atoi(p + 17);
+        r->kernels_passed = atoi(p + strlen("\"kernels_passed\":"));
 
     p = strstr(json, "\"kernel_pass_bitmap\":\"");
-    if (p)
-        r->kernel_pass_bitmap =
-            strtoull(p + 24, NULL, 16);
+    if (p) {
+        p += strlen("\"kernel_pass_bitmap\":\"");
+        r->kernel_pass_bitmap = strtoull(p, NULL, 16);
+    }
 
     p = strstr(json, "\"timestamp_ms\":");
     if (p)
-        r->timestamp_ms = (int64_t)strtoll(p + 17, NULL, 10);
+        r->timestamp_ms =
+            (int64_t)strtoll(p + strlen("\"timestamp_ms\":"), NULL, 10);
 
     p = strstr(json, "\"constitutional_valid\":");
     if (p)
-        r->constitutional_valid = atoi(p + 25);
+        r->constitutional_valid =
+            atoi(p + strlen("\"constitutional_valid\":"));
     p = strstr(json, "\"constitutional_compliant\":");
     if (p)
-        r->constitutional_compliant = atoi(p + 30);
+        r->constitutional_compliant =
+            atoi(p + strlen("\"constitutional_compliant\":"));
     p = strstr(json, "\"constitutional_checks\":");
     if (p)
-        r->constitutional_checks = atoi(p + 26);
+        r->constitutional_checks =
+            atoi(p + strlen("\"constitutional_checks\":"));
     p = strstr(json, "\"constitutional_violations\":");
     if (p)
-        r->constitutional_violations = atoi(p + 30);
+        r->constitutional_violations =
+            atoi(p + strlen("\"constitutional_violations\":"));
     p = strstr(json, "\"constitutional_mandatory_halts\":");
     if (p)
-        r->constitutional_mandatory_halts = atoi(p + 35);
+        r->constitutional_mandatory_halts =
+            atoi(p + strlen("\"constitutional_mandatory_halts\":"));
 
     /* Arrays/model strings: skipped for verify hash — must match writer;
      * full verify uses marshal fields filled above;
@@ -564,7 +743,8 @@ static int parse_json_receipt(const char *json, struct cos_proof_receipt *r)
     p = strstr(json, "\"sigma_channels\":[");
     if (p) {
         float a, b, c, d;
-        if (sscanf(p + 18, "%f,%f,%f,%f", &a, &b, &c, &d) == 4) {
+        p += strlen("\"sigma_channels\":[");
+        if (sscanf(p, "%f,%f,%f,%f", &a, &b, &c, &d) == 4) {
             r->sigma_channels[0] = a;
             r->sigma_channels[1] = b;
             r->sigma_channels[2] = c;
@@ -574,7 +754,8 @@ static int parse_json_receipt(const char *json, struct cos_proof_receipt *r)
     p = strstr(json, "\"meta_channels\":[");
     if (p) {
         float a, b, c, d;
-        if (sscanf(p + 17, "%f,%f,%f,%f", &a, &b, &c, &d) == 4) {
+        p += strlen("\"meta_channels\":[");
+        if (sscanf(p, "%f,%f,%f,%f", &a, &b, &c, &d) == 4) {
             r->meta_channels[0] = a;
             r->meta_channels[1] = b;
             r->meta_channels[2] = c;

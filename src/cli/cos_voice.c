@@ -414,7 +414,7 @@ int cos_voice_main(int argc, char **argv, const char *exe0) {
 
         const char *act = "ACCEPT";
         if (strstr(chat_out, "ABSTAIN") != NULL) act = "ABSTAIN";
-        cos_tui_print_receipt(sigma, act, 0.0f, 0.0f, cost);
+        cos_tui_print_receipt(sigma, act, 0.0f, 0.0f, cost, NULL);
 
         static char ansbuf[8192];
         const char *answer = "";

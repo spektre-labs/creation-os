@@ -756,7 +756,8 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
                                    int conformal_active,
                                    float conformal_alpha,
                                    int semantic_cache_hit,
-                                   const struct cos_speed_metrics *spd) {
+                                   const struct cos_speed_metrics *spd,
+                                   const char *receipt_hex16) {
     const char *act = cos_sigma_action_label(r->final_action);
     const char *src = semantic_cache_hit ? "CACHE_SEMANTIC"
                      : r->engram_hit     ? "CACHE"
@@ -795,18 +796,31 @@ static void print_receipt_polished(const cos_pipeline_result_t *r,
 
     if (r->final_action == COS_SIGMA_ACTION_ABSTAIN) {
         fprintf(stdout,
-                "[σ=%.3f | ABSTAIN%s%s | %.1f tok/s | TTFT %.0fms | %.0f ms | "
+                "[σ=%.3f | ABSTAIN%s%s%s%s | %.1f tok/s | TTFT %.0fms | %.0f ms | "
                 "€%.4f]\n"
                 "  (σ above τ_rethink — cannot guarantee accuracy at "
                 "this confidence; reformulate or accept uncertainty.)\n",
-                (double)r->sigma, conformal_tag, rethink_tag, (double)tps,
-                (double)ttft_ms, ms, r->cost_eur);
+                (double)r->sigma, conformal_tag, rethink_tag,
+                (receipt_hex16 != NULL && receipt_hex16[0] != '\0')
+                    ? " | receipt="
+                    : "",
+                (receipt_hex16 != NULL && receipt_hex16[0] != '\0')
+                    ? receipt_hex16
+                    : "",
+                (double)tps, (double)ttft_ms, ms, r->cost_eur);
     } else {
         fprintf(stdout,
-                "[σ=%.3f | %s | %s | %s%s%s | %.1f tok/s | TTFT %.0fms | €%.4f]\n",
+                "[σ=%.3f | %s | %s | %s%s%s%s%s | %.1f tok/s | TTFT %.0fms | "
+                "€%.4f]\n",
                 (double)r->sigma, act, src, route,
-                conformal_tag, rethink_tag, (double)tps,
-                (double)ttft_ms, r->cost_eur);
+                conformal_tag, rethink_tag,
+                (receipt_hex16 != NULL && receipt_hex16[0] != '\0')
+                    ? " | receipt="
+                    : "",
+                (receipt_hex16 != NULL && receipt_hex16[0] != '\0')
+                    ? receipt_hex16
+                    : "",
+                (double)tps, (double)ttft_ms, r->cost_eur);
     }
     fflush(stdout);
 }
@@ -1322,7 +1336,8 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
                                  int         constitutional_compliant,
                                  int         constitutional_checks,
                                  int         constitutional_violations,
-                                 int         constitutional_mandatory_halts)
+                                 int         constitutional_mandatory_halts,
+                                 struct cos_proof_receipt *rec_out)
 {
     struct cos_proof_receipt               rec;
     struct cos_proof_receipt_options       opt;
@@ -1381,6 +1396,7 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
 
     snprintf(model_buf, sizeof model_buf, "%s", cos_chat_backend_label());
     opt.model_id = model_buf;
+    opt.prompt_bind = (prompt != NULL && prompt[0] != '\0') ? prompt : NULL;
 
     codex_ver[0] = '\0';
     if (cfg->codex != NULL) {
@@ -1407,6 +1423,10 @@ static void chat_turn_proof_emit(const cos_pipeline_config_t *cfg,
         &attr, kbmp, &opt, &rec);
 
     (void)cos_proof_receipt_persist_chain(&rec);
+    (void)cos_proof_receipt_audit_append(&rec);
+
+    if (rec_out != NULL)
+        memcpy(rec_out, &rec, sizeof(rec));
 
     if (feat != NULL && feat->proof_receipt_echo != 0) {
         char *js = cos_proof_receipt_to_json(&rec);
@@ -1808,6 +1828,22 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
          * output; the "round 0" line already satisfied that, so the
          * receipt is free to adopt the visual format. */
         {
+            const char *proof_body = deliver_txt;
+            if (feat != NULL && feat->multi_sigma && c_mhalts != 0
+                && r.response != NULL && r.response[0] != '\0')
+                proof_body = r.response;
+            struct cos_proof_receipt turn_rec;
+            memset(&turn_rec, 0, sizeof turn_rec);
+            chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
+                                 elapsed_ms, proof_body, c_valid, c_compl,
+                                 c_checks, c_viol, c_mhalts, &turn_rec);
+            char receipt_prefix[17];
+            {
+                char hx[65];
+                spektre_hex_lower(turn_rec.receipt_hash, hx);
+                memcpy(receipt_prefix, hx, 16);
+                receipt_prefix[16] = '\0';
+            }
             float ttft_pass = -1.0f;
             if (cos_chat_stream_env_on()) {
                 double g = cos_bitnet_server_last_ttft_ms();
@@ -1827,16 +1863,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             print_receipt_polished(&r, elapsed_ms,
                                    feat != NULL ? feat->conformal_active : 0,
                                    feat != NULL ? feat->conformal_alpha  : 0.0f,
-                                   semantic_hit, &spd);
-        }
-        {
-            const char *proof_body = deliver_txt;
-            if (feat != NULL && feat->multi_sigma && c_mhalts != 0
-                && r.response != NULL && r.response[0] != '\0')
-                proof_body = r.response;
-            chat_turn_proof_emit(cfg_rw, prompt, &r, &ms, have_ms, feat, &SL,
-                                 elapsed_ms, proof_body, c_valid, c_compl,
-                                 c_checks, c_viol, c_mhalts);
+                                   semantic_hit, &spd, receipt_prefix);
         }
     }
 
@@ -3232,6 +3259,22 @@ int main(int argc, char **argv) {
             }
 
             {
+                const char *repl_proof = repl_deliver;
+                if (multi_sigma && rc_mhalts != 0 && r.response != NULL
+                    && r.response[0] != '\0')
+                    repl_proof = r.response;
+                struct cos_proof_receipt turn_rec;
+                memset(&turn_rec, 0, sizeof turn_rec);
+                chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat, &SL,
+                                     elapsed_ms, repl_proof, rcv, rc_compl,
+                                     rc_chk, rc_viol, rc_mhalts, &turn_rec);
+                char receipt_prefix[17];
+                {
+                    char hx[65];
+                    spektre_hex_lower(turn_rec.receipt_hash, hx);
+                    memcpy(receipt_prefix, hx, 16);
+                    receipt_prefix[16] = '\0';
+                }
                 float ttft_pass = -1.0f;
                 if (cos_chat_stream_env_on()) {
                     double g = cos_bitnet_server_last_ttft_ms();
@@ -3252,11 +3295,12 @@ int main(int argc, char **argv) {
                             g_cos_chat_semantic_phase_ms);
                     print_receipt_polished(&r, elapsed_ms,
                                            conformal_active, conformal_alpha,
-                                           semantic_hit, &spd);
+                                           semantic_hit, &spd, receipt_prefix);
                 } else {
                     cos_tui_print_receipt(
                         r.sigma, cos_sigma_action_label(r.final_action),
-                        spd.tokens_per_second, spd.ttft_ms, (float)r.cost_eur);
+                        spd.tokens_per_second, spd.ttft_ms, (float)r.cost_eur,
+                        receipt_prefix);
                     sigma_sess_sum += r.sigma;
                     sigma_sess_n++;
                     if (semantic_hit || r.engram_hit)
@@ -3276,16 +3320,6 @@ int main(int argc, char **argv) {
                                            0.001f * (float)turn, smean);
                         cos_tui_header(smean, k_eff_h);
                     }
-                }
-                {
-                    const char *repl_proof = repl_deliver;
-                    if (multi_sigma && rc_mhalts != 0 && r.response != NULL
-                        && r.response[0] != '\0')
-                        repl_proof = r.response;
-                    chat_turn_proof_emit(&cfg, line, &r, &ms, ms_ok, &rfeat,
-                                         &SL, elapsed_ms, repl_proof, rcv,
-                                         rc_compl, rc_chk, rc_viol,
-                                         rc_mhalts);
                 }
             }
         }

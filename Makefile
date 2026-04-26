@@ -6346,6 +6346,10 @@ cos-receipts: src/cli/cos_receipts.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
 	    -o $@ src/cli/cos_receipts.c $(COS_PROOF_LIB) $(LDFLAGS)
 
+cos-receipt-audit: src/cli/cos_receipt_audit.c $(COS_PROOF_LIB)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
+	    -o $@ src/cli/cos_receipt_audit.c $(COS_PROOF_LIB) $(LDFLAGS)
+
 cos-compliance: src/cli/cos_compliance_cli.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
 	    -o $@ src/cli/cos_compliance_cli.c $(COS_PROOF_LIB) $(LDFLAGS)

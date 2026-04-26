@@ -300,8 +300,86 @@ static int cmd_status(void)
  *  cos verify
  * -------------------------------------------------------------------- */
 
-static int cmd_verify(void)
+static int prefer_c_or_hint(const char *c_bin, int argc, char **argv);
+
+static int cmd_receipt(int argc, char **argv)
 {
+    if (argc < 1 || strcmp(argv[0], "verify") != 0) {
+        fprintf(stderr,
+                "usage: cos receipt verify [AUDIT.jsonl]\n"
+                "  default audit path: today's UTC file under ~/.cos/audit\n");
+        return 2;
+    }
+    return prefer_c_or_hint("cos-receipt-audit", argc - 1, argv + 1);
+}
+
+static int cmd_verify(int argc, char **argv)
+{
+    int i;
+    int want_receipt = 0;
+
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--receipt") == 0)
+            want_receipt = 1;
+        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            printf("usage: cos verify [--receipt]\n"
+                   "  default   run Verified-Agent harness (make verify-agent)\n"
+                   "  --receipt read one-line prompt from stdin; run "
+                   "./cos-chat --once --receipt\n");
+            return 0;
+        }
+    }
+
+    if (want_receipt) {
+        char   buf[65536];
+        size_t n;
+        pid_t  pid;
+        int    st = 0;
+        char  *av[16];
+        int    ai = 0;
+
+        n = fread(buf, 1, sizeof buf - 1, stdin);
+        buf[n] = '\0';
+        while (n > 0 && (buf[n - 1] == '\n' || buf[n - 1] == '\r')) {
+            buf[n - 1] = '\0';
+            --n;
+        }
+        if (n == 0) {
+            fprintf(stderr,
+                    "cos verify --receipt: empty stdin (one prompt line "
+                    "expected)\n");
+            return 2;
+        }
+
+        ai           = 0;
+        av[ai++]     = (char *)"./cos-chat";
+        av[ai++]     = (char *)"--once";
+        av[ai++]     = (char *)"--no-tui";
+        av[ai++]     = (char *)"--no-transcript";
+        av[ai++]     = (char *)"--prompt";
+        av[ai++]     = buf;
+        av[ai++]     = (char *)"--receipt";
+        av[ai++]     = NULL;
+
+        pid = fork();
+        if (pid < 0) {
+            perror("cos verify --receipt: fork");
+            return 126;
+        }
+        if (pid == 0) {
+            execv("./cos-chat", av);
+            perror("cos verify --receipt: execv");
+            _exit(127);
+        }
+        if (waitpid(pid, &st, 0) < 0) {
+            perror("cos verify --receipt: waitpid");
+            return 126;
+        }
+        if (!WIFEXITED(st))
+            return 1;
+        return WEXITSTATUS(st);
+    }
+
     print_header();
     section("verified-agent (v57)");
     int rc = run_cmd("make -s verify-agent");
@@ -603,7 +681,7 @@ static int cmd_receipts_sibling(int argc, char **argv)
 
 static int cmd_compliance(int argc, char **argv)
 {
-    int i, want_selftest = 0, eu_only = 0, nist = 0;
+    int i, want_selftest = 0, eu_only = 0, nist = 0, eu_art15 = 0;
 
     for (i = 2; i < argc; ++i) {
         if (strcmp(argv[i], "--self-test") == 0)
@@ -612,18 +690,27 @@ static int cmd_compliance(int argc, char **argv)
             eu_only = 1;
         else if (strcmp(argv[i], "--nist") == 0)
             nist = 1;
+        else if (strcmp(argv[i], "--eu-ai-act") == 0)
+            eu_art15 = 1;
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             fprintf(stdout,
-                    "usage: cos compliance [--eu] [--nist] [--self-test]\n"
+                    "usage: cos compliance [--eu] [--nist] [--eu-ai-act] "
+                    "[--self-test]\n"
                     "  default   EU AI Act–oriented compliance snapshot + JSON\n"
                     "  --eu      print Article mapping (human-readable)\n"
                     "  --nist    NIST AI RMF mapping (human-readable)\n"
+                    "  --eu-ai-act  Article 15 evidence (markdown)\n"
                     "  --self-test  run legacy cos-compliance binary self-test\n");
             return 0;
         }
     }
     if (want_selftest)
         return prefer_c_or_hint("cos-compliance", argc - 2, argv + 2);
+
+    if (eu_art15) {
+        fputs(cos_eu_ai_act_article15_evidence_md(), stdout);
+        return 0;
+    }
 
     {
         struct cos_eu_compliance c = cos_eu_check();
@@ -3279,7 +3366,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], "kernel-tour") == 0) return cmd_demo();
     if (strcmp(argv[1], "doctor")  == 0) return cmd_doctor();
     if (strcmp(argv[1], "health")  == 0) return cmd_health(argc - 2, argv + 2);
-    if (strcmp(argv[1], "verify")  == 0) return cmd_verify();
+    if (strcmp(argv[1], "verify") == 0)
+        return cmd_verify(argc - 2, argv + 2);
+    if (strcmp(argv[1], "receipt") == 0)
+        return cmd_receipt(argc - 2, argv + 2);
     if (strcmp(argv[1], "chace")   == 0) return cmd_chace();
     if (strcmp(argv[1], "sigma")   == 0) return cmd_sigma();
     if (strcmp(argv[1], "think")     == 0) return cmd_think(argc - 2, argv + 2);

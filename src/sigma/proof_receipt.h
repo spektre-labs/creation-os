@@ -58,6 +58,8 @@ struct cos_proof_receipt_options {
     int      sovereign_brake;
     int      within_compute_budget;
     int      kernels_run;
+    /** When non-NULL and non-empty, `output_hash` binds prompt || 0x1e || response. */
+    const char *prompt_bind;
     const char *model_id;
     const char *codex_version;
     int64_t timestamp_ms;
@@ -101,6 +103,15 @@ int cos_proof_receipt_persist(const struct cos_proof_receipt *receipt,
 int cos_proof_receipt_persist_chain(struct cos_proof_receipt *receipt);
 
 int cos_proof_receipt_chain_verify_dir(const char *dir);
+
+/** Append one JSONL proof record to ~/.cos/audit/UTC-YYYY-MM-DD.jsonl (COS_AUDIT_DIR overrides). */
+int cos_proof_receipt_audit_append(const struct cos_proof_receipt *receipt);
+
+/** Resolve default audit JSONL path for the current UTC calendar day. */
+int cos_proof_receipt_audit_default_path(char *out, size_t cap);
+
+/** Verify each line is a self-consistent proof receipt and in-file prev→receipt chain. */
+int cos_proof_receipt_audit_verify_jsonl(const char *path, FILE *report);
 
 void cos_proof_receipt_print_filenames(FILE *fp, const char *dir);
 

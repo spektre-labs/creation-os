@@ -97,6 +97,47 @@ int main(void)
            != 0,
        "missing_dir");
 
+    {
+        char              td[] = "/tmp/cos_pr_audit_XXXXXX";
+        const char       *oldh;
+        struct cos_proof_receipt       rec;
+        struct cos_proof_receipt_options opt;
+        struct cos_error_attribution   attr;
+        float sch[4] = {0.11f, 0.12f, 0.13f, 0.14f};
+        float mch[4] = {0.f, 0.f, 0.f, 0.f};
+        char  ap[768];
+
+        if (mkdtemp(td) == NULL)
+            return 1;
+        oldh = getenv("HOME");
+        if (setenv("HOME", td, 1) != 0) {
+            rmdir(td);
+            return 1;
+        }
+        memset(&attr, 0, sizeof attr);
+        memset(&opt, 0, sizeof opt);
+        opt.codex_fnv64     = 0xabcdd001ULL;
+        opt.model_id        = "audit-test";
+        opt.codex_version   = "seed";
+        opt.timestamp_ms    = 1700000000000LL;
+        opt.kernels_run     = 10;
+        opt.prompt_bind     = "What is 2+2?";
+        PA(cos_proof_receipt_generate_with("4", 0.21f, sch, mch, 0, &attr,
+                                           0xFULL, &opt, &rec)
+               == 0,
+           "audit_gen");
+        PA(cos_proof_receipt_audit_append(&rec) == 0, "audit_append");
+        PA(cos_proof_receipt_audit_default_path(ap, sizeof ap) == 0,
+           "audit_default_path");
+        PA(cos_proof_receipt_audit_verify_jsonl(ap, stdout) == 0,
+           "audit_verify_jsonl");
+        (void)unlink(ap);
+        if (oldh != NULL)
+            (void)setenv("HOME", oldh, 1);
+        else
+            (void)unsetenv("HOME");
+    }
+
     return 0;
 }
 

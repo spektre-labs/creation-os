@@ -39,7 +39,8 @@ void cos_tui_stream_newline(void);
 
 /** Colored receipt from scalar σ + speed/cost metrics. */
 void cos_tui_print_receipt(float sigma, const char *action, float tok_s,
-                           float ttft_ms, float cost_eur);
+                           float ttft_ms, float cost_eur,
+                           const char *receipt_hex16);
 
 void cos_tui_color_sigma(float sigma);
 void cos_tui_reset_color(void);

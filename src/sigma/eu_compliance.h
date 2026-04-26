@@ -29,6 +29,9 @@ char *cos_eu_report(const struct cos_eu_compliance *c);
 /** NIST AI RMF–style checklist text; static buffer, do not free. */
 const char *cos_nist_rmf_report(void);
 
+/** EU AI Act Article 15 evidence (σ + SHA-256 receipts); static buffer. */
+const char *cos_eu_ai_act_article15_evidence_md(void);
+
 #ifdef __cplusplus
 }
 #endif

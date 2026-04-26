@@ -38,7 +38,8 @@ struct cos_eu_compliance cos_eu_check(void)
         "  Art 12 record-keeping       — receipt chain + JSONL events\n"
         "  Art 13 transparency         — σ surfaced per turn + receipts\n"
         "  Art 14 human oversight      — sovereign brake + SERVING mode\n"
-        "  Art 15 accuracy             — benchmarks + conformal hooks\n"
+        "  Art 15 accuracy/robustness/cybersecurity — σ + conformal hooks + "
+        "SHA-256 proof receipts + audit JSONL chain\n"
         "  Art 52 transparency (GPAI) — open-source demo + CLI receipts\n"
         "\nSignals: audit_trail=%s risk_tier=%d human_oversight=%s "
         "data_governance=%s\n",
@@ -72,6 +73,26 @@ char *cos_eu_report(const struct cos_eu_compliance *c)
         return NULL;
     }
     return s;
+}
+
+const char *cos_eu_ai_act_article15_evidence_md(void)
+{
+    return "# EU AI Act Article 15 — evidence (Creation OS)\n\n"
+           "Article 15 requires accuracy, robustness, and cybersecurity.\n\n"
+           "| Pillar | Mechanism |\n"
+           "|--------|-----------|\n"
+           "| Accuracy | Scalar σ per output; optional multi-σ shadow; "
+           "conformal calibration hooks; benchmark harnesses in-tree. |\n"
+           "| Robustness | Append-only `~/.cos/audit/*.jsonl` proof records; "
+           "`cos receipt verify` detects broken hash chains. |\n"
+           "| Cybersecurity | SHA-256 proof receipts (FIPS-180-4, "
+           "dependency-free implementation); prompt-bound `output_hash` "
+           "when chat emits receipts. |\n\n"
+           "Commands:\n"
+           "- `cos receipt verify [AUDIT.jsonl]`\n"
+           "- `cos chat ...` (receipt prefix on the polished line)\n"
+           "- `cos verify --receipt` (stdin prompt → `cos-chat --once "
+           "--receipt`)\n";
 }
 
 const char *cos_nist_rmf_report(void)
