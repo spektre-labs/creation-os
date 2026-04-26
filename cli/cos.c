@@ -548,6 +548,11 @@ static int cmd_benchmark(int argc, char **argv)
     return prefer_c_or_hint("cos-benchmark", argc, argv);
 }
 
+static int cmd_bench(int argc, char **argv)
+{
+    return prefer_c_or_hint("cos-bench", argc, argv);
+}
+
 /* --------------------------------------------------------------------
  *  cos cost — cost-savings driver: how many € did σ-gating save?
  * -------------------------------------------------------------------- */
@@ -3281,6 +3286,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "search")   == 0) return cmd_search(argc - 2, argv + 2);
     if (strcmp(argv[1], "chat")      == 0) return cmd_chat(argc - 2, argv + 2);
     if (strcmp(argv[1], "benchmark") == 0) return cmd_benchmark(argc - 2, argv + 2);
+    if (strcmp(argv[1], "bench") == 0) return cmd_bench(argc - 2, argv + 2);
     if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
     if (strcmp(argv[1], "cache")     == 0) return cmd_cache(argc - 2, argv + 2);
     if (strcmp(argv[1], "skills")    == 0) return cmd_skills(argc - 2, argv + 2);

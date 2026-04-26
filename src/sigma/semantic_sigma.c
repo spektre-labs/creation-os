@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 #define COS_SS_MAX_SAMPLES 8
 
@@ -148,6 +151,108 @@ int cos_semantic_sigma_compute_texts(const char *t0, const char *t1,
     return 0;
 }
 
+static int ss_parallel_semantic_sigma(void)
+{
+    const char *e = getenv("COS_SEMANTIC_SIGMA_PARALLEL");
+    return (e == NULL || e[0] != '0' || e[1] != '\0');
+}
+
+static int ss_pipe_read_dup(int rd, char **out)
+{
+    *out = NULL;
+    uint32_t n = 0;
+    if (read(rd, &n, sizeof n) != (ssize_t)sizeof n)
+        return -1;
+    if (n == 0u)
+        return 0;
+    if (n > 4000000u)
+        n = 4000000u;
+    char *b = malloc((size_t)n + 1u);
+    if (b == NULL)
+        return -1;
+    size_t g = 0;
+    while (g < (size_t)n) {
+        ssize_t w = read(rd, b + g, (size_t)n - g);
+        if (w <= 0) {
+            free(b);
+            return -1;
+        }
+        g += (size_t)w;
+    }
+    b[g] = '\0';
+    *out = b;
+    return 0;
+}
+
+static pid_t ss_fork_query_pipe(int pair[2], int port, const char *prompt,
+                                const char *sysp, float temp, int max_tok)
+{
+    if (pipe(pair) != 0)
+        return (pid_t)-1;
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pair[0]);
+        close(pair[1]);
+        return (pid_t)-1;
+    }
+    if (pid == 0) {
+        close(pair[0]);
+        char *r =
+            cos_bitnet_query_temp_with_options(port, prompt, sysp, temp, max_tok);
+        uint32_t n =
+            (r != NULL && r[0] != '\0') ? (uint32_t)strlen(r) : 0u;
+        if (n > 4000000u)
+            n = 4000000u;
+        (void)write(pair[1], &n, sizeof n);
+        if (n > 0u && r != NULL)
+            (void)write(pair[1], r, n);
+        free(r);
+        close(pair[1]);
+        _exit(0);
+    }
+    close(pair[1]);
+    return pid;
+}
+
+static pid_t ss_fork_complete_pipe(int pair[2], const char *prompt,
+                                   const char *sysp, float temp, int np,
+                                   int seed)
+{
+    if (pipe(pair) != 0)
+        return (pid_t)-1;
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pair[0]);
+        close(pair[1]);
+        return (pid_t)-1;
+    }
+    if (pid == 0) {
+        close(pair[0]);
+        cos_bitnet_server_params_t par;
+        memset(&par, 0, sizeof(par));
+        par.system_prompt = sysp;
+        par.temperature   = temp;
+        par.n_predict       = np;
+        par.seed            = seed;
+        cos_bitnet_server_result_t br;
+        memset(&br, 0, sizeof(br));
+        const char *txt = "";
+        if (cos_bitnet_server_complete(prompt, &par, &br) == 0
+            && br.text != NULL)
+            txt = br.text;
+        uint32_t n = (uint32_t)strlen(txt);
+        if (n > 4000000u)
+            n = 4000000u;
+        (void)write(pair[1], &n, sizeof n);
+        if (n > 0u)
+            (void)write(pair[1], txt, n);
+        close(pair[1]);
+        _exit(0);
+    }
+    close(pair[1]);
+    return pid;
+}
+
 static int ss_default_temps(int n, float *out) {
     /* Wide spread (curl-style) for three independent samples. */
     static const float t3[3] = { 0.1f, 0.7f, 1.5f };
@@ -205,19 +310,54 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         if (dup0 == NULL)
             ok = -1;
         texts[0] = dup0;
-        if (ok == 0) {
+        if (ok == 0 && ss_parallel_semantic_sigma()) {
+            int   pr1[2], pr2[2];
+            pid_t c1 = ss_fork_query_pipe(pr1, port, prompt, k_semantic_extra_sysp,
+                                         0.1f, k_semantic_extra_np);
+            if (c1 < (pid_t)0) {
+                ok = -1;
+            } else {
+                pid_t c2 = ss_fork_query_pipe(
+                    pr2, port, prompt, k_semantic_extra_sysp, 1.5f,
+                    k_semantic_extra_np);
+                if (c2 < (pid_t)0) {
+                    (void)waitpid(c1, NULL, 0);
+                    close(pr1[0]);
+                    ok = -1;
+                } else {
+                    int st1 = 0, st2 = 0;
+                    (void)waitpid(c1, &st1, 0);
+                    (void)waitpid(c2, &st2, 0);
+                    if (!(WIFEXITED(st1) && WEXITSTATUS(st1) == 0
+                          && WIFEXITED(st2) && WEXITSTATUS(st2) == 0)
+                        || ss_pipe_read_dup(pr1[0], &dup1) != 0
+                        || ss_pipe_read_dup(pr2[0], &dup2) != 0
+                        || dup1 == NULL || dup1[0] == '\0' || dup2 == NULL
+                        || dup2[0] == '\0') {
+                        free(dup1);
+                        dup1 = NULL;
+                        free(dup2);
+                        dup2 = NULL;
+                        ok = -1;
+                    }
+                    close(pr1[0]);
+                    close(pr2[0]);
+                }
+            }
+        } else if (ok == 0) {
             dup1 = cos_bitnet_query_temp_with_options(
                 port, prompt, k_semantic_extra_sysp, 0.1f, k_semantic_extra_np);
             if (dup1 == NULL || dup1[0] == '\0')
                 ok = -1;
-        }
-        if (ok == 0) {
-            dup2 = cos_bitnet_query_temp_with_options(
-                port, prompt, k_semantic_extra_sysp, 1.5f, k_semantic_extra_np);
-            if (dup2 == NULL || dup2[0] == '\0') {
-                free(dup1);
-                dup1 = NULL;
-                ok     = -1;
+            if (ok == 0) {
+                dup2 = cos_bitnet_query_temp_with_options(
+                    port, prompt, k_semantic_extra_sysp, 1.5f,
+                    k_semantic_extra_np);
+                if (dup2 == NULL || dup2[0] == '\0') {
+                    free(dup1);
+                    dup1 = NULL;
+                    ok     = -1;
+                }
             }
         }
         texts[1] = dup1 != NULL ? dup1 : "";
@@ -226,12 +366,55 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         float temps[3];
         if (ss_default_temps(3, temps) != 0) {
             ok = -1;
+        } else if (ss_parallel_semantic_sigma()) {
+            int   pr0[2], pr1[2], pr2[2];
+            pid_t c0 = ss_fork_complete_pipe(pr0, prompt, k_semantic_extra_sysp,
+                                             temps[0], k_semantic_extra_np,
+                                             13001 + 0 * 17);
+            if (c0 < (pid_t)0) {
+                ok = -1;
+            } else {
+                pid_t c1 = ss_fork_complete_pipe(
+                    pr1, prompt, k_semantic_extra_sysp, temps[1],
+                    k_semantic_extra_np, 13001 + 1 * 17);
+                if (c1 < (pid_t)0) {
+                    (void)waitpid(c0, NULL, 0);
+                    close(pr0[0]);
+                    ok = -1;
+                } else {
+                    pid_t c2 = ss_fork_complete_pipe(
+                        pr2, prompt, k_semantic_extra_sysp, temps[2],
+                        k_semantic_extra_np, 13001 + 2 * 17);
+                    if (c2 < (pid_t)0) {
+                        (void)waitpid(c0, NULL, 0);
+                        (void)waitpid(c1, NULL, 0);
+                        close(pr0[0]);
+                        close(pr1[0]);
+                        ok = -1;
+                    } else {
+                        int s0 = 0, s1 = 0, s2 = 0;
+                        (void)waitpid(c0, &s0, 0);
+                        (void)waitpid(c1, &s1, 0);
+                        (void)waitpid(c2, &s2, 0);
+                        if (!(WIFEXITED(s0) && WEXITSTATUS(s0) == 0
+                              && WIFEXITED(s1) && WEXITSTATUS(s1) == 0
+                              && WIFEXITED(s2) && WEXITSTATUS(s2) == 0)
+                            || ss_pipe_read_dup(pr0[0], &dup0) != 0
+                            || ss_pipe_read_dup(pr1[0], &dup1) != 0
+                            || ss_pipe_read_dup(pr2[0], &dup2) != 0
+                            || dup0 == NULL || dup0[0] == '\0' || dup1 == NULL
+                            || dup1[0] == '\0' || dup2 == NULL || dup2[0] == '\0')
+                            ok = -1;
+                        close(pr0[0]);
+                        close(pr1[0]);
+                        close(pr2[0]);
+                    }
+                }
+            }
         } else {
             for (int i = 0; i < 3 && ok == 0; i++) {
                 cos_bitnet_server_params_t par;
                 memset(&par, 0, sizeof(par));
-                /* Three fresh samples: same short sysp as curl harness so
-                 * temperature spread dominates, not Codex framing. */
                 par.system_prompt = k_semantic_extra_sysp;
                 par.temperature   = temps[i];
                 par.n_predict     = k_semantic_extra_np;

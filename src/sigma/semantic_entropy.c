@@ -6,8 +6,11 @@
 #include "inference_cache.h"
 
 #include <ctype.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+#include <sys/wait.h>
 
 static int se_streq_ci(const char *a, const char *b) {
     if (a == NULL || b == NULL)
@@ -187,6 +190,78 @@ static void se_restore_env(int port_set, int model_set, const char *old_port,
     }
 }
 
+static int se_parallel_samples(void)
+{
+    const char *e = getenv("COS_SEMANTIC_ENTROPY_PARALLEL");
+    return (e == NULL || e[0] != '0' || e[1] != '\0');
+}
+
+static int se_pipe_read_dup(int rd, char **out)
+{
+    *out = NULL;
+    uint32_t n = 0;
+    if (read(rd, &n, sizeof n) != (ssize_t)sizeof n)
+        return -1;
+    if (n == 0u)
+        return 0;
+    if (n > 4000000u)
+        n = 4000000u;
+    char *b = malloc((size_t)n + 1u);
+    if (b == NULL)
+        return -1;
+    size_t g = 0;
+    while (g < (size_t)n) {
+        ssize_t w = read(rd, b + g, (size_t)n - g);
+        if (w <= 0) {
+            free(b);
+            return -1;
+        }
+        g += (size_t)w;
+    }
+    b[g] = '\0';
+    *out = b;
+    return 0;
+}
+
+static pid_t se_fork_complete_pipe(int pair[2], const char *prompt,
+                                   const char *system_prompt, float temp,
+                                   int max_tok, int seed)
+{
+    if (pipe(pair) != 0)
+        return (pid_t)-1;
+    pid_t pid = fork();
+    if (pid < 0) {
+        close(pair[0]);
+        close(pair[1]);
+        return (pid_t)-1;
+    }
+    if (pid == 0) {
+        close(pair[0]);
+        cos_bitnet_server_params_t par;
+        memset(&par, 0, sizeof(par));
+        par.system_prompt = system_prompt;
+        par.temperature   = temp;
+        par.n_predict       = max_tok;
+        par.seed            = seed;
+        cos_bitnet_server_result_t br;
+        memset(&br, 0, sizeof(br));
+        const char *txt = "";
+        if (cos_bitnet_server_complete(prompt, &par, &br) == 0
+            && br.text != NULL)
+            txt = br.text;
+        uint32_t n = (uint32_t)strlen(txt);
+        if (n > 4000000u)
+            n = 4000000u;
+        (void)write(pair[1], &n, sizeof n);
+        if (n > 0u)
+            (void)write(pair[1], txt, n);
+        close(pair[1]);
+        _exit(0);
+    }
+    close(pair[1]);
+    return pid;
+}
+
 static int se_default_temps(int n, float *out) {
     static const float t3[3] = { 0.3f, 0.7f, 1.0f };
     static const float t2[2] = { 0.3f, 0.9f };
@@ -244,25 +319,56 @@ float cos_semantic_entropy_ex(const char *prompt, const char *system_prompt,
     memset(dup, 0, sizeof(dup));
 
     int ok = 0;
-    for (int i = 0; i < n_samples; i++) {
-        cos_bitnet_server_params_t par;
-        memset(&par, 0, sizeof(par));
-        par.system_prompt = system_prompt;
-        par.temperature   = temps[i];
-        par.n_predict     = max_tok;
-        par.seed          = 9001 + i * 17;
-
-        cos_bitnet_server_result_t outr;
-        memset(&outr, 0, sizeof(outr));
-        if (cos_bitnet_server_complete(prompt, &par, &outr) != 0
-            || outr.text == NULL) {
-            ok = -1;
-            break;
+    if (se_parallel_samples() && n_samples >= 2 && n_samples <= COS_SE_MAX_SAMPLES) {
+        int   pr[COS_SE_MAX_SAMPLES][2];
+        pid_t ch[COS_SE_MAX_SAMPLES];
+        int   started = 0;
+        for (int i = 0; i < n_samples; ++i) {
+            ch[i] = se_fork_complete_pipe(pr[i], prompt, system_prompt, temps[i],
+                                          max_tok, 9001 + i * 17);
+            if (ch[i] < (pid_t)0) {
+                for (int j = 0; j < i; ++j) {
+                    (void)waitpid(ch[j], NULL, 0);
+                    close(pr[j][0]);
+                }
+                ok = -1;
+                break;
+            }
+            started++;
         }
-        dup[i] = strdup(outr.text);
-        if (dup[i] == NULL) {
-            ok = -1;
-            break;
+        if (started == n_samples) {
+            for (int i = 0; i < n_samples; ++i) {
+                int st = 0;
+                (void)waitpid(ch[i], &st, 0);
+                if (!(WIFEXITED(st) && WEXITSTATUS(st) == 0)
+                    || se_pipe_read_dup(pr[i][0], &dup[i]) != 0
+                    || dup[i] == NULL || dup[i][0] == '\0') {
+                    ok = -1;
+                }
+                close(pr[i][0]);
+            }
+        }
+    } else {
+        for (int i = 0; i < n_samples; i++) {
+            cos_bitnet_server_params_t par;
+            memset(&par, 0, sizeof(par));
+            par.system_prompt = system_prompt;
+            par.temperature   = temps[i];
+            par.n_predict     = max_tok;
+            par.seed          = 9001 + i * 17;
+
+            cos_bitnet_server_result_t outr;
+            memset(&outr, 0, sizeof(outr));
+            if (cos_bitnet_server_complete(prompt, &par, &outr) != 0
+                || outr.text == NULL) {
+                ok = -1;
+                break;
+            }
+            dup[i] = strdup(outr.text);
+            if (dup[i] == NULL) {
+                ok = -1;
+                break;
+            }
         }
     }
 

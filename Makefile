@@ -6253,6 +6253,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/semantic_entropy.c \
           src/sigma/semantic_sigma.c \
           $(COS_PROOF_LIB) src/cli/escalation.c src/import/ollama_detect.c \
+          src/sigma/response_cache.c \
           src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
@@ -6275,8 +6276,9 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/semantic_entropy.c \
 	    src/sigma/semantic_sigma.c \
 	    $(COS_PROOF_LIB) \
-	    src/cli/escalation.c src/import/ollama_detect.c src/cli/cos_chat.c \
-	    $(LDFLAGS) -lsqlite3 -lcurl
+	    src/cli/escalation.c src/import/ollama_detect.c src/sigma/response_cache.c \
+	    src/cli/cos_chat.c \
+	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 
 cos-spike: src/cli/cos_spike.c $(COS_SPIKE_ADAPT_SRCS)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/cli/cos_spike.c \
@@ -8001,6 +8003,9 @@ check-serve: check-cos-serve
 check-voice: cos
 	@./cos voice --help >/dev/null
 	@echo "check-voice: OK (cos voice --help)"
+
+cos-bench: src/cli/cos_bench.c
+	$(CC) -O2 -Wall -std=c11 -o cos-bench src/cli/cos_bench.c $(LDFLAGS)
 
 # --- σ-pipeline: A2A agent-to-agent (OMEGA-2) ------------------------
 #

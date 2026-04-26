@@ -86,6 +86,7 @@
 #include "speed_metrics.h"
 #include "semantic_entropy.h"
 #include "semantic_sigma.h"
+#include "response_cache.h"
 #include "bitnet_server.h"
 #include "ollama_detect.h"
 #include "text_similarity.h"
@@ -125,6 +126,9 @@ static int cos_chat_stream_env_on(void)
 
 static volatile sig_atomic_t g_cos_chat_sigint = 0;
 static void (*g_cos_chat_prev_sigint)(int) = SIG_DFL;
+
+/** Wall ms spent in semantic_entropy / semantic_sigma HTTP this turn. */
+static double g_cos_chat_semantic_phase_ms;
 
 static void cos_chat_sigint_handler(int signo)
 {
@@ -805,11 +809,17 @@ static void chat_maybe_semantic_entropy(cos_pipeline_config_t *cfg_rw,
     const char *model = getenv("COS_BITNET_CHAT_MODEL");
 
     int   ncl = 1;
+    struct timespec __t0, __t1;
+    (void)clock_gettime(CLOCK_MONOTONIC, &__t0);
     float se  = cos_semantic_entropy_ex(user_prompt, sysp, port,
                                          (model != NULL && model[0] != '\0')
                                              ? model
                                              : NULL,
                                          3, &ncl);
+    (void)clock_gettime(CLOCK_MONOTONIC, &__t1);
+    g_cos_chat_semantic_phase_ms +=
+        (double)(__t1.tv_sec - __t0.tv_sec) * 1000.0
+        + (double)(__t1.tv_nsec - __t0.tv_nsec) / 1.0e6;
 
     float        prior_sigma = r->sigma;
     const char *mode         = getenv("COS_SEMANTIC_ENTROPY_MODE");
@@ -868,11 +878,17 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
     cos_semantic_sigma_result det;
     memset(&det, 0, sizeof(det));
     /* Snapshot per-token σ before auxiliary completes overwrite server state. */
+    struct timespec __ts0, __ts1;
+    (void)clock_gettime(CLOCK_MONOTONIC, &__ts0);
     float se = cos_semantic_sigma_ex(user_prompt, sysp, port,
                                        (model != NULL && model[0] != '\0')
                                            ? model
                                            : NULL,
                                        3, r->response, &det);
+    (void)clock_gettime(CLOCK_MONOTONIC, &__ts1);
+    g_cos_chat_semantic_phase_ms +=
+        (double)(__ts1.tv_sec - __ts0.tv_sec) * 1000.0
+        + (double)(__ts1.tv_nsec - __ts0.tv_nsec) / 1.0e6;
 
     float combined = 0.7f * se + 0.3f * prior;
     combined         = (combined < 0.0f) ? 0.0f : combined;
@@ -1280,6 +1296,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
 
     cos_pipeline_result_t r;
     memset(&r, 0, sizeof(r));
+    g_cos_chat_semantic_phase_ms = 0.0;
 
     chat_sigma_layer_t SL;
     int early_spec_abstain = 0;
@@ -1407,12 +1424,37 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
             || feat->adaptive_compute))
         cos_speculative_sigma_observe(domain_h, r.sigma);
 
-    if (feat != NULL && feat->semantic_sigma) {
-        chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
-                                  early_spec_abstain, semantic_hit, prc, 0);
-    } else if (feat != NULL && feat->semantic_entropy)
-        chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r, early_spec_abstain,
-                                    semantic_hit, prc, 0);
+    uint64_t      resp_cache_h = cos_response_cache_prompt_hash(prompt);
+    int           skipped_resp_sig_cache = 0;
+    if (!early_spec_abstain && !semantic_hit && prc == 0 && feat != NULL
+        && (feat->semantic_sigma || feat->semantic_entropy)) {
+        float c_sig = cos_response_cache_lookup(resp_cache_h, NULL, 0);
+        if (c_sig >= 0.0f) {
+            r.sigma         = c_sig;
+            r.final_action  = cos_sigma_reinforce_round(
+                c_sig, cfg_rw->tau_accept, cfg_rw->tau_rethink, r.rethink_count);
+            skipped_resp_sig_cache = 1;
+            fprintf(stdout,
+                    "[response-σ-cache] hit σ=%.3f action=%s\n", (double)c_sig,
+                    cos_sigma_action_label(r.final_action));
+        }
+    }
+
+    if (!skipped_resp_sig_cache) {
+        if (feat != NULL && feat->semantic_sigma) {
+            chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
+                                      early_spec_abstain, semantic_hit, prc, 0);
+        } else if (feat != NULL && feat->semantic_entropy)
+            chat_maybe_semantic_entropy(cfg_rw, feat, prompt, &r,
+                                        early_spec_abstain, semantic_hit, prc,
+                                        0);
+    }
+
+    if (!early_spec_abstain && !semantic_hit && prc == 0
+        && !skipped_resp_sig_cache && feat != NULL
+        && (feat->semantic_sigma || feat->semantic_entropy)
+        && r.response != NULL)
+        cos_response_cache_store(resp_cache_h, r.sigma, r.response);
 
     if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
         memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));
@@ -1532,6 +1574,11 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                 ttft_pass);
             cos_speed_print(&spd);
             fputc('\n', stdout);
+            fprintf(stderr,
+                    "[speed: %d tok | %.0fms | %.1f tok/s | σ_time %.0fms]\n",
+                    spd.tokens_generated, (double)elapsed_ms,
+                    (double)spd.tokens_per_second,
+                    g_cos_chat_semantic_phase_ms);
             print_receipt_polished(&r, elapsed_ms,
                                    feat != NULL ? feat->conformal_active : 0,
                                    feat != NULL ? feat->conformal_alpha  : 0.0f,
@@ -2500,6 +2547,7 @@ int main(int argc, char **argv) {
         int kernel_cap = SL.bu.kernels_to_run;
 
         int semantic_hit = 0;
+        g_cos_chat_semantic_phase_ms = 0.0;
 
         double w0 = 0.0, w1 = 0.0;
         double  elapsed_ms = 0.0;
@@ -2617,14 +2665,38 @@ int main(int argc, char **argv) {
             && (speculative_sigma || spike_mode || adaptive_compute))
             cos_speculative_sigma_observe(domain_h, r.sigma);
 
-        if (rfeat.semantic_sigma) {
-            chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
-                                      early_spec_abstain, semantic_hit, prc,
-                                      use_tui ? 1 : 0);
-        } else if (rfeat.semantic_entropy)
-            chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r,
-                                        early_spec_abstain, semantic_hit, prc,
-                                        use_tui ? 1 : 0);
+        uint64_t      resp_cache_h2 = cos_response_cache_prompt_hash(line);
+        int           skipped_resp_sig_cache2 = 0;
+        if (!early_spec_abstain && !semantic_hit && prc == 0
+            && (rfeat.semantic_sigma || rfeat.semantic_entropy)) {
+            float c2 = cos_response_cache_lookup(resp_cache_h2, NULL, 0);
+            if (c2 >= 0.0f) {
+                r.sigma        = c2;
+                r.final_action = cos_sigma_reinforce_round(
+                    c2, cfg.tau_accept, cfg.tau_rethink, r.rethink_count);
+                skipped_resp_sig_cache2 = 1;
+                fprintf(use_tui ? stderr : stdout,
+                        "[response-σ-cache] hit σ=%.3f action=%s\n",
+                        (double)c2, cos_sigma_action_label(r.final_action));
+            }
+        }
+
+        if (!skipped_resp_sig_cache2) {
+            if (rfeat.semantic_sigma) {
+                chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
+                                          early_spec_abstain, semantic_hit,
+                                          prc, use_tui ? 1 : 0);
+            } else if (rfeat.semantic_entropy)
+                chat_maybe_semantic_entropy(&cfg, &rfeat, line, &r,
+                                            early_spec_abstain, semantic_hit,
+                                            prc, use_tui ? 1 : 0);
+        }
+
+        if (!early_spec_abstain && !semantic_hit && prc == 0
+            && !skipped_resp_sig_cache2
+            && (rfeat.semantic_sigma || rfeat.semantic_entropy)
+            && r.response != NULL)
+            cos_response_cache_store(resp_cache_h2, r.sigma, r.response);
 
         if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
             memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));
@@ -2774,6 +2846,12 @@ int main(int argc, char **argv) {
                 if (!use_tui) {
                     cos_speed_print(&spd);
                     fputc('\n', stdout);
+                    fprintf(stderr,
+                            "[speed: %d tok | %.0fms | %.1f tok/s | σ_time "
+                            "%.0fms]\n",
+                            spd.tokens_generated, (double)elapsed_ms,
+                            (double)spd.tokens_per_second,
+                            g_cos_chat_semantic_phase_ms);
                     print_receipt_polished(&r, elapsed_ms,
                                            conformal_active, conformal_alpha,
                                            semantic_hit, &spd);
