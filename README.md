@@ -922,62 +922,46 @@ This is a research prototype.  Full list with scope and caveats:
 
 <a id="enterprise"></a>
 
-## Enterprise
+## Enterprise (pilot MVP)
 
-**σ-gate HTTP surface:** `make cos-serve` builds `./cos-serve`, and **`make cos`** links the same HTTP stack into **`./cos serve`** (C only; request parsing uses vendored [picohttpparser](https://github.com/h2o/picohttpparser), MIT — see `src/vendor/LICENSES.md`).
+**Goal:** one command HTTP σ-gate + audit JSONL + tiny Python client + stdout audit summary.
 
-### API
+### `cos serve` (HTTP)
+
+`make cos && make cos-serve`, then:
 
 ```bash
-make cos-serve
-make cos
 ./cos serve --port 3001
-# or
-./cos-serve --port 3001
 curl -s http://127.0.0.1:3001/v1/health
 curl -s -X POST http://127.0.0.1:3001/v1/gate \
   -H 'Content-Type: application/json' \
-  -d '{"prompt":"What is 2+2?","model":"gemma3:4b"}'
-curl -s -X POST http://127.0.0.1:3001/v1/verify \
-  -H 'Content-Type: application/json' \
-  -d '{"text":"The capital of France is Paris","model":"gemma3:4b"}'
+  -d '{"prompt":"What is 2+2?"}'
 ```
 
-Endpoints: `POST /v1/gate`, `POST /v1/verify`, `GET /v1/health`, `GET /v1/audit/{id}`.
+If **`ollama serve`** is listening on **`127.0.0.1:11434`**, `cos serve` sets **`COS_INFERENCE_BACKEND=ollama`** and picks a default model from **`/api/tags`** (prefers **`gemma3:4b`**) when you have not set **`COS_OLLAMA_MODEL`**.  You can still override with env vars or a `"model"` field in JSON.
 
-### Audit trail (append-only JSONL)
+Endpoints: `POST /v1/gate`, `POST /v1/verify`, `GET /v1/health`, `GET /v1/audit/{id}`.  Append-only audit: `~/.cos/audit/YYYY-MM-DD.jsonl`.
 
-Each request can append one JSON object per line under `~/.cos/audit/YYYY-MM-DD.jsonl` (hashes, σ, action, model, latency, thresholds, optional `chain_prev` digest of the previous raw line for tamper-evident replay).  This is **implementation support** for operator logging and integrity checks; it is **not** legal advice or a certification of EU AI Act or NIST AI RMF compliance.
+### `cos report`
 
-### Python SDK
+```bash
+cos report
+```
 
-`pip install requests`, then either `pip install -e sdk/python` from the repo root, or add `sdk/python` to `PYTHONPATH` for editable use.
+Prints a **human-readable summary** of all `~/.cos/audit/*.jsonl` rows (counts, mean σ).
+
+### Python SDK (`pip install`)
+
+From a checkout: `pip install ./sdk/python` (see `sdk/python/README.md` for a `git+https://…#subdirectory=sdk/python` one-liner).
 
 ```python
 from creation_os import CreationOS
 
-cos = CreationOS(host="localhost", port=3001)
-result = cos.gate("What is 2+2?", model="gemma3:4b")
-print(result["sigma"], result["action"])
+cos = CreationOS()
+print(cos.gate("What is 2+2?"))
 ```
 
-### JavaScript (Node)
-
-See `sdk/js/creation-os.js` (`require` + `async` `gate` / `verify` / `health`).
-
-### LangChain
-
-`integrations/langchain_sigma.py` defines `SigmaGateCallback`: on each `on_llm_end`, it calls `/v1/verify` on the completion text and raises if the action is `ABSTAIN`.
-
-```bash
-export PYTHONPATH="sdk/python:integrations"
-```
-
-```python
-from langchain_sigma import SigmaGateCallback
-
-llm = ChatOllama(callbacks=[SigmaGateCallback()])
-```
+Optional LangChain hook: `integrations/langchain_sigma.py` (needs `PYTHONPATH` including `sdk/python`).
 
 ### Graded metrics (lab, one CSV)
 
@@ -986,24 +970,15 @@ llm = ChatOllama(callbacks=[SigmaGateCallback()])
 | AUROC | 0.8123 on graded-50 run — see [`benchmarks/graded/RESULTS.md`](benchmarks/graded/RESULTS.md) and source CSV named there |
 | Evidence class | Lab reporting on a fixed graded set; not a frontier harness row |
 
-### Compliance tooling (local)
+### Pricing (positioning only)
 
-- **EU AI Act mapping report (operator artefact, not legal advice):**  
-  `python3 scripts/compliance/eu_ai_act_report.py` → `reports/eu_ai_act_conformity.md` (reads `~/.cos/audit/*.jsonl`, optional graded `RESULTS.md` / CSV for bounded metrics, verifies `chain_prev` when present).
-- **Live terminal view:** `cos monitor --dashboard` — refreshes every 2s from `~/.cos/state_ledger.json` and today’s audit JSONL (ANSI; Ctrl+C to exit).
-- **Weekly operator Markdown:** `cos report --weekly --output reports/weekly.md` — optional PDF if `pandoc` is on `PATH` (`--output report.pdf` writes a sibling `.md` then runs `pandoc`).
-
-### Pricing (product positioning)
-
-Commercial tiers below are **positioning only** in this repository: there is **no payment or licence enforcement** in the CLI.  Core σ-gate and the `cos` tree remain under the same **SCSL / AGPL** terms as the rest of the project ([`LICENSE`](LICENSE), [`docs/LICENSE_MATRIX.md`](docs/LICENSE_MATRIX.md)).
+No payment logic ships in this tree; licence terms are unchanged ([`LICENSE`](LICENSE)).
 
 | Tier | What | Indicative price |
 |:---|:---|:---|
-| Open source | `cos` CLI, demos, σ-gate kernels, audit JSONL writers | Free under SCSL / AGPL terms |
-| Pro (positioning) | `cos serve`, audit trail, compliance mapping script, dashboard / weekly report | €49/month (contact Spektre Labs) |
-| Enterprise (positioning) | Custom τ, SLA, on-prem packaging, dedicated support | Contact |
-
-**Pitch (one line):** Operators who need **local, inspectable governance evidence** for high-risk-style AI workflows can run Creation OS **on their own hardware**, keep append-only audit JSONL, and generate mapping reports — **without** shipping prompts to a vendor cloud.
+| Open source | `cos`, σ-gate kernels, `cos serve`, audit JSONL, `cos report`, SDK | Free under SCSL / AGPL terms |
+| Pro (positioning) | Commercial support / packaging around the same bits | €49/month (contact Spektre Labs) |
+| Enterprise (positioning) | SLA, custom τ, on-prem | Contact |
 
 <p align="center"><sub><strong>· · ·</strong> license <strong>· · ·</strong></sub></p>
 

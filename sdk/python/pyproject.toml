@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creation-os"
+version = "0.1.0"
+description = "Python client for Creation OS cos-serve (σ-gate HTTP API)"
+requires-python = ">=3.9"
+readme = "README.md"
+license = { text = "LicenseRef-SCSL-1.0 OR AGPL-3.0-only" }
+dependencies = ["requests"]
+
+[project.urls]
+Homepage = "https://github.com/spektre-labs/creation-os"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["creation_os*"]

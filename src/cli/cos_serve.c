@@ -33,6 +33,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <netinet/in.h>
+#include <poll.h>
 #include <signal.h>
 #include <stdarg.h>
 #include <stdio.h>
@@ -170,6 +171,161 @@ static void gen_audit_id(char out17[17])
     out17[16] = '\0';
 }
 
+/* Pilot default: if Ollama answers on 127.0.0.1:11434, use COS_INFERENCE_BACKEND=ollama
+ * and pick COS_OLLAMA_MODEL from /api/tags (prefer gemma3:4b) without requiring env vars. */
+static int serve_tcp_probe_port(uint16_t port, int timeout_ms)
+{
+    struct sockaddr_in a;
+    int                s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s < 0)
+        return -1;
+    int fl = fcntl(s, F_GETFL, 0);
+    if (fl < 0 || fcntl(s, F_SETFL, fl | O_NONBLOCK) < 0) {
+        close(s);
+        return -1;
+    }
+    memset(&a, 0, sizeof a);
+    a.sin_family = AF_INET;
+    a.sin_port   = htons(port);
+    if (inet_pton(AF_INET, "127.0.0.1", &a.sin_addr) != 1) {
+        close(s);
+        return -1;
+    }
+    if (connect(s, (struct sockaddr *)&a, sizeof a) < 0 && errno != EINPROGRESS) {
+        close(s);
+        return -1;
+    }
+    struct pollfd pfd = { s, POLLOUT, 0 };
+    if (poll(&pfd, 1, timeout_ms) <= 0) {
+        close(s);
+        return -1;
+    }
+    int       soe = 0;
+    socklen_t sl  = sizeof soe;
+    if (getsockopt(s, SOL_SOCKET, SO_ERROR, &soe, &sl) < 0 || soe != 0) {
+        close(s);
+        return -1;
+    }
+    (void)fcntl(s, F_SETFL, fl);
+    close(s);
+    return 0;
+}
+
+static int serve_http_get_ollama_tags(char *resp, size_t cap)
+{
+    int s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s < 0)
+        return -1;
+    struct timeval tv;
+    tv.tv_sec  = 2;
+    tv.tv_usec = 0;
+    (void)setsockopt(s, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof tv);
+    (void)setsockopt(s, SOL_SOCKET, SO_SNDTIMEO, &tv, sizeof tv);
+    struct sockaddr_in a;
+    memset(&a, 0, sizeof a);
+    a.sin_family = AF_INET;
+    a.sin_port   = htons(11434);
+    if (inet_pton(AF_INET, "127.0.0.1", &a.sin_addr) != 1) {
+        close(s);
+        return -1;
+    }
+    if (connect(s, (struct sockaddr *)&a, sizeof a) != 0) {
+        close(s);
+        return -1;
+    }
+    const char *req =
+        "GET /api/tags HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n";
+    if (send(s, req, strlen(req), 0) < 0) {
+        close(s);
+        return -1;
+    }
+    size_t n = 0;
+    while (n + 1 < cap) {
+        ssize_t r = recv(s, resp + n, cap - n - 1, 0);
+        if (r <= 0)
+            break;
+        n += (size_t)r;
+    }
+    resp[n] = '\0';
+    close(s);
+    return 0;
+}
+
+static void serve_pick_model_from_tags_body(const char *http, char *model, size_t mcap)
+{
+    model[0] = '\0';
+    const char *body = strstr(http, "\r\n\r\n");
+    if (!body)
+        body = http;
+    else
+        body += 4;
+    if (strstr(body, "\"name\":\"gemma3:4b\"")) {
+        snprintf(model, mcap, "gemma3:4b");
+        return;
+    }
+    /* Prefer any gemma3 tag */
+    {
+        const char *p = body;
+        while ((p = strstr(p, "\"name\":\"gemma3")) != NULL) {
+            p += 9;
+            size_t w = 0;
+            while (*p && *p != '"' && w + 1 < mcap)
+                model[w++] = *p++;
+            model[w] = '\0';
+            if (model[0])
+                return;
+        }
+    }
+    /* First "name":"…" in JSON */
+    {
+        const char *p = strstr(body, "\"name\":\"");
+        if (p) {
+            p += 8;
+            size_t w = 0;
+            while (*p && *p != '"' && w + 1 < mcap)
+                model[w++] = *p++;
+            model[w] = '\0';
+        }
+    }
+}
+
+static void serve_autodetect_ollama_env(void)
+{
+    const char *be = getenv("COS_INFERENCE_BACKEND");
+    if (!be || !be[0]) {
+        if (serve_tcp_probe_port(11434, 800) == 0)
+            (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
+    }
+    if (getenv("COS_INFERENCE_BACKEND") == NULL
+        || strcmp(getenv("COS_INFERENCE_BACKEND"), "ollama") != 0)
+        return;
+    if (!getenv("COS_OLLAMA_HOST") || !getenv("COS_OLLAMA_HOST")[0])
+        (void)setenv("COS_OLLAMA_HOST", "127.0.0.1", 1);
+    if (!getenv("COS_OLLAMA_PORT") || !getenv("COS_OLLAMA_PORT")[0])
+        (void)setenv("COS_OLLAMA_PORT", "11434", 1);
+
+    int have_m = getenv("COS_OLLAMA_MODEL") && getenv("COS_OLLAMA_MODEL")[0];
+    int have_b = getenv("COS_BITNET_CHAT_MODEL") && getenv("COS_BITNET_CHAT_MODEL")[0];
+    if (have_m && have_b)
+        return;
+    char tags[65536];
+    char m[128];
+    m[0] = '\0';
+    if (serve_http_get_ollama_tags(tags, sizeof tags) == 0)
+        serve_pick_model_from_tags_body(tags, m, sizeof m);
+    if (!m[0])
+        snprintf(m, sizeof m, "gemma3:4b");
+    if (!have_m)
+        (void)setenv("COS_OLLAMA_MODEL", m, 1);
+    if (!have_b) {
+        const char *om = getenv("COS_OLLAMA_MODEL");
+        if (om && om[0])
+            (void)setenv("COS_BITNET_CHAT_MODEL", om, 1);
+        else
+            (void)setenv("COS_BITNET_CHAT_MODEL", m, 1);
+    }
+}
+
 static int serve_load_conformal(cos_serve_state_t *st, const char *override)
 {
     const char *p = (override && override[0]) ? override : st->calib_path;
@@ -255,6 +411,8 @@ static void serve_state_init(cos_serve_state_t *st)
                      "%s/.cos/calibration.json", home);
     }
     (void)serve_load_conformal(st, NULL);
+
+    serve_autodetect_ollama_env();
 
     if (cos_cli_use_bitnet_http() != 0)
         st->cfg.mode = COS_PIPELINE_MODE_LOCAL_ONLY;

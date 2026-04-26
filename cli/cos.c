@@ -2637,9 +2637,8 @@ static int cmd_help_topic(const char *topic, const char *prog)
         {"green", "Sustainability grade vs cloud counterfactuals."},
         {"omega", "Omega-loop continuous operation controls."},
         {"think", "Goal-oriented decomposition + sigma pipeline."},
-        {"monitor", "Live telemetry dashboard (substrates + latency); "
-                    "`--dashboard` for ledger + audit ANSI view."},
-        {"report", "Weekly operator Markdown from audit JSONL; optional PDF via pandoc."},
+        {"monitor", "Live telemetry (Ω JSONL — --summary / --csv / --follow)."},
+        {"report", "Pilot: stdout summary of ~/.cos/audit/*.jsonl."},
         {"cache", "Inference cache hits, stats, sizing."},
         {"skills", "Skill library health + reliability."},
         {"graph", "Knowledge-graph introspection."},
@@ -2751,11 +2750,9 @@ static int cmd_help_full(const char *prog)
     printf("  %s%-12s%s  unified Ω-loop (perceive → think → gate → learn; --turns / --hours / --status / --halt)\n",
            C_BOLD, "omega", C_RESET);
     printf("  %s%-12s%s  Ω JSONL telemetry viewer (~/.cos/omega/events.jsonl — "
-           "--summary / --sigma / --csv / --plot / --html / --follow / "
-           "--dashboard)\n",
+           "--summary / --sigma / --csv / --plot / --html / --follow)\n",
            C_BOLD, "monitor", C_RESET);
-    printf("  %s%-12s%s  Weekly operator report (~/.cos/audit — --weekly "
-           "--output path.md|.pdf)\n",
+    printf("  %s%-12s%s  Pilot audit summary to stdout (~/.cos/audit)\n",
            C_BOLD, "report", C_RESET);
     printf("  %s%-12s%s  σ-guided self-play curriculum (AGI-2; deterministic harness)\n",
            C_BOLD, "selfplay", C_RESET);
