@@ -8,6 +8,53 @@ This report records **measured artifacts** and **honest limits**. No fabricated 
 
 ---
 
+## 2026-04-26 update (Desktop `creation-os-kernel` session)
+
+**Hardware (stated):** MacBook Air M4 8GB. **Model:** `gemma3:4b` via Ollama (`localhost:11434`).
+
+### σ-Separation (15 prompts, `chart.txt` / `pipeline_results.csv`)
+
+```
+=== σ Separation (cos chat pipeline) ===
+FACTUAL      #######------------- mean=0.384
+CREATIVE     #######------------- mean=0.383
+REASONING    #########----------- mean=0.497
+SELF_AWARE   ############-------- mean=0.608
+IMPOSSIBLE   ############-------- mean=0.643
+
+Gap: 0.260
+SEPARATION OK
+```
+
+**Two-prompt verify (σ_combined / σ_semantic):** EASY **0.318** / **0.333**; HARD **0.553** / **0.667**; gaps **0.235** / **0.334**. Detail: `benchmarks/sigma_separation/SEPARATION_REPORT.md`.
+
+### Evolve campaign (`scripts/real/omega_evolve_final.sh`, 5×10, clean engram DBs)
+
+**Trajectory** (`benchmarks/evolve_campaign/sigma_trajectory.csv`, run 2026-04-25 UTC):
+
+```csv
+run,sigma_mean,cache_hits,prompts
+1,0.4413,0,10
+2,0.4709,0,10
+3,0.4271,0,10
+4,0.4823,0,10
+5,0.4762,0,10
+```
+
+**Dated copy:** `benchmarks/evolve_campaign/trajectory_20260425.csv`.
+
+### Ω-Loop (20 turns, `omega_20turns_gemma3.txt`)
+
+From the receipt tail: **20** turns in **0h 21m 59s**, **σ_mean 0.3104** (vs start 0.3104), **k_eff 0.6896**, **episodes stored 20**, **grade C (62.05/100)**, verdict **Ω integrates live modules (halt=0)**. Monitor one-liner: `benchmarks/lm_eval/receipts/omega_20turns_monitor.txt`.
+
+### Quality gates (this Desktop checkout)
+
+`make merge-gate` was **not completed** in this session: runs from **`~/Desktop/creation-os-kernel`** hit long stalls at subprocess launch (`_dyld_start`–only samples) and at **`check-v138`** before a **Frama-C** wall-timeout fix landed in `src/v138/proof.c`. **`make check-agi`** was not finished to log here. **Re-run** `make merge-gate` and `make check-agi` from a **non–File Provider** clone (see **Host layout** below) before any release or push.
+
+**Code fixes in this batch (merge-gate hygiene):** `src/v124/main.c`, `src/v134/main.c`, `src/v138/main.c` — line-buffered stdio under pipes; `src/v138/proof.c` — **fork + `poll`/`read` + `SIGKILL`** around Frama-C tier-2 with default **120 s** timeout (`COS_V138_FRAMA_TIMEOUT_SEC` optional).
+
+---
+
 ## Host layout (iCloud vs local)
 
 **Issue (Desktop / File Provider):** Running `creation_os_*` and some `git` operations from **`~/Desktop/creation-os-kernel`** caused `_dyld_start` stalls, `git archive` / `mmap` timeouts, and impractically slow full-tree `cp -R`.

@@ -94,6 +94,9 @@ static int simulate_epochs(int n, cos_v124_baseline_fn bfn) {
 }
 
 int main(int argc, char **argv) {
+    /* Merge-gate / CI pipe stdout+stderr: default block buffering hides progress. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    setvbuf(stderr, NULL, _IOLBF, 0);
     if (argc < 2) return usage(argv[0]);
     if (!strcmp(argv[1], "--self-test")) return cos_v124_self_test();
     if (!strcmp(argv[1], "--trigger") && argc == 5) {

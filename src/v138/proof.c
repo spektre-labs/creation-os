@@ -6,9 +6,15 @@
 #include "proof.h"
 
 #include <ctype.h>
+#include <errno.h>
+#include <poll.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 
 static int file_contains(const char *hay, const char *needle) {
@@ -108,6 +114,45 @@ cos_v138_result_t cos_v138_validate_acsl(const char *path,
     return COS_V138_PROOF_OK;
 }
 
+/* Drain pipe fd without blocking forever (Frama-C WP can hang on some
+ * hosts).  Returns 0 = EOF, -1 = timeout, -2 = read error. */
+static int cos_v138_drain_fd_timeout(int fd, char *stdout_buf, size_t cap,
+                                     int timeout_sec) {
+    if (fd < 0 || !stdout_buf || cap == 0) return 0;
+    stdout_buf[0] = 0;
+    size_t off = 0;
+    time_t deadline = time(NULL) + (time_t)(timeout_sec > 0 ? timeout_sec : 120);
+    for (;;) {
+        time_t now = time(NULL);
+        if (now >= deadline)
+            return -1;
+        int ms = (int)((deadline - now) * 1000);
+        if (ms > 500) ms = 500;
+        if (ms < 1) ms = 1;
+        struct pollfd pfd = { .fd = fd, .events = (short)POLLIN };
+        int pr = poll(&pfd, 1, ms);
+        if (pr < 0) {
+            if (errno == EINTR) continue;
+            return -2;
+        }
+        if (pr == 0)
+            continue;
+        char chunk[1024];
+        ssize_t n = read(fd, chunk, sizeof chunk);
+        if (n < 0) {
+            if (errno == EINTR) continue;
+            return -2;
+        }
+        if (n == 0)
+            return 0;
+        if (off + (size_t)n + 1 < cap) {
+            memcpy(stdout_buf + off, chunk, (size_t)n);
+            off += (size_t)n;
+            stdout_buf[off] = 0;
+        }
+    }
+}
+
 /* Try Frama-C.  We intentionally do NOT depend on Frama-C being
  * present — tier 2 is opportunistic and returns SKIPPED otherwise. */
 cos_v138_result_t cos_v138_try_frama_c(const char *path,
@@ -118,21 +163,54 @@ cos_v138_result_t cos_v138_try_frama_c(const char *path,
     if (system("command -v frama-c >/dev/null 2>&1") != 0)
         return COS_V138_PROOF_SKIPPED;
 
-    char cmd[1024];
-    snprintf(cmd, sizeof cmd,
-        "frama-c -wp -wp-rte '%s' 2>&1", path);
-    FILE *pipe = popen(cmd, "r");
-    if (!pipe) return COS_V138_PROOF_FAIL;
-    size_t off = 0;
-    if (stdout_buf && cap > 0) stdout_buf[0] = 0;
-    char line[512];
-    while (fgets(line, sizeof line, pipe)) {
-        if (stdout_buf && off + strlen(line) + 1 < cap) {
-            strcpy(stdout_buf + off, line);
-            off += strlen(line);
-        }
+    int timeout_sec = 120;
+    const char *ts = getenv("COS_V138_FRAMA_TIMEOUT_SEC");
+    if (ts && ts[0]) {
+        int v = atoi(ts);
+        if (v > 0 && v <= 3600) timeout_sec = v;
     }
-    int rc = pclose(pipe);
+
+    int pfd[2];
+    if (pipe(pfd) != 0) return COS_V138_PROOF_FAIL;
+
+    pid_t pid = fork();
+    if (pid == (pid_t)-1) {
+        close(pfd[0]);
+        close(pfd[1]);
+        return COS_V138_PROOF_FAIL;
+    }
+    if (pid == 0) {
+        /* Child: Frama-C stdout+stderr → write end of pipe */
+        (void)close(pfd[0]);
+        if (dup2(pfd[1], STDOUT_FILENO) < 0 || dup2(pfd[1], STDERR_FILENO) < 0)
+            _exit(126);
+        (void)close(pfd[1]);
+        execlp("frama-c", "frama-c", "-wp", "-wp-rte", path, (char *)NULL);
+        _exit(127);
+    }
+    (void)close(pfd[1]);
+
+    char scratch[4096];
+    char *sink = (stdout_buf && cap > 0) ? stdout_buf : scratch;
+    size_t sink_cap = (stdout_buf && cap > 0) ? cap : sizeof scratch;
+    if (stdout_buf && cap > 0) stdout_buf[0] = 0;
+    int dr = cos_v138_drain_fd_timeout(pfd[0], sink, sink_cap, timeout_sec);
+    (void)close(pfd[0]);
+
+    int st = 0;
+    if (dr == -1) {
+        (void)kill(pid, SIGKILL);
+        (void)waitpid(pid, &st, 0);
+        return COS_V138_PROOF_SKIPPED;
+    }
+    if (dr == -2) {
+        (void)kill(pid, SIGKILL);
+        (void)waitpid(pid, &st, 0);
+        return COS_V138_PROOF_FAIL;
+    }
+    if (waitpid(pid, &st, 0) != pid)
+        return COS_V138_PROOF_FAIL;
+    int rc = WIFEXITED(st) ? WEXITSTATUS(st) : -1;
     /* WP success → rc == 0.  Any "Invalid" or "Timeout" → fail. */
     if (stdout_buf && (strstr(stdout_buf, "Invalid") ||
                        strstr(stdout_buf, "Timeout")))

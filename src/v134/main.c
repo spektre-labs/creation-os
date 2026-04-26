@@ -70,6 +70,9 @@ static int cmd_demo(void) {
 }
 
 int main(int argc, char **argv) {
+    /* Piped/redirected stdio (merge-gate): avoid block-buffered silence. */
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    setvbuf(stderr, NULL, _IOLBF, 0);
     if (argc < 2) return usage();
     if (!strcmp(argv[1], "--self-test")) return cos_v134_self_test();
     if (!strcmp(argv[1], "--demo"))      return cmd_demo();
