@@ -2,11 +2,13 @@
 
 Adversarial prompt matrix: `tests/stress/break_it.csv`.
 
-Run from the repository root (after `make cos-chat`):
+Run from the repository root (after `make cos` + `make cos-chat` so `./cos chat` exists):
 
 ```bash
 bash scripts/real/run_break_it.sh
 ```
+
+The harness invokes **`./cos chat`** when the `cos` binary is present and executable; otherwise it falls back to **`./cos-chat`** with the same flags (`--once --prompt … --multi-sigma --json`).
 
 Outputs (overwritten each run):
 

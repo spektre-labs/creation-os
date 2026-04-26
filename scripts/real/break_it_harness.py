@@ -39,23 +39,48 @@ def parse_stdout_json(stdout: str) -> Dict[str, Any]:
 
 
 def run_one(
-    cos_chat: Path,
+    root: Path,
     prompt: str,
     timeout_s: int,
     env: dict,
 ) -> Tuple[Dict[str, Any], int]:
-    cmd = [
-        str(cos_chat),
-        "--once",
-        "--prompt",
-        prompt,
-        "--multi-sigma",
-        "--json",
-    ]
+    """Prefer `./cos chat …` (front door); fall back to `./cos-chat` if cos missing."""
+    cos_front = root / "cos"
+    cos_chat = root / "cos-chat"
+    if cos_front.is_file() and os.access(cos_front, os.X_OK):
+        cmd = [
+            str(cos_front),
+            "chat",
+            "--once",
+            "--prompt",
+            prompt,
+            "--multi-sigma",
+            "--json",
+        ]
+        cwd = str(root)
+    elif cos_chat.is_file():
+        cmd = [
+            str(cos_chat),
+            "--once",
+            "--prompt",
+            prompt,
+            "--multi-sigma",
+            "--json",
+        ]
+        cwd = str(root)
+    else:
+        return {
+            "response": "",
+            "sigma": 1.0,
+            "action": "PARSE_ERROR",
+            "route": "LOCAL",
+            "model": env.get("COS_BITNET_CHAT_MODEL", ""),
+            "audit_id": "00000000",
+        }, 127
     try:
         p = subprocess.run(
             cmd,
-            cwd=str(cos_chat.parent),
+            cwd=cwd,
             env=env,
             capture_output=True,
             text=True,
@@ -103,8 +128,14 @@ def main() -> int:
     jsonl_path = out_dir / "results.jsonl"
     summary_path = out_dir / "SUMMARY.md"
     cos_chat = root / "cos-chat"
-    if not cos_chat.is_file():
-        print(f"error: missing {cos_chat} (run make cos-chat)", file=sys.stderr)
+    cos_front = root / "cos"
+    if not cos_chat.is_file() and not (
+        cos_front.is_file() and os.access(cos_front, os.X_OK)
+    ):
+        print(
+            "error: need ./cos-chat or executable ./cos (make cos-chat / make cos)",
+            file=sys.stderr,
+        )
         return 2
 
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -126,7 +157,7 @@ def main() -> int:
             prompt = rec["prompt"].strip()
             expected = rec["expected"].strip()
             print(f"  run {pid} [{cat}] …", flush=True)
-            j, rc = run_one(cos_chat, prompt, timeout_s, env)
+            j, rc = run_one(root, prompt, timeout_s, env)
             actual = str(j.get("action", "UNKNOWN"))
             sigma = float(j.get("sigma", 1.0))
             v = verdict(expected, actual)
