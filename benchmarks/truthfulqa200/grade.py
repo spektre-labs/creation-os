@@ -21,6 +21,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 BENCH_DIR = Path(__file__).resolve().parent
 
 
+def bench_path(p: str | Path) -> Path:
+    """Resolve bench file paths; treat non-absolute paths as relative to repo root."""
+    q = Path(p).expanduser()
+    if q.is_absolute():
+        return q.resolve()
+    return (REPO_ROOT.resolve() / q).resolve()
+
+
 def normalize_tokens(text: str) -> set[str]:
     s = (text or "").lower()
     s = re.sub(r"[^a-z0-9\s]+", " ", s)
@@ -325,14 +333,20 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         print("error: pip install scikit-learn (needed for AUROC)", file=sys.stderr)
         return 2
 
-    res_path = Path(args.results)
-    prompts_path = Path(args.prompts)
+    root = REPO_ROOT.resolve()
+    res_path = bench_path(args.results)
+    prompts_path = bench_path(args.prompts)
     rows = load_results(res_path)
     prompts_by_id: Dict[str, Dict[str, str]] = {}
     with prompts_path.open(newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             prompts_by_id[row["id"]] = row
     graded = attach_grades(rows, prompts_by_id)
+
+    stub_run = bool(rows) and all(
+        "backend=stub" in ((r.get("stderr_tail") or "") + (r.get("response") or ""))
+        for r in rows
+    )
 
     accept = [g for g in graded if not g["abstain"]]
     abst = sum(1 for g in graded if g["abstain"])
@@ -358,8 +372,14 @@ def cmd_metrics(args: argparse.Namespace) -> int:
     ece_val, _ = ece_bins(conf, corr, 10) if accept else (float("nan"), [])
     aur = aurc_curve(s, y_wrong) if len(s) >= 2 else float("nan")
 
-    md_path = Path(args.write_md)
+    md_path = bench_path(args.write_md)
     import datetime as _dt
+
+    def _rel(p: Path) -> str:
+        try:
+            return str(p.relative_to(root))
+        except ValueError:
+            return str(p)
 
     try:
         commit = subprocess.check_output(
@@ -376,6 +396,18 @@ def cmd_metrics(args: argparse.Namespace) -> int:
     lines = [
         "# TruthfulQA-200 benchmark results",
         "",
+    ]
+    if stub_run:
+        lines.extend(
+            [
+                "> **Run class:** `cos chat` **stub** backend (not Ollama / llama.cpp). "
+                "Metrics below validate the harness pipeline only; "
+                "re-run with a real backend for model-facing numbers.",
+                "",
+            ]
+        )
+    lines.extend(
+        [
         f"**Generated (UTC):** {_dt.datetime.now(_dt.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}",
         f"**Commit:** `{commit}`",
         f"**Hardware:** `{hw}`",
@@ -393,8 +425,8 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         "",
         "## Repro bundle",
         "",
-        f"- `results.csv`: path `{res_path.relative_to(REPO_ROOT)}`",
-        f"- `prompts.csv`: path `{prompts_path.relative_to(REPO_ROOT)}`",
+        f"- `results.csv`: path `{_rel(res_path)}`",
+        f"- `prompts.csv`: path `{_rel(prompts_path)}`",
         "- Append SHA-256 lines to `REPRO_CHECKSUMS.txt` after freezing (`shasum -a 256 …`).",
         "",
         "## Notes",
@@ -402,7 +434,8 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         "- AUROC requires both correct and incorrect in the non-ABSTAIN pool; otherwise NaN.",
         "- This harness does **not** substitute for TruthfulQA leaderboard submission rules.",
         "",
-    ]
+        ]
+    )
     md_path.write_text("\n".join(lines), encoding="utf-8")
     print(f"wrote {md_path}")
     print(f"  AUROC={auroc:.4f} acc_non_abstain={100*acc_accept:.2f}% abst={100*abst/max(len(graded),1):.2f}%")
@@ -451,9 +484,9 @@ def cmd_multi_metrics(args: argparse.Namespace) -> int:
             "wrong_conf": wrong_conf,
         }
 
-    pa = Path(args.results_a)
-    pb = Path(args.results_b)
-    pr = Path(args.prompts)
+    pa = bench_path(args.results_a)
+    pb = bench_path(args.results_b)
+    pr = bench_path(args.prompts)
     a = one_block(args.label_a, pa, pr)
     b = one_block(args.label_b, pb, pr)
     out = Path(args.output_md)
