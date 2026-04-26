@@ -986,6 +986,25 @@ llm = ChatOllama(callbacks=[SigmaGateCallback()])
 | AUROC | 0.8123 on graded-50 run — see [`benchmarks/graded/RESULTS.md`](benchmarks/graded/RESULTS.md) and source CSV named there |
 | Evidence class | Lab reporting on a fixed graded set; not a frontier harness row |
 
+### Compliance tooling (local)
+
+- **EU AI Act mapping report (operator artefact, not legal advice):**  
+  `python3 scripts/compliance/eu_ai_act_report.py` → `reports/eu_ai_act_conformity.md` (reads `~/.cos/audit/*.jsonl`, optional graded `RESULTS.md` / CSV for bounded metrics, verifies `chain_prev` when present).
+- **Live terminal view:** `cos monitor --dashboard` — refreshes every 2s from `~/.cos/state_ledger.json` and today’s audit JSONL (ANSI; Ctrl+C to exit).
+- **Weekly operator Markdown:** `cos report --weekly --output reports/weekly.md` — optional PDF if `pandoc` is on `PATH` (`--output report.pdf` writes a sibling `.md` then runs `pandoc`).
+
+### Pricing (product positioning)
+
+Commercial tiers below are **positioning only** in this repository: there is **no payment or licence enforcement** in the CLI.  Core σ-gate and the `cos` tree remain under the same **SCSL / AGPL** terms as the rest of the project ([`LICENSE`](LICENSE), [`docs/LICENSE_MATRIX.md`](docs/LICENSE_MATRIX.md)).
+
+| Tier | What | Indicative price |
+|:---|:---|:---|
+| Open source | `cos` CLI, demos, σ-gate kernels, audit JSONL writers | Free under SCSL / AGPL terms |
+| Pro (positioning) | `cos serve`, audit trail, compliance mapping script, dashboard / weekly report | €49/month (contact Spektre Labs) |
+| Enterprise (positioning) | Custom τ, SLA, on-prem packaging, dedicated support | Contact |
+
+**Pitch (one line):** Operators who need **local, inspectable governance evidence** for high-risk-style AI workflows can run Creation OS **on their own hardware**, keep append-only audit JSONL, and generate mapping reports — **without** shipping prompts to a vendor cloud.
+
 <p align="center"><sub><strong>· · ·</strong> license <strong>· · ·</strong></sub></p>
 
 ---

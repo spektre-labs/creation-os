@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
+#include <time.h>
 #include <unistd.h>
 
 struct mon_evt {
@@ -445,6 +447,298 @@ static void mon_run_default(FILE *fp)
     }
 }
 
+static volatile sig_atomic_t mon_dash_stop;
+
+static void mon_dash_sigint(int sig)
+{
+    (void)sig;
+    mon_dash_stop = 1;
+}
+
+static int dash_grab_int(const char *json, const char *key)
+{
+    char pat[64];
+    snprintf(pat, sizeof pat, "\"%s\":", key);
+    const char *p = strstr(json, pat);
+    if (!p)
+        return 0;
+    return (int)strtol(p + strlen(pat), NULL, 10);
+}
+
+static double dash_grab_double(const char *json, const char *key)
+{
+    char pat[64];
+    snprintf(pat, sizeof pat, "\"%s\":", key);
+    const char *p = strstr(json, pat);
+    if (!p)
+        return 0.0;
+    return strtod(p + strlen(pat), NULL);
+}
+
+static int mon_ledger_read_file(char *buf, size_t cap)
+{
+    const char *h = getenv("HOME");
+    if (!h || !h[0])
+        h = "/tmp";
+    char path[512];
+    snprintf(path, sizeof path, "%s/.cos/state_ledger.json", h);
+    FILE *fp = fopen(path, "rb");
+    if (!fp)
+        return -1;
+    size_t n = fread(buf, 1, cap - 1, fp);
+    fclose(fp);
+    buf[n] = '\0';
+    return (int)n;
+}
+
+static void mon_audit_today_path(char *buf, size_t cap)
+{
+    const char *h = getenv("HOME");
+    if (!h || !h[0])
+        h = "/tmp";
+    time_t    t = time(NULL);
+    struct tm tmv;
+    if (gmtime_r(&t, &tmv) == NULL) {
+        if (cap)
+            buf[0] = '\0';
+        return;
+    }
+    char d[32];
+    strftime(d, sizeof d, "%Y-%m-%d", &tmv);
+    snprintf(buf, cap, "%s/.cos/audit/%s.jsonl", h, d);
+}
+
+static int mon_audit_tail_sigma(const char *path, double *sig100, int want,
+                                  char prev[5][72], char act[5][16], double *sig5,
+                                  int *n5)
+{
+    FILE *fp = fopen(path, "rb");
+    if (!fp)
+        return -1;
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        fclose(fp);
+        return -1;
+    }
+    long sz = ftell(fp);
+    if (sz <= 0) {
+        fclose(fp);
+        return -1;
+    }
+    long chunk = sz > 98304 ? 98304 : sz;
+    if (fseek(fp, sz - chunk, SEEK_SET) != 0) {
+        fclose(fp);
+        return -1;
+    }
+    char *buf = (char *)malloc((size_t)chunk + 1u);
+    if (!buf) {
+        fclose(fp);
+        return -1;
+    }
+    size_t n = fread(buf, 1, (size_t)chunk, fp);
+    fclose(fp);
+    buf[n] = '\0';
+
+    char *lines[512];
+    int    nlines = 0;
+    {
+        char *p = buf;
+        while (*p && nlines < 512) {
+            char *nl = strchr(p, '\n');
+            if (!nl)
+                break;
+            *nl  = '\0';
+            lines[nlines++] = p;
+            p    = nl + 1;
+        }
+    }
+    int ns = 0, k;
+    for (k = nlines - 1; k >= 0 && ns < want; --k) {
+        const char *ln = lines[k];
+        if (!strstr(ln, "\"sigma\":"))
+            continue;
+        double s = mon_find_json_double(ln, "sigma");
+        if (s != s || s < 0.0 || s > 1.0)
+            continue;
+        sig100[ns++] = s;
+    }
+    /* reverse to chronological order for spark */
+    for (k = 0; k < ns / 2; ++k) {
+        double t        = sig100[k];
+        sig100[k]       = sig100[ns - 1 - k];
+        sig100[ns - 1 - k] = t;
+    }
+    *n5 = 0;
+    for (k = nlines - 1; k >= 0 && *n5 < 5; --k) {
+        const char *ln = lines[k];
+        if (!strstr(ln, "\"sigma\":"))
+            continue;
+        double s = mon_find_json_double(ln, "sigma");
+        if (s != s)
+            continue;
+        mon_parse_action(ln, act[*n5], sizeof act[0]);
+        {
+            const char *pp = strstr(ln, "\"input_preview\":\"");
+            size_t      i  = 0;
+            prev[*n5][0] = '\0';
+            if (pp) {
+                pp += 18;
+                while (*pp && *pp != '"' && i + 1 < sizeof prev[0]) {
+                    if (*pp == '\\' && pp[1]) {
+                        pp += 2;
+                        continue;
+                    }
+                    prev[*n5][i++] = *pp++;
+                }
+                prev[*n5][i] = '\0';
+            }
+        }
+        sig5[*n5] = s;
+        (*n5)++;
+    }
+    free(buf);
+    return ns;
+}
+
+static char mon_spark_ascii_ch(double s01)
+{
+    static const char *bars = " .:-=+*#%@";
+    int                  idx;
+    if (!(s01 == s01) || s01 < 0.)
+        s01 = 0.;
+    if (s01 > 1.)
+        s01 = 1.;
+    idx = (int)(s01 * 9.999);
+    if (idx < 0)
+        idx = 0;
+    if (idx > 9)
+        idx = 9;
+    return bars[idx];
+}
+
+static void mon_run_dashboard(void)
+{
+    char          lbuf[65536];
+    int           llen = mon_ledger_read_file(lbuf, sizeof lbuf);
+    int           tq = 0, ac = 0, rt = 0, ab = 0, drift = 0;
+    double        smean = 0.0;
+    const char   *auroc_disp = getenv("COS_SERVE_HEALTH_AUROC");
+    if (llen > 0) {
+        tq    = dash_grab_int(lbuf, "total_queries");
+        ac    = dash_grab_int(lbuf, "accepts");
+        rt    = dash_grab_int(lbuf, "rethinks");
+        ab    = dash_grab_int(lbuf, "abstains");
+        drift = dash_grab_int(lbuf, "sigma_drift");
+        smean = dash_grab_double(lbuf, "sigma_mean_session");
+    }
+    static time_t boot;
+    if (boot == 0)
+        boot = time(NULL);
+
+    struct sigaction sa, old;
+    memset(&sa, 0, sizeof sa);
+    sa.sa_handler = mon_dash_sigint;
+    sigemptyset(&sa.sa_mask);
+    sigaction(SIGINT, &sa, &old);
+    mon_dash_stop = 0;
+
+    while (!mon_dash_stop) {
+        llen = mon_ledger_read_file(lbuf, sizeof lbuf);
+        if (llen > 0) {
+            tq    = dash_grab_int(lbuf, "total_queries");
+            ac    = dash_grab_int(lbuf, "accepts");
+            rt    = dash_grab_int(lbuf, "rethinks");
+            ab    = dash_grab_int(lbuf, "abstains");
+            drift = dash_grab_int(lbuf, "sigma_drift");
+            smean = dash_grab_double(lbuf, "sigma_mean_session");
+        }
+
+        char ap[512];
+        mon_audit_today_path(ap, sizeof ap);
+        double sig100[128];
+        int    nsig;
+        char   pv[5][72], act[5][16];
+        double s5[5];
+        int    n5 = 0;
+        nsig = mon_audit_tail_sigma(ap, sig100, 100, pv, act, s5, &n5);
+        if (nsig < 0)
+            nsig = 0;
+
+        time_t now = time(NULL);
+        long   sess = (long)(now - boot);
+        int    hh   = (int)(sess / 3600);
+        int    mm   = (int)((sess % 3600) / 60);
+
+        double pct_acc = 0, pct_ab = 0, pct_rt = 0;
+        if (tq > 0) {
+            pct_acc = 100.0 * (double)ac / (double)tq;
+            pct_ab  = 100.0 * (double)ab / (double)tq;
+            pct_rt  = 100.0 * (double)rt / (double)tq;
+        }
+
+        fputs("\033[2J\033[H", stdout);
+        fputs("+----------------------------------------------------------+\n",
+              stdout);
+        fputs("|  CREATION OS — Live dashboard (ledger + today's audit)  |\n",
+              stdout);
+        fputs("+----------------------------------------------------------+\n",
+              stdout);
+        printf("|  Ledger queries: %-6d |  Session: %dh %02dm              |\n", tq,
+               hh, mm);
+        if (auroc_disp && auroc_disp[0])
+            printf("|  sigma_mean (sess): %.3f |  AUROC (env): %-8s          |\n",
+                   smean, auroc_disp);
+        else
+            printf("|  sigma_mean (sess): %.3f |  AUROC: see graded RESULTS.md |\n",
+                   smean);
+        printf("|  ACCEPT: %5.1f%%       |  ABSTAIN: %5.1f%%               |\n",
+               pct_acc, pct_ab);
+        printf("|  RETHINK: %5.1f%%       |  Wrong+conf: see CSV/heuristic  |\n",
+               pct_rt);
+        fputs("+----------------------------------------------------------+\n",
+              stdout);
+        fputs("|  sigma spark (last audit rows, ASCII):                  |\n|  ",
+              stdout);
+        {
+            int i, lim = nsig < 40 ? nsig : 40;
+            for (i = 0; i < lim; ++i)
+                fputc(mon_spark_ascii_ch(sig100[i]), stdout);
+            for (; i < 40; ++i)
+                fputc(' ', stdout);
+        }
+        fputs(" |\n", stdout);
+        if (drift)
+            fputs("|  [DRIFT] sigma_drift=1 in ledger — consider RECALIBRATE   |\n",
+                  stdout);
+        else
+            fputs("|  [STABLE] no drift flag on ledger snapshot                |\n",
+                  stdout);
+        fputs("+----------------------------------------------------------+\n",
+              stdout);
+        fputs("|  Last audit rows (today's JSONL, newest first):          |\n",
+              stdout);
+        {
+            int j;
+            for (j = 0; j < n5; ++j) {
+                const char *sym =
+                    (strcmp(act[j], "ABSTAIN") == 0) ?
+                        "x" :
+                        (strcmp(act[j], "RETHINK") == 0) ? "!" : "v";
+                printf("|  %.2f %s %-52.52s |\n", s5[j], sym, pv[j]);
+            }
+            for (; j < 5; ++j)
+                fputs("|  (no preview rows)                                        |\n",
+                      stdout);
+        }
+        fputs("+----------------------------------------------------------+\n",
+              stdout);
+        fputs("Ctrl+C to exit.  Refreshes every 2s.\n", stdout);
+        fflush(stdout);
+        sleep(2);
+    }
+    sigaction(SIGINT, &old, NULL);
+    fputs("\n", stdout);
+}
+
 static int mon_follow_path(const char *path)
 {
     FILE *fp;
@@ -498,10 +792,13 @@ int cos_monitor_main(int argc, char **argv)
     int   mode_plot    = 0;
     int   mode_html    = 0;
     int   mode_follow  = 0;
+    int   mode_dashboard = 0;
     const char *path_arg = NULL;
 
     for (i = base; i < argc; ++i) {
-        if (strcmp(argv[i], "--csv") == 0)
+        if (strcmp(argv[i], "--dashboard") == 0)
+            mode_dashboard = 1;
+        else if (strcmp(argv[i], "--csv") == 0)
             mode_csv = 1, mode_default = 0;
         else if (strcmp(argv[i], "--summary") == 0)
             mode_summary = 1, mode_default = 0;
@@ -516,6 +813,11 @@ int cos_monitor_main(int argc, char **argv)
             mode_follow = 1;
         else if (argv[i][0] != '-')
             path_arg = argv[i];
+    }
+
+    if (mode_dashboard) {
+        mon_run_dashboard();
+        return 0;
     }
 
     if (path_arg)

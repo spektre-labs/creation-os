@@ -10166,6 +10166,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c src/cli/cos_monitor.c \
+	    src/cli/cos_report.c \
 	    $(COS_LEARN_WEB_SRCS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
 

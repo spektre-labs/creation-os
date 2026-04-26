@@ -69,6 +69,7 @@
 #include "../src/cli/cos_energy_green_cli.h"
 #include "../src/cli/cos_omega_cli.h"
 #include "../src/cli/cos_monitor.h"
+#include "../src/cli/cos_report.h"
 #include "../src/cli/cos_demo.h"
 #include "../src/cli/cos_voice.h"
 #include "../src/cli/cos_web.h"
@@ -2636,7 +2637,9 @@ static int cmd_help_topic(const char *topic, const char *prog)
         {"green", "Sustainability grade vs cloud counterfactuals."},
         {"omega", "Omega-loop continuous operation controls."},
         {"think", "Goal-oriented decomposition + sigma pipeline."},
-        {"monitor", "Live telemetry dashboard (substrates + latency)."},
+        {"monitor", "Live telemetry dashboard (substrates + latency); "
+                    "`--dashboard` for ledger + audit ANSI view."},
+        {"report", "Weekly operator Markdown from audit JSONL; optional PDF via pandoc."},
         {"cache", "Inference cache hits, stats, sizing."},
         {"skills", "Skill library health + reliability."},
         {"graph", "Knowledge-graph introspection."},
@@ -2748,8 +2751,12 @@ static int cmd_help_full(const char *prog)
     printf("  %s%-12s%s  unified Ω-loop (perceive → think → gate → learn; --turns / --hours / --status / --halt)\n",
            C_BOLD, "omega", C_RESET);
     printf("  %s%-12s%s  Ω JSONL telemetry viewer (~/.cos/omega/events.jsonl — "
-           "--summary / --sigma / --csv / --plot / --html / --follow)\n",
+           "--summary / --sigma / --csv / --plot / --html / --follow / "
+           "--dashboard)\n",
            C_BOLD, "monitor", C_RESET);
+    printf("  %s%-12s%s  Weekly operator report (~/.cos/audit — --weekly "
+           "--output path.md|.pdf)\n",
+           C_BOLD, "report", C_RESET);
     printf("  %s%-12s%s  σ-guided self-play curriculum (AGI-2; deterministic harness)\n",
            C_BOLD, "selfplay", C_RESET);
     printf("  %s%-12s%s  T3/T4/T5/T6 evidence ledger (H4: monotonicity + commutativity + encode/decode + latency)\n",
@@ -3328,6 +3335,7 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "agent")     == 0) return cmd_agent  (argc - 2, argv + 2);
     if (strcmp(argv[1], "network")   == 0) return cmd_network(argc - 2, argv + 2);
     if (strcmp(argv[1], "monitor")   == 0) return cos_monitor_main(argc, argv);
+    if (strcmp(argv[1], "report")    == 0) return cos_report_main(argc, argv);
     if (strcmp(argv[1], "omega")     == 0) return cos_omega_main(argc, argv);
     if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
     if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);

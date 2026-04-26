@@ -198,6 +198,11 @@ creation_os_check_*
 third_party/bitnet/build/
 third_party/bitnet/models/
 
+# Operator compliance / weekly reports (generated; keep directory)
+reports/*.md
+reports/*.pdf
+!reports/.gitkeep
+
 # TruthfulQA MC1 JSON is large; fetch with scripts/real/truthfulqa_sigma.sh
 benchmarks/truthfulqa/mc_task.json
 
