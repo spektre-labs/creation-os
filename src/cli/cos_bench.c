@@ -20,6 +20,8 @@
 #include <sys/wait.h>
 #include <time.h>
 
+#include "adaptive_tau.h"
+
 enum { BENCH_LINE_MAX = 16384, BENCH_PROMPT_MAX = 4096 };
 
 static int file_exists(const char *p)
@@ -142,7 +144,8 @@ static const char *find_chat_bin(void)
     return "cos-chat";
 }
 
-static int bench_graded(const char *csv, int n_max, const char *title)
+static int bench_graded(const char *csv, int n_max, const char *title,
+                        int adaptive_tau)
 {
     (void)title;
     if (!file_exists(csv)) {
@@ -190,6 +193,15 @@ static int bench_graded(const char *csv, int n_max, const char *title)
     char capbuf[BENCH_LINE_MAX];
     int   n_done = 0;
     clock_t t0 = clock();
+    cos_adaptive_tau_t bench_at;
+    memset(&bench_at, 0, sizeof bench_at);
+    if (adaptive_tau) {
+        if (cos_adaptive_tau_state_load(&bench_at) != 0) {
+            bench_at.tau_accept        = 0.40f;
+            bench_at.tau_rethink       = 0.60f;
+            bench_at.accuracy_estimate = 0.5f;
+        }
+    }
     while (n_done < n_max && fgets(line, sizeof line, fi) != NULL) {
         char *p = line;
         while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
@@ -278,6 +290,10 @@ static int bench_graded(const char *csv, int n_max, const char *title)
                 (double)sig, act, ok);
         fprintf(stdout, "  [%d] σ=%.3f %s  grade=%s\n", n_done, (double)sig, act,
                 ok ? "OK" : "XX");
+        if (adaptive_tau) {
+            (void)cos_adaptive_tau_update(&bench_at, sig, ok);
+            (void)cos_adaptive_tau_state_save(&bench_at);
+        }
         n_done++;
     }
 
@@ -289,6 +305,10 @@ static int bench_graded(const char *csv, int n_max, const char *title)
         sec = 0;
     fprintf(stdout, "cos-bench: wrote %s (%d rows) in %.1fs\n", outpath, n_done,
             sec);
+    if (adaptive_tau)
+        fprintf(stdout,
+                "tau_accept=%.3f (calibrated from %d samples)\n",
+                (double)bench_at.tau_accept, bench_at.n_history);
     return 0;
 }
 
@@ -324,7 +344,7 @@ static int bench_break_it(void)
 
 int cos_bench_main(int argc, char **argv)
 {
-    int graded = 0, truthfulqa = 0, breakit = 0, n = 50;
+    int graded = 0, truthfulqa = 0, breakit = 0, n = 50, adaptive_tau = 0;
     for (int i = 1; i < argc; ++i) {
         if (strcmp(argv[i], "--graded") == 0)
             graded = 1;
@@ -332,6 +352,8 @@ int cos_bench_main(int argc, char **argv)
             truthfulqa = 1;
         else if (strcmp(argv[i], "--break-it") == 0 || strcmp(argv[i], "--breakit") == 0)
             breakit = 1;
+        else if (strcmp(argv[i], "--adaptive-tau") == 0)
+            adaptive_tau = 1;
         else if (strcmp(argv[i], "--n") == 0 && i + 1 < argc)
             n = atoi(argv[++i]);
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -339,6 +361,7 @@ int cos_bench_main(int argc, char **argv)
                   "  --graded       graded σ-gate CSV (50-row fixture)\n"
                   "  --truthfulqa   TruthfulQA-style pilot CSV\n"
                   "  --break-it     run scripts/real/run_break_it.sh\n"
+                  "  --adaptive-tau update ~/.cos/tau_state.json from graded rows\n"
                   "  --n N          max graded rows (default 50)\n",
                   stdout);
             return 0;
@@ -365,7 +388,7 @@ int cos_bench_main(int argc, char **argv)
             return 1;
         }
         printf("=== Creation OS Benchmark: TruthfulQA pilot ===\n");
-        return bench_graded(csv, n, "truthfulqa");
+        return bench_graded(csv, n, "truthfulqa", adaptive_tau);
     }
 
     if (!graded) {
@@ -377,7 +400,7 @@ int cos_bench_main(int argc, char **argv)
     if (!file_exists(csv))
         csv = "benchmarks/graded/graded_prompts.csv";
     printf("=== Creation OS Benchmark: Graded set ===\n");
-    return bench_graded(csv, n, "graded");
+    return bench_graded(csv, n, "graded", adaptive_tau);
 }
 
 int main(int argc, char **argv) { return cos_bench_main(argc, argv); }

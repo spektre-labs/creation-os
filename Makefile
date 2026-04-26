@@ -1803,8 +1803,13 @@ microbench-v74: standalone-v74
 # bindings/ios and bindings/android directories ship Swift + Kotlin
 # façades so iOS / iPadOS / macOS and Android NDK targets consume
 # the kernel directly via a C-ABI.
-V76_SRCS = src/v76/surface.c src/license_kernel/license_attest.c
-V76_INC  = -Isrc/v76 -Isrc/license_kernel
+#
+# Bundled SHA-256 (no OpenSSL) + license attestation sources — used
+# by COS_PROOF_LIB, cos-stamp, v76/v178/v181/v182, and license_attest.
+LICENSE_KERNEL_SRCS = src/crypto/sha256.c src/license_kernel/license_attest.c
+LICENSE_KERNEL_INC  = -Isrc/license_kernel -Isrc
+V76_SRCS = src/v76/surface.c $(LICENSE_KERNEL_SRCS)
+V76_INC  = -Isrc/v76 $(LICENSE_KERNEL_INC)
 
 standalone-v76: src/v76/creation_os_v76.c $(V76_SRCS)
 	$(CC) $(CFLAGS) $(V76_INC) -o creation_os_v76 src/v76/creation_os_v76.c $(V76_SRCS) $(LDFLAGS)
@@ -4184,8 +4189,8 @@ check-v177: check-v177-compress-sigma-prune
 # convergence above quorum; mesh abstains when it cannot
 # converge.  v178.1 wires live v128 mesh transport + signed
 # messages + streaming v72 anchoring.
-V178_INC  = -Isrc/v178 -Isrc/license_kernel
-V178_SRCS = src/v178/consensus.c src/license_kernel/license_attest.c
+V178_INC  = -Isrc/v178 $(LICENSE_KERNEL_INC)
+V178_SRCS = src/v178/consensus.c $(LICENSE_KERNEL_SRCS)
 
 creation_os_v178_consensus: $(V178_SRCS) src/v178/main.c
 	$(CC) $(CFLAGS) $(V178_INC) -o $@ \
@@ -4271,8 +4276,8 @@ check-v180: check-v180-steer-truthful-sigma-drop
 # ISO/IEC 42001).  v181.1 ships `cos audit report --period
 # YYYY-MM` (PDF), `cos audit export --format jsonl` (CLI), and
 # auto-wires v159 self-healing on anomaly.
-V181_INC  = -Isrc/v181 -Isrc/license_kernel
-V181_SRCS = src/v181/audit.c src/license_kernel/license_attest.c
+V181_INC  = -Isrc/v181 $(LICENSE_KERNEL_INC)
+V181_SRCS = src/v181/audit.c $(LICENSE_KERNEL_SRCS)
 
 creation_os_v181_audit: $(V181_SRCS) src/v181/main.c
 	$(CC) $(CFLAGS) $(V181_INC) -o $@ \
@@ -4300,8 +4305,8 @@ check-v181: check-v181-audit-chain-verify
 # invariant still holds.  v182.1 wires live v115 memory rows with
 # AES-GCM at rest, live v129 unlearn broadcast, and a zk-proof
 # verifier for external right-to-forget attestations.
-V182_INC  = -Isrc/v182 -Isrc/license_kernel
-V182_SRCS = src/v182/privacy.c src/license_kernel/license_attest.c
+V182_INC  = -Isrc/v182 $(LICENSE_KERNEL_INC)
+V182_SRCS = src/v182/privacy.c $(LICENSE_KERNEL_SRCS)
 
 creation_os_v182_privacy: $(V182_SRCS) src/v182/main.c
 	$(CC) $(CFLAGS) $(V182_INC) -o $@ \
@@ -6228,7 +6233,7 @@ check-integration: test_sigma_pipeline_integration
 # quantitatively visible.
 COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
                -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma -Isrc/omega \
-               -Isrc/bridge -Isrc/codex
+               -Isrc/bridge -Isrc/codex -Isrc
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6253,7 +6258,7 @@ COS_EDGE_INF = src/sigma/inference_cache.c
 COS_SPIKE_ADAPT_SRCS = src/sigma/spike_engine.c src/sigma/adaptive_compute.c
 COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
 		     src/sigma/constitution.c src/sigma/eu_compliance.c \
-		     src/license_kernel/license_attest.c
+		     $(LICENSE_KERNEL_SRCS)
 
 # DEV-8 purge: src/import/bitnet_ppl.c (llama-perplexity σ heuristic)
 # was removed — bitnet_server.c now delivers real per-token logprob
@@ -6269,6 +6274,9 @@ COS_PROOF_LIB      = src/sigma/proof_receipt.c src/sigma/compliance.c \
 # — it's only ever invoked from cos_chat's escalate callback, which
 # lives in cos-chat's link closure.
 cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+          src/cache/response_cache.c \
+          src/sigma/sigma_trajectory.c \
+          src/sigma/cross_model.c \
           src/sigma/c2pa_sigma.c \
           src/sigma/text_similarity.c \
           src/sigma/ttt/inplace_ttt.c \
@@ -6295,6 +6303,9 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/cache/response_cache.c \
+	    src/sigma/sigma_trajectory.c \
+	    src/sigma/cross_model.c \
 	    src/sigma/c2pa_sigma.c \
 	    src/sigma/text_similarity.c \
 	    src/sigma/ttt/inplace_ttt.c \
@@ -6314,7 +6325,8 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/semantic_entropy.c \
 	    src/sigma/semantic_sigma.c \
 	    $(COS_PROOF_LIB) \
-	    src/cli/escalation.c src/import/ollama_detect.c src/sigma/response_cache.c \
+	    src/cli/escalation.c src/import/ollama_detect.c \
+	    src/sigma/response_cache.c \
 	    src/sigma/cross_model_sigma.c src/sigma/model_cascade.c \
 	    src/sigma/semantic_cache.c \
 	    src/cli/cos_chat.c \
@@ -6365,12 +6377,12 @@ check-compliance: creation_os_check_compliance
 
 creation_os_check_constitution: tests/agi/check_constitution_main.c \
 		src/sigma/constitution.c src/sigma/proof_receipt.c \
-		src/license_kernel/license_attest.c
+		$(LICENSE_KERNEL_SRCS)
 	$(CC) $(CFLAGS) -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
 	    -DCREATION_OS_ENABLE_SELF_TESTS=1 \
 	    -o $@ tests/agi/check_constitution_main.c \
 	    src/sigma/constitution.c src/sigma/proof_receipt.c \
-	    src/license_kernel/license_attest.c $(LDFLAGS)
+	    $(LICENSE_KERNEL_SRCS) $(LDFLAGS)
 
 check-constitution: creation_os_check_constitution
 	@./creation_os_check_constitution
@@ -6379,13 +6391,13 @@ check-constitution: creation_os_check_constitution
 creation_os_check_neuro_symbolic: tests/agi/check_neuro_symbolic_main.c \
 		src/bridge/neural_symbolic.c src/codex/codex_smt.c \
 		src/sigma/constitution.c src/sigma/proof_receipt.c \
-		src/license_kernel/license_attest.c
+		$(LICENSE_KERNEL_SRCS)
 	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma -Isrc/sigma/pipeline \
 	    $(LICENSE_KERNEL_INC) -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
 	    tests/agi/check_neuro_symbolic_main.c \
 	    src/bridge/neural_symbolic.c src/codex/codex_smt.c \
 	    src/sigma/constitution.c src/sigma/proof_receipt.c \
-	    src/license_kernel/license_attest.c $(LDFLAGS)
+	    $(LICENSE_KERNEL_SRCS) $(LDFLAGS)
 
 check-neuro-symbolic: creation_os_check_neuro_symbolic
 	@./creation_os_check_neuro_symbolic
@@ -6933,11 +6945,11 @@ check-text-similarity: creation_os_check_text_similarity
 	@echo "check-text-similarity: OK (Jaccard + normalize self-test)"
 
 creation_os_check_c2pa: tests/agi/check_c2pa_main.c src/sigma/c2pa_sigma.c \
-		src/license_kernel/license_attest.c
+		$(LICENSE_KERNEL_SRCS)
 	$(CC) $(CFLAGS) -Isrc/sigma $(LICENSE_KERNEL_INC) \
 	    -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
 	    tests/agi/check_c2pa_main.c src/sigma/c2pa_sigma.c \
-	    src/license_kernel/license_attest.c $(LDFLAGS)
+	    $(LICENSE_KERNEL_SRCS) $(LDFLAGS)
 
 check-c2pa: creation_os_check_c2pa
 	@./creation_os_check_c2pa
@@ -6945,17 +6957,17 @@ check-c2pa: creation_os_check_c2pa
 
 cos-stamp: src/cli/cos_stamp.c src/sigma/c2pa_sigma.c src/sigma/semantic_sigma.c \
 		src/import/bitnet_server.c src/sigma/text_similarity.c \
-		src/license_kernel/license_attest.c
+		$(LICENSE_KERNEL_SRCS)
 	$(CC) $(CFLAGS) $(LICENSE_KERNEL_INC) -Isrc/sigma -Isrc/import -o $@ \
 	    src/cli/cos_stamp.c src/sigma/c2pa_sigma.c src/sigma/semantic_sigma.c \
 	    src/import/bitnet_server.c src/sigma/text_similarity.c \
-	    src/license_kernel/license_attest.c $(LDFLAGS)
+	    $(LICENSE_KERNEL_SRCS) $(LDFLAGS)
 
 cos-validate: src/cli/cos_validate.c src/sigma/c2pa_sigma.c \
-		src/license_kernel/license_attest.c
+		$(LICENSE_KERNEL_SRCS)
 	$(CC) $(CFLAGS) $(LICENSE_KERNEL_INC) -Isrc/sigma -o $@ \
 	    src/cli/cos_validate.c src/sigma/c2pa_sigma.c \
-	    src/license_kernel/license_attest.c $(LDFLAGS)
+	    $(LICENSE_KERNEL_SRCS) $(LDFLAGS)
 
 check-c2pa-stamp: cos-stamp cos-validate
 	@mkdir -p $(BUILDDIR)
@@ -7068,7 +7080,7 @@ COS_AGENT_SRCS = src/sigma/pipeline/plan.c \
                  src/sigma/pipeline/agent.c \
                  src/cli/cos_agent_node.c \
                  src/sigma/pipeline/codex.c \
-                 src/license_kernel/license_attest.c \
+                 $(LICENSE_KERNEL_SRCS) \
                  src/sigma/pipeline/a2a.c \
                  src/sigma/sigma_mcp_gate.c \
                  src/sigma/tools/sigma_tools.c \
@@ -7078,7 +7090,7 @@ COS_AGENT_SRCS = src/sigma/pipeline/plan.c \
 
 cos-agent: $(COS_AGENT_SRCS) src/cli/cos_agent.c
 	$(CC) $(CFLAGS) -Isrc/sigma/pipeline -Isrc/cli -Isrc/sigma -Isrc/sigma/tools \
-	    -Isrc/license_kernel -o $@ \
+	    $(LICENSE_KERNEL_INC) -o $@ \
 	    $(COS_AGENT_SRCS) src/cli/cos_agent.c $(LDFLAGS) -lsqlite3
 
 check-cos-agent: cos-agent
@@ -8160,8 +8172,10 @@ check-voice: cos
 	@./cos voice --help >/dev/null
 	@echo "check-voice: OK (cos voice --help)"
 
-cos-bench: src/cli/cos_bench.c
-	$(CC) -O2 -Wall -std=c11 -o cos-bench src/cli/cos_bench.c $(LDFLAGS)
+cos-bench: src/cli/cos_bench.c src/sigma/adaptive_tau.c src/omega/pattern_keywords.c
+	$(CC) -O2 -Wall -std=c11 -Isrc/sigma -Isrc/omega -o cos-bench \
+	    src/cli/cos_bench.c src/sigma/adaptive_tau.c src/omega/pattern_keywords.c \
+	    $(LDFLAGS)
 
 # --- σ-pipeline: A2A agent-to-agent (OMEGA-2) ------------------------
 #
@@ -10259,8 +10273,7 @@ check-v301-v306: check-v301 check-v302 check-v303 check-v304 check-v305 check-v3
 #
 # This is the v75 σ-License kernel — the cryptographic-evidence
 # spine of the Spektre Commercial Source License v1.0.
-LICENSE_KERNEL_SRCS = src/license_kernel/license_attest.c
-LICENSE_KERNEL_INC  = -Isrc/license_kernel
+# LICENSE_KERNEL_* defined with COS_PROOF_LIB (bundled crypto SHA-256).
 
 license_attest: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 	$(CC) -O2 -Wall -Wextra -std=c11 $(LICENSE_KERNEL_INC) -o license_attest src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
@@ -10310,6 +10323,7 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	    src/cli/cos_demo.c \
 	    src/cli/cos_verify_claims.c src/sigma/semantic_entropy.c \
 	    src/cli/cos_life.c \
+	    src/cache/response_cache.c \
 	    $(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline -Isrc/vendor \
@@ -10328,6 +10342,7 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	    src/cli/cos_demo.c \
 	    src/cli/cos_verify_claims.c src/sigma/semantic_entropy.c \
 	    src/cli/cos_life.c \
+	    src/cache/response_cache.c \
 	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	    $(COS_PROOF_LIB) \
 	    src/cli/cos_serve.c src/vendor/picohttpparser.c src/sigma/audit_log.c \

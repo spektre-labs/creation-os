@@ -56,6 +56,30 @@ void cos_adaptive_tau_invalidate_cache(void);
  */
 float cos_adaptive_tau_for_prompt_domain(const char *prompt_utf8, float base);
 
+/* ── Runtime τ session (σ history + ~/.cos/tau_state.json) ───────── */
+
+typedef struct {
+    float tau_accept;
+    float tau_rethink;
+    float sigma_history[256];
+    int   correct_history[256];
+    int   n_history;
+    float accuracy_estimate;
+} cos_adaptive_tau_t;
+
+/** Default path: $HOME/.cos/tau_state.json */
+int cos_adaptive_tau_state_path(char *buf, size_t cap);
+
+int cos_adaptive_tau_state_load(cos_adaptive_tau_t *at);
+int cos_adaptive_tau_state_save(const cos_adaptive_tau_t *at);
+
+/** was_correct: 1 yes, 0 no, -1 unknown (σ stored; label omitted from conformal). */
+float cos_adaptive_tau_update(cos_adaptive_tau_t *at, float sigma, int was_correct);
+
+/** Conformal-style τ from labeled rows only (correct[j] < 0 skips sample j). */
+float cos_conformal_tau(const float *sigmas, const int *correct, int n,
+                        float target_accuracy);
+
 #ifdef __cplusplus
 }
 #endif

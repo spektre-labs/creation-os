@@ -31,6 +31,8 @@
 #include "../vendor/picohttpparser.h"
 #include "bitnet_server.h"
 #include "cos_verify_claims.h"
+#include "crypto/sha256.h"
+#include "cache/response_cache.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -143,14 +145,7 @@ static int json_copy_string(const char *v, char *dst, size_t cap)
 
 static void sha256_hex(const void *data, size_t len, char out65[65])
 {
-    uint8_t h[32];
-    spektre_sha256(data, len, h);
-    static const char *hx = "0123456789abcdef";
-    for (int i = 0; i < 32; ++i) {
-        out65[i * 2]     = hx[(h[i] >> 4) & 15];
-        out65[i * 2 + 1] = hx[h[i] & 15];
-    }
-    out65[64] = '\0';
+    cos_sha256_hex((const uint8_t *)data, len, out65);
 }
 
 static void gen_audit_id(char out17[17])
@@ -661,6 +656,68 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
     if (!cos_bitnet_server_is_healthy())
         return http_reply_json(cfd, 503, "{\"error\":\"ollama_unavailable\"}");
 
+    {
+        const char *mod_cache =
+            model[0] ? model : getenv("COS_BITNET_CHAT_MODEL");
+        if (mod_cache == NULL || mod_cache[0] == '\0')
+            mod_cache = "gemma3:4b";
+        cos_cache_entry_t cce;
+        if (cos_cache_lookup(prompt, mod_cache, &cce) == 0) {
+            char          audit_id[17];
+            char          ph[65], rh[65];
+            char          phf[96], rhf[96];
+            char          esc[8192];
+            size_t        w = 0;
+            const char   *cresp = (cce.response[0] != '\0') ? cce.response : "";
+            gen_audit_id(audit_id);
+            sha256_hex(prompt, strlen(prompt), ph);
+            sha256_hex(cresp, strlen(cresp), rh);
+            snprintf(phf, sizeof phf, "sha256:%s", ph);
+            snprintf(rhf, sizeof rhf, "sha256:%s", rh);
+            for (const char *s = cresp; *s && w + 2 < sizeof esc; ++s) {
+                unsigned char c = (unsigned char)*s;
+                if (c == '"' || c == '\\') {
+                    esc[w++] = '\\';
+                    esc[w++] = (char)c;
+                } else if (c == '\n') {
+                    esc[w++] = '\\';
+                    esc[w++] = 'n';
+                } else if (c < 0x20u)
+                    w += (size_t)snprintf(esc + w, sizeof esc - w, "\\u%04x", c);
+                else
+                    esc[w++] = (char)c;
+            }
+            esc[w] = '\0';
+            float temp = 0.3f;
+            {
+                const char *te = getenv("COS_SERVE_DEFAULT_TEMPERATURE");
+                if (te && te[0])
+                    temp = (float)atof(te);
+            }
+            {
+                char codexh[96];
+                codex_sha256_field(st, codexh, sizeof codexh);
+                (void)cos_audit_append_serve_row(
+                    audit_id, phf, prompt, (double)cce.sigma, (double)cce.sigma,
+                    cce.action[0] ? cce.action : "ACCEPT", mod_cache, rhf, 0.0,
+                    temp, st->cfg.tau_accept, st->cfg.tau_rethink, 0, codexh);
+            }
+            char receipt_disp[24];
+            snprintf(receipt_disp, sizeof receipt_disp, "%.16s", rh);
+            char js[SERVE_JSON_MAX];
+            snprintf(
+                js, sizeof js,
+                "{\"response\":\"%s\",\"sigma\":%.6f,\"action\":\"%s\","
+                "\"receipt\":\"%s\",\"model\":\"%s\","
+                "\"gated\":true,\"audit_id\":\"%s\",\"latency_ms\":%.1f,"
+                "\"cached\":true}",
+                esc, (double)cce.sigma,
+                (cce.action[0] != '\0') ? cce.action : "ACCEPT", receipt_disp,
+                mod_cache, audit_id, 0.0);
+            return http_reply_json(cfd, 200, js);
+        }
+    }
+
     cos_pipeline_result_t r;
     memset(&r, 0, sizeof r);
     clock_t t0 = clock();
@@ -734,6 +791,7 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
                  esc, (double)r.sigma, action_label(r.final_action), receipt_disp,
                  mod_json, audit_id, ms);
     }
+    cos_cache_store(prompt, mod_json, resp, r.sigma, action_label(r.final_action));
     return http_reply_json(cfd, 200, js);
 }
 

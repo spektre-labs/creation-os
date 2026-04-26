@@ -93,6 +93,9 @@
 #include "semantic_entropy.h"
 #include "semantic_sigma.h"
 #include "response_cache.h"
+#include "cache/response_cache.h"
+#include "sigma_trajectory.h"
+#include "cross_model.h"
 #include "cross_model_sigma.h"
 #include "model_cascade.h"
 #include "semantic_cache.h"
@@ -921,6 +924,9 @@ typedef struct {
     int   dual_process;
     /** One-line machine JSON on stdout (--once); human chatter on stderr. */
     int   json_once;
+    int   use_disk_cache;
+    int   adaptive_tau_learn;
+    int   trajectory_cli;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -1088,6 +1094,7 @@ static int      g_spike_have_last;
 static char     g_spike_last_resp[4096];
 static char     g_spike_ham_buf[4096];
 static char     g_cos_sem_lru_buf[4096];
+static char     g_disk_cache_body[4096];
 static char     g_cos_cascade_buf[4096];
 static char     g_cos_eng_cascade_buf[4096];
 
@@ -1625,6 +1632,38 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     int     prc          = 0;
 
     if (!early_spec_abstain && !semantic_hit && feat != NULL
+        && feat->use_disk_cache && cos_cli_use_bitnet_http() != 0) {
+        cos_cache_entry_t ce;
+        const char       *cm = cos_chat_backend_label();
+        if (cos_cache_lookup(prompt, cm, &ce) == 0) {
+            snprintf(g_disk_cache_body, sizeof g_disk_cache_body, "%s",
+                     ce.response);
+            r.response       = g_disk_cache_body;
+            r.sigma          = ce.sigma;
+            r.engram_hit     = 0;
+            r.rethink_count  = 0;
+            r.escalated      = 0;
+            r.cost_eur       = 0.0;
+            if (strcmp(ce.action, "ACCEPT") == 0)
+                r.final_action = COS_SIGMA_ACTION_ACCEPT;
+            else if (strcmp(ce.action, "RETHINK") == 0)
+                r.final_action = COS_SIGMA_ACTION_RETHINK;
+            else
+                r.final_action = COS_SIGMA_ACTION_ABSTAIN;
+            r.agent_gate   = COS_AGENT_ALLOW;
+            r.diagnostic   = "disk_prompt_cache";
+            r.mode         = cfg_rw->mode;
+            r.codex_hash   = cfg_rw->codex != NULL ? cfg_rw->codex->hash_fnv1a64
+                                                   : 0ULL;
+            r.ttt_applied  = 0;
+            semantic_hit   = 1;
+            prc            = 0;
+            fprintf(co, "[CACHED] σ=%.3f action=%s\n", (double)r.sigma,
+                    ce.action);
+        }
+    }
+
+    if (!early_spec_abstain && !semantic_hit && feat != NULL
         && feat->semantic_lru) {
         uint64_t hlr = cos_semantic_cache_prompt_hash(prompt);
         float    cs  = cos_semantic_cache_lookup(
@@ -1848,6 +1887,13 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         && r.response != NULL)
         cos_response_cache_store(resp_cache_h, r.sigma, r.response);
 
+    if (!early_spec_abstain && feat != NULL && feat->use_disk_cache && prc == 0
+        && r.response != NULL
+        && (r.diagnostic == NULL
+            || strcmp(r.diagnostic, "disk_prompt_cache") != 0))
+        cos_cache_store(prompt, cos_chat_backend_label(), r.response, r.sigma,
+                        cos_sigma_action_label(r.final_action));
+
     if (!early_spec_abstain && feat != NULL && feat->semantic_lru && prc == 0
         && r.response != NULL
         && strcmp(r.response, COS_CHAT_PIPELINE_ABSTAIN) != 0
@@ -2054,6 +2100,33 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                 (g_ag_ledger_ready && g_ag_ledger.drift_detected) ? 1 : 0);
         fflush(tout);
     }
+    if (feat != NULL && feat->adaptive_tau_learn && prc == 0
+        && r.response != NULL) {
+        static cos_adaptive_tau_t g_at_learn;
+        static int                g_at_learn_inited;
+        if (!g_at_learn_inited) {
+            (void)cos_adaptive_tau_state_load(&g_at_learn);
+            g_at_learn_inited = 1;
+        }
+        (void)cos_adaptive_tau_update(&g_at_learn, r.sigma, -1);
+        (void)cos_adaptive_tau_state_save(&g_at_learn);
+    }
+    if (feat != NULL && feat->trajectory_cli && feat->verbose
+        && cos_cli_use_bitnet_http() != 0 && !jo) {
+        int         port = 11434;
+        const char *pe   = getenv("COS_BITNET_SERVER_PORT");
+        if (pe != NULL && pe[0] != '\0')
+            port = atoi(pe);
+        const char *mdl = getenv("COS_BITNET_CHAT_MODEL");
+        if (mdl == NULL || mdl[0] == '\0')
+            mdl = "gemma3:4b";
+        cos_sigma_trajectory_t tr = cos_measure_trajectory(port, prompt, mdl);
+        for (int si = 0; si < tr.n_steps; ++si)
+            fprintf(co, "  Step %d: σ=%.2f\n", si + 1,
+                    (double)tr.sigma_per_step[si]);
+        fprintf(co, "  Trajectory: slope=%.3f → %s\n", (double)tr.sigma_slope,
+                cos_trajectory_action(&tr));
+    }
     if (feat != NULL && feat->knowledge_graph && r.response != NULL)
         chat_kg_store_turn(prompt, r.response);
     return 0;
@@ -2208,6 +2281,12 @@ int main(int argc, char **argv) {
     int         fast_sigma         = 0;
     int         adaptive_tau_csv   = 0;
     const char *adaptive_csv_path = NULL;
+    int         use_disk_cache     = 1;
+    int         adaptive_tau_learn = 0;
+    int         trajectory_cli     = 0;
+    char        cross_models_buf[512];
+    int         cross_models_n     = 0;
+    const char *cross_models[8];
     const char *domain             = "general";
 
     for (int i = 1; i < argc; ++i) {
@@ -2262,6 +2341,23 @@ int main(int argc, char **argv) {
                    && i + 1 < argc) {
             adaptive_csv_path = argv[++i];
             adaptive_tau_csv  = 1;
+        } else if (strcmp(argv[i], "--no-cache") == 0) {
+            use_disk_cache = 0;
+        } else if (strcmp(argv[i], "--adaptive-tau-learn") == 0) {
+            adaptive_tau_learn = 1;
+        } else if (strcmp(argv[i], "--trajectory") == 0) {
+            trajectory_cli = 1;
+        } else if (strcmp(argv[i], "--cross-model") == 0 && i + 1 < argc) {
+            const char *src = argv[++i];
+            snprintf(cross_models_buf, sizeof cross_models_buf, "%s", src);
+            cross_models_n = 0;
+            for (char *tok = strtok(cross_models_buf, ","); tok != NULL
+                 && cross_models_n < 8;
+                 tok = strtok(NULL, ",")) {
+                while (*tok == ' ' || *tok == '\t')
+                    ++tok;
+                cross_models[cross_models_n++] = tok;
+            }
         } else if (strcmp(argv[i], "--domain") == 0 && i + 1 < argc) {
             domain = argv[++i];
         } else if (strcmp(argv[i], "--ttt") == 0) {
@@ -2869,8 +2965,37 @@ int main(int argc, char **argv) {
                 return 4;
             }
         }
+        if (cross_models_n > 0 && once_prompt != NULL && once_prompt[0] != '\0'
+            && cos_cli_use_bitnet_http() != 0) {
+            int               port = 11434;
+            const char       *pe   = getenv("COS_BITNET_SERVER_PORT");
+            cos_model_result_t res[8];
+            if (pe != NULL && pe[0] != '\0')
+                port = atoi(pe);
+            if (cos_cross_model_query(port, once_prompt, cross_models,
+                                      cross_models_n, res)
+                == 0) {
+                int best = cos_select_best_model(res, cross_models_n);
+                int j;
+                for (j = 0; j < cross_models_n; ++j) {
+                    fprintf(stdout, "  %-14s σ=%.3f %-8s%s\n", res[j].model,
+                            (double)res[j].sigma, res[j].action,
+                            (j == best) ? "←" : "");
+                }
+                fprintf(stdout, "  Selected: %s (lowest σ)\n", res[best].model);
+            }
+            if (tout != NULL)
+                fclose(tout);
+            cos_sigma_pipeline_free_engram_values(&engram);
+            cos_sigma_codex_free(&codex);
+            cos_engram_persist_close(persist);
+            return 0;
+        }
         chat_feat_t feat;
         memset(&feat, 0, sizeof(feat));
+        feat.use_disk_cache       = use_disk_cache;
+        feat.adaptive_tau_learn   = adaptive_tau_learn;
+        feat.trajectory_cli       = trajectory_cli;
         feat.multi_sigma        = multi_sigma;
         feat.conformal_active   = conformal_active;
         feat.conformal_alpha    = conformal_alpha;

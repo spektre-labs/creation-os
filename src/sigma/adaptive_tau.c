@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 static float g_cached_tau = -1.0f;
 static char  g_cached_path[1024];
@@ -319,4 +321,158 @@ float cos_adaptive_tau_rethink_from_accept(float tau_accept)
 float cos_adaptive_tau_rethink(void)
 {
     return cos_adaptive_tau_rethink_from_accept(cos_adaptive_tau_accept());
+}
+
+/* --- Runtime τ persistence (JSON) ------------------------------------ */
+
+int cos_adaptive_tau_state_path(char *buf, size_t cap)
+{
+    const char *h = getenv("HOME");
+    if (!buf || cap < 48)
+        return -1;
+    if (h == NULL || h[0] == '\0')
+        h = "/tmp";
+    if (snprintf(buf, cap, "%s/.cos/tau_state.json", h) >= (int)cap)
+        return -1;
+    return 0;
+}
+
+int cos_adaptive_tau_state_load(cos_adaptive_tau_t *at)
+{
+    char path[512], line[4096];
+    if (at == NULL || cos_adaptive_tau_state_path(path, sizeof path) != 0)
+        return -1;
+    memset(at, 0, sizeof *at);
+    at->tau_accept          = 0.40f;
+    at->tau_rethink         = 0.60f;
+    at->accuracy_estimate   = 0.5f;
+    FILE *f = fopen(path, "r");
+    if (f == NULL)
+        return -1;
+    while (fgets(line, sizeof line, f) != NULL) {
+        if (strncmp(line, "\"tau_accept\":", 13) == 0)
+            at->tau_accept = (float)strtod(line + 13, NULL);
+        else if (strncmp(line, "\"tau_rethink\":", 14) == 0)
+            at->tau_rethink = (float)strtod(line + 14, NULL);
+        else if (strncmp(line, "\"n_history\":", 12) == 0)
+            at->n_history = atoi(line + 12);
+        else if (strncmp(line, "\"accuracy_estimate\":", 21) == 0)
+            at->accuracy_estimate = (float)strtod(line + 21, NULL);
+    }
+    fclose(f);
+    if (at->tau_accept < 0.02f || at->tau_accept > 0.98f || at->tau_accept != at->tau_accept)
+        at->tau_accept = 0.40f;
+    if (at->tau_rethink <= at->tau_accept || at->tau_rethink > 0.99f)
+        at->tau_rethink = cos_adaptive_tau_rethink_from_accept(at->tau_accept);
+    return 0;
+}
+
+int cos_adaptive_tau_state_save(const cos_adaptive_tau_t *at)
+{
+    char path[512];
+    if (at == NULL || cos_adaptive_tau_state_path(path, sizeof path) != 0)
+        return -1;
+    {
+        char dir[512];
+        snprintf(dir, sizeof dir, "%s", path);
+        char *slash = strrchr(dir, '/');
+        if (slash) {
+            *slash = '\0';
+            (void)mkdir(dir, 0700);
+        }
+    }
+    FILE *f = fopen(path, "w");
+    if (f == NULL)
+        return -1;
+    fprintf(f,
+            "{\n  \"tau_accept\": %.6f,\n  \"tau_rethink\": %.6f,\n"
+            "  \"n_history\": %d,\n  \"accuracy_estimate\": %.6f\n}\n",
+            (double)at->tau_accept, (double)at->tau_rethink, at->n_history,
+            (double)at->accuracy_estimate);
+    fclose(f);
+    return 0;
+}
+
+float cos_conformal_tau(const float *sigmas, const int *correct, int n,
+                        float target_accuracy)
+{
+    int   i, j;
+    float best = 0.35f;
+    if (sigmas == NULL || correct == NULL || n <= 0)
+        return best;
+    for (i = 0; i < n; ++i) {
+        float t = sigmas[i];
+        if (t < 0.f || t > 1.f || t != t)
+            continue;
+        int ok = 0, tot = 0;
+        for (j = 0; j < n; ++j) {
+            if (sigmas[j] <= t + 1e-6f) {
+                if (correct[j] < 0)
+                    continue; /* unknown label — exclude from conformal ratio */
+                tot++;
+                if (correct[j])
+                    ok++;
+            }
+        }
+        if (tot > 0 && (float)ok / (float)tot >= target_accuracy - 1e-4f
+            && t > best)
+            best = t;
+    }
+    if (best < 0.05f)
+        best = 0.05f;
+    if (best > 0.95f)
+        best = 0.95f;
+    return best;
+}
+
+float cos_adaptive_tau_update(cos_adaptive_tau_t *at, float sigma, int was_correct)
+{
+    int nuse;
+    if (at == NULL)
+        return 0.4f;
+    if (was_correct >= 0)
+        at->accuracy_estimate =
+            0.92f * at->accuracy_estimate + 0.08f * (was_correct ? 1.f : 0.f);
+    {
+        int ch = 0;
+        if (was_correct > 0)
+            ch = 1;
+        else if (was_correct == 0)
+            ch = 0;
+        else
+            ch = -1; /* unknown — σ logged but not used as false in conformal */
+        if (at->n_history < 256) {
+            at->sigma_history[at->n_history]   = sigma;
+            at->correct_history[at->n_history] = ch;
+            at->n_history++;
+        } else {
+            memmove(at->sigma_history, at->sigma_history + 1,
+                    255u * sizeof(at->sigma_history[0]));
+            memmove(at->correct_history, at->correct_history + 1,
+                    255u * sizeof(at->correct_history[0]));
+            at->sigma_history[255]   = sigma;
+            at->correct_history[255] = ch;
+        }
+    }
+    nuse = at->n_history;
+    if (nuse >= 4) {
+        int labeled = 0;
+        for (int k = 0; k < nuse; ++k) {
+            if (at->correct_history[k] >= 0) {
+                labeled = 1;
+                break;
+            }
+        }
+        float ct = at->tau_accept;
+        if (labeled)
+            ct = cos_conformal_tau(at->sigma_history, at->correct_history, nuse,
+                                   0.88f);
+        at->tau_accept = 0.85f * at->tau_accept + 0.15f * ct;
+        if (at->tau_accept < 0.08f)
+            at->tau_accept = 0.08f;
+        if (at->tau_accept > 0.85f)
+            at->tau_accept = 0.85f;
+        at->tau_rethink = cos_adaptive_tau_rethink_from_accept(at->tau_accept);
+    }
+    return at->tau_accept;
 }

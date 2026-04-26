@@ -38,6 +38,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "crypto/sha256.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,14 +61,9 @@ extern const uint8_t  spektre_license_sha256_bin[32];
 #define SPEKTRE_WEBSITE_URL      "https://spektrelabs.org"
 #define SPEKTRE_COMMERCIAL_EMAIL "spektre.labs@proton.me"
 
-/* ── 1. SHA-256 (FIPS-180-4), self-contained ───────────────────── */
+/* ── 1. SHA-256 (FIPS-180-4) via src/crypto/sha256.c (no OpenSSL) ─ */
 
-typedef struct {
-    uint32_t  h[8];
-    uint64_t  total_bits;
-    uint8_t   buf[64];
-    size_t    buf_len;
-} spektre_sha256_ctx_t;
+typedef cos_sha256_ctx_t spektre_sha256_ctx_t;
 
 void  spektre_sha256_init   (spektre_sha256_ctx_t *ctx);
 void  spektre_sha256_update (spektre_sha256_ctx_t *ctx,
