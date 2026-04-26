@@ -3,6 +3,7 @@
 #include "cross_model_sigma.h"
 
 #include "bitnet_server.h"
+#include "semantic_entropy.h"
 #include "text_similarity.h"
 
 #include <stdlib.h>
@@ -191,4 +192,40 @@ float cos_cross_model_sigma(int port, const char *prompt,
     free(r1);
     free(r2);
     return sig;
+}
+
+float cos_cross_model_sigma_eu_from_sigmas(const float *sigmas, int n_models)
+{
+    int   i;
+    float lo, hi;
+    if (sigmas == NULL || n_models < 2)
+        return 0.0f;
+    lo = hi = sigmas[0];
+    for (i = 1; i < n_models; ++i) {
+        float s = sigmas[i];
+        if (s < lo)
+            lo = s;
+        if (s > hi)
+            hi = s;
+    }
+    return hi - lo;
+}
+
+float cos_cross_model_eu(int port, const char *prompt, const char **models,
+                         int n_models)
+{
+    int   i;
+    float sigs[16];
+    if (prompt == NULL || prompt[0] == '\0' || models == NULL || n_models < 2
+        || n_models > (int)(sizeof sigs / sizeof sigs[0]))
+        return 1.0f;
+    for (i = 0; i < n_models; ++i) {
+        const char *mdl =
+            (models[i] != NULL && models[i][0] != '\0') ? models[i] : "gemma3:4b";
+        int   ncl = 3;
+        float se =
+            cos_semantic_entropy_ex(prompt, NULL, port, mdl, 3, &ncl);
+        sigs[i] = se;
+    }
+    return cos_cross_model_sigma_eu_from_sigmas(sigs, n_models);
 }

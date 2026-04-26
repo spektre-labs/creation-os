@@ -2975,12 +2975,41 @@ int main(int argc, char **argv) {
             if (cos_cross_model_query(port, once_prompt, cross_models,
                                       cross_models_n, res)
                 == 0) {
-                int best = cos_select_best_model(res, cross_models_n);
-                int j;
+                int   best = cos_select_best_model(res, cross_models_n);
+                int   j;
+                float sigbuf[8];
+                float mean_au = 0.0f;
                 for (j = 0; j < cross_models_n; ++j) {
-                    fprintf(stdout, "  %-14s σ=%.3f %-8s%s\n", res[j].model,
-                            (double)res[j].sigma, res[j].action,
-                            (j == best) ? "←" : "");
+                    sigbuf[j] = res[j].sigma;
+                    mean_au += res[j].sigma;
+                }
+                if (cross_models_n > 0)
+                    mean_au /= (float)cross_models_n;
+                float eu = cos_cross_model_sigma_eu_from_sigmas(sigbuf,
+                                                                cross_models_n);
+                float sigma_total =
+                    mean_au + eu;
+                if (sigma_total > 1.0f)
+                    sigma_total = 1.0f;
+                for (j = 0; j < cross_models_n; ++j) {
+                    if (j > 0)
+                        fputs("  ", stdout);
+                    fprintf(stdout, "%-14s σ=%.2f", res[j].model,
+                            (double)res[j].sigma);
+                }
+                fputc('\n', stdout);
+                {
+                    const char *eu_tag =
+                        (eu < 0.15f) ? "low disagreement" : "high disagreement";
+                    const char *route = "ACCEPT";
+                    if (cross_models_n >= 2 && eu >= 0.35f)
+                        route = "ABSTAIN";
+                    else if (sigma_total >= 0.65f)
+                        route = "RETHINK";
+                    fprintf(stdout,
+                            "  EU=%.2f (%s) → %s\n"
+                            "  σ_total=%.2f (mean AU + cross-model EU)\n",
+                            (double)eu, eu_tag, route, (double)sigma_total);
                 }
                 fprintf(stdout, "  Selected: %s (lowest σ)\n", res[best].model);
             }

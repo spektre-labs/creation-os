@@ -295,6 +295,15 @@ static void serve_autodetect_ollama_env(void)
         if (serve_tcp_probe_port(11434, 800) == 0)
             (void)setenv("COS_INFERENCE_BACKEND", "ollama", 1);
     }
+    if (getenv("COS_INFERENCE_BACKEND") != NULL
+        && strcmp(getenv("COS_INFERENCE_BACKEND"), "ollama") == 0) {
+        if (getenv("COS_BITNET_SERVER_EXTERNAL") == NULL
+            || getenv("COS_BITNET_SERVER_EXTERNAL")[0] == '\0')
+            (void)setenv("COS_BITNET_SERVER_EXTERNAL", "1", 1);
+        if (getenv("COS_BITNET_SERVER_PORT") == NULL
+            || getenv("COS_BITNET_SERVER_PORT")[0] == '\0')
+            (void)setenv("COS_BITNET_SERVER_PORT", "11434", 1);
+    }
     if (getenv("COS_INFERENCE_BACKEND") == NULL
         || strcmp(getenv("COS_INFERENCE_BACKEND"), "ollama") != 0)
         return;

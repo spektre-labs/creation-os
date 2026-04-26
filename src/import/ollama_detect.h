@@ -21,6 +21,9 @@ int cos_ollama_http_get_tags(const char *host, uint16_t port, char *buf, size_t 
 /** Parse Ollama tags JSON body; prefers gemma3:4b, else first "name":"…". */
 void cos_ollama_pick_model_from_tags(const char *http, char *model, size_t mcap);
 
+/** GET /api/tags on host:port; returns malloc'd first model name or NULL. */
+char *cos_ollama_first_model(uint16_t port);
+
 /**
  * If COS_BITNET_SERVER_EXTERNAL is unset and 127.0.0.1:11434 answers,
  * set COS_BITNET_SERVER_EXTERNAL=1, COS_BITNET_SERVER_PORT=11434,

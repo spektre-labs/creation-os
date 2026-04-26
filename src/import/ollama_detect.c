@@ -102,6 +102,22 @@ int cos_ollama_http_get_tags(const char *host, uint16_t port, char *buf, size_t 
     return 0;
 }
 
+char *cos_ollama_first_model(uint16_t port)
+{
+    const char *host = getenv("COS_OLLAMA_HOST");
+    char        tags[65536];
+    char        m[256];
+    if (host == NULL || host[0] == '\0')
+        host = "127.0.0.1";
+    if (cos_ollama_http_get_tags(host, port, tags, sizeof tags) != 0)
+        return NULL;
+    m[0] = '\0';
+    cos_ollama_pick_model_from_tags(tags, m, sizeof m);
+    if (m[0] == '\0')
+        return NULL;
+    return strdup(m);
+}
+
 void cos_ollama_pick_model_from_tags(const char *http, char *model, size_t mcap)
 {
     if (model == NULL || mcap == 0)
@@ -160,12 +176,13 @@ void cos_ollama_autodetect_apply_env(void)
     int have_ollama_m = getenv("COS_OLLAMA_MODEL") != NULL
                       && getenv("COS_OLLAMA_MODEL")[0] != '\0';
 
-    if (have_chat && !have_ollama_m) {
-        (void)setenv("COS_OLLAMA_MODEL", getenv("COS_BITNET_CHAT_MODEL"), 1);
+    if (have_chat) {
+        if (!have_ollama_m)
+            (void)setenv("COS_OLLAMA_MODEL", getenv("COS_BITNET_CHAT_MODEL"), 1);
+        fprintf(stderr, "Ollama detected (%s)\n",
+                getenv("COS_BITNET_CHAT_MODEL"));
         return;
     }
-    if (have_chat)
-        return;
 
     char tags[65536];
     char m[128];
@@ -176,4 +193,5 @@ void cos_ollama_autodetect_apply_env(void)
         snprintf(m, sizeof m, "gemma3:4b");
     (void)setenv("COS_OLLAMA_MODEL", m, 1);
     (void)setenv("COS_BITNET_CHAT_MODEL", m, 1);
+    fprintf(stderr, "Ollama detected (%s)\n", m);
 }

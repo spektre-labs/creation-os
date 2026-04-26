@@ -5,6 +5,7 @@
 #include "bitnet_server.h"
 #include "text_similarity.h"
 
+#include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -155,6 +156,31 @@ static int ss_parallel_semantic_sigma(void)
 {
     const char *e = getenv("COS_SEMANTIC_SIGMA_PARALLEL");
     return (e == NULL || e[0] != '0' || e[1] != '\0');
+}
+
+/** Parallel T=0.1 / T=1.5 pair via pthread (default off; fork is default). */
+static int ss_use_pthread_semantic_sigma(void)
+{
+    const char *e = getenv("COS_SEMANTIC_SIGMA_USE_PTHREAD");
+    return (e != NULL && e[0] == '1' && e[1] == '\0');
+}
+
+typedef struct {
+    int         port;
+    const char *prompt;
+    const char *sysp;
+    float       temp;
+    int         max_tokens;
+    char       *result;
+} ss_inference_arg_t;
+
+static void *ss_inference_thread(void *arg)
+{
+    ss_inference_arg_t *a = (ss_inference_arg_t *)arg;
+    a->result =
+        cos_bitnet_query_temp_with_options(a->port, a->prompt, a->sysp, a->temp,
+                                           a->max_tokens);
+    return NULL;
 }
 
 static int ss_pipe_read_dup(int rd, char **out)
@@ -310,7 +336,30 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         if (dup0 == NULL)
             ok = -1;
         texts[0] = dup0;
-        if (ok == 0 && ss_parallel_semantic_sigma()) {
+        if (ok == 0 && ss_use_pthread_semantic_sigma()) {
+            pthread_t        t1, t2;
+            ss_inference_arg_t a1 = { port, prompt, k_semantic_extra_sysp, 0.1f,
+                                      k_semantic_extra_np, NULL };
+            ss_inference_arg_t a2 = { port, prompt, k_semantic_extra_sysp, 1.5f,
+                                      k_semantic_extra_np, NULL };
+            if (pthread_create(&t1, NULL, ss_inference_thread, &a1) != 0
+                || pthread_create(&t2, NULL, ss_inference_thread, &a2) != 0) {
+                ok = -1;
+            } else {
+                (void)pthread_join(t1, NULL);
+                (void)pthread_join(t2, NULL);
+                dup1 = a1.result;
+                dup2 = a2.result;
+                if (dup1 == NULL || dup1[0] == '\0' || dup2 == NULL
+                    || dup2[0] == '\0') {
+                    free(dup1);
+                    dup1 = NULL;
+                    free(dup2);
+                    dup2 = NULL;
+                    ok = -1;
+                }
+            }
+        } else if (ok == 0 && ss_parallel_semantic_sigma()) {
             int   pr1[2], pr2[2];
             pid_t c1 = ss_fork_query_pipe(pr1, port, prompt, k_semantic_extra_sysp,
                                          0.1f, k_semantic_extra_np);

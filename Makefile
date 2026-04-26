@@ -2,7 +2,7 @@
 # One command: make all
 CC = cc
 CFLAGS = -O2 -march=native -Wall -std=c11 -D_GNU_SOURCE -D_DARWIN_C_SOURCE
-LDFLAGS = -lm
+LDFLAGS = -lm -pthread
 BUILDDIR = .build
 # Verilator 5+: --timing with --lint-only (Ubuntu 24.04+). Override: make VERILATOR_LINT_FLAGS=-Wall formal-rtl-lint
 #

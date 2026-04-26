@@ -399,6 +399,7 @@ def main() -> int:
     rows_sorted = sorted(rows, key=lambda r: r["sigma"])
     n = len(rows_sorted)
     out_lines: list[str] = []
+    br = brier_score(rows_sorted)
 
     # --- AUROC / AURC (need ≥4) ---
     auroc = None
@@ -427,6 +428,7 @@ def main() -> int:
         augrc = trapezoid_augrc(cov_gr, gen_risks)
         print(f"AUGRC: {augrc:.4f}")
         print("  (area under coverage×selective-risk; lower = better; 0 = perfect)")
+        print(f"Brier Score: {br:.4f}")
         print("")
         print(f"Correct: {n_cor} | Incorrect: {n_inc}")
         print("")
@@ -471,7 +473,6 @@ def main() -> int:
     else:
         print(f"AUROC/AURC skipped (n={n} < 4).")
 
-    br = brier_score(rows_sorted)
     print("=== Brier score (confidence = 1−σ) ===")
     print(f"Brier: {br:.4f}")
     print("  (proper scoring rule; lower = better; 0 = perfect)")
@@ -564,13 +565,24 @@ def main() -> int:
         md.append(f"- **AURC:** {aurc:.4f}\n")
         md.append(f"- **AUGRC:** {augrc:.4f} (lower = better)\n")
         md.append(f"- **Brier:** {br:.4f} (lower = better; conf = 1−σ)\n")
+        md.append(
+            "- **Cross-model (optional):** `cos chat --once --cross-model a,b` "
+            "prints per-model σ, EU (max−min spread), and σ_total = mean(AU)+EU; "
+            "graded AUROC vs single-model is an operator-side comparison.\n"
+        )
         md.append(f"- **Correct / incorrect:** {n_cor} / {n_inc}\n\n")
     elif n >= 4:
         md.append("## AUROC / AURC / AUGRC / Brier\n\n")
         md.append(f"- **AUROC:** undefined ({reason})\n")
         md.append(f"- **AURC:** {aurc:.4f}\n")
         md.append(f"- **AUGRC:** {augrc:.4f}\n")
-        md.append(f"- **Brier:** {br:.4f}\n\n")
+        md.append(f"- **Brier:** {br:.4f}\n")
+        md.append(
+            "- **Cross-model (optional):** `cos chat --once --cross-model a,b` "
+            "prints per-model σ, EU (max−min spread), and σ_total = mean(AU)+EU; "
+            "graded AUROC vs single-model is an operator-side comparison.\n"
+        )
+        md.append(f"- **Correct / incorrect:** {n_cor} / {n_inc}\n\n")
     else:
         md.append("## AUROC / AURC / AUGRC / Brier\n\nSkipped (insufficient rows).\n\n")
 

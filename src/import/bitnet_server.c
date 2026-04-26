@@ -9,7 +9,9 @@
  *
  *  Implementation notes:
  *    - Pure POSIX: fork, execvp, socket, AF_INET, send, recv,
- *      kill, waitpid, atexit.  No libcurl, no threads.
+ *      kill, waitpid, atexit.  No libcurl.  Optional pthread overlap
+ *      for semantic-σ dual-temperature probes lives in semantic_sigma.c
+ *      (COS_SEMANTIC_SIGMA_USE_PTHREAD=1; default remains fork isolation).
  *    - JSON parsing is deliberately minimal — we only need five
  *      fields (content, completion_probabilities, tokens_predicted,
  *      stopped_eos, stopped_limit) and the per-token `prob` floats.
