@@ -1,7 +1,6 @@
 """Thin HTTP client for cos-serve (σ-gate API).
 
-Requires: pip install requests
-Server: build with `make cos-serve`, run `./cos-serve --port 3001` or `cos serve`.
+Install from repo: ``pip install -e sdk/python`` (requires ``requests``).
 """
 
 from __future__ import annotations
@@ -26,7 +25,7 @@ class CreationOS:
         port: Optional[int] = None,
         *,
         base_url: Optional[str] = None,
-        timeout_s: float = 600.0,
+        timeout_s: float = 120.0,
     ) -> None:
         if base_url is not None:
             self.base = base_url.rstrip("/")
@@ -55,7 +54,7 @@ class CreationOS:
         return r.json()
 
     def health(self) -> Dict[str, Any]:
-        r = requests.get(f"{self.base}/v1/health", timeout=30.0)
+        r = requests.get(f"{self.base}/v1/health", timeout=5.0)
         r.raise_for_status()
         return r.json()
 

@@ -59,6 +59,7 @@
 #include <unistd.h>
 
 #include "cos_version.h"
+#include "cos_serve.h"
 
 #include "../src/cli/cos_think.h"
 #include "../src/cli/cos_search.h"
@@ -813,7 +814,7 @@ static int exec_preferred(const char *short_name,
 }
 
 static int cmd_mcp     (int argc, char **argv) { return exec_preferred("cos-mcp",      "creation_os_sigma_mcp",      argc, argv); }
-static int cmd_serve   (int argc, char **argv) { return exec_preferred("cos-serve",    "cos-serve",                  argc, argv); }
+static int cmd_serve(int argc, char **argv) { return cos_serve_main(argc, argv); }
 static int cmd_a2a     (int argc, char **argv) { return exec_preferred("cos-a2a",      "creation_os_sigma_a2a",      argc, argv); }
 static int cmd_team    (int argc, char **argv) { return exec_preferred("cos-team",     "creation_os_sigma_team",     argc, argv); }
 static int cmd_lora    (int argc, char **argv) { return exec_preferred("cos-lora",     "creation_os_sigma_lora",     argc, argv); }

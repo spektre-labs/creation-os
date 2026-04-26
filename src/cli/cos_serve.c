@@ -25,6 +25,8 @@
 #include "conformal.h"
 #include "constitution.h"
 #include "license_attest.h"
+#include "audit_log.h"
+#include "../vendor/picohttpparser.h"
 
 #include <arpa/inet.h>
 #include <ctype.h>
@@ -36,6 +38,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -167,49 +170,6 @@ static void gen_audit_id(char out17[17])
     out17[16] = '\0';
 }
 
-static int serve_mkdir_p(const char *path)
-{
-#if defined(__unix__) || defined(__APPLE__)
-    return mkdir(path, 0700);
-#else
-    (void)path;
-    return -1;
-#endif
-}
-
-static void audit_path_today(char *buf, size_t cap)
-{
-    const char *home = getenv("HOME");
-    if (!home || !home[0])
-        home = "/tmp";
-    char dir[512];
-    snprintf(dir, sizeof dir, "%s/.cos/audit", home);
-    if (serve_mkdir_p(dir) != 0 && errno != EEXIST)
-        home = "/tmp";
-    time_t t = time(NULL);
-    struct tm tmv;
-    if (gmtime_r(&t, &tmv) == NULL) {
-        if (buf && cap)
-            buf[0] = '\0';
-        return;
-    }
-    char date[32];
-    strftime(date, sizeof date, "%Y-%m-%d", &tmv);
-    snprintf(buf, cap, "%s/.cos/audit/%s.jsonl", home, date);
-}
-
-static void iso8601_utc(char *buf, size_t cap)
-{
-    time_t    t = time(NULL);
-    struct tm tmv;
-    if (gmtime_r(&t, &tmv) == NULL) {
-        if (buf && cap)
-            buf[0] = '\0';
-        return;
-    }
-    strftime(buf, cap, "%Y-%m-%dT%H:%M:%SZ", &tmv);
-}
-
 static int serve_load_conformal(cos_serve_state_t *st, const char *override)
 {
     const char *p = (override && override[0]) ? override : st->calib_path;
@@ -323,67 +283,6 @@ static void codex_sha256_field(const cos_serve_state_t *st, char *out, size_t ou
     }
 }
 
-static void audit_log(cos_serve_state_t *st, const char *audit_id,
-                        const char *prompt_hash, const char *response_hash,
-                        const char *input_text, const cos_pipeline_result_t *r,
-                        double latency_ms, const char *model,
-                        float temperature)
-{
-    char path[640];
-    char ts[48];
-    char codexh[96];
-    audit_path_today(path, sizeof path);
-    iso8601_utc(ts, sizeof ts);
-    codex_sha256_field(st, codexh, sizeof codexh);
-
-    FILE *fp = fopen(path, "a");
-    if (!fp)
-        return;
-    fprintf(fp,
-            "{\"timestamp\":\"%s\",\"audit_id\":\"%s\",\"prompt_hash\":\"%s\","
-            "\"input_preview\":",
-            ts, audit_id, prompt_hash);
-    /* Short preview only (escape minimal) */
-    {
-        const char *s = input_text ? input_text : "";
-        size_t       n = strlen(s);
-        if (n > 120)
-            n = 120;
-        fputc('"', fp);
-        for (size_t i = 0; i < n; ++i) {
-            unsigned char c = (unsigned char)s[i];
-            if (c == '"' || c == '\\')
-                fputc('\\', fp);
-            if (c < 0x20u)
-                fprintf(fp, "\\u%04x", c);
-            else
-                fputc((int)c, fp);
-        }
-        fputc('"', fp);
-    }
-    fprintf(fp,
-            ",\"sigma\":%.6f,\"sigma_calibrated\":%.6f,\"action\":\"%s\","
-            "\"model\":",
-            (double)r->sigma, (double)r->sigma, action_label(r->final_action));
-    if (model && model[0]) {
-        fputc('"', fp);
-        for (const char *p = model; *p; ++p) {
-            if (*p == '"' || *p == '\\')
-                fputc('\\', fp);
-            fputc(*p, fp);
-        }
-        fputc('"', fp);
-    } else
-        fputs("\"default\"", fp);
-    fprintf(fp,
-            ",\"response_hash\":\"%s\",\"latency_ms\":%.1f,"
-            "\"temperature\":%.3f,\"tau_accept\":%.6f,\"tau_rethink\":%.6f,"
-            "\"constitutional_halt\":false,\"codex_hash\":\"%s\"}\n",
-            response_hash, latency_ms, (double)temperature,
-            (double)st->cfg.tau_accept, (double)st->cfg.tau_rethink, codexh);
-    fclose(fp);
-}
-
 static int http_send_all(int fd, const char *s, size_t n)
 {
     size_t off = 0;
@@ -446,32 +345,60 @@ static int scan_audit_id(const char *id, char *out_line, size_t cap)
     return -1;
 }
 
+static int phr_eq(const char *s, size_t slen, const char *lit)
+{
+    size_t ll = strlen(lit);
+    return slen == ll && memcmp(s, lit, ll) == 0;
+}
+
 static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reqlen)
 {
-    char method[16], path[SERVE_PATH_MAX];
-    method[0] = path[0] = '\0';
-    {
-        char *line_end = strstr(req, "\r\n");
-        if (!line_end)
-            return http_reply_json(cfd, 400, "{\"error\":\"bad_request\"}");
-        size_t L = (size_t)(line_end - req);
-        if (L >= sizeof(path))
-            L = sizeof(path) - 1;
-        char line[512];
-        memcpy(line, req, L);
-        line[L] = '\0';
-        if (sscanf(line, "%15s %511s", method, path) < 2)
-            return http_reply_json(cfd, 400, "{\"error\":\"bad_request\"}");
+    const char *method;
+    size_t        method_len;
+    const char *path;
+    size_t        path_len;
+    int           minor_version;
+    struct phr_header headers[64];
+    size_t        num_headers = sizeof(headers) / sizeof(headers[0]);
+
+    int pret = phr_parse_request(req, reqlen, &method, &method_len, &path, &path_len,
+                                 &minor_version, headers, &num_headers, 0);
+    if (pret == -2)
+        return http_reply_json(cfd, 400, "{\"error\":\"partial_request\"}");
+    if (pret < 0)
+        return http_reply_json(cfd, 400, "{\"error\":\"bad_request\"}");
+
+    const char *body = req + pret;
+    size_t      body_len = reqlen - (size_t)pret;
+    for (size_t hi = 0; hi < num_headers; ++hi) {
+        if (!headers[hi].name || headers[hi].name_len != 14)
+            continue;
+        if (strncasecmp(headers[hi].name, "Content-Length", 14) != 0)
+            continue;
+        if (!headers[hi].value)
+            break;
+        char tmp[48];
+        if (headers[hi].value_len >= sizeof tmp)
+            break;
+        memcpy(tmp, headers[hi].value, headers[hi].value_len);
+        tmp[headers[hi].value_len] = '\0';
+        long cl = strtol(tmp, NULL, 10);
+        if (cl >= 0 && (size_t)cl <= body_len)
+            body_len = (size_t)cl;
+        break;
     }
 
-    const char *body = strstr(req, "\r\n\r\n");
-    if (body)
-        body += 4;
+    char pathz[SERVE_PATH_MAX];
+    {
+        size_t pl = path_len < sizeof(pathz) - 1 ? path_len : sizeof(pathz) - 1;
+        memcpy(pathz, path, pl);
+        pathz[pl] = '\0';
+    }
 
-    if (strcmp(method, "OPTIONS") == 0)
+    if (phr_eq(method, method_len, "OPTIONS"))
         return http_reply_json(cfd, 200, "{}");
 
-    if (strcmp(method, "GET") == 0 && strcmp(path, "/v1/health") == 0) {
+    if (phr_eq(method, method_len, "GET") && strcmp(pathz, "/v1/health") == 0) {
         char js[SERVE_JSON_MAX];
         const char *m = getenv("COS_OLLAMA_MODEL");
         if (!m || !m[0])
@@ -487,8 +414,8 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
         return http_reply_json(cfd, 200, js);
     }
 
-    if (strcmp(method, "GET") == 0 && strncmp(path, "/v1/audit/", 10) == 0) {
-        const char *id = path + 10;
+    if (phr_eq(method, method_len, "GET") && strncmp(pathz, "/v1/audit/", 10) == 0) {
+        const char *id = pathz + 10;
         if (!id || !id[0] || strlen(id) > 32)
             return http_reply_json(cfd, 404, "{\"error\":\"not_found\"}");
         char line[8192];
@@ -501,14 +428,20 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
         return http_reply_json(cfd, 200, line);
     }
 
-    if ((strcmp(method, "POST") != 0 && strcmp(method, "PUT") != 0))
+    if (!phr_eq(method, method_len, "POST") && !phr_eq(method, method_len, "PUT"))
         return http_reply_json(cfd, 404, "{\"error\":\"not_found\"}");
 
-    if (strcmp(path, "/v1/gate") != 0 && strcmp(path, "/v1/verify") != 0)
+    if (strcmp(pathz, "/v1/gate") != 0 && strcmp(pathz, "/v1/verify") != 0)
         return http_reply_json(cfd, 404, "{\"error\":\"not_found\"}");
 
-    if (!body || !body[0])
+    if (!body || body_len == 0)
         return http_reply_json(cfd, 400, "{\"error\":\"empty_body\"}");
+
+    char jb[SERVE_JSON_MAX];
+    if (body_len >= sizeof jb)
+        return http_reply_json(cfd, 400, "{\"error\":\"body_too_large\"}");
+    memcpy(jb, body, body_len);
+    jb[body_len] = '\0';
 
     char prompt[16384];
     char model[128];
@@ -516,10 +449,10 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
     model[0]  = '\0';
 
     {
-        const char *jp = json_find_key(body, "prompt");
-        const char *jt = json_find_key(body, "text");
-        const char *jm = json_find_key(body, "model");
-        if (strcmp(path, "/v1/verify") == 0) {
+        const char *jp = json_find_key(jb, "prompt");
+        const char *jt = json_find_key(jb, "text");
+        const char *jm = json_find_key(jb, "model");
+        if (strcmp(pathz, "/v1/verify") == 0) {
             if (jt && *jt == '"') {
                 if (json_copy_string(jt, prompt, sizeof prompt) != 0)
                     return http_reply_json(cfd, 400, "{\"error\":\"bad_json\"}");
@@ -568,11 +501,18 @@ static int handle_request(cos_serve_state_t *st, int cfd, char *req, size_t reql
             temp = (float)atof(te);
     }
 
-    audit_log(st, audit_id, phf, rhf, prompt, &r, ms,
-              model[0] ? model : "default", temp);
+    {
+        char codexh[96];
+        codex_sha256_field(st, codexh, sizeof codexh);
+        const char *mod = model[0] ? model : "default";
+        (void)cos_audit_append_serve_row(audit_id, phf, prompt, (double)r.sigma,
+                                         (double)r.sigma, action_label(r.final_action),
+                                         mod, rhf, ms, temp, st->cfg.tau_accept,
+                                         st->cfg.tau_rethink, 0, codexh);
+    }
 
     char js[SERVE_JSON_MAX];
-    if (strcmp(path, "/v1/gate") == 0) {
+    if (strcmp(pathz, "/v1/gate") == 0) {
         /* Escape response for JSON */
         char esc[8192];
         size_t w = 0;
@@ -669,7 +609,8 @@ int cos_serve_main(int argc, char **argv)
 
     srand((unsigned)time(NULL) ^ (unsigned)getpid());
 
-    for (int i = 1; i < argc; ++i) {
+    /* argv[0] may be the program name (./cos-serve) or the first flag (cos serve --port …). */
+    for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "--port") == 0 && i + 1 < argc)
             port = atoi(argv[++i]);
         else if (strcmp(argv[i], "--bind") == 0 && i + 1 < argc)

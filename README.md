@@ -924,12 +924,15 @@ This is a research prototype.  Full list with scope and caveats:
 
 ## Enterprise
 
-**σ-gate HTTP surface:** `make cos-serve` builds `./cos-serve` (C only, no Python on the server path).  The `cos` CLI can dispatch it as `cos serve --port 3001`.
+**σ-gate HTTP surface:** `make cos-serve` builds `./cos-serve`, and **`make cos`** links the same HTTP stack into **`./cos serve`** (C only; request parsing uses vendored [picohttpparser](https://github.com/h2o/picohttpparser), MIT — see `src/vendor/LICENSES.md`).
 
 ### API
 
 ```bash
 make cos-serve
+make cos
+./cos serve --port 3001
+# or
 ./cos-serve --port 3001
 curl -s http://127.0.0.1:3001/v1/health
 curl -s -X POST http://127.0.0.1:3001/v1/gate \
@@ -944,11 +947,11 @@ Endpoints: `POST /v1/gate`, `POST /v1/verify`, `GET /v1/health`, `GET /v1/audit/
 
 ### Audit trail (append-only JSONL)
 
-Each request can append one JSON object per line under `~/.cos/audit/YYYY-MM-DD.jsonl` (hashes, σ, action, model, latency, thresholds).  This is **implementation support** for operator logging and integrity checks; it is **not** legal advice or a certification of EU AI Act or NIST AI RMF compliance.
+Each request can append one JSON object per line under `~/.cos/audit/YYYY-MM-DD.jsonl` (hashes, σ, action, model, latency, thresholds, optional `chain_prev` digest of the previous raw line for tamper-evident replay).  This is **implementation support** for operator logging and integrity checks; it is **not** legal advice or a certification of EU AI Act or NIST AI RMF compliance.
 
 ### Python SDK
 
-`pip install requests`, then add `sdk/python` to `PYTHONPATH` (or copy `creation_os.py` into your project).
+`pip install requests`, then either `pip install -e sdk/python` from the repo root, or add `sdk/python` to `PYTHONPATH` for editable use.
 
 ```python
 from creation_os import CreationOS

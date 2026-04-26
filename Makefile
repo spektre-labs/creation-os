@@ -7977,14 +7977,17 @@ cos-serve: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
          src/sigma/pipeline/conformal.c \
          src/sigma/pipeline/multi_sigma.c \
          src/sigma/metacog/introspection.c \
-         src/cli/escalation.c src/cli/cos_serve.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude -DCOS_SERVE_MAIN -o $@ \
+         src/cli/escalation.c src/cli/cos_serve.c \
+         src/vendor/picohttpparser.c src/sigma/audit_log.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude -Isrc/vendor -Isrc/sigma \
+	    -DCOS_SERVE_MAIN -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
 	    src/sigma/pipeline/multi_sigma.c \
 	    src/sigma/metacog/introspection.c \
 	    src/cli/escalation.c src/cli/cos_serve.c \
+	    src/vendor/picohttpparser.c src/sigma/audit_log.c \
 	    $(COS_PROOF_LIB) \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 
@@ -10140,7 +10143,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	src/cli/cos_life.c \
 	$(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
-	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline \
+	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline -Isrc/vendor \
 	    -o cos cli/cos.c src/cli/cos_voice.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
@@ -10157,6 +10160,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	    src/cli/cos_life.c \
 	    src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	    $(COS_PROOF_LIB) \
+	    src/cli/cos_serve.c src/vendor/picohttpparser.c src/sigma/audit_log.c \
 	    src/sigma/mission.c src/sigma/coherence_watchdog.c \
 	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
