@@ -813,6 +813,7 @@ static int exec_preferred(const char *short_name,
 }
 
 static int cmd_mcp     (int argc, char **argv) { return exec_preferred("cos-mcp",      "creation_os_sigma_mcp",      argc, argv); }
+static int cmd_serve   (int argc, char **argv) { return exec_preferred("cos-serve",    "cos-serve",                  argc, argv); }
 static int cmd_a2a     (int argc, char **argv) { return exec_preferred("cos-a2a",      "creation_os_sigma_a2a",      argc, argv); }
 static int cmd_team    (int argc, char **argv) { return exec_preferred("cos-team",     "creation_os_sigma_team",     argc, argv); }
 static int cmd_lora    (int argc, char **argv) { return exec_preferred("cos-lora",     "creation_os_sigma_lora",     argc, argv); }
@@ -2778,6 +2779,8 @@ static int cmd_help_full(const char *prog)
      * standalone C binary (zero Python in the dispatch). */
     printf("  %s%-12s%s  Model Context Protocol server (σ-gated tool + resource + prompt)\n",
            C_BOLD, "mcp",      C_RESET);
+    printf("  %s%-12s%s  HTTP σ-gate API (/v1/gate, /v1/verify, /v1/health) + append-only audit JSONL\n",
+           C_BOLD, "serve",    C_RESET);
     printf("  %s%-12s%s  Agent-to-Agent protocol (σ-signed envelopes + delegation + handshake)\n",
            C_BOLD, "a2a",      C_RESET);
     printf("  %s%-12s%s  Team composition: specialist routing + critique + aggregation\n",
@@ -3339,6 +3342,7 @@ int main(int argc, char **argv)
         strcmp(argv[1], "meta-status") == 0) return cmd_sigma_meta(argc - 2, argv + 2);
     /* CLOSE-4: long-tail kernels exposed on the front door. */
     if (strcmp(argv[1], "mcp")      == 0) return cmd_mcp     (argc - 2, argv + 2);
+    if (strcmp(argv[1], "serve")    == 0) return cmd_serve   (argc - 2, argv + 2);
     if (strcmp(argv[1], "a2a")      == 0) return cmd_a2a     (argc - 2, argv + 2);
     if (strcmp(argv[1], "team")     == 0) return cmd_team    (argc - 2, argv + 2);
     if (strcmp(argv[1], "lora")     == 0) return cmd_lora    (argc - 2, argv + 2);

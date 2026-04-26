@@ -6114,8 +6114,8 @@ check-sigma-pipeline: check-sigma-reinforce check-sigma-speculative \
                       check-sigma-mesh3 check-sigma-arxiv \
                       check-sigma-conformal check-sigma-coverage-curve \
                       check-sigma-multi check-sigma-suite-sci \
-                      check-cos-mcp check-cos-a2a check-cos-evolve
-	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-mcp + cos-a2a + cos-evolve + digital-twin + long-horizon + sigma-swarm + cos-sandbox)"
+                      check-cos-serve check-cos-mcp check-cos-a2a check-cos-evolve
+	@echo "check-sigma-pipeline: OK (reinforce + speculative + ttt + engram + moe + multimodal + tinyml + edge + swarm + live + continual + unlearn + agent + diagnostic + sovereign + codex + end-to-end compose + integration + cos CLIs + tool + plan + merge + grounding + session + cos-agent + selfplay + curriculum + synthetic + evolution + meta + omega + mesh + split + marketplace + federation + protocol + ed25519 + cos-network + spike + photonic + substrate + formal + paper + cos-unified + c-dispatch + repro-bundle + truthfulqa + mesh-2node + lean-t3 + paper-latex + dp + ratelimit + persist + health + signal + version-genesis + rag + persona + offline + corpus + voice + lora + team + suite + lora-export + watchdog + mcp + a2a + formal-complete + mesh3 + arxiv + conformal + coverage-curve + multi-sigma + suite-sci + cos-serve + cos-mcp + cos-a2a + cos-evolve + digital-twin + long-horizon + sigma-swarm + cos-sandbox)"
 
 # --- Atlantean Codex: soul of the pipeline (I0) ---
 #
@@ -7970,6 +7970,27 @@ cos-mcp: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 check-cos-mcp: cos-mcp
 	@bash benchmarks/sigma_pipeline/check_cos_mcp.sh
 	@echo "check-cos-mcp: OK (initialize + tools/list + cos.* + unknown-method)"
+
+# --- cos-serve: HTTP σ-gate API + append-only audit JSONL ------------
+cos-serve: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+         src/sigma/ttt/inplace_ttt.c \
+         src/sigma/pipeline/conformal.c \
+         src/sigma/pipeline/multi_sigma.c \
+         src/sigma/metacog/introspection.c \
+         src/cli/escalation.c src/cli/cos_serve.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude -DCOS_SERVE_MAIN -o $@ \
+	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
+	    src/sigma/ttt/inplace_ttt.c \
+	    src/sigma/pipeline/conformal.c \
+	    src/sigma/pipeline/multi_sigma.c \
+	    src/sigma/metacog/introspection.c \
+	    src/cli/escalation.c src/cli/cos_serve.c \
+	    $(COS_PROOF_LIB) \
+	    $(LDFLAGS) -lsqlite3 -lcurl
+
+check-cos-serve: cos-serve
+	@./cos-serve --self-test
+	@echo "check-cos-serve: OK (HTTP /v1/health self-probe)"
 
 # --- σ-pipeline: A2A agent-to-agent (OMEGA-2) ------------------------
 #

@@ -918,6 +918,71 @@ This is a research prototype.  Full list with scope and caveats:
 - **BitNet quickstart** downloads real 1.2 GB weights; the local
   runtime is real.  Cloud escalation is opt-in and off by default.
 
+---
+
+<a id="enterprise"></a>
+
+## Enterprise
+
+**σ-gate HTTP surface:** `make cos-serve` builds `./cos-serve` (C only, no Python on the server path).  The `cos` CLI can dispatch it as `cos serve --port 3001`.
+
+### API
+
+```bash
+make cos-serve
+./cos-serve --port 3001
+curl -s http://127.0.0.1:3001/v1/health
+curl -s -X POST http://127.0.0.1:3001/v1/gate \
+  -H 'Content-Type: application/json' \
+  -d '{"prompt":"What is 2+2?","model":"gemma3:4b"}'
+curl -s -X POST http://127.0.0.1:3001/v1/verify \
+  -H 'Content-Type: application/json' \
+  -d '{"text":"The capital of France is Paris","model":"gemma3:4b"}'
+```
+
+Endpoints: `POST /v1/gate`, `POST /v1/verify`, `GET /v1/health`, `GET /v1/audit/{id}`.
+
+### Audit trail (append-only JSONL)
+
+Each request can append one JSON object per line under `~/.cos/audit/YYYY-MM-DD.jsonl` (hashes, σ, action, model, latency, thresholds).  This is **implementation support** for operator logging and integrity checks; it is **not** legal advice or a certification of EU AI Act or NIST AI RMF compliance.
+
+### Python SDK
+
+`pip install requests`, then add `sdk/python` to `PYTHONPATH` (or copy `creation_os.py` into your project).
+
+```python
+from creation_os import CreationOS
+
+cos = CreationOS(host="localhost", port=3001)
+result = cos.gate("What is 2+2?", model="gemma3:4b")
+print(result["sigma"], result["action"])
+```
+
+### JavaScript (Node)
+
+See `sdk/js/creation-os.js` (`require` + `async` `gate` / `verify` / `health`).
+
+### LangChain
+
+`integrations/langchain_sigma.py` defines `SigmaGateCallback`: on each `on_llm_end`, it calls `/v1/verify` on the completion text and raises if the action is `ABSTAIN`.
+
+```bash
+export PYTHONPATH="sdk/python:integrations"
+```
+
+```python
+from langchain_sigma import SigmaGateCallback
+
+llm = ChatOllama(callbacks=[SigmaGateCallback()])
+```
+
+### Graded metrics (lab, one CSV)
+
+| Metric | Value (evidence) |
+|--------|------------------|
+| AUROC | 0.8123 on graded-50 run — see [`benchmarks/graded/RESULTS.md`](benchmarks/graded/RESULTS.md) and source CSV named there |
+| Evidence class | Lab reporting on a fixed graded set; not a frontier harness row |
+
 <p align="center"><sub><strong>· · ·</strong> license <strong>· · ·</strong></sub></p>
 
 ---
