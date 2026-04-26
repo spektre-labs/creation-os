@@ -87,6 +87,7 @@
 #include "semantic_entropy.h"
 #include "semantic_sigma.h"
 #include "bitnet_server.h"
+#include "ollama_detect.h"
 #include "text_similarity.h"
 #include "cos_tui.h"
 #include "speculative_decode.h"
@@ -1681,6 +1682,8 @@ static int chat_tools_dispatch_line(const char *line, int dry_run, FILE *confirm
 }
 
 int main(int argc, char **argv) {
+    cos_ollama_autodetect_apply_env();
+
     int     use_codex     = 1;
     int     use_seed      = 0;
     const char *codex_path = NULL;
@@ -2083,6 +2086,18 @@ int main(int argc, char **argv) {
                     "cos chat: adaptive τ enabled but no CSV path "
                     "(use --adaptive-tau-csv PATH or COS_ADAPTIVE_TAU_CSV / "
                     "CREATION_OS_ROOT)\n");
+        }
+    }
+
+    if (!adaptive_tau_csv && !have_tau_accept) {
+        char        csv[1024];
+        struct stat st;
+        if (cos_adaptive_tau_default_csv_path(csv, sizeof csv) == 0
+            && stat(csv, &st) == 0 && S_ISREG(st.st_mode) && st.st_size > 0) {
+            tau_accept = cos_adaptive_tau_accept_from_csv(csv, 0.3f);
+            if (!have_tau_rethink)
+                tau_rethink =
+                    cos_adaptive_tau_rethink_from_accept(tau_accept);
         }
     }
 

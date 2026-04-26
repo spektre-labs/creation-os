@@ -10,6 +10,7 @@
 
 #include "cos_voice.h"
 #include "cos_tui.h"
+#include "ollama_detect.h"
 
 #include <curl/curl.h>
 #include <errno.h>
@@ -85,11 +86,12 @@ static int whisper_transcribe_file(const char *wav_path, const char *url,
         curl_easy_cleanup(c);
         return -1;
     }
-    const char *wm = getenv("COS_WHISPER_MODEL");
-    if (wm != NULL && wm[0] != '\0') {
+    {
+        const char *wm = getenv("COS_WHISPER_MODEL");
+        const char *md = (wm != NULL && wm[0] != '\0') ? wm : "whisper-1";
         curl_mimepart *pm = curl_mime_addpart(mime);
         curl_mime_name(pm, "model");
-        curl_mime_data(pm, wm, CURL_ZERO_TERMINATED);
+        curl_mime_data(pm, md, CURL_ZERO_TERMINATED);
     }
     if (lang_opt != NULL && lang_opt[0] != '\0') {
         curl_mimepart *pl = curl_mime_addpart(mime);
@@ -164,9 +166,49 @@ static int resolve_cos_chat(char *out_path, size_t cap, const char *exe0) {
     return -1;
 }
 
+static int parse_http_host_port(const char *url, char *host, size_t hcap,
+                                int *port_out)
+{
+    *port_out = 2022;
+    if (host == NULL || hcap == 0 || url == NULL || url[0] == '\0')
+        return -1;
+    if (snprintf(host, hcap, "127.0.0.1") >= (int)hcap)
+        return -1;
+    const char *u = url;
+    if (strncmp(u, "http://", 7) == 0)
+        u += 7;
+    else if (strncmp(u, "https://", 8) == 0)
+        u += 8;
+    const char *colon = strchr(u, ':');
+    const char *slash = strchr(u, '/');
+    if (colon != NULL && slash != NULL && colon < slash) {
+        size_t hl = (size_t)(colon - u);
+        if (hl + 1u >= hcap)
+            return -1;
+        memcpy(host, u, hl);
+        host[hl] = '\0';
+        int pr = atoi(colon + 1);
+        if (pr > 0 && pr < 65536)
+            *port_out = pr;
+        return 0;
+    }
+    if (slash != NULL) {
+        size_t hl = (size_t)(slash - u);
+        if (hl + 1u >= hcap)
+            return -1;
+        memcpy(host, u, hl);
+        host[hl] = '\0';
+    } else {
+        if (snprintf(host, hcap, "%s", u) >= (int)hcap)
+            return -1;
+    }
+    return 0;
+}
+
 static int run_cos_chat_once(const char *chat_bin, const char *prompt,
                              char *resp, size_t rcap, float *sigma_out,
-                             double *cost_out) {
+                             double *cost_out, int use_multi_sigma)
+{
     int pipefd[2];
     if (pipe(pipefd) != 0)
         return -1;
@@ -181,8 +223,22 @@ static int run_cos_chat_once(const char *chat_bin, const char *prompt,
         if (dup2(pipefd[1], STDOUT_FILENO) < 0)
             _exit(126);
         close(pipefd[1]);
-        execl(chat_bin, chat_bin, "--once", "--no-tui", "--no-stream",
-              "--no-coherence", "--prompt", prompt, (char *)NULL);
+        char ms0[] = "--multi-sigma";
+        if (use_multi_sigma) {
+            char *const av2[] = {
+                (char *)chat_bin, (char *)"--once",      (char *)"--no-tui",
+                (char *)"--no-stream", (char *)"--no-coherence", ms0,
+                (char *)"--prompt", (char *)prompt, NULL,
+            };
+            (void)execv(chat_bin, av2);
+        } else {
+            char *const av1[] = {
+                (char *)chat_bin, (char *)"--once",      (char *)"--no-tui",
+                (char *)"--no-stream", (char *)"--no-coherence",
+                (char *)"--prompt", (char *)prompt, NULL,
+            };
+            (void)execv(chat_bin, av1);
+        }
         _exit(127);
     }
     close(pipefd[1]);
@@ -253,9 +309,12 @@ static void cos_voice_speak(const char *text, int no_tts) {
 int cos_voice_main(int argc, char **argv, const char *exe0) {
     const char *lang = NULL;
     int           no_tts = 0;
+    int           use_multi_sigma = 1;
     for (int i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "--no-tts") == 0)
             no_tts = 1;
+        else if (strcmp(argv[i], "--no-multi-sigma") == 0)
+            use_multi_sigma = 0;
         else if (strcmp(argv[i], "--lang") == 0 && i + 1 < argc) {
             lang = argv[++i];
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
@@ -267,7 +326,8 @@ int cos_voice_main(int argc, char **argv, const char *exe0) {
                 "       COS_VOICE_WAV — skip mic; transcribe this WAV once then exit\n"
                 "       COS_VOICE_RECORD_CMD — snprintf pattern with %%s for wav path\n"
                 "  Flags: --lang <code>   whisper language (e.g. fi)\n"
-                "         --no-tts        no say/espeak\n",
+                "         --no-tts        no say/espeak\n"
+                "         --no-multi-sigma  skip cos-chat --multi-sigma\n",
                 stdout);
             return 0;
         }
@@ -283,6 +343,18 @@ int cos_voice_main(int argc, char **argv, const char *exe0) {
     const char *wurl = getenv("COS_WHISPER_URL");
     if (wurl == NULL || wurl[0] == '\0')
         wurl = "http://127.0.0.1:2022/v1/audio/transcriptions";
+
+    char wh_host[128];
+    int  wh_port = 2022;
+    if (parse_http_host_port(wurl, wh_host, sizeof wh_host, &wh_port) != 0
+        || cos_tcp_probe_ipv4(wh_host, (uint16_t)wh_port, 800) != 0) {
+        fprintf(stderr,
+                "whisper.cpp not found at %s:%d\n"
+                "Install: git clone https://github.com/ggml-org/whisper.cpp\n"
+                "Run: ./whisper-server -m models/ggml-base.en.bin\n",
+                wh_host, wh_port);
+        return 1;
+    }
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     g_voice_stop = 0;
@@ -330,7 +402,7 @@ int cos_voice_main(int argc, char **argv, const char *exe0) {
         float         sigma = 0.5f;
         double        cost  = 0.0;
         if (run_cos_chat_once(chat_path, transcript, chat_out,
-                              sizeof chat_out, &sigma, &cost)
+                              sizeof chat_out, &sigma, &cost, use_multi_sigma)
             != 0) {
             fprintf(stderr, "cos voice: cos-chat subprocess failed\n");
             curl_global_cleanup();

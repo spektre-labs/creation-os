@@ -6252,7 +6252,8 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
           src/sigma/speed_metrics.c \
           src/sigma/semantic_entropy.c \
           src/sigma/semantic_sigma.c \
-          $(COS_PROOF_LIB) src/cli/escalation.c src/cli/cos_chat.c
+          $(COS_PROOF_LIB) src/cli/escalation.c src/import/ollama_detect.c \
+          src/cli/cos_chat.c
 	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Isrc/sigma \
 	    -Isrc/sigma/tools -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
@@ -6274,7 +6275,7 @@ cos-chat: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/semantic_entropy.c \
 	    src/sigma/semantic_sigma.c \
 	    $(COS_PROOF_LIB) \
-	    src/cli/escalation.c src/cli/cos_chat.c \
+	    src/cli/escalation.c src/import/ollama_detect.c src/cli/cos_chat.c \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 
 cos-spike: src/cli/cos_spike.c $(COS_SPIKE_ADAPT_SRCS)
@@ -6821,8 +6822,8 @@ check-text-similarity: creation_os_check_text_similarity
 	@echo "check-text-similarity: OK (Jaccard + normalize self-test)"
 
 check-agi: check-state-ledger check-error-attribution check-engram-episodic \
-	check-text-similarity
-	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity)"
+	check-text-similarity check-cos-serve check-voice
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + cos-serve + cos voice)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c src/cli/escalation.c
@@ -7994,6 +7995,12 @@ cos-serve: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 check-cos-serve: cos-serve
 	@./cos-serve --self-test
 	@echo "check-cos-serve: OK (HTTP /v1/health self-probe)"
+
+check-serve: check-cos-serve
+
+check-voice: cos
+	@./cos voice --help >/dev/null
+	@echo "check-voice: OK (cos voice --help)"
 
 # --- σ-pipeline: A2A agent-to-agent (OMEGA-2) ------------------------
 #
@@ -10127,7 +10134,7 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 # Linked with creation_os cos_think (libsqlite3 + libcurl) for
 # `cos think --goal ...`.  NO_COLOR / TERM=dumb respected; isatty
 # auto-detect for colour.
-cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	src/cli/cos_search.c \
@@ -10144,7 +10151,7 @@ cos: cli/cos.c src/cli/cos_voice.c include/cos_version.h $(COS_CLI_SRCS) $(COS_T
 	$(COS_OMEGA_SUPPORT_SRCS)
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline -Isrc/vendor \
-	    -o cos cli/cos.c src/cli/cos_voice.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    -o cos cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
 	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	    src/cli/cos_search.c \

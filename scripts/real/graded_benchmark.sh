@@ -27,5 +27,6 @@ python3 "$ROOT/scripts/real/graded_benchmark.py" "$@"
 rc=$?
 if [[ "$rc" -eq 0 ]] && [[ -f benchmarks/graded/graded_results.csv ]]; then
   python3 "$ROOT/scripts/real/compute_auroc.py" || true
+  cp -f benchmarks/graded/graded_results.csv benchmarks/graded/graded_200_results.csv
 fi
 exit "$rc"
