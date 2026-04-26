@@ -100,9 +100,6 @@ float cos_multi_sigma_perplexity(const float *logprob_selected,
 float cos_multi_sigma_consistency(const char *const *regen_texts,
                                   int k);
 
-/** Word-bag Jaccard similarity in [0,1] (same tokenizer as σ_consistency). */
-float cos_text_jaccard(const char *a, const char *b);
-
 /* --------- ensemble --------- */
 
 /* Combine four components.  Weights are renormalised so w sums to 1.0

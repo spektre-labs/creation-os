@@ -65,6 +65,7 @@
  */
 #include "conformal.h"
 #include "multi_sigma.h"
+#include "text_similarity.h"
 #include "introspection.h"
 #include "coherence.h"
 #include "sigma_tools.h"
