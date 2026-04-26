@@ -198,6 +198,9 @@ creation_os_check_*
 third_party/bitnet/build/
 third_party/bitnet/models/
 
+# TruthfulQA MC1 JSON is large; fetch with scripts/real/truthfulqa_sigma.sh
+benchmarks/truthfulqa/mc_task.json
+
 # Benchmark outputs (keep scripts under benchmarks/** — ignore generated reports)
 benchmarks/*/results/
 benchmarks/qwen_first_contact/*.txt
