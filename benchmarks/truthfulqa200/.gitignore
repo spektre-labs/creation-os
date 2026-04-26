@@ -1,0 +1,8 @@
+# Full upstream dataset (download with curl; see README.md)
+TruthfulQA_full.csv
+# Machine-local run outputs (regenerate; checksums in REPRO_CHECKSUMS.txt after a run)
+results.csv
+results_*.csv
+stderr_*.log
+*.png
+definitive_run.log

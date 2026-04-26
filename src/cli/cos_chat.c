@@ -2316,6 +2316,7 @@ int main(int argc, char **argv) {
     int         use_tui            = 0;
     int         spec_decode        = 0;
     int         fast_sigma         = 0;
+    int         adaptive_sigma_cli = 0;
     int         adaptive_tau_csv   = 0;
     const char *adaptive_csv_path = NULL;
     int         use_disk_cache     = 1;
@@ -2378,6 +2379,8 @@ int main(int argc, char **argv) {
             multi_sigma_cli = 1;
         } else if (strcmp(argv[i], "--fast") == 0) {
             fast_sigma = 1;
+        } else if (strcmp(argv[i], "--adaptive-sigma") == 0) {
+            adaptive_sigma_cli = 1;
         } else if (strcmp(argv[i], "--adaptive-tau") == 0) {
             adaptive_tau_csv = 1;
         } else if (strcmp(argv[i], "--adaptive-tau-csv") == 0
@@ -2518,6 +2521,8 @@ int main(int argc, char **argv) {
                 "  --no-semantic-entropy  disable (overrides COS_CHAT_SEMANTIC_ENTROPY=1)\n"
                 "  --semantic-sigma    force Jaccard semantic σ path (same as --multi-sigma\n"
                 "                      without --fast); env COS_CHAT_SEMANTIC_SIGMA=1\n"
+                "  --adaptive-sigma    optional 2→3 semantic samples (COS_SEMANTIC_SIGMA_ADAPTIVE=1;\n"
+                "                      sequential probes; default off)\n"
                 "  --no-semantic-sigma disable (overrides COS_CHAT_SEMANTIC_SIGMA=1)\n"
                 "  --conformal         load τ from ~/.cos/calibration.json (default)\n"
                 "  --no-conformal      always use the static τ_accept flag\n"
@@ -2610,6 +2615,12 @@ int main(int argc, char **argv) {
         cos_spec_decode_init(NULL);
     } else {
         (void)unsetenv("COS_SPEC_DECODE");
+    }
+
+    if (adaptive_sigma_cli) {
+        (void)setenv("COS_SEMANTIC_SIGMA_ADAPTIVE", "1", 1);
+        /* Pair-σ must be evaluated before optional third HTTP sample. */
+        (void)setenv("COS_SEMANTIC_SIGMA_PARALLEL", "0", 1);
     }
 
     {

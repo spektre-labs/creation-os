@@ -1,0 +1,3 @@
+# Append after a real run (repo root):
+#   shasum -a 256 benchmarks/truthfulqa200/prompts.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt
+#   shasum -a 256 benchmarks/truthfulqa200/results.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt

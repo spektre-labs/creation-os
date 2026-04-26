@@ -2,6 +2,7 @@
 
 #include "semantic_sigma.h"
 
+#include "adaptive_sampling.h"
 #include "bitnet_server.h"
 #include "text_similarity.h"
 
@@ -392,7 +393,42 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         if (dup0 == NULL)
             ok = -1;
         texts[0] = dup0;
-        if (ok == 0 && ss_use_pthread_semantic_sigma()) {
+        if (ok == 0 && cos_semantic_adaptive_enabled()) {
+            dup1 = cos_bitnet_query_temp_with_options(
+                port, prompt, k_semantic_extra_sysp, 0.1f, k_semantic_extra_np);
+            if (dup1 == NULL || dup1[0] == '\0')
+                ok = -1;
+            if (ok == 0) {
+                char fs0a[512], fs1a[512];
+                cos_text_first_sentence(texts[0], fs0a, sizeof fs0a);
+                cos_text_first_sentence(dup1, fs1a, sizeof fs1a);
+                float j01p = cos_text_jaccard(fs0a, fs1a);
+                if (j01p < 0.0f)
+                    j01p = 0.0f;
+                if (j01p > 1.0f)
+                    j01p = 1.0f;
+                float sig_pair = 1.0f - j01p;
+                if (cos_adaptive_take_third_sample(sig_pair)) {
+                    dup2 = cos_bitnet_query_temp_with_options(
+                        port, prompt, k_semantic_extra_sysp, 1.5f,
+                        k_semantic_extra_np);
+                    if (dup2 == NULL || dup2[0] == '\0') {
+                        free(dup1);
+                        dup1 = NULL;
+                        ok = -1;
+                    } else {
+                        fprintf(stderr,
+                                "[semantic-σ adaptive: 3/3 samples pair_σ=%.3f]\n",
+                                (double)sig_pair);
+                    }
+                } else {
+                    dup2 = NULL;
+                    fprintf(stderr,
+                            "[semantic-σ adaptive: 2/3 samples pair_σ=%.3f]\n",
+                            (double)sig_pair);
+                }
+            }
+        } else if (ok == 0 && ss_use_pthread_semantic_sigma()) {
             pthread_t        t1, t2;
             ss_inference_arg_t a1 = { port, prompt, k_semantic_extra_sysp, 0.1f,
                                       k_semantic_extra_np, NULL };
@@ -566,10 +602,28 @@ float cos_semantic_sigma_ex(const char *prompt, const char *system_prompt,
         cos_text_first_sentence(texts[0], fs0, sizeof fs0);
         cos_text_first_sentence(texts[1], fs1, sizeof fs1);
         cos_text_first_sentence(texts[2], fs2, sizeof fs2);
-        (void)cos_semantic_sigma_compute_texts(fs0, fs1, fs2, out);
-        ss_semantic_energy_fallback(prompt, port, model, out);
+        if (dup1 != NULL && dup2 == NULL) {
+            float j01 = cos_text_jaccard(fs0, fs1);
+            if (j01 < 0.0f)
+                j01 = 0.0f;
+            if (j01 > 1.0f)
+                j01 = 1.0f;
+            out->sigma           = ss_clamp01(1.0f - j01);
+            out->similarities[0] = j01;
+            out->similarities[1] = j01;
+            out->similarities[2] = j01;
+            out->n_clusters      = ss_cluster_count_from_sims(j01, j01, j01,
+                                                            ss_env_float(
+                                                                "COS_SEMANTIC_SIGMA_CLUSTER_SIM",
+                                                                0.6f));
+            out->n_samples = 2;
+            ss_semantic_energy_fallback(prompt, port, model, out);
+        } else {
+            (void)cos_semantic_sigma_compute_texts(fs0, fs1, fs2, out);
+            ss_semantic_energy_fallback(prompt, port, model, out);
+            out->n_samples = 3;
+        }
     }
-    out->n_samples = 3;
 
     free(dup0);
     free(dup1);
