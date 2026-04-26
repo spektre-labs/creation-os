@@ -269,6 +269,13 @@ char *cos_bitnet_query_temp_with_options(int port, const char *prompt,
 char *cos_bitnet_query_temp(int port, const char *prompt,
                             const char *system, float temperature);
 
+/** One chat completion with explicit Ollama / chat `model` id (temporary
+ *  COS_OLLAMA_MODEL + COS_BITNET_CHAT_MODEL override).  Returns malloc'd
+ *  text or NULL.  `temperature` <= 0 uses COS_TEMPERATURE / server default. */
+char *cos_bitnet_query_model(int port, const char *prompt, const char *system,
+                             const char *model, float temperature,
+                             int max_tokens);
+
 #ifdef __cplusplus
 }
 #endif

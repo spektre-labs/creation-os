@@ -2754,3 +2754,95 @@ char *cos_bitnet_query_temp(int port, const char *prompt,
     return cos_bitnet_query_temp_with_options(port, prompt, system,
                                               temperature, 96);
 }
+
+char *cos_bitnet_query_model(int port, const char *prompt, const char *system,
+                             const char *model, float temperature,
+                             int max_tokens)
+{
+    if (prompt == NULL || model == NULL || model[0] == '\0')
+        return NULL;
+
+    char        prev_port_buf[96];
+    char        prev_bcm_buf[512];
+    char        prev_oll_buf[512];
+    int         had_port = 0, had_bcm = 0, had_oll = 0;
+    const char *prev_port = NULL;
+    const char *prev_bcm  = NULL;
+    const char *prev_oll  = NULL;
+
+    if (port > 0) {
+        prev_port = getenv("COS_BITNET_SERVER_PORT");
+        if (prev_port != NULL && prev_port[0] != '\0') {
+            (void)snprintf(prev_port_buf, sizeof prev_port_buf, "%s", prev_port);
+            had_port = 1;
+        }
+        char portbuf[32];
+        (void)snprintf(portbuf, sizeof portbuf, "%d", port);
+        if (setenv("COS_BITNET_SERVER_PORT", portbuf, 1) != 0)
+            return NULL;
+        cos_bitnet_server_invalidate_config();
+    }
+
+    prev_bcm = getenv("COS_BITNET_CHAT_MODEL");
+    if (prev_bcm != NULL && prev_bcm[0] != '\0') {
+        (void)snprintf(prev_bcm_buf, sizeof prev_bcm_buf, "%s", prev_bcm);
+        had_bcm = 1;
+    }
+    prev_oll = getenv("COS_OLLAMA_MODEL");
+    if (prev_oll != NULL && prev_oll[0] != '\0') {
+        (void)snprintf(prev_oll_buf, sizeof prev_oll_buf, "%s", prev_oll);
+        had_oll = 1;
+    }
+    if (setenv("COS_BITNET_CHAT_MODEL", model, 1) != 0
+        || setenv("COS_OLLAMA_MODEL", model, 1) != 0) {
+        if (port > 0) {
+            if (had_port)
+                (void)setenv("COS_BITNET_SERVER_PORT", prev_port_buf, 1);
+            else
+                (void)unsetenv("COS_BITNET_SERVER_PORT");
+            cos_bitnet_server_invalidate_config();
+        }
+        return NULL;
+    }
+    cos_bitnet_server_invalidate_config();
+
+    int np = max_tokens;
+    if (np < 8)
+        np = 8;
+    if (np > 512)
+        np = 512;
+
+    cos_bitnet_server_params_t pp;
+    memset(&pp, 0, sizeof(pp));
+    pp.n_predict     = np;
+    pp.n_probs       = 3;
+    pp.temperature   = temperature;
+    pp.system_prompt = system;
+    pp.seed          = -1;
+
+    cos_bitnet_server_result_t rr;
+    memset(&rr, 0, sizeof(rr));
+    int rc = cos_bitnet_server_complete(prompt, &pp, &rr);
+
+    char *out = NULL;
+    if (rc == 0 && rr.text != NULL && rr.text[0] != '\0')
+        out = strdup(rr.text);
+
+    if (had_bcm)
+        (void)setenv("COS_BITNET_CHAT_MODEL", prev_bcm_buf, 1);
+    else
+        (void)unsetenv("COS_BITNET_CHAT_MODEL");
+    if (had_oll)
+        (void)setenv("COS_OLLAMA_MODEL", prev_oll_buf, 1);
+    else
+        (void)unsetenv("COS_OLLAMA_MODEL");
+
+    if (port > 0) {
+        if (had_port)
+            (void)setenv("COS_BITNET_SERVER_PORT", prev_port_buf, 1);
+        else
+            (void)unsetenv("COS_BITNET_SERVER_PORT");
+    }
+    cos_bitnet_server_invalidate_config();
+    return out;
+}

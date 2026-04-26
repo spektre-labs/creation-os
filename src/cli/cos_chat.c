@@ -87,6 +87,9 @@
 #include "semantic_entropy.h"
 #include "semantic_sigma.h"
 #include "response_cache.h"
+#include "cross_model_sigma.h"
+#include "model_cascade.h"
+#include "semantic_cache.h"
 #include "bitnet_server.h"
 #include "ollama_detect.h"
 #include "text_similarity.h"
@@ -778,6 +781,9 @@ typedef struct {
     int   semantic_sigma;
     /** 1 = skip HTTP triple-sample σ (single logprob shadow only). */
     int   fast_sigma;
+    int   cascade;
+    int   cross_model_sigma;
+    int   semantic_lru;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -860,6 +866,8 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
         return;
     if (strcmp(r->response, COS_CHAT_PIPELINE_ABSTAIN) == 0)
         return;
+    if (feat->cross_model_sigma && cos_cli_use_bitnet_http() == 0)
+        return;
 
     const char *sysp =
         (cfg_rw->codex != NULL && cfg_rw->codex->bytes != NULL
@@ -880,11 +888,20 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
     /* Snapshot per-token σ before auxiliary completes overwrite server state. */
     struct timespec __ts0, __ts1;
     (void)clock_gettime(CLOCK_MONOTONIC, &__ts0);
-    float se = cos_semantic_sigma_ex(user_prompt, sysp, port,
-                                       (model != NULL && model[0] != '\0')
-                                           ? model
-                                           : NULL,
-                                       3, r->response, &det);
+    float se;
+    if (feat->cross_model_sigma) {
+        se = cos_cross_model_sigma(port, user_prompt, sysp);
+        det.n_samples   = 3;
+        det.n_clusters  = 1;
+        det.similarities[0] = det.similarities[1] = det.similarities[2] =
+            1.0f - se;
+    } else {
+        se = cos_semantic_sigma_ex(user_prompt, sysp, port,
+                                   (model != NULL && model[0] != '\0')
+                                       ? model
+                                       : NULL,
+                                   3, r->response, &det);
+    }
     (void)clock_gettime(CLOCK_MONOTONIC, &__ts1);
     g_cos_chat_semantic_phase_ms +=
         (double)(__ts1.tv_sec - __ts0.tv_sec) * 1000.0
@@ -898,12 +915,16 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
         combined, cfg_rw->tau_accept, cfg_rw->tau_rethink, r->rethink_count);
 
     FILE *out = (repl_use_tui != 0) ? stderr : stdout;
-    fprintf(out,
-            "[semantic-sigma σ=%.3f j01=%.3f j02=%.3f j12=%.3f "
-            "n_cl=%d blend=0.7·σ_se+0.3·σ_prior]\n",
-            (double)se, (double)det.similarities[0],
-            (double)det.similarities[1], (double)det.similarities[2],
-            det.n_clusters);
+    {
+        const char *tag = feat->cross_model_sigma ? "cross-model-sigma"
+                                                  : "semantic-sigma";
+        fprintf(out,
+                "[%s σ=%.3f j01=%.3f j02=%.3f j12=%.3f n_cl=%d "
+                "blend=0.7·σ_se+0.3·σ_prior]\n",
+                tag, (double)se, (double)det.similarities[0],
+                (double)det.similarities[1], (double)det.similarities[2],
+                det.n_clusters);
+    }
 }
 
 typedef struct {
@@ -929,6 +950,9 @@ static uint64_t g_spike_last_bsc[COS_INF_W];
 static int      g_spike_have_last;
 static char     g_spike_last_resp[4096];
 static char     g_spike_ham_buf[4096];
+static char     g_cos_sem_lru_buf[4096];
+static char     g_cos_cascade_buf[4096];
+static char     g_cos_eng_cascade_buf[4096];
 
 static struct cos_state_ledger g_ag_ledger;
 static int                     g_ag_ledger_ready;
@@ -1325,12 +1349,40 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     int kernel_cap = SL.bu.kernels_to_run;
 
     int semantic_hit = 0;
+    int cascade_done = 0;
 
     double w0 = 0.0, w1 = 0.0;
     double  elapsed_ms = 0.0;
     int     prc          = 0;
 
-    if (!early_spec_abstain && feat != NULL && feat->semantic_cache) {
+    if (!early_spec_abstain && !semantic_hit && feat != NULL
+        && feat->semantic_lru) {
+        uint64_t hlr = cos_semantic_cache_prompt_hash(prompt);
+        float    cs  = cos_semantic_cache_lookup(
+            hlr, g_cos_sem_lru_buf, sizeof g_cos_sem_lru_buf);
+        if (cs >= 0.0f) {
+            semantic_hit          = 1;
+            r.response            = g_cos_sem_lru_buf;
+            r.sigma               = cs;
+            r.engram_hit          = 0;
+            r.rethink_count       = 0;
+            r.escalated           = 0;
+            r.cost_eur            = 0.0;
+            r.final_action        = COS_SIGMA_ACTION_ACCEPT;
+            r.agent_gate          = COS_AGENT_ALLOW;
+            r.diagnostic          = "semantic_lru_cache";
+            r.mode                = cfg_rw->mode;
+            r.codex_hash          = cfg_rw->codex != NULL
+                                        ? cfg_rw->codex->hash_fnv1a64
+                                        : 0ULL;
+            r.ttt_applied         = 0;
+            fprintf(stdout, "[CACHE_LRU] hit σ=%.3f (normalized prompt)\n",
+                    (double)cs);
+        }
+    }
+
+    if (!early_spec_abstain && !semantic_hit && feat != NULL
+        && feat->semantic_cache) {
         struct cos_inference_cache_entry hit;
         if (cos_inference_cache_lookup(bsc_prompt, COS_INF_W, &hit) != 0) {
             semantic_hit          = 1;
@@ -1388,7 +1440,73 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         }
     }
 
-    if (!early_spec_abstain && !semantic_hit) {
+    if (!early_spec_abstain && !semantic_hit && feat != NULL && feat->cascade
+        && cos_cli_use_bitnet_http() != 0) {
+        if (cfg_rw->engram != NULL) {
+            cos_sigma_engram_tick(cfg_rw->engram);
+            cos_sigma_engram_entry_t eg;
+            uint64_t                 eh = cos_sigma_engram_hash(prompt);
+            if (cos_sigma_engram_get(cfg_rw->engram, eh, &eg) == 1
+                && eg.value != NULL) {
+                const char *ev = (const char *)eg.value;
+                snprintf(g_cos_eng_cascade_buf, sizeof g_cos_eng_cascade_buf,
+                         "%s", ev);
+                r.response       = g_cos_eng_cascade_buf;
+                r.sigma          = eg.sigma_at_store;
+                r.engram_hit     = 1;
+                r.rethink_count  = 0;
+                r.escalated      = 0;
+                r.cost_eur       = 0.0;
+                r.final_action   = COS_SIGMA_ACTION_ACCEPT;
+                r.agent_gate     = COS_AGENT_ALLOW;
+                r.diagnostic     = "engram_hit";
+                r.mode           = cfg_rw->mode;
+                r.codex_hash     = cfg_rw->codex != NULL ? cfg_rw->codex->hash_fnv1a64
+                                                       : 0ULL;
+                r.ttt_applied    = 0;
+                semantic_hit     = 1;
+            }
+        }
+        if (!semantic_hit) {
+            int         port = 0;
+            const char *pe   = getenv("COS_BITNET_SERVER_PORT");
+            if (pe != NULL && pe[0] != '\0')
+                port = atoi(pe);
+            const char *sysp_c = NULL;
+            if (cfg_rw->codex != NULL && cfg_rw->codex->bytes != NULL
+                && cfg_rw->codex->size > 0)
+                sysp_c = cfg_rw->codex->bytes;
+            w0 = chat_wall_ms();
+            float csig = 1.0f;
+            int   tier = -1;
+            int   cr   = cos_cascade_query(port, prompt, sysp_c, g_cos_cascade_buf,
+                                         sizeof g_cos_cascade_buf, &csig,
+                                         &tier);
+            w1 = chat_wall_ms();
+            if (cr != 0) {
+                chat_emit_pipeline_failure_help();
+                return 3;
+            }
+            prc = 0;
+            r.response     = g_cos_cascade_buf;
+            r.sigma        = csig;
+            r.engram_hit   = 0;
+            r.rethink_count = 0;
+            r.escalated    = 0;
+            r.cost_eur     = 0.0001 * (double)(tier >= 0 ? (tier + 1) : 4);
+            r.final_action = cos_sigma_reinforce_round(
+                csig, cfg_rw->tau_accept, cfg_rw->tau_rethink, r.rethink_count);
+            r.agent_gate   = COS_AGENT_ALLOW;
+            r.diagnostic   = (tier >= 0) ? "cascade_tier" : "cascade_abstain";
+            r.mode         = cfg_rw->mode;
+            r.codex_hash   = cfg_rw->codex != NULL ? cfg_rw->codex->hash_fnv1a64
+                                                   : 0ULL;
+            r.ttt_applied  = 0;
+            cascade_done   = 1;
+        }
+    }
+
+    if (!early_spec_abstain && !semantic_hit && !cascade_done) {
         w0 = chat_wall_ms();
         prc = cos_sigma_pipeline_run(cfg_rw, prompt, &r);
         w1 = chat_wall_ms();
@@ -1398,11 +1516,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         chat_sigma_layer_restore(cfg_rw, &SL);
 
     cfg_rw->tau_accept = tau_saved;
-    if (!early_spec_abstain && !semantic_hit && prc != 0) {
+    if (!early_spec_abstain && !semantic_hit && !cascade_done && prc != 0) {
         chat_emit_pipeline_failure_help();
         return 3;
     }
-    if (!early_spec_abstain && !semantic_hit) {
+    if (!early_spec_abstain && !semantic_hit && !cascade_done) {
+        elapsed_ms = w1 - w0;
+        if (elapsed_ms < 0.0)
+            elapsed_ms = 0.0;
+    } else if (cascade_done && !semantic_hit) {
         elapsed_ms = w1 - w0;
         if (elapsed_ms < 0.0)
             elapsed_ms = 0.0;
@@ -1427,7 +1549,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     uint64_t      resp_cache_h = cos_response_cache_prompt_hash(prompt);
     int           skipped_resp_sig_cache = 0;
     if (!early_spec_abstain && !semantic_hit && prc == 0 && feat != NULL
-        && (feat->semantic_sigma || feat->semantic_entropy)) {
+        && (feat->semantic_sigma || feat->semantic_entropy)
+        && !(feat->cascade)) {
         float c_sig = cos_response_cache_lookup(resp_cache_h, NULL, 0);
         if (c_sig >= 0.0f) {
             r.sigma         = c_sig;
@@ -1440,7 +1563,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         }
     }
 
-    if (!skipped_resp_sig_cache) {
+    if (!skipped_resp_sig_cache && !(feat != NULL && feat->cascade)) {
         if (feat != NULL && feat->semantic_sigma) {
             chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
                                       early_spec_abstain, semantic_hit, prc, 0);
@@ -1455,6 +1578,15 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         && (feat->semantic_sigma || feat->semantic_entropy)
         && r.response != NULL)
         cos_response_cache_store(resp_cache_h, r.sigma, r.response);
+
+    if (!early_spec_abstain && feat != NULL && feat->semantic_lru && prc == 0
+        && r.response != NULL
+        && strcmp(r.response, COS_CHAT_PIPELINE_ABSTAIN) != 0
+        && strncmp(r.response, "[ABSTAIN", 9) != 0
+        && (r.diagnostic == NULL
+            || strcmp(r.diagnostic, "semantic_lru_cache") != 0))
+        cos_semantic_cache_store(cos_semantic_cache_prompt_hash(prompt),
+                                 r.sigma, r.response);
 
     if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
         memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));
@@ -1764,6 +1896,9 @@ int main(int argc, char **argv) {
     int         tools_self_test  = 0;
     int         tools_dry_run    = 0;
     int         semantic_cache   = 0;
+    int         cascade          = 0;
+    int         cross_model_sigma = 0;
+    int         semantic_lru     = 0;
     int         speculative_sigma = 0;
     int         knowledge_graph  = 0;
     int         spike_mode        = 0;
@@ -1872,6 +2007,12 @@ int main(int argc, char **argv) {
             tools_dry_run = 1;
         } else if (strcmp(argv[i], "--semantic-cache") == 0) {
             semantic_cache = 1;
+        } else if (strcmp(argv[i], "--cascade") == 0) {
+            cascade = 1;
+        } else if (strcmp(argv[i], "--cross-model-sigma") == 0) {
+            cross_model_sigma = 1;
+        } else if (strcmp(argv[i], "--semantic-lru") == 0) {
+            semantic_lru = 1;
         } else if (strcmp(argv[i], "--speculative") == 0) {
             speculative_sigma = 1;
         } else if (strcmp(argv[i], "--graph") == 0) {
@@ -1935,6 +2076,9 @@ int main(int argc, char **argv) {
                 "  --tools-self-test   20-case classifier regression (exit 0/1)\n"
                 "  --tools-dry-run     with --tools: gate only, never exec\n"
                 "  --semantic-cache    BSC Hamming semantic inference cache (~/.cos)\n"
+                "  --semantic-lru      exact-match LRU on normalized prompt (1h TTL)\n"
+                "  --cascade           tiered Ollama models (0.6b→4b→3b) + intra-tier σ\n"
+                "  --cross-model-sigma three-model Jaccard σ (replaces same-model samples)\n"
                 "  --speculative       predict σ early (skip-verify / early abstain)\n"
                 "  --spike             neuromorphic σ-channel spike layer (stable σ → cheap path)\n"
                 "  --adaptive          σ-guided compute budget (kernels / rethink / TTT caps)\n"
@@ -1952,6 +2096,10 @@ int main(int argc, char **argv) {
                 "  COS_TOOL_TAU_LOW/HIGH      tool gate thresholds (default 0.35 / 0.65)\n"
                 "  COS_TOOLS_ASSUME_YES=1     auto-answer CONFIRM as yes\n"
                 "  COS_INFERENCE_CACHE_CAP    ring slots for semantic cache (default 512)\n"
+                "  COS_SEMANTIC_LRU_CACHE=0   disable --semantic-lru store/lookup\n"
+                "  COS_CROSS_MODEL_A/B/C    override cross-model ids (defaults Gemma/Llama/Qwen)\n"
+                "  COS_CASCADE_MODEL_0/1/2  override cascade tier models\n"
+                "  COS_CASCADE_TAU_0/1/2     per-tier accept thresholds\n"
                 "  COS_KG_ENABLE=1            same as --graph (per-turn graph extract)\n"
                 "  COS_CHAT_SEMANTIC_ENTROPY=1  same as --semantic-entropy (unless --no-…)\n"
                 "  COS_SEMANTIC_ENTROPY_MODE   replace | blend | max (default replace)\n"
@@ -2073,6 +2221,12 @@ int main(int argc, char **argv) {
     }
     if (semantic_sigma)
         semantic_entropy = 0;
+
+    if (cross_model_sigma) {
+        semantic_sigma     = 1;
+        semantic_entropy   = 0;
+        no_semantic_sigma  = 0;
+    }
 
     if (multi_sigma_cli && !fast_sigma && !no_semantic_sigma) {
         semantic_sigma     = 1;
@@ -2399,6 +2553,9 @@ int main(int argc, char **argv) {
         feat.semantic_entropy     = semantic_entropy;
         feat.semantic_sigma       = semantic_sigma;
         feat.fast_sigma           = fast_sigma;
+        feat.cascade              = cascade;
+        feat.cross_model_sigma    = cross_model_sigma;
+        feat.semantic_lru         = semantic_lru;
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
@@ -2517,6 +2674,9 @@ int main(int argc, char **argv) {
         rfeat.semantic_entropy     = semantic_entropy;
         rfeat.semantic_sigma       = semantic_sigma;
         rfeat.fast_sigma           = fast_sigma;
+        rfeat.cascade              = cascade;
+        rfeat.cross_model_sigma    = cross_model_sigma;
+        rfeat.semantic_lru         = semantic_lru;
 
         cos_pipeline_result_t r;
         memset(&r, 0, sizeof(r));
@@ -2547,13 +2707,39 @@ int main(int argc, char **argv) {
         int kernel_cap = SL.bu.kernels_to_run;
 
         int semantic_hit = 0;
+        int cascade_done = 0;
         g_cos_chat_semantic_phase_ms = 0.0;
 
         double w0 = 0.0, w1 = 0.0;
         double  elapsed_ms = 0.0;
         int     prc        = 0;
 
-        if (!early_spec_abstain && semantic_cache) {
+        if (!early_spec_abstain && !semantic_hit && semantic_lru) {
+            uint64_t hlr = cos_semantic_cache_prompt_hash(line);
+            float    cs  = cos_semantic_cache_lookup(
+                hlr, g_cos_sem_lru_buf, sizeof g_cos_sem_lru_buf);
+            if (cs >= 0.0f) {
+                semantic_hit          = 1;
+                r.response            = g_cos_sem_lru_buf;
+                r.sigma               = cs;
+                r.engram_hit          = 0;
+                r.rethink_count       = 0;
+                r.escalated           = 0;
+                r.cost_eur            = 0.0;
+                r.final_action        = COS_SIGMA_ACTION_ACCEPT;
+                r.agent_gate          = COS_AGENT_ALLOW;
+                r.diagnostic          = "semantic_lru_cache";
+                r.mode                = cfg.mode;
+                r.codex_hash          = cfg.codex != NULL ? cfg.codex->hash_fnv1a64
+                                                         : 0ULL;
+                r.ttt_applied         = 0;
+                fprintf(use_tui ? stderr : stdout,
+                        "[CACHE_LRU] hit σ=%.3f (normalized prompt)\n",
+                        (double)cs);
+            }
+        }
+
+        if (!early_spec_abstain && !semantic_hit && semantic_cache) {
             struct cos_inference_cache_entry hit;
             if (cos_inference_cache_lookup(bsc_prompt, COS_INF_W, &hit) != 0) {
                 semantic_hit       = 1;
@@ -2610,7 +2796,79 @@ int main(int argc, char **argv) {
             }
         }
 
-        if (!early_spec_abstain && !semantic_hit) {
+        if (!early_spec_abstain && !semantic_hit && cascade
+            && cos_cli_use_bitnet_http() != 0) {
+            if (cfg.engram != NULL) {
+                cos_sigma_engram_tick(cfg.engram);
+                cos_sigma_engram_entry_t eg;
+                uint64_t                 eh = cos_sigma_engram_hash(line);
+                if (cos_sigma_engram_get(cfg.engram, eh, &eg) == 1
+                    && eg.value != NULL) {
+                    snprintf(g_cos_eng_cascade_buf, sizeof g_cos_eng_cascade_buf,
+                             "%s", (const char *)eg.value);
+                    r.response       = g_cos_eng_cascade_buf;
+                    r.sigma          = eg.sigma_at_store;
+                    r.engram_hit     = 1;
+                    r.rethink_count  = 0;
+                    r.escalated      = 0;
+                    r.cost_eur       = 0.0;
+                    r.final_action   = COS_SIGMA_ACTION_ACCEPT;
+                    r.agent_gate     = COS_AGENT_ALLOW;
+                    r.diagnostic     = "engram_hit";
+                    r.mode           = cfg.mode;
+                    r.codex_hash     = cfg.codex != NULL ? cfg.codex->hash_fnv1a64
+                                                       : 0ULL;
+                    r.ttt_applied    = 0;
+                    semantic_hit     = 1;
+                }
+            }
+            if (!semantic_hit) {
+                if (use_tui && cos_chat_stream_env_on())
+                    cos_tui_begin_ai_line();
+                g_cos_chat_sigint = 0;
+                cos_bitnet_server_io_cancel_clear();
+                int         port = 0;
+                const char *pe   = getenv("COS_BITNET_SERVER_PORT");
+                if (pe != NULL && pe[0] != '\0')
+                    port = atoi(pe);
+                const char *sysp_c = NULL;
+                if (cfg.codex != NULL && cfg.codex->bytes != NULL
+                    && cfg.codex->size > 0)
+                    sysp_c = cfg.codex->bytes;
+                w0 = chat_wall_ms();
+                float csig = 1.0f;
+                int   tier = -1;
+                int   cr   = cos_cascade_query(port, line, sysp_c, g_cos_cascade_buf,
+                                             sizeof g_cos_cascade_buf, &csig,
+                                             &tier);
+                w1 = chat_wall_ms();
+                if (cr != 0) {
+                    chat_emit_pipeline_failure_help();
+                    cfg.tau_accept = tau_sv;
+                    if (SL.did_budget)
+                        chat_sigma_layer_restore(&cfg, &SL);
+                    continue;
+                }
+                prc            = 0;
+                r.response     = g_cos_cascade_buf;
+                r.sigma        = csig;
+                r.engram_hit   = 0;
+                r.rethink_count = 0;
+                r.escalated    = 0;
+                r.cost_eur     = 0.0001 * (double)(tier >= 0 ? (tier + 1) : 4);
+                r.final_action = cos_sigma_reinforce_round(
+                    csig, cfg.tau_accept, cfg.tau_rethink, r.rethink_count);
+                r.agent_gate   = COS_AGENT_ALLOW;
+                r.diagnostic   = (tier >= 0) ? "cascade_tier" : "cascade_abstain";
+                r.mode         = cfg.mode;
+                r.codex_hash   = cfg.codex != NULL ? cfg.codex->hash_fnv1a64
+                                                   : 0ULL;
+                r.ttt_applied  = 0;
+                cascade_done   = 1;
+            }
+        }
+
+        if (!early_spec_abstain && !semantic_hit && !cascade_done) {
             if (use_tui && cos_chat_stream_env_on())
                 cos_tui_begin_ai_line();
             g_cos_chat_sigint = 0;
@@ -2641,12 +2899,16 @@ int main(int argc, char **argv) {
 
         cfg.tau_accept = tau_sv;
 
-        if (!early_spec_abstain && !semantic_hit && prc != 0) {
+        if (!early_spec_abstain && !semantic_hit && !cascade_done && prc != 0) {
             chat_emit_pipeline_failure_help();
             continue;
         }
 
-        if (!early_spec_abstain && !semantic_hit) {
+        if (!early_spec_abstain && !semantic_hit && !cascade_done) {
+            elapsed_ms = w1 - w0;
+            if (elapsed_ms < 0.0)
+                elapsed_ms = 0.0;
+        } else if (cascade_done && !semantic_hit) {
             elapsed_ms = w1 - w0;
             if (elapsed_ms < 0.0)
                 elapsed_ms = 0.0;
@@ -2668,7 +2930,8 @@ int main(int argc, char **argv) {
         uint64_t      resp_cache_h2 = cos_response_cache_prompt_hash(line);
         int           skipped_resp_sig_cache2 = 0;
         if (!early_spec_abstain && !semantic_hit && prc == 0
-            && (rfeat.semantic_sigma || rfeat.semantic_entropy)) {
+            && (rfeat.semantic_sigma || rfeat.semantic_entropy)
+            && !rfeat.cascade) {
             float c2 = cos_response_cache_lookup(resp_cache_h2, NULL, 0);
             if (c2 >= 0.0f) {
                 r.sigma        = c2;
@@ -2681,7 +2944,7 @@ int main(int argc, char **argv) {
             }
         }
 
-        if (!skipped_resp_sig_cache2) {
+        if (!skipped_resp_sig_cache2 && !rfeat.cascade) {
             if (rfeat.semantic_sigma) {
                 chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
                                           early_spec_abstain, semantic_hit,
@@ -2697,6 +2960,14 @@ int main(int argc, char **argv) {
             && (rfeat.semantic_sigma || rfeat.semantic_entropy)
             && r.response != NULL)
             cos_response_cache_store(resp_cache_h2, r.sigma, r.response);
+
+        if (!early_spec_abstain && semantic_lru && prc == 0 && r.response != NULL
+            && strcmp(r.response, COS_CHAT_PIPELINE_ABSTAIN) != 0
+            && strncmp(r.response, "[ABSTAIN", 9) != 0
+            && (r.diagnostic == NULL
+                || strcmp(r.diagnostic, "semantic_lru_cache") != 0))
+            cos_semantic_cache_store(cos_semantic_cache_prompt_hash(line),
+                                     r.sigma, r.response);
 
         if (!early_spec_abstain && !semantic_hit && prc == 0 && r.response != NULL) {
             memcpy(g_spike_last_bsc, bsc_prompt, sizeof(g_spike_last_bsc));
@@ -2739,6 +3010,9 @@ int main(int argc, char **argv) {
         xf.semantic_entropy  = semantic_entropy;
         xf.semantic_sigma    = semantic_sigma;
         xf.fast_sigma        = fast_sigma;
+        xf.cascade           = cascade;
+        xf.cross_model_sigma = cross_model_sigma;
+        xf.semantic_lru      = semantic_lru;
 
         chat_multi_t ms;
         memset(&ms, 0, sizeof(ms));
