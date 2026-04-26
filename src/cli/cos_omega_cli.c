@@ -74,9 +74,15 @@ static int usage_omega(FILE *fp)
         "  cos omega --sim            synthetic σ step (no live think / perception I/O)\n"
         "  cos omega --light          minimal Ω for low-RAM hosts (60s turn cap, max 1 rethink,\n"
         "                             no TTT / federation / codegen / embodiment / consciousness)\n"
+        "  cos omega --evolve         rule-based τ / temperature adaptation (JSONL evolver.jsonl)\n"
+        "  cos omega --patterns       periodic pattern_extract → ~/.cos/patterns.json\n"
+        "  cos omega --autonomous     rotate graded prompt bank (CREATION_OS_ROOT + CSV)\n"
+        "  cos omega --minutes M      wall cap (sets COS_OMEGA_MINUTES_CAP; pairs with --hours)\n"
+        "  cos omega --verbose        stderr detail for evolver / autonomous\n"
         "Env: COS_OMEGA_GOAL  per-turn goal string (optional)\n"
         "     COS_OMEGA_SIM=1       same as --sim\n"
         "     COS_OMEGA_HOURS_CAP  hours wall clock (alternative to --hours)\n"
+        "     COS_OMEGA_MINUTES_CAP short wall cap (alternative to --minutes)\n"
         "     COS_OMEGA_TURN_TIMEOUT_S  per-turn wall budget (default 120; --light uses 60)\n",
         fp);
     return fp == stderr ? 2 : 0;
@@ -89,6 +95,7 @@ int cos_omega_main(int argc, char **argv)
     struct cos_omega_config   cfg;
     struct cos_omega_state    st;
     char                     *rep;
+    int                       verbose_cli = 0;
 
     memset(&cfg, 0, sizeof cfg);
     {
@@ -111,6 +118,21 @@ int cos_omega_main(int argc, char **argv)
             char ebuf[64];
             snprintf(ebuf, sizeof ebuf, "%s", argv[++i]);
             setenv("COS_OMEGA_HOURS_CAP", ebuf, 1);
+        } else if (strcmp(argv[i], "--minutes") == 0 && i + 1 < argc) {
+            char ebuf[64];
+            snprintf(ebuf, sizeof ebuf, "%s", argv[++i]);
+            setenv("COS_OMEGA_MINUTES_CAP", ebuf, 1);
+        } else if (strcmp(argv[i], "--evolve") == 0) {
+            cfg.enable_evolver = 1;
+        } else if (strcmp(argv[i], "--patterns") == 0) {
+            cfg.enable_pattern_extract = 1;
+        } else if (strcmp(argv[i], "--autonomous") == 0) {
+            cfg.autonomous_mode = 1;
+            cfg.consolidate_interval = 100;
+            cfg.enable_evolver         = 1;
+            cfg.enable_pattern_extract = 1;
+        } else if (strcmp(argv[i], "--verbose") == 0) {
+            verbose_cli = 1;
         } else if (strcmp(argv[i], "--sim") == 0) {
             cfg.simulation_mode = 1;
         } else if (strcmp(argv[i], "--light") == 0) {
@@ -164,6 +186,9 @@ int cos_omega_main(int argc, char **argv)
             return usage_omega(stderr);
         }
     }
+
+    if (verbose_cli)
+        cfg.verbose_evolver = 1;
 
     if (cos_omega_init(&cfg, &st) != 0) {
         fputs("cos omega: init failed\n", stderr);

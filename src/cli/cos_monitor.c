@@ -42,6 +42,9 @@ struct mon_evt {
 
     /** From JSONL / ledger when present (0/1). */
     int       sigma_drift;
+
+    /** Estimated tokens this Ω turn; -1 if absent in JSONL. */
+    int       tokens_est;
 };
 
 static int mon_argv_skip_monitor(int argc, char **argv)
@@ -170,6 +173,9 @@ static void mon_parse_line(const char *ln, struct mon_evt *ev)
     ev->sigma_drift = 0;
     if (strstr(ln, "\"sigma_drift\"") != NULL)
         ev->sigma_drift = mon_find_json_int(ln, "sigma_drift");
+    ev->tokens_est = -1;
+    if (strstr(ln, "\"tokens_est\"") != NULL)
+        ev->tokens_est = mon_find_json_int(ln, "tokens_est");
 }
 
 static void mon_print_formatted(const struct mon_evt *ev)
@@ -230,6 +236,11 @@ struct mon_agg {
     char     last_grade;
     double   last_green;
     int      drift_flags;
+
+    long     sum_tokens;
+    int      n_tokens;
+    int      tok_ring[32];
+    int      n_tok_ring;
 };
 
 static void mon_agg_cb(const struct mon_evt *ev, void *ctx)
@@ -259,6 +270,16 @@ static void mon_agg_cb(const struct mon_evt *ev, void *ctx)
     a->last_con = ev->consciousness;
     if (ev->sigma_drift)
         a->drift_flags++;
+    if (ev->tokens_est >= 0) {
+        a->sum_tokens += (long)ev->tokens_est;
+        a->n_tokens++;
+        if (a->n_tok_ring < 32)
+            a->tok_ring[a->n_tok_ring++] = ev->tokens_est;
+        else {
+            memmove(a->tok_ring, a->tok_ring + 1, sizeof(int) * 31u);
+            a->tok_ring[31] = ev->tokens_est;
+        }
+    }
 }
 
 static void mon_run_summary(FILE *fp)
@@ -284,6 +305,34 @@ static void mon_run_summary(FILE *fp)
     if (a.drift_flags > 0)
         printf("σ drift: %d event(s) with sigma_drift=1 (consider RECALIBRATE)\n",
                a.drift_flags);
+    if (a.n_tokens > 0) {
+        int i, h = a.n_tok_ring / 2, t0 = 0, t1 = 0;
+        printf("Tokens/query (mean): %.1f\n",
+               (double)a.sum_tokens / (double)a.n_tokens);
+        if (a.n_tok_ring >= 4) {
+            fputs("Tokens/query trend: ", stdout);
+            for (i = 0; i < a.n_tok_ring; i++) {
+                double u = (double)a.tok_ring[i] / 512.0;
+                if (u < 0.)
+                    u = 0.;
+                if (u > 1.)
+                    u = 1.;
+                fputs(mon_spark_utf8(u), stdout);
+            }
+            for (i = 0; i < h; i++)
+                t0 += a.tok_ring[i];
+            for (; i < a.n_tok_ring; i++)
+                t1 += a.tok_ring[i];
+            t0 = (h > 0) ? t0 / h : 0;
+            t1 = (a.n_tok_ring - h > 0) ? t1 / (a.n_tok_ring - h) : 0;
+            if (t1 < t0 - 2)
+                fputs(" [DECLINING ✓]\n", stdout);
+            else if (t1 > t0 + 2)
+                fputs(" [RISING]\n", stdout);
+            else
+                fputs(" [STABLE]\n", stdout);
+        }
+    }
 }
 
 struct mon_sigma_ctx {

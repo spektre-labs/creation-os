@@ -6199,7 +6199,7 @@ check-integration: test_sigma_pipeline_integration
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
 COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
-               -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma
+               -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma -Isrc/omega
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6207,6 +6207,7 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/sovereign.c \
                src/sigma/pipeline/agent.c \
                src/sigma/adaptive_tau.c \
+               src/omega/pattern_keywords.c \
                src/sigma/ttt_runtime.c \
                src/cli/stub_gen.c \
                src/cli/cos_tui.c \
@@ -6572,7 +6573,8 @@ COS_OMEGA_SUPPORT_SRCS = src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
-	src/sigma/omega_loop.c src/cli/cos_omega_cli.c
+	src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	src/omega/evolver.c src/omega/pattern_extractor.c
 
 COS_OMEGA_STATE_DEPS = src/sigma/sovereign_limits.c \
 	src/sigma/consciousness_meter.c src/sigma/awareness_log.c \
@@ -6599,6 +6601,7 @@ creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    src/omega/evolver.c src/omega/pattern_extractor.c \
 	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
@@ -6625,6 +6628,7 @@ cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    src/omega/evolver.c src/omega/pattern_extractor.c \
 	    $(COS_LEARN_WEB_SRCS) src/cli/cos_search.c \
 	    $(COS_OMEGA_STATE_DEPS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread
@@ -6829,8 +6833,8 @@ check-text-similarity: creation_os_check_text_similarity
 	@echo "check-text-similarity: OK (Jaccard + normalize self-test)"
 
 check-agi: check-state-ledger check-error-attribution check-engram-episodic \
-	check-text-similarity check-cos-serve check-voice
-	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + cos-serve + cos voice)"
+	check-text-similarity check-cos-serve check-voice check-omega
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + cos-serve + cos voice + Ω-loop)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c src/cli/escalation.c
@@ -10182,7 +10186,9 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
-	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c src/cli/cos_monitor.c \
+	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	    src/omega/evolver.c src/omega/pattern_extractor.c \
+	    src/cli/cos_monitor.c \
 	    src/cli/cos_report.c \
 	    $(COS_LEARN_WEB_SRCS) \
 	    $(LDFLAGS) -lsqlite3 -lcurl -lpthread

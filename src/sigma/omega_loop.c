@@ -39,6 +39,8 @@
 #include "autonomy.h"
 
 #include "../cli/cos_think.h"
+#include "../omega/evolver.h"
+#include "../omega/pattern_extractor.h"
 
 #include <errno.h>
 #include <math.h>
@@ -85,6 +87,18 @@ static int                           g_omega_cache_info_done;
 static struct cos_living_weights g_lw;
 static struct cos_autonomy_state g_autonomy;
 static int64_t                   g_omega_last_learn_ms;
+
+static cos_evolver_config_t      g_evcfg;
+static int                       g_evcfg_inited;
+static float                     g_hist_s[128];
+static int                       g_hist_g[128];
+static int                       g_hist_n;
+static FILE                     *g_evolver_fp;
+
+#define OMEGA_PB_MAX 512
+#define OMEGA_PB_LEN 768
+static char                      g_pb[OMEGA_PB_MAX][OMEGA_PB_LEN];
+static int                       g_pb_n;
 
 static int64_t omega_now_ms(void)
 {
@@ -258,6 +272,112 @@ static int omega_write_status(struct cos_omega_state *st)
     return 0;
 }
 
+static void omega_hist_push(float s, int gate_action)
+{
+    if (g_hist_n < 128) {
+        g_hist_s[g_hist_n] = s;
+        g_hist_g[g_hist_n] = gate_action;
+        g_hist_n++;
+    } else {
+        memmove(g_hist_s, g_hist_s + 1, sizeof(float) * 127u);
+        memmove(g_hist_g, g_hist_g + 1, sizeof(int) * 127u);
+        g_hist_s[127] = s;
+        g_hist_g[127] = gate_action;
+        g_hist_n      = 128;
+    }
+}
+
+static int omega_load_prompt_bank(void)
+{
+    char        path[1024];
+    FILE       *f;
+    char        line[2048];
+    const char *root = getenv("CREATION_OS_ROOT");
+
+    g_pb_n = 0;
+    if (root != NULL && root[0] != '\0') {
+        if (snprintf(path, sizeof path, "%s/benchmarks/graded/graded_prompts.csv",
+                     root)
+            >= (int)sizeof path)
+            return -1;
+    } else if (snprintf(path, sizeof path, "benchmarks/graded/graded_prompts.csv")
+               >= (int)sizeof path) {
+        return -1;
+    }
+    f = fopen(path, "r");
+    if (f == NULL)
+        return -1;
+    if (fgets(line, sizeof line, f) == NULL) {
+        fclose(f);
+        return -1;
+    }
+    while (g_pb_n < OMEGA_PB_MAX && fgets(line, sizeof line, f) != NULL) {
+        char cat[80];
+        char pr[OMEGA_PB_LEN];
+        int  rc = sscanf(line, " %79[^,],%767[^,]", cat, pr);
+        if (rc < 2)
+            continue;
+        snprintf(g_pb[g_pb_n], sizeof g_pb[g_pb_n], "%s", pr);
+        g_pb_n++;
+    }
+    fclose(f);
+    return g_pb_n > 0 ? 0 : -1;
+}
+
+static void omega_evolver_and_patterns(struct cos_omega_state *st)
+{
+    int iv = g_cfg.evolver_interval > 0 ? g_cfg.evolver_interval : 10;
+    int pv = g_cfg.pattern_interval > 0 ? g_cfg.pattern_interval : 50;
+
+    if (g_cfg.enable_evolver && st->turn > 0 && st->turn % iv == 0
+        && g_hist_n >= iv) {
+        float        sigb[128];
+        int          okb[128];
+        int          i, off = g_hist_n - iv;
+        cos_evolver_config_t prev;
+
+        if (!g_evcfg_inited) {
+            cos_evolver_config_default(&g_evcfg);
+            g_evcfg_inited = 1;
+        }
+        prev = g_evcfg;
+        for (i = 0; i < iv; i++) {
+            sigb[i] = g_hist_s[off + i];
+            okb[i]  = (g_hist_g[off + i] == COS_SIGMA_ACTION_ACCEPT) ? 1 : 0;
+        }
+        cos_evolver_set_stderr_verbose(g_cfg.verbose_evolver);
+        g_evcfg = cos_evolver_step(g_evcfg, sigb, iv, okb, iv);
+        if (g_cfg.verbose_evolver)
+            fprintf(stderr,
+                    "[evolver] tick turn=%d window=%d τ_accept=%.3f τ_rethink=%.3f\n",
+                    st->turn, iv, (double)g_evcfg.tau_accept,
+                    (double)g_evcfg.tau_rethink);
+        if (g_evolver_fp == NULL) {
+            char ep[512];
+            if (omega_home_subdir(ep, sizeof ep, "evolver.jsonl")
+                < (int)sizeof ep)
+                g_evolver_fp = fopen(ep, "a");
+            if (g_evolver_fp != NULL)
+                setvbuf(g_evolver_fp, NULL, _IONBF, 0);
+        }
+        if (g_evolver_fp != NULL)
+            cos_evolver_emit_jsonl(g_evolver_fp, omega_now_ms(), st->turn,
+                                   &prev, &g_evcfg);
+        {
+            char b[32];
+            snprintf(b, sizeof b, "%.4f", (double)g_evcfg.tau_accept);
+            (void)setenv("COS_THINK_TAU_ACCEPT", b, 1);
+            snprintf(b, sizeof b, "%.4f", (double)g_evcfg.tau_rethink);
+            (void)setenv("COS_THINK_TAU_RETHINK", b, 1);
+        }
+    }
+
+    if (g_cfg.enable_pattern_extract && st->turn > 0 && st->turn % pv == 0) {
+        if (cos_pattern_extract_write(NULL) != 0)
+            omega_skip("pattern_extract_write");
+    }
+}
+
 static const char *omega_pick_goal(struct cos_omega_state *st)
 {
     static const char *kGoals[] = {
@@ -270,6 +390,8 @@ static const char *omega_pick_goal(struct cos_omega_state *st)
 
     if (genv && genv[0])
         return genv;
+    if (g_cfg.autonomous_mode && g_pb_n > 0)
+        return g_pb[(unsigned)st->turn % (unsigned)g_pb_n];
     return kGoals[(unsigned)st->turn % (sizeof kGoals / sizeof kGoals[0])];
 }
 
@@ -489,6 +611,17 @@ int cos_omega_init(const struct cos_omega_config *config,
     }
 
     g_omega_last_learn_ms = omega_now_ms();
+    g_hist_n              = 0;
+    g_pb_n                = 0;
+    if (g_cfg.enable_evolver && g_cfg.evolver_interval <= 0)
+        g_cfg.evolver_interval = 10;
+    if (g_cfg.enable_pattern_extract && g_cfg.pattern_interval <= 0)
+        g_cfg.pattern_interval = 50;
+    if (g_cfg.autonomous_mode && omega_load_prompt_bank() != 0)
+        fprintf(stderr,
+                "[omega] autonomous: prompt bank missing "
+                "(CREATION_OS_ROOT + benchmarks/graded/graded_prompts.csv)\n");
+
     if (getenv("COS_OMEGA_ENABLE_LEARNING") != NULL
         && getenv("COS_OMEGA_ENABLE_LEARNING")[0] == '1')
         g_cfg.enable_learning = 1;
@@ -826,6 +959,8 @@ common_tail:
     if (omega_write_status(state) != 0)
         omega_skip("omega_write_status");
 
+    omega_hist_push(sigma_proof, gate_decision);
+
     state->turn++;
 
     omega_consolidate_turn(state);
@@ -877,6 +1012,11 @@ common_tail:
         row.energy_turn_j = e_turn;
         row.co2_turn_g    = c_turn;
         row.latency_ms    = omega_now_ms() - omega_turn_t0_ms;
+        row.tokens_est    = omega_estimate_tokens(&g_last_tr);
+        if (row.tokens_est < 1)
+            row.tokens_est = (int)(strlen(output) / 4);
+        if (row.tokens_est < 1)
+            row.tokens_est = 1;
 
         if (cos_omega_emit_event(g_omega_events_fp, state, state->turn, &row)
             == 0) {
@@ -885,6 +1025,8 @@ common_tail:
             fflush(g_omega_events_fp);
         }
     }
+
+    omega_evolver_and_patterns(state);
 
     return 0;
 }
@@ -928,6 +1070,7 @@ int cos_omega_run(struct cos_omega_state *state)
 {
     int64_t       t_end_ms = 0;
     const char   *hours_env = getenv("COS_OMEGA_HOURS_CAP");
+    const char   *min_env   = getenv("COS_OMEGA_MINUTES_CAP");
 
     if (!state)
         return -1;
@@ -935,6 +1078,14 @@ int cos_omega_run(struct cos_omega_state *state)
         double h = atof(hours_env);
         if (h > 1e-6)
             t_end_ms = state->started_ms + (int64_t)(h * 3600000.0);
+    }
+    if (min_env != NULL && min_env[0] != '\0') {
+        double m = atof(min_env);
+        if (m > 1e-6) {
+            int64_t te = state->started_ms + (int64_t)(m * 60000.0);
+            if (t_end_ms == 0 || te < t_end_ms)
+                t_end_ms = te;
+        }
     }
 
     for (;;) {
@@ -990,6 +1141,10 @@ int cos_omega_finish_session(struct cos_omega_state *state)
             fclose(g_omega_events_fp);
             g_omega_events_fp = NULL;
         }
+        if (g_evolver_fp != NULL) {
+            fclose(g_evolver_fp);
+            g_evolver_fp = NULL;
+        }
         return -2;
     }
     fp = fopen(rp, "w");
@@ -1004,6 +1159,10 @@ int cos_omega_finish_session(struct cos_omega_state *state)
     if (g_omega_events_fp != NULL) {
         fclose(g_omega_events_fp);
         g_omega_events_fp = NULL;
+    }
+    if (g_evolver_fp != NULL) {
+        fclose(g_evolver_fp);
+        g_evolver_fp = NULL;
     }
     cos_curiosity_shutdown();
     cos_learn_shutdown();
@@ -1091,6 +1250,12 @@ char *cos_omega_report(const struct cos_omega_state *state)
         free(buf);
         return NULL;
     }
+    if (g_evcfg_inited) {
+        size_t L = strlen(buf);
+        (void)snprintf(buf + L, cap - L,
+                       "│ Evolver τ_accept=%.3f τ_rethink=%.3f                  │\n",
+                       (double)g_evcfg.tau_accept, (double)g_evcfg.tau_rethink);
+    }
     return buf;
 }
 
@@ -1124,6 +1289,7 @@ int cos_omega_emit_event(FILE                          *fp,
             "{\"t\":%lld,\"turn\":%d,\"sigma\":%.6f,\"k_eff\":%.6f,"
             "\"attribution\":%d,\"action\":\"%s\",\"cache_hit\":%s,"
             "\"energy_j\":%.9f,\"co2_g\":%.9f,\"latency_ms\":%lld,"
+            "\"tokens_est\":%d,"
             "\"consciousness\":%d,\"skills\":%d,\"episodes\":%d,"
             "\"sigma_trend\":%.6f,\"green_score\":%.4f,"
             "\"green_grade\":\"%c\"}\n",
@@ -1132,9 +1298,10 @@ int cos_omega_emit_event(FILE                          *fp,
             omega_action_json(row->gate_action),
             row->cache_hit ? "true" : "false",
             (double)row->energy_turn_j, (double)row->co2_turn_g,
-            (long long)row->latency_ms, state->consciousness_level,
-            state->skills_learned, state->episodes_stored,
-            (double)state->sigma_trend, (double)gs.green_score, gs.grade);
+            (long long)row->latency_ms, row->tokens_est,
+            state->consciousness_level, state->skills_learned,
+            state->episodes_stored, (double)state->sigma_trend,
+            (double)gs.green_score, gs.grade);
     return 0;
 }
 

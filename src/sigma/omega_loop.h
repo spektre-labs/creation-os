@@ -47,6 +47,14 @@ struct cos_omega_config {
 
     /** Curiosity + autonomy brain (COS_OMEGA_AUTONOMY=1). */
     int       enable_autonomy;
+
+    /** EvoTest-style rule evolver (writes ~/.cos/omega/evolver.jsonl). */
+    int       enable_evolver;
+    int       evolver_interval; /* turns between steps; default 10 */
+    int       enable_pattern_extract;
+    int       pattern_interval; /* default 50 */
+    int       autonomous_mode; /* rotate graded prompt bank as COS_OMEGA_GOAL */
+    int       verbose_evolver;   /* stderr echo from evolver rules */
 };
 
 /** Per-turn fields for JSONL (not all duplicated in cos_omega_state). */
@@ -59,6 +67,7 @@ struct cos_omega_turn_emit {
     float   energy_turn_j;
     float   co2_turn_g;
     int64_t latency_ms;
+    int     tokens_est; /* Ω think output length heuristic */
 };
 
 struct cos_omega_state {

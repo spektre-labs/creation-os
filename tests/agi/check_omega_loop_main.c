@@ -2,6 +2,7 @@
  * Ω-loop harness (eight checks + embedded self-test).
  */
 #include "../../src/sigma/omega_loop.h"
+#include "evolver.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -47,5 +48,7 @@ int main(void)
     }
     free(rep);
 
+    if (cos_evolver_self_test() != 0)
+        return 19;
     return cos_omega_self_test() != 0 ? 18 : 0;
 }

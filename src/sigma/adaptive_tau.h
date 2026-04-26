@@ -49,6 +49,13 @@ float cos_adaptive_tau_rethink(void);
 
 void cos_adaptive_tau_invalidate_cache(void);
 
+/**
+ * Optional domain τ from ~/.cos/patterns.json (written by Ω pattern extract).
+ * Enable with COS_ADAPTIVE_TAU_PATTERNS=1. Returns `base` when disabled,
+ * missing file, or unknown domain.
+ */
+float cos_adaptive_tau_for_prompt_domain(const char *prompt_utf8, float base);
+
 #ifdef __cplusplus
 }
 #endif

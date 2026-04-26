@@ -133,6 +133,118 @@ static void (*g_cos_chat_prev_sigint)(int) = SIG_DFL;
 /** Wall ms spent in semantic_entropy / semantic_sigma HTTP this turn. */
 static double g_cos_chat_semantic_phase_ms;
 
+static long  g_cos_chat_sess_tokens;
+static int   g_cos_chat_sess_queries;
+static int   g_cos_chat_tok_ring[24];
+static int   g_cos_chat_tok_ring_n;
+
+static const char *chat_spark_utf8(double u01)
+{
+    static const char *blk[8] = {
+        "\xe2\x96\x81", "\xe2\x96\x82", "\xe2\x96\x83", "\xe2\x96\x84",
+        "\xe2\x96\x85", "\xe2\x96\x86", "\xe2\x96\x87", "\xe2\x96\x88",
+    };
+    int idx;
+    if (!(u01 == u01) || u01 < 0.)
+        u01 = 0.;
+    if (u01 > 1.)
+        u01 = 1.;
+    idx = (int)(u01 * 7.999);
+    if (idx < 0)
+        idx = 0;
+    if (idx > 7)
+        idx = 7;
+    return blk[idx];
+}
+
+static void cos_chat_token_session_note(int tokens_per_turn)
+{
+    if (tokens_per_turn < 1)
+        tokens_per_turn = 1;
+    g_cos_chat_sess_tokens += (long)tokens_per_turn;
+    g_cos_chat_sess_queries++;
+    if (g_cos_chat_tok_ring_n < 24)
+        g_cos_chat_tok_ring[g_cos_chat_tok_ring_n++] = tokens_per_turn;
+    else {
+        memmove(g_cos_chat_tok_ring, g_cos_chat_tok_ring + 1,
+                sizeof(int) * 23u);
+        g_cos_chat_tok_ring[23] = tokens_per_turn;
+    }
+
+    {
+        const char *en = getenv("COS_CHAT_TOKEN_JSONL");
+        const char *home;
+        char        dir[512], path[640];
+        FILE       *fp;
+        struct timespec ts;
+        long long   ms_wall = 0;
+
+        if (en == NULL || en[0] != '1' || en[1] != '\0')
+            return;
+        home = getenv("HOME");
+        if (home == NULL || home[0] == '\0')
+            return;
+        if (snprintf(dir, sizeof dir, "%s/.cos/logs", home) >= (int)sizeof dir)
+            return;
+#if defined(__unix__) || defined(__APPLE__)
+        mkdir(dir, 0700);
+#endif
+        if (snprintf(path, sizeof path, "%s/chat_tokens.jsonl", dir)
+            >= (int)sizeof path)
+            return;
+        fp = fopen(path, "a");
+        if (fp == NULL)
+            return;
+        if (clock_gettime(CLOCK_REALTIME, &ts) == 0)
+            ms_wall = (long long)ts.tv_sec * 1000LL
+                    + (long long)ts.tv_nsec / 1000000LL;
+        fprintf(fp,
+                "{\"t\":%lld,\"tokens_turn\":%d,\"queries\":%d,"
+                "\"total_tokens\":%ld,\"avg_tokens\":%.4f}\n",
+                ms_wall, tokens_per_turn, g_cos_chat_sess_queries,
+                g_cos_chat_sess_tokens,
+                (double)g_cos_chat_sess_tokens
+                    / (double)g_cos_chat_sess_queries);
+        fclose(fp);
+    }
+}
+
+static void cos_chat_token_trend_footer(FILE *out)
+{
+    int i, n, first = 0, last = 0, nf, nl;
+
+    if (g_cos_chat_sess_queries <= 0 || out == NULL)
+        return;
+    fprintf(out, "  tokens/query (session): %.1f\n",
+            (double)g_cos_chat_sess_tokens / (double)g_cos_chat_sess_queries);
+    n = g_cos_chat_tok_ring_n;
+    if (n < 4)
+        return;
+    nf = n / 2;
+    nl = n - nf;
+    for (i = 0; i < nf; i++)
+        first += g_cos_chat_tok_ring[i];
+    for (; i < n; i++)
+        last += g_cos_chat_tok_ring[i];
+    first = (nf > 0) ? first / nf : 0;
+    last  = (nl > 0) ? last / nl : 0;
+    fputs("  Tokens/query trend: ", out);
+    for (i = 0; i < n; i++) {
+        double u = (double)g_cos_chat_tok_ring[i] / 512.0;
+        if (u < 0.)
+            u = 0.;
+        if (u > 1.)
+            u = 1.;
+        fputs(chat_spark_utf8(u), out);
+    }
+    if (last < first - 2)
+        fputs(" [DECLINING ✓]\n", out);
+    else if (last > first + 2)
+        fputs(" [RISING]\n", out);
+    else
+        fputs(" [STABLE]\n", out);
+}
+
 static void cos_chat_sigint_handler(int signo)
 {
     (void)signo;
@@ -143,7 +255,8 @@ static void cos_chat_sigint_handler(int signo)
 static void cos_chat_jsonl_turn(const char *prompt_line,
                                 const cos_pipeline_result_t *r,
                                 double elapsed_ms,
-                                int sigma_drift)
+                                int sigma_drift,
+                                int tokens_turn)
 {
     const char *en = getenv("COS_CHAT_JSONL_LOG");
     if (en == NULL || en[0] != '1' || prompt_line == NULL || r == NULL)
@@ -188,7 +301,7 @@ static void cos_chat_jsonl_turn(const char *prompt_line,
             "\"sigma_drift\":%d,"
             "\"degradation_level\":0,\"retries\":0,\"error\":null}\n",
             ms_wall, (unsigned long long)ph, (double)r->sigma, act, route,
-            model, elapsed_ms, 0, r->cost_eur, sigma_drift);
+            model, elapsed_ms, tokens_turn, r->cost_eur, sigma_drift);
     fclose(fp);
 }
 
@@ -2110,6 +2223,8 @@ int main(int argc, char **argv) {
                 "  CREATION_OS_ROOT            repo root for default graded CSV path\n"
                 "  COS_ADAPTIVE_TAU_TEMPERATURE_BLEND=1  nudge τ using graded temperature.txt\n"
                 "  COS_ADAPTIVE_TEMPERATURE_TXT  override path to temperature.txt\n"
+                "  COS_ADAPTIVE_TAU_PATTERNS=1   τ from ~/.cos/patterns.json by prompt domain\n"
+                "  COS_CHAT_TOKEN_JSONL=1        append tokens/query JSONL to ~/.cos/logs/chat_tokens.jsonl\n"
                 "  COS_SIGMA_DRIFT_BASELINE_MEAN / _STD  optional σ drift z-score baseline\n");
             return 0;
         }
@@ -2653,6 +2768,15 @@ int main(int argc, char **argv) {
         float    tloc = cos_engram_get_local_tau(tph);
         if (tloc > 0.f && tloc < 1.f)
             cfg.tau_accept = tloc;
+        if (!have_tau_accept) {
+            const char *tp = getenv("COS_ADAPTIVE_TAU_PATTERNS");
+            if (tp != NULL && tp[0] == '1' && tp[1] == '\0') {
+                float pt = cos_adaptive_tau_for_prompt_domain(line,
+                                                              cfg.tau_accept);
+                if (pt > 0.f && pt < 1.f)
+                    cfg.tau_accept = pt;
+            }
+        }
 
         uint64_t bsc_prompt[COS_INF_W];
         cos_inference_bsc_encode_prompt(line, bsc_prompt);
@@ -3189,10 +3313,18 @@ int main(int argc, char **argv) {
         if (knowledge_graph && r.response != NULL)
             chat_kg_store_turn(line, r.response);
 
-        if (!early_spec_abstain && prc == 0)
+        if (!early_spec_abstain && prc == 0) {
+            struct cos_speed_metrics spd_tok = cos_speed_measure_ex(
+                r.response != NULL ? r.response : "", 0.0, -1.0f);
+            int tok_est = spd_tok.tokens_generated + r.rethink_count * 48;
+            if (tok_est < 1)
+                tok_est = 1;
             cos_chat_jsonl_turn(
                 line, &r, elapsed_ms,
-                (g_ag_ledger_ready && g_ag_ledger.drift_detected) ? 1 : 0);
+                (g_ag_ledger_ready && g_ag_ledger.drift_detected) ? 1 : 0,
+                tok_est);
+            cos_chat_token_session_note(tok_est);
+        }
     }
 
     if (sig_tty)
@@ -3200,6 +3332,7 @@ int main(int argc, char **argv) {
 
     fprintf(stdout, "\n─── Session summary ───\n");
     fprintf(stdout, "  turns: %d\n", turn);
+    cos_chat_token_trend_footer(stdout);
     print_cost(&sv);
     if (coherence_enabled && coh.n > 0) {
         float mean = 0.0f, slope = 0.0f;

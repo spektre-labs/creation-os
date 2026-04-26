@@ -2,6 +2,8 @@
 
 #include "adaptive_tau.h"
 
+#include "pattern_keywords.h"
+
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +15,11 @@ static int     g_graded_temp_inited = 0;
 static float   g_graded_temp        = 1.0f;
 static char    g_cached_temp_path[1024];
 
+static char  g_pat_json_path[1024];
+static char *g_pat_json_buf;
+static size_t g_pat_json_len;
+static int    g_pat_json_loaded;
+
 void cos_adaptive_tau_invalidate_cache(void)
 {
     g_cached_tau = -1.0f;
@@ -20,6 +27,112 @@ void cos_adaptive_tau_invalidate_cache(void)
     g_graded_temp_inited = 0;
     g_graded_temp        = 1.0f;
     g_cached_temp_path[0] = '\0';
+    free(g_pat_json_buf);
+    g_pat_json_buf      = NULL;
+    g_pat_json_len      = 0;
+    g_pat_json_loaded   = 0;
+    g_pat_json_path[0]  = '\0';
+}
+
+static int adaptive_patterns_default_path(char *buf, size_t cap)
+{
+    const char *h = getenv("HOME");
+    if (!buf || cap < 32)
+        return -1;
+    if (h == NULL || h[0] == '\0')
+        h = "/tmp";
+    if (snprintf(buf, cap, "%s/.cos/patterns.json", h) >= (int)cap)
+        return -1;
+    return 0;
+}
+
+static int adaptive_patterns_load(void)
+{
+    FILE *f;
+    long  sz;
+
+    if (g_pat_json_loaded && g_pat_json_buf != NULL)
+        return 0;
+    g_pat_json_loaded = 1;
+    if (adaptive_patterns_default_path(g_pat_json_path, sizeof g_pat_json_path)
+        != 0)
+        return -1;
+    f = fopen(g_pat_json_path, "r");
+    if (!f)
+        return -1;
+    if (fseek(f, 0, SEEK_END) != 0) {
+        fclose(f);
+        return -1;
+    }
+    sz = ftell(f);
+    if (sz < 8 || sz > 655360L) {
+        fclose(f);
+        return -1;
+    }
+    rewind(f);
+    g_pat_json_buf = (char *)malloc((size_t)sz + 1u);
+    if (!g_pat_json_buf) {
+        fclose(f);
+        return -1;
+    }
+    if (fread(g_pat_json_buf, 1u, (size_t)sz, f) != (size_t)sz) {
+        fclose(f);
+        free(g_pat_json_buf);
+        g_pat_json_buf = NULL;
+        return -1;
+    }
+    fclose(f);
+    g_pat_json_buf[sz]     = '\0';
+    g_pat_json_len         = (size_t)sz;
+    return 0;
+}
+
+static float adaptive_patterns_find_tau(const char *json, const char *dom)
+{
+    char   needle[96];
+    size_t dlen;
+    const char *p;
+    const char *end;
+
+    if (!json || !dom || !dom[0])
+        return -1.f;
+    dlen = strlen(dom);
+    if (dlen + 20 >= sizeof needle)
+        return -1.f;
+    if (snprintf(needle, sizeof needle, "\"domain\":\"%s\"", dom)
+        >= (int)sizeof needle)
+        return -1.f;
+    end = json + strlen(json);
+    p   = json;
+    while ((p = strstr(p, needle)) != NULL) {
+        const char *q = strstr(p, "\"optimal_tau\":");
+        if (q != NULL && (size_t)(q - p) < 800u) {
+            float t = (float)strtod(q + 14, NULL);
+            if (t > 0.02f && t < 0.98f && t == t)
+                return t;
+        }
+        p += 4;
+        if (p >= end)
+            break;
+    }
+    return -1.f;
+}
+
+float cos_adaptive_tau_for_prompt_domain(const char *prompt_utf8, float base)
+{
+    const char *en = getenv("COS_ADAPTIVE_TAU_PATTERNS");
+    char        dom[80];
+    float       t;
+
+    if (en == NULL || en[0] != '1' || en[1] != '\0')
+        return base;
+    if (adaptive_patterns_load() != 0 || g_pat_json_buf == NULL)
+        return base;
+    cos_pattern_keyword_domain(prompt_utf8, dom, sizeof dom);
+    t = adaptive_patterns_find_tau(g_pat_json_buf, dom);
+    if (t < 0.f)
+        return base;
+    return t;
 }
 
 int cos_adaptive_tau_default_csv_path(char *buf, size_t cap)
