@@ -25,11 +25,17 @@ void cos_ollama_pick_model_from_tags(const char *http, char *model, size_t mcap)
 char *cos_ollama_first_model(uint16_t port);
 
 /**
- * If COS_BITNET_SERVER_EXTERNAL is unset and 127.0.0.1:11434 answers,
- * set COS_BITNET_SERVER_EXTERNAL=1, COS_BITNET_SERVER_PORT=11434,
- * COS_INFERENCE_BACKEND=ollama, and model from tags when chat model unset.
+ * If COS_BITNET_SERVER_EXTERNAL is unset, probe 127.0.0.1:8080 (llama-server)
+ * then 11434 (Ollama). On match, set COS_BITNET_SERVER_EXTERNAL=1, port,
+ * COS_INFERENCE_BACKEND=ollama, and model from Ollama /api/tags when applicable.
  */
 void cos_ollama_autodetect_apply_env(void);
+
+/** 1 if host:port accepts TCP within timeout_ms, else 0. */
+int cos_http_check_port(const char *host, uint16_t port, int timeout_ms);
+
+/** Apply explicit HTTP backend: "llama-server" (8080) or "ollama" (11434). Returns 0 or -1 if unknown. */
+int cos_inference_backend_apply_cli(const char *name);
 
 #ifdef __cplusplus
 }

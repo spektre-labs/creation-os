@@ -918,6 +918,8 @@ typedef struct {
     int   semantic_sigma;
     /** 1 = skip HTTP triple-sample σ (single logprob shadow only). */
     int   fast_sigma;
+    /** 1 = skip post-inference σ layers (--fast without --multi-sigma). */
+    int   inference_only;
     int   cascade;
     int   cross_model_sigma;
     int   semantic_lru;
@@ -930,6 +932,24 @@ typedef struct {
     int   trajectory_cli;
 } chat_feat_t;
 
+static void chat_emit_latency_budget(FILE *fp, const chat_feat_t *feat,
+                                    double infer_ms, float sigma,
+                                    cos_sigma_action_t act)
+{
+    double resp = infer_ms * 1.0e-3;
+    double sigt = g_cos_chat_semantic_phase_ms * 1.0e-3;
+    double tot  = resp + sigt;
+    if (feat != NULL && feat->inference_only) {
+        fprintf(fp,
+                "[response: %.1fs | σ-gate: SKIP | total: %.1fs | σ=N/A]\n",
+                resp, resp);
+        return;
+    }
+    fprintf(fp,
+            "[response: %.1fs | σ-gate: %.1fs | total: %.1fs | σ=%.2f %s]\n",
+            resp, sigt, tot, (double)sigma, cos_sigma_action_label(act));
+}
+
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
 static void chat_maybe_semantic_entropy(cos_pipeline_config_t *cfg_rw,
                                         const chat_feat_t     *feat,
@@ -938,6 +958,8 @@ static void chat_maybe_semantic_entropy(cos_pipeline_config_t *cfg_rw,
                                         int early_spec, int semantic_hit, int prc,
                                         int repl_use_tui) {
     if (cfg_rw == NULL || r == NULL || feat == NULL || !feat->semantic_entropy)
+        return;
+    if (feat->inference_only)
         return;
     if (early_spec || semantic_hit || prc != 0)
         return;
@@ -1003,6 +1025,8 @@ static void chat_maybe_semantic_sigma(cos_pipeline_config_t *cfg_rw,
                                       int early_spec, int semantic_hit, int prc,
                                       int repl_use_tui) {
     if (cfg_rw == NULL || r == NULL || feat == NULL || !feat->semantic_sigma)
+        return;
+    if (feat->inference_only)
         return;
     if (early_spec || semantic_hit || prc != 0)
         return;
@@ -1633,7 +1657,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     int     prc          = 0;
 
     if (!early_spec_abstain && !semantic_hit && feat != NULL
-        && feat->use_disk_cache && cos_cli_use_bitnet_http() != 0) {
+        && feat->use_disk_cache && !feat->inference_only
+        && cos_cli_use_bitnet_http() != 0) {
         cos_cache_entry_t ce;
         const char       *cm = cos_chat_backend_label();
         if (cos_cache_lookup(prompt, cm, &ce) == 0) {
@@ -1858,6 +1883,7 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     uint64_t      resp_cache_h = cos_response_cache_prompt_hash(prompt);
     int           skipped_resp_sig_cache = 0;
     if (!early_spec_abstain && !semantic_hit && prc == 0 && feat != NULL
+        && !feat->inference_only
         && (feat->semantic_sigma || feat->semantic_entropy)
         && !(feat->cascade)) {
         float c_sig = cos_response_cache_lookup(resp_cache_h, NULL, 0);
@@ -1872,7 +1898,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         }
     }
 
-    if (!skipped_resp_sig_cache && !(feat != NULL && feat->cascade)) {
+    if (!skipped_resp_sig_cache && !(feat != NULL && feat->cascade)
+        && !(feat != NULL && feat->inference_only)) {
         if (feat != NULL && feat->semantic_sigma) {
             chat_maybe_semantic_sigma(cfg_rw, feat, prompt, &r,
                                       early_spec_abstain, semantic_hit, prc, 0);
@@ -1888,7 +1915,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
         && r.response != NULL)
         cos_response_cache_store(resp_cache_h, r.sigma, r.response);
 
-    if (!early_spec_abstain && feat != NULL && feat->use_disk_cache && prc == 0
+    if (!early_spec_abstain && feat != NULL && feat->use_disk_cache
+        && !feat->inference_only && prc == 0
         && r.response != NULL
         && (r.diagnostic == NULL
             || strcmp(r.diagnostic, "disk_prompt_cache") != 0))
@@ -1937,7 +1965,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
     memset(&ms, 0, sizeof(ms));
     {
         int allow_multi =
-            feat != NULL && feat->multi_sigma && !skip_multi_verify
+            feat != NULL && feat->multi_sigma && !feat->inference_only
+            && !skip_multi_verify
             && (!feat->adaptive_compute || kernel_cap >= 10);
         if (allow_multi) {
             int hmt = (cos_cli_use_bitnet_http() != 0)
@@ -2046,15 +2075,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                         spd.tokens_generated, (double)elapsed_ms,
                         (double)spd.tokens_per_second,
                         g_cos_chat_semantic_phase_ms);
-                {
-                    long infer_l = (long)(elapsed_ms + 0.5);
-                    long sig_l =
-                        (long)(g_cos_chat_semantic_phase_ms + 0.5);
-                    long tot_l = infer_l + sig_l;
-                    fprintf(stderr,
-                            "[%ldms total | %ldms infer | %ldms σ]\n", tot_l,
-                            infer_l, sig_l);
-                }
+                chat_emit_latency_budget(stderr, feat, elapsed_ms, r.sigma,
+                                         r.final_action);
                 print_receipt_polished(&r, elapsed_ms,
                                        feat != NULL ? feat->conformal_active : 0,
                                        feat != NULL ? feat->conformal_alpha
@@ -2232,8 +2254,6 @@ static int chat_tools_dispatch_line(const char *line, int dry_run, FILE *confirm
 }
 
 int main(int argc, char **argv) {
-    cos_ollama_autodetect_apply_env();
-
     int     use_codex     = 1;
     int     use_seed      = 0;
     const char *codex_path = NULL;
@@ -2260,6 +2280,9 @@ int main(int argc, char **argv) {
      * harnesses byte-identical; opt-in via flags or env). */
     int         multi_sigma        = 0;
     int         multi_sigma_cli    = 0; /* argv --multi-sigma only (not --verbose) */
+    int         fast_cli           = 0;
+    int         inference_only     = 0;
+    int         backend_arg_invalid = 0;
     int         want_ttt           = 0;
     int         conformal_enabled  = 1;  /* auto-load bundle if present */
     int         coherence_enabled  = 1;  /* REPL-only; --once is a single
@@ -2348,7 +2371,16 @@ int main(int argc, char **argv) {
             multi_sigma     = 1;
             multi_sigma_cli = 1;
         } else if (strcmp(argv[i], "--fast") == 0) {
-            fast_sigma = 1;
+            fast_cli = 1;
+        } else if (strcmp(argv[i], "--backend") == 0 && i + 1 < argc) {
+            const char *bk = argv[++i];
+            if (cos_inference_backend_apply_cli(bk) != 0) {
+                fprintf(stderr,
+                        "cos chat: unknown --backend \"%s\" "
+                        "(use llama-server|ollama)\n",
+                        bk);
+                backend_arg_invalid = 1;
+            }
         } else if (strcmp(argv[i], "--adaptive-tau") == 0) {
             adaptive_tau_csv = 1;
         } else if (strcmp(argv[i], "--adaptive-tau-csv") == 0
@@ -2478,8 +2510,10 @@ int main(int argc, char **argv) {
                 "  --icl-rethink-only  inject ICL only on RETHINK rounds (round>0)\n"
                 "  --multi-sigma       σ_combined shadow + Jaccard semantic σ\n"
                 "                      (primary + HTTP samples @ 0.7 / 1.2) unless --fast\n"
-                "  --fast              with --multi-sigma + HTTP: logprob-only shadow\n"
-                "                      (skip semantic multi-sample completes)\n"
+                "  --fast              without --multi-sigma: raw inference (skip post-σ\n"
+                "                      HTTP layers; τ pinned open).  With --multi-sigma:\n"
+                "                      logprob-only shadow (skip semantic multi-sample completes)\n"
+                "  --backend NAME      force OpenAI-compat HTTP target: llama-server|ollama\n"
                 "  --ttt               ULTRA-8: test-time sketch on RETHINK (Qwen path)\n"
                 "  --no-multi-sigma    disable the ensemble shadow (default)\n"
                 "  --semantic-entropy  after inference: 3 temps → cluster → σ_se\n"
@@ -2546,6 +2580,11 @@ int main(int argc, char **argv) {
             return 0;
         }
     }
+
+    if (backend_arg_invalid)
+        return 2;
+
+    cos_ollama_autodetect_apply_env();
 
     if (want_stamp) {
         if (stamp_path_opt != NULL)
@@ -2638,6 +2677,16 @@ int main(int argc, char **argv) {
         }
         fprintf(stdout, "\n  assert(declared == realized);\n  1 = 1.\n");
         return 0;
+    }
+
+    if (fast_cli) {
+        if (multi_sigma_cli) {
+            fast_sigma     = 1;
+            inference_only = 0;
+        } else {
+            fast_sigma     = 0;
+            inference_only = 1;
+        }
     }
 
     if (once_mode) {
@@ -2888,6 +2937,11 @@ int main(int argc, char **argv) {
     }
     cfg.generate_ctx = &genctx;
     cfg.escalate_ctx   = &genctx;
+    if (inference_only) {
+        cfg.max_rethink  = 0;
+        cfg.tau_accept   = 1.0f;
+        cfg.tau_rethink  = 1.0f;
+    }
     /* DEV-5: dispatch via the API escalation module.  When
      * COS_ESCALATION_BACKEND / CREATION_OS_ESCALATION_PROVIDER + keys
      * are set, this reaches out to Claude / OpenAI / DeepSeek over
@@ -3117,6 +3171,7 @@ int main(int argc, char **argv) {
         feat.semantic_entropy     = semantic_entropy;
         feat.semantic_sigma       = semantic_sigma;
         feat.fast_sigma           = fast_sigma;
+        feat.inference_only       = inference_only;
         feat.cascade              = cascade;
         feat.cross_model_sigma    = cross_model_sigma;
         feat.semantic_lru         = semantic_lru;
@@ -3249,6 +3304,7 @@ int main(int argc, char **argv) {
         rfeat.semantic_entropy     = semantic_entropy;
         rfeat.semantic_sigma       = semantic_sigma;
         rfeat.fast_sigma           = fast_sigma;
+        rfeat.inference_only       = inference_only;
         rfeat.cascade              = cascade;
         rfeat.cross_model_sigma    = cross_model_sigma;
         rfeat.semantic_lru         = semantic_lru;
@@ -3506,6 +3562,7 @@ int main(int argc, char **argv) {
         uint64_t      resp_cache_h2 = cos_response_cache_prompt_hash(line);
         int           skipped_resp_sig_cache2 = 0;
         if (!early_spec_abstain && !semantic_hit && prc == 0
+            && !rfeat.inference_only
             && (rfeat.semantic_sigma || rfeat.semantic_entropy)
             && !rfeat.cascade) {
             float c2 = cos_response_cache_lookup(resp_cache_h2, NULL, 0);
@@ -3520,7 +3577,8 @@ int main(int argc, char **argv) {
             }
         }
 
-        if (!skipped_resp_sig_cache2 && !rfeat.cascade) {
+        if (!skipped_resp_sig_cache2 && !rfeat.cascade
+            && !rfeat.inference_only) {
             if (rfeat.semantic_sigma) {
                 chat_maybe_semantic_sigma(&cfg, &rfeat, line, &r,
                                           early_spec_abstain, semantic_hit,
@@ -3586,6 +3644,7 @@ int main(int argc, char **argv) {
         xf.semantic_entropy  = semantic_entropy;
         xf.semantic_sigma    = semantic_sigma;
         xf.fast_sigma        = fast_sigma;
+        xf.inference_only    = inference_only;
         xf.cascade           = cascade;
         xf.cross_model_sigma = cross_model_sigma;
         xf.semantic_lru      = semantic_lru;
@@ -3595,7 +3654,8 @@ int main(int argc, char **argv) {
         memset(&ms, 0, sizeof(ms));
         int ms_ok = 0;
         {
-            int allow_ms = (multi_sigma || verbose) && !skip_multi_verify
+            int allow_ms = (multi_sigma || verbose) && !inference_only
+                && !skip_multi_verify
                 && (!adaptive_compute || kernel_cap >= 10);
             if (allow_ms) {
                 int hmt = (cos_cli_use_bitnet_http() != 0)
@@ -3719,6 +3779,8 @@ int main(int argc, char **argv) {
                             spd.tokens_generated, (double)elapsed_ms,
                             (double)spd.tokens_per_second,
                             g_cos_chat_semantic_phase_ms);
+                    chat_emit_latency_budget(stderr, &rfeat, elapsed_ms, r.sigma,
+                                             r.final_action);
                     print_receipt_polished(&r, elapsed_ms,
                                            conformal_active, conformal_alpha,
                                            semantic_hit, &spd, receipt_prefix);
