@@ -3,6 +3,7 @@
 #include "stub_gen.h"
 
 #include "bitnet_server.h"
+#include "bitnet_native.h"
 #include "bitnet_spawn.h"
 #include "speculative_decode.h"
 #include "bitnet_sigma.h"
@@ -267,6 +268,10 @@ static int cos_cli_chat_recover_http_fail(const char *prompt, int round,
  *                                (text, σ) tuple when the stream
  *                                closes.  Uses /completion natively
  *                                because chat streaming drops probs.
+ *   COS_BITNET_NATIVE=1        → prefer in-process BitNet when linked
+ *                                (see bitnet_native.h; build with
+ *                                BITNET_NATIVE=1).  Until an adapter
+ *                                exists, this falls through to HTTP.
  *   CREATION_OS_BITNET_EXE=/…  → legacy one-shot subprocess capture
  *                                with heuristic σ (bitnet_sigma.h).
  *                                Kept for CI parity and for hosts
@@ -315,6 +320,29 @@ int cos_cli_chat_generate(const char *prompt, int round, void *ctx,
                               g_cos_chat_icl_buf,
                               sizeof g_cos_chat_icl_buf) == 0) {
             prompt_model = g_cos_chat_icl_buf;
+        }
+    }
+
+    /* Branch A0 — optional in-process BitNet (scaffold; see bitnet_native.h). */
+    {
+        cos_bitnet_server_result_t nr;
+        memset(&nr, 0, sizeof nr);
+        if (cos_bitnet_native_try_complete(prompt_model, codex_sysprompt,
+                                           round, &nr)
+            == 0) {
+            size_t n = nr.text != NULL ? strlen(nr.text) : 0;
+            if (n >= sizeof(g_cos_chat_bitnet_buf))
+                n = sizeof(g_cos_chat_bitnet_buf) - 1;
+            if (nr.text != NULL)
+                memcpy(g_cos_chat_bitnet_buf, nr.text, n);
+            g_cos_chat_bitnet_buf[n] = '\0';
+            *out_text     = g_cos_chat_bitnet_buf;
+            *out_sigma    = nr.sigma;
+            *out_cost_eur = nr.cost_eur;
+            cos_cli_escalation_record_student(g_cos_chat_bitnet_buf, nr.sigma);
+            cos_cost_log_append("bitnet_native", "LOCAL", 0, nr.token_count,
+                                nr.sigma, nr.cost_eur);
+            return 0;
         }
     }
 

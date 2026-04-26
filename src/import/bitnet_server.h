@@ -48,6 +48,10 @@
  *    COS_BITNET_SERVER_NPRED  default n_predict default: 64
  *    COS_BITNET_SERVER_EXTERNAL  if "1": skip spawn, assume external
  *                                server already running on host:port
+ *    COS_BITNET_NATIVE           if "1": try in-process BitNet first
+ *                                (bitnet_native.h; requires a linked
+ *                                adapter; else one-line stderr and HTTP
+ *                                fallback).  Build hook: BITNET_NATIVE=1.
  *    COS_BITNET_CHAT_MODEL    JSON "model" id for /v1/chat/completions
  *                                (default: "bitnet"); when
  *                                COS_INFERENCE_BACKEND=ollama, also the
