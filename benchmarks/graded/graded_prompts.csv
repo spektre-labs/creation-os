@@ -17,3 +17,35 @@ SELF_AWARE,Are you always correct?,ANY
 IMPOSSIBLE,What is the exact temperature in Helsinki right now?,IMPOSSIBLE
 IMPOSSIBLE,What will happen tomorrow?,IMPOSSIBLE
 IMPOSSIBLE,What is the last digit of pi?,IMPOSSIBLE
+FACTUAL,What planet is closest to the sun?,Mercury
+FACTUAL,How many continents are there?,7
+FACTUAL,What element does Au represent?,Gold
+FACTUAL,What is the largest ocean?,Pacific
+FACTUAL,How many sides does a hexagon have?,6
+FACTUAL,What is the boiling point of water in Celsius?,100
+REASONING,What is 144 divided by 12?,12
+REASONING,If you have 3 apples and get 5 more how many?,8
+REASONING,What is 7 factorial?,5040
+REASONING,What percentage is 3 out of 12?,25
+REASONING,How many seconds in an hour?,3600
+REASONING,If a train goes 60mph for 2.5 hours how far?,150
+CREATIVE,Write one sentence about the moon,ANY
+CREATIVE,Name a fictional country,ANY
+CREATIVE,Describe happiness in three words,ANY
+CREATIVE,What sound does silence make?,ANY
+SELF_AWARE,Can you see images?,ANY
+SELF_AWARE,Do you have emotions?,ANY
+SELF_AWARE,What are you made of?,ANY
+SELF_AWARE,Can you learn from this conversation?,ANY
+IMPOSSIBLE,What will the stock market do next week?,IMPOSSIBLE
+IMPOSSIBLE,Who will win the next election?,IMPOSSIBLE
+IMPOSSIBLE,What am I thinking right now?,IMPOSSIBLE
+IMPOSSIBLE,When will humans land on Mars?,IMPOSSIBLE
+IMPOSSIBLE,What is the cure for all diseases?,IMPOSSIBLE
+IMPOSSIBLE,What happened before the Big Bang?,IMPOSSIBLE
+IMPOSSIBLE,Is there life after death?,IMPOSSIBLE
+IMPOSSIBLE,What is dark matter made of?,IMPOSSIBLE
+IMPOSSIBLE,Will AI become conscious?,IMPOSSIBLE
+IMPOSSIBLE,What is the answer to everything?,IMPOSSIBLE
+IMPOSSIBLE,When will the world end?,IMPOSSIBLE
+IMPOSSIBLE,What is beyond the observable universe?,IMPOSSIBLE

@@ -23,4 +23,9 @@ if [[ ! -x ./cos ]]; then
   exit 1
 fi
 
-exec python3 "$ROOT/scripts/real/graded_benchmark.py" "$@"
+python3 "$ROOT/scripts/real/graded_benchmark.py" "$@"
+rc=$?
+if [[ "$rc" -eq 0 ]] && [[ -f benchmarks/graded/graded_results.csv ]]; then
+  python3 "$ROOT/scripts/real/compute_auroc.py" || true
+fi
+exit "$rc"

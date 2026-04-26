@@ -217,6 +217,7 @@ benchmarks/**/*.csv
 !benchmarks/evolve_campaign/*.csv
 # Graded σ benchmark (tracked prompt list; run `graded_benchmark.sh` for CSV/MD)
 !benchmarks/graded/graded_prompts.csv
+!benchmarks/graded/risk_coverage.csv
 # Tracked lm-eval receipts (subset runs + σ replay summaries)
 !benchmarks/lm_eval/receipts/
 !benchmarks/lm_eval/receipts/**

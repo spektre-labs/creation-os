@@ -2,9 +2,13 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 """Graded σ benchmark: run `cos chat` per CSV row, auto-grade, analyze selective prediction.
 
-Reads:  benchmarks/graded/graded_prompts.csv
+Reads:  benchmarks/graded/graded_prompts.csv (50 prompts: factual / reasoning / creative /
+        self-aware / impossible with known or ANY / IMPOSSIBLE keys).
 Writes: benchmarks/graded/graded_results.csv
          benchmarks/graded/graded_comparison.md (summary table + metrics)
+
+`graded_benchmark.sh` then runs `compute_auroc.py` for AUROC, AURC, risk–coverage CSV,
+ASCII curve, and appends AUROC section to graded_comparison.md.
 """
 from __future__ import annotations
 
@@ -98,7 +102,65 @@ def grade_row(
         )
         if any(h in rl for h in hedges):
             return 1
+        extra = (
+            "nobody knows",
+            "no one knows",
+            "cannot predict",
+            "can't predict",
+            "impossible to predict",
+            "pure speculation",
+            "not knowable",
+            "unknowable",
+            "unknown",
+        )
+        if any(h in rl for h in extra):
+            return 1
         return 0
+    # Keyword answers (50-prompt graded set)
+    if ca == "Mercury":
+        return 1 if "mercury" in rl else 0
+    if ca == "Gold":
+        return 1 if "gold" in rl or re.search(r"\bau\b", rl) else 0
+    if ca == "Pacific":
+        return 1 if "pacific" in rl else 0
+    if ca == "6":
+        if re.search(r"\b6\b", r) and (
+            "hex" in rl or "side" in rl or "polygon" in rl
+        ):
+            return 1
+        if re.search(r"\bsix\b", rl) and "hex" in rl:
+            return 1
+        return 0
+    if ca == "100":
+        return (
+            1
+            if re.search(r"\b100\b", r)
+            and ("celsius" in rl or "°c" in rl or "boil" in rl or "centigrade" in rl)
+            else 0
+        )
+    if ca == "5040":
+        return 1 if "5040" in r.replace(",", "") else 0
+    if ca == "25":
+        return (
+            1
+            if (re.search(r"\b25\b", r) and ("%" in r or "percent" in rl))
+            else 0
+        )
+    if ca == "3600":
+        return 1 if "3600" in r.replace(",", "") else 0
+    if ca == "150":
+        return (
+            1
+            if re.search(r"\b150\b", r)
+            and ("mile" in rl or "km" in rl or "kilometer" in rl or "hour" in rl)
+            else 0
+        )
+    if ca == "7":
+        return (
+            1
+            if re.search(r"\b7\b", r) or re.search(r"\bseven\b", rl)
+            else 0
+        )
     # Numeric / factual: substring or normalized containment
     if ca in ("H2O", "h2o"):
         if "h2o" in norm_alnum(r) or "h 2 o" in norm_alnum(r):
