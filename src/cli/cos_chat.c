@@ -23,6 +23,7 @@
  *   --local-only       — never escalate to cloud
  *   --swarm            — escalate path uses swarm consensus (stub)
  *   --verbose          — append a one-liner diagnostic per turn
+ *   --dual-process     — print System 1 / System 2 audit (informative)
  *   --tau-accept F     — override τ_accept (default 0.40)
  *   --tau-rethink F    — override τ_rethink (default 0.60)
  *   --banner-only      — print the banner and exit (smoke-test hook)
@@ -85,6 +86,7 @@
 #include "proof_receipt.h"
 #include "c2pa_sigma.h"
 #include "constitution.h"
+#include "neural_symbolic.h"
 #include "license_attest.h"
 #include "speed_metrics.h"
 #include "semantic_entropy.h"
@@ -914,6 +916,8 @@ typedef struct {
     int   cascade;
     int   cross_model_sigma;
     int   semantic_lru;
+    /** Print neural + symbolic audit line (informative; not a second model). */
+    int   dual_process;
 } chat_feat_t;
 
 /** Optional semantic-entropy σ after the main pipeline (extra HTTP samples). */
@@ -1326,6 +1330,42 @@ static uint64_t chat_proof_kernel_mask(const chat_feat_t           *feat,
 
 static char g_cos_chat_const_halt[768];
 static char g_cos_chat_stamp_path[512];
+
+static void chat_dual_process_report(const char *prompt,
+                                     const cos_pipeline_config_t *cfg,
+                                     const cos_pipeline_result_t *r,
+                                     const chat_feat_t *feat, FILE *out)
+{
+    cos_bridge_result_t br;
+    char                hx[17];
+
+    if (out == NULL)
+        out = stdout;
+    if (feat == NULL || !feat->dual_process || r == NULL || cfg == NULL)
+        return;
+    if (cos_bridge_evaluate(prompt, r->response, r->sigma, cfg->tau_accept,
+                           cfg->tau_rethink, &br)
+        != 0)
+        return;
+    fputs("\n--- dual-process (informative) ---\n", out);
+    fprintf(out, "System 1 (neural): %s\n",
+            (r->response != NULL && r->response[0] != '\0') ? r->response
+                                                          : "(empty)");
+    fprintf(out,
+            "System 2 (symbolic): σ=%.3f τ_accept=%.3f τ_rethink=%.3f\n",
+            (double)br.sigma_combined, (double)br.tau_accept,
+            (double)br.tau_rethink);
+    fprintf(out, "  constitution violations=%d mandatory=%d\n",
+            br.constitution_violations, br.constitution_mandatory_hits);
+    if (br.violation_summary[0] != '\0')
+        fprintf(out, "  first hit: %s\n", br.violation_summary);
+    fprintf(out, "  τ-gate (bridge): %s | pipeline action: %s\n",
+            cos_sigma_action_label(br.gate),
+            cos_sigma_action_label(r->final_action));
+    spektre_hex_lower(br.bridge_digest, hx);
+    hx[16] = '\0';
+    fprintf(out, "  bridge digest prefix: %s\n", hx);
+}
 
 static void chat_write_c2pa_stamp_if_requested(
     const cos_pipeline_config_t *cfg, const cos_pipeline_result_t *r,
@@ -1919,6 +1959,8 @@ static int run_chat_once(FILE *tout, cos_pipeline_config_t *cfg_rw,
                                    feat != NULL ? feat->conformal_active : 0,
                                    feat != NULL ? feat->conformal_alpha  : 0.0f,
                                    semantic_hit, &spd, receipt_prefix);
+            if (feat != NULL && feat->dual_process != 0)
+                chat_dual_process_report(prompt, cfg_rw, &r, feat, stdout);
             chat_write_c2pa_stamp_if_requested(cfg_rw, &r, &ms, have_ms, feat,
                                                  &turn_rec);
         }
@@ -2066,6 +2108,7 @@ int main(int argc, char **argv) {
     int     local_only    = 0;
     int     swarm_mode    = 0;
     int     verbose       = 0;
+    int     dual_process  = 0;
     int     banner_only   = 0;
     int     once_mode     = 0;
     const char *once_prompt = NULL;
@@ -2124,6 +2167,7 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--local-only") == 0) local_only = 1;
         else if (strcmp(argv[i], "--swarm")      == 0) swarm_mode = 1;
         else if (strcmp(argv[i], "--verbose")    == 0) verbose = 1;
+        else if (strcmp(argv[i], "--dual-process") == 0) dual_process = 1;
         else if (strcmp(argv[i], "--banner-only")== 0) banner_only = 1;
         else if (strcmp(argv[i], "--stream")     == 0) stream_cli = 1;
         else if (strcmp(argv[i], "--no-stream")  == 0) stream_cli = 0;
@@ -2237,6 +2281,8 @@ int main(int argc, char **argv) {
                 "  --local-only        never escalate to cloud\n"
                 "  --swarm             cloud tier uses swarm consensus (stub)\n"
                 "  --verbose           print a per-turn diagnostic\n"
+                "  --dual-process      print neural + symbolic audit line "
+                "(after receipt)\n"
                 "  --stream            stream tokens (default: on in REPL)\n"
                 "  --no-stream         full response at once (default with --once)\n"
                 "  --tui               ANSI live layout (default on interactive TTY)\n"
@@ -2773,6 +2819,7 @@ int main(int argc, char **argv) {
         feat.cascade              = cascade;
         feat.cross_model_sigma    = cross_model_sigma;
         feat.semantic_lru         = semantic_lru;
+        feat.dual_process         = dual_process;
         int rc = run_chat_once(tout, &cfg, &feat, once_prompt);
         if (tout != NULL)
             fclose(tout);
@@ -2903,6 +2950,7 @@ int main(int argc, char **argv) {
         rfeat.cascade              = cascade;
         rfeat.cross_model_sigma    = cross_model_sigma;
         rfeat.semantic_lru         = semantic_lru;
+        rfeat.dual_process         = dual_process;
 
         cos_pipeline_result_t r;
         memset(&r, 0, sizeof(r));
@@ -3239,6 +3287,7 @@ int main(int argc, char **argv) {
         xf.cascade           = cascade;
         xf.cross_model_sigma = cross_model_sigma;
         xf.semantic_lru      = semantic_lru;
+        xf.dual_process      = dual_process;
 
         chat_multi_t ms;
         memset(&ms, 0, sizeof(ms));
@@ -3398,6 +3447,9 @@ int main(int argc, char **argv) {
                 }
                 chat_write_c2pa_stamp_if_requested(&cfg, &r, &ms, ms_ok, &rfeat,
                                                    &turn_rec);
+                if (rfeat.dual_process != 0)
+                    chat_dual_process_report(line, &cfg, &r, &rfeat,
+                                             use_tui ? stderr : stdout);
             }
         }
 

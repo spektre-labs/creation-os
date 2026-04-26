@@ -6206,7 +6206,8 @@ check-integration: test_sigma_pipeline_integration
 # binaries prove the control plane works and make the Codex effect
 # quantitatively visible.
 COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
-               -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma -Isrc/omega
+               -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma -Isrc/omega \
+               -Isrc/bridge -Isrc/codex
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6223,7 +6224,9 @@ COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/import/bitnet_server.c \
                src/import/bitnet_native.c \
                src/import/bitnet_spawn.c \
-               src/import/bitnet_sigma.c
+               src/import/bitnet_sigma.c \
+               src/bridge/neural_symbolic.c \
+               src/codex/codex_smt.c
 
 COS_EDGE_INF = src/sigma/inference_cache.c
 COS_SPIKE_ADAPT_SRCS = src/sigma/spike_engine.c src/sigma/adaptive_compute.c
@@ -6351,6 +6354,21 @@ creation_os_check_constitution: tests/agi/check_constitution_main.c \
 check-constitution: creation_os_check_constitution
 	@./creation_os_check_constitution
 	@echo "check-constitution: OK (Codex RULE pragma parser self-test)"
+
+creation_os_check_neuro_symbolic: tests/agi/check_neuro_symbolic_main.c \
+		src/bridge/neural_symbolic.c src/codex/codex_smt.c \
+		src/sigma/constitution.c src/sigma/proof_receipt.c \
+		src/license_kernel/license_attest.c
+	$(CC) $(CFLAGS) $(COS_CLI_INC) -Isrc/sigma -Isrc/sigma/pipeline \
+	    $(LICENSE_KERNEL_INC) -DCREATION_OS_ENABLE_SELF_TESTS=1 -o $@ \
+	    tests/agi/check_neuro_symbolic_main.c \
+	    src/bridge/neural_symbolic.c src/codex/codex_smt.c \
+	    src/sigma/constitution.c src/sigma/proof_receipt.c \
+	    src/license_kernel/license_attest.c $(LDFLAGS)
+
+check-neuro-symbolic: creation_os_check_neuro_symbolic
+	@./creation_os_check_neuro_symbolic
+	@echo "check-neuro-symbolic: OK (bridge + codex_smt self-tests)"
 
 cos-receipts: src/cli/cos_receipts.c $(COS_PROOF_LIB)
 	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/sigma/pipeline $(LICENSE_KERNEL_INC) \
@@ -6937,8 +6955,8 @@ check-bitnet-native: creation_os_check_bitnet_native
 	@echo "check-bitnet-native: OK (top2 Q16.16 helper + native scaffold)"
 
 check-agi: check-state-ledger check-error-attribution check-engram-episodic \
-	check-text-similarity check-c2pa check-bitnet-native check-cos-serve check-voice check-omega
-	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + c2pa_sigma + bitnet_native + cos-serve + cos voice + Ω-loop)"
+	check-text-similarity check-c2pa check-bitnet-native check-cos-serve check-voice check-omega check-neuro-symbolic
+	@echo "check-agi: OK (state ledger + error attribution + episodic memory + text_similarity + c2pa_sigma + bitnet_native + cos-serve + cos voice + Ω-loop + neuro-symbolic bridge)"
 
 cos-benchmark: $(COS_CLI_SRCS) src/cli/cos_benchmark.c \
                src/sigma/metrics/energy_metric.c src/cli/escalation.c
