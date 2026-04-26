@@ -41,6 +41,7 @@
 #include "../cli/cos_think.h"
 #include "../omega/evolver.h"
 #include "../omega/pattern_extractor.h"
+#include "../omega/predictive_world.h"
 
 #include <errno.h>
 #include <math.h>
@@ -962,6 +963,7 @@ common_tail:
     omega_hist_push(sigma_proof, gate_decision);
 
     state->turn++;
+    cos_predictive_world_omega_note_turn(goal, sigma_proof, state->turn);
 
     omega_consolidate_turn(state);
 

@@ -16,6 +16,7 @@
  *     cos certify --output DIR  # local DO-178C-oriented evidence templates
  *     cos stamp --file PATH     # σ-credential JSON sidecar (C2PA-oriented assertion)
  *     cos validate PATH.cos.json # schema + range checks on a σ sidecar
+ *     cos self-report [--prompt …]  # predictive σ-world stats (lab)
  *     cos chace                  # the CHACE-class 12-layer security gate
  *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
@@ -83,6 +84,7 @@
 #include "../src/sigma/constitution.h"
 #include "../src/sigma/eu_compliance.h"
 #include "../src/import/bitnet_server.h"
+#include "../src/omega/predictive_world.h"
 
 /* --------------------------------------------------------------------
  *  Colour & style — Apple SF-inspired terminal palette.
@@ -278,6 +280,8 @@ static void status_quickstart(void)
                 C_GREY, C_RESET);
     bullet_line("cos validate   %scheck a σ-credential sidecar (schema + σ range + receipt hex)%s",
                 C_GREY, C_RESET);
+    bullet_line("cos self-report %scoarse predictive σ-world stats (run cos omega to populate)%s",
+                C_GREY, C_RESET);
     bullet_line("cos exec       %sdigital-twin preflight + guarded /bin/sh (cp modeled)%s",
                 C_GREY, C_RESET);
     bullet_line("cos plan       %slong-horizon σ-checkpoints + snapshot rollback (demo missions)%s",
@@ -312,6 +316,7 @@ static int prefer_c_or_hint(const char *c_bin, int argc, char **argv);
 static int cmd_certify(int argc, char **argv);
 static int cmd_stamp(int argc, char **argv);
 static int cmd_validate(int argc, char **argv);
+static int cmd_self_report(int argc, char **argv);
 
 static int cmd_receipt(int argc, char **argv)
 {
@@ -679,6 +684,28 @@ static int cmd_stamp(int argc, char **argv)
 static int cmd_validate(int argc, char **argv)
 {
     return prefer_c_or_hint("cos-validate", argc, argv);
+}
+
+static int cmd_self_report(int argc, char **argv)
+{
+    int         i;
+    const char *prompt = NULL;
+    const char *model  = NULL;
+
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--prompt") == 0 && i + 1 < argc)
+            prompt = argv[++i];
+        else if (strcmp(argv[i], "--model") == 0 && i + 1 < argc)
+            model = argv[++i];
+        else if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+            printf("usage: cos self-report [--prompt TEXT] [--model MODEL_ID]\n"
+                   "  Prints coarse predictive σ-world statistics (Ω-loop updates).\n"
+                   "  See docs/architecture/agi_stack.md.\n");
+            return 0;
+        }
+    }
+    cos_predictive_world_fprint_report(stdout, prompt, model);
+    return 0;
 }
 
 /* --------------------------------------------------------------------
@@ -2792,6 +2819,9 @@ static int cmd_help_topic(const char *topic, const char *prog)
         {"energy", "Session energy receipt — joules, CO2, euro."},
         {"green", "Sustainability grade vs cloud counterfactuals."},
         {"omega", "Omega-loop continuous operation controls."},
+        {"self-report",
+         "Predictive σ-world snapshot (lab) — coarse domain EMA; "
+         "see docs/architecture/agi_stack.md."},
         {"think", "Goal-oriented decomposition + sigma pipeline."},
         {"monitor", "Live telemetry (Ω JSONL — --summary / --csv / --follow)."},
         {"report", "Pilot: stdout summary of ~/.cos/audit/*.jsonl."},
@@ -3500,6 +3530,8 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "monitor")   == 0) return cos_monitor_main(argc, argv);
     if (strcmp(argv[1], "report")    == 0) return cos_report_main(argc, argv);
     if (strcmp(argv[1], "omega")     == 0) return cos_omega_main(argc, argv);
+    if (strcmp(argv[1], "self-report") == 0)
+        return cmd_self_report(argc - 2, argv + 2);
     if (strcmp(argv[1], "selfplay")   == 0) return cmd_selfplay(argc - 2, argv + 2);
     if (strcmp(argv[1], "distill")    == 0) return cmd_distill (argc - 2, argv + 2);
     if (strcmp(argv[1], "memory") == 0) return cmd_memory(argc - 2, argv + 2);

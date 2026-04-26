@@ -2,8 +2,10 @@
  * Ω-loop harness (eight checks + embedded self-test).
  */
 #include "../../src/sigma/omega_loop.h"
+#include "continual_learning.h"
 #include "evolver.h"
 #include "gvu_loop.h"
+#include "predictive_world.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -53,5 +55,9 @@ int main(void)
         return 19;
     if (cos_gvu_self_test() != 0)
         return 20;
+    if (cos_predictive_world_self_test() != 0)
+        return 21;
+    if (cos_continual_learning_self_test() != 0)
+        return 22;
     return cos_omega_self_test() != 0 ? 18 : 0;
 }
