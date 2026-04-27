@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 #
-# Crash-proof σ ablation driver: survives terminal disconnect (run under nohup).
+# Crash-proof σ ablation driver: survives terminal disconnect (run under nohup or launch_ablation_detached.sh).
 # See benchmarks/sigma_ablation/results/README.md — "Overnight crash-proof run".
 #
 # Environment (optional):

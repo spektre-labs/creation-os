@@ -63,7 +63,20 @@ Each line is one JSON object, for example:
 
 ## Overnight crash-proof run
 
-Use **`nohup`** so the job keeps going if Cursor, the terminal, or SSH disconnects. The canonical driver is **`benchmarks/sigma_ablation/run_ablation_overnight.sh`** (repo-root detection — no hard-coded `~/creation-os`).
+The ablation **does not depend on Cursor** once started with **`nohup`** (or **`launch_ablation_detached.sh`**, which uses **`setsid`** when available for a new session without a controlling tty).
+
+**Important:** **`ollama serve`** started only inside Cursor’s integrated terminal may still exit when Cursor quits. For a run that must survive Cursor, start **Ollama** in **Terminal.app**, **tmux**, **ssh**, or **launchd** — not only inside the IDE.
+
+Use **`benchmarks/sigma_ablation/launch_ablation_detached.sh`** for a single canonical driver (refuses duplicate launch if `ablation_master.pid` is alive). Or use **`make sigma-ablation-launch-detached`** from the repo root.
+
+To remove stray **`cos chat --fast`** / extra **`run_sigma_ablation.py`** after a crash (keeps the process tree for `logs/ablation_master.pid`):
+
+```bash
+make sigma-ablation-prune-orphans
+# or: bash benchmarks/sigma_ablation/prune_sigma_ablation_orphans.sh
+```
+
+The canonical driver is **`benchmarks/sigma_ablation/run_ablation_overnight.sh`** (repo-root detection — no hard-coded `~/creation-os`).
 
 ### 1. Ollama
 
@@ -73,9 +86,17 @@ ollama list
 ollama pull gemma3:4b   # if missing
 ```
 
-Ensure the server is up (`ollama serve` in another session if you do not use a launchd service).
+Ensure the server is up **outside Cursor-only lifecycle** if you need the job to outlive the IDE (`ollama serve` in another terminal session or a service).
 
-### 2. Start under nohup (from repository root)
+### 2a. Recommended: detached launcher (from repository root)
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+chmod +x benchmarks/sigma_ablation/launch_ablation_detached.sh benchmarks/sigma_ablation/run_ablation_overnight.sh
+bash benchmarks/sigma_ablation/launch_ablation_detached.sh
+```
+
+### 2b. Manual: nohup (from repository root)
 
 ```bash
 cd "$(git rev-parse --show-toplevel)"
@@ -88,6 +109,7 @@ echo "master PID: $(cat benchmarks/sigma_ablation/logs/ablation_master.pid)"
 ```
 
 - **`nohup`** — ignores SIGHUP when the terminal closes.  
+- **`setsid`** (launcher path) — new session without a controlling tty (stronger than `nohup` alone when available).  
 - **`ablation_master.pid`** — PID of the outer `bash` wrapper (same process group as the driver after exec).  
 - **Timestamped log** — `benchmarks/sigma_ablation/logs/ablation_YYYYMMDD_HHMMSS.log` receives full stdout/stderr from the driver (everything after Ollama preflight).  
 - **`set -euo pipefail`** — fail fast on errors instead of hanging silently.
@@ -125,6 +147,7 @@ python3 -m json.tool < benchmarks/sigma_ablation/results/sigma_ablation_summary.
 
 ### Caveats
 
+- **Ollama lifecycle** — if `ollama serve` was started only inside Cursor and Cursor exits, the server may stop; HTTP phases then fail until Ollama is restarted (prefer a host-level Ollama process).  
 - **Sleep / power** — if the machine sleeps, the run stops. Disable sleep for AC power for overnight jobs.  
 - **Wall clock** — full matrix over all prompts and models can take many hours; scale is configuration-dependent.
 
