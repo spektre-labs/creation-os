@@ -13,10 +13,14 @@ import re
 import subprocess
 import sys
 import time
+import zlib
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+import mct
+import seu
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 HERE = Path(__file__).resolve().parent
@@ -211,6 +215,31 @@ def ollama_chat_openai(
     raise last
 
 
+def ollama_n_samples_temps(
+    host: str,
+    port: int,
+    model: str,
+    prompt: str,
+    temperatures: List[float],
+    max_tokens: int,
+    sequential: bool = True,
+) -> Tuple[List[str], Optional[float]]:
+    """One completion per temperature; return texts and mean logprob-σ when present."""
+    texts: List[str] = []
+    lps: List[float] = []
+    for T in temperatures:
+        t, lp, _ = ollama_chat_openai(host, port, model, prompt, float(T), max_tokens)
+        texts.append(t)
+        if lp is not None:
+            lps.append(float(lp))
+        if sequential:
+            time.sleep(0.05)
+    mean_lp: Optional[float] = None
+    if lps:
+        mean_lp = max(0.0, min(1.0, float(sum(lps) / len(lps))))
+    return texts, mean_lp
+
+
 def ollama_n_samples(
     host: str,
     port: int,
@@ -221,20 +250,9 @@ def ollama_n_samples(
     n: int,
     sequential: bool = True,
 ) -> Tuple[List[str], Optional[float]]:
-    """Return completion texts and **mean** logprob-σ across samples (None if all missing)."""
-    texts: List[str] = []
-    lps: List[float] = []
-    for i in range(n):
-        t, lp, _ = ollama_chat_openai(host, port, model, prompt, temperature, max_tokens)
-        texts.append(t)
-        if lp is not None:
-            lps.append(float(lp))
-        if sequential:
-            time.sleep(0.05)
-    mean_lp: Optional[float] = None
-    if lps:
-        mean_lp = max(0.0, min(1.0, float(sum(lps) / len(lps))))
-    return texts, mean_lp
+    """Fixed temperature: ``n`` samples at ``temperature``."""
+    temps = [float(temperature)] * int(n)
+    return ollama_n_samples_temps(host, port, model, prompt, temps, max_tokens, sequential)
 
 
 def cos_fast_sigma(cos_bin: Path, prompt: str, extra_env: Dict[str, str]) -> Tuple[str, float, str]:
@@ -292,12 +310,17 @@ def emit_row(
     sigma_semantic: float,
     w_sem: Optional[float],
     w_lp: Optional[float],
+    sigma_seu: Optional[float] = None,
+    temp_strategy: str = "legacy",
+    mean_temperature: Optional[float] = None,
+    weight_seu: Optional[float] = None,
 ) -> None:
-    rec = {
+    rec: Dict[str, Any] = {
         "id": pid,
         "model": model_id,
         "n_samples": n_samples,
-        "temperature": temperature,
+        "temperature": float(temperature),
+        "temp_strategy": str(temp_strategy),
         "signal": signal,
         "sigma": float(sigma),
         "correct": bool(correct),
@@ -309,6 +332,12 @@ def emit_row(
         "weight_semantic": w_sem,
         "weight_logprob": w_lp,
     }
+    if mean_temperature is not None:
+        rec["mean_temperature"] = float(mean_temperature)
+    if sigma_seu is not None:
+        rec["sigma_seu"] = float(sigma_seu)
+    if weight_seu is not None:
+        rec["weight_seu"] = float(weight_seu)
     fp.write(json.dumps(rec, ensure_ascii=False) + "\n")
     fp.flush()
 
@@ -333,11 +362,22 @@ def main() -> int:
     temperature = float(cfg.get("temperature", 0.7))
     tau = float(cfg.get("tau_accept", 0.3))
     max_tokens = int(cfg.get("max_tokens", 220))
+    base_seed = int(cfg.get("seed", 42))
     if os.environ.get("COS_ABLATION_MAX_TOKENS", "").strip().isdigit():
         max_tokens = int(os.environ["COS_ABLATION_MAX_TOKENS"].strip())
     n_list = [int(x) for x in cfg.get("n_samples_list", [3, 5, 8, 10])]
     weights: List[Tuple[float, float]] = [
         (float(a), float(b)) for a, b in cfg.get("weight_pairs_semantic_logprob", [])
+    ]
+    temp_strategies: List[Dict[str, Any]] = list(cfg.get("temperature_strategies") or [])
+    if not temp_strategies:
+        temp_strategies = [{"name": "fixed_legacy", "type": "fixed", "value": float(temperature)}]
+    weights_seu_list: List[Tuple[float, float]] = [
+        (float(a), float(b))
+        for a, b in cfg.get(
+            "weight_pairs_seu_logprob",
+            cfg.get("weight_pairs_semantic_logprob", [[0.5, 0.5]]),
+        )
     ]
 
     if args.check:
@@ -367,6 +407,8 @@ def main() -> int:
         limit = min(limit, 4)
         n_list = [3]
         weights = [(0.5, 0.5)]
+        weights_seu_list = [(0.5, 0.5)]
+        temp_strategies = [{"name": "fixed_0.7", "type": "fixed", "value": 0.7}]
 
     prompts_path = REPO_ROOT / str(cfg.get("prompts_csv", "benchmarks/truthfulqa200/prompts.csv"))
     if not prompts_path.is_file():
@@ -416,84 +458,159 @@ def main() -> int:
                     continue
 
             for n_samp in n_list:
-                for row in rows:
-                    pid = row["id"]
-                    q = row.get("question", "")
-                    best = row.get("best_answer", "")
-                    worst = row.get("best_incorrect_answer", "")
-                    ref = best[:2000]
-                    print(f"  {mid} n={n_samp} {pid} …", flush=True)
-                    try:
-                        texts, s_lp = ollama_n_samples(
-                            host, port, omodel, q, temperature, max_tokens, n_samp
-                        )
-                    except (urllib.error.URLError, TimeoutError, OSError) as e:
-                        print(f"error HTTP {pid}: {e}", file=sys.stderr)
-                        continue
-                    s_sem = semantic_sigma_from_texts(texts)
-                    primary = texts[0] if texts else ""
-                    corr = bool(grade_one(primary, best, worst))
-                    for w_sem, w_lp in weights:
-                        if w_lp > 0.0 and s_lp is None:
+                for ts in temp_strategies:
+                    for row in rows:
+                        pid = row["id"]
+                        q = row.get("question", "")
+                        best = row.get("best_answer", "")
+                        worst = row.get("best_incorrect_answer", "")
+                        ref = best[:2000]
+                        seed_i = int(base_seed) + (zlib.crc32(pid.encode("utf-8")) & 0x7FFFFFFF)
+                        typ = str(ts.get("type", "fixed")).lower()
+                        if typ == "mct":
+                            temps = mct.mct_temperatures(
+                                n_samp,
+                                float(ts.get("low", 0.3)),
+                                float(ts.get("high", 0.9)),
+                                seed_i,
+                            )
+                        else:
+                            temps = mct.fixed_temperatures(n_samp, float(ts.get("value", temperature)))
+                        ts_name = str(ts.get("name", "unnamed"))
+                        mean_t = sum(temps) / max(len(temps), 1)
+                        print(f"  {mid} n={n_samp} {ts_name} {pid} …", flush=True)
+                        try:
+                            texts, s_lp = ollama_n_samples_temps(
+                                host, port, omodel, q, temps, max_tokens, True
+                            )
+                        except (urllib.error.URLError, TimeoutError, OSError) as e:
+                            print(f"error HTTP {pid}: {e}", file=sys.stderr)
                             continue
-                        lp_use = float(s_lp) if s_lp is not None else 0.5
-                        s_comb = max(0.0, min(1.0, w_sem * s_sem + w_lp * lp_use))
-                        sig = f"sigma_combined_{w_sem:g}_{w_lp:g}"
-                        accepted = s_comb < tau
+                        s_sem = semantic_sigma_from_texts(texts)
+                        s_seu_o = seu.compute_seu(texts)
+                        primary = texts[0] if texts else ""
+                        corr = bool(grade_one(primary, best, worst))
+                        for w_sem, w_lp in weights:
+                            if w_lp > 0.0 and s_lp is None:
+                                continue
+                            lp_use = float(s_lp) if s_lp is not None else 0.5
+                            s_comb = max(0.0, min(1.0, w_sem * s_sem + w_lp * lp_use))
+                            sig = f"sigma_combined_semantic_{w_sem:g}_{w_lp:g}"
+                            accepted = s_comb < tau
+                            emit_row(
+                                fp,
+                                pid=pid,
+                                model_id=mid,
+                                n_samples=n_samp,
+                                temperature=float(mean_t),
+                                signal=sig,
+                                sigma=s_comb,
+                                correct=corr,
+                                accepted=accepted,
+                                answer=primary,
+                                reference=ref,
+                                sigma_logprob=s_lp,
+                                sigma_semantic=s_sem,
+                                w_sem=w_sem,
+                                w_lp=w_lp,
+                                sigma_seu=s_seu_o,
+                                temp_strategy=ts_name,
+                                mean_temperature=float(mean_t),
+                            )
+                        if s_lp is not None:
+                            acc_lp = float(s_lp) < tau
+                            emit_row(
+                                fp,
+                                pid=pid,
+                                model_id=mid,
+                                n_samples=n_samp,
+                                temperature=float(mean_t),
+                                signal="sigma_logprob",
+                                sigma=float(s_lp),
+                                correct=corr,
+                                accepted=acc_lp,
+                                answer=primary,
+                                reference=ref,
+                                sigma_logprob=s_lp,
+                                sigma_semantic=s_sem,
+                                w_sem=None,
+                                w_lp=None,
+                                sigma_seu=s_seu_o,
+                                temp_strategy=ts_name,
+                                mean_temperature=float(mean_t),
+                            )
+                        acc_sem = s_sem < tau
                         emit_row(
                             fp,
                             pid=pid,
                             model_id=mid,
                             n_samples=n_samp,
-                            temperature=temperature,
-                            signal=sig,
-                            sigma=s_comb,
+                            temperature=float(mean_t),
+                            signal="sigma_semantic",
+                            sigma=float(s_sem),
                             correct=corr,
-                            accepted=accepted,
-                            answer=primary,
-                            reference=ref,
-                            sigma_logprob=s_lp,
-                            sigma_semantic=s_sem,
-                            w_sem=w_sem,
-                            w_lp=w_lp,
-                        )
-                    if s_lp is not None:
-                        acc_lp = float(s_lp) < tau
-                        emit_row(
-                            fp,
-                            pid=pid,
-                            model_id=mid,
-                            n_samples=n_samp,
-                            temperature=temperature,
-                            signal="sigma_logprob",
-                            sigma=float(s_lp),
-                            correct=corr,
-                            accepted=acc_lp,
+                            accepted=acc_sem,
                             answer=primary,
                             reference=ref,
                             sigma_logprob=s_lp,
                             sigma_semantic=s_sem,
                             w_sem=None,
                             w_lp=None,
+                            sigma_seu=s_seu_o,
+                            temp_strategy=ts_name,
+                            mean_temperature=float(mean_t),
                         )
-                    acc_sem = s_sem < tau
-                    emit_row(
-                        fp,
-                        pid=pid,
-                        model_id=mid,
-                        n_samples=n_samp,
-                        temperature=temperature,
-                        signal="sigma_semantic",
-                        sigma=float(s_sem),
-                        correct=corr,
-                        accepted=acc_sem,
-                        answer=primary,
-                        reference=ref,
-                        sigma_logprob=s_lp,
-                        sigma_semantic=s_sem,
-                        w_sem=None,
-                        w_lp=None,
-                    )
+                        if s_seu_o is not None:
+                            acc_seu = float(s_seu_o) < tau
+                            emit_row(
+                                fp,
+                                pid=pid,
+                                model_id=mid,
+                                n_samples=n_samp,
+                                temperature=float(mean_t),
+                                signal="sigma_seu",
+                                sigma=float(s_seu_o),
+                                correct=corr,
+                                accepted=acc_seu,
+                                answer=primary,
+                                reference=ref,
+                                sigma_logprob=s_lp,
+                                sigma_semantic=s_sem,
+                                w_sem=None,
+                                w_lp=None,
+                                sigma_seu=float(s_seu_o),
+                                temp_strategy=ts_name,
+                                mean_temperature=float(mean_t),
+                            )
+                            for w_seu, w_lp in weights_seu_list:
+                                if w_lp > 0.0 and s_lp is None:
+                                    continue
+                                if w_seu > 0.0 and s_seu_o is None:
+                                    continue
+                                lp_use = float(s_lp) if s_lp is not None else 0.5
+                                s_c2 = max(0.0, min(1.0, w_seu * float(s_seu_o) + w_lp * lp_use))
+                                sig2 = f"sigma_combined_seu_{w_seu:g}_{w_lp:g}"
+                                emit_row(
+                                    fp,
+                                    pid=pid,
+                                    model_id=mid,
+                                    n_samples=n_samp,
+                                    temperature=float(mean_t),
+                                    signal=sig2,
+                                    sigma=s_c2,
+                                    correct=corr,
+                                    accepted=s_c2 < tau,
+                                    answer=primary,
+                                    reference=ref,
+                                    sigma_logprob=s_lp,
+                                    sigma_semantic=s_sem,
+                                    w_sem=None,
+                                    w_lp=w_lp,
+                                    sigma_seu=float(s_seu_o),
+                                    temp_strategy=ts_name,
+                                    mean_temperature=float(mean_t),
+                                    weight_seu=w_seu,
+                                )
 
         elif prov == "cos_fast":
             cos_bin = REPO_ROOT / str(mspec.get("cos_bin", "cos"))
@@ -530,6 +647,9 @@ def main() -> int:
                         sigma_semantic=float(sig),
                         w_sem=None,
                         w_lp=None,
+                        sigma_seu=None,
+                        temp_strategy="cos_fast_scalar",
+                        mean_temperature=float(temperature),
                     )
         else:
             print(f"unknown provider {prov}", file=sys.stderr)

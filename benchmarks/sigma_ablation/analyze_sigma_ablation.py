@@ -16,12 +16,24 @@ HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE / "results"
 
 
+def _row_ts(r: Dict[str, Any]) -> str:
+    return str(r.get("temp_strategy") or "legacy")
+
+
 def write_plots_best_group(rows: List[Dict[str, Any]], best: Dict[str, Any], out_dir: Path) -> None:
-    """Optional ROC + σ histogram for the best (model, n_samples, signal) arm."""
+    """Optional ROC + σ histogram for the best (model, n_samples, signal, temp_strategy) arm."""
     if not best:
         return
     m, ns, sig = str(best["model"]), int(best["n_samples"]), str(best["signal"])
-    sub = [r for r in rows if str(r["model"]) == m and int(r["n_samples"]) == ns and str(r["signal"]) == sig]
+    tsb = str(best.get("temp_strategy", "legacy"))
+    sub = [
+        r
+        for r in rows
+        if str(r["model"]) == m
+        and int(r["n_samples"]) == ns
+        and str(r["signal"]) == sig
+        and _row_ts(r) == tsb
+    ]
     if len(sub) < 4:
         print("plots: skipped (fewer than 4 rows in best arm)", file=sys.stderr)
         return
@@ -50,7 +62,7 @@ def write_plots_best_group(rows: List[Dict[str, Any]], best: Dict[str, Any], out
     plt.plot([0, 1], [0, 1], "k--", alpha=0.3)
     plt.xlabel("FPR")
     plt.ylabel("TPR")
-    plt.title(f"ROC — {m} n={ns} `{sig}`")
+    plt.title(f"ROC — {m} n={ns} `{sig}` [{tsb}]")
     plt.legend(loc="lower right")
     plt.tight_layout()
     p_roc = out_dir / "sigma_roc.png"
@@ -66,7 +78,7 @@ def write_plots_best_group(rows: List[Dict[str, Any]], best: Dict[str, Any], out
         plt.hist(sw, bins=12, alpha=0.55, label="wrong", density=True)
     plt.xlabel("σ")
     plt.ylabel("density")
-    plt.title(f"σ — {m} n={ns}")
+    plt.title(f"σ — {m} n={ns} [{tsb}]")
     plt.legend()
     plt.tight_layout()
     p_hist = out_dir / "sigma_hist_correct_wrong.png"
@@ -126,13 +138,13 @@ def main() -> int:
                 continue
             rows.append(json.loads(line))
 
-    groups: DefaultDict[Tuple[str, int, str], List[Dict[str, Any]]] = defaultdict(list)
+    groups: DefaultDict[Tuple[str, int, str, str], List[Dict[str, Any]]] = defaultdict(list)
     for r in rows:
-        key = (str(r["model"]), int(r["n_samples"]), str(r["signal"]))
+        key = (str(r["model"]), int(r["n_samples"]), str(r["signal"]), _row_ts(r))
         groups[key].append(r)
 
     per_group: List[Dict[str, Any]] = []
-    for (model, n_samp, signal), recs in sorted(groups.items()):
+    for (model, n_samp, signal, ts_key), recs in sorted(groups.items()):
         y_wrong = [1 - int(x["correct"]) for x in recs]
         s = [float(x["sigma"]) for x in recs]
         acc_flags = [bool(x["accepted"]) for x in recs]
@@ -161,10 +173,13 @@ def main() -> int:
         m_c = sum(sc) / len(sc) if sc else float("nan")
         m_w = sum(sw) / len(sw) if sw else float("nan")
         gap = (m_w - m_c) if (sc and sw) else float("nan")
+        viable = (not math.isnan(auroc) and auroc > 0.65)
+        failed = (not math.isnan(auroc) and auroc < 0.54)
         per_group.append(
             {
                 "model": model,
                 "n_samples": n_samp,
+                "temp_strategy": ts_key,
                 "signal": signal,
                 "n_rows": len(recs),
                 "auroc": auroc,
@@ -177,6 +192,8 @@ def main() -> int:
                 "mean_sigma_correct": m_c,
                 "mean_sigma_wrong": m_w,
                 "sigma_gap": gap,
+                "viable_auroc_above_0p65": bool(viable),
+                "failed_auroc_below_0p54": bool(failed),
             }
         )
 
@@ -193,24 +210,31 @@ def main() -> int:
     best_overall = max(overall, key=lambda z: z["auroc"]) if overall else {}
 
     def parse_combined_weights(sig: str) -> Optional[Tuple[float, float]]:
-        prefix = "sigma_combined_"
-        if not str(sig).startswith(prefix):
-            return None
-        rest = str(sig)[len(prefix) :]
-        parts = rest.split("_", 1)
-        if len(parts) != 2:
-            return None
-        try:
-            return float(parts[0]), float(parts[1])
-        except ValueError:
-            return None
+        s = str(sig)
+        for prefix in ("sigma_combined_semantic_", "sigma_combined_seu_", "sigma_combined_"):
+            if s.startswith(prefix):
+                rest = s[len(prefix) :]
+                parts = rest.split("_", 1)
+                if len(parts) != 2:
+                    return None
+                try:
+                    return float(parts[0]), float(parts[1])
+                except ValueError:
+                    return None
+        return None
 
     def signal_family(sig: str) -> str:
         s = str(sig)
         if s == "sigma_semantic":
             return "semantic"
+        if s == "sigma_seu":
+            return "seu"
         if s == "sigma_logprob":
             return "logprob"
+        if s.startswith("sigma_combined_semantic"):
+            return "combined_semantic"
+        if s.startswith("sigma_combined_seu"):
+            return "combined_seu"
         if s.startswith("sigma_combined"):
             return "combined"
         return "other"
@@ -226,6 +250,7 @@ def main() -> int:
             {
                 "model": x["model"],
                 "n_samples": x["n_samples"],
+                "temp_strategy": x["temp_strategy"],
                 "auroc": a,
                 "sigma_semantic_failed_diagnostic": bool(failed),
             }
@@ -236,8 +261,10 @@ def main() -> int:
     best_report = {
         "best_signal": bo_sig,
         "best_signal_family": signal_family(bo_sig) if best_overall else "",
+        "best_temp_strategy": str(best_overall.get("temp_strategy", "")) if best_overall else "",
         "best_weight_semantic_logprob": list(cw) if cw else None,
         "best_auroc": best_overall.get("auroc") if best_overall else float("nan"),
+        "best_sigma_gap": best_overall.get("sigma_gap") if best_overall else float("nan"),
     }
 
     gem_best = best_by_model.get("gemma3_4b") or {}
@@ -309,7 +336,7 @@ def main() -> int:
         (
             x["auroc"]
             for x in per_group
-            if str(x["signal"]).startswith("sigma_combined") and not math.isnan(x["auroc"])
+            if str(x["signal"]).startswith("sigma_combined_semantic") and not math.isnan(x["auroc"])
         ),
         default=float("nan"),
     )
@@ -343,6 +370,84 @@ def main() -> int:
         )
     conclusions = threshold_conclusions + semantic_notes
 
+    def max_auroc(pred) -> float:
+        xs = [float(x["auroc"]) for x in per_group if pred(x) and not math.isnan(float(x["auroc"]))]
+        return max(xs) if xs else float("nan")
+
+    mct_best = max_auroc(lambda x: "mct" in str(x["temp_strategy"]))
+    fixed_best = max_auroc(lambda x: str(x["temp_strategy"]).startswith("fixed"))
+    mct_improves = bool(
+        not math.isnan(mct_best) and not math.isnan(fixed_best) and (mct_best - fixed_best >= 0.03)
+    )
+
+    seu_best = max_auroc(lambda x: x["signal"] == "sigma_seu")
+    sem_best = max_auroc(lambda x: x["signal"] == "sigma_semantic")
+    seu_improves = bool(
+        not math.isnan(seu_best) and not math.isnan(sem_best) and (seu_best - sem_best >= 0.03)
+    )
+
+    best_single = max(
+        max_auroc(lambda x: x["signal"] == "sigma_semantic"),
+        max_auroc(lambda x: x["signal"] == "sigma_seu"),
+        max_auroc(lambda x: x["signal"] == "sigma_logprob"),
+    )
+    best_combined_any = max_auroc(lambda x: str(x["signal"]).startswith("sigma_combined"))
+    multi_improves = bool(
+        not math.isnan(best_combined_any)
+        and not math.isnan(best_single)
+        and (best_combined_any - best_single >= 0.05)
+    )
+
+    auroc_above_065 = any(
+        (not math.isnan(float(x["auroc"])) and float(x["auroc"]) > 0.65) for x in per_group
+    )
+
+    if auroc_above_065:
+        recommendation = (
+            "At least one (model, n, signal, temp_strategy) arm exceeds 0.65 AUROC — "
+            "worth deeper validation; diagnostic only until a repro bundle exists."
+        )
+    elif seu_improves:
+        recommendation = (
+            "SEU (embedding) best AUROC exceeds Jaccard semantic by ≥0.03 — "
+            "embedding channel may be more informative on this slice."
+        )
+    elif mct_improves:
+        recommendation = (
+            "MCT (random per-sample T) best AUROC exceeds fixed-T by ≥0.03 — "
+            "temperature strategy may matter for separation."
+        )
+    elif multi_improves:
+        recommendation = (
+            "Best combined (semantic/SEU + logprob) AUROC exceeds best single-channel by ≥0.05 — "
+            "multi-channel composition helps on this slice."
+        )
+    else:
+        recommendation = (
+            "No preset uplift vs chance in this summary — treat as boundary evidence; "
+            "do not upgrade gate claims without stronger separation."
+        )
+
+    conclusions_structured: Dict[str, Any] = {
+        "mct_vs_fixed": {
+            "mct_best_auroc": mct_best,
+            "fixed_best_auroc": fixed_best,
+            "mct_improves": mct_improves,
+        },
+        "seu_vs_semantic": {
+            "seu_best_auroc": seu_best,
+            "semantic_best_auroc": sem_best,
+            "seu_improves": seu_improves,
+        },
+        "combined_vs_single": {
+            "combined_best_auroc": best_combined_any,
+            "single_best_auroc": best_single,
+            "combined_improves": multi_improves,
+        },
+        "auroc_above_0p65_any_arm": bool(auroc_above_065),
+        "recommendation": recommendation,
+    }
+
     def json_sanitize(o: Any) -> Any:
         if isinstance(o, float) and (math.isnan(o) or math.isinf(o)):
             return None
@@ -367,6 +472,7 @@ def main() -> int:
         "sigma_semantic_near_chance_by_setup": semantic_failed,
         "per_group": per_group,
         "conclusions": conclusions,
+        "conclusions_structured": conclusions_structured,
         "interpretation_note": (
             "AUROC ≈ 0.51 is a diagnosis, not a catastrophe. If σ does not separate, "
             "the gate must not claim separation; if separation appears only with a larger "
@@ -416,12 +522,31 @@ def main() -> int:
     ]
     for c in conclusions:
         lines.append(f"- {c}")
-    lines.extend(["", "## Per (model, n_samples, signal)", "", "| model | n | signal | AUROC | AUPRC | ECE | acc\\|accept | abstain | wrong\\_conf | gap |", "|---|---:|---|---:|---:|---:|---:|---:|---:|---:|"])
-    for x in sorted(per_group, key=lambda z: (-(z["auroc"] if not math.isnan(z["auroc"]) else -1), z["model"], z["n_samples"], z["signal"])):
+    lines.extend(
+        [
+            "",
+            "## Structured conclusions (MCT / SEU / combined)",
+            "",
+            "```json",
+            json.dumps(json_sanitize(conclusions_structured), indent=2),
+            "```",
+            "",
+        ]
+    )
+    lines.extend(["", "## Per (model, n, temp_strategy, signal)", "", "| model | n | temp_strategy | signal | AUROC | viable | failed | gap |", "|---|---:|---|---|---:|---:|---:|---:|"])
+    for x in sorted(
+        per_group,
+        key=lambda z: (
+            -(z["auroc"] if not math.isnan(z["auroc"]) else -1),
+            z["model"],
+            z["n_samples"],
+            str(z["temp_strategy"]),
+            z["signal"],
+        ),
+    ):
         lines.append(
-            f"| {x['model']} | {x['n_samples']} | `{x['signal']}` | {x['auroc']:.4f} | "
-            f"{x['auprc']:.4f} | {x['ece']:.4f} | "
-            f"{x['accuracy_accepted']:.3f} | {x['abstain_rate']:.3f} | {x['wrong_confident_count']} | "
+            f"| {x['model']} | {x['n_samples']} | `{x['temp_strategy']}` | `{x['signal']}` | "
+            f"{x['auroc']:.4f} | {x['viable_auroc_above_0p65']} | {x['failed_auroc_below_0p54']} | "
             f"{x['sigma_gap']:.4f} |"
         )
     lines.append("")

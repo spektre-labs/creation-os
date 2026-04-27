@@ -8629,7 +8629,7 @@ check-sigma-truthfulqa:
 
 # σ AUROC rescue ablation (HTTP diagnostic; see benchmarks/sigma_ablation/results/README.md)
 .PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation sigma-ablation-overnight-help \
-	sigma-ablation-launch-detached sigma-ablation-prune-orphans
+	sigma-ablation-launch-detached sigma-ablation-prune-orphans sigma-ablation-v2-overnight-help
 sigma-ablation-overnight-help:
 	@echo "Overnight crash-proof σ ablation: see benchmarks/sigma_ablation/results/README.md"
 	@echo "Detached launch: bash benchmarks/sigma_ablation/launch_ablation_detached.sh"
@@ -8640,6 +8640,9 @@ sigma-ablation-launch-detached:
 sigma-ablation-prune-orphans:
 	@chmod +x benchmarks/sigma_ablation/prune_sigma_ablation_orphans.sh
 	@bash benchmarks/sigma_ablation/prune_sigma_ablation_orphans.sh
+sigma-ablation-v2-overnight-help:
+	@echo "v2 overnight = run_ablation_v2_overnight.sh (preflight: sentence-transformers + sklearn) then same driver as v1"
+	@echo "Launch: nohup bash benchmarks/sigma_ablation/run_ablation_v2_overnight.sh >> benchmarks/sigma_ablation/logs/nohup_ablation.log 2>&1 &"
 sigma-ablation:
 	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
 	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"

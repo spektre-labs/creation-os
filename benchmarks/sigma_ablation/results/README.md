@@ -13,11 +13,20 @@ When TruthfulQA-style AUROC sits near chance (~0.5), this tree asks **why**:
 ## How it works
 
 - **Input:** `benchmarks/truthfulqa200/prompts.csv` (default first 100 rows; `--limit N`; `--full` uses `full_dataset_limit` from config, where **0** means the entire CSV).
-- **Runner:** `run_sigma_ablation.py` calls **Ollama OpenAI-compatible HTTP** for *N* sequential samples at **fixed `temperature=0.7`**. This is **not** identical to the in-process `cos chat` mixed-temperature shadow (0.1 / 0.7 / 1.5); it isolates *sample count* and *T* for diagnosis. **Logprob σ** is computed per completion and **averaged across the N runs** when `top_logprobs` are present.
-- **Semantic σ:** pairwise mean Jaccard on `first_sentence` snippets → `1 − mean_sim` with the same high/low similarity clamps as `cos_chat.c` `chat_multi_shadow` for the 3-sample case.
-- **Logprob σ:** mean per-token **normalized entropy** from `logprobs.content[].top_logprobs` when the server returns them; otherwise **logprob-only and any combined row with non-zero logprob weight are skipped for that prompt** (no silent fallback to semantic-only in those arms).
-- **Combined σ:** `w_sem·σ_sem + w_lp·σ_lp` (clipped to `[0,1]`). Weights are enumerated in `sigma_ablation_config.json`.
+- **Runner:** `run_sigma_ablation.py` calls **Ollama HTTP** for *N* completions. **`temperature_strategies`** in `sigma_ablation_config.json` select **fixed T** (e.g. 0.5, 0.7) or **MCT** (uniform random *T* per sample in `[low, high]`). **`cos_fast`** still emits a scalar σ with `temp_strategy=cos_fast_scalar`.
+- **Semantic σ (Jaccard):** pairwise Jaccard on `first_sentence` snippets → `1 − mean_sim` with the same high/low similarity clamps as `cos_chat.c` `chat_multi_shadow` for the 3-sample case.
+- **SEU (embeddings):** optional `sigma_seu` and `sigma_combined_seu_*` from **sentence-transformers** `all-MiniLM-L6-v2` (`seu.py`). If the import fails, SEU arms are skipped for that process.
+- **Logprob σ:** mean per-token **normalized entropy** from `top_logprobs` when returned; otherwise logprob-only and combined rows with non-zero logprob weight are skipped for that prompt.
+- **Combined σ:** `sigma_combined_semantic_{w}:{w_lp}` and `sigma_combined_seu_{w}:{w_lp}` (weights in `sigma_ablation_config.json`). Legacy rows may use `sigma_combined_*` without the middle token; the analyzer still parses them.
 - **Optional `bitnet_2b_current`:** one `./cos chat --fast` scalar per prompt (pipeline σ); skipped if `./cos` is missing.
+
+## Python dependencies (SEU + metrics)
+
+```bash
+pip install scikit-learn sentence-transformers
+```
+
+`sentence-transformers` pulls **torch**; **all-MiniLM-L6-v2** is small and typically runs on CPU. Overnight v2 preflight: `bash benchmarks/sigma_ablation/run_ablation_v2_overnight.sh` (or `make sigma-ablation-v2-overnight-help` for the one-liner hint).
 
 ## Commands
 
