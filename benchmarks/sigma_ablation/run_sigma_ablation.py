@@ -126,7 +126,7 @@ def logprob_sigma_from_choice(choice: Dict[str, Any]) -> Optional[float]:
     return max(0.0, min(1.0, float(sum(hs) / len(hs))))
 
 
-def ollama_chat_openai(
+def _ollama_chat_body(
     host: str,
     port: int,
     model: str,
@@ -134,6 +134,7 @@ def ollama_chat_openai(
     temperature: float,
     max_tokens: int,
 ) -> Tuple[str, Optional[float], Dict[str, Any]]:
+    """Single pass: try logprobs first, then one retry without logprobs on selected failures."""
     url = f"http://{host}:{port}/v1/chat/completions"
     timeout = float(os.environ.get("COS_ABLATION_HTTP_TIMEOUT", "600"))
     last_exc: Optional[BaseException] = None
@@ -175,6 +176,39 @@ def ollama_chat_openai(
         return text, s_lp, raw
     assert last_exc is not None
     raise last_exc
+
+
+def ollama_chat_openai(
+    host: str,
+    port: int,
+    model: str,
+    user_text: str,
+    temperature: float,
+    max_tokens: int,
+) -> Tuple[str, Optional[float], Dict[str, Any]]:
+    """HTTP chat with transient retry (Ollama restart, brief overload, connection refused)."""
+    retries = max(1, int(os.environ.get("COS_ABLATION_HTTP_RETRIES", "8")))
+    base = float(os.environ.get("COS_ABLATION_HTTP_RETRY_BASE_SEC", "1.25"))
+    cap = float(os.environ.get("COS_ABLATION_HTTP_RETRY_CAP_SEC", "90"))
+    last: Optional[BaseException] = None
+    for attempt in range(retries):
+        try:
+            return _ollama_chat_body(host, port, model, user_text, temperature, max_tokens)
+        except urllib.error.HTTPError as e:
+            last = e
+            code = int(getattr(e, "code", 0) or 0)
+            if attempt + 1 < retries and code in (429, 500, 502, 503):
+                time.sleep(min(base ** attempt, cap))
+                continue
+            raise
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as e:
+            last = e
+            if attempt + 1 < retries:
+                time.sleep(min(base ** attempt, cap))
+                continue
+            raise
+    assert last is not None
+    raise last
 
 
 def ollama_n_samples(

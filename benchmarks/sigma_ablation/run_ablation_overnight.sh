@@ -7,7 +7,8 @@
 # Environment (optional):
 #   SIGMA_ABLATION_GIT_COMMIT=1   — git commit result artifacts (default: 1)
 #   SIGMA_ABLATION_COMMIT_DETAIL=1 — include sigma_ablation_detail.jsonl (large; default: 0)
-#   SIGMA_ABLATION_GIT_PUSH=1     — git push origin current branch after commit (default: 0)
+#   SIGMA_ABLATION_CAFFEINATE=0     — disable macOS caffeinate (default: on when caffeinate exists)
+#   COS_ABLATION_HTTP_RETRIES=8    — transient Ollama HTTP / connection retries per completion
 
 set -euo pipefail
 
@@ -55,13 +56,21 @@ PYTHON="${PYTHON:-python3}"
 # Ease Metal VRAM pressure on small GPUs (override anytime).
 export COS_ABLATION_MAX_TOKENS="${COS_ABLATION_MAX_TOKENS:-128}"
 
+run_phase() {
+  if [ "${SIGMA_ABLATION_CAFFEINATE:-1}" != "0" ] && [ "$(uname -s)" = "Darwin" ] && command -v caffeinate >/dev/null 2>&1; then
+    caffeinate -dimsu -- "$@"
+  else
+    "$@"
+  fi
+}
+
 echo "=== Phase 1: run_sigma_ablation.py --full ==="
-"${PYTHON}" benchmarks/sigma_ablation/run_sigma_ablation.py \
+run_phase "${PYTHON}" benchmarks/sigma_ablation/run_sigma_ablation.py \
   --config benchmarks/sigma_ablation/sigma_ablation_config.json \
   --full
 
 echo "=== Phase 2: analyze_sigma_ablation.py --plots ==="
-"${PYTHON}" benchmarks/sigma_ablation/analyze_sigma_ablation.py --plots
+run_phase "${PYTHON}" benchmarks/sigma_ablation/analyze_sigma_ablation.py --plots
 
 echo "=== Phase 3: optional git commit / push ==="
 GIT_COMMIT="${SIGMA_ABLATION_GIT_COMMIT:-1}"

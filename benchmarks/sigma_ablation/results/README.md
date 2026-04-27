@@ -148,7 +148,8 @@ python3 -m json.tool < benchmarks/sigma_ablation/results/sigma_ablation_summary.
 ### Caveats
 
 - **Ollama lifecycle** — if `ollama serve` was started only inside Cursor and Cursor exits, the server may stop; HTTP phases then fail until Ollama is restarted (prefer a host-level Ollama process).  
-- **Sleep / power** — if the machine sleeps, the run stops. Disable sleep for AC power for overnight jobs.  
+- **Sleep / power** — the overnight driver runs **`caffeinate -dimsu`** on macOS by default (see `SIGMA_ABLATION_CAFFEINATE` in `run_ablation_overnight.sh`) so the machine is less likely to sleep mid-run; lid-closed / battery policy can still stop work — plug in AC and disable aggressive sleep if you need a hard guarantee.  
+- **Transient Ollama errors** — `run_sigma_ablation.py` retries each HTTP completion on connection errors and 429/500/502/503 (defaults: `COS_ABLATION_HTTP_RETRIES=8`, exponential backoff capped at 90s).  
 - **Wall clock** — full matrix over all prompts and models can take many hours; scale is configuration-dependent.
 
 ## Interpretation rule
