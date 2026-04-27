@@ -8638,10 +8638,18 @@ sigma-ablation-analyze:
 	@echo "sigma-ablation-analyze: OK (summary + table under benchmarks/sigma_ablation/results/)"
 
 check-sigma-ablation:
-	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py --check
-	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py --quick
-	@python3 benchmarks/sigma_ablation/analyze_sigma_ablation.py
-	@echo "check-sigma-ablation: OK (Ollama + quick ablation + analyze)"
+	@python3 -m py_compile benchmarks/sigma_ablation/run_sigma_ablation.py benchmarks/sigma_ablation/analyze_sigma_ablation.py
+	@if [ "$$SKIP_SIGMA_ABLATION_OLLAMA" = 1 ]; then \
+	  S=$$(mktemp) && T=$$(mktemp) && \
+	  python3 benchmarks/sigma_ablation/analyze_sigma_ablation.py --detail benchmarks/sigma_ablation/fixtures/tiny_detail.jsonl --summary "$$S" --table "$$T" && \
+	  rm -f "$$S" "$$T" && \
+	  echo "check-sigma-ablation: OK (SKIP_SIGMA_ABLATION_OLLAMA=1 — py_compile + fixture analyze)"; \
+	else \
+	  python3 benchmarks/sigma_ablation/run_sigma_ablation.py --check && \
+	  python3 benchmarks/sigma_ablation/run_sigma_ablation.py --quick && \
+	  python3 benchmarks/sigma_ablation/analyze_sigma_ablation.py && \
+	  echo "check-sigma-ablation: OK (Ollama + quick ablation + analyze)"; \
+	fi
 
 check-cos-unified: cos cos-agent cos-network \
                    creation_os_sigma_omega \

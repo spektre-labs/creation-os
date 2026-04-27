@@ -170,16 +170,20 @@ def ollama_n_samples(
     n: int,
     sequential: bool = True,
 ) -> Tuple[List[str], Optional[float]]:
+    """Return completion texts and **mean** logprob-σ across samples (None if all missing)."""
     texts: List[str] = []
-    first_lp: Optional[float] = None
+    lps: List[float] = []
     for i in range(n):
         t, lp, _ = ollama_chat_openai(host, port, model, prompt, temperature, max_tokens)
         texts.append(t)
-        if i == 0:
-            first_lp = lp
+        if lp is not None:
+            lps.append(float(lp))
         if sequential:
             time.sleep(0.05)
-    return texts, first_lp
+    mean_lp: Optional[float] = None
+    if lps:
+        mean_lp = max(0.0, min(1.0, float(sum(lps) / len(lps))))
+    return texts, mean_lp
 
 
 def cos_fast_sigma(cos_bin: Path, prompt: str, extra_env: Dict[str, str]) -> Tuple[str, float, str]:
@@ -264,6 +268,11 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None, help="max prompts (default from config)")
     ap.add_argument("--quick", action="store_true", help="tiny smoke: 4 prompts, n=3, gemma only")
     ap.add_argument("--check", action="store_true", help="verify Ollama reachable and exit")
+    ap.add_argument(
+        "--full",
+        action="store_true",
+        help="use full_dataset_limit from config (0 = entire prompts CSV)",
+    )
     ap.add_argument("--models", type=str, default=None, help="comma subset of model ids")
     args = ap.parse_args()
 
@@ -291,7 +300,16 @@ def main() -> int:
         print("check-sigma-ablation: OK (Ollama HTTP)")
         return 0
 
-    limit = args.limit if args.limit is not None else int(cfg.get("prompt_limit_default", 100))
+    if args.limit is not None:
+        limit = int(args.limit)
+    elif args.full:
+        fdl = cfg.get("full_dataset_limit", 0)
+        if fdl is None or int(fdl) == 0:
+            limit = 10**9
+        else:
+            limit = int(fdl)
+    else:
+        limit = int(cfg.get("prompt_limit_default", 100))
     if args.quick:
         limit = min(limit, 4)
         n_list = [3]
@@ -363,12 +381,11 @@ def main() -> int:
                     primary = texts[0] if texts else ""
                     corr = bool(grade_one(primary, best, worst))
                     for w_sem, w_lp in weights:
-                        if s_lp is None and w_lp > 0.0:
-                            s_comb = s_sem
-                        else:
-                            lp_use = 0.5 if s_lp is None else float(s_lp)
-                            s_comb = max(0.0, min(1.0, w_sem * s_sem + w_lp * lp_use))
-                        sig = f"sigma_combined_{w_sem:.2f}_{w_lp:.2f}"
+                        if w_lp > 0.0 and s_lp is None:
+                            continue
+                        lp_use = float(s_lp) if s_lp is not None else 0.5
+                        s_comb = max(0.0, min(1.0, w_sem * s_sem + w_lp * lp_use))
+                        sig = f"sigma_combined_{w_sem:g}_{w_lp:g}"
                         accepted = s_comb < tau
                         emit_row(
                             fp,

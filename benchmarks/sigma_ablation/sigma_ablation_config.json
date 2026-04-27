@@ -2,7 +2,7 @@
   "title": "σ AUROC Rescue: Model Size, Sample Count, and Signal Composition Ablation",
   "prompts_csv": "benchmarks/truthfulqa200/prompts.csv",
   "prompt_limit_default": 100,
-  "full_dataset_limit": 200,
+  "full_dataset_limit": 0,
   "temperature": 0.7,
   "tau_accept": 0.3,
   "max_tokens": 220,
@@ -42,7 +42,9 @@
     "This harness calls Ollama HTTP directly for N i.i.d. completions at fixed T (not the mixed 0.1/0.7/1.5 cos shadow loop).",
     "Semantic σ = 1 − mean pairwise Jaccard(first_sentence) over samples, with the same 0.95/0.05 clamps as cos_chat chat_multi_shadow for n=3.",
     "Logprob σ = mean per-token normalized entropy from top_logprobs when the API returns them; else NaN (row skipped in logprob-only AUROC for that prompt).",
-    "n_samples=10 is supported at the HTTP layer; cos C semantic_entropy.c still caps at 8 for in-process paths — this experiment is intentionally HTTP-side.",
+    "HTTP logprob σ is averaged across the N sequential samples when logprobs are present.",
+    "n_samples=10 is supported at the HTTP layer; in-process cos C paths may cap lower — this experiment is intentionally HTTP-side.",
+    "full_dataset_limit 0 = read entire prompts_csv; set e.g. 200 to cap rows.",
     "Do not merge these numbers into flagship TruthfulQA claims without a repro bundle; diagnostic only."
   ]
 }

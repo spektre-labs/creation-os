@@ -10,10 +10,69 @@ import math
 import sys
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, DefaultDict, Dict, List
+from typing import Any, DefaultDict, Dict, List, Optional, Tuple
 
 HERE = Path(__file__).resolve().parent
 RESULTS_DIR = HERE / "results"
+
+
+def write_plots_best_group(rows: List[Dict[str, Any]], best: Dict[str, Any], out_dir: Path) -> None:
+    """Optional ROC + σ histogram for the best (model, n_samples, signal) arm."""
+    if not best:
+        return
+    m, ns, sig = str(best["model"]), int(best["n_samples"]), str(best["signal"])
+    sub = [r for r in rows if str(r["model"]) == m and int(r["n_samples"]) == ns and str(r["signal"]) == sig]
+    if len(sub) < 4:
+        print("plots: skipped (fewer than 4 rows in best arm)", file=sys.stderr)
+        return
+    try:
+        from sklearn.metrics import auc, roc_curve
+
+        import matplotlib
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+    except ImportError as e:
+        print(f"plots: skipped ({e})", file=sys.stderr)
+        return
+
+    y = [1 - int(x["correct"]) for x in sub]
+    s = [float(x["sigma"]) for x in sub]
+    if len(set(y)) < 2:
+        print("plots: skipped (single class in best arm)", file=sys.stderr)
+        return
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    fpr, tpr, _ = roc_curve(y, s)
+    roc_auc = auc(fpr, tpr)
+    plt.figure(figsize=(5, 4))
+    plt.plot(fpr, tpr, label=f"AUROC={roc_auc:.3f}")
+    plt.plot([0, 1], [0, 1], "k--", alpha=0.3)
+    plt.xlabel("FPR")
+    plt.ylabel("TPR")
+    plt.title(f"ROC — {m} n={ns} `{sig}`")
+    plt.legend(loc="lower right")
+    plt.tight_layout()
+    p_roc = out_dir / "sigma_roc.png"
+    plt.savefig(p_roc, dpi=120)
+    plt.close()
+
+    sc = [float(x["sigma"]) for x in sub if x["correct"]]
+    sw = [float(x["sigma"]) for x in sub if not x["correct"]]
+    plt.figure(figsize=(5, 4))
+    if sc:
+        plt.hist(sc, bins=12, alpha=0.55, label="correct", density=True)
+    if sw:
+        plt.hist(sw, bins=12, alpha=0.55, label="wrong", density=True)
+    plt.xlabel("σ")
+    plt.ylabel("density")
+    plt.title(f"σ — {m} n={ns}")
+    plt.legend()
+    plt.tight_layout()
+    p_hist = out_dir / "sigma_hist_correct_wrong.png"
+    plt.savefig(p_hist, dpi=120)
+    plt.close()
+    print(f"wrote {p_roc} and {p_hist}")
 
 
 def ece_bins(conf: List[float], correct: List[int], n_bins: int = 10) -> float:
@@ -42,6 +101,11 @@ def main() -> int:
     ap.add_argument("--summary", type=Path, default=RESULTS_DIR / "sigma_ablation_summary.json")
     ap.add_argument("--table", type=Path, default=RESULTS_DIR / "sigma_ablation_table.md")
     ap.add_argument("--tau-wrong-conf", type=float, default=0.3)
+    ap.add_argument(
+        "--plots",
+        action="store_true",
+        help="write sigma_roc.png + sigma_hist_correct_wrong.png for best AUROC arm (needs matplotlib)",
+    )
     args = ap.parse_args()
 
     if not args.detail.is_file():
@@ -90,9 +154,7 @@ def main() -> int:
         wconf = sum(
             1
             for x in recs
-            if x["accepted"]
-            and not x["correct"]
-            and float(x["sigma"]) < args.tau_wrong_conf
+            if (not x["correct"]) and float(x["sigma"]) < float(args.tau_wrong_conf)
         )
         sc = [float(x["sigma"]) for x in recs if x["correct"]]
         sw = [float(x["sigma"]) for x in recs if not x["correct"]]
@@ -129,6 +191,70 @@ def main() -> int:
     best_by_model = {m: best_for_model(m) for m in models}
     overall = [x for x in per_group if not math.isnan(x["auroc"])]
     best_overall = max(overall, key=lambda z: z["auroc"]) if overall else {}
+
+    def parse_combined_weights(sig: str) -> Optional[Tuple[float, float]]:
+        prefix = "sigma_combined_"
+        if not str(sig).startswith(prefix):
+            return None
+        rest = str(sig)[len(prefix) :]
+        parts = rest.split("_", 1)
+        if len(parts) != 2:
+            return None
+        try:
+            return float(parts[0]), float(parts[1])
+        except ValueError:
+            return None
+
+    def signal_family(sig: str) -> str:
+        s = str(sig)
+        if s == "sigma_semantic":
+            return "semantic"
+        if s == "sigma_logprob":
+            return "logprob"
+        if s.startswith("sigma_combined"):
+            return "combined"
+        return "other"
+
+    # Near-chance σ_semantic: honest "failed" flag (no hidden optimism).
+    semantic_failed: List[Dict[str, Any]] = []
+    for x in per_group:
+        if x["signal"] != "sigma_semantic" or math.isnan(float(x["auroc"])):
+            continue
+        a = float(x["auroc"])
+        failed = 0.48 <= a <= 0.54
+        semantic_failed.append(
+            {
+                "model": x["model"],
+                "n_samples": x["n_samples"],
+                "auroc": a,
+                "sigma_semantic_failed_diagnostic": bool(failed),
+            }
+        )
+
+    bo_sig = str(best_overall.get("signal", "")) if best_overall else ""
+    cw = parse_combined_weights(bo_sig)
+    best_report = {
+        "best_signal": bo_sig,
+        "best_signal_family": signal_family(bo_sig) if best_overall else "",
+        "best_weight_semantic_logprob": list(cw) if cw else None,
+        "best_auroc": best_overall.get("auroc") if best_overall else float("nan"),
+    }
+
+    gem_best = best_by_model.get("gemma3_4b") or {}
+    phi_best = best_by_model.get("phi4") or {}
+    bit_best = best_by_model.get("bitnet_2b_current") or {}
+    model_delta = {
+        "gemma3_4b_minus_bitnet_auroc": (
+            float(gem_best["auroc"]) - float(bit_best["auroc"])
+            if gem_best and bit_best and not math.isnan(gem_best["auroc"]) and not math.isnan(bit_best["auroc"])
+            else float("nan")
+        ),
+        "phi4_minus_bitnet_auroc": (
+            float(phi_best["auroc"]) - float(bit_best["auroc"])
+            if phi_best and bit_best and not math.isnan(phi_best["auroc"]) and not math.isnan(bit_best["auroc"])
+            else float("nan")
+        ),
+    }
 
     def _auroc(d: Dict[str, Any]) -> float:
         v = d.get("auroc") if d else None
@@ -196,17 +322,49 @@ def main() -> int:
         conclusions.append(
             "Composition signal: best weighted combined beats semantic-only by ≥0.05."
         )
-    if not conclusions:
-        conclusions.append(
+
+    flagged_semantic = [x for x in semantic_failed if x["sigma_semantic_failed_diagnostic"]]
+    semantic_notes: List[str] = []
+    if flagged_semantic:
+        semantic_notes.append(
+            "σ_semantic AUROC ∈ [0.48, 0.54] (mark as non-separating / failed diagnostic for that setup): "
+            + "; ".join(
+                f"{x['model']}|n={x['n_samples']}|{x['auroc']:.3f}" for x in flagged_semantic[:24]
+            )
+            + (" …" if len(flagged_semantic) > 24 else "")
+        )
+
+    threshold_conclusions = conclusions[:]
+    if not threshold_conclusions and not semantic_notes:
+        threshold_conclusions.append(
             "No preset threshold fired: AUROC may stay near chance (~0.5) for this slice — "
             "treat σ as non-discriminative on this dataset under the tested arms, "
             "or expand prompts / models before any gate claim."
         )
+    conclusions = threshold_conclusions + semantic_notes
+
+    def json_sanitize(o: Any) -> Any:
+        if isinstance(o, float) and (math.isnan(o) or math.isinf(o)):
+            return None
+        if isinstance(o, dict):
+            return {str(k): json_sanitize(v) for k, v in o.items()}
+        if isinstance(o, list):
+            return [json_sanitize(v) for v in o]
+        return o
+
+    model_improves = (
+        (not math.isnan(model_delta["gemma3_4b_minus_bitnet_auroc"]) and model_delta["gemma3_4b_minus_bitnet_auroc"] >= 0.10)
+        or (not math.isnan(model_delta["phi4_minus_bitnet_auroc"]) and model_delta["phi4_minus_bitnet_auroc"] >= 0.10)
+    )
 
     summary = {
         "title": "σ AUROC Rescue: Model Size, Sample Count, and Signal Composition Ablation",
         "best_overall": best_overall,
         "best_by_model": best_by_model,
+        "best_signal_report": best_report,
+        "model_auroc_deltas": model_delta,
+        "model_change_improves_auroc_by_threshold_0p10": bool(model_improves),
+        "sigma_semantic_near_chance_by_setup": semantic_failed,
         "per_group": per_group,
         "conclusions": conclusions,
         "interpretation_note": (
@@ -216,8 +374,11 @@ def main() -> int:
         ),
     }
     args.summary.parent.mkdir(parents=True, exist_ok=True)
-    args.summary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    args.summary.write_text(json.dumps(json_sanitize(summary), indent=2), encoding="utf-8")
     print(f"wrote {args.summary}")
+
+    if args.plots:
+        write_plots_best_group(rows, best_overall, args.table.parent)
 
     lines = [
         "# σ AUROC Rescue: Model Size, Sample Count, and Signal Composition Ablation",
@@ -227,7 +388,27 @@ def main() -> int:
         "## Best overall (by AUROC)",
         "",
         "```json",
-        json.dumps(best_overall, indent=2),
+        json.dumps(json_sanitize(best_overall), indent=2),
+        "```",
+        "",
+        "## Best signal / weights (parsed)",
+        "",
+        "```json",
+        json.dumps(json_sanitize(best_report), indent=2),
+        "```",
+        "",
+        "## Model AUROC deltas (best arm per model id)",
+        "",
+        "```json",
+        json.dumps(json_sanitize(model_delta), indent=2),
+        "```",
+        "",
+        "## σ_semantic near-chance (failed diagnostic) by setup",
+        "",
+        "AUROC ∈ [0.48, 0.54] ⇒ mark `sigma_semantic` as **non-separating** for that (model, n); not a hidden failure.",
+        "",
+        "```json",
+        json.dumps(json_sanitize(flagged_semantic), indent=2),
         "```",
         "",
         "## Conclusions (threshold rules)",

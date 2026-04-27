@@ -194,6 +194,7 @@ creation_os_check_*
 *.bin
 *.jsonl
 !benchmarks/lm_eval/fixtures/tiny_hellaswag_sample.jsonl
+!benchmarks/sigma_ablation/fixtures/tiny_detail.jsonl
 *.gguf
 
 # Editor / OS junk (macOS duplicates already excluded above)
