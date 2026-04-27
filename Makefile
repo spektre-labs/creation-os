@@ -8627,6 +8627,22 @@ check-sigma-truthfulqa:
 	@bash benchmarks/sigma_pipeline/check_sigma_truthfulqa.sh
 	@echo "check-sigma-truthfulqa: OK (50Q pipeline, local=30% → hybrid=96% via σ-escalation)"
 
+# σ AUROC rescue ablation (HTTP diagnostic; see benchmarks/sigma_ablation/results/README.md)
+.PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation
+sigma-ablation:
+	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
+	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"
+
+sigma-ablation-analyze:
+	@python3 benchmarks/sigma_ablation/analyze_sigma_ablation.py
+	@echo "sigma-ablation-analyze: OK (summary + table under benchmarks/sigma_ablation/results/)"
+
+check-sigma-ablation:
+	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py --check
+	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py --quick
+	@python3 benchmarks/sigma_ablation/analyze_sigma_ablation.py
+	@echo "check-sigma-ablation: OK (Ollama + quick ablation + analyze)"
+
 check-cos-unified: cos cos-agent cos-network \
                    creation_os_sigma_omega \
                    creation_os_sigma_formal \
