@@ -8628,7 +8628,10 @@ check-sigma-truthfulqa:
 	@echo "check-sigma-truthfulqa: OK (50Q pipeline, local=30% → hybrid=96% via σ-escalation)"
 
 # σ AUROC rescue ablation (HTTP diagnostic; see benchmarks/sigma_ablation/results/README.md)
-.PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation
+.PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation sigma-ablation-overnight-help
+sigma-ablation-overnight-help:
+	@echo "Overnight crash-proof σ ablation: see benchmarks/sigma_ablation/results/README.md"
+	@echo "Driver: benchmarks/sigma_ablation/run_ablation_overnight.sh (run under nohup from repo root)"
 sigma-ablation:
 	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
 	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"

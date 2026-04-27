@@ -214,6 +214,9 @@ reports/*.pdf
 benchmarks/truthfulqa/mc_task.json
 
 # Benchmark outputs (keep scripts under benchmarks/** — ignore generated reports)
+benchmarks/sigma_ablation/logs/*.log
+benchmarks/sigma_ablation/logs/*.pid
+!benchmarks/sigma_ablation/logs/.gitkeep
 benchmarks/*/results/*
 !benchmarks/sigma_ablation/results/README.md
 benchmarks/qwen_first_contact/*.txt

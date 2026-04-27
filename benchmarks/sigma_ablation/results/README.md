@@ -61,6 +61,73 @@ Each line is one JSON object, for example:
 {"id":"q_0001","model":"gemma3_4b","n_samples":8,"temperature":0.7,"signal":"sigma_combined_0.5_0.5","sigma":0.42,"correct":true,"accepted":true,"answer":"…","reference":"…","sigma_logprob":0.35,"sigma_semantic":0.49,"weight_semantic":0.5,"weight_logprob":0.5}
 ```
 
+## Overnight crash-proof run
+
+Use **`nohup`** so the job keeps going if Cursor, the terminal, or SSH disconnects. The canonical driver is **`benchmarks/sigma_ablation/run_ablation_overnight.sh`** (repo-root detection — no hard-coded `~/creation-os`).
+
+### 1. Ollama
+
+```bash
+ollama list
+# Expect gemma3:4b (or adjust sigma_ablation_config.json)
+ollama pull gemma3:4b   # if missing
+```
+
+Ensure the server is up (`ollama serve` in another session if you do not use a launchd service).
+
+### 2. Start under nohup (from repository root)
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+chmod +x benchmarks/sigma_ablation/run_ablation_overnight.sh
+mkdir -p benchmarks/sigma_ablation/logs
+nohup bash benchmarks/sigma_ablation/run_ablation_overnight.sh \
+  > benchmarks/sigma_ablation/logs/nohup_ablation.log 2>&1 &
+echo $! > benchmarks/sigma_ablation/logs/ablation_master.pid
+echo "master PID: $(cat benchmarks/sigma_ablation/logs/ablation_master.pid)"
+```
+
+- **`nohup`** — ignores SIGHUP when the terminal closes.  
+- **`ablation_master.pid`** — PID of the outer `bash` wrapper (same process group as the driver after exec).  
+- **Timestamped log** — `benchmarks/sigma_ablation/logs/ablation_YYYYMMDD_HHMMSS.log` receives full stdout/stderr from the driver (everything after Ollama preflight).  
+- **`set -euo pipefail`** — fail fast on errors instead of hanging silently.
+
+### 3. Git behavior (defaults are conservative)
+
+| Variable | Default | Meaning |
+|----------|---------|---------|
+| `SIGMA_ABLATION_GIT_COMMIT` | `1` | Stage and commit `sigma_ablation_summary.json`, `sigma_ablation_table.md`, optional PNGs. |
+| `SIGMA_ABLATION_COMMIT_DETAIL` | `0` | Set to `1` to also `git add -f` **`sigma_ablation_detail.jsonl`** (can be very large). |
+| `SIGMA_ABLATION_GIT_PUSH` | `0` | Set to `1` to **`git push origin HEAD`** after a successful commit (off by default so `main` is not pushed accidentally). |
+
+### 4. Monitor
+
+```bash
+# Wrapper still running?
+ps -p "$(cat benchmarks/sigma_ablation/logs/ablation_master.pid)" && echo RUNNING || echo DONE
+
+# Live wrapper log (often short: the driver redirects to the timestamped log after start)
+tail -f benchmarks/sigma_ablation/logs/nohup_ablation.log
+
+# Full transcript (recommended)
+ls -t benchmarks/sigma_ablation/logs/ablation_*.log 2>/dev/null | head -1 | xargs tail -f
+
+# Progress (detail lines)
+wc -l benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl
+```
+
+### 5. Morning checks
+
+```bash
+sed -n '1,120p' benchmarks/sigma_ablation/results/sigma_ablation_table.md
+python3 -m json.tool < benchmarks/sigma_ablation/results/sigma_ablation_summary.json | head -80
+```
+
+### Caveats
+
+- **Sleep / power** — if the machine sleeps, the run stops. Disable sleep for AC power for overnight jobs.  
+- **Wall clock** — full matrix over all prompts and models can take many hours; scale is configuration-dependent.
+
 ## Interpretation rule
 
 **AUROC ≈ 0.51 is a diagnosis, not a catastrophe.** If σ does not separate, the gate must not claim separation. If separation only appears with a larger model, more samples, or a different composition, record that as a **boundary condition**, not a silent fix.
