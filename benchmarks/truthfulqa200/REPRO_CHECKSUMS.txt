@@ -3,6 +3,13 @@
 #   shasum -a 256 benchmarks/truthfulqa200/prompts.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt
 #   shasum -a 256 benchmarks/truthfulqa200/results.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt
 #
-# Ollama gemma3:4b, N=50 (first 50 prompts; --limit 50), 2026-04-27:
+# Wave 6: Ollama gemma3:4b, --multi-sigma, N=100 (first 100 prompts), 2026-04-27:
 ac367f8166ae4af254eb8f8cf4abcba071ac670b9895727d4e2a7e4eb3bab60d  benchmarks/truthfulqa200/prompts.csv
-735fbb638eb375c81d9410785d587d5df1cc95517efb0b0df539af93f8f7b062  benchmarks/truthfulqa200/results.csv
+d906dcab3a3ad735360b8f974f3ac73809e61521b78ee7a6d9bd61366d14973f  benchmarks/truthfulqa200/results.csv
+# Meta (append at end of run):
+# commit: (see git log)
+# uname: (see host)
+# date: 2026-04-27T17:10:00Z (approx, post-metrics)
+commit: 0b85b90617b8f2a16babceea66880be5742f39fc
+uname: Darwin Mac 24.6.0 Darwin Kernel Version 24.6.0: Wed Jan  7 21:18:30 PST 2026; root:xnu-11417.140.69.708.2~1/RELEASE_ARM64_T8122 arm64
+date: 2026-04-27T17:08:20Z

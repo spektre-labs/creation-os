@@ -1,30 +1,31 @@
 # TruthfulQA-200 benchmark results
 
-**Run scope:** first **50** prompts of the 200-row stratified set (`grade.py run --limit 50`); full matrix: omit `--limit` (expect long wall clock). **Backend:** Ollama `gemma3:4b`; `cos chat --fast --no-cache`, pinned τ; `COS_ENGRAM_DISABLE=1` in harness.
+**Run (Wave 6):** N=**100** (first 100 of 200 prompts); Ollama **gemma3:4b**; `cos chat` **`--multi-sigma`** (full semantic σ), **`--no-cache`**, `τ_accept=0.3`, `τ_rethink=0.7`, `COS_ENGRAM_DISABLE=1`, `COS_SEMANTIC_SIGMA_PARALLEL=0`. Resumed after Cursor stop (append from row 81).
 
-**Generated (UTC):** 2026-04-27T12:14:43Z
-**Commit:** `4066154101e18fdfc0d0685231560d38d59ec4bd`
+**Generated (UTC):** 2026-04-27T17:07:56Z
+**Commit:** `0b85b90617b8f2a16babceea66880be5742f39fc`
 **Hardware:** `Darwin Mac 24.6.0 Darwin Kernel Version 24.6.0: Wed Jan  7 21:18:30 PST 2026; root:xnu-11417.140.69.708.2~1/RELEASE_ARM64_T8122 arm64`
 **Model:** `gemma3:4b`
-**N prompts:** 50
+**N prompts:** 100
 
 | Metric | Value |
 |--------|-------|
-| AUROC (σ predicts incorrect; sklearn) | 0.8261 |
-| Accuracy (non-ABSTAIN only) | 6.12% |
-| Abstention rate | 2.00% |
-| Wrong + confident (ACCEPT, σ<0.3, graded wrong) | 0 |
-| ECE (10 bins, conf=1−σ) | 0.6080 |
-| AURC (risk–coverage, σ desc.) | 0.9629 |
+| AUROC (σ predicts incorrect; sklearn) | 0.5135 |
+| Accuracy (non-ABSTAIN only) | 38.96% |
+| Abstention rate | 23.00% |
+| Wrong + confident (ACCEPT, σ<0.3, graded wrong) | 1 |
+| ECE (10 bins, conf=1−σ) | 0.0600 |
+| AURC (risk–coverage, σ desc.) | 0.5763 |
 
 ## Repro bundle
 
 - `results.csv`: path `benchmarks/truthfulqa200/results.csv`
 - `prompts.csv`: path `benchmarks/truthfulqa200/prompts.csv`
-- `REPRO_CHECKSUMS.txt`: SHA-256 for `prompts.csv` + this `results.csv` (N=50 run).
+- `REPRO_CHECKSUMS.txt`: SHA-256 for `prompts.csv` + this N=100 `results.csv`.
 
 ## Notes
 
+- Default `grade.py run` invokes `cos chat --multi-sigma` (full semantic σ); `--fast` is **opt-in** for quick smoke tests only (compressed σ).
 - AUROC requires both correct and incorrect in the non-ABSTAIN pool; otherwise NaN.
 - This harness does **not** substitute for TruthfulQA leaderboard submission rules.
 
@@ -34,10 +35,10 @@ Random 50/50 split stratified by **correct** (0/1), seed=42. Rule: **ACCEPT** if
 
 | Target acc (cal) | τ | Empirical acc (cal, σ<τ) | Coverage (cal) | Acc (test, σ<τ) | Coverage (test) |
 |---:|---:|---:|---:|---:|---:|
-| 80% | 0.3033 | 100.0% | 4.2% | 33.3% | 12.0% |
-| 85% | 0.3033 | 100.0% | 4.2% | 33.3% | 12.0% |
-| 90% | 0.3033 | 100.0% | 4.2% | 33.3% | 12.0% |
-| 95% | 0.3033 | 100.0% | 4.2% | 33.3% | 12.0% |
+| 80% | 0.4013 | 100.0% | 2.6% | 0.0% | 5.1% |
+| 85% | 0.4013 | 100.0% | 2.6% | 0.0% | 5.1% |
+| 90% | 0.4013 | 100.0% | 2.6% | 0.0% | 5.1% |
+| 95% | 0.4013 | 100.0% | 2.6% | 0.0% | 5.1% |
 
 *Figure skipped: install `matplotlib` to emit accuracy–coverage PNG.*
 

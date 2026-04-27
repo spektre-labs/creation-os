@@ -144,38 +144,46 @@ def run_cos_chat(
     extra_env: Dict[str, str],
     tau_accept: float,
     tau_rethink: float,
+    *,
+    use_fast: bool,
 ) -> Tuple[float, str, str, str, str]:
-    """Invoke ``cos chat --once`` with pinned τ so repo conformal / adaptive CSV
-    cannot drive τ_accept to a value that yields 100% ABSTAIN on typical local σ
-    (TruthfulQA bench would otherwise report NaN metrics)."""
+    """Invoke ``cos chat --once`` with pinned τ. Default (Wave 6 / README) uses
+    ``--multi-sigma`` (semantic σ ensemble); use ``--fast`` only for quick
+    local smoke tests (logprob-only, compressed σ). ``--no-cache`` avoids
+    cos disk cache replay. Engram is disabled in ``cmd_run`` so engram τ does
+    not override ``--tau-accept``."""
     env = dict(os.environ)
     env.update(extra_env)
+    to_s = int(env.get("COS_TQA_CHAT_TIMEOUT", "900") or 900)
     t0 = time.perf_counter()
-    # --fast: skip semantic multi-σ / speculative-σ paths that can early-ABSTAIN
-    # even when σ < τ_accept (Ollama + local-only would otherwise report 100% ABSTAIN).
-    # --no-cache: otherwise cos disk prompt cache replays old σ/action (ABSTAIN) from
-    # prior runs and prints [CACHED], defeating fresh bench numbers.
     cmd: List[str] = [
         str(cos_bin),
         "chat",
         "--once",
         "--json",
         "--no-stream",
-        "--fast",
-        "--no-cache",
-        "--tau-accept",
-        f"{tau_accept:.6f}",
-        "--tau-rethink",
-        f"{tau_rethink:.6f}",
-        "--prompt",
-        prompt,
     ]
+    if use_fast:
+        cmd.append("--fast")
+    else:
+        cmd.append("--multi-sigma")
+    cmd.extend(
+        [
+            "--no-cache",
+            "--tau-accept",
+            f"{tau_accept:.6f}",
+            "--tau-rethink",
+            f"{tau_rethink:.6f}",
+            "--prompt",
+            prompt,
+        ]
+    )
     p = subprocess.run(
         cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
-        timeout=int(os.environ.get("COS_TQA_CHAT_TIMEOUT", "600")),
+        timeout=max(60, to_s),
         env=env,
     )
     dt_ms = (time.perf_counter() - t0) * 1000.0
@@ -208,9 +216,17 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"error: missing {prompts_path}", file=sys.stderr)
         return 2
     results_path = Path(args.results)
-    # Prevent ~/.cos engram from overriding τ_accept (run_chat_once uses
-    # cos_engram_get_local_tau and can drive τ to ~0.2 → false ABSTAIN on Ollama).
-    extra_env = {"COS_ENGRAM_DISABLE": "1"}
+    # Wave 6 defaults: full semantic path; envs only if not already set by caller.
+    def _default_env(key: str, value: str) -> None:
+        if key not in os.environ or not str(os.environ.get(key, "")).strip():
+            extra_env[key] = value
+
+    extra_env: Dict[str, str] = {}
+    _default_env("COS_ENGRAM_DISABLE", "1")
+    _default_env("COS_BITNET_IO_TIMEOUT_S", "600")
+    _default_env("COS_TQA_CHAT_TIMEOUT", "900")
+    # Sequential semantic probes (avoid OOM on 8GB; parallel uses fork/pthread in cos)
+    _default_env("COS_SEMANTIC_SIGMA_PARALLEL", "0")
     if args.model:
         extra_env["COS_BITNET_CHAT_MODEL"] = args.model
         extra_env["COS_OLLAMA_MODEL"] = args.model
@@ -250,7 +266,12 @@ def cmd_run(args: argparse.Namespace) -> int:
             q = row.get("question", "")
             print(f"  {pid} [{cat}] …", flush=True)
             lat, sigs, act, resp, etail = run_cos_chat(
-                cos_bin, q, extra_env, args.tau_accept, args.tau_rethink
+                cos_bin,
+                q,
+                extra_env,
+                args.tau_accept,
+                args.tau_rethink,
+                use_fast=bool(getattr(args, "fast", False)),
             )
             w.writerow(
                 [
@@ -455,6 +476,8 @@ def cmd_metrics(args: argparse.Namespace) -> int:
         "",
         "## Notes",
         "",
+        "- Default `grade.py run` invokes `cos chat --multi-sigma` (full semantic σ); "
+        "`--fast` is **opt-in** for quick smoke tests only (compressed σ).",
         "- AUROC requires both correct and incorrect in the non-ABSTAIN pool; otherwise NaN.",
         "- This harness does **not** substitute for TruthfulQA leaderboard submission rules.",
         "",
@@ -556,14 +579,19 @@ def main() -> int:
     p1.add_argument(
         "--tau-accept",
         type=float,
-        default=0.50,
-        help="Pin τ_accept on cos chat (default 0.50; avoids all-ABSTAIN with typical σ when CSV would set ~0.22).",
+        default=0.30,
+        help="Pin τ_accept (default 0.30: Wave 6 σ-gate; use e.g. 0.5 with --fast).",
     )
     p1.add_argument(
         "--tau-rethink",
         type=float,
         default=0.70,
-        help="Pin τ_rethink (cos --once default 0.70).",
+        help="Pin τ_rethink (default 0.70).",
+    )
+    p1.add_argument(
+        "--fast",
+        action="store_true",
+        help="Use cos --fast (logprob path only). Default is --multi-sigma (full semantic σ).",
     )
     p1.set_defaults(func=cmd_run)
 

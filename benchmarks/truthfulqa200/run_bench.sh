@@ -12,10 +12,12 @@ if [[ ! -x ./cos ]] && [[ ! -f ./cos ]]; then
   echo "error: run from repo root with ./cos present" >&2
   exit 2
 fi
-# Ollama + logprobs + Codex system prompt often exceed the bitnet client default
-# 60 s socket budget; without this, rows tend to time out and become all-ABSTAIN.
-export COS_BITNET_IO_TIMEOUT_S="${COS_BITNET_IO_TIMEOUT_S:-240}"
+# Wave 6: full ``--multi-sigma`` (semantic σ); long wall clock per prompt.
+# Defaults match grade.py; override in your shell if needed.
+export COS_ENGRAM_DISABLE="${COS_ENGRAM_DISABLE:-1}"
+export COS_BITNET_IO_TIMEOUT_S="${COS_BITNET_IO_TIMEOUT_S:-600}"
 export COS_TQA_CHAT_TIMEOUT="${COS_TQA_CHAT_TIMEOUT:-900}"
+export COS_SEMANTIC_SIGMA_PARALLEL="${COS_SEMANTIC_SIGMA_PARALLEL:-0}"
 exec python3 benchmarks/truthfulqa200/grade.py run \
   --cos ./cos \
   --prompts "$PROMPTS" \
