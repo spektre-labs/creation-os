@@ -3,6 +3,6 @@
 #   shasum -a 256 benchmarks/truthfulqa200/prompts.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt
 #   shasum -a 256 benchmarks/truthfulqa200/results.csv >> benchmarks/truthfulqa200/REPRO_CHECKSUMS.txt
 #
-# Stub pipeline lock (cos chat stub, N=200, 2026-04-26):
+# Ollama gemma3:4b, N=50 (first 50 prompts; --limit 50), 2026-04-27:
 ac367f8166ae4af254eb8f8cf4abcba071ac670b9895727d4e2a7e4eb3bab60d  benchmarks/truthfulqa200/prompts.csv
-e1b0da054a8df69b59ef1d47dbd01fb443ec579d583a003d0d244352ecc4aa86  benchmarks/truthfulqa200/results.csv
+735fbb638eb375c81d9410785d587d5df1cc95517efb0b0df539af93f8f7b062  benchmarks/truthfulqa200/results.csv

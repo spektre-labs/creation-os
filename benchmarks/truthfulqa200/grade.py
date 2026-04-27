@@ -138,20 +138,40 @@ def cmd_sample(args: argparse.Namespace) -> int:
     return 0
 
 
-def run_cos_chat(cos_bin: Path, prompt: str, extra_env: Dict[str, str]) -> Tuple[float, str, str, str, str]:
+def run_cos_chat(
+    cos_bin: Path,
+    prompt: str,
+    extra_env: Dict[str, str],
+    tau_accept: float,
+    tau_rethink: float,
+) -> Tuple[float, str, str, str, str]:
+    """Invoke ``cos chat --once`` with pinned τ so repo conformal / adaptive CSV
+    cannot drive τ_accept to a value that yields 100% ABSTAIN on typical local σ
+    (TruthfulQA bench would otherwise report NaN metrics)."""
     env = dict(os.environ)
     env.update(extra_env)
     t0 = time.perf_counter()
+    # --fast: skip semantic multi-σ / speculative-σ paths that can early-ABSTAIN
+    # even when σ < τ_accept (Ollama + local-only would otherwise report 100% ABSTAIN).
+    # --no-cache: otherwise cos disk prompt cache replays old σ/action (ABSTAIN) from
+    # prior runs and prints [CACHED], defeating fresh bench numbers.
+    cmd: List[str] = [
+        str(cos_bin),
+        "chat",
+        "--once",
+        "--json",
+        "--no-stream",
+        "--fast",
+        "--no-cache",
+        "--tau-accept",
+        f"{tau_accept:.6f}",
+        "--tau-rethink",
+        f"{tau_rethink:.6f}",
+        "--prompt",
+        prompt,
+    ]
     p = subprocess.run(
-        [
-            str(cos_bin),
-            "chat",
-            "--once",
-            "--json",
-            "--no-stream",
-            "--prompt",
-            prompt,
-        ],
+        cmd,
         cwd=str(REPO_ROOT),
         capture_output=True,
         text=True,
@@ -188,7 +208,9 @@ def cmd_run(args: argparse.Namespace) -> int:
         print(f"error: missing {prompts_path}", file=sys.stderr)
         return 2
     results_path = Path(args.results)
-    extra_env = {}
+    # Prevent ~/.cos engram from overriding τ_accept (run_chat_once uses
+    # cos_engram_get_local_tau and can drive τ to ~0.2 → false ABSTAIN on Ollama).
+    extra_env = {"COS_ENGRAM_DISABLE": "1"}
     if args.model:
         extra_env["COS_BITNET_CHAT_MODEL"] = args.model
         extra_env["COS_OLLAMA_MODEL"] = args.model
@@ -227,7 +249,9 @@ def cmd_run(args: argparse.Namespace) -> int:
             cat = row.get("category", "")
             q = row.get("question", "")
             print(f"  {pid} [{cat}] …", flush=True)
-            lat, sigs, act, resp, etail = run_cos_chat(cos_bin, q, extra_env)
+            lat, sigs, act, resp, etail = run_cos_chat(
+                cos_bin, q, extra_env, args.tau_accept, args.tau_rethink
+            )
             w.writerow(
                 [
                     pid,
@@ -529,6 +553,18 @@ def main() -> int:
     p1.add_argument("--start", type=int, default=0)
     p1.add_argument("--limit", type=int, default=None)
     p1.add_argument("--fresh", action="store_true", help="overwrite results.csv")
+    p1.add_argument(
+        "--tau-accept",
+        type=float,
+        default=0.50,
+        help="Pin τ_accept on cos chat (default 0.50; avoids all-ABSTAIN with typical σ when CSV would set ~0.22).",
+    )
+    p1.add_argument(
+        "--tau-rethink",
+        type=float,
+        default=0.70,
+        help="Pin τ_rethink (cos --once default 0.70).",
+    )
     p1.set_defaults(func=cmd_run)
 
     p2 = sub.add_parser("metrics", help="grade + write RESULTS.md")
