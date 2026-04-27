@@ -52,6 +52,8 @@ if command -v ollama >/dev/null 2>&1; then
 fi
 
 PYTHON="${PYTHON:-python3}"
+# Ease Metal VRAM pressure on small GPUs (override anytime).
+export COS_ABLATION_MAX_TOKENS="${COS_ABLATION_MAX_TOKENS:-128}"
 
 echo "=== Phase 1: run_sigma_ablation.py --full ==="
 "${PYTHON}" benchmarks/sigma_ablation/run_sigma_ablation.py \

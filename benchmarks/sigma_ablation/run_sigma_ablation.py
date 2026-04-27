@@ -135,29 +135,46 @@ def ollama_chat_openai(
     max_tokens: int,
 ) -> Tuple[str, Optional[float], Dict[str, Any]]:
     url = f"http://{host}:{port}/v1/chat/completions"
-    body = {
-        "model": model,
-        "messages": [{"role": "user", "content": user_text}],
-        "temperature": float(temperature),
-        "max_tokens": int(max_tokens),
-        "stream": False,
-        "logprobs": True,
-        "top_logprobs": 5,
-    }
-    data = json.dumps(body).encode("utf-8")
-    req = urllib.request.Request(
-        url,
-        data=data,
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=float(os.environ.get("COS_ABLATION_HTTP_TIMEOUT", "600"))) as resp:
-        raw = json.loads(resp.read().decode("utf-8"))
-    ch0 = (raw.get("choices") or [{}])[0]
-    msg = ch0.get("message") or {}
-    text = str(msg.get("content") or "")
-    s_lp = logprob_sigma_from_choice(ch0)
-    return text, s_lp, raw
+    timeout = float(os.environ.get("COS_ABLATION_HTTP_TIMEOUT", "600"))
+    last_exc: Optional[BaseException] = None
+    for use_logprobs in (True, False):
+        body: Dict[str, Any] = {
+            "model": model,
+            "messages": [{"role": "user", "content": user_text}],
+            "temperature": float(temperature),
+            "max_tokens": int(max_tokens),
+            "stream": False,
+        }
+        if use_logprobs:
+            body["logprobs"] = True
+            body["top_logprobs"] = 5
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(
+            url,
+            data=data,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                raw = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            last_exc = e
+            if use_logprobs and int(getattr(e, "code", 0) or 0) in (500, 502, 503):
+                continue
+            raise
+        except (urllib.error.URLError, TimeoutError, OSError, json.JSONDecodeError) as e:
+            last_exc = e
+            if use_logprobs:
+                continue
+            raise
+        ch0 = (raw.get("choices") or [{}])[0]
+        msg = ch0.get("message") or {}
+        text = str(msg.get("content") or "")
+        s_lp = logprob_sigma_from_choice(ch0) if use_logprobs else None
+        return text, s_lp, raw
+    assert last_exc is not None
+    raise last_exc
 
 
 def ollama_n_samples(
@@ -282,6 +299,8 @@ def main() -> int:
     temperature = float(cfg.get("temperature", 0.7))
     tau = float(cfg.get("tau_accept", 0.3))
     max_tokens = int(cfg.get("max_tokens", 220))
+    if os.environ.get("COS_ABLATION_MAX_TOKENS", "").strip().isdigit():
+        max_tokens = int(os.environ["COS_ABLATION_MAX_TOKENS"].strip())
     n_list = [int(x) for x in cfg.get("n_samples_list", [3, 5, 8, 10])]
     weights: List[Tuple[float, float]] = [
         (float(a), float(b)) for a, b in cfg.get("weight_pairs_semantic_logprob", [])
