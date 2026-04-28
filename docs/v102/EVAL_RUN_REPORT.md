@@ -7,8 +7,19 @@ Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 
 ## Security
 
-- **Never** commit Hugging Face or GitHub tokens. Use `HF_TOKEN` / `HUGGING_FACE_HUB_TOKEN` in the shell only.
-- If a token was pasted into chat or logs, **revoke it in Hugging Face** and create a new one.
+- Export tokens in the shell only; do not commit `.env` or log lines that echo secrets.
+
+## Detached overnight run (survives Cursor disconnect)
+
+```bash
+export HF_TOKEN='…'
+export HUGGINGFACE_HUB_TOKEN="$HF_TOKEN"
+mkdir -p logs
+nohup bash scripts/sigma_eval_pipeline_nightly.sh >> logs/nightly_console.log 2>&1 &
+echo $! > logs/nightly_nohup.pid
+```
+
+Progress: `tail -f logs/pipeline_*/pipeline.log` (open the newest `logs/pipeline_*` directory). Per-step logs: `streaming.log`, `router.log`, `gemma.log`, etc. Checkpoint: `checkpoint.txt`. JSON snapshots are copied into that directory when present.
 
 ## Hardware profile (example)
 

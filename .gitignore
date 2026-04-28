@@ -66,6 +66,9 @@ PROVENANCE.json
 /genesis
 /qhdc
 
+# Nightly σ eval pipeline logs (local; may contain stderr from HF/transformers)
+/logs/
+
 # Runtime logs / transcripts / repro bundles
 /cos_chat_transcript.jsonl
 /repro_bundle.txt
@@ -238,6 +241,17 @@ benchmarks/sigma_gate_eval/results_cross_model/
 benchmarks/sigma_gate_eval/results_unified/
 benchmarks/sigma_gate_eval/results_multi_signal/
 benchmarks/sigma_gate_eval/results_cross_domain_multi/
+benchmarks/sigma_gate_eval/results_ultimate/
+benchmarks/sigma_gate_eval/results_hide/
+benchmarks/sigma_gate_eval/results_hami/
+benchmarks/sigma_gate_eval/results_streaming/
+benchmarks/sigma_gate_eval/results_router/
+benchmarks/sigma_gate_eval/results_cost/
+benchmarks/sigma_gate_eval/results_calibration/
+benchmarks/sigma_gate_scaling/results_gemma/
+benchmarks/sigma_gate_eval/results_complete/
+external/hide/
+external/hami/
 external/lapeig/
 benchmarks/sigma_gate_v5/results/
 benchmarks/sigma_gate_v5/logs/*.log
