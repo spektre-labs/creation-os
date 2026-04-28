@@ -1,0 +1,328 @@
+{
+  "title": "\u03c3 AUROC Rescue: Model Size, Sample Count, and Signal Composition Ablation",
+  "best_overall": {
+    "model": "gemma3_4b",
+    "n_samples": 3,
+    "temp_strategy": "legacy",
+    "signal": "sigma_combined_semantic_0.5_0.5",
+    "n_rows": 2,
+    "auroc": 1.0,
+    "auprc": 1.0,
+    "ece": 0.2,
+    "accuracy_accepted": 1.0,
+    "coverage": 0.5,
+    "abstain_rate": 0.5,
+    "wrong_confident_count": 0,
+    "mean_sigma_correct": 0.22,
+    "mean_sigma_wrong": 0.82,
+    "sigma_gap": 0.6,
+    "viable_auroc_above_0p65": true,
+    "failed_auroc_below_0p54": false
+  },
+  "best_by_model": {
+    "bitnet_2b_current": {
+      "model": "bitnet_2b_current",
+      "n_samples": 3,
+      "temp_strategy": "cos_fast_scalar",
+      "signal": "sigma_cos_fast_scalar",
+      "n_rows": 2,
+      "auroc": 0.0,
+      "auprc": 0.5,
+      "ece": 0.52,
+      "accuracy_accepted": null,
+      "coverage": 0.0,
+      "abstain_rate": 1.0,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.52,
+      "mean_sigma_wrong": 0.48,
+      "sigma_gap": -0.040000000000000036,
+      "viable_auroc_above_0p65": false,
+      "failed_auroc_below_0p54": true
+    },
+    "gemma3_4b": {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "signal": "sigma_combined_semantic_0.5_0.5",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.2,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.22,
+      "mean_sigma_wrong": 0.82,
+      "sigma_gap": 0.6,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    }
+  },
+  "best_signal_report": {
+    "best_signal": "sigma_combined_semantic_0.5_0.5",
+    "best_signal_family": "combined_semantic",
+    "best_temp_strategy": "legacy",
+    "best_weight_semantic_logprob": [
+      0.5,
+      0.5
+    ],
+    "best_auroc": 1.0,
+    "best_sigma_gap": 0.6
+  },
+  "model_auroc_deltas": {
+    "gemma3_4b_minus_bitnet_auroc": 1.0,
+    "phi4_minus_bitnet_auroc": null
+  },
+  "model_change_improves_auroc_by_threshold_0p10": true,
+  "sigma_semantic_near_chance_by_setup": [
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "fixed_0.5",
+      "auroc": 1.0,
+      "sigma_semantic_failed_diagnostic": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "fixed_0.7",
+      "auroc": 1.0,
+      "sigma_semantic_failed_diagnostic": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "auroc": 1.0,
+      "sigma_semantic_failed_diagnostic": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "mct_0.3_0.9",
+      "auroc": 1.0,
+      "sigma_semantic_failed_diagnostic": false
+    }
+  ],
+  "per_group": [
+    {
+      "model": "bitnet_2b_current",
+      "n_samples": 3,
+      "temp_strategy": "cos_fast_scalar",
+      "signal": "sigma_cos_fast_scalar",
+      "n_rows": 2,
+      "auroc": 0.0,
+      "auprc": 0.5,
+      "ece": 0.52,
+      "accuracy_accepted": null,
+      "coverage": 0.0,
+      "abstain_rate": 1.0,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.52,
+      "mean_sigma_wrong": 0.48,
+      "sigma_gap": -0.040000000000000036,
+      "viable_auroc_above_0p65": false,
+      "failed_auroc_below_0p54": true
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "signal": "sigma_combined_semantic_0.5_0.5",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.2,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.22,
+      "mean_sigma_wrong": 0.82,
+      "sigma_gap": 0.6,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "signal": "sigma_logprob",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.19999999999999996,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.2,
+      "mean_sigma_wrong": 0.8,
+      "sigma_gap": 0.6000000000000001,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "fixed_0.5",
+      "signal": "sigma_semantic",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.235,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.27,
+      "mean_sigma_wrong": 0.8,
+      "sigma_gap": 0.53,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "fixed_0.7",
+      "signal": "sigma_semantic",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.21500000000000002,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.26,
+      "mean_sigma_wrong": 0.83,
+      "sigma_gap": 0.57,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "signal": "sigma_semantic",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.2,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.25,
+      "mean_sigma_wrong": 0.85,
+      "sigma_gap": 0.6,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "mct_0.3_0.9",
+      "signal": "sigma_semantic",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.26,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.3,
+      "mean_sigma_wrong": 0.78,
+      "sigma_gap": 0.48000000000000004,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    },
+    {
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "mct_0.3_0.9",
+      "signal": "sigma_seu",
+      "n_rows": 2,
+      "auroc": 1.0,
+      "auprc": 1.0,
+      "ece": 0.26,
+      "accuracy_accepted": 1.0,
+      "coverage": 0.5,
+      "abstain_rate": 0.5,
+      "wrong_confident_count": 0,
+      "mean_sigma_correct": 0.28,
+      "mean_sigma_wrong": 0.76,
+      "sigma_gap": 0.48,
+      "viable_auroc_above_0p65": true,
+      "failed_auroc_below_0p54": false
+    }
+  ],
+  "conclusions": [
+    "Model-size signal: best gemma3_4b AUROC exceeds bitnet_2b_current by \u22650.10 (small / local model limitation plausible)."
+  ],
+  "conclusions_structured": {
+    "mct_vs_fixed": {
+      "mct_best_auroc": 1.0,
+      "fixed_best_auroc": 1.0,
+      "mct_improves": false,
+      "mct_improves_ge_0p03": false,
+      "mct_improves_ge_0p05": false,
+      "delta_auroc": 0.0
+    },
+    "seu_vs_semantic": {
+      "seu_best_auroc": 1.0,
+      "semantic_best_auroc": 1.0,
+      "seu_improves": false,
+      "seu_improves_ge_0p03": false,
+      "seu_improves_ge_0p05": false,
+      "delta_auroc": 0.0
+    },
+    "combined_vs_single": {
+      "combined_best_auroc": 1.0,
+      "single_best_auroc": 1.0,
+      "combined_improves": false
+    },
+    "best_overall": {
+      "signal": "sigma_combined_semantic_0.5_0.5",
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "auroc": 1.0,
+      "sigma_gap": 0.6
+    },
+    "auroc_above_0p65_any_arm": true,
+    "auroc_above_0.65": true,
+    "recommendation": "At least one (model, n, signal, temp_strategy) arm exceeds 0.65 AUROC \u2014 worth deeper validation; diagnostic only until a repro bundle exists."
+  },
+  "conclusions_dict": {
+    "mct_vs_fixed": {
+      "mct_best_auroc": 1.0,
+      "fixed_best_auroc": 1.0,
+      "mct_improves": false,
+      "mct_improves_ge_0p03": false,
+      "mct_improves_ge_0p05": false,
+      "delta_auroc": 0.0
+    },
+    "seu_vs_semantic": {
+      "seu_best_auroc": 1.0,
+      "semantic_best_auroc": 1.0,
+      "seu_improves": false,
+      "seu_improves_ge_0p03": false,
+      "seu_improves_ge_0p05": false,
+      "delta_auroc": 0.0
+    },
+    "best_overall": {
+      "signal": "sigma_combined_semantic_0.5_0.5",
+      "model": "gemma3_4b",
+      "n_samples": 3,
+      "temp_strategy": "legacy",
+      "auroc": 1.0,
+      "sigma_gap": 0.6
+    },
+    "auroc_above_0.65": true,
+    "recommendation": "At least one (model, n, signal, temp_strategy) arm exceeds 0.65 AUROC \u2014 worth deeper validation; diagnostic only until a repro bundle exists."
+  },
+  "interpretation_note": "AUROC \u2248 0.51 is a diagnosis, not a catastrophe. If \u03c3 does not separate, the gate must not claim separation; if separation appears only with a larger model, more samples, or a different composition, record that as a boundary."
+}

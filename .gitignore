@@ -219,6 +219,10 @@ benchmarks/sigma_ablation/logs/*.pid
 !benchmarks/sigma_ablation/logs/.gitkeep
 benchmarks/*/results/*
 !benchmarks/sigma_ablation/results/README.md
+!benchmarks/sigma_probe/logs/.gitkeep
+!benchmarks/sigma_probe/results/.gitkeep
+benchmarks/sigma_probe/logs/*.log
+benchmarks/sigma_probe/logs/*.pid
 benchmarks/qwen_first_contact/*.txt
 benchmarks/qwen_first_contact/*.csv
 benchmarks/omega_campaign/*.txt

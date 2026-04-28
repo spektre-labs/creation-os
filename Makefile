@@ -8629,7 +8629,9 @@ check-sigma-truthfulqa:
 
 # σ AUROC rescue ablation (HTTP diagnostic; see benchmarks/sigma_ablation/results/README.md)
 .PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation sigma-ablation-overnight-help \
-	sigma-ablation-launch-detached sigma-ablation-prune-orphans sigma-ablation-v2-overnight-help
+	sigma-ablation-launch-detached sigma-ablation-prune-orphans sigma-ablation-v2-overnight-help \
+	validate-sigma-ablation-v2 \
+	sigma-probe-train sigma-probe-eval check-sigma-probe
 sigma-ablation-overnight-help:
 	@echo "Overnight crash-proof σ ablation: see benchmarks/sigma_ablation/results/README.md"
 	@echo "Detached launch: bash benchmarks/sigma_ablation/launch_ablation_detached.sh"
@@ -8641,8 +8643,34 @@ sigma-ablation-prune-orphans:
 	@chmod +x benchmarks/sigma_ablation/prune_sigma_ablation_orphans.sh
 	@bash benchmarks/sigma_ablation/prune_sigma_ablation_orphans.sh
 sigma-ablation-v2-overnight-help:
-	@echo "v2 overnight = run_ablation_v2_overnight.sh (preflight: sentence-transformers + sklearn) then same driver as v1"
-	@echo "Launch: nohup bash benchmarks/sigma_ablation/run_ablation_v2_overnight.sh >> benchmarks/sigma_ablation/logs/nohup_ablation.log 2>&1 &"
+	@echo "v2 overnight: bash benchmarks/sigma_ablation/run_ablation_v2_full.sh (preload SEU model, then run_ablation_overnight.sh)"
+	@echo "Detached (survives Cursor): bash benchmarks/sigma_ablation/launch_ablation_v2_detached.sh"
+	@echo "Repo-root wrapper: bash run_ablation_v2.sh"
+	@echo "Or: nohup bash run_ablation_v2.sh >> benchmarks/sigma_ablation/logs/nohup_v2.log 2>&1 &"
+validate-sigma-ablation-v2:
+	@chmod +x benchmarks/sigma_ablation/validate_ablation_v2.sh
+	@bash benchmarks/sigma_ablation/validate_ablation_v2.sh
+	@echo "validate-sigma-ablation-v2: OK"
+
+# σ-gate v3 diagnostic: hidden-state trajectory probe (PyTorch / transformers; lab harness)
+sigma-probe-train:
+	@python3 benchmarks/sigma_probe/train_probe.py \
+		--model gemma3:4b \
+		--prompts benchmarks/truthfulqa200/prompts.csv \
+		--output benchmarks/sigma_probe/results/ \
+		--limit 100
+	@echo "sigma-probe-train: OK (artifacts under benchmarks/sigma_probe/results/)"
+
+sigma-probe-eval:
+	@python3 -c "import json, pathlib; p=pathlib.Path('benchmarks/sigma_probe/results/probe_summary.json'); \
+		s=json.loads(p.read_text(encoding='utf-8')); \
+		print('AUROC (CV mean):', s.get('cv_auroc_mean'), '±', s.get('cv_auroc_std')); \
+		print('Method:', s.get('method')); print('HF model:', s.get('hf_model'))"
+	@echo "sigma-probe-eval: OK"
+
+check-sigma-probe:
+	@python3 -m py_compile benchmarks/sigma_probe/train_probe.py benchmarks/sigma_probe/sigma_probe.py
+	@echo "check-sigma-probe: OK (py_compile only; full train needs torch/transformers + GPU/RAM)"
 sigma-ablation:
 	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
 	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"
