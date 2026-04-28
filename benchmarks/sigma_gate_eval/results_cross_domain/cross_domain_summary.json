@@ -1,0 +1,23 @@
+{
+  "probe_path": "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl",
+  "generator_model": "gpt2",
+  "probe_trained_on": "TruthfulQA split (see results_holdout or results_full manifest)",
+  "training_cv_auroc_manifest": 0.9219999999999999,
+  "prism_prompt": true,
+  "trivia_labeling": "semantic",
+  "trivia_semantic_threshold": 0.45,
+  "triviaqa_auroc_wrong_vs_sigma": 0.9595959595959596,
+  "triviaqa_n": 100,
+  "triviaqa_error": null,
+  "halueval_mode": "generative",
+  "halueval_auroc_wrong_vs_sigma": 0.38280281107895825,
+  "halueval_n_pairs_oracle": 0,
+  "halueval_n_generative": 100,
+  "halueval_n_rows": 100,
+  "halueval_error": null,
+  "generalization_threshold_0p70": {
+    "triviaqa_pass": true,
+    "halueval_pass": false
+  },
+  "generalization_both_pass": false
+}

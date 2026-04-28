@@ -1,0 +1,92 @@
+--- lsd/models/components.py
++++ lsd/models/components.py
+@@ -3,6 +3,7 @@
+ import torch.nn.functional as F
+ from transformers import AutoModelForCausalLM, AutoTokenizer
+ from sentence_transformers import SentenceTransformer
++import os
+ from typing import List, Tuple
+ import numpy as np
+ 
+@@ -28,11 +29,31 @@
+             self.tokenizer.pad_token = self.tokenizer.eos_token
+             
+         logger.log(f"Loading model {model_name}...")
+-        self.model = AutoModelForCausalLM.from_pretrained(
+-            model_name, 
+-            output_hidden_states=True,
+-            torch_dtype=torch.float32
+-        ).to(device).eval()
++        use_dm = os.environ.get("LSD_DEVICE_MAP", "").strip().lower() in ("1", "true", "yes")
++        if use_dm:
++            try:
++                self.model = AutoModelForCausalLM.from_pretrained(
++                    model_name,
++                    output_hidden_states=True,
++                    torch_dtype=torch.float16,
++                    device_map="auto",
++                ).eval()
++            except Exception as e:
++                logger.log(
++                    f"LSD_DEVICE_MAP=1 load failed ({e}); falling back to fp32 on {device}",
++                    "WARNING",
++                )
++                self.model = AutoModelForCausalLM.from_pretrained(
++                    model_name,
++                    output_hidden_states=True,
++                    torch_dtype=torch.float32,
++                ).to(device).eval()
++        else:
++            self.model = AutoModelForCausalLM.from_pretrained(
++                model_name,
++                output_hidden_states=True,
++                torch_dtype=torch.float32,
++            ).to(device).eval()
+         
+         self.max_length = max_length
+         self.num_layers = self.model.config.num_hidden_layers
+@@ -51,10 +72,11 @@
+             return self._cache[cache_key]
+         
+         # Tokenize inputs
++        model_dev = next(self.model.parameters()).device
+         toks = self.tokenizer(
+             texts, return_tensors="pt", truncation=True, 
+             padding=True, max_length=self.max_length
+-        ).to(self.device)
++        ).to(model_dev)
+         
+         # Get hidden states from all layers
+         with torch.no_grad():
+--- lsd/main.py
++++ lsd/main.py
+@@ -2,6 +2,7 @@
+ """
+ Main execution function for Layer-wise Semantic Dynamics Analysis
+ """
++import os
+ 
+ from lsd.core import AnalysisOrchestrator, LayerwiseSemanticDynamicsConfig, OperationMode
+ 
+@@ -12,11 +13,16 @@
+     Returns:
+         Configured LayerwiseSemanticDynamicsConfig object
+     """
++    num_pairs = int(os.environ.get("LSD_NUM_PAIRS", "1000"))
++    epochs = int(os.environ.get("LSD_EPOCHS", "10"))
++    batch_size = int(os.environ.get("LSD_BATCH_SIZE", "8"))
++    learning_rate = float(os.environ.get("LSD_LEARNING_RATE", "5e-5"))
++    margin = float(os.environ.get("LSD_MARGIN", "0.5"))
+     return LayerwiseSemanticDynamicsConfig(
+         model_name="gpt2",
+         truth_encoder_name="sentence-transformers/all-MiniLM-L6-v2",
+-        num_pairs=1000,
+-        epochs=10,
+-        batch_size=8,
+-        learning_rate=5e-5,
+-        margin=0.5,
++        num_pairs=num_pairs,
++        epochs=epochs,
++        batch_size=batch_size,
++        learning_rate=learning_rate,
++        margin=margin,

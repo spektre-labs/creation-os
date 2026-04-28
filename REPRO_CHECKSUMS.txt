@@ -1,0 +1,8 @@
+=== Creation OS σ-gate reproducibility (working tree) ===
+Date (UTC): 2026-04-28T19:12:21Z
+Base commit: 3c41300103c0851d075a3ce0f20319e33bf51fcc
+
+=== SHA-256 (if present) ===
+bf4d6ce3b32df3ed451c9526513448122de1fd0058d56b642f7d59a3f472a6b5  benchmarks/sigma_gate_eval/results_holdout/holdout_summary.json
+d67e9d134a1804a96f9cc2babeb2cb30ccccdbfbb02098e46a17ce298ce29902  benchmarks/sigma_gate_eval/results_cross_domain/cross_domain_summary.json
+ac367f8166ae4af254eb8f8cf4abcba071ac670b9895727d4e2a7e4eb3bab60d  benchmarks/truthfulqa200/prompts.csv

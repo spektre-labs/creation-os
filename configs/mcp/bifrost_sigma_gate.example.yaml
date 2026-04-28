@@ -1,0 +1,19 @@
+# Example: wire Creation OS LSD σ-gate MCP (stdio) into a Bifrost-style gateway.
+# Copy and adapt paths to your checkout. Requires: pip install 'mcp[cli]' in the venv
+# you use for SIGMA_GATE_PY, plus the LSD pickle under benchmarks/sigma_gate_lsd/...
+#
+# This file is documentation only — not loaded by merge-gate.
+
+mcp_servers:
+  - name: sigma-gate
+    transport: stdio
+    command: python3
+    args:
+      - "-m"
+      - "cos.mcp_sigma_server"
+    cwd: "/absolute/path/to/creation-os-kernel"
+    env:
+      PYTHONPATH: "/absolute/path/to/creation-os-kernel/python"
+      SIGMA_PROBE_PATH: "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl"
+      # Optional: enable prompt-only entropy precheck (downloads HF weights on first use)
+      # SIGMA_MCP_PRECHECK_MODEL: "openai-community/gpt2"

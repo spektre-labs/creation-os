@@ -37,6 +37,30 @@ Adjust `command` to an **absolute path** if your client does not start in the re
 
 Full **Claude Desktop + TruthfulQA/GSM8K** A/B rows are **not M-tier** until an archived harness exists. See `benchmarks/v36/mcp_bench_stub.sh` and tier tags in `docs/WHAT_IS_REAL.md`.
 
+## Python LSD σ-gate (stdio, MCP SDK)
+
+For **hallucination-oriented scoring** on `(prompt, response)` pairs using the
+lab **LSD pickle** (no `cos chat` subprocess), run the FastMCP server:
+
+```bash
+export PYTHONPATH=python
+export SIGMA_PROBE_PATH=benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl
+python3 -m cos.mcp_sigma_server
+```
+
+Install dependency: `pip install 'mcp[cli]'` (see `mcp.server.fastmcp.FastMCP`).
+
+Tools: `verify_response`, `should_generate` (optional HF precheck via
+`SIGMA_MCP_PRECHECK_MODEL`), `sigma_gate_audit_tail`, `sigma_gate_stats`.
+
+The legacy JSON-RPC server `scripts/cos_mcp_server.py` also exposes
+`sigma_gate_verify`, `sigma_gate_audit_tail`, and `sigma_gate_stats` on the same
+audit ring when the Python `cos` package is importable.
+
+Gateway example: `configs/mcp/bifrost_sigma_gate.example.yaml`.
+
+Audit entries are **in-process** retention hooks — not a legal compliance product.
+
 ## HTTP transport
 
 `./creation_os_mcp --transport http --http-port 8765` accepts a single JSON-RPC object in the HTTP POST body and returns one JSON object (**no SSE yet**).

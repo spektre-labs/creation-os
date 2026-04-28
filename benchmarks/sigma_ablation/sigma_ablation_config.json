@@ -5,6 +5,7 @@
   "full_dataset_limit": 0,
   "temperature": 0.7,
   "tau_accept": 0.3,
+  "tau_rethink": 0.7,
   "max_tokens": 220,
   "seed": 42,
   "ollama_host": "127.0.0.1",

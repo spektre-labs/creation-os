@@ -8631,7 +8631,9 @@ check-sigma-truthfulqa:
 .PHONY: sigma-ablation sigma-ablation-analyze check-sigma-ablation sigma-ablation-overnight-help \
 	sigma-ablation-launch-detached sigma-ablation-prune-orphans sigma-ablation-v2-overnight-help \
 	validate-sigma-ablation-v2 \
-	sigma-probe-train sigma-probe-eval check-sigma-probe
+	sigma-probe-train sigma-probe-eval check-sigma-probe sigma-probe-full \
+	lsd-repro lsd-creation-train check-sigma-lsd \
+	sigma-gate-v4-adapt sigma-gate-v4-repro check-sigma-gate-v4
 sigma-ablation-overnight-help:
 	@echo "Overnight crash-proof σ ablation: see benchmarks/sigma_ablation/results/README.md"
 	@echo "Detached launch: bash benchmarks/sigma_ablation/launch_ablation_detached.sh"
@@ -8671,6 +8673,54 @@ sigma-probe-eval:
 check-sigma-probe:
 	@python3 -m py_compile benchmarks/sigma_probe/train_probe.py benchmarks/sigma_probe/sigma_probe.py
 	@echo "check-sigma-probe: OK (py_compile only; full train needs torch/transformers + GPU/RAM)"
+
+# Full 100-prompt probe (see run_probe_full.sh; long-running; use nohup + logs/probe_full.pid)
+sigma-probe-full:
+	@chmod +x run_probe_full.sh
+	@bash run_probe_full.sh
+	@echo "sigma-probe-full: OK (see benchmarks/sigma_probe/results_full/)"
+
+# σ-gate v4: Sirraya LSD (contrastive heads; vendor under external/lsd — see run_lsd_integration.sh)
+lsd-repro:
+	@python3 benchmarks/sigma_probe_lsd/reproduce_lsd_upstream.py
+	@echo "lsd-repro: OK (vendor outputs under external/lsd/layerwise_semantic_dynamics_system/)"
+
+lsd-creation-train:
+	@python3 benchmarks/sigma_probe_lsd/train_creation_lsd.py \
+		--prompts benchmarks/truthfulqa200/prompts.csv \
+		--output benchmarks/sigma_probe_lsd/results/creation_lsd_latest \
+		--hf-model "$${CREATION_LSD_HF_MODEL:-gpt2}" \
+		--epochs "$${CREATION_LSD_EPOCHS:-8}"
+	@echo "lsd-creation-train: OK (manifest + gate_head under benchmarks/sigma_probe_lsd/results/)"
+
+check-sigma-lsd:
+	@python3 -m py_compile benchmarks/sigma_probe_lsd/reproduce_lsd_upstream.py \
+		benchmarks/sigma_probe_lsd/train_creation_lsd.py benchmarks/sigma_probe_lsd/sigma_gate_lsd.py
+	@echo "check-sigma-lsd: OK (py_compile; full runs need torch + HF + network)"
+
+# σ-gate v4 (canonical layout: benchmarks/sigma_gate_lsd/ — not cos/, which is the compiled binary)
+sigma-gate-v4-repro:
+	@chmod +x run_lsd_v4.sh
+	@bash run_lsd_v4.sh
+	@echo "sigma-gate-v4-repro: OK (see benchmarks/sigma_gate_lsd/results/latest/)"
+
+sigma-gate-v4-adapt:
+	@python3 benchmarks/sigma_gate_lsd/adapt_lsd.py \
+		--prompts benchmarks/truthfulqa200/prompts.csv \
+		--output benchmarks/sigma_gate_lsd/results/latest \
+		--hf-model "$${CREATION_LSD_HF_MODEL:-gpt2}" \
+		--epochs "$${CREATION_LSD_EPOCHS:-8}"
+	@echo "sigma-gate-v4-adapt: OK"
+
+check-sigma-gate-v4:
+	@python3 -m py_compile benchmarks/sigma_gate_lsd/adapt_lsd.py benchmarks/sigma_gate_lsd/sigma_gate_v4.py \
+		python/cos/sigma_gate_unified.py python/cos/sigma_spectral.py python/cos/sigma_streaming.py \
+		python/cos/sigma_unified.py \
+		python/cos/mcp_sigma_audit.py python/cos/mcp_sigma_server.py \
+		benchmarks/sigma_gate_eval/run_unified_eval.py benchmarks/sigma_gate_eval/run_multi_signal_eval.py \
+		benchmarks/sigma_gate_eval/run_cross_domain_multi.py \
+		benchmarks/sigma_gate_scaling/run_scaling.py scripts/cos_mcp_server.py
+	@echo "check-sigma-gate-v4: OK (py_compile only)"
 sigma-ablation:
 	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
 	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"
@@ -10994,6 +11044,98 @@ distclean: clean
 
 clean:
 	rm -rf $(BUILDDIR) .build/vrtl .build/v49-cov .build/v49-audit creation_os creation_os_v6 creation_os_v7 creation_os_v9 creation_os_v10 creation_os_v11 creation_os_v12 creation_os_v15 creation_os_v16 creation_os_v20 creation_os_v21 creation_os_v22 creation_os_v23 creation_os_v24 creation_os_v25 creation_os_v26 creation_os_v27 creation_os_v28 creation_os_v29 creation_os_v31 creation_os_v33 creation_os_v34 creation_os_v35 creation_os_v39 creation_os_v40 creation_os_v41 creation_os_v42 creation_os_v43 creation_os_v45 creation_os_v46 creation_os_v47 creation_os_v48 creation_os_v51 creation_os_v53 creation_os_v54 creation_os_v55 creation_os_v56 creation_os_v57 creation_os_v58 creation_os_v59 creation_os_v60 creation_os_v61 creation_os_v57_hardened creation_os_v58_hardened creation_os_v59_hardened creation_os_v60_hardened creation_os_v61_hardened creation_os_v58_asan creation_os_v59_asan creation_os_v60_asan creation_os_v60_ubsan creation_os_v61_asan creation_os_v61_ubsan creation_os_v58_asan.dSYM creation_os_v59_asan.dSYM creation_os_v60_asan.dSYM creation_os_v60_ubsan.dSYM creation_os_v61_asan.dSYM creation_os_v61_ubsan.dSYM creation_os_v62 creation_os_v62_hardened creation_os_v62_asan creation_os_v62_ubsan creation_os_v62_asan.dSYM creation_os_v62_ubsan.dSYM creation_os_v63 creation_os_v63_hardened creation_os_v63_asan creation_os_v63_ubsan creation_os_v63_asan.dSYM creation_os_v63_ubsan.dSYM creation_os_v64 creation_os_v64_hardened creation_os_v64_asan creation_os_v64_ubsan creation_os_v64_asan.dSYM creation_os_v64_ubsan.dSYM creation_os_v65 creation_os_v65_hardened creation_os_v65_asan creation_os_v65_ubsan creation_os_v65_asan.dSYM creation_os_v65_ubsan.dSYM creation_os_v66 creation_os_v66_hardened creation_os_v66_asan creation_os_v66_ubsan creation_os_v66_asan.dSYM creation_os_v66_ubsan.dSYM creation_os_v67 creation_os_v67_hardened creation_os_v67_asan creation_os_v67_ubsan creation_os_v67_asan.dSYM creation_os_v67_ubsan.dSYM creation_os_v68 creation_os_v68_hardened creation_os_v68_asan creation_os_v68_ubsan creation_os_v68_asan.dSYM creation_os_v68_ubsan.dSYM creation_os_v69 creation_os_v69_hardened creation_os_v69_asan creation_os_v69_ubsan creation_os_v69_asan.dSYM creation_os_v69_ubsan.dSYM creation_os_v70 creation_os_v70_hardened creation_os_v70_asan creation_os_v70_ubsan creation_os_v70_asan.dSYM creation_os_v70_ubsan.dSYM cos SBOM.json ATTESTATION.json ATTESTATION.sig PROVENANCE.json .build/wasm .build/ebpf .build/nix-v61 creation_os_proxy creation_os_mcp creation_os_openai_stub creation_os_suite_stub creation_os_native_m4 cos_lm cos-stamp cos-validate creation_os_check_c2pa creation_os_check_bitnet_native tokenizer_throughput binding_fidelity vocab_scaling vs_transformer oracle_speaks oracle_ultimate gemm_vs_bsc coherence_gate_batch hv_agi_gate_neon genesis qhdc test_bsc inference_trace_selftest.tmp inference_trace.json cb_v27_selftest.tmp gguf_v28_selftest.gguf tokenizer_v28_selftest.json gguf_v29_selftest.gguf hdl/neuromorphic/build docs/v49/certification/coverage/html
+
+# --- sigma-gate v4 (Python / LSD probe): PYTHONPATH=python for ``import cos`` ---
+# Use the LSD venv so ``matplotlib`` / ``torch`` imports succeed when loading the probe.
+SIGMA_GATE_PY := benchmarks/sigma_gate_lsd/.venv/bin/python
+.PHONY: check-sigma-gate sigma-gate-smoke
+check-sigma-gate:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "from cos.sigma_gate import SigmaGate; print('sigma-gate v4: OK')"
+
+sigma-gate-smoke:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "\
+from cos.sigma_gate import SigmaGate; \
+g = SigmaGate('benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl'); \
+print('Gate loaded. tau_accept=', g.tau_accept, 'tau_abstain=', g.tau_abstain); \
+print('sigma-gate v4 smoke: PASS'); \
+g.close(); \
+"
+
+.PHONY: sigma-holdout sigma-full-validation sigma-cross-domain sigma-all-results \
+	sigma-v5 sigma-ship sigma-gate-full-smoke sigma-comparison-table \
+	sigma-spectral-eval sigma-unified-eval sigma-scaling sigma-all \
+	sigma-multi-signal sigma-spectral-smoke sigma-unified-smoke sigma-mcp-smoke sigma-mcp-serve sigma-final-eval
+sigma-holdout:
+	@bash run_holdout_pipeline.sh
+
+sigma-full-validation:
+	@bash run_holdout_pipeline.sh
+
+sigma-cross-domain:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) benchmarks/sigma_gate_eval/run_cross_domain.py
+
+sigma-all-results:
+	@$(SIGMA_GATE_PY) benchmarks/sigma_gate_eval/print_full_validation_banner.py --full
+
+sigma-v5:
+	@bash run_v5.sh
+
+sigma-ship:
+	@bash run_ship.sh
+
+sigma-gate-full-smoke:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "\
+from pathlib import Path; \
+from cos.sigma_gate_full import SigmaGateFull; \
+p = Path('benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl') \
+  if Path('benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl').is_file() \
+  else Path('benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl'); \
+g = SigmaGateFull(str(p)); \
+print('SigmaGateFull OK, probe=', p); \
+g.close(); \
+"
+
+sigma-comparison-table:
+	@$(SIGMA_GATE_PY) benchmarks/sigma_gate_eval/print_comparison_summary.py
+
+sigma-spectral-eval:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "from cos.sigma_spectral import spectral_sigma; print('Spectral: OK')"
+
+sigma-unified-eval:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) benchmarks/sigma_gate_eval/run_unified_eval.py
+
+sigma-scaling:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) benchmarks/sigma_gate_scaling/run_scaling.py
+
+sigma-all: sigma-gate-smoke sigma-spectral-eval sigma-unified-eval
+	@echo "sigma-all: OK (smoke + spectral import + unified holdout eval)"
+
+sigma-multi-signal:
+	@bash run_multi_signal.sh
+
+sigma-spectral-smoke:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "from cos.sigma_spectral import SpectralSigma; SpectralSigma(k=10); print('SpectralSigma: OK')"
+
+sigma-unified-smoke:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "from cos.sigma_unified import SigmaUnified; print('SigmaUnified: OK')"
+
+sigma-mcp-smoke:
+	@PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -c "\
+from mcp.server.fastmcp import FastMCP; \
+import cos.mcp_sigma_server as m; \
+assert m.FastMCP is not None; \
+print('sigma-mcp-smoke: OK (FastMCP + cos.mcp_sigma_server)')"
+
+sigma-mcp-serve:
+	@probe=benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl; \
+	if test -f "$(CURDIR)/$$probe"; then export SIGMA_PROBE_PATH="$(CURDIR)/$$probe"; \
+	elif test -f "$(CURDIR)/benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl"; then \
+	  export SIGMA_PROBE_PATH="$(CURDIR)/benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl"; \
+	else echo "sigma-mcp-serve: missing sigma_gate_lsd.pkl" >&2; exit 2; fi; \
+	PYTHONPATH="$(CURDIR)/python" $(SIGMA_GATE_PY) -m cos.mcp_sigma_server
+
+sigma-final-eval:
+	@bash run_final_eval.sh
 
 publish-github:
 	@bash tools/publish_to_creation_os_github.sh

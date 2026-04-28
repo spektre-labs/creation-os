@@ -293,6 +293,23 @@ def load_prompts(path: Path, limit: int) -> List[Dict[str, str]]:
     return rows
 
 
+def row_extras(
+    prompt: str,
+    temps: List[float],
+    texts: List[str],
+    tau_accept: float,
+    tau_rethink: float,
+) -> Dict[str, Any]:
+    cap = int(os.environ.get("COS_ABLATION_RESPONSE_CHARS", "2000"))
+    return {
+        "prompt": (prompt or "")[:12000],
+        "temps_used": [float(t) for t in temps],
+        "responses": [(t or "")[:cap] for t in texts],
+        "tau_accept": float(tau_accept),
+        "tau_rethink": float(tau_rethink),
+    }
+
+
 def emit_row(
     fp,
     *,
@@ -314,6 +331,7 @@ def emit_row(
     temp_strategy: str = "legacy",
     mean_temperature: Optional[float] = None,
     weight_seu: Optional[float] = None,
+    extras: Optional[Dict[str, Any]] = None,
 ) -> None:
     rec: Dict[str, Any] = {
         "id": pid,
@@ -338,6 +356,10 @@ def emit_row(
         rec["sigma_seu"] = float(sigma_seu)
     if weight_seu is not None:
         rec["weight_seu"] = float(weight_seu)
+    if extras:
+        for k, v in extras.items():
+            if v is not None:
+                rec[k] = v
     fp.write(json.dumps(rec, ensure_ascii=False) + "\n")
     fp.flush()
 
@@ -361,6 +383,7 @@ def main() -> int:
     port = int(cfg.get("ollama_port", 11434))
     temperature = float(cfg.get("temperature", 0.7))
     tau = float(cfg.get("tau_accept", 0.3))
+    tau_r = float(cfg.get("tau_rethink", 0.7))
     max_tokens = int(cfg.get("max_tokens", 220))
     base_seed = int(cfg.get("seed", 42))
     if os.environ.get("COS_ABLATION_MAX_TOKENS", "").strip().isdigit():
@@ -486,6 +509,7 @@ def main() -> int:
                         except (urllib.error.URLError, TimeoutError, OSError) as e:
                             print(f"error HTTP {pid}: {e}", file=sys.stderr)
                             continue
+                        xtra = row_extras(q, temps, texts, tau, tau_r)
                         s_sem = semantic_sigma_from_texts(texts)
                         s_seu_o = seu.compute_seu(texts)
                         primary = texts[0] if texts else ""
@@ -516,6 +540,7 @@ def main() -> int:
                                 sigma_seu=s_seu_o,
                                 temp_strategy=ts_name,
                                 mean_temperature=float(mean_t),
+                                extras=xtra,
                             )
                         if s_lp is not None:
                             acc_lp = float(s_lp) < tau
@@ -538,6 +563,7 @@ def main() -> int:
                                 sigma_seu=s_seu_o,
                                 temp_strategy=ts_name,
                                 mean_temperature=float(mean_t),
+                                extras=xtra,
                             )
                         acc_sem = s_sem < tau
                         emit_row(
@@ -559,6 +585,7 @@ def main() -> int:
                             sigma_seu=s_seu_o,
                             temp_strategy=ts_name,
                             mean_temperature=float(mean_t),
+                            extras=xtra,
                         )
                         if s_seu_o is not None:
                             acc_seu = float(s_seu_o) < tau
@@ -581,6 +608,7 @@ def main() -> int:
                                 sigma_seu=float(s_seu_o),
                                 temp_strategy=ts_name,
                                 mean_temperature=float(mean_t),
+                                extras=xtra,
                             )
                             for w_seu, w_lp in weights_seu_list:
                                 if w_lp > 0.0 and s_lp is None:
@@ -610,6 +638,7 @@ def main() -> int:
                                     temp_strategy=ts_name,
                                     mean_temperature=float(mean_t),
                                     weight_seu=w_seu,
+                                    extras=xtra,
                                 )
 
         elif prov == "cos_fast":
@@ -631,6 +660,7 @@ def main() -> int:
                     ans, sig, _e = cos_fast_sigma(cos_bin, q, extra)
                     corr = bool(grade_one(ans, best, worst))
                     acc = sig < tau
+                    cos_x = row_extras(q, [float(temperature)], [ans], tau, tau_r)
                     emit_row(
                         fp,
                         pid=pid,
@@ -650,6 +680,7 @@ def main() -> int:
                         sigma_seu=None,
                         temp_strategy="cos_fast_scalar",
                         mean_temperature=float(temperature),
+                        extras=cos_x,
                     )
         else:
             print(f"unknown provider {prov}", file=sys.stderr)

@@ -5,7 +5,8 @@ Creation OS MCP Server (Python, stdio JSON-RPC 2.0).
 Exposes σ-measured tools that delegate to the `cos` C binary (`cos chat`,
 `cos introspect`). Wire shape matches the in-repo C `cos-mcp` server
 (flat `result` objects, protocolVersion 2026-03-26), with Python-specific
-tool names: sigma_chat, sigma_measure, sigma_health.
+tool names: sigma_chat, sigma_measure, sigma_health, sigma_gate_verify,
+sigma_gate_audit_tail, sigma_gate_stats (LSD pickle path via ``SIGMA_PROBE_PATH``).
 
 For the native in-process pipeline (cos.chat, cos.sigma, …), use ./cos-mcp.
 """
@@ -25,6 +26,42 @@ _DEFAULT_SERVER_VERSION = "3.3.0"
 
 def _repo_root() -> Path:
     return Path(__file__).resolve().parent.parent
+
+
+def _ensure_python_cos_path() -> None:
+    p = str(_repo_root() / "python")
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+
+def _sigma_probe_path() -> Path:
+    env = (os.environ.get("SIGMA_PROBE_PATH") or "").strip()
+    if env:
+        p = Path(env).expanduser()
+        if not p.is_absolute():
+            p = (_repo_root() / p).resolve()
+        return p
+    for rel in (
+        "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl",
+        "benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl",
+    ):
+        cand = _repo_root() / rel
+        if cand.is_file():
+            return cand.resolve()
+    raise FileNotFoundError("sigma_gate_lsd.pkl not found; set SIGMA_PROBE_PATH")
+
+
+_LSD_GATE_FOR_MCP: Optional[Any] = None
+
+
+def _get_lsd_gate_for_mcp() -> Any:
+    global _LSD_GATE_FOR_MCP
+    if _LSD_GATE_FOR_MCP is None:
+        _ensure_python_cos_path()
+        from cos.sigma_gate import SigmaGate
+
+        _LSD_GATE_FOR_MCP = SigmaGate(_sigma_probe_path())
+    return _LSD_GATE_FOR_MCP
 
 
 def _cos_bin() -> str:
@@ -129,6 +166,40 @@ def _tools_list() -> list:
             "description": "Creation OS introspection snapshot (`cos introspect`).",
             "inputSchema": {"type": "object", "properties": {}},
         },
+        {
+            "name": "sigma_gate_verify",
+            "description": (
+                "LSD σ-gate on (prompt, response) using the lab pickle; no live HF model required. "
+                "Audit entry appended (see cos.mcp_sigma_audit)."
+            ),
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "prompt": {"type": "string"},
+                    "response": {"type": "string"},
+                    "reference": {
+                        "type": "string",
+                        "description": "Optional factual reference string for the probe",
+                    },
+                },
+                "required": ["prompt", "response"],
+            },
+        },
+        {
+            "name": "sigma_gate_audit_tail",
+            "description": "Last N audit records from sigma_gate_verify / should_generate in this process.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "last_n": {"type": "integer", "default": 20},
+                },
+            },
+        },
+        {
+            "name": "sigma_gate_stats",
+            "description": "In-memory audit ring statistics for LSD MCP tools.",
+            "inputSchema": {"type": "object", "properties": {}},
+        },
     ]
 
 
@@ -209,6 +280,50 @@ def _handle_tools_call(msg_id: Any, params: Dict[str, Any]) -> Dict[str, Any]:
             }
     elif name == "sigma_health":
         body = _sigma_health()
+    elif name == "sigma_gate_verify":
+        prompt = str(args.get("prompt", "") or "").strip()
+        response = str(args.get("response", "") or "").strip()
+        reference = str(args.get("reference", "") or "").strip() or None
+        if not prompt or not response:
+            body = {"error": "sigma_gate_verify: empty prompt or response"}
+        else:
+            try:
+                _ensure_python_cos_path()
+                from cos.mcp_sigma_audit import append_record
+
+                gate = _get_lsd_gate_for_mcp()
+                sigma, decision = gate(None, None, prompt, response, reference=reference)
+                body = {
+                    "sigma": float(sigma),
+                    "decision": str(decision),
+                    "reference_used": bool(reference),
+                }
+                append_record(
+                    {
+                        "tool": "sigma_gate_verify",
+                        "sigma": float(sigma),
+                        "decision": str(decision),
+                    }
+                )
+            except Exception as e:
+                body = {"error": f"sigma_gate_verify:{type(e).__name__}", "detail": str(e)[:500]}
+    elif name == "sigma_gate_audit_tail":
+        last_n = int(args.get("last_n", 20) or 20)
+        try:
+            _ensure_python_cos_path()
+            from cos.mcp_sigma_audit import tail as audit_tail
+
+            body = {"entries": audit_tail(last_n)}
+        except Exception as e:
+            body = {"error": f"sigma_gate_audit_tail:{type(e).__name__}", "detail": str(e)[:500]}
+    elif name == "sigma_gate_stats":
+        try:
+            _ensure_python_cos_path()
+            from cos.mcp_sigma_audit import stats as audit_stats
+
+            body = audit_stats()
+        except Exception as e:
+            body = {"error": f"sigma_gate_stats:{type(e).__name__}", "detail": str(e)[:500]}
     else:
         body = {"error": "unknown tool", "name": name}
 

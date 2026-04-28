@@ -6,7 +6,7 @@ of sentence embeddings (diagnostic; optional ``sentence-transformers``).
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, List, Optional
 
 _model = None
 
@@ -40,6 +40,22 @@ def compute_seu(responses: List[str]) -> Optional[float]:
     n = int(emb.shape[0])
     if n < 2:
         return 0.5
+    sim = emb @ emb.T
+    mask = ~np.eye(n, dtype=bool)
+    mean_sim = float(sim[mask].mean())
+    return float(np.clip(1.0 - mean_sim, 0.0, 1.0))
+
+
+def compute_seu_from_embeddings(embeddings: Any) -> Optional[float]:
+    """SEU from pre-computed L2-normalized rows (each row = one embedding)."""
+    try:
+        import numpy as np
+    except ImportError:
+        return None
+    emb = np.asarray(embeddings, dtype=np.float64)
+    if emb.ndim != 2 or emb.shape[0] < 2:
+        return 0.5
+    n = int(emb.shape[0])
     sim = emb @ emb.T
     mask = ~np.eye(n, dtype=bool)
     mean_sim = float(sim[mask].mean())

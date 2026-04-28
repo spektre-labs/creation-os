@@ -403,6 +403,145 @@ projections.  Reproduce:
 MC; GSM8K at 2B is mostly unscored or τ-invalid at this δ; HellaSwag
 stays modest.  **σ is not universal** across benchmarks.
 
+### σ-gate v4 (LSD contrastive probe, GPT-2, TruthfulQA200)
+
+This row is a **separate** evidence class from the BitNet TruthfulQA-817
+generation table above: a **Python** probe trained with the Sirraya LSD-style
+contrastive stack on **200** bundled TruthfulQA prompts plus synthetic negatives,
+then evaluated with **sklearn** trajectory features.  See
+[`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md): do **not** merge these
+AUROC figures with the 817-row `cos chat` accuracy table in one headline.
+
+| Metric | Value |
+|--------|-------|
+| Method | LSD contrastive hidden-state probe + logistic head |
+| AUROC (5-fold CV, training manifest) | **0.9428** (`benchmarks/sigma_gate_lsd/results_full/manifest.json`) |
+| Training pairs | 800 (balanced factual / hallucinated; includes GPT-2–sampled negatives) |
+| Inference | One forward pass through the **probe** causal LM + trajectory feature pass |
+| Wire layout | 12 bytes (`python/cos/sigma_gate.py` → `pack_measurement`) |
+| Based on | [arXiv:2510.04933](https://arxiv.org/abs/2510.04933) (*The Geometry of Truth*) |
+
+### σ-gate: runtime hallucination detection (measured in this tree)
+
+**Method (summary):** contrastive LSD-style training on hidden-state trajectories with a
+MiniLM-L6-v2 truth encoder; margin loss; single forward pass through the **probe** GPT-2
+checkpoint for scoring (no multi-sample decoding for the detector itself).  Default
+cross-domain eval uses **PRISM-style** prompt suffixes and **semantic** correctness labels
+(MiniLM cosine) where noted below.
+
+**Ship-ready summary (validated claims only).**  Do **not** merge these AUROCs with
+the BitNet TruthfulQA-817 **accuracy** table above, or with spectral / unified fusion
+experiments, in one headline — see [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
+
+| Benchmark | AUROC | Type | N | Status |
+|-----------|-------|------|---|--------|
+| TruthfulQA (5-fold CV) | **0.943** | In-distribution | 200 | Validated |
+| TruthfulQA (30% holdout) | **0.982** | True holdout | 57 | Validated |
+| TriviaQA (greedy GPT-2) | **0.960** | Cross-domain | 100 | Validated |
+| HaluEval (generative) | — | Pending label protocol refinement | — | In progress |
+
+**Method:** LSD contrastive hidden-state probe ([arXiv:2510.04933](https://arxiv.org/abs/2510.04933)).
+**Training:** 800 balanced pairs, ~15 epochs (see ``adapt_lsd`` / manifest). **Inference:** one
+scoring forward through the probe bundle; **12-byte** wire blob via ``SigmaGate.pack_measurement``.
+
+Experimental HaluEval generative smoke numbers (when run) live in
+``benchmarks/sigma_gate_eval/results_cross_domain/cross_domain_summary.json`` — not promoted here until the label story is frozen.
+
+**Harness detail (artifact paths, includes generative HaluEval smoke when present):**
+
+| Benchmark | AUROC | Type | N | Artifact |
+|-----------|-------|------|---|----------|
+| TruthfulQA (5-fold CV) | **0.943** | In-distribution | 200-pair protocol | ``benchmarks/sigma_gate_lsd/results_full/manifest.json`` |
+| TruthfulQA (holdout) | **0.982** | Held-out prompts | 57 | ``benchmarks/sigma_gate_eval/results_holdout/holdout_summary.json`` |
+| TriviaQA (greedy GPT-2) | **0.960** | Cross-task smoke | 100 | ``benchmarks/sigma_gate_eval/results_cross_domain/cross_domain_summary.json`` |
+| HaluEval (``qa_samples``, generative) | **0.383** | Cross-task smoke | 100 | ``cross_domain_summary.json`` (``halueval_mode``: ``generative``) |
+
+**Comparison (orientation only).**  Published AUROCs below are **not** head-to-head on
+the same CSV / split as this harness; they summarize commonly cited ranges or paper
+tables.  Do **not** merge them with the in-repo rows in one headline without that wall.
+See [`docs/sigma_gate_v4_comparison_table.md`](docs/sigma_gate_v4_comparison_table.md) and
+[`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
+
+| Method | Typical reported AUROC | Forward passes (detector) | Year |
+|--------|------------------------|---------------------------|------|
+| Semantic entropy (sampling) | ~0.79 (setup-dependent) | Many (5–20+) | 2024 |
+| SelfCheckGPT-style | ~0.76 (setup-dependent) | Several+ | 2023 |
+| HalluShift (example) | ~0.90 (paper tables; task-dependent) | 1 | 2026 |
+| LSD (*Geometry of Truth*) | ~0.92–0.96 (vendor / paper setups) | 1 | 2025 |
+| **σ-gate (this repo)** | **0.982** holdout / **0.960** TriviaQA | **1** scoring forward | 2026 |
+
+**Limitations:** short-form QA only (TruthfulQA / TriviaQA smoke); GPT-2-scale probe
+target; white-box hidden states required; long-form and domain-specific (medical, legal)
+evaluation not claimed here; HaluEval generative labels combine HF ``hallucination`` flags
+with cosine alignment to the provided ``answer`` string — treat as a **smoke harness**,
+not a reproduction of HaluEval leaderboard conditions.
+
+**Usage:**
+
+```python
+from cos.sigma_gate import SigmaGate
+gate = SigmaGate("benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl")
+sigma, decision = gate(model, tokenizer, prompt, response)
+# sigma in [0, 1], decision in {ACCEPT, RETHINK, ABSTAIN}; wire blob: gate.pack_measurement(...)
+```
+
+**Acknowledgments:** LSD contrastive framework
+[arXiv:2510.04933](https://arxiv.org/abs/2510.04933); semantic-entropy line (Kuhn et al.,
+Farquhar et al.); RLHF / uncertainty discussions in the literature (e.g. Liu 2026,
+arXiv:2603.24124) for *motivation* only unless separately reproduced in-tree.
+
+**Integration:** the repo root already ships a C executable named `cos`; the
+importable Python module lives under **`python/cos/`**.  Use
+`PYTHONPATH=python` (or `make check-sigma-gate`) and
+`from cos.sigma_gate import SigmaGate`.  Default probe path:
+`benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl`.
+
+**End-to-end eval harness:** greedy GPT-2 completions on the same CSV, weak
+substring labels vs. `best_answer`, AUROC in
+`benchmarks/sigma_gate_eval/results/eval_summary.json` after
+`python3 benchmarks/sigma_gate_eval/run_eval.py` (venv: `benchmarks/sigma_gate_lsd/.venv`).
+That AUROC is **not** the same statistic as the CV row (different labels and
+generative setup).
+
+| Method | Typical evidence | Forward passes (detector) |
+|--------|------------------|---------------------------|
+| Semantic-entropy family (e.g. Kuhn et al.) | Published MC / QA setups (task-dependent AUROC) | **Many** (multi-sample) |
+| Self-consistency / self-check variants | Task-dependent | **Several+** |
+| σ-gate v4 (this probe) | CV on curated pairs + optional `run_eval.py` | **1** LM forward for scoring |
+
+The left column cites **families**, not a claim that a single external AUROC
+number was reproduced on this CSV; see
+[`docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md`](docs/EXTERNAL_EVIDENCE_AND_POSITIONING.md).
+
+**Holdout protocol:** ``python3 benchmarks/sigma_gate_lsd/create_splits.py`` writes
+``benchmarks/sigma_gate_lsd/splits/{train,holdout}.csv`` (default: stratified by
+``category``).  Retrain with ``adapt_lsd.py --prompts .../train.csv`` and evaluate
+on holdout via ``python3 benchmarks/sigma_gate_eval/run_holdout_eval.py``, or run
+``bash run_holdout_pipeline.sh`` (long; uses the LSD venv; includes **Step 4**
+TriviaQA + HaluEval cross-domain smoke with **no** probe retraining).
+
+- Cross-domain only: ``make sigma-cross-domain`` (requires network + ``datasets``).
+- One-screen summary from JSON: ``make sigma-all-results``.
+- Publication-style table template:
+  [`docs/sigma_gate_v4_publication_results.md`](docs/sigma_gate_v4_publication_results.md).
+- Checksums + regenerative cross-domain refresh: ``bash run_ship.sh`` (optional
+  ``CREATION_SHIP_COMMIT=1`` / ``CREATION_SHIP_PUSH=1``).
+
+**σ-gate v5 (lab, optional):** multi-dataset + semantic labels + leave-one-source-out —
+``make sigma-v5`` or ``bash run_v5.sh``; see ``benchmarks/sigma_gate_v5/README.md``.
+
+**Pre-generation scaffold (HALT / ICR direction, not shipped weights):**
+``python/cos/sigma_gate_precheck.py`` (`SigmaPrecheck`) defaults to **normalized
+next-token entropy** on the prompt (one forward). ``python/cos/sigma_gate_full.py``
+(`SigmaGateFull`) chains precheck → optional generate → LSD ``SigmaGate`` post
+score. See module docstrings; calibrate ``tau_skip`` on your traffic.
+
+**Comparison table (with claim discipline):**
+[`docs/sigma_gate_v4_comparison_table.md`](docs/sigma_gate_v4_comparison_table.md).
+**Reddit drafts:** [`docs/reddit_ml_post_v2.md`](docs/reddit_ml_post_v2.md),
+[`docs/reddit_ml_sigma_gate_v4.md`](docs/reddit_ml_sigma_gate_v4.md),
+[`docs/reddit_ml_sigma_gate.md`](docs/reddit_ml_sigma_gate.md).
+
 ### Reasoning per joule (ULTRA-7)
 
 Energy-aware pipeline runs (`make check-ultra`, `--energy`) report
@@ -649,6 +788,15 @@ Creation OS is not just a chat interface.
 | `cos mcp`            | MCP server — σ-gate as infrastructure |
 | `cos a2a`            | agent-to-agent with σ-trust |
 
+### MCP: LSD σ-gate (Python, stdio)
+
+Optional **MCP tools** score `(prompt, response)` with the lab LSD pickle (`python3 -m cos.mcp_sigma_server` with `PYTHONPATH=python`; see [`docs/MCP_SIGMA.md`](docs/MCP_SIGMA.md) and [`configs/mcp/bifrost_sigma_gate.example.yaml`](configs/mcp/bifrost_sigma_gate.example.yaml)). The JSON-RPC server [`scripts/cos_mcp_server.py`](scripts/cos_mcp_server.py) adds matching `sigma_gate_*` tools. Requires `pip install 'mcp[cli]'` in your venv for the FastMCP entrypoint. **Governance:** follow [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) for any AUROC claims; audit logs are operator hooks, not legal certification.
+
+```bash
+make sigma-mcp-smoke   # import check (needs mcp in sigma_gate_lsd venv)
+make sigma-mcp-serve   # stdio MCP server (SIGMA_PROBE_PATH)
+```
+
 ```mermaid
 %%{init: {'theme':'neutral', 'flowchart': {'curve': 'basis'}}}%%
 flowchart LR
@@ -827,7 +975,7 @@ Three audience tracks:
 | Formalism → silicon | [`docs/FULL_STACK_FORMAL_TO_SILICON.md`](docs/FULL_STACK_FORMAL_TO_SILICON.md) |
 | σ stack map (v33 → v100 + HDL) | [`docs/SIGMA_FULL_STACK.md`](docs/SIGMA_FULL_STACK.md) |
 | Mobile + messenger + legacy-app bindings | [`bindings/README.md`](bindings/README.md) |
-| MCP σ server | [`docs/MCP_SIGMA.md`](docs/MCP_SIGMA.md) · `make check-mcp` |
+| MCP σ server | [`docs/MCP_SIGMA.md`](docs/MCP_SIGMA.md) · `make check-mcp` · `make sigma-mcp-smoke` |
 | Git remotes | [`docs/CANONICAL_GIT_REPOSITORY.md`](docs/CANONICAL_GIT_REPOSITORY.md) |
 | Contributing · security · agent rules | [`CONTRIBUTING.md`](CONTRIBUTING.md) · [`SECURITY.md`](SECURITY.md) · [`AGENTS.md`](AGENTS.md) |
 | Maintainers + merge gate | [`docs/MAINTAINERS.md`](docs/MAINTAINERS.md) |

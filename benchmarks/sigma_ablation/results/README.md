@@ -18,6 +18,7 @@ When TruthfulQA-style AUROC sits near chance (~0.5), this tree asks **why**:
 - **SEU (embeddings):** optional `sigma_seu` and `sigma_combined_seu_*` from **sentence-transformers** `all-MiniLM-L6-v2` (`seu.py`). If the import fails, SEU arms are skipped for that process.
 - **Logprob σ:** mean per-token **normalized entropy** from `top_logprobs` when returned; otherwise logprob-only and combined rows with non-zero logprob weight are skipped for that prompt.
 - **Combined σ:** `sigma_combined_semantic_{w}:{w_lp}` and `sigma_combined_seu_{w}:{w_lp}` (weights in `sigma_ablation_config.json`). Legacy rows may use `sigma_combined_*` without the middle token; the analyzer still parses them.
+- **Detail extras (v2):** each row may include **`prompt`**, **`temps_used`**, **`responses`** (truncated per `COS_ABLATION_RESPONSE_CHARS`, default 2000), **`tau_accept`**, **`tau_rethink`** (from config `tau_accept` / `tau_rethink`).
 - **Optional `bitnet_2b_current`:** one `./cos chat --fast` scalar per prompt (pipeline σ); skipped if `./cos` is missing.
 
 ## Python dependencies (SEU + metrics)
@@ -26,7 +27,7 @@ When TruthfulQA-style AUROC sits near chance (~0.5), this tree asks **why**:
 pip install scikit-learn sentence-transformers
 ```
 
-`sentence-transformers` pulls **torch**; **all-MiniLM-L6-v2** is small and typically runs on CPU. Overnight v2 preflight: `bash benchmarks/sigma_ablation/run_ablation_v2_overnight.sh` (or `make sigma-ablation-v2-overnight-help` for the one-liner hint).
+`sentence-transformers` pulls **torch**; **all-MiniLM-L6-v2** is small and typically runs on CPU. Overnight v2 preflight: `bash benchmarks/sigma_ablation/run_ablation_v2_overnight.sh` (or `make sigma-ablation-v2-overnight-help` for the one-liner hint). Full driver with embedding preload: **`bash benchmarks/sigma_ablation/run_ablation_v2_full.sh`** or repo root **`bash run_ablation_v2.sh`**. Post-run checks: **`make validate-sigma-ablation-v2`** (expects `results/sigma_ablation_detail.jsonl` plus analyzed summary/table).
 
 ## Commands
 
@@ -77,6 +78,8 @@ The ablation **does not depend on Cursor** once started with **`nohup`** (or **`
 **Important:** **`ollama serve`** started only inside Cursor’s integrated terminal may still exit when Cursor quits. For a run that must survive Cursor, start **Ollama** in **Terminal.app**, **tmux**, **ssh**, or **launchd** — not only inside the IDE.
 
 Use **`benchmarks/sigma_ablation/launch_ablation_detached.sh`** for a single canonical driver (refuses duplicate launch if `ablation_master.pid` is alive). Or use **`make sigma-ablation-launch-detached`** from the repo root.
+
+For **v2** (MCT + SEU preload + same overnight phases), use **`benchmarks/sigma_ablation/launch_ablation_v2_detached.sh`** — same `ablation_master.pid` + **`logs/nohup_v2.log`** pattern.
 
 To remove stray **`cos chat --fast`** / extra **`run_sigma_ablation.py`** after a crash (keeps the process tree for `logs/ablation_master.pid`):
 

@@ -1,0 +1,21 @@
+{
+  "eval_type": "HOLDOUT",
+  "generator_model": "gpt2",
+  "n_holdout": 57,
+  "n_correct": 1,
+  "n_wrong": 56,
+  "auroc_wrong_vs_sigma": 0.9821428571428571,
+  "pr_auc_average_precision": 0.99968671679198,
+  "accuracy_accepted": null,
+  "abstain_rate": 1.0,
+  "wrong_confident_accept": 0,
+  "coverage_non_abstain": 0.0,
+  "sigma_gap_mean_wrong_minus_correct": 0.04756697344694538,
+  "mean_sigma_correct": 0.9193389110499791,
+  "mean_sigma_wrong": 0.9669058844969245,
+  "training_cv_auroc_manifest": 0.9219999999999999,
+  "probe_path": "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl",
+  "holdout_csv": "benchmarks/sigma_gate_lsd/splits/holdout.csv",
+  "labeling": "semantic_cosine_minilm_threshold_0.45",
+  "prism_prompt": true
+}

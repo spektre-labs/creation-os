@@ -39,13 +39,25 @@ def jaccard(a: Set[str], b: Set[str]) -> float:
 
 
 def grade_one(response: str, best: str, worst: str) -> int:
-    """1 if response aligns more with best than worst (same as σ ablation harness)."""
+    """1 if response aligns more with best than worst (Jaccard on tokens)."""
     ra = normalize_tokens(response)
     sb = normalize_tokens(best)
     sw = normalize_tokens(worst)
     jc = jaccard(ra, sb)
     ji = jaccard(ra, sw)
     return 1 if jc > ji else 0
+
+
+def grade_semantic(response: str, best: str, worst: str) -> int:
+    """1 if cosine(response,best) > cosine(response,worst) (MiniLM)."""
+    sys.path.insert(0, str(REPO_ROOT / "benchmarks" / "sigma_gate_eval"))
+    from semantic_labeling import cosine_similarity
+
+    if not (best or "").strip() or not (worst or "").strip():
+        return 0
+    sb = cosine_similarity(response, best)
+    sw = cosine_similarity(response, worst)
+    return 1 if sb > sw else 0
 
 
 def main() -> int:
@@ -69,6 +81,17 @@ def main() -> int:
         default="",
         help="override HuggingFace model id (else env SIGMA_PROBE_HF_MODEL or built-in map)",
     )
+    ap.add_argument(
+        "--grading",
+        choices=("semantic", "jaccard"),
+        default="semantic",
+        help="How to label generations vs best / best_incorrect_answer.",
+    )
+    ap.add_argument(
+        "--no-prism",
+        action="store_true",
+        help="Use raw CSV question for generation (default: PRISM-style suffix).",
+    )
     args = ap.parse_args()
 
     try:
@@ -81,6 +104,19 @@ def main() -> int:
     sys.path.insert(0, str(HERE))
     from sigma_probe import SigmaProbe
 
+    if args.grading == "semantic" or not args.no_prism:
+        sys.path.insert(0, str(REPO_ROOT / "benchmarks" / "sigma_gate_eval"))
+        try:
+            from semantic_labeling import prism_wrap_question
+        except ImportError:
+            print("error: pip install sentence-transformers (for semantic grading / PRISM)", file=sys.stderr)
+            return 2
+    else:
+
+        def prism_wrap_question(q: str) -> str:  # type: ignore[misc]
+            return (q or "").strip()
+
+    grade_fn = grade_one if args.grading == "jaccard" else grade_semantic
     out_dir = args.output
     out_dir.mkdir(parents=True, exist_ok=True)
     detail_path = out_dir / "probe_detail.jsonl"
@@ -140,11 +176,12 @@ def main() -> int:
 
     for i, row in enumerate(rows):
         pid = row.get("id", f"row_{i:04d}")
-        prompt = row.get("question", "") or ""
+        prompt_plain = row.get("question", "") or ""
+        prompt = prompt_plain if args.no_prism else prism_wrap_question(prompt_plain)
         best = row.get("best_answer", "") or ""
         worst = row.get("best_incorrect_answer", "") or ""
 
-        print(f"[{i + 1}/{len(rows)}] {pid} {prompt[:56]}…")
+        print(f"[{i + 1}/{len(rows)}] {pid} {prompt_plain[:56]}…")
 
         inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=384)
         device = next(model.parameters()).device
@@ -165,13 +202,13 @@ def main() -> int:
 
         layer_embs = probe.extract_hidden_states(model, tokenizer, prompt, response_text)
         enc = probe._get_encoder()
-        factual_emb = enc.encode(prompt, normalize_embeddings=True)
+        factual_emb = enc.encode(prompt_plain, normalize_embeddings=True)
         if not isinstance(factual_emb, np.ndarray):
             factual_emb = np.asarray(factual_emb, dtype=np.float64)
         factual_emb = factual_emb.ravel()
         features = probe.compute_trajectory_features(layer_embs, factual_emb)
 
-        ok = grade_one(response_text, best, worst)
+        ok = grade_fn(response_text, best, worst)
         y = 0 if ok == 1 else 1
         all_features.append(list(features.values()))
         all_labels.append(y)
@@ -245,6 +282,8 @@ def main() -> int:
         "train_auroc": _json_float(train_auroc),
         "features_used": feature_keys,
         "method": "hidden_state_trajectory_probe",
+        "grading": str(args.grading),
+        "prism_prompt": not bool(args.no_prism),
         "reference": "LSD (arXiv 2510.04933), ICR Probe (ACL 2025)",
     }
     with (out_dir / "probe_summary.json").open("w", encoding="utf-8") as f:

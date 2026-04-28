@@ -1,0 +1,442 @@
+=== sigma-GATE v5 START: Tue Apr 28 20:55:12 EEST 2026 ===
+
+[notice] A new release of pip is available: 26.0.1 -> 26.1
+[notice] To update, run: pip install --upgrade pip
+Loading truthfulqa...
+  -> 80 rows
+Loading triviaqa...
+  -> 80 rows
+Loading natural_questions...
+  -> 80 rows
+Loading halueval...
+  -> 80 rows
+
+Total rows: 320 -> /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/intermediate/multi_dataset.json
+[transformers] The following generation flags are not valid and may be ignored: ['output_hidden_states']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 11057.11it/s]
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 7520.34it/s]
+[1/320] truthfulqa sim=0.218 x
+[2/320] truthfulqa sim=0.095 x
+[3/320] truthfulqa sim=-0.026 x
+[4/320] truthfulqa sim=0.025 x
+[5/320] truthfulqa sim=0.004 x
+[6/320] truthfulqa sim=-0.012 x
+[7/320] truthfulqa sim=0.072 x
+[8/320] truthfulqa sim=0.081 x
+[9/320] truthfulqa sim=-0.041 x
+[10/320] truthfulqa sim=0.051 x
+[11/320] truthfulqa sim=0.057 x
+[12/320] truthfulqa sim=0.055 x
+[13/320] truthfulqa sim=0.051 x
+[14/320] truthfulqa sim=0.054 x
+[15/320] truthfulqa sim=0.039 x
+[16/320] truthfulqa sim=0.090 x
+[17/320] truthfulqa sim=0.202 x
+[18/320] truthfulqa sim=0.218 x
+[19/320] truthfulqa sim=0.065 x
+[20/320] truthfulqa sim=0.068 x
+[21/320] truthfulqa sim=0.226 x
+[22/320] truthfulqa sim=0.038 x
+[23/320] truthfulqa sim=-0.010 x
+[24/320] truthfulqa sim=-0.036 x
+[25/320] truthfulqa sim=0.061 x
+[26/320] truthfulqa sim=0.079 x
+[27/320] truthfulqa sim=0.043 x
+[28/320] truthfulqa sim=0.007 x
+[29/320] truthfulqa sim=0.049 x
+[30/320] truthfulqa sim=0.382 x
+[31/320] truthfulqa sim=-0.022 x
+[32/320] truthfulqa sim=0.050 x
+[33/320] truthfulqa sim=0.001 x
+[34/320] truthfulqa sim=0.043 x
+[35/320] truthfulqa sim=-0.061 x
+[36/320] truthfulqa sim=-0.012 x
+[37/320] truthfulqa sim=-0.043 x
+[38/320] truthfulqa sim=0.143 x
+[39/320] truthfulqa sim=0.062 x
+[40/320] truthfulqa sim=0.038 x
+[41/320] truthfulqa sim=-0.033 x
+[42/320] truthfulqa sim=-0.009 x
+[43/320] truthfulqa sim=0.052 x
+[44/320] truthfulqa sim=0.079 x
+[45/320] truthfulqa sim=0.074 x
+[46/320] truthfulqa sim=-0.005 x
+[47/320] truthfulqa sim=0.060 x
+[48/320] truthfulqa sim=-0.002 x
+[49/320] truthfulqa sim=0.010 x
+[50/320] truthfulqa sim=0.040 x
+[51/320] truthfulqa sim=0.219 x
+[52/320] truthfulqa sim=0.131 x
+[53/320] truthfulqa sim=-0.051 x
+[54/320] truthfulqa sim=-0.037 x
+[55/320] truthfulqa sim=-0.008 x
+[56/320] truthfulqa sim=0.218 x
+[57/320] truthfulqa sim=0.076 x
+[58/320] truthfulqa sim=0.250 x
+[59/320] truthfulqa sim=0.052 x
+[60/320] truthfulqa sim=-0.024 x
+[61/320] truthfulqa sim=0.037 x
+[62/320] truthfulqa sim=0.278 x
+[63/320] truthfulqa sim=0.031 x
+[64/320] truthfulqa sim=0.216 x
+[65/320] truthfulqa sim=0.035 x
+[66/320] truthfulqa sim=0.021 x
+[67/320] truthfulqa sim=0.088 x
+[68/320] truthfulqa sim=0.099 x
+[69/320] truthfulqa sim=-0.029 x
+[70/320] truthfulqa sim=0.017 x
+[71/320] truthfulqa sim=0.003 x
+[72/320] truthfulqa sim=-0.059 x
+[73/320] truthfulqa sim=-0.053 x
+[74/320] truthfulqa sim=0.041 x
+[75/320] truthfulqa sim=-0.021 x
+[76/320] truthfulqa sim=0.086 x
+[77/320] truthfulqa sim=0.246 x
+[78/320] truthfulqa sim=0.001 x
+[79/320] truthfulqa sim=0.077 x
+[80/320] truthfulqa sim=0.119 x
+[81/320] triviaqa sim=0.052 x
+[82/320] triviaqa sim=-0.009 x
+[83/320] triviaqa sim=0.046 x
+[84/320] triviaqa sim=0.025 x
+[85/320] triviaqa sim=-0.027 x
+[86/320] triviaqa sim=0.045 x
+[87/320] triviaqa sim=0.043 x
+[88/320] triviaqa sim=0.082 x
+[89/320] triviaqa sim=0.115 x
+[90/320] triviaqa sim=0.127 x
+[91/320] triviaqa sim=0.037 x
+[92/320] triviaqa sim=0.086 x
+[93/320] triviaqa sim=0.016 x
+[94/320] triviaqa sim=0.127 x
+[95/320] triviaqa sim=0.197 x
+[96/320] triviaqa sim=-0.022 x
+[97/320] triviaqa sim=0.058 x
+[98/320] triviaqa sim=0.007 x
+[99/320] triviaqa sim=0.150 x
+[100/320] triviaqa sim=0.080 x
+[101/320] triviaqa sim=0.090 x
+[102/320] triviaqa sim=0.106 x
+[103/320] triviaqa sim=0.096 x
+[104/320] triviaqa sim=0.012 x
+[105/320] triviaqa sim=0.080 x
+[106/320] triviaqa sim=0.209 x
+[107/320] triviaqa sim=0.032 x
+[108/320] triviaqa sim=0.066 x
+[109/320] triviaqa sim=-0.113 x
+[110/320] triviaqa sim=-0.010 x
+[111/320] triviaqa sim=0.009 x
+[112/320] triviaqa sim=-0.002 x
+[113/320] triviaqa sim=0.001 x
+[114/320] triviaqa sim=0.031 x
+[115/320] triviaqa sim=0.104 x
+[116/320] triviaqa sim=0.080 x
+[117/320] triviaqa sim=-0.004 x
+[118/320] triviaqa sim=0.042 x
+[119/320] triviaqa sim=0.015 x
+[120/320] triviaqa sim=-0.089 x
+[121/320] triviaqa sim=0.069 x
+[122/320] triviaqa sim=0.055 x
+[123/320] triviaqa sim=0.050 x
+[124/320] triviaqa sim=0.353 x
+[125/320] triviaqa sim=-0.009 x
+[126/320] triviaqa sim=0.086 x
+[127/320] triviaqa sim=0.065 x
+[128/320] triviaqa sim=0.126 x
+[129/320] triviaqa sim=0.071 x
+[130/320] triviaqa sim=0.048 x
+[131/320] triviaqa sim=-0.032 x
+[132/320] triviaqa sim=0.222 x
+[133/320] triviaqa sim=0.035 x
+[134/320] triviaqa sim=0.019 x
+[135/320] triviaqa sim=0.061 x
+[136/320] triviaqa sim=0.002 x
+[137/320] triviaqa sim=-0.021 x
+[138/320] triviaqa sim=0.000 x
+[139/320] triviaqa sim=-0.022 x
+[140/320] triviaqa sim=0.214 x
+[141/320] triviaqa sim=0.259 x
+[142/320] triviaqa sim=0.042 x
+[143/320] triviaqa sim=0.075 x
+[144/320] triviaqa sim=0.122 x
+[145/320] triviaqa sim=0.014 x
+[146/320] triviaqa sim=0.033 x
+[147/320] triviaqa sim=-0.012 x
+[148/320] triviaqa sim=-0.012 x
+[149/320] triviaqa sim=0.017 x
+[150/320] triviaqa sim=0.040 x
+[151/320] triviaqa sim=0.112 x
+[152/320] triviaqa sim=0.057 x
+[153/320] triviaqa sim=0.036 x
+[154/320] triviaqa sim=0.106 x
+[155/320] triviaqa sim=0.219 x
+[156/320] triviaqa sim=0.001 x
+[157/320] triviaqa sim=0.063 x
+[158/320] triviaqa sim=-0.072 x
+[159/320] triviaqa sim=0.091 x
+[160/320] triviaqa sim=0.113 x
+[161/320] natural_questions sim=0.011 x
+[162/320] natural_questions sim=0.141 x
+[163/320] natural_questions sim=0.099 x
+[164/320] natural_questions sim=0.094 x
+[165/320] natural_questions sim=0.087 x
+[166/320] natural_questions sim=-0.081 x
+[167/320] natural_questions sim=0.067 x
+[168/320] natural_questions sim=0.098 x
+[169/320] natural_questions sim=-0.083 x
+[170/320] natural_questions sim=-0.004 x
+[171/320] natural_questions sim=0.032 x
+[172/320] natural_questions sim=0.088 x
+[173/320] natural_questions sim=0.046 x
+[174/320] natural_questions sim=0.066 x
+[175/320] natural_questions sim=0.092 x
+[176/320] natural_questions sim=-0.015 x
+[177/320] natural_questions sim=0.211 x
+[178/320] natural_questions sim=0.074 x
+[179/320] natural_questions sim=0.070 x
+[180/320] natural_questions sim=0.114 x
+[181/320] natural_questions sim=0.056 x
+[182/320] natural_questions sim=0.028 x
+[183/320] natural_questions sim=0.112 x
+[184/320] natural_questions sim=0.098 x
+[185/320] natural_questions sim=0.104 x
+[186/320] natural_questions sim=0.086 x
+[187/320] natural_questions sim=0.059 x
+[188/320] natural_questions sim=0.100 x
+[189/320] natural_questions sim=0.044 x
+[190/320] natural_questions sim=0.056 x
+[191/320] natural_questions sim=0.088 x
+[192/320] natural_questions sim=0.064 x
+[193/320] natural_questions sim=0.028 x
+[194/320] natural_questions sim=0.043 x
+[195/320] natural_questions sim=0.039 x
+[196/320] natural_questions sim=0.036 x
+[197/320] natural_questions sim=0.020 x
+[198/320] natural_questions sim=0.113 x
+[199/320] natural_questions sim=0.026 x
+[200/320] natural_questions sim=0.035 x
+[201/320] natural_questions sim=0.071 x
+[202/320] natural_questions sim=0.126 x
+[203/320] natural_questions sim=0.097 x
+[204/320] natural_questions sim=0.117 x
+[205/320] natural_questions sim=0.144 x
+[206/320] natural_questions sim=0.100 x
+[207/320] natural_questions sim=0.057 x
+[208/320] natural_questions sim=0.051 x
+[209/320] natural_questions sim=0.066 x
+[210/320] natural_questions sim=0.074 x
+[211/320] natural_questions sim=0.149 x
+[212/320] natural_questions sim=-0.020 x
+[213/320] natural_questions sim=0.076 x
+[214/320] natural_questions sim=0.150 x
+[215/320] natural_questions sim=0.035 x
+[216/320] natural_questions sim=-0.033 x
+[217/320] natural_questions sim=0.066 x
+[218/320] natural_questions sim=0.070 x
+[219/320] natural_questions sim=0.015 x
+[220/320] natural_questions sim=0.109 x
+[221/320] natural_questions sim=0.043 x
+[222/320] natural_questions sim=0.080 x
+[223/320] natural_questions sim=0.009 x
+[224/320] natural_questions sim=0.032 x
+[225/320] natural_questions sim=0.049 x
+[226/320] natural_questions sim=0.084 x
+[227/320] natural_questions sim=-0.025 x
+[228/320] natural_questions sim=0.181 x
+[229/320] natural_questions sim=0.015 x
+[230/320] natural_questions sim=-0.052 x
+[231/320] natural_questions sim=0.065 x
+[232/320] natural_questions sim=-0.004 x
+[233/320] natural_questions sim=0.121 x
+[234/320] natural_questions sim=0.011 x
+[235/320] natural_questions sim=0.141 x
+[236/320] natural_questions sim=0.041 x
+[237/320] natural_questions sim=0.044 x
+[238/320] natural_questions sim=0.085 x
+[239/320] natural_questions sim=0.122 x
+[240/320] natural_questions sim=0.055 x
+[241/320] halueval sim=0.014 x
+[242/320] halueval sim=0.030 x
+[243/320] halueval sim=0.038 x
+[244/320] halueval sim=0.100 x
+[245/320] halueval sim=0.035 x
+[246/320] halueval sim=-0.011 x
+[247/320] halueval sim=0.277 x
+[248/320] halueval sim=0.101 x
+[249/320] halueval sim=0.140 x
+[250/320] halueval sim=0.179 x
+[251/320] halueval sim=0.077 x
+[252/320] halueval sim=0.025 x
+[253/320] halueval sim=0.032 x
+[254/320] halueval sim=0.311 x
+[255/320] halueval sim=0.085 x
+[256/320] halueval sim=0.171 x
+[257/320] halueval sim=0.031 x
+[258/320] halueval sim=0.086 x
+[259/320] halueval sim=0.110 x
+[260/320] halueval sim=0.071 x
+[261/320] halueval sim=0.106 x
+[262/320] halueval sim=0.087 x
+[263/320] halueval sim=0.235 x
+[264/320] halueval sim=0.124 x
+[265/320] halueval sim=0.058 x
+[266/320] halueval sim=0.069 x
+[267/320] halueval sim=0.028 x
+[268/320] halueval sim=0.140 x
+[269/320] halueval sim=0.153 x
+[270/320] halueval sim=-0.004 x
+[271/320] halueval sim=0.043 x
+[272/320] halueval sim=0.082 x
+[273/320] halueval sim=0.117 x
+[274/320] halueval sim=0.112 x
+[275/320] halueval sim=0.038 x
+[276/320] halueval sim=0.104 x
+[277/320] halueval sim=0.025 x
+[278/320] halueval sim=0.110 x
+[279/320] halueval sim=0.166 x
+[280/320] halueval sim=0.073 x
+[281/320] halueval sim=-0.023 x
+[282/320] halueval sim=0.021 x
+[283/320] halueval sim=-0.004 x
+[284/320] halueval sim=0.177 x
+[285/320] halueval sim=0.100 x
+[286/320] halueval sim=0.033 x
+[287/320] halueval sim=0.360 x
+[288/320] halueval sim=0.065 x
+[289/320] halueval sim=0.035 x
+[290/320] halueval sim=0.153 x
+[291/320] halueval sim=0.045 x
+[292/320] halueval sim=0.051 x
+[293/320] halueval sim=0.235 x
+[294/320] halueval sim=0.130 x
+[295/320] halueval sim=0.183 x
+[296/320] halueval sim=0.074 x
+[297/320] halueval sim=0.050 x
+[298/320] halueval sim=0.114 x
+[299/320] halueval sim=0.089 x
+[300/320] halueval sim=0.065 x
+[301/320] halueval sim=0.060 x
+[302/320] halueval sim=0.184 x
+[303/320] halueval sim=-0.006 x
+[304/320] halueval sim=0.053 x
+[305/320] halueval sim=0.043 x
+[306/320] halueval sim=0.035 x
+[307/320] halueval sim=0.132 x
+[308/320] halueval sim=0.117 x
+[309/320] halueval sim=0.160 x
+[310/320] halueval sim=0.075 x
+[311/320] halueval sim=0.187 x
+[312/320] halueval sim=0.127 x
+[313/320] halueval sim=0.023 x
+[314/320] halueval sim=0.117 x
+[315/320] halueval sim=0.038 x
+[316/320] halueval sim=0.077 x
+[317/320] halueval sim=-0.013 x
+[318/320] halueval sim=0.099 x
+[319/320] halueval sim=-0.078 x
+[320/320] halueval sim=0.098 x
+Wrote /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/intermediate/labeled_rows.jsonl
+Wrote 320 contrastive rows -> /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/intermediate/multi_contrastive.csv
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+[transformers] The following generation flags are not valid and may be ignored: ['output_hidden_states']. Set `TRANSFORMERS_VERBOSITY=info` for more details.
+LSD contrastive train: model=gpt2 train_pairs=320 epochs=12 batch=32 lr=0.001 margin=0.3
+Augmentation meta: {"n_factual_raw": 320, "n_hallucination_raw": 320, "min_pairs_target": 400, "n_hallucination_generated": 0, "n_factual_balanced": 200, "n_hallucination_balanced": 200, "n_pairs_total": 400}
+[2026-04-28 21:02:33] [INFO] Initializing enhanced models...
+[2026-04-28 21:02:33] [INFO] Loading tokenizer for gpt2...
+[2026-04-28 21:02:34] [INFO] Loading model gpt2...
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 12842.81it/s]
+[2026-04-28 21:02:35] [INFO] Initialized HiddenStatesExtractor with 12 layers
+[2026-04-28 21:02:35] [INFO] Loading truth encoder: sentence-transformers/all-MiniLM-L6-v2
+Loading weights:   0%|          | 0/103 [00:00<?, ?it/s]Loading weights: 100%|██████████| 103/103 [00:00<00:00, 7767.23it/s]
+[2026-04-28 21:02:39] [INFO] Initialized TruthEncoder: sentence-transformers/all-MiniLM-L6-v2
+[2026-04-28 21:02:40] [INFO] Model dimensions - Hidden: 768, Truth: 384
+[2026-04-28 21:02:40] [INFO] Built enhanced projection heads with dimensions: [1024, 512]
+[2026-04-28 21:02:40] [INFO] Training distribution - Factual: 140, Hallucination: 132
+[2026-04-28 21:02:40] [INFO] Training on 272 samples, validating on 48 samples
+[2026-04-28 21:02:40] [INFO] Starting enhanced training...
+Epoch 1/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 1/12:  11%|█         | 1/9 [00:01<00:09,  1.15s/it]Epoch 1/12:  22%|██▏       | 2/9 [00:02<00:06,  1.02it/s]Epoch 1/12:  33%|███▎      | 3/9 [00:03<00:06,  1.01s/it]Epoch 1/12:  44%|████▍     | 4/9 [00:03<00:04,  1.09it/s]Epoch 1/12:  56%|█████▌    | 5/9 [00:04<00:03,  1.02it/s]Epoch 1/12:  67%|██████▋   | 6/9 [00:06<00:03,  1.16s/it]Epoch 1/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.14s/it]Epoch 1/12:  89%|████████▉ | 8/9 [00:08<00:00,  1.01it/s]Epoch 1/12: 100%|██████████| 9/9 [00:08<00:00,  1.26it/s]Epoch 1/12: 100%|██████████| 9/9 [00:08<00:00,  1.05it/s]
+[2026-04-28 21:02:50] [INFO] Epoch 1: train_loss=0.1847, val_loss=0.1352, val_acc=0.859, pos_sim=0.548, neg_sim=-0.321, lr=1.00e-03
+[2026-04-28 21:02:50] [INFO] Models saved with suffix: best
+[2026-04-28 21:02:50] [INFO] New best model saved with val_loss=0.1352
+Epoch 2/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 2/12:  11%|█         | 1/9 [00:00<00:07,  1.08it/s]Epoch 2/12:  22%|██▏       | 2/9 [00:01<00:06,  1.03it/s]Epoch 2/12:  33%|███▎      | 3/9 [00:03<00:07,  1.22s/it]Epoch 2/12:  44%|████▍     | 4/9 [00:04<00:06,  1.27s/it]Epoch 2/12:  56%|█████▌    | 5/9 [00:06<00:05,  1.43s/it]Epoch 2/12:  67%|██████▋   | 6/9 [00:07<00:03,  1.27s/it]Epoch 2/12:  78%|███████▊  | 7/9 [00:08<00:02,  1.33s/it]Epoch 2/12:  89%|████████▉ | 8/9 [00:09<00:01,  1.17s/it]Epoch 2/12: 100%|██████████| 9/9 [00:10<00:00,  1.05it/s]Epoch 2/12: 100%|██████████| 9/9 [00:10<00:00,  1.14s/it]
+[2026-04-28 21:03:00] [INFO] Epoch 2: train_loss=0.0253, val_loss=0.0757, val_acc=0.891, pos_sim=0.891, neg_sim=-0.677, lr=9.83e-04
+[2026-04-28 21:03:00] [INFO] Models saved with suffix: best
+[2026-04-28 21:03:00] [INFO] New best model saved with val_loss=0.0757
+Epoch 3/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 3/12:  11%|█         | 1/9 [00:00<00:06,  1.20it/s]Epoch 3/12:  22%|██▏       | 2/9 [00:01<00:06,  1.06it/s]Epoch 3/12:  33%|███▎      | 3/9 [00:03<00:06,  1.10s/it]Epoch 3/12:  44%|████▍     | 4/9 [00:04<00:06,  1.36s/it]Epoch 3/12:  56%|█████▌    | 5/9 [00:06<00:05,  1.31s/it]Epoch 3/12:  67%|██████▋   | 6/9 [00:07<00:03,  1.25s/it]Epoch 3/12:  78%|███████▊  | 7/9 [00:08<00:02,  1.27s/it]Epoch 3/12:  89%|████████▉ | 8/9 [00:09<00:01,  1.18s/it]Epoch 3/12: 100%|██████████| 9/9 [00:10<00:00,  1.04it/s]Epoch 3/12: 100%|██████████| 9/9 [00:10<00:00,  1.11s/it]
+[2026-04-28 21:03:10] [INFO] Epoch 3: train_loss=0.0031, val_loss=0.0523, val_acc=0.922, pos_sim=0.933, neg_sim=-0.824, lr=9.33e-04
+[2026-04-28 21:03:10] [INFO] Models saved with suffix: best
+[2026-04-28 21:03:10] [INFO] New best model saved with val_loss=0.0523
+Epoch 4/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 4/12:  11%|█         | 1/9 [00:01<00:10,  1.31s/it]Epoch 4/12:  22%|██▏       | 2/9 [00:02<00:07,  1.06s/it]Epoch 4/12:  33%|███▎      | 3/9 [00:03<00:06,  1.14s/it]Epoch 4/12:  44%|████▍     | 4/9 [00:04<00:05,  1.06s/it]Epoch 4/12:  56%|█████▌    | 5/9 [00:05<00:04,  1.11s/it]Epoch 4/12:  67%|██████▋   | 6/9 [00:06<00:03,  1.04s/it]Epoch 4/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.10s/it]Epoch 4/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.11s/it]Epoch 4/12: 100%|██████████| 9/9 [00:09<00:00,  1.01s/it]Epoch 4/12: 100%|██████████| 9/9 [00:09<00:00,  1.07s/it]
+[2026-04-28 21:03:20] [INFO] Epoch 4: train_loss=0.0017, val_loss=0.0537, val_acc=0.922, pos_sim=0.951, neg_sim=-0.858, lr=8.54e-04
+Epoch 5/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 5/12:  11%|█         | 1/9 [00:01<00:09,  1.19s/it]Epoch 5/12:  22%|██▏       | 2/9 [00:01<00:06,  1.05it/s]Epoch 5/12:  33%|███▎      | 3/9 [00:03<00:06,  1.09s/it]Epoch 5/12:  44%|████▍     | 4/9 [00:04<00:05,  1.00s/it]Epoch 5/12:  56%|█████▌    | 5/9 [00:04<00:03,  1.06it/s]Epoch 5/12:  67%|██████▋   | 6/9 [00:06<00:03,  1.19s/it]Epoch 5/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.18s/it]Epoch 5/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.11s/it]Epoch 5/12: 100%|██████████| 9/9 [00:09<00:00,  1.09it/s]Epoch 5/12: 100%|██████████| 9/9 [00:09<00:00,  1.02s/it]
+[2026-04-28 21:03:29] [INFO] Epoch 5: train_loss=0.0009, val_loss=0.0594, val_acc=0.922, pos_sim=0.961, neg_sim=-0.869, lr=7.50e-04
+Epoch 6/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 6/12:  11%|█         | 1/9 [00:00<00:07,  1.00it/s]Epoch 6/12:  22%|██▏       | 2/9 [00:01<00:06,  1.01it/s]Epoch 6/12:  33%|███▎      | 3/9 [00:02<00:05,  1.11it/s]Epoch 6/12:  44%|████▍     | 4/9 [00:03<00:04,  1.12it/s]Epoch 6/12:  56%|█████▌    | 5/9 [00:04<00:03,  1.08it/s]Epoch 6/12:  67%|██████▋   | 6/9 [00:05<00:03,  1.03s/it]Epoch 6/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.10s/it]Epoch 6/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.31s/it]Epoch 6/12: 100%|██████████| 9/9 [00:09<00:00,  1.05s/it]Epoch 6/12: 100%|██████████| 9/9 [00:09<00:00,  1.04s/it]
+[2026-04-28 21:03:38] [INFO] Epoch 6: train_loss=0.0007, val_loss=0.0646, val_acc=0.922, pos_sim=0.966, neg_sim=-0.873, lr=6.29e-04
+Epoch 7/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 7/12:  11%|█         | 1/9 [00:01<00:10,  1.30s/it]Epoch 7/12:  22%|██▏       | 2/9 [00:02<00:07,  1.13s/it]Epoch 7/12:  33%|███▎      | 3/9 [00:03<00:06,  1.17s/it]Epoch 7/12:  44%|████▍     | 4/9 [00:05<00:06,  1.37s/it]Epoch 7/12:  56%|█████▌    | 5/9 [00:06<00:04,  1.19s/it]Epoch 7/12:  67%|██████▋   | 6/9 [00:06<00:03,  1.03s/it]Epoch 7/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.09s/it]Epoch 7/12:  89%|████████▉ | 8/9 [00:09<00:01,  1.12s/it]Epoch 7/12: 100%|██████████| 9/9 [00:09<00:00,  1.09it/s]Epoch 7/12: 100%|██████████| 9/9 [00:09<00:00,  1.07s/it]
+[2026-04-28 21:03:48] [INFO] Epoch 7: train_loss=0.0006, val_loss=0.0682, val_acc=0.922, pos_sim=0.968, neg_sim=-0.875, lr=5.00e-04
+Epoch 8/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 8/12:  11%|█         | 1/9 [00:00<00:06,  1.20it/s]Epoch 8/12:  22%|██▏       | 2/9 [00:01<00:05,  1.19it/s]Epoch 8/12:  33%|███▎      | 3/9 [00:02<00:06,  1.00s/it]Epoch 8/12:  44%|████▍     | 4/9 [00:04<00:05,  1.08s/it]Epoch 8/12:  56%|█████▌    | 5/9 [00:05<00:05,  1.28s/it]Epoch 8/12:  67%|██████▋   | 6/9 [00:06<00:03,  1.14s/it]Epoch 8/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.12s/it]Epoch 8/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.13s/it]Epoch 8/12: 100%|██████████| 9/9 [00:09<00:00,  1.03it/s]Epoch 8/12: 100%|██████████| 9/9 [00:09<00:00,  1.05s/it]
+[2026-04-28 21:03:57] [INFO] Epoch 8: train_loss=0.0005, val_loss=0.0701, val_acc=0.922, pos_sim=0.971, neg_sim=-0.873, lr=3.71e-04
+Epoch 9/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 9/12:  11%|█         | 1/9 [00:00<00:06,  1.29it/s]Epoch 9/12:  22%|██▏       | 2/9 [00:01<00:07,  1.02s/it]Epoch 9/12:  33%|███▎      | 3/9 [00:02<00:05,  1.07it/s]Epoch 9/12:  44%|████▍     | 4/9 [00:03<00:04,  1.11it/s]Epoch 9/12:  56%|█████▌    | 5/9 [00:04<00:04,  1.03s/it]Epoch 9/12:  67%|██████▋   | 6/9 [00:05<00:02,  1.03it/s]Epoch 9/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.20s/it]Epoch 9/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.21s/it]Epoch 9/12: 100%|██████████| 9/9 [00:09<00:00,  1.03s/it]Epoch 9/12: 100%|██████████| 9/9 [00:09<00:00,  1.03s/it]
+[2026-04-28 21:04:07] [INFO] Epoch 9: train_loss=0.0005, val_loss=0.0714, val_acc=0.922, pos_sim=0.971, neg_sim=-0.877, lr=2.50e-04
+Epoch 10/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 10/12:  11%|█         | 1/9 [00:00<00:07,  1.13it/s]Epoch 10/12:  22%|██▏       | 2/9 [00:02<00:08,  1.21s/it]Epoch 10/12:  33%|███▎      | 3/9 [00:04<00:08,  1.50s/it]Epoch 10/12:  44%|████▍     | 4/9 [00:05<00:07,  1.43s/it]Epoch 10/12:  56%|█████▌    | 5/9 [00:06<00:05,  1.34s/it]Epoch 10/12:  67%|██████▋   | 6/9 [00:07<00:03,  1.16s/it]Epoch 10/12:  78%|███████▊  | 7/9 [00:08<00:02,  1.07s/it]Epoch 10/12:  89%|████████▉ | 8/9 [00:09<00:00,  1.01it/s]Epoch 10/12: 100%|██████████| 9/9 [00:09<00:00,  1.18it/s]Epoch 10/12: 100%|██████████| 9/9 [00:09<00:00,  1.08s/it]
+[2026-04-28 21:04:16] [INFO] Epoch 10: train_loss=0.0005, val_loss=0.0721, val_acc=0.922, pos_sim=0.972, neg_sim=-0.877, lr=1.46e-04
+Epoch 11/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 11/12:  11%|█         | 1/9 [00:01<00:09,  1.18s/it]Epoch 11/12:  22%|██▏       | 2/9 [00:01<00:06,  1.07it/s]Epoch 11/12:  33%|███▎      | 3/9 [00:03<00:06,  1.03s/it]Epoch 11/12:  44%|████▍     | 4/9 [00:04<00:05,  1.09s/it]Epoch 11/12:  56%|█████▌    | 5/9 [00:05<00:04,  1.11s/it]Epoch 11/12:  67%|██████▋   | 6/9 [00:07<00:03,  1.29s/it]Epoch 11/12:  78%|███████▊  | 7/9 [00:08<00:02,  1.25s/it]Epoch 11/12:  89%|████████▉ | 8/9 [00:08<00:01,  1.09s/it]Epoch 11/12: 100%|██████████| 9/9 [00:09<00:00,  1.07it/s]Epoch 11/12: 100%|██████████| 9/9 [00:09<00:00,  1.06s/it]
+[2026-04-28 21:04:26] [INFO] Epoch 11: train_loss=0.0005, val_loss=0.0724, val_acc=0.922, pos_sim=0.971, neg_sim=-0.877, lr=6.70e-05
+Epoch 12/12:   0%|          | 0/9 [00:00<?, ?it/s]Epoch 12/12:  11%|█         | 1/9 [00:01<00:08,  1.12s/it]Epoch 12/12:  22%|██▏       | 2/9 [00:02<00:07,  1.14s/it]Epoch 12/12:  33%|███▎      | 3/9 [00:03<00:06,  1.15s/it]Epoch 12/12:  44%|████▍     | 4/9 [00:04<00:05,  1.06s/it]Epoch 12/12:  56%|█████▌    | 5/9 [00:05<00:04,  1.12s/it]Epoch 12/12:  67%|██████▋   | 6/9 [00:07<00:03,  1.26s/it]Epoch 12/12:  78%|███████▊  | 7/9 [00:07<00:02,  1.12s/it]Epoch 12/12:  89%|████████▉ | 8/9 [00:09<00:01,  1.11s/it]Epoch 12/12: 100%|██████████| 9/9 [00:09<00:00,  1.14it/s]Epoch 12/12: 100%|██████████| 9/9 [00:09<00:00,  1.04s/it]
+[2026-04-28 21:04:35] [INFO] Epoch 12: train_loss=0.0005, val_loss=0.0724, val_acc=0.922, pos_sim=0.972, neg_sim=-0.876, lr=1.70e-05
+[2026-04-28 21:04:35] [INFO] Models saved with suffix: final
+[2026-04-28 21:04:35] [INFO] Enhanced training completed successfully
+Trajectory features on 400 pairs (for 5-fold CV + final head)
+[2026-04-28 21:04:35] [INFO] Starting comprehensive layer-wise dynamics analysis...
+Analyzing Dynamics:   0%|          | 0/400 [00:00<?, ?it/s]Analyzing Dynamics:   1%|          | 3/400 [00:00<00:17, 23.30it/s]Analyzing Dynamics:   2%|▏         | 6/400 [00:00<00:15, 25.27it/s]Analyzing Dynamics:   2%|▏         | 9/400 [00:00<00:16, 23.62it/s]Analyzing Dynamics:   3%|▎         | 12/400 [00:00<00:17, 21.85it/s]Analyzing Dynamics:   4%|▍         | 15/400 [00:00<00:17, 21.52it/s]Analyzing Dynamics:   4%|▍         | 18/400 [00:00<00:17, 21.67it/s]Analyzing Dynamics:   5%|▌         | 21/400 [00:00<00:17, 21.78it/s]Analyzing Dynamics:   6%|▌         | 24/400 [00:01<00:17, 21.26it/s]Analyzing Dynamics:   7%|▋         | 27/400 [00:01<00:16, 22.70it/s]Analyzing Dynamics:   8%|▊         | 30/400 [00:01<00:15, 23.76it/s]Analyzing Dynamics:   8%|▊         | 33/400 [00:01<00:16, 22.53it/s]Analyzing Dynamics:   9%|▉         | 36/400 [00:01<00:15, 23.10it/s]Analyzing Dynamics:  10%|▉         | 39/400 [00:01<00:15, 23.48it/s]Analyzing Dynamics:  10%|█         | 42/400 [00:01<00:15, 23.33it/s]Analyzing Dynamics:  11%|█▏        | 45/400 [00:01<00:14, 24.42it/s]Analyzing Dynamics:  12%|█▏        | 48/400 [00:02<00:15, 23.36it/s]Analyzing Dynamics:  13%|█▎        | 51/400 [00:02<00:18, 19.16it/s]Analyzing Dynamics:  14%|█▎        | 54/400 [00:02<00:18, 18.89it/s]Analyzing Dynamics:  14%|█▍        | 56/400 [00:02<00:18, 18.95it/s]Analyzing Dynamics:  15%|█▍        | 59/400 [00:02<00:17, 19.91it/s]Analyzing Dynamics:  16%|█▌        | 62/400 [00:02<00:18, 18.44it/s]Analyzing Dynamics:  16%|█▌        | 64/400 [00:03<00:18, 17.93it/s]Analyzing Dynamics:  17%|█▋        | 67/400 [00:03<00:17, 18.56it/s]Analyzing Dynamics:  18%|█▊        | 71/400 [00:03<00:14, 22.81it/s]Analyzing Dynamics:  18%|█▊        | 74/400 [00:03<00:14, 21.75it/s]Analyzing Dynamics:  19%|█▉        | 77/400 [00:03<00:15, 20.35it/s]Analyzing Dynamics:  20%|██        | 80/400 [00:03<00:14, 22.33it/s]Analyzing Dynamics:  21%|██        | 83/400 [00:03<00:14, 22.59it/s]Analyzing Dynamics:  22%|██▏       | 86/400 [00:03<00:13, 23.49it/s]Analyzing Dynamics:  22%|██▏       | 89/400 [00:04<00:13, 22.65it/s]Analyzing Dynamics:  23%|██▎       | 92/400 [00:04<00:14, 20.99it/s]Analyzing Dynamics:  24%|██▍       | 96/400 [00:04<00:13, 23.24it/s]Analyzing Dynamics:  25%|██▍       | 99/400 [00:04<00:13, 22.76it/s]Analyzing Dynamics:  26%|██▌       | 102/400 [00:04<00:12, 23.17it/s]Analyzing Dynamics:  26%|██▋       | 105/400 [00:04<00:12, 23.57it/s]Analyzing Dynamics:  28%|██▊       | 111/400 [00:04<00:09, 30.19it/s]Analyzing Dynamics:  29%|██▉       | 115/400 [00:05<00:09, 29.96it/s]Analyzing Dynamics:  30%|██▉       | 119/400 [00:05<00:11, 24.39it/s]Analyzing Dynamics:  31%|███       | 124/400 [00:05<00:09, 27.91it/s]Analyzing Dynamics:  32%|███▏      | 127/400 [00:05<00:10, 26.23it/s]Analyzing Dynamics:  32%|███▎      | 130/400 [00:05<00:11, 24.10it/s]Analyzing Dynamics:  33%|███▎      | 133/400 [00:05<00:11, 24.14it/s]Analyzing Dynamics:  34%|███▍      | 136/400 [00:05<00:10, 25.44it/s]Analyzing Dynamics:  35%|███▌      | 140/400 [00:06<00:09, 28.37it/s]Analyzing Dynamics:  36%|███▌      | 143/400 [00:06<00:09, 26.38it/s]Analyzing Dynamics:  36%|███▋      | 146/400 [00:06<00:10, 24.71it/s]Analyzing Dynamics:  37%|███▋      | 149/400 [00:06<00:09, 25.70it/s]Analyzing Dynamics:  38%|███▊      | 152/400 [00:06<00:11, 21.31it/s]Analyzing Dynamics:  39%|███▉      | 156/400 [00:06<00:10, 24.02it/s]Analyzing Dynamics:  40%|███▉      | 159/400 [00:06<00:10, 23.00it/s]Analyzing Dynamics:  40%|████      | 162/400 [00:07<00:10, 22.79it/s]Analyzing Dynamics:  41%|████▏     | 165/400 [00:07<00:10, 22.57it/s]Analyzing Dynamics:  42%|████▏     | 169/400 [00:07<00:09, 24.04it/s]Analyzing Dynamics:  43%|████▎     | 172/400 [00:07<00:09, 23.50it/s]Analyzing Dynamics:  44%|████▍     | 175/400 [00:07<00:09, 23.62it/s]Analyzing Dynamics:  44%|████▍     | 178/400 [00:07<00:09, 23.84it/s]Analyzing Dynamics:  46%|████▌     | 183/400 [00:07<00:07, 27.44it/s]Analyzing Dynamics:  46%|████▋     | 186/400 [00:07<00:07, 27.16it/s]Analyzing Dynamics:  47%|████▋     | 189/400 [00:08<00:07, 26.51it/s]Analyzing Dynamics:  48%|████▊     | 192/400 [00:08<00:07, 26.80it/s]Analyzing Dynamics:  49%|████▉     | 196/400 [00:08<00:07, 28.30it/s]Analyzing Dynamics:  50%|████▉     | 199/400 [00:08<00:07, 28.50it/s]Analyzing Dynamics:  50%|█████     | 202/400 [00:08<00:07, 28.01it/s]Analyzing Dynamics:  52%|█████▏    | 206/400 [00:08<00:06, 31.15it/s]Analyzing Dynamics:  52%|█████▎    | 210/400 [00:08<00:07, 25.50it/s]Analyzing Dynamics:  53%|█████▎    | 213/400 [00:08<00:07, 25.72it/s]Analyzing Dynamics:  54%|█████▍    | 216/400 [00:09<00:07, 26.16it/s]Analyzing Dynamics:  55%|█████▌    | 221/400 [00:09<00:05, 30.74it/s]Analyzing Dynamics:  56%|█████▋    | 225/400 [00:09<00:06, 26.75it/s]Analyzing Dynamics:  57%|█████▋    | 228/400 [00:09<00:06, 27.06it/s]Analyzing Dynamics:  58%|█████▊    | 232/400 [00:09<00:06, 27.05it/s]Analyzing Dynamics:  59%|█████▉    | 236/400 [00:09<00:05, 27.38it/s]Analyzing Dynamics:  60%|█████▉    | 239/400 [00:09<00:05, 27.01it/s]Analyzing Dynamics:  61%|██████    | 243/400 [00:10<00:05, 27.50it/s]Analyzing Dynamics:  62%|██████▏   | 248/400 [00:10<00:04, 30.83it/s]Analyzing Dynamics:  64%|██████▎   | 254/400 [00:10<00:04, 34.71it/s]Analyzing Dynamics:  64%|██████▍   | 258/400 [00:10<00:04, 32.32it/s]Analyzing Dynamics:  66%|██████▋   | 265/400 [00:10<00:03, 39.19it/s]Analyzing Dynamics:  67%|██████▋   | 269/400 [00:10<00:03, 34.43it/s]Analyzing Dynamics:  68%|██████▊   | 274/400 [00:10<00:03, 35.85it/s]Analyzing Dynamics:  70%|██████▉   | 278/400 [00:10<00:03, 34.99it/s]Analyzing Dynamics:  70%|███████   | 282/400 [00:11<00:03, 34.87it/s]Analyzing Dynamics:  72%|███████▏  | 286/400 [00:11<00:03, 33.92it/s]Analyzing Dynamics:  72%|███████▎  | 290/400 [00:11<00:03, 34.50it/s]Analyzing Dynamics:  74%|███████▎  | 294/400 [00:11<00:03, 32.92it/s]Analyzing Dynamics:  74%|███████▍  | 298/400 [00:11<00:03, 33.69it/s]Analyzing Dynamics:  76%|███████▌  | 302/400 [00:11<00:02, 34.82it/s]Analyzing Dynamics:  77%|███████▋  | 309/400 [00:11<00:02, 41.03it/s]Analyzing Dynamics:  79%|███████▉  | 315/400 [00:11<00:01, 45.32it/s]Analyzing Dynamics:  80%|████████  | 320/400 [00:12<00:01, 43.71it/s]Analyzing Dynamics:  81%|████████▏ | 325/400 [00:12<00:01, 42.29it/s]Analyzing Dynamics:  83%|████████▎ | 331/400 [00:12<00:01, 46.03it/s]Analyzing Dynamics:  84%|████████▍ | 336/400 [00:12<00:01, 44.99it/s]Analyzing Dynamics:  85%|████████▌ | 341/400 [00:12<00:01, 35.74it/s]Analyzing Dynamics:  86%|████████▋ | 346/400 [00:12<00:01, 38.57it/s]Analyzing Dynamics:  89%|████████▉ | 356/400 [00:12<00:00, 53.35it/s]Analyzing Dynamics:  90%|█████████ | 362/400 [00:13<00:00, 45.12it/s]Analyzing Dynamics:  92%|█████████▏| 368/400 [00:13<00:00, 44.46it/s]Analyzing Dynamics:  93%|█████████▎| 373/400 [00:13<00:00, 42.15it/s]Analyzing Dynamics:  95%|█████████▍| 379/400 [00:13<00:00, 45.83it/s]Analyzing Dynamics:  96%|█████████▋| 385/400 [00:13<00:00, 45.42it/s]Analyzing Dynamics:  98%|█████████▊| 390/400 [00:13<00:00, 42.53it/s]Analyzing Dynamics: 100%|██████████| 400/400 [00:13<00:00, 29.09it/s]
+[2026-04-28 21:04:49] [INFO] Analysis completed: 400 samples processed
+{
+  "cv_auroc_mean": 0.9952500000000001,
+  "cv_auroc_std": 0.00950000000000002,
+  "hf_model": "gpt2",
+  "n_pairs": 400,
+  "augmentation": {
+    "n_factual_raw": 320,
+    "n_hallucination_raw": 320,
+    "min_pairs_target": 400,
+    "n_hallucination_generated": 0,
+    "n_factual_balanced": 200,
+    "n_hallucination_balanced": 200,
+    "n_pairs_total": 400
+  }
+}
+Running: /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_lsd/.venv/bin/python3 /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_lsd/adapt_lsd.py --prompts /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/intermediate/multi_contrastive.csv --output /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/results/v5_multidomain --limit 6736 --epochs 12 --min-pairs 400
+OK -> /Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/results/v5_multidomain/sigma_gate_lsd.pkl
+Traceback (most recent call last):
+  File "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/eval_cross_domain.py", line 163, in <module>
+    main()
+    ~~~~^^
+  File "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/eval_cross_domain.py", line 86, in main
+    ap = argparse.ArgumentParser()
+         ^^^^^^^^
+NameError: name 'argparse' is not defined. Did you forget to import 'argparse'?
+=== sigma-gate v5: multi-dataset + semantic labels + PRISM (lab) ===
+
+>>> prepare_multi_dataset.py
+
+>>> generate_and_label.py
+
+>>> create_contrastive_pairs.py
+
+>>> train_multi_probe.py
+
+>>> eval_cross_domain.py
+Traceback (most recent call last):
+  File "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/run_v5_pipeline.py", line 54, in <module>
+    main()
+    ~~~~^^
+  File "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/run_v5_pipeline.py", line 38, in main
+    _run("eval_cross_domain.py")
+    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/run_v5_pipeline.py", line 20, in _run
+    subprocess.run([sys.executable, str(p)], check=True, cwd=str(repo))
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/homebrew/Cellar/python@3.14/3.14.4/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 578, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_lsd/.venv/bin/python3', '/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/sigma_gate_v5/eval_cross_domain.py']' returned non-zero exit status 1.

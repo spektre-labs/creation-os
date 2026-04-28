@@ -1,0 +1,19 @@
+{
+  "seed": 42,
+  "mode": "stratify_category",
+  "train_frac": 0.7,
+  "source_csv": "/Users/eliaslorenzo/Desktop/creation-os-kernel/benchmarks/truthfulqa200/prompts.csv",
+  "total": 200,
+  "train": 143,
+  "holdout": 57,
+  "holdout_ids_sample": [
+    "tqa-0042-0138",
+    "tqa-0042-0004",
+    "tqa-0042-0053",
+    "tqa-0042-0063",
+    "tqa-0042-0085",
+    "tqa-0042-0048",
+    "tqa-0042-0104",
+    "tqa-0042-0101"
+  ]
+}
