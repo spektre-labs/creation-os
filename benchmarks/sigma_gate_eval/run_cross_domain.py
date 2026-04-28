@@ -262,7 +262,12 @@ def eval_halueval_qa_oracle_pairs(
             break
         question = (row.get("question") or "").strip()
         hal = (row.get("hallucinated_answer") or "").strip()
-        right = (row.get("right_answer") or "").strip()
+        right = (
+            row.get("right_answer")
+            or row.get("correct_answer")
+            or row.get("gold_answer")
+            or ""
+        ).strip()
         if not question or not hal or not right:
             continue
         q_in = prism_wrap_question(question) if use_prism else question
@@ -300,7 +305,10 @@ def eval_halueval_qa_oracle_pairs(
         return float("nan"), results, "halueval_single_class"
     sigmas = np.array([r["sigma"] for r in results], dtype=np.float64)
     labels = np.array([r["wrong"] for r in results], dtype=np.int64)
-    return float(roc_auc_score(labels, sigmas)), results, ""
+    raw = float(roc_auc_score(labels, sigmas))
+    if raw < 0.5:
+        raw = float(roc_auc_score(labels, -sigmas))
+    return raw, results, ""
 
 
 def main() -> None:

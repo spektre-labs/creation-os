@@ -8730,6 +8730,7 @@ check-sigma-gate-v4:
 		benchmarks/sigma_gate_eval/run_cross_domain_multi.py benchmarks/sigma_gate_eval/run_ultimate_eval.py \
 		benchmarks/sigma_gate_eval/run_hide_eval.py \
 		benchmarks/sigma_gate_eval/run_streaming_eval.py \
+		benchmarks/sigma_gate_eval/run_halueval_oracle_fix.py \
 		benchmarks/sigma_gate_eval/run_complete_pipeline_eval.py \
 		benchmarks/sigma_gate_eval/run_router_eval.py \
 		benchmarks/sigma_gate_eval/run_cost_eval.py \
