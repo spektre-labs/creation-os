@@ -8718,6 +8718,8 @@ check-sigma-gate-v4:
 		python/cos/sigma_unified.py python/cos/sigma_hide.py python/cos/sigma_ultimate.py \
 		python/cos/sigma_gate_core.py \
 		python/cos/sigma_self_modify.py \
+		python/cos/sigma_a2a_card.py \
+		python/cos/sigma_swarm.py \
 		python/cos/sigma_router.py \
 		python/cos/sigma_cascade.py \
 		python/cos/sigma_calibration.py \
@@ -8749,7 +8751,8 @@ check-sigma-gate-c: tests/test_sigma_gate.c python/cos/sigma_gate.h
 check-sigma-gate-python: check-sigma-gate-v4
 	@if python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_sigma_gate_core.py" \
-			"$(CURDIR)/tests/test_sigma_integration.py" "$(CURDIR)/tests/test_sigma_self_modify.py" -q && echo "check-sigma-gate-python: OK"; \
+			"$(CURDIR)/tests/test_sigma_integration.py" "$(CURDIR)/tests/test_sigma_self_modify.py" \
+			"$(CURDIR)/tests/test_sigma_a2a_card.py" "$(CURDIR)/tests/test_sigma_swarm.py" -q && echo "check-sigma-gate-python: OK"; \
 	else \
 		echo "check-sigma-gate-python: SKIP (pip install pytest)"; \
 	fi

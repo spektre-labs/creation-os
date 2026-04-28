@@ -46,6 +46,13 @@ from .sigma_self_modify import (
     MutationOutcome,
     SigmaSelfModifier,
 )
+from .sigma_a2a_card import (
+    DEFAULT_SIGMA_SIGNALS,
+    DEFAULT_SIGMA_VERIFIER_CAPABILITIES,
+    VERDICT_TYPE_NAMES,
+    build_sigma_verifier_agent_card,
+)
+from .sigma_swarm import SigmaSwarm, SwarmAgent
 
 __all__ = [
     "SigmaGate",
@@ -86,4 +93,10 @@ __all__ = [
     "DEFAULT_INVARIANT_FRAGMENTS",
     "MutationOutcome",
     "SigmaSelfModifier",
+    "DEFAULT_SIGMA_SIGNALS",
+    "DEFAULT_SIGMA_VERIFIER_CAPABILITIES",
+    "VERDICT_TYPE_NAMES",
+    "build_sigma_verifier_agent_card",
+    "SigmaSwarm",
+    "SwarmAgent",
 ]

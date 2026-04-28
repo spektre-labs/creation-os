@@ -5,6 +5,12 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [README.md](../README.md) | Everyone | Slim (~530 lines) front door: Try-it, Measured, Architecture, Build, Proofs, Docs hub, Limitations, License |
+| [QUICKSTART.md](QUICKSTART.md) | Integrators | σ-gate Python import, MCP env block, representative AUROC table, Gemma+HIDE eval pointer |
+| [MCP_SIGMA.md](MCP_SIGMA.md) | Agent integrators | FastMCP LSD σ-gate stdio server, tool list, JSON response envelope |
+| [MCP_LISTING.md](MCP_LISTING.md) | Operators / marketplace | Draft marketplace copy + install JSON + submission checklist (evidence-backed numbers only) |
+| [EU_AI_ACT_COMPLIANCE.md](EU_AI_ACT_COMPLIANCE.md) | Operators / counsel prep | Article 50 transparency **support** mapping — not legal advice or certification |
+| [v58/BITNET_SIGMA_SAMPLER.md](v58/BITNET_SIGMA_SAMPLER.md) | Integrators | BitNet / bitnet.cpp + `sigma_sampler.h` wiring checklist (v58; no energy claims without repro) |
+| [v58/SIGMA_A2A_SWARM.md](v58/SIGMA_A2A_SWARM.md) | Integrators | A2A Agent Card σ-extension (`sigma_a2a_card.py`) + σ-swarm / HAP scaffold (`sigma_swarm.py`); complements `A2A_COS_TRUST.md` / `MCP_SIGMA.md` |
 | [README_FULL.md](README_FULL.md) | Reviewers, narrative readers | Archived pre-slim README (1 906 lines) with full diagrams, forty-kernel receipt, capability layers, composed-decision stack |
 | [SURFACE_VERSIONS.md](SURFACE_VERSIONS.md) | Integrators, reviewers | Full v112–v278+ capability catalogue (tables + `make check-vNN` pointers) split out of README |
 | [README_REFACTOR_PLAN.md](README_REFACTOR_PLAN.md) | Maintainers | README slimming phases, metrics, optional `gen_readme_fragment.sh` automation |

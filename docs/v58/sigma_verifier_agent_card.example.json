@@ -1,0 +1,19 @@
+{
+  "agent_id": "creation-os-sigma",
+  "name": "σ-gate Verifier",
+  "description": "Cognitive interrupt for LLM outputs (lab verifier agent card).",
+  "capabilities": [
+    "hallucination_detection",
+    "confidence_scoring",
+    "abstention_recommendation"
+  ],
+  "sigma_profile": {
+    "signals": ["lsd", "hide", "spectral", "entropy"],
+    "verdict_types": ["ACCEPT", "RETHINK", "ABSTAIN"],
+    "gate_version": "0.57",
+    "kernel_size_bytes": 12
+  },
+  "protocols": ["mcp", "a2a"],
+  "license": "LicenseRef-SCSL-1.0 OR AGPL-3.0-only",
+  "endpoint": "https://creation-os.example/.well-known/agent.json"
+}
