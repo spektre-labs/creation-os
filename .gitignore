@@ -240,11 +240,13 @@ benchmarks/sigma_gate_eval/results_multi_signal/
 benchmarks/sigma_gate_eval/results_cross_domain_multi/
 external/lapeig/
 benchmarks/sigma_gate_v5/results/
+benchmarks/sigma_gate_v5/logs/*.log
 benchmarks/sigma_gate_v5/intermediate/*.json
 benchmarks/sigma_gate_v5/intermediate/*.jsonl
 benchmarks/sigma_gate_v5/intermediate/*.csv
 !benchmarks/sigma_gate_v5/intermediate/.gitkeep
 benchmarks/sigma_gate_eval/logs/*.log
+benchmarks/sigma_gate_eval/logs/*.pid
 benchmarks/sigma_gate_eval/results/*.jsonl
 # Sirraya LSD vendor clone (reclone via run_lsd_integration.sh; tracked patch under benchmarks/sigma_probe_lsd/patches/)
 external/lsd/
