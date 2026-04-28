@@ -1,12 +1,12 @@
 {
   "model": "gemma3_4b",
-  "hf_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "hf_model": "google/gemma-2-2b-it",
   "n_prompts": 100,
-  "n_correct": 11,
-  "n_wrong": 89,
-  "cv_auroc_mean": 0.8022875816993464,
-  "cv_auroc_std": 0.10957706880678737,
-  "train_auroc": 0.8539325842696629,
+  "n_correct": 43,
+  "n_wrong": 57,
+  "cv_auroc_mean": 0.5297979797979798,
+  "cv_auroc_std": 0.05639206091491248,
+  "train_auroc": 0.606283149734802,
   "features_used": [
     "mean_alignment",
     "final_alignment",
