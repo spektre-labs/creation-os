@@ -119,26 +119,20 @@ def main() -> int:
     probe = SigmaProbe()
 
     tokenizer = AutoTokenizer.from_pretrained(hf_name, trust_remote_code=True)
-    try:
-        import importlib.util
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
 
-        _has_acc = importlib.util.find_spec("accelerate") is not None
-    except Exception:
-        _has_acc = False
+    use_device_map = os.environ.get("SIGMA_PROBE_DEVICE_MAP", "0") == "1"
     load_kw: dict = {"trust_remote_code": True}
-    if _has_acc:
-        load_kw["torch_dtype"] = torch.float16
+    if use_device_map:
         load_kw["device_map"] = "auto"
+        load_kw["torch_dtype"] = torch.float16
     else:
         load_kw["torch_dtype"] = torch.float32
+
     model = AutoModelForCausalLM.from_pretrained(hf_name, **load_kw)
-    if not _has_acc:
-        dev = torch.device("cpu")
-        if torch.backends.mps.is_available():
-            dev = torch.device("mps")
-        elif torch.cuda.is_available():
-            dev = torch.device("cuda")
-        model = model.to(dev)
+    if not use_device_map:
+        model = model.to(torch.device("cpu"))
     model.eval()
 
     all_features: List[List[float]] = []

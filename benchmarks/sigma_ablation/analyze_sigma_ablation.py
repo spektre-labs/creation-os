@@ -108,14 +108,11 @@ def ece_bins(conf: List[float], correct: List[int], n_bins: int = 10) -> float:
 
 
 def _finite_sigma(x: Dict[str, Any]) -> bool:
-    v = x.get("sigma")
-    if v is None:
-        return False
     try:
-        fv = float(v)
+        v = float(x.get("sigma", float("nan")))
+        return not (math.isnan(v) or math.isinf(v))
     except (TypeError, ValueError):
         return False
-    return not (math.isnan(fv) or math.isinf(fv))
 
 
 def main() -> int:
@@ -155,25 +152,22 @@ def main() -> int:
         groups[key].append(r)
 
     per_group: List[Dict[str, Any]] = []
-    for (model, n_samp, signal, ts_key), recs in sorted(groups.items()):
-        recs_f = [x for x in recs if _finite_sigma(x)]
-        y_wrong = [1 - int(x["correct"]) for x in recs_f]
-        s = [float(x["sigma"]) for x in recs_f]
+    for (model, n_samp, signal, ts_key), recs_all in sorted(groups.items()):
+        recs = [x for x in recs_all if _finite_sigma(x)]
+        if not recs:
+            continue
+        y_wrong = [1 - int(x["correct"]) for x in recs]
+        s = [float(x["sigma"]) for x in recs]
         acc_flags = [bool(x["accepted"]) for x in recs]
         corr = [int(x["correct"]) for x in recs]
-        if len(recs_f) < 2 or len(set(y_wrong)) < 2:
+        if len(set(y_wrong)) < 2:
             auroc = float("nan")
             auprc = float("nan")
         else:
             auroc = float(roc_auc_score(y_wrong, s))
             auprc = float(average_precision_score(y_wrong, s))
-        conf = [
-            max(1e-6, min(1.0 - 1e-6, 1.0 - float(x["sigma"])))
-            for x in recs
-            if _finite_sigma(x)
-        ]
-        corr_f = [int(x["correct"]) for x in recs if _finite_sigma(x)]
-        ece = ece_bins(conf, corr_f, 10) if conf else float("nan")
+        conf = [max(1e-6, min(1.0 - 1e-6, 1.0 - float(x["sigma"]))) for x in recs]
+        ece = ece_bins(conf, corr, 10)
         n_acc = sum(1 for a in acc_flags if a)
         acc_accept = (
             sum(c for c, a in zip(corr, acc_flags) if a) / n_acc if n_acc else float("nan")
@@ -183,12 +177,10 @@ def main() -> int:
         wconf = sum(
             1
             for x in recs
-            if _finite_sigma(x)
-            and (not x["correct"])
-            and float(x["sigma"]) < float(args.tau_wrong_conf)
+            if (not x["correct"]) and float(x["sigma"]) < float(args.tau_wrong_conf)
         )
-        sc = [float(x["sigma"]) for x in recs if x["correct"] and _finite_sigma(x)]
-        sw = [float(x["sigma"]) for x in recs if (not x["correct"]) and _finite_sigma(x)]
+        sc = [float(x["sigma"]) for x in recs if x["correct"]]
+        sw = [float(x["sigma"]) for x in recs if not x["correct"]]
         m_c = sum(sc) / len(sc) if sc else float("nan")
         m_w = sum(sw) / len(sw) if sw else float("nan")
         gap = (m_w - m_c) if (sc and sw) else float("nan")
