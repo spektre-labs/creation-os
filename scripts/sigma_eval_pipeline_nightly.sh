@@ -23,6 +23,7 @@ STAMP="$(date +%Y%m%d_%H%M%S)"
 LOGDIR="${REPO}/logs/pipeline_${STAMP}"
 mkdir -p "$LOGDIR"
 echo "$$" >"${LOGDIR}/pipeline.pid"
+ln -sfn "$LOGDIR" "${REPO}/logs/LATEST_PIPELINE"
 
 log() { echo "[$(date -Iseconds)] $*" | tee -a "${LOGDIR}/pipeline.log"; }
 
@@ -30,6 +31,48 @@ checkpoint() {
   echo "$*" >>"${LOGDIR}/checkpoint.txt"
   log "$*"
 }
+
+write_report() {
+  local r="${LOGDIR}/REPORT_SUMMARY.md"
+  {
+    echo "# σ eval pipeline — run summary"
+    echo ""
+    echo "- **Generated:** $(date -Iseconds)"
+    echo "- **Log directory:** \`${LOGDIR}\`"
+    echo "- **Repo:** \`${REPO}\`"
+    echo ""
+    echo "## checkpoint.txt"
+    echo '```'
+    cat "${LOGDIR}/checkpoint.txt" 2>/dev/null || echo "(empty)"
+    echo '```'
+    echo ""
+    echo "## JSON snapshots (in this directory)"
+    ls -1 "${LOGDIR}"/*.json 2>/dev/null | while read -r f; do echo "- \`$(basename "$f")\`"; done || true
+    echo ""
+    for f in streaming_eval_summary.json router_summary.json gemma_hide_summary.json \
+      halueval_oracle_summary.json calibration_summary.json; do
+      local p="${LOGDIR}/${f}"
+      if [[ -f "${p}" ]]; then
+        echo "## ${f}"
+        echo '```json'
+        python3 -c "import json,sys; print(json.dumps(json.load(open(sys.argv[1])), indent=2))" "${p}" 2>/dev/null || cat "${p}"
+        echo '```'
+        echo ""
+      fi
+    done
+    echo "## Per-step logs"
+    echo "| Step | Log |"
+    echo "|------|-----|"
+    for name in streaming router gemma halueval_oracle hide calibration cost cascade; do
+      if [[ -f "${LOGDIR}/${name}.log" ]]; then
+        echo "| ${name} | \`${name}.log\` |"
+      fi
+    done
+  } >"${r}" 2>/dev/null || true
+  log "wrote ${r}"
+}
+
+trap 'write_report' EXIT
 
 run_step() {
   local name="$1"
@@ -84,3 +127,4 @@ run_step cascade python3 benchmarks/sigma_gate_eval/run_cascade_eval.py
 
 checkpoint "END"
 log "done; artefacts and per-step logs in ${LOGDIR}"
+# write_report runs via trap EXIT

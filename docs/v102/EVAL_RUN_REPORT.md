@@ -21,6 +21,9 @@ echo $! > logs/nightly_nohup.pid
 
 Progress: `tail -f logs/pipeline_*/pipeline.log` (open the newest `logs/pipeline_*` directory). Per-step logs: `streaming.log`, `router.log`, `gemma.log`, etc. Checkpoint: `checkpoint.txt`. JSON snapshots are copied into that directory when present.
 
+**Stable pointer:** `logs/LATEST_PIPELINE` → symlink to the active (or last started) run directory.
+
+**Morning read:** open `logs/LATEST_PIPELINE/REPORT_SUMMARY.md` — generated automatically when the pipeline shell exits (success, failure, or `SIGTERM`), and lists checkpoints plus embedded JSON summaries.
 ## Hardware profile (example)
 
 - Apple Silicon, 8 GB unified memory: prefer `--limit 10` for Gemma; MPS uses **float32** in `run_gemma_eval.py`; CPU uses **bfloat16**.
