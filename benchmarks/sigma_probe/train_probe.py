@@ -221,15 +221,20 @@ def main() -> int:
         train_auroc = probe.train(X, y)
         probe.save(str(out_dir / "sigma_probe.pkl"))
 
+    def _json_float(x: float) -> float | None:
+        if isinstance(x, float) and (np.isnan(x) or np.isinf(x)):
+            return None
+        return float(x)
+
     summary = {
         "model": args.model,
         "hf_model": hf_name,
         "n_prompts": len(rows),
         "n_correct": int(len(y) - y.sum()),
         "n_wrong": int(y.sum()),
-        "cv_auroc_mean": cv_mean,
-        "cv_auroc_std": cv_std,
-        "train_auroc": train_auroc,
+        "cv_auroc_mean": _json_float(cv_mean),
+        "cv_auroc_std": _json_float(cv_std),
+        "train_auroc": _json_float(train_auroc),
         "features_used": feature_keys,
         "method": "hidden_state_trajectory_probe",
         "reference": "LSD (arXiv 2510.04933), ICR Probe (ACL 2025)",
