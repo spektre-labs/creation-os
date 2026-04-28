@@ -1,12 +1,12 @@
 {
   "model": "gemma3:4b",
-  "hf_model": "hf-internal-testing/tiny-random-LlamaForCausalLM",
-  "n_prompts": 24,
-  "n_correct": 0,
-  "n_wrong": 24,
+  "hf_model": "distilgpt2",
+  "n_prompts": 40,
+  "n_correct": 1,
+  "n_wrong": 39,
   "cv_auroc_mean": null,
   "cv_auroc_std": null,
-  "train_auroc": null,
+  "train_auroc": 1.0,
   "features_used": [
     "mean_alignment",
     "final_alignment",
