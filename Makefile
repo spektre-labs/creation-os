@@ -8715,12 +8715,81 @@ sigma-gate-v4-adapt:
 check-sigma-gate-v4:
 	@python3 -m py_compile benchmarks/sigma_gate_lsd/adapt_lsd.py benchmarks/sigma_gate_lsd/sigma_gate_v4.py \
 		python/cos/sigma_gate_unified.py python/cos/sigma_spectral.py python/cos/sigma_streaming.py \
-		python/cos/sigma_unified.py \
+		python/cos/sigma_unified.py python/cos/sigma_hide.py python/cos/sigma_ultimate.py \
+		python/cos/sigma_gate_core.py \
+		python/cos/sigma_self_modify.py \
+		python/cos/sigma_router.py \
+		python/cos/sigma_cascade.py \
+		python/cos/sigma_calibration.py \
+		python/cos/sigma_gate_complete.py python/cos/sigma_gate_precheck.py python/cos/sigma_precheck.py \
+		python/cos/hide_metric_upstream.py \
 		python/cos/mcp_sigma_audit.py python/cos/mcp_sigma_server.py \
 		benchmarks/sigma_gate_eval/run_unified_eval.py benchmarks/sigma_gate_eval/run_multi_signal_eval.py \
-		benchmarks/sigma_gate_eval/run_cross_domain_multi.py \
-		benchmarks/sigma_gate_scaling/run_scaling.py scripts/cos_mcp_server.py
+		benchmarks/sigma_gate_eval/run_cross_domain_multi.py benchmarks/sigma_gate_eval/run_ultimate_eval.py \
+		benchmarks/sigma_gate_eval/run_hide_eval.py \
+		benchmarks/sigma_gate_eval/run_streaming_eval.py \
+		benchmarks/sigma_gate_eval/run_complete_pipeline_eval.py \
+		benchmarks/sigma_gate_eval/run_router_eval.py \
+		benchmarks/sigma_gate_eval/run_cost_eval.py \
+		benchmarks/sigma_gate_eval/run_cascade_eval.py \
+		benchmarks/sigma_gate_eval/run_calibration_eval.py \
+		benchmarks/sigma_gate_hami/adapt_hami.py \
+		benchmarks/sigma_gate_eval/create_comparison_table.py \
+		benchmarks/sigma_gate_scaling/run_scaling.py \
+		benchmarks/sigma_gate_scaling/run_gemma_eval.py scripts/cos_mcp_server.py
 	@echo "check-sigma-gate-v4: OK (py_compile only)"
+
+# C cognitive interrupt header (python/cos/sigma_gate.h) + unit test
+check-sigma-gate-c: tests/test_sigma_gate.c python/cos/sigma_gate.h
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/python/cos" \
+		-o "$(CURDIR)/.tmp_test_sigma_gate" "$(CURDIR)/tests/test_sigma_gate.c" && \
+		"$(CURDIR)/.tmp_test_sigma_gate" && rm -f "$(CURDIR)/.tmp_test_sigma_gate" && \
+		echo "check-sigma-gate-c: OK"
+
+check-sigma-gate-python: check-sigma-gate-v4
+	@if python3 -c "import pytest" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_sigma_gate_core.py" \
+			"$(CURDIR)/tests/test_sigma_integration.py" "$(CURDIR)/tests/test_sigma_self_modify.py" -q && echo "check-sigma-gate-python: OK"; \
+	else \
+		echo "check-sigma-gate-python: SKIP (pip install pytest)"; \
+	fi
+
+# σ-gate v57 bundle: C unit test + pytest + eval harnesses (torch/transformers; Gemma needs HF token).
+.PHONY: check-sigma-v57 test-sigma-gate test-sigma-core test-sigma-streaming test-sigma-router test-sigma-gemma test-sigma-hide
+
+SIGMA_GATE_PYTHONPATH ?= $(CURDIR)/python
+
+check-sigma-v57: test-sigma-gate test-sigma-core test-sigma-streaming test-sigma-router test-sigma-hide test-sigma-gemma
+	@echo "check-sigma-v57: OK"
+
+test-sigma-gate: tests/test_sigma_gate.c python/cos/sigma_gate.h
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/python/cos" \
+		-o "$(CURDIR)/.tmp_test_sigma_gate" "$(CURDIR)/tests/test_sigma_gate.c" && \
+		"$(CURDIR)/.tmp_test_sigma_gate" && rm -f "$(CURDIR)/.tmp_test_sigma_gate" && \
+		echo "test-sigma-gate: OK"
+
+test-sigma-core:
+	@python3 -c "import pytest" >/dev/null 2>&1 || (echo "test-sigma-core: install pytest" >&2 && false)
+	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" python3 -m pytest "$(CURDIR)/tests/test_sigma_gate_core.py" -v && echo "test-sigma-core: OK"
+
+test-sigma-streaming:
+	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" MPLBACKEND=Agg python3 "$(CURDIR)/benchmarks/sigma_gate_eval/run_streaming_eval.py" \
+		--holdout-limit 12 --max-new-tokens 80 && echo "test-sigma-streaming: OK"
+
+test-sigma-router:
+	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" MPLBACKEND=Agg python3 "$(CURDIR)/benchmarks/sigma_gate_eval/run_router_eval.py" \
+		--holdout-limit 20 --max-new-tokens 40 && echo "test-sigma-router: OK"
+
+test-sigma-hide:
+	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" MPLBACKEND=Agg python3 "$(CURDIR)/benchmarks/sigma_gate_eval/run_hide_eval.py" \
+		--holdout-limit 15 --scan-limit 15 --trivia-limit 20 --halu-limit 20 --max-new-tokens 40 && echo "test-sigma-hide: OK"
+
+test-sigma-gemma:
+	@if [ -z "$$HF_TOKEN" ] && [ -z "$$HUGGING_FACE_HUB_TOKEN" ]; then \
+		echo "test-sigma-gemma: SKIP (set HF_TOKEN or HUGGING_FACE_HUB_TOKEN for Gemma load)"; \
+	else \
+		PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" python3 "$(CURDIR)/benchmarks/sigma_gate_scaling/run_gemma_eval.py" --limit 5 && echo "test-sigma-gemma: OK"; \
+	fi
 sigma-ablation:
 	@python3 benchmarks/sigma_ablation/run_sigma_ablation.py
 	@echo "sigma-ablation: OK (detail → benchmarks/sigma_ablation/results/sigma_ablation_detail.jsonl)"
