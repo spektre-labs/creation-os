@@ -1,0 +1,23 @@
+{
+  "model": "gemma3_4b",
+  "hf_model": "TinyLlama/TinyLlama-1.1B-Chat-v1.0",
+  "n_prompts": 100,
+  "n_correct": 11,
+  "n_wrong": 89,
+  "cv_auroc_mean": 0.8022875816993464,
+  "cv_auroc_std": 0.10957706880678737,
+  "train_auroc": 0.8539325842696629,
+  "features_used": [
+    "mean_alignment",
+    "final_alignment",
+    "alignment_drift",
+    "alignment_std",
+    "mean_velocity",
+    "max_velocity",
+    "velocity_std",
+    "mean_acceleration",
+    "max_acceleration"
+  ],
+  "method": "hidden_state_trajectory_probe",
+  "reference": "LSD (arXiv 2510.04933), ICR Probe (ACL 2025)"
+}
