@@ -1,6 +1,7 @@
-=== Creation OS σ-gate reproducibility (working tree) ===
-Date (UTC): 2026-04-28T19:12:21Z
-Base commit: 3c41300103c0851d075a3ce0f20319e33bf51fcc
+=== Creation OS σ-gate reproducibility ===
+Tag: v56
+Date (UTC): 2026-04-28T19:14:15Z
+Commit: ce7554b95fc72f0091334ba67226181833c59b1c
 
 === SHA-256 (if present) ===
 bf4d6ce3b32df3ed451c9526513448122de1fd0058d56b642f7d59a3f472a6b5  benchmarks/sigma_gate_eval/results_holdout/holdout_summary.json
