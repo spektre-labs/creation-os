@@ -1,0 +1,23 @@
+{
+  "model": "gemma3:4b",
+  "hf_model": "hf-internal-testing/tiny-random-LlamaForCausalLM",
+  "n_prompts": 24,
+  "n_correct": 0,
+  "n_wrong": 24,
+  "cv_auroc_mean": null,
+  "cv_auroc_std": null,
+  "train_auroc": null,
+  "features_used": [
+    "mean_alignment",
+    "final_alignment",
+    "alignment_drift",
+    "alignment_std",
+    "mean_velocity",
+    "max_velocity",
+    "velocity_std",
+    "mean_acceleration",
+    "max_acceleration"
+  ],
+  "method": "hidden_state_trajectory_probe",
+  "reference": "LSD (arXiv 2510.04933), ICR Probe (ACL 2025)"
+}
