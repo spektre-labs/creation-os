@@ -20,7 +20,9 @@ git add benchmarks/sigma_gate_v5/
 git add benchmarks/sigma_probe_lsd/
 git add configs/mcp/
 git add scripts/cos_mcp_server.py
-git add run_*.sh
+git add run_final_eval.sh run_holdout_pipeline.sh run_integration.sh run_lsd_full.sh \
+  run_lsd_integration.sh run_lsd_v4.sh run_mcp_integration.sh run_multi_signal.sh \
+  run_next_phase.sh run_ship.sh run_v5.sh 2>/dev/null || true
 git add docs/MCP_SIGMA.md docs/sigma_gate_v4_comparison_table.md docs/sigma_gate_v4_publication_results.md \
   docs/reddit_ml_sigma_gate.md docs/reddit_ml_sigma_gate_v4.md docs/reddit_ml_post_v2.md 2>/dev/null || true
 git add benchmarks/sigma_ablation/ benchmarks/sigma_probe/train_probe.py 2>/dev/null || true
