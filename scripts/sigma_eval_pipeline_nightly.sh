@@ -96,9 +96,9 @@ run_step() {
 log "pipeline dir=${LOGDIR} pid=$$ repo=${REPO}"
 checkpoint "START"
 
-# --- eval steps (continue on failure) — full holdout split (~57 rows) unless RAM-bound ---
-# Gemma+HIDE uses same row cap; reduce with CREATION_OS_GEMMA_LIMIT if OOM.
-_GEM_LIM="${CREATION_OS_GEMMA_LIMIT:-57}"
+# Gemma+HIDE: default 10 rows on 8GB unified memory (MPS OOM if 57). Override:
+#   CREATION_OS_GEMMA_LIMIT=57  (risk OOM)  or  PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 (risky)
+_GEM_LIM="${CREATION_OS_GEMMA_LIMIT:-10}"
 run_step streaming python3 benchmarks/sigma_gate_eval/run_streaming_eval.py \
   --holdout-limit 57 --max-new-tokens 100
 

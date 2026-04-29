@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import pickle
 import sys
 from pathlib import Path
 
@@ -56,9 +55,7 @@ def main() -> int:
     from cos.sigma_gate import SigmaGate
 
     probe_path = _pick_probe(repo)
-    with probe_path.open("rb") as f:
-        probe = pickle.load(f)
-    gate = SigmaGate(probe)
+    gate = SigmaGate(probe_path)
 
     tok = AutoTokenizer.from_pretrained(args.model)
     if tok.pad_token is None:
