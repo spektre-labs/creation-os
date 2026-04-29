@@ -96,9 +96,12 @@ run_step() {
 log "pipeline dir=${LOGDIR} pid=$$ repo=${REPO}"
 checkpoint "START"
 
-# Gemma+HIDE: default 10 rows on 8GB unified memory (MPS OOM if 57). Override:
-#   CREATION_OS_GEMMA_LIMIT=57  (risk OOM)  or  PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 (risky)
+# Gemma+HIDE: default 10 rows; on Darwin use --cpu unless CREATION_OS_GEMMA_USE_CPU=0 (MPS OOM on 8GB).
 _GEM_LIM="${CREATION_OS_GEMMA_LIMIT:-10}"
+_GEM_EXTRA=()
+if [[ "$(uname -s)" == "Darwin" && "${CREATION_OS_GEMMA_USE_CPU:-1}" != "0" ]]; then
+  _GEM_EXTRA+=(--cpu)
+fi
 run_step streaming python3 benchmarks/sigma_gate_eval/run_streaming_eval.py \
   --holdout-limit 57 --max-new-tokens 100
 
@@ -106,7 +109,7 @@ run_step router python3 benchmarks/sigma_gate_eval/run_router_eval.py \
   --holdout-limit 0 --max-new-tokens 80
 
 run_step gemma python3 benchmarks/sigma_gate_scaling/run_gemma_eval.py \
-  --limit "${_GEM_LIM}"
+  --limit "${_GEM_LIM}" "${_GEM_EXTRA[@]}"
 
 run_step halueval_oracle python3 benchmarks/sigma_gate_eval/run_halueval_oracle_fix.py \
   --limit 80
