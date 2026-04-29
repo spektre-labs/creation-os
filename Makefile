@@ -8723,6 +8723,7 @@ check-sigma-gate-v4:
 		python/cos/sigma_router.py \
 		python/cos/sigma_cascade.py \
 		python/cos/sigma_calibration.py \
+		python/cos/sigma_icr.py python/cos/sigma_router_calibrate.py \
 		python/cos/sigma_gate_complete.py python/cos/sigma_gate_precheck.py python/cos/sigma_precheck.py \
 		python/cos/hide_metric_upstream.py \
 		python/cos/mcp_sigma_audit.py python/cos/mcp_sigma_server.py \
@@ -8731,6 +8732,7 @@ check-sigma-gate-v4:
 		benchmarks/sigma_gate_eval/run_hide_eval.py \
 		benchmarks/sigma_gate_eval/run_streaming_eval.py \
 		benchmarks/sigma_gate_eval/run_halueval_oracle_fix.py \
+		benchmarks/sigma_gate_eval/run_halueval_v2.py \
 		benchmarks/sigma_gate_eval/run_complete_pipeline_eval.py \
 		benchmarks/sigma_gate_eval/run_router_eval.py \
 		benchmarks/sigma_gate_eval/run_cost_eval.py \
@@ -8739,7 +8741,8 @@ check-sigma-gate-v4:
 		benchmarks/sigma_gate_hami/adapt_hami.py \
 		benchmarks/sigma_gate_eval/create_comparison_table.py \
 		benchmarks/sigma_gate_scaling/run_scaling.py \
-		benchmarks/sigma_gate_scaling/run_gemma_eval.py scripts/cos_mcp_server.py
+		benchmarks/sigma_gate_scaling/run_gemma_eval.py \
+		benchmarks/sigma_gate_scaling/run_gemma_full.py scripts/cos_mcp_server.py
 	@echo "check-sigma-gate-v4: OK (py_compile only)"
 
 # C cognitive interrupt header (python/cos/sigma_gate.h) + unit test
@@ -8782,7 +8785,7 @@ test-sigma-streaming:
 
 test-sigma-router:
 	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" MPLBACKEND=Agg python3 "$(CURDIR)/benchmarks/sigma_gate_eval/run_router_eval.py" \
-		--holdout-limit 20 --max-new-tokens 40 && echo "test-sigma-router: OK"
+		--holdout-limit 20 --max-new-tokens 40 --calibrate-thresholds --p-fast 45 && echo "test-sigma-router: OK"
 
 test-sigma-hide:
 	@PYTHONPATH="$(SIGMA_GATE_PYTHONPATH)" MPLBACKEND=Agg python3 "$(CURDIR)/benchmarks/sigma_gate_eval/run_hide_eval.py" \

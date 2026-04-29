@@ -29,6 +29,14 @@ def main() -> None:
     ap.add_argument("--tau-fast", type=float, default=0.3, help="sigma_pre <= this → FAST (band router)")
     ap.add_argument("--tau-verify", type=float, default=0.6, help="sigma_pre <= this → VERIFY after FAST band")
     ap.add_argument("--tau-escalate", type=float, default=0.85, help="sigma_pre <= this → RAG/VERIFY; above → ESCALATE/ABSTAIN")
+    ap.add_argument(
+        "--calibrate-thresholds",
+        action="store_true",
+        help="set tau_fast/tau_verify/tau_escalate from percentiles of sigma_pre on this holdout slice",
+    )
+    ap.add_argument("--p-fast", type=float, default=30.0, help="percentile for tau_fast (with --calibrate-thresholds)")
+    ap.add_argument("--p-verify", type=float, default=70.0, help="percentile for tau_verify")
+    ap.add_argument("--p-escalate", type=float, default=90.0, help="percentile for tau_escalate")
     ap.add_argument("--precheck-mode", choices=("entropy", "pooled", "head"), default="entropy")
     ap.add_argument("--holdout-limit", type=int, default=0, help="0 = all rows")
     ap.add_argument("--max-new-tokens", type=int, default=80)
@@ -45,6 +53,7 @@ def main() -> None:
 
     from cos.sigma_gate_precheck import SigmaPrecheck
     from cos.sigma_router import SigmaRouter
+    from cos.sigma_router_calibrate import router_thresholds_from_precheck_sigmas
 
     try:
         from semantic_labeling import prism_wrap_question
@@ -65,23 +74,59 @@ def main() -> None:
         mode=str(args.precheck_mode),
     )
 
-    router = SigmaRouter(
-        precheck=precheck,
-        post_gate=None,
-        local_model=model,
-        local_tokenizer=tok,
-        route_by_precheck_thresholds=True,
-        tau_fast=float(args.tau_fast),
-        tau_verify=float(args.tau_verify),
-        tau_escalate=float(args.tau_escalate),
-    )
-
     csv_path = repo / "benchmarks" / "sigma_gate_lsd" / "splits" / "holdout.csv"
     rows: List[Dict[str, str]] = []
     with csv_path.open(newline="", encoding="utf-8") as fp:
         rows = list(csv.DictReader(fp))
     if int(args.holdout_limit) > 0:
         rows = rows[: int(args.holdout_limit)]
+
+    tau_fast = float(args.tau_fast)
+    tau_verify = float(args.tau_verify)
+    tau_escalate = float(args.tau_escalate)
+    calibration_meta: Dict[str, object] = {"used": False}
+
+    if bool(args.calibrate_thresholds):
+        sigmas: List[float] = []
+        for row in rows:
+            q = (row.get("question") or "").strip()
+            if not q:
+                continue
+            question = prism_wrap_question(q) if use_prism else q
+            _s, sp, _d = precheck.predict(model, tok, question)
+            sigmas.append(float(sp))
+        th = router_thresholds_from_precheck_sigmas(
+            sigmas,
+            p_fast=float(args.p_fast),
+            p_verify=float(args.p_verify),
+            p_escalate=float(args.p_escalate),
+        )
+        tau_fast = float(th["tau_fast"])
+        tau_verify = float(th["tau_verify"])
+        tau_escalate = float(th["tau_escalate"])
+        calibration_meta = {
+            "used": True,
+            "n_sigma_samples": len(sigmas),
+            "p_fast": float(args.p_fast),
+            "p_verify": float(args.p_verify),
+            "p_escalate": float(args.p_escalate),
+            "thresholds": th,
+        }
+        print(
+            json.dumps({"calibrated_router_thresholds": th, "n_samples": len(sigmas)}, indent=2),
+            flush=True,
+        )
+
+    router = SigmaRouter(
+        precheck=precheck,
+        post_gate=None,
+        local_model=model,
+        local_tokenizer=tok,
+        route_by_precheck_thresholds=True,
+        tau_fast=tau_fast,
+        tau_verify=tau_verify,
+        tau_escalate=tau_escalate,
+    )
 
     for i, row in enumerate(rows):
         q = (row.get("question") or "").strip()
@@ -107,7 +152,8 @@ def main() -> None:
 
     out_dir = repo / "benchmarks" / "sigma_gate_eval" / "results_router"
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "router_summary.json").write_text(json.dumps(stats, indent=2), encoding="utf-8")
+    stats_out = {**stats, "calibration": calibration_meta}
+    (out_dir / "router_summary.json").write_text(json.dumps(stats_out, indent=2), encoding="utf-8")
 
 
 if __name__ == "__main__":

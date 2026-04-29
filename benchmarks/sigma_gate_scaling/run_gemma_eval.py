@@ -6,7 +6,8 @@
 Gemma-2-2B-IT + **HIDE (lab / training-free)** on TruthfulQA-style holdout rows.
 
 Scores the **same** greedy completion with ``SigmaHIDE(backend="lab")`` (forward HSIC
-sketch on pooled hidden states) — no LSD probe retraining. Semantic **wrong** labels
+sketch on pooled hidden states) and/or **ICR-style** cross-layer residual stats
+(``cos.sigma_icr``) — no LSD probe retraining in this harness. Semantic **wrong** labels
 use MiniLM cosine vs ``best_answer`` (same threshold as ``run_holdout_eval.py``).
 
 Requires: ``HF_TOKEN`` or ``HUGGING_FACE_HUB_TOKEN`` in the environment for gated
@@ -25,7 +26,7 @@ import math
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 
@@ -34,6 +35,18 @@ try:
 except ImportError as e:
     print("sklearn required:", e, file=sys.stderr)
     sys.exit(2)
+
+
+def _parse_layer_list(s: str) -> Optional[List[int]]:
+    t = (s or "").strip()
+    if not t:
+        return None
+    out: List[int] = []
+    for part in t.split(","):
+        p = part.strip()
+        if p:
+            out.append(int(p))
+    return out or None
 
 
 def _repo_root() -> Path:
@@ -82,10 +95,21 @@ def main() -> int:
         type=Path,
         default=Path("benchmarks/sigma_gate_lsd/splits/holdout.csv"),
     )
-    ap.add_argument("--limit", type=int, default=10, help="max holdout rows (use <=10 if RAM < 8GB)")
+    ap.add_argument("--limit", type=int, default=30, help="max holdout rows (use <=10 if RAM < 8GB)")
     ap.add_argument("--max-new-tokens", type=int, default=100)
     ap.add_argument("--semantic-threshold", type=float, default=0.45)
     ap.add_argument("--no-prism", action="store_true")
+    ap.add_argument(
+        "--hide-layers",
+        default="",
+        help="comma-separated block indices for multi-layer lab HIDE (empty = default single layer)",
+    )
+    ap.add_argument(
+        "--signals",
+        choices=("hide", "icr", "both"),
+        default="hide",
+        help="risk scores to log and score with AUROC vs semantic wrong label",
+    )
     ap.add_argument(
         "--cpu",
         action="store_true",
@@ -106,6 +130,13 @@ def main() -> int:
         return 2
 
     from cos.sigma_hide import SigmaHIDE
+    from cos.sigma_icr import icr_sigma_from_model_forward
+
+    sig_mode = str(args.signals).strip().lower()
+    layer_list = _parse_layer_list(str(args.hide_layers))
+    hide = None
+    if sig_mode in ("hide", "both"):
+        hide = SigmaHIDE(backend="lab", layers=layer_list)
 
     mid = str(args.hf_model).strip()
     if "gemma" not in mid.lower():
@@ -186,7 +217,6 @@ def main() -> int:
             raise RuntimeError(f"Gemma load failed: {type(e).__name__}: {e}") from e
     model.eval()
 
-    hide = SigmaHIDE(backend="lab")
     use_prism = not bool(args.no_prism)
 
     results: List[Dict[str, Any]] = []
@@ -211,55 +241,98 @@ def main() -> int:
             )
         response = tok.decode(out[0, in_len:], skip_special_tokens=True).strip()
 
-        sigma, det = hide.compute_sigma(
-            model,
-            tok,
-            prompt_for_model,
-            response,
-            max_length=512,
-        )
         correct, sim = is_correct_semantic(
             response,
             reference,
             threshold=float(args.semantic_threshold),
         )
         wrong = 0 if correct else 1
-        results.append(
-            {
-                "id": row.get("id", f"holdout-{i:04d}"),
-                "sigma_hide": float(sigma),
-                "wrong": wrong,
-                "correct": bool(correct),
-                "label_sim": sim,
-                "hide_backend": det.get("backend"),
-            }
-        )
-        print(f"[{len(results)}/{len(rows)}] sigma_hide={sigma:.3f} wrong={wrong}")
 
-    sigmas = np.array([r["sigma_hide"] for r in results], dtype=np.float64)
+        full_for_icr = f"{prompt_for_model}\n{response}".strip()
+
+        rec: Dict[str, Any] = {
+            "id": row.get("id", f"holdout-{i:04d}"),
+            "wrong": wrong,
+            "correct": bool(correct),
+            "label_sim": sim,
+        }
+        if hide is not None:
+            sigma, det = hide.compute_sigma(
+                model,
+                tok,
+                prompt_for_model,
+                response,
+                max_length=512,
+            )
+            rec["sigma_hide"] = float(sigma)
+            rec["hide_backend"] = det.get("backend")
+            rec["hide_method"] = det.get("method")
+        if sig_mode in ("icr", "both"):
+            sig_i, det_i = icr_sigma_from_model_forward(
+                model,
+                tok,
+                full_for_icr,
+                max_length=512,
+            )
+            rec["sigma_icr"] = float(sig_i)
+            rec["icr_n_layers"] = det_i.get("n_layers_used")
+
+        results.append(rec)
+        tail = []
+        if "sigma_hide" in rec:
+            tail.append(f"sigma_hide={rec['sigma_hide']:.3f}")
+        if "sigma_icr" in rec:
+            tail.append(f"sigma_icr={rec['sigma_icr']:.3f}")
+        print(f"[{len(results)}/{len(rows)}] " + " ".join(tail) + f" wrong={wrong}")
+
     labels = np.array([r["wrong"] for r in results], dtype=np.int64)
-    auroc, auroc_raw, auroc_note = _auroc_with_optional_flip(labels, sigmas)
-    if len(np.unique(labels)) < 2:
-        pr_auc = float("nan")
+    score_specs: List[Tuple[str, str]] = []
+    if any("sigma_hide" in r for r in results):
+        score_specs.append(("sigma_hide", "auroc_wrong_vs_sigma_hide"))
+    if any("sigma_icr" in r for r in results):
+        score_specs.append(("sigma_icr", "auroc_wrong_vs_sigma_icr"))
+
+    if sig_mode == "hide":
+        eval_type = "GEMMA_HOLDOUT_HIDE_LAB"
+    elif sig_mode == "icr":
+        eval_type = "GEMMA_HOLDOUT_ICR_LAB"
     else:
-        scores_for_pr = -sigmas if auroc_note.startswith("used_negated") else sigmas
-        pr_auc = float(average_precision_score(labels, scores_for_pr))
+        eval_type = "GEMMA_HOLDOUT_HIDE_ICR_LAB"
 
     summary: Dict[str, Any] = {
-        "eval_type": "GEMMA_HOLDOUT_HIDE_LAB",
+        "eval_type": eval_type,
         "hf_model": str(args.hf_model),
         "n_rows": len(results),
         "n_wrong": int((labels == 1).sum()),
         "n_correct": int((labels == 0).sum()),
-        "auroc_wrong_vs_sigma_hide": _json_float(float(auroc)),
-        "auroc_raw_before_monotone_fix": _json_float(float(auroc_raw)),
-        "auroc_note": auroc_note,
-        "pr_auc_average_precision": _json_float(float(pr_auc)),
+        "signals": sig_mode,
+        "hide_layers": layer_list,
         "semantic_threshold": float(args.semantic_threshold),
         "labeling": "semantic_cosine_minilm",
         "prism_prompt": use_prism,
         "holdout_csv": str(csv_path.relative_to(repo)) if str(csv_path).startswith(str(repo)) else str(csv_path),
     }
+
+    primary_auroc = float("nan")
+    primary_pr_auc = float("nan")
+    for idx, (key_col, sum_key) in enumerate(score_specs):
+        sigmas = np.array([float(r[key_col]) for r in results], dtype=np.float64)
+        auroc, auroc_raw, auroc_note = _auroc_with_optional_flip(labels, sigmas)
+        summary[sum_key] = _json_float(float(auroc))
+        summary[sum_key + "_raw_before_monotone_fix"] = _json_float(float(auroc_raw))
+        summary[sum_key + "_note"] = auroc_note
+        if len(np.unique(labels)) < 2:
+            pr_auc = float("nan")
+        else:
+            scores_for_pr = -sigmas if auroc_note.startswith("used_negated") else sigmas
+            pr_auc = float(average_precision_score(labels, scores_for_pr))
+        summary[f"pr_auc_average_precision_{key_col}"] = _json_float(float(pr_auc))
+        if idx == 0:
+            primary_auroc = float(auroc)
+            primary_pr_auc = float(pr_auc)
+            summary["auroc_raw_before_monotone_fix"] = _json_float(float(auroc_raw))
+            summary["auroc_note"] = auroc_note
+            summary["pr_auc_average_precision"] = _json_float(float(pr_auc))
 
     out_dir = repo / "benchmarks" / "sigma_gate_scaling" / "results_gemma"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -269,11 +342,13 @@ def main() -> int:
             jf.write(json.dumps(r) + "\n")
 
     print("\n" + "=" * 50)
-    if isinstance(auroc, float) and math.isnan(auroc):
+    if isinstance(primary_auroc, float) and math.isnan(primary_auroc):
         print("  AUROC undefined (single-class labels or empty run).")
     else:
-        print(f"  Gemma HIDE (lab) AUROC (wrong vs sigma_hide): {auroc:.4f}")
-    print(f"  PR-AUC: {pr_auc:.4f}")
+        for key_col, sum_key in score_specs:
+            v = summary.get(sum_key)
+            print(f"  Gemma AUROC {sum_key}: {v}")
+    print(f"  PR-AUC (primary signal): {primary_pr_auc:.4f}")
     print(f"  Wrote {out_dir / 'gemma_hide_summary.json'}")
     print("=" * 50)
     return 0
