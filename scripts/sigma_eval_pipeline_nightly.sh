@@ -96,24 +96,26 @@ run_step() {
 log "pipeline dir=${LOGDIR} pid=$$ repo=${REPO}"
 checkpoint "START"
 
-# --- eval steps (continue on failure) ---
+# --- eval steps (continue on failure) — full holdout split (~57 rows) unless RAM-bound ---
+# Gemma+HIDE uses same row cap; reduce with CREATION_OS_GEMMA_LIMIT if OOM.
+_GEM_LIM="${CREATION_OS_GEMMA_LIMIT:-57}"
 run_step streaming python3 benchmarks/sigma_gate_eval/run_streaming_eval.py \
-  --holdout-limit 20 --max-new-tokens 80
+  --holdout-limit 57 --max-new-tokens 100
 
 run_step router python3 benchmarks/sigma_gate_eval/run_router_eval.py \
-  --holdout-limit 20 --max-new-tokens 40
+  --holdout-limit 0 --max-new-tokens 80
 
 run_step gemma python3 benchmarks/sigma_gate_scaling/run_gemma_eval.py \
-  --limit 10
+  --limit "${_GEM_LIM}"
 
 run_step halueval_oracle python3 benchmarks/sigma_gate_eval/run_halueval_oracle_fix.py \
-  --limit 40
+  --limit 80
 
 run_step hide python3 benchmarks/sigma_gate_eval/run_hide_eval.py \
-  --holdout-limit 15 --scan-limit 15 --trivia-limit 20 --halu-limit 20 --max-new-tokens 40
+  --holdout-limit 0 --scan-limit 30 --trivia-limit 100 --halu-limit 100 --max-new-tokens 100
 
 run_step calibration python3 benchmarks/sigma_gate_eval/run_calibration_eval.py \
-  --limit 40 --max-new-tokens 60
+  --limit 0 --max-new-tokens 80
 
 run_step cost python3 benchmarks/sigma_gate_eval/run_cost_eval.py
 
