@@ -35,23 +35,29 @@ checkpoint() {
 write_report() {
   local r="${LOGDIR}/REPORT_SUMMARY.md"
   {
-    echo "# σ eval pipeline — run summary"
-    echo ""
-    echo "- **Generated:** $(date -Iseconds)"
-    echo "- **Log directory:** \`${LOGDIR}\`"
-    echo "- **Repo:** \`${REPO}\`"
-    echo ""
-    echo "## checkpoint.txt"
+    cat <<EOF
+# σ eval pipeline — run summary
+
+- **Generated:** $(date -Iseconds)
+- **Log directory:** ${LOGDIR}
+- **Repo:** ${REPO}
+
+## checkpoint.txt
+
+EOF
     echo '```'
     cat "${LOGDIR}/checkpoint.txt" 2>/dev/null || echo "(empty)"
     echo '```'
     echo ""
     echo "## JSON snapshots (in this directory)"
-    ls -1 "${LOGDIR}"/*.json 2>/dev/null | while read -r f; do echo "- \`$(basename "$f")\`"; done || true
+    shopt -s nullglob 2>/dev/null || true
+    for jf in "${LOGDIR}"/*.json; do
+      echo "- $(basename "${jf}")"
+    done
     echo ""
     for f in streaming_eval_summary.json router_summary.json gemma_hide_summary.json \
       halueval_oracle_summary.json calibration_summary.json; do
-      local p="${LOGDIR}/${f}"
+      p="${LOGDIR}/${f}"
       if [[ -f "${p}" ]]; then
         echo "## ${f}"
         echo '```json'
@@ -65,7 +71,7 @@ write_report() {
     echo "|------|-----|"
     for name in streaming router gemma halueval_oracle hide calibration cost cascade; do
       if [[ -f "${LOGDIR}/${name}.log" ]]; then
-        echo "| ${name} | \`${name}.log\` |"
+        echo "| ${name} | ${name}.log |"
       fi
     done
   } >"${r}" 2>/dev/null || true
