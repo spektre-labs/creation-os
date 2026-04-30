@@ -24,7 +24,7 @@ jobs:
     outputs:
       digest: ${{ steps.hash.outputs.digest }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Build hardened v61
         run: make standalone-v61-hardened
       - name: Compute artifact digest
