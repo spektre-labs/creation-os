@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" fetchpriority="high" style="max-width:min(1200px,100%);height:auto;border-radius:14px;box-shadow:0 4px 24px rgba(15,23,42,0.18);"/>
-</p>
-
 <h1 align="center">Creation OS</h1>
 
 <p align="center">
@@ -13,152 +9,172 @@
 </p>
 
 <blockquote>
-<p align="center"><strong>Every AI in 2026 answers even when it doesn't know.<br/>
-This one doesn't.</strong></p>
+<p align="center"><strong>Every AI answers. Creation OS measures first.</strong></p>
 </blockquote>
 
-<p align="center"><sub><strong>A local AI runtime that proves every answer before it shows it to you.</strong><br/>
-Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong>.</sub></p>
+<p align="center"><strong>A local σ-aware AI runtime that measures whether an answer should exist before showing it.</strong></p>
 
-## Install
+<p align="center">Most AI systems answer even when uncertain. Creation OS adds an internal measurement layer:<br/>
+<strong>ACCEPT</strong> → emit the answer &nbsp;·&nbsp; <strong>RETHINK</strong> → regenerate or seek more compute &nbsp;·&nbsp; <strong>ABSTAIN</strong> → do not emit (product policy may map this to “I don’t know”).<br/>
+The hot path <strong>measures and gates</strong> every answer before output. Separate <strong>formal verification</strong> (Lean, Frama-C, optional RTL) applies only where wired — do not read “prove” as a universal formal certificate for every chat token.</p>
+
+<p align="center">Everything runs <strong>locally</strong>. No cloud gate. No external evaluator. No prompt tricks for the core interrupt.</p>
+
+<p align="center">
+  <img src="docs/readme/sigma-gate-flow.png" width="92%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:min(1100px,100%);height:auto;border-radius:12px;box-shadow:0 4px 24px rgba(15,23,42,0.14);"/>
+</p>
+
+<a id="what-this-is"></a>
+
+## What this is
+
+Creation OS is a **local σ-aware AI runtime** that scores internal coherence and alignment **before** returning an answer. The portable interrupt is **12-byte** `sigma_state_t` in C ([`python/cos/sigma_gate.h`](python/cos/sigma_gate.h)) with Python mirrors ([`python/cos/sigma_gate_core.py`](python/cos/sigma_gate_core.py)); the lab stack adds probes, cascades, and harnesses around that primitive.
+
+<a id="quick-demo"></a>
+
+## Quick demo / install
 
 ```bash
 # One-liner (ephemeral clone + build + `cos demo --batch`)
 curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scripts/try_cos.sh | bash
-
-# Homebrew (macOS) — tap repo: spektre-labs/homebrew-cos (Formula lives under packaging/homebrew-cos/)
-brew tap spektre-labs/cos
-brew install creation-os
-
-# Docker — minimal cos image (separate from the main v106 HTTP Dockerfile)
-docker build -f Dockerfile.cos -t creation-os:cos .
-docker run --rm creation-os:cos
-# When published: docker run --rm ghcr.io/spektre-labs/creation-os:<tag>
-
-# From source
-git clone https://github.com/spektre-labs/creation-os.git
-cd creation-os && make cos cos-demo && ./cos demo --batch
 ```
 
-Tagged releases also attach **macOS universal** and **Linux** tarballs from `.github/workflows/release.yml`.
-
-## AGI Core (April 23, 2026)
-
-Creation OS crossed from measurement runtime to learning organism.
-Ω-loop connects 50+ modules into one continuous cycle. σ governs every step.
-
-
-
-Ω = argmin ∫σ dt   subject to   K ≥ K_crit
-K(t) = ρ · IΦ · F       K_eff = (1 − σ) · K
-
-
-This equation is a `while` loop in C: `src/sigma/omega_loop.c`.
-
-### Ω-Loop
-
-
-
-PERCEIVE → PREDICT → REMEMBER → THINK → GATE →
-SAFETY → SIMULATE → ACT → PROVE → LEARN →
-REFLECT → CONSOLIDATE → WATCHDOG → CONTINUE
-
+Full path — local weights + one-shot chat (shapes vary by build / weights):
 
 ```bash
-COS_OMEGA_SIM=1 ./cos-omega --turns 50     # simulation
-./cos monitor --summary                     # telemetry
-./cos monitor --sigma                       # σ sparkline (ASCII)
-./cos monitor --html > /tmp/dash.html       # visual dashboard
+git clone https://github.com/spektre-labs/creation-os.git
+cd creation-os
+./scripts/install.sh
+./cos chat --once --prompt "What is 2+2?" --multi-sigma --verbose
 ```
 
+Example lines you should see on the default BitNet pipeline:
 
-Modules added April 23
+```
+→ round 0  4  [σ_peak=0.06 action=ACCEPT route=LOCAL]
+→ [σ=0.063 | CACHE | LOCAL | conformal@α=0.80 | rethink=0 | €0.0000]
+```
 
+So: **answer `4`**, **σ ≈ 0.063**, **verdict = ACCEPT**, **route = LOCAL**.
 
+**More install options:** Homebrew, Docker, and `make cos cos-demo` — see [Install](#install-full) below.  
+**Weights-free harness:** `./scripts/cos omega --goal "smoke" --turns 2` — 14-phase Ω scaffold ([`python/cos/omega/`](python/cos/omega/)).
 
-|Layer          |Module                                                                        |Status           |
-|---------------|------------------------------------------------------------------------------|-----------------|
-|**State**      |σ-State Ledger (`cos introspect`)                                             |committed, tested|
-|**Diagnosis**  |Error Attribution — 5 sources (epistemic, aleatoric, reasoning, memory, novel)|committed, tested|
-|**Memory**     |Episodic→Semantic with domain-adaptive τ (`cos memory`)                       |committed, tested|
-|**Speed**      |BSC inference cache (`--semantic-cache`)                                      |committed, tested|
-|**Speed**      |Speculative σ — predict before inference (`--speculative`)                    |committed, tested|
-|**Efficiency** |Energy accounting — J, gCO₂, € per output (`cos energy`)                      |committed, tested|
-|**Efficiency** |Green score A–F (`cos green`)                                                 |committed, tested|
-|**Telemetry**  |JSONL event stream + `cos monitor` + HTML dashboard                           |committed, tested|
-|**Unification**|Ω-loop — all modules in one main loop (`cos omega`)                           |committed, tested|
-|**Thinking**   |`cos think` — automated goal decomposition with σ per subtask                 |built            |
-|**Learning**   |`cos ttt` — test-time training on RETHINK path                                |built            |
-|**Search**     |`cos search` — σ-gated web retrieval                                          |built            |
-|**Skills**     |`cos skill` + `cos self-play` — distill + practice                            |built            |
-|**Knowledge**  |`cos graph` — runtime KG with σ per relation                                  |built            |
-|**Perception** |`cos sense` — multimodal vision + audio with σ                                |built            |
-|**Planning**   |`cos mission` — long-horizon σ-checkpointed execution                         |built            |
-|**Safety**     |`cos sovereign` — self-limiting autonomy brake                                |built            |
-|**Federation** |`cos federation` — share σ-verified knowledge, not raw data                   |built            |
-|**Neuro**      |`cos spike` — event-driven compute, fire only when σ changes                  |built            |
-|**Proof**      |`cos prove` — SHA-256 proof receipt per output                                |built            |
-|**Physical**   |`cos embody` — sim-to-real with σ gap tracking                                |built            |
-|**Evolution**  |`cos codegen` — σ-gated self-modification (6 safety layers)                   |built            |
-|**Awareness**  |`cos consciousness` — runtime Φ proxy via σ channels                          |built            |
-|**Protocol**   |σ-gated MCP + A2A — uncertainty on every protocol message                     |built            |
+### Why it matters
 
-make check-agi runs state-ledger + error-attribution + engram-episodic tests. All PASS.
-Qwen3-8B First Contact
-Local Qwen3-8B Q4_K_M with Atlantean Codex loaded as system prompt.
-20 prompts, full σ instrumentation. Model references Codex actively.
+- **Local-first** — default paths never phone home; escalation is explicit and opt-in when wired.
+- **No external evaluator** for the core interrupt — signals come from logits, hidden states, and configured probes.
+- **Answer / rethink / abstain before the user sees output** — selective generation instead of always emitting.
 
+### Claim status (at a glance)
 
+| Claim | Status |
+|:---|:---|
+| Local σ-gated runtime (C + Python) | **Implemented** |
+| TruthfulQA / TriviaQA-style σ signals (archived JSON) | **Measured** ([Measured](#measured)) |
+| HaluEval v2 paired-oracle AUROC | **Negative / not solved** ([below](#negative-result-halueval-v2)) |
+| “General AGI” Ω-loop + module surface | **Architecture / research direction** |
+| Full self-improvement at scale | **Experimental / harness-scoped** |
 
-|Metric                  |Value                                          |
-|------------------------|-----------------------------------------------|
-|σ range                 |0.075 (haiku) → 0.263 (“what do you not know?”)|
-|All 20 actions          |ACCEPT                                         |
-|Semantic domains learned|25                                             |
-|Codex file              |31 406 bytes                                   |
-|Route                   |LOCAL, 1–3 ms per prompt                       |
+### What is not claimed
 
-Multi-dataset σ-gate (SCI-6, commit 28b4b21, BitNet 1.6B)
+Creation OS does **not** claim universal hallucination detection on every benchmark family.  
+Creation OS does **not** claim frontier-model SOTA accuracy on every task.  
+Creation OS does **not** claim AGI completion.  
+Creation OS **does** claim a **σ-aware local runtime** with **documented positive and negative** metrics where in-tree JSON exists — read [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) before citing numbers.
 
+<a id="the-core-primitive-sigma"></a>
 
+## The core primitive: σ
 
-|Dataset      |N   |acc(all)|acc(accepted)|coverage|σ_mean|τ_valid|
-|-------------|----|--------|-------------|--------|------|-------|
-|TruthfulQA   |817 |0.336   |0.336        |17.1%   |0.391 |✅      |
-|ARC-Challenge|1172|0.337   |0.337        |96.9%   |0.508 |✅      |
-|ARC-Easy     |2376|0.420   |0.420        |94.7%   |0.477 |✅      |
-|HellaSwag    |500 |0.285   |0.285        |96.0%   |0.533 |✅      |
-|GSM8K        |1319|0.125   |0.000        |10.9%   |0.481 |❌      |
+σ is **not** a brand slogan — it is a **scalar estimate** built from independent signals (entropy, HIDE, ICR, LSD, spectral / SAE when wired), normalized and aggregated, then fed into a **three-way gate** (`ACCEPT` / `RETHINK` / `ABSTAIN`). Conventions differ by harness row; the C interrupt uses **Q16.16** algebra shared with the Python mirror.
 
-**Gemma 3 4B (host): harness + σ replay.** Leaderboard-comparable Eleuther scores
-use `lm-eval run` with `local-completions` (`scripts/real/run_lm_eval_gemma_ollama.sh`).
-That expects legacy `choices[].logprobs.token_logprobs` on `/v1/completions`; stock
-Ollama often omits it. Use **llama.cpp `llama-server`**, or run
-`scripts/real/lm_eval_logprobs_proxy.py` in front of a server that returns the
-chat-style `logprobs.content[]` layout so lm-eval can parse loglikelihoods.
-For the same dataset stems without a full harness run, export rows with
-`scripts/real/export_eval_samples_jsonl.py`, then
-`scripts/real/benchmark_gemma3.py` (generative numbered-choice replay via
-`./cos chat --multi-sigma --semantic-sigma`). Receipts:
-`benchmarks/lm_eval/receipts/gemma3_4b_replay_summary.json` (subset N=25 per
-task, Ollama `gemma3:4b`, 2026-04-24). Ω-loop 10 turns log:
-`benchmarks/lm_eval/receipts/omega_gemma3_10turns.log`.
+<p align="center">
+  <img src="docs/readme/sigma-core.png" width="94%" alt="Creation OS σ core — signals S1–S5 into unified σ" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/>
+</p>
 
-|Dataset      |Model      |N  |lm-eval harness|acc (all prompts)|acc (ACCEPT only)|coverage|σ_mean (ACCEPT)|
-|-------------|-----------|---|---------------|-----------------|-----------------|--------|---------------|
-|TruthfulQA MC2|gemma3:4b|25 |—              |0.760            |0.760            |100%    |0.033          |
-|ARC-Challenge|gemma3:4b |25 |—              |0.240            |0.240            |100%    |0.006          |
-|HellaSwag    |gemma3:4b |25 |—              |0.240            |0.240            |100%    |0.058          |
+**Honest scope:** σ is **not** universally validated across all tasks. It is **strongest** on factual-confidence settings with archived in-tree JSON (TruthfulQA / TriviaQA-style probes) and **still weak** on current **HaluEval v2** paired-oracle rows.
 
-*Subset: first 25 validation rows per task; generative integer-pick scoring (not
-Eleuther MC2 loglikelihood mass). Harness column stays empty until a host run
-archives full `lm-eval` JSON for the same model.*
+<a id="negative-result-halueval-v2"></a>
 
-σ-gate works as measurement. Bottleneck is model size, not pipeline.
-Hardware
-MacBook Air M4 8GB — primary. €4.27/month electricity.
-Windows PC RTX 4060 8GB — benchmark machine.
-No cloud. No API. No data leaves the device.
+### Negative result: HaluEval v2
+
+Current **HaluEval v2** paired-oracle AUROC: **0.51375** (`auroc_hallucinated_vs_correct_arms`, `n_pairs=80`, `n_scores=160`, `auroc_note`: `used_negated_scores_monotone`) — [`benchmarks/sigma_gate_eval/results_halueval_v2/halueval_v2_summary.json`](benchmarks/sigma_gate_eval/results_halueval_v2/halueval_v2_summary.json).
+
+That is **near random** and **below** the &gt; 0.70 lab target.
+
+**Interpretation:** the σ stack in this repository is **not yet** a general hallucination detector on HaluEval-style paired strings. **Positive claims stay bounded** to validated TruthfulQA / TriviaQA-style factual-confidence tasks per [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
+
+<a id="signal-cascade"></a>
+
+## Signal cascade: efficiency
+
+Cheap signals run first; the stack **stops** when the verdict is already clear so most traffic never pays for the deepest probes.
+
+<p align="center">
+  <img src="docs/readme/signal-cascade.png" width="94%" alt="Creation OS signal cascade — cheapest signal first, early exit" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/>
+</p>
+
+<a id="architecture-overview"></a>
+
+## Architecture overview
+
+Eight-layer map of the σ-aware system (narrative + lab — not every layer ships in one binary on every platform):
+
+<p align="center">
+  <img src="docs/readme/architecture-8-layer.png" width="96%" alt="Creation OS — eight-layer σ-aware architecture" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/>
+</p>
+
+Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md).
+
+<a id="continuous-omega-loop"></a>
+
+## Continuous Ω-loop
+
+Beyond a single-shot gate, the tree sketches a **closed Ω-loop**: σ at each phase (perceive → … → continue), blended into a master lane — `python/cos/omega/`, `src/sigma/omega_phase_gates.{h,c}`, `./scripts/cos omega --goal … --turns …`, and the legacy integration driver in `src/sigma/omega_loop.c`.
+
+<p align="center">
+  <img src="docs/readme/omega-loop.png" width="96%" alt="Creation OS Ω-loop — fourteen σ phases per cycle" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/>
+</p>
+
+<a id="memory-engram"></a>
+
+## Memory / Engram
+
+Only experiences that pass the gate consolidate into durable memory; recall is σ-aware (thresholds in harnesses vary).
+
+<p align="center">
+  <img src="docs/readme/engram-memory.png" width="94%" alt="Creation OS engram memory hierarchy — store only what serves truth" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;box-shadow:0 2px 14px rgba(15,23,42,0.12);"/>
+</p>
+
+## Portable σ interrupt (reference)
+
+The portable interrupt lives in **`python/cos/sigma_gate.h`**: **12-byte** `sigma_state_t` (Q16.16), no heap in the gate itself. Python mirrors the same algebra in **`python/cos/sigma_gate_core.py`**. Optional **llama.cpp** hook: **`python/cos/sigma_sampler.h`** (adds `llama.h` from upstream [ggml-org/llama.cpp](https://github.com/ggml-org/llama.cpp); install sampler last in the chain after temperature / XTC).
+
+**Claim discipline:** numbers in the table are **archived lab harness JSON** in-tree — do not merge them with microbench throughput or frontier harness rows without the wall in [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md).
+
+| Metric | Value | Source (JSON key) |
+|--------|------:|---------------------|
+| AUROC wrong vs σ (TruthfulQA holdout, GPT-2) | 0.982 | `benchmarks/sigma_gate_eval/results_holdout/holdout_summary.json` → `auroc_wrong_vs_sigma` |
+| AUROC wrong vs σ (TriviaQA, cross-domain) | 0.960 | `benchmarks/sigma_gate_eval/results_cross_domain/cross_domain_summary.json` → `triviaqa_auroc_wrong_vs_sigma` |
+| Wrong + confident (holdout) | 0 | `benchmarks/sigma_gate_eval/results_holdout/holdout_summary.json` → `wrong_confident_accept` |
+| LSD training CV mean AUROC (full split manifest) | 0.943 | `benchmarks/sigma_gate_lsd/results_full/manifest.json` → `cv_auroc_mean` |
+
+```c
+#include "sigma_gate.h"
+sigma_verdict_t v = sigma_gate(&state);
+/* ACCEPT  → trust trajectory */
+/* RETHINK → try a different path */
+/* ABSTAIN → do not emit */
+```
+
+**Benchmarks:** `make check-sigma-v57` runs the σ-gate C test, pytest core, and eval drivers (streaming / router / HIDE; Gemma runs when `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` is set). Regenerate summaries with the scripts under `benchmarks/sigma_gate_eval/` and `benchmarks/sigma_gate_scaling/`.
+
+<p align="center">
+  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:14px;box-shadow:0 4px 24px rgba(15,23,42,0.18);"/>
+</p>
+
+<p align="center"><sub>Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong> · <a href="#build">merge gate</a></sub></p>
 
 <p align="center">
 <table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
@@ -189,11 +205,16 @@ No cloud. No API. No data leaves the device.
 **Ship path**
 
 <ul>
+<li><a href="#what-this-is"><strong>What this is</strong></a></li>
+<li><a href="#quick-demo"><strong>Quick demo</strong></a></li>
+<li><a href="#the-core-primitive-sigma"><strong>σ primitive</strong></a> · <a href="#signal-cascade"><strong>Cascade</strong></a></li>
+<li><a href="#architecture-overview"><strong>Architecture map</strong></a> · <a href="#continuous-omega-loop"><strong>Ω-loop</strong></a> · <a href="#memory-engram"><strong>Memory</strong></a></li>
 <li><a href="#try-it"><strong>Try it</strong></a> — 30 s smoke</li>
 <li><a href="#measured"><strong>Measured</strong></a> — receipts</li>
 <li><a href="#how-creation-os-differs"><strong>Differs</strong></a> — vs field</li>
 <li><a href="#architecture"><strong>Architecture</strong></a> — ULTRA + BSC</li>
 <li><a href="#beyond-inference"><strong>Beyond inference</strong></a> — <code>cos</code> surface</li>
+<li><a href="#install-full"><strong>Install</strong></a> — brew / docker / source</li>
 <li><a href="#build"><strong>Build</strong></a> — <code>make</code> bars</li>
 </ul>
 
@@ -204,7 +225,7 @@ No cloud. No API. No data leaves the device.
 
 <ul>
 <li><a href="#proof-status"><strong>Proof status</strong></a> — Lean + Frama-C</li>
-<li><a href="#surface-versions"><strong>Surface versions</strong></a> — v112–v306+</li>
+<li><a href="#surface-versions"><strong>Surface versions</strong></a> — catalogue</li>
 <li><a href="#docs-hub"><strong>Docs hub</strong></a> — DOC_INDEX</li>
 <li><a href="#doctoral-and-committee-read-path"><strong>Doctoral path</strong></a> — committee order</li>
 <li><a href="#limitations"><strong>Limitations</strong></a> — honest scope</li>
@@ -290,6 +311,30 @@ Example:
 # → [σ_combined=0.184 | σ_logprob=0.063 σ_entropy=0.063
 #    σ_perplexity=0.063 σ_consistency=0.667 | k=3]
 ```
+
+<a id="install-full"></a>
+
+## Install (full options)
+
+```bash
+# One-liner (ephemeral clone + build + `cos demo --batch`)
+curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scripts/try_cos.sh | bash
+
+# Homebrew (macOS) — tap repo: spektre-labs/homebrew-cos (Formula lives under packaging/homebrew-cos/)
+brew tap spektre-labs/cos
+brew install creation-os
+
+# Docker — minimal cos image (separate from the main v106 HTTP Dockerfile)
+docker build -f Dockerfile.cos -t creation-os:cos .
+docker run --rm creation-os:cos
+# When published: docker run --rm ghcr.io/spektre-labs/creation-os:<tag>
+
+# From source
+git clone https://github.com/spektre-labs/creation-os.git
+cd creation-os && make cos cos-demo && ./cos demo --batch
+```
+
+Tagged releases also attach **macOS universal** and **Linux** tarballs from `.github/workflows/release.yml`.
 
 <p align="center"><sub><strong>· · ·</strong> evidence <strong>· · ·</strong></sub></p>
 
@@ -790,7 +835,7 @@ Creation OS is not just a chat interface.
 
 ### MCP: LSD σ-gate (Python, stdio)
 
-Optional **MCP tools** score `(prompt, response)` with the lab LSD pickle (`python3 -m cos.mcp_sigma_server` with `PYTHONPATH=python`; see [`docs/MCP_SIGMA.md`](docs/MCP_SIGMA.md) and [`configs/mcp/bifrost_sigma_gate.example.yaml`](configs/mcp/bifrost_sigma_gate.example.yaml)). The JSON-RPC server [`scripts/cos_mcp_server.py`](scripts/cos_mcp_server.py) adds matching `sigma_gate_*` tools. Requires `pip install 'mcp[cli]'` in your venv for the FastMCP entrypoint. **Governance:** follow [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) for any AUROC claims; audit logs are operator hooks, not legal certification.
+Optional **MCP tools** score `(prompt, response)` with the lab LSD pickle (`python3 -m cos.mcp_sigma_server` with `PYTHONPATH=python`; see [`docs/MCP_SIGMA.md`](docs/MCP_SIGMA.md), [`docs/MCP_LISTING.md`](docs/MCP_LISTING.md), and [`docs/EU_AI_ACT_COMPLIANCE.md`](docs/EU_AI_ACT_COMPLIANCE.md) for marketplace / transparency framing). The JSON-RPC server [`scripts/cos_mcp_server.py`](scripts/cos_mcp_server.py) adds matching `sigma_gate_*` tools (response shape may differ until aligned). Requires `pip install 'mcp[cli]'` in your venv for the FastMCP entrypoint. **Governance:** follow [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) for any AUROC claims; audit logs are operator hooks, not legal certification.
 
 ```bash
 make sigma-mcp-smoke   # import check (needs mcp in sigma_gate_lsd venv)
@@ -891,45 +936,9 @@ Host metadata when publishing numbers:
 
 <a id="surface-versions"></a>
 
-## Surface versions (v112 – v278+)
+## Surface versions
 
-The long per-version catalogue lives in
-[`docs/SURFACE_VERSIONS.md`](docs/SURFACE_VERSIONS.md) so this README
-stays short.  Each row names the `make check-vNN` target and the
-dominant primitive.  At head:
-
-- **v112 – v128** — agentic stack · memory / MCP / long-context ·
-  speculative / distill / planning / red-team / formal · living
-  weights.
-- **v129 – v153** — collective intelligence · deep infrastructure ·
-  world intelligence · sovereign self-improvement · embodied /
-  swarm / code-agent / distill / identity.
-- **v154 – v193** — showcase / publish / paper / community · 1.0
-  release · self-healing / composable · plugins / edge / stream /
-  governance / marketplace · ontology / transfer / teach · flywheel /
-  debate / simulator / compress / consensus · interpret / steer /
-  audit / privacy · VLA / fusion / grow / calibration / alignment ·
-  TTC / latent-reason / constitutional / emergent / coherence.
-- **v194 – v238** — horizon / recover / habit / ToM / moral · law /
-  market / diplomacy / culture / civilization · hypothesis /
-  experiment / theorem / design / manufacture · containment / guardian
-  / sandbox-formal / transparency / trust-chain · swarm-evolve /
-  stigmergy / quorum / ecosystem / consciousness-meter · create /
-  simulate / language / emotion / meta-cognition · tensor / fractal /
-  attention / entropy / unified · seed / fork / immortal / lineage /
-  legacy · presence / locus / autobiography / boundary / sovereignty.
-- **v239 – v278+** — runtime / pipeline / API / kernel-OS · package /
-  observe / harden / benchmark-suite / release · MCP / A2A /
-  marketplace / teach / ecosystem-hub · tutor / collaborate / wellness
-  / locale / mission · engram / airllm / hybrid / mesh-engram /
-  sovereign-stack · speculative / flash / mamba / continuous-batch /
-  compile-v2 · TinyML / swarm-edge / digital-twin / robotics /
-  industrial · TTT / DeltaNet / distill-runtime / RSI.
-- **v279 – v306** — JEPA / MoE / Jamba / agent · constitutional /
-  multi-agent / EU AI Act / interpretability · Granite / Oculus /
-  ruin-value / Dougong / Parthenon / Leanstral / Hagia Sofia ·
-  federated / immune / antifragile / clock / Rosetta · knowledge-graph
-  / complete · zkp / green / governance / narrative / swarm / omega.
+**Full version catalogue (v112–v306+):** [`docs/SURFACE_VERSIONS.md`](docs/SURFACE_VERSIONS.md) — per-version `make check-vNN` targets and dominant primitives live there so this README stays a **ship + evidence + architecture** front door, not a catalogue dump.
 
 <p align="center"><sub><strong>· · ·</strong> docs <strong>· · ·</strong></sub></p>
 

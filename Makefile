@@ -8723,7 +8723,32 @@ check-sigma-gate-v4:
 		python/cos/sigma_router.py \
 		python/cos/sigma_cascade.py \
 		python/cos/sigma_calibration.py \
-		python/cos/sigma_icr.py python/cos/sigma_router_calibrate.py \
+		python/cos/sigma_icr.py python/cos/sigma_fusion.py \
+		python/cos/sigma_deltanet.py python/cos/sigma_ttt.py \
+		python/cos/sigma_living_weights.py python/cos/sigma_engram.py \
+		python/cos/sigma_reasoning.py python/cos/sigma_budget.py python/cos/sigma_liquid_model.py \
+		python/cos/sigma_sae.py python/cos/sigma_steer.py python/cos/sigma_superposition.py \
+		python/cos/sigma_distill.py python/cos/cli.py python/cos/__main__.py \
+		python/cos/omega/__init__.py \
+		python/cos/omega/state.py \
+		python/cos/omega/act.py \
+		python/cos/omega/consolidate.py \
+		python/cos/omega/continue_phase.py \
+		python/cos/omega/gate.py \
+		python/cos/omega/learn.py \
+		python/cos/omega/loop.py \
+		python/cos/omega/perceive.py \
+		python/cos/omega/predict.py \
+		python/cos/omega/prove.py \
+		python/cos/omega/reflect.py \
+		python/cos/omega/remember.py \
+		python/cos/omega/safety.py \
+		python/cos/omega/simulate.py \
+		python/cos/omega/think.py \
+		python/cos/omega/watchdog.py \
+		python/cos/sigma_debate.py python/cos/sigma_selfplay.py python/cos/sigma_proconductor.py \
+		python/cos/sigma_sense.py python/cos/sigma_vla.py python/cos/sigma_sim2real.py \
+		python/cos/sigma_router_calibrate.py \
 		python/cos/sigma_gate_complete.py python/cos/sigma_gate_precheck.py python/cos/sigma_precheck.py \
 		python/cos/hide_metric_upstream.py \
 		python/cos/mcp_sigma_audit.py python/cos/mcp_sigma_server.py \
@@ -8738,6 +8763,7 @@ check-sigma-gate-v4:
 		benchmarks/sigma_gate_eval/run_cost_eval.py \
 		benchmarks/sigma_gate_eval/run_cascade_eval.py \
 		benchmarks/sigma_gate_eval/run_calibration_eval.py \
+		benchmarks/sigma_gate_eval/run_icr_eval.py \
 		benchmarks/sigma_gate_hami/adapt_hami.py \
 		benchmarks/sigma_gate_eval/create_comparison_table.py \
 		benchmarks/sigma_gate_scaling/run_scaling.py \
@@ -8752,11 +8778,35 @@ check-sigma-gate-c: tests/test_sigma_gate.c python/cos/sigma_gate.h
 		"$(CURDIR)/.tmp_test_sigma_gate" && rm -f "$(CURDIR)/.tmp_test_sigma_gate" && \
 		echo "check-sigma-gate-c: OK"
 
+# Liquid σ-neuron (Q16 mirror in-tree; does not modify ``python/cos/sigma_gate.h``).
+check-liquid-neuron-c: src/sigma/liquid_neuron.c src/sigma/liquid_neuron.h tests/sigma/check_liquid_neuron_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/sigma" \
+		-o "$(CURDIR)/.tmp_check_liquid_neuron" \
+		"$(CURDIR)/tests/sigma/check_liquid_neuron_main.c" "$(CURDIR)/src/sigma/liquid_neuron.c" && \
+		"$(CURDIR)/.tmp_check_liquid_neuron" && rm -f "$(CURDIR)/.tmp_check_liquid_neuron" && \
+		echo "check-liquid-neuron-c: OK"
+
+# Ω-loop 14-phase σ bundle (Q16 mirror; does not modify ``python/cos/sigma_gate.h``).
+check-omega-phase-gates-c: src/sigma/omega_phase_gates.c src/sigma/omega_phase_gates.h tests/sigma/check_omega_phase_gates_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/sigma" \
+		-o "$(CURDIR)/.tmp_check_omega_phase_gates" \
+		"$(CURDIR)/tests/sigma/check_omega_phase_gates_main.c" "$(CURDIR)/src/sigma/omega_phase_gates.c" && \
+		"$(CURDIR)/.tmp_check_omega_phase_gates" && rm -f "$(CURDIR)/.tmp_check_omega_phase_gates" && \
+		echo "check-omega-phase-gates-c: OK"
+
 check-sigma-gate-python: check-sigma-gate-v4
 	@if python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_sigma_gate_core.py" \
 			"$(CURDIR)/tests/test_sigma_integration.py" "$(CURDIR)/tests/test_sigma_self_modify.py" \
-			"$(CURDIR)/tests/test_sigma_a2a_card.py" "$(CURDIR)/tests/test_sigma_swarm.py" -q && echo "check-sigma-gate-python: OK"; \
+			"$(CURDIR)/tests/test_sigma_a2a_card.py" "$(CURDIR)/tests/test_sigma_swarm.py" \
+			"$(CURDIR)/tests/test_sigma_icr.py" "$(CURDIR)/tests/test_sigma_fusion.py" \
+			"$(CURDIR)/tests/test_sigma_engram_living.py" "$(CURDIR)/tests/test_sigma_torch_scaffold.py" \
+			"$(CURDIR)/tests/test_sigma_reasoning_budget_liquid.py" \
+			"$(CURDIR)/tests/test_sigma_sae_interpretability.py" \
+			"$(CURDIR)/tests/test_sigma_distill.py" \
+			"$(CURDIR)/tests/test_sigma_debate_stack.py" \
+			"$(CURDIR)/tests/test_sigma_multimodal.py" \
+			"$(CURDIR)/tests/test_omega_loop.py" -q && echo "check-sigma-gate-python: OK"; \
 	else \
 		echo "check-sigma-gate-python: SKIP (pip install pytest)"; \
 	fi

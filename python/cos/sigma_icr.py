@@ -21,6 +21,16 @@ import numpy as np
 _MAX_ICR_VAR_SQUASH = 0.25
 
 
+def compute_icr_scores(hidden_states: Sequence[Any]) -> List[float]:
+    """
+    Per-layer residual magnitude ratios (ICR-style lab signal).
+
+    Alias of :func:`icr_ratios_from_hidden_stack` — matches the “ICR score list” naming
+    used in harness docs (Zhang et al., ACL 2025, arXiv:2507.16488 as **orientation**).
+    """
+    return icr_ratios_from_hidden_stack(hidden_states)
+
+
 def icr_ratios_from_hidden_stack(hidden_states: Sequence[Any]) -> List[float]:
     """
     ``hidden_states``: tuple/list of length ``L+1`` (embedding + blocks), each ``[1, T, D]`` tensor.
@@ -45,8 +55,20 @@ def icr_ratios_from_hidden_stack(hidden_states: Sequence[Any]) -> List[float]:
     return ratios
 
 
+def icr_sigma(icr_scores: Sequence[float]) -> float:
+    """
+    Map per-layer ICR ratios to a single ``[0, 1]`` risk via **variance squash** (divider 0.01).
+
+    Higher cross-layer variance → higher σ (lab default for fusion / dashboards).
+    """
+    if not icr_scores:
+        return 0.5
+    v = float(np.var(np.asarray(list(icr_scores), dtype=np.float64)))
+    return float(min(v / 0.01, 1.0))
+
+
 def icr_sigma_from_ratios(ratios: Sequence[float]) -> float:
-    """Map ICR ratio list to ``[0,1]`` risk: higher variance → higher σ (lab heuristic)."""
+    """Map ICR ratio list to ``[0,1]`` risk: higher variance → higher σ (softer squash)."""
     if not ratios:
         return 0.5
     v = float(np.var(np.asarray(ratios, dtype=np.float64)))
@@ -88,7 +110,9 @@ def icr_sigma_from_model_forward(
 
 
 __all__ = [
+    "compute_icr_scores",
     "icr_ratios_from_hidden_stack",
+    "icr_sigma",
     "icr_sigma_from_ratios",
     "icr_sigma_from_model_forward",
 ]

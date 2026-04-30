@@ -1,0 +1,10 @@
+{
+  "eval_type": "HALUEVAL_V2_PAIRED_ORACLE",
+  "source": "auto",
+  "n_pairs": 80,
+  "n_scores": 160,
+  "auroc_hallucinated_vs_correct_arms": 0.51375,
+  "auroc_note": "used_negated_scores_monotone",
+  "load_note": null,
+  "probe": "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl"
+}

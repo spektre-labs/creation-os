@@ -376,3 +376,28 @@ class SigmaHIDE:
                 max_new_tokens=max_new_tokens,
             )
         return self._lab_compute_sigma(model, tokenizer, prompt, response, max_length=max_length)
+
+
+_DEFAULT_MULTI_LAYERS: List[int] = [4, 5, 6, 7, 8, 9, 10]
+
+
+def multi_layer_hide(
+    model: Any,
+    tokenizer: Any,
+    prompt: str,
+    response: str,
+    *,
+    layers: Optional[List[int]] = None,
+    max_length: int = 512,
+) -> Tuple[float, Dict[str, Any]]:
+    """
+    **Multi-layer lab HIDE:** HSIC over prompt/continuation split, averaged across ``layers``.
+
+    Default layers scan **L4–L10** (transformer block indices in ``hidden_states``; embedding is 0).
+    Delegates to :class:`SigmaHIDE` ``backend="lab"`` with ``layers=``.
+    """
+    ls = list(layers) if layers is not None else list(_DEFAULT_MULTI_LAYERS)
+    hide = SigmaHIDE(backend="lab", layers=ls)
+    sigma, det = hide.compute_sigma(model, tokenizer, prompt, response, max_length=max_length)
+    det = {**det, "method": det.get("method", "HSIC_token_multi_layer_lab"), "multi_layer_hide_layers": ls}
+    return sigma, det

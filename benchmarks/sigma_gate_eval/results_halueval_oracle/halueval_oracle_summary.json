@@ -1,0 +1,6 @@
+{
+  "auroc_wrong_vs_sigma": 0.51375,
+  "n_rows": 160,
+  "error": null,
+  "probe": "benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl"
+}

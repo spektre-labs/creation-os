@@ -12,6 +12,9 @@ build/
 *.sig
 *.dSYM/
 
+# Local Python venv for sigma_eval_pipeline_nightly.sh (optional)
+.sigma_pipeline_venv/
+
 # Attestations / SBOM / provenance (generated locally; CI emits canonical)
 SBOM.json
 ATTESTATION.json
@@ -85,6 +88,7 @@ metrics/session_*.jsonl
 .cursor/
 __pycache__/
 .pytest_cache/
+.tmp_pytest_*/
 .venv/
 .venv-bitnet/
 

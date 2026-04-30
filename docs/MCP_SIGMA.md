@@ -53,6 +53,11 @@ Install dependency: `pip install 'mcp[cli]'` (see `mcp.server.fastmcp.FastMCP`).
 Tools: `verify_response`, `should_generate` (optional HF precheck via
 `SIGMA_MCP_PRECHECK_MODEL`), `sigma_gate_audit_tail`, `sigma_gate_stats`.
 
+**Response envelope (FastMCP):** each tool returns JSON shaped as
+`{ "result": <payload>, "sigma": { "value", "verdict", "d_sigma", "k_eff", "signals" }, "metadata": { "model", "gate_version", "license" } }`.
+`sigma.value` may be `null` when no scalar score applies (e.g. routing economics only).
+See `python/cos/mcp_sigma_server.py` and `docs/MCP_LISTING.md`.
+
 The legacy JSON-RPC server `scripts/cos_mcp_server.py` also exposes
 `sigma_gate_verify`, `sigma_gate_audit_tail`, and `sigma_gate_stats` on the same
 audit ring when the Python `cos` package is importable.

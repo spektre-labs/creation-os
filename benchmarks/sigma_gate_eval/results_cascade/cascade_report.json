@@ -1,0 +1,28 @@
+{
+  "total_queries": 50,
+  "gate_rejections": 0,
+  "escalation_events_per_query_avg": 0.0,
+  "tier_distribution": {},
+  "tier_counts": {},
+  "comparison": {
+    "premium_cost_per_query_usd": 0.5,
+    "cascade_cost_per_query_usd": 0.0,
+    "savings_pct": 1.0,
+    "note": "Premium baseline uses avg_tokens only; cascade uses per-response token estimate."
+  },
+  "annual_1000_queries_usd": {
+    "premium": 182500.0,
+    "cascade": 0.0,
+    "savings": 182500.0
+  },
+  "annual_10000_queries_usd": {
+    "premium": 1825000.0,
+    "cascade": 0.0,
+    "savings": 1825000.0
+  },
+  "annual_100000_queries_usd": {
+    "premium": 18250000.0,
+    "cascade": 0.0,
+    "savings": 18250000.0
+  }
+}
