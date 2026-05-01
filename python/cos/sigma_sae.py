@@ -13,7 +13,8 @@ See ``docs/CLAIM_DISCIPLINE.md`` — do not merge SAE toy numbers with harness A
 """
 from __future__ import annotations
 
-from typing import Any, List, Protocol, Sequence, Tuple, runtime_checkable
+import math
+from typing import Any, Dict, List, Protocol, Sequence, Tuple, runtime_checkable
 
 try:
     import torch
@@ -134,5 +135,101 @@ class SigmaSAE:
                 active.append(int(i))
         return (len(active) > 0), active
 
+    def decompose_dominance_sigma(self, features: Any) -> Tuple[float, List[Tuple[int, float]]]:
+        """
+        Return ``(dominance, shares)`` where ``dominance`` is ``max_i z_i / sum_j z_j``
+        over ReLU features — a **toy** “max feature σ” proxy for superposition strain.
+        """
+        t = _require_torch()
+        z = t.relu(self._flatten_features(features).detach().float())
+        s = float(z.sum().item()) + 1e-8
+        zmax = float(z.max().item()) if z.numel() else 0.0
+        dominance = min(1.0, zmax / s)
+        shares: List[Tuple[int, float]] = []
+        for i in range(int(z.numel())):
+            shares.append((i, float(z[i].item()) / s))
+        return dominance, shares
 
-__all__ = ["SigmaSAE"]
+    def aggregate_sigma_sae(self, hidden_states: Any) -> Tuple[float, Any, Dict[str, float]]:
+        """
+        ``σ_sae ≈ max(reconstruction σ, dominance)`` for cascade L5 lab plumbing.
+        """
+        recon_sigma, features = self.compute_sigma(hidden_states)
+        dom, _ = self.decompose_dominance_sigma(features)
+        agg = float(max(float(recon_sigma), float(dom)))
+        meta = {"reconstruction_sigma": float(recon_sigma), "dominance_sigma": float(dom)}
+        return agg, features, meta
+
+    def clarify_scores(self, features: Any) -> Dict[str, float]:
+        """
+        Normalized Shannon entropy of positive feature mass — **analogous** to
+        “should I clarify?” / spread-of-mass signals; not a trained experiment head.
+        """
+        t = _require_torch()
+        z = t.relu(self._flatten_features(features).detach().float())
+        mass = float(z.sum().item())
+        if mass <= 1e-12 or z.numel() <= 1:
+            return {"clarify_score": 0.0, "output_score": 1.0}
+        p = z / (z.sum() + 1e-12)
+        ent = float(-(p * p.clamp_min(1e-12).log()).sum().item())
+        ent /= math.log(float(z.numel())) + 1e-12
+        ent = max(0.0, min(1.0, ent))
+        return {"clarify_score": ent, "output_score": 1.0 - ent}
+
+    def cb_sae_feature_metrics(self, features: Any) -> List[Dict[str, Any]]:
+        """
+        Per-dictionary CB-SAE-shaped audit rows (interpretability / steerability proxies).
+
+        **Lab only:** scores derive from a single activation snapshot, not a probe suite.
+        """
+        t = _require_torch()
+        z = t.relu(self._flatten_features(features).detach().float())
+        if z.numel() == 0:
+            return []
+        zmax = float(z.max().item()) + 1e-12
+        med = float(z.median().item())
+        std = float(z.std().item()) + 1e-12
+        rows: List[Dict[str, Any]] = []
+        for i in range(int(z.numel())):
+            zi = float(z[i].item())
+            interp = max(0.0, min(1.0, zi / zmax))
+            steer = max(0.0, min(1.0, abs(zi - med) / std))
+            rows.append({"index": i, "interpretability": interp, "steerability": steer})
+        return rows
+
+    def plan_cb_sae_prune(
+        self,
+        features: Any,
+        *,
+        tau_interp: float = 0.2,
+        tau_steer: float = 0.2,
+    ) -> Dict[str, Any]:
+        """
+        Prune coordinates with weak proxy metrics; keep list and name σ-relevant bottleneck tags.
+        """
+        metrics = self.cb_sae_feature_metrics(features)
+        ti, ts = float(tau_interp), float(tau_steer)
+        prune: List[int] = []
+        keep: List[int] = []
+        for row in metrics:
+            i = int(row["index"])
+            if float(row["interpretability"]) < ti or float(row["steerability"]) < ts:
+                prune.append(i)
+            else:
+                keep.append(i)
+        return {
+            "prune_indices": prune,
+            "keep_indices": keep,
+            "augment_concepts": list(SIGMA_CONCEPT_BOTTLENECK),
+        }
+
+
+SIGMA_CONCEPT_BOTTLENECK: Tuple[str, ...] = (
+    "factuality",
+    "uncertainty",
+    "confidence",
+    "hedging",
+)
+
+
+__all__ = ["SIGMA_CONCEPT_BOTTLENECK", "SigmaSAE"]

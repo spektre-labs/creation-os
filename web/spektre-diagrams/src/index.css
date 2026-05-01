@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --color-spektre-bg: oklch(0.13 0.01 260);
+  --color-spektre-bg-raised: oklch(0.15 0.012 260);
+  --color-spektre-surface: oklch(0.17 0.01 260);
+  --color-spektre-elevated: oklch(0.19 0.014 258);
+  --color-spektre-border: oklch(0.25 0.01 260);
+  --color-spektre-border-subtle: oklch(0.22 0.008 260);
+  --color-spektre-blue: oklch(0.45 0.15 250);
+  --color-spektre-blue-glow: oklch(0.55 0.12 250);
+  --color-spektre-text: oklch(0.93 0.01 260);
+  --color-spektre-muted: oklch(0.65 0.01 260);
+  --color-spektre-faint: oklch(0.5 0.015 260);
+  --color-spektre-accept: oklch(0.65 0.2 145);
+  --color-spektre-rethink: oklch(0.75 0.15 85);
+  --color-spektre-abstain: oklch(0.55 0.2 25);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--color-spektre-bg);
+  background-image:
+    radial-gradient(ellipse 120% 80% at 50% -20%, oklch(0.22 0.04 250 / 0.35), transparent 55%),
+    radial-gradient(ellipse 80% 60% at 100% 50%, oklch(0.18 0.03 260 / 0.2), transparent 50%);
+  color: var(--color-spektre-text);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  font-feature-settings: "ss01" on, "cv02" on;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: oklch(0.45 0.15 250 / 0.35);
+  color: var(--color-spektre-text);
+}

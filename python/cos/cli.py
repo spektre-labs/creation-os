@@ -1517,6 +1517,237 @@ def _cmd_predict(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_interpret(args: argparse.Namespace) -> int:
+    """σ-SAE interpretability lab (v121 scaffold): JSON on stdout."""
+    from cos.sigma_cascade import cascade_summary
+
+    def _mock_block(op: str) -> Dict[str, Any]:
+        cs = cascade_summary()
+        base: Dict[str, Any] = {"cmd": "interpret", "op": op, "cascade": cs}
+        if op == "decompose":
+            base.update({"sigma_sae": 0.25, "clarify_score": 0.4, "recommend_abstain": False})
+        elif op == "steer":
+            base.update({"sigma_sae": 0.22, "clarify_score": 0.35})
+        elif op == "steer-permanent":
+            base.update({"patch": None, "hits": 1})
+        elif op == "feature-map":
+            base.update({"metrics": [{"index": 0, "interpretability": 0.9, "steerability": 0.1}]})
+        elif op == "explain":
+            base.update({"active_labels": ["mock"], "hallucination_hit": False})
+        elif op == "correlate":
+            base.update({"correlations": [{"feature_index": 0, "pearson_r": 0.5}]})
+        return base
+
+    op = None
+    if bool(getattr(args, "decompose", False)):
+        op = "decompose"
+    elif bool(getattr(args, "steer", False)):
+        op = "steer"
+    elif bool(getattr(args, "steer_permanent", False)):
+        op = "steer-permanent"
+    elif bool(getattr(args, "feature_map", False)):
+        op = "feature-map"
+    elif bool(getattr(args, "explain", False)):
+        op = "explain"
+    elif bool(getattr(args, "correlate", False)):
+        op = "correlate"
+    if op is None:
+        print("cos interpret: pick one mode flag", file=sys.stderr)
+        return 2
+
+    if bool(getattr(args, "mock", False)):
+        print(json.dumps(_mock_block(op), ensure_ascii=False))
+        return 0
+
+    import torch
+    import torch.nn as nn
+
+    from cos.sigma_gate_sae_signal import compute_l5_sae_signal
+    from cos.sigma_sae import SigmaSAE
+    from cos.sigma_steering import SigmaSteering
+
+    class _ToySAE(nn.Module):
+        def __init__(self, d_in: int, d_dict: int) -> None:
+            super().__init__()
+            self.enc = nn.Linear(d_in, d_dict, bias=True)
+            self.dec = nn.Linear(d_dict, d_in, bias=True)
+
+        def encode(self, h: torch.Tensor) -> torch.Tensor:
+            return torch.relu(self.enc(h))
+
+        def decode(self, z: torch.Tensor) -> torch.Tensor:
+            return self.dec(z)
+
+    d_dict = max(2, int(getattr(args, "dict_dim", 16)))
+    hpath = str(getattr(args, "hidden_json", "") or "").strip()
+    if hpath:
+        raw = json.loads(Path(hpath).read_text(encoding="utf-8"))
+        if not isinstance(raw, list):
+            print("cos interpret: --hidden-json must be a JSON array of floats", file=sys.stderr)
+            return 2
+        vec = [float(x) for x in raw]
+        dim = len(vec)
+        h = torch.tensor(vec, dtype=torch.float32)
+    else:
+        dim = max(1, int(getattr(args, "dim", 8)))
+        g = torch.Generator()
+        g.manual_seed(0)
+        h = torch.randn(dim, generator=g)
+
+    hf_raw = str(getattr(args, "halluc_features", "") or "")
+    known = tuple(int(x.strip()) for x in hf_raw.split(",") if x.strip().isdigit())
+    sae = SigmaSAE(
+        _ToySAE(dim, d_dict),
+        known_hallucination_features=known,
+        activation_threshold=float(getattr(args, "activation_threshold", 0.1)),
+    )
+    labels = [s.strip() for s in str(getattr(args, "labels", "") or "").split(",") if s.strip()]
+    while len(labels) < d_dict:
+        labels.append(f"f{len(labels)}")
+    ctau = float(getattr(args, "clarify_tau", 0.62))
+
+    if op == "correlate":
+        sp = str(getattr(args, "sigma_json", "") or "").strip()
+        ap = str(getattr(args, "activations_json", "") or "").strip()
+        if not sp or not ap:
+            print("cos interpret --correlate needs --sigma-json and --activations-json", file=sys.stderr)
+            return 2
+        xs = json.loads(Path(sp).read_text(encoding="utf-8"))
+        mat = json.loads(Path(ap).read_text(encoding="utf-8"))
+        if not isinstance(xs, list) or not isinstance(mat, list):
+            print("cos interpret: sigma-json list; activations-json list of rows", file=sys.stderr)
+            return 2
+        corr = SigmaSteering().correlate_sigma_with_activations(xs, mat)
+        print(
+            json.dumps(
+                {"cmd": "interpret", "op": "correlate", "cascade": cascade_summary(), "correlations": corr},
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if op == "steer-permanent":
+        st = SigmaSteering()
+        feat_idx = int(getattr(args, "feature_idx", 0))
+        for _ in range(max(1, int(getattr(args, "replay", 1)))):
+            st.record_hallucination_hit(feat_idx)
+        patch = st.suggest_permanent_patch(
+            feat_idx,
+            min_hits=int(getattr(args, "min_hits", 3)),
+            alpha_crit=float(getattr(args, "alpha_crit", 0.15)),
+            sigma_drop_if_ablated=float(getattr(args, "sigma_drop", 0.25)),
+        )
+        print(
+            json.dumps(
+                {"cmd": "interpret", "op": "steer-permanent", "cascade": cascade_summary(), "patch": patch},
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if op == "steer":
+        st = SigmaSteering()
+        fj = str(getattr(args, "faithful_json", "") or "").strip()
+        hj = str(getattr(args, "halluc_json", "") or "").strip()
+        uf = None
+        uh = None
+        if fj:
+            u = json.loads(Path(fj).read_text(encoding="utf-8"))
+            if not isinstance(u, list):
+                print("cos interpret: faithful-json must be a JSON array", file=sys.stderr)
+                return 2
+            uf = torch.tensor([float(x) for x in u], dtype=torch.float32)
+        if hj:
+            u = json.loads(Path(hj).read_text(encoding="utf-8"))
+            if not isinstance(u, list):
+                print("cos interpret: halluc-json must be a JSON array", file=sys.stderr)
+                return 2
+            uh = torch.tensor([float(x) for x in u], dtype=torch.float32)
+        bundle = st.steer_with_sigma_sae(
+            sae,
+            h,
+            faithful_direction=uf,
+            hallucinatory_direction=uh,
+            scale_faithful=float(getattr(args, "scale_faithful", 0.05)),
+            scale_halluc_down=float(getattr(args, "scale_halluc_down", 0.1)),
+        )
+        print(
+            json.dumps(
+                {
+                    "cmd": "interpret",
+                    "op": "steer",
+                    "cascade": cascade_summary(),
+                    "sigma_sae": bundle["sigma_sae"],
+                    "meta": bundle["meta"],
+                    "clarify": bundle["clarify"],
+                    "l5": compute_l5_sae_signal(sae, bundle["hidden_steered"], clarify_tau=ctau, feature_labels=labels),
+                },
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if op == "decompose":
+        agg, feat, meta = sae.aggregate_sigma_sae(h)
+        dom, shares = sae.decompose_dominance_sigma(feat)
+        clar = sae.clarify_scores(feat)
+        prune = sae.plan_cb_sae_prune(
+            feat,
+            tau_interp=float(getattr(args, "tau_interp", 0.2)),
+            tau_steer=float(getattr(args, "tau_steer", 0.2)),
+        )
+        out = {
+            "cmd": "interpret",
+            "op": "decompose",
+            "cascade": cascade_summary(),
+            "sigma_sae": float(agg),
+            "meta": meta,
+            "dominance": float(dom),
+            "top_shares": shares[: min(32, len(shares))],
+            "clarify": clar,
+            "cb_sae_prune_plan": prune,
+            "l5": compute_l5_sae_signal(sae, h, clarify_tau=ctau, feature_labels=labels),
+        }
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    if op == "feature-map":
+        _, feat, _ = sae.aggregate_sigma_sae(h)
+        rows = sae.cb_sae_feature_metrics(feat)
+        out = {
+            "cmd": "interpret",
+            "op": "feature-map",
+            "cascade": cascade_summary(),
+            "metrics": rows,
+            "prune": sae.plan_cb_sae_prune(
+                feat,
+                tau_interp=float(getattr(args, "tau_interp", 0.2)),
+                tau_steer=float(getattr(args, "tau_steer", 0.2)),
+            ),
+            "l5": compute_l5_sae_signal(sae, h, clarify_tau=ctau, feature_labels=labels),
+        }
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    if op == "explain":
+        _, feat, _ = sae.aggregate_sigma_sae(h)
+        exp = sae.explain_sigma(feat, labels)
+        hit, idx = sae.detect_hallucination_features(feat)
+        out = {
+            "cmd": "interpret",
+            "op": "explain",
+            "cascade": cascade_summary(),
+            "active_labels": exp,
+            "hallucination_hit": hit,
+            "hallucination_indices": idx,
+            "l5": compute_l5_sae_signal(sae, h, clarify_tau=ctau, feature_labels=labels),
+        }
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    return 2
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
     ap = argparse.ArgumentParser(prog="cos", description="Creation OS cos CLI")
@@ -1863,6 +2094,40 @@ def main(argv: Optional[List[str]] = None) -> int:
     pred.add_argument("--dim", type=int, default=8, help="lab latent dimension")
     pred.add_argument("--drift", type=float, default=0.02, help="LabLatentPredictor drift")
     pred.set_defaults(func=_cmd_predict)
+
+    interp = sub.add_parser(
+        "interpret",
+        help="σ-SAE interpretability lab (v121): decompose, steer, correlate, … → JSON",
+    )
+    ig = interp.add_mutually_exclusive_group(required=True)
+    ig.add_argument("--decompose", action="store_true", help="reconstruction + dominance + CB plan + L5")
+    ig.add_argument("--steer", action="store_true", help="SSL-shaped direction steering + L5 on steered h")
+    ig.add_argument("--steer-permanent", action="store_true", dest="steer_permanent", help="SALVE-shaped recurrence ledger")
+    ig.add_argument("--feature-map", action="store_true", dest="feature_map", help="CB-SAE per-feature metrics")
+    ig.add_argument("--explain", action="store_true", help="active feature labels + L5 attribution")
+    ig.add_argument("--correlate", action="store_true", help="CorrSteer-shaped Pearson vs σ series (JSON inputs)")
+    interp.add_argument("--mock", action="store_true", help="CI / no-torch stub JSON")
+    interp.add_argument("--hidden-json", type=str, default="", dest="hidden_json", metavar="PATH", help="JSON array of floats")
+    interp.add_argument("--dim", type=int, default=8, help="activation dim when --hidden-json omitted")
+    interp.add_argument("--dict-dim", type=int, default=16, dest="dict_dim", help="SAE dictionary width (ToySAE)")
+    interp.add_argument("--labels", type=str, default="", help='comma labels for --explain (default "f0",…) ')
+    interp.add_argument("--halluc-features", type=str, default="", dest="halluc_features", help="comma feature indices")
+    interp.add_argument("--activation-threshold", type=float, default=0.1, dest="activation_threshold")
+    interp.add_argument("--tau-interp", type=float, default=0.2, dest="tau_interp")
+    interp.add_argument("--tau-steer", type=float, default=0.2, dest="tau_steer")
+    interp.add_argument("--clarify-tau", type=float, default=0.62, dest="clarify_tau")
+    interp.add_argument("--faithful-json", type=str, default="", dest="faithful_json", help="JSON array, steering direction")
+    interp.add_argument("--halluc-json", type=str, default="", dest="halluc_json", help="JSON array, direction to suppress")
+    interp.add_argument("--scale-faithful", type=float, default=0.05, dest="scale_faithful")
+    interp.add_argument("--scale-halluc-down", type=float, default=0.1, dest="scale_halluc_down")
+    interp.add_argument("--feature-idx", type=int, default=0, dest="feature_idx")
+    interp.add_argument("--replay", type=int, default=1, help="repeat record_hallucination_hit (steer-permanent)")
+    interp.add_argument("--min-hits", type=int, default=3, dest="min_hits")
+    interp.add_argument("--alpha-crit", type=float, default=0.15, dest="alpha_crit")
+    interp.add_argument("--sigma-drop", type=float, default=0.25, dest="sigma_drop")
+    interp.add_argument("--sigma-json", type=str, default="", dest="sigma_json", metavar="PATH")
+    interp.add_argument("--activations-json", type=str, default="", dest="activations_json", metavar="PATH")
+    interp.set_defaults(func=_cmd_interpret)
 
     bmk = sub.add_parser(
         "benchmark",

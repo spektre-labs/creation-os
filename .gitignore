@@ -107,6 +107,10 @@ nimcache/
 infra/cos_gate/target/
 polyglot/nim/cos_gate
 
+# Web diagram app (Vite / npm; sources tracked, artefacts local)
+web/spektre-diagrams/node_modules/
+web/spektre-diagrams/dist/
+
 # Hardware build dirs (Chisel / Rust gate / formal agency)
 hw/chisel/target/
 hw/chisel/project/target/
