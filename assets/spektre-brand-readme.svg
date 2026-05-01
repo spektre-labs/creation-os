@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="960" height="328" viewBox="0 0 960 328" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="338" viewBox="0 0 960 338" role="img" aria-labelledby="title desc">
   <title id="title">Spektre Labs, Helsinki 2026</title>
-  <desc id="desc">Luxury monochrome wordmark with inset frame and editorial hairline.</desc>
-  <rect width="960" height="328" fill="#000000"/>
-  <rect x="32" y="28" width="896" height="272" fill="none" stroke="#1f1f1f" stroke-width="1"/>
-  <line x1="32" y1="64" x2="928" y2="64" stroke="#141414" stroke-width="1"/>
+  <desc id="desc">Luxury monochrome wordmark with inset frame, paired masthead rules, editorial hairline.</desc>
+  <rect width="960" height="338" fill="#000000"/>
+  <rect x="28" y="26" width="904" height="286" fill="none" stroke="#242424" stroke-width="1"/>
+  <line x1="28" y1="66" x2="932" y2="66" stroke="#161616" stroke-width="1"/>
+  <line x1="28" y1="312" x2="932" y2="312" stroke="#161616" stroke-width="1"/>
   <style>
     .brand {
       font-family: "Times New Roman", Times, ui-serif, serif;
       font-size: 60px;
       font-weight: 600;
-      fill: #ffffff;
-      letter-spacing: 0.4em;
+      fill: #fafafa;
+      letter-spacing: 0.42em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
@@ -19,8 +20,8 @@
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 11px;
       font-weight: 500;
-      fill: #e5e5e5;
-      letter-spacing: 0.98em;
+      fill: #d4d4d4;
+      letter-spacing: 1em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
@@ -28,14 +29,14 @@
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 9.5px;
       font-weight: 500;
-      fill: #666666;
-      letter-spacing: 0.62em;
+      fill: #737373;
+      letter-spacing: 0.64em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
   </style>
-  <text x="480" y="138" class="brand">SPEKTRE</text>
-  <text x="480" y="206" class="sub">LABS</text>
-  <line x1="288" y1="252" x2="672" y2="252" stroke="#333333" stroke-width="1" stroke-linecap="square"/>
-  <text x="480" y="292" class="loc">HELSINKI &#183; 2026</text>
+  <text x="480" y="142" class="brand">SPEKTRE</text>
+  <text x="480" y="214" class="sub">LABS</text>
+  <line x1="276" y1="262" x2="684" y2="262" stroke="#404040" stroke-width="1" stroke-linecap="square"/>
+  <text x="480" y="288" class="loc">HELSINKI &#183; 2026</text>
 </svg>

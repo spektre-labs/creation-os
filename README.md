@@ -2,10 +2,11 @@
   <a href="https://spektrelabs.org">
     <img
       src="./assets/spektre-brand-readme.png"
-      width="780"
+      width="800"
       alt="Spektre Labs — Helsinki 2026"
       decoding="async"
       fetchpriority="high"
+      loading="eager"
     />
   </a>
 </p>
@@ -34,6 +35,8 @@
 
 <p align="center">σ is the internal measure of coherence, uncertainty, alignment, and truth-distance.</p>
 
+<br/>
+
 ## Claim Discipline
 
 > Architecture with discipline, not hype: Creation OS is an AGI-oriented **surface**, not a claim of achieved AGI.  
@@ -54,6 +57,8 @@
 | 5. Formal | Lean 4: 6/6, Frama-C: 15/15 | **verified** |
 | 6. Architecture | Ω-loop, Engram, JEPA, Swarm, Sovereign, TTT | **built** |
 | 7. Roadmap | AGI-oriented architecture — not AGI achieved | **research direction** |
+
+<br/>
 
 ---
 
@@ -95,6 +100,10 @@ The hot path <strong>measures and gates</strong> every answer before output. Sep
   <img src="docs/readme/sigma-gate-flow.png" width="92%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:min(1100px,100%);height:auto;border-radius:10px;box-shadow:0 2px 20px rgba(15,23,42,0.07);"/>
 </p>
 
+---
+
+<br/>
+
 <a id="what-this-is"></a>
 
 ## What this is
@@ -104,6 +113,8 @@ Creation OS is a **local σ-aware AI runtime** that scores internal coherence an
 <a id="quick-demo"></a>
 
 ## Quick demo / install
+
+<p align="center"><sub><tt>CLONE · BUILD · COS CHAT · Ω HARNESS</tt></sub></p>
 
 ```bash
 # One-liner (ephemeral clone + build + `cos demo --batch`)
