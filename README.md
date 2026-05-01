@@ -1,5 +1,8 @@
 <p align="center">
-  <img src="./assets/spektre-logo.svg" alt="Spektre Labs — Helsinki 2026" width="480" decoding="async" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="./assets/spektre-logo-boxed.svg?v=3" />
+    <img src="./assets/spektre-logo.svg?v=3" alt="Spektre Labs — Helsinki 2026" width="480" decoding="async" />
+  </picture>
 </p>
 
 ![Creation OS](./assets/creation-os-hero.png)

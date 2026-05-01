@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" role="img" aria-labelledby="title desc">
   <title id="title">Spektre Labs</title>
-  <desc id="desc">Spektre Labs wordmark — dark on transparent for light backgrounds.</desc>
+  <desc id="desc">Spektre Labs wordmark with light panel for light and dark UIs (e.g. GitHub README).</desc>
+  <rect x="0" y="0" width="640" height="260" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
   <style>
     .brand {
       font-family: "Times New Roman", "Liberation Serif", "Noto Serif", Times, serif;
@@ -24,7 +25,7 @@
       font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 10px;
       font-weight: 500;
-      fill: #94a3b8;
+      fill: #64748b;
       letter-spacing: 0.42em;
       text-anchor: middle;
       dominant-baseline: middle;
