@@ -20,11 +20,11 @@
 <p align="center">
   <img
     src="./assets/creation-os-hero.png"
-    width="92%"
+    width="96%"
     alt="Creation OS — σ-aware architecture overview (Spektre Labs luxury tech map)"
     decoding="async"
     fetchpriority="high"
-    style="max-width:min(1180px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"
+    style="max-width:min(1320px,100%);height:auto;border-radius:0;border:0;box-shadow:0 48px 100px -28px rgba(0,0,0,0.11);"
   />
 </p>
 
