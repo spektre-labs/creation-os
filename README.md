@@ -1,3 +1,5 @@
+<!-- README surface: shadcn-style zinc tokens (Card, Muted, radius ~12px, shadow-sm). -->
+
 <p align="center">
   <a href="https://spektrelabs.org">
     <img
@@ -7,50 +9,74 @@
       decoding="async"
       fetchpriority="high"
       loading="eager"
+      style="max-width:min(800px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);"
     />
   </a>
 </p>
 
-<p align="center"><sub><tt>SPEKTRE LABS · HELSINKI · σ-AWARE · LOCAL-FIRST</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.06em;"><tt>SPEKTRE LABS · HELSINKI · σ-AWARE · LOCAL-FIRST</tt></p>
 
 <br/>
 
----
+<hr style="border:0;height:1px;background:linear-gradient(90deg,transparent,#e4e4e7,transparent);margin:8px 0 24px;"/>
 
 <p align="center">
-  <img
-    src="./assets/creation-os-hero.png"
-    width="96%"
-    alt="Creation OS — σ-aware architecture overview (Spektre Labs luxury tech map)"
-    decoding="async"
-    fetchpriority="high"
-    style="max-width:min(1320px,100%);height:auto;border-radius:0;border:0;box-shadow:0 48px 100px -28px rgba(0,0,0,0.11);"
-  />
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1320px,100%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(12px,2.5vw,28px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img
+  src="./assets/creation-os-hero.png"
+  width="100%"
+  alt="Creation OS — σ-aware architecture overview (Spektre Labs)"
+  decoding="async"
+  fetchpriority="high"
+  style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.35);"
+/>
+</td>
+</tr>
+</table>
 </p>
 
 # Creation OS
 
-<p align="center"><em>One runtime. Measured coherence. Truth before output.</em></p>
+<p align="center" style="color:#3f3f46;font-size:1.125rem;line-height:1.55;max-width:36rem;margin:0 auto;"><em>One runtime. Measured coherence. Truth before output.</em></p>
 
-<p align="center">A <strong>σ-aware</strong> closed-loop cognition architecture — not a replacement model, not a chat skin, not a prompt cookbook.</p>
+<p align="center" style="color:#52525b;line-height:1.6;max-width:42rem;margin:12px auto 0;">A <strong>σ-aware</strong> closed-loop cognition architecture — not a replacement model, not a chat skin, not a prompt cookbook.</p>
 
-<p align="center">σ <strong>estimates</strong> coherence, uncertainty, alignment, and truth-distance — carried as a <strong>twelve-byte</strong> interrupt on the hot path — portable C89, Q16.16, zero dependencies at the primitive.</p>
+<p align="center" style="color:#52525b;line-height:1.6;max-width:42rem;margin:8px auto 0;">σ <strong>estimates</strong> coherence, uncertainty, alignment, and truth-distance — carried as a <strong>twelve-byte</strong> interrupt on the hot path — portable C89, Q16.16, zero dependencies at the primitive.</p>
 
 <br/>
 
 ## Claim Discipline
 
-> Architecture with discipline, not hype: Creation OS is an AGI-oriented **surface**, not a claim of achieved AGI.  
-> **Evidence rules:** [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:0 auto 8px;">
+<tr>
+<td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:14px 18px;color:#3f3f46;font-size:14px;line-height:1.55;">
+<strong style="color:#18181b;">Claim discipline,</strong> not hype: Creation OS is an AGI-oriented <strong>surface</strong>, not a claim of achieved AGI.<br/>
+<strong>Evidence rules:</strong> <a href="docs/CLAIM_DISCIPLINE.md">docs/CLAIM_DISCIPLINE.md</a>
+</td>
+</tr>
+</table>
 
 ## Evidence Ladder
 
 <p align="center">
-  <img src="./docs/evidence_ladder.png" width="88%" alt="Creation OS evidence ladder — primitive through roadmap (Spektre Labs)" decoding="async" loading="lazy" style="max-width:min(900px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(900px,92%);width:92%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="./docs/evidence_ladder.png" width="100%" alt="Creation OS evidence ladder — primitive through roadmap (Spektre Labs)" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
 </p>
 
-> Creation OS does not claim everything. It measures what it can, proves what is wired, and refuses to overclaim.
-
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:10px auto 4px;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-left:4px solid #a1a1aa;border-radius:12px;padding:12px 16px;color:#52525b;font-size:14px;line-height:1.55;">
+Creation OS does not claim everything. It measures what it can, proves what is wired, and refuses to overclaim.
+</td>
+</tr>
+</table>
 | Level | What | Status |
 |-------|------|--------|
 | 1. Primitive | 12-byte `sigma_state_t`, C89, Q16.16, zero deps | **shipped** |
@@ -63,42 +89,44 @@
 
 <br/>
 
----
+<hr style="border:0;height:1px;background:linear-gradient(90deg,transparent,#e4e4e7,transparent);margin:20px 0;"/>
 
 <br/>
 
-<p align="center"><sub><tt>REPOSITORY · RUNTIME · PROOFS · BENCHMARKS</tt></sub></p>
-
 <br/>
 
-<p align="center">
+<p align="center" style="margin:6px 0 20px;">
   <a href="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml"><img src="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   &nbsp;
-  <a href="docs/CLAIM_DISCIPLINE.md" title="Evidence classes — read before citing numbers"><img src="https://img.shields.io/badge/claims-CLAIM__DISCIPLINE-a3a3a3?style=flat-square&labelColor=0a0a0a" alt="Claim discipline"/></a>
+  <a href="docs/CLAIM_DISCIPLINE.md" title="Evidence classes — read before citing numbers"><img src="https://img.shields.io/badge/claims-CLAIM__DISCIPLINE-18181b?style=flat-square&labelColor=f4f4f5" alt="Claim discipline"/></a>
   &nbsp;
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/release-v3.2.0--HORIZON-d4d4d4?style=flat-square&labelColor=111111" alt="Release v3.2.0 HORIZON"/></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/release-v3.2.0--HORIZON-27272a?style=flat-square&labelColor=ffffff" alt="Release v3.2.0 HORIZON"/></a>
   &nbsp;
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-6%2F6-c9a962?style=flat-square&labelColor=1a1814" alt="Lean 6/6"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-6%2F6-18181b?style=flat-square&labelColor=f4f4f5" alt="Lean 6/6"/></a>
   &nbsp;
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C-15%2F15-9ca3af?style=flat-square&labelColor=0a0a0a" alt="Frama-C 15/15"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C-15%2F15-3f3f46?style=flat-square&labelColor=f4f4f5" alt="Frama-C 15/15"/></a>
 </p>
 
 <br/>
 
-<blockquote>
-<p align="center"><strong>Every AI answers. Creation OS measures first.</strong></p>
-</blockquote>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:40rem;margin:8px auto;">
+<tr>
+<td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;border-left:4px solid #18181b;padding:14px 18px;">
+<p align="center" style="margin:0;color:#18181b;font-size:15px;line-height:1.5;"><strong>Every AI answers. Creation OS measures first.</strong></p>
+</td>
+</tr>
+</table>
 
-<p align="center"><strong>A local σ-aware AI runtime that measures whether an answer should exist before showing it.</strong></p>
+<p align="center" style="color:#18181b;max-width:44rem;margin:16px auto 0;line-height:1.6;"><strong>A local σ-aware AI runtime that measures whether an answer should exist before showing it.</strong></p>
 
-<p align="center">Most AI systems answer even when uncertain. Creation OS adds an internal measurement layer:<br/>
+<p align="center" style="color:#52525b;max-width:46rem;margin:12px auto 0;line-height:1.65;">Most AI systems answer even when uncertain. Creation OS adds an internal measurement layer:<br/>
 <strong>ACCEPT</strong> → emit the answer &nbsp;·&nbsp; <strong>RETHINK</strong> → regenerate or seek more compute &nbsp;·&nbsp; <strong>ABSTAIN</strong> → do not emit (product policy may map this to “I don’t know”).<br/>
 The hot path <strong>measures and gates</strong> every answer before output. Separate <strong>formal verification</strong> (Lean, Frama-C, optional RTL) applies only where wired — do not read “prove” as a universal formal certificate for every chat token.</p>
 
-<p align="center">Everything runs <strong>locally</strong>. No cloud gate. No external evaluator. No prompt tricks for the core interrupt.</p>
+<p align="center" style="color:#52525b;max-width:40rem;margin:10px auto 0;line-height:1.6;">Everything runs <strong>locally</strong>. No cloud gate. No external evaluator. No prompt tricks for the core interrupt.</p>
 
 <p align="center">
-  <img src="docs/readme/sigma-gate-flow.png" width="92%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:min(1100px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/sigma-gate-flow.png" width="92%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 ---
@@ -115,7 +143,7 @@ Creation OS is a **local σ-aware AI runtime** that scores internal coherence an
 
 ## Quick demo / install
 
-<p align="center"><sub><tt>CLONE · BUILD · COS CHAT · Ω HARNESS</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.06em;"><tt>CLONE · BUILD · COS CHAT · Ω HARNESS</tt></p>
 
 ```bash
 # One-liner (ephemeral clone + build + `cos demo --batch`)
@@ -173,7 +201,7 @@ Creation OS **does** claim a **σ-aware local runtime** with **documented positi
 σ is **not** a brand slogan — it is a **scalar estimate** built from independent signals (entropy, HIDE, ICR, LSD, spectral / SAE when wired), normalized and aggregated, then fed into a **three-way gate** (`ACCEPT` / `RETHINK` / `ABSTAIN`). Conventions differ by harness row; the C interrupt uses **Q16.16** algebra shared with the Python mirror.
 
 <p align="center">
-  <img src="docs/readme/sigma-core.png" width="94%" alt="Creation OS σ core — signals S1–S5 into unified σ" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/sigma-core.png" width="94%" alt="Creation OS σ core — signals S1–S5 into unified σ" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 **Honest scope:** σ is **not** universally validated across all tasks. It is **strongest** on factual-confidence settings with archived in-tree JSON (TruthfulQA / TriviaQA-style probes) and **still weak** on current **HaluEval v2** paired-oracle rows.
@@ -195,7 +223,7 @@ That is **near random** and **below** the &gt; 0.70 lab target.
 Cheap signals run first; the stack **stops** when the verdict is already clear so most traffic never pays for the deepest probes.
 
 <p align="center">
-  <img src="docs/readme/signal-cascade.png" width="94%" alt="Creation OS signal cascade — cheapest signal first, early exit" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/signal-cascade.png" width="94%" alt="Creation OS signal cascade — cheapest signal first, early exit" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 <a id="architecture-overview"></a>
@@ -205,7 +233,7 @@ Cheap signals run first; the stack **stops** when the verdict is already clear s
 Eight-layer map of the σ-aware system (narrative + lab — not every layer ships in one binary on every platform):
 
 <p align="center">
-  <img src="docs/readme/architecture-8-layer.png" width="96%" alt="Creation OS — eight-layer σ-aware architecture" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/architecture-8-layer.png" width="96%" alt="Creation OS — eight-layer σ-aware architecture" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md).
@@ -217,7 +245,7 @@ Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_IN
 Beyond a single-shot gate, the tree sketches a **closed Ω-loop**: σ at each phase (perceive → … → continue), blended into a master lane — `python/cos/omega/`, `src/sigma/omega_phase_gates.{h,c}`, `./scripts/cos omega --goal … --turns …`, and the legacy integration driver in `src/sigma/omega_loop.c`.
 
 <p align="center">
-  <img src="docs/readme/omega-loop.png" width="96%" alt="Creation OS Ω-loop — fourteen σ phases per cycle" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/omega-loop.png" width="96%" alt="Creation OS Ω-loop — fourteen σ phases per cycle" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 <a id="memory-engram"></a>
@@ -227,7 +255,7 @@ Beyond a single-shot gate, the tree sketches a **closed Ω-loop**: σ at each ph
 Only experiences that pass the gate consolidate into durable memory; recall is σ-aware (thresholds in harnesses vary).
 
 <p align="center">
-  <img src="docs/readme/engram-memory.png" width="94%" alt="Creation OS engram memory hierarchy — store only what serves truth" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/readme/engram-memory.png" width="94%" alt="Creation OS engram memory hierarchy — store only what serves truth" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 ## Portable σ interrupt (reference)
@@ -254,7 +282,7 @@ sigma_verdict_t v = sigma_gate(&state);
 **Benchmarks:** `make check-sigma-v57` runs the σ-gate C test, pytest core, and eval drivers (streaming / router / HIDE; Gemma runs when `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` is set). Regenerate summaries with the scripts under `benchmarks/sigma_gate_eval/` and `benchmarks/sigma_gate_scaling/`. **Hardware lab (silicon path):** `make bench-hardware` and `cos benchmark --hardware` — capture stdout under [`benchmarks/hardware/`](benchmarks/hardware/README.md) with host metadata (see [`docs/REPRO_BUNDLE_TEMPLATE.md`](docs/REPRO_BUNDLE_TEMPLATE.md)); do not treat microbench throughput as harness MMLU/ARC.
 
 <p align="center">
-  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/>
+  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
 </p>
 
 <p align="center"><sub>Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong> · <a href="#build">merge gate</a></sub></p>
@@ -262,21 +290,21 @@ sigma_verdict_t v = sigma_gate(&state);
 <p align="center">
 <table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
 <tr>
-<td align="center"><a href="#try-it"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-e5e5e5?style=for-the-badge&labelColor=111111" alt="Try it in 30 seconds"/></a></td>
-<td align="center"><a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-a8a29e?style=for-the-badge&labelColor=1c1917" alt="TruthfulQA 817 accuracy lift"/></a></td>
+<td align="center"><a href="#try-it"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Try it in 30 seconds"/></a></td>
+<td align="center"><a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-27272a?style=for-the-badge&labelColor=ffffff" alt="TruthfulQA 817 accuracy lift"/></a></td>
 </tr>
 <tr>
-<td align="center"><a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%206%2F6%20%C2%B7%20Frama--C%2015%2F15-c9a962?style=for-the-badge&labelColor=1a1814" alt="Proofs — Lean 6/6, Frama-C 15/15"/></a></td>
-<td align="center"><a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-9ca3af?style=for-the-badge&labelColor=0a0a0a" alt="hot path: branchless · Q16.16 · libc only"/></a></td>
+<td align="center"><a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%206%2F6%20%C2%B7%20Frama--C%2015%2F15-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Proofs — Lean 6/6, Frama-C 15/15"/></a></td>
+<td align="center"><a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-52525b?style=for-the-badge&labelColor=ffffff" alt="hot path: branchless · Q16.16 · libc only"/></a></td>
 </tr>
 </table>
 </p>
 
 <p align="center">
-  <a href="Makefile"><img src="https://img.shields.io/badge/merge--gate-check%E2%80%93v6%E2%80%A6v306-b0b0b0?style=flat-square&labelColor=111111" alt="Merge gate"/></a>
-  <a href="#build"><img src="https://img.shields.io/badge/CI-sigma--pipeline-a3a3a3?style=flat-square&labelColor=0a0a0a" alt="Sigma pipeline checks"/></a>
-  <a href="docs/LICENSING.md"><img src="https://img.shields.io/badge/license-SCSL%20%2B%20AGPL-d4d4d4?style=flat-square&labelColor=1a1a1a" alt="License"/></a>
-  <a href="docs/FEATURES_AND_STANDALONE_BUILDS.md"><img src="https://img.shields.io/badge/binaries-standalone%20kernels-8a8a8a?style=flat-square&labelColor=0f0f0f" alt="Standalone binaries"/></a>
+  <a href="Makefile"><img src="https://img.shields.io/badge/merge--gate-check%E2%80%93v6%E2%80%A6v306-18181b?style=flat-square&labelColor=f4f4f5" alt="Merge gate"/></a>
+  <a href="#build"><img src="https://img.shields.io/badge/CI-sigma--pipeline-3f3f46?style=flat-square&labelColor=ffffff" alt="Sigma pipeline checks"/></a>
+  <a href="docs/LICENSING.md"><img src="https://img.shields.io/badge/license-SCSL%20%2B%20AGPL-52525b?style=flat-square&labelColor=fafafa" alt="License"/></a>
+  <a href="docs/FEATURES_AND_STANDALONE_BUILDS.md"><img src="https://img.shields.io/badge/binaries-standalone%20kernels-27272a?style=flat-square&labelColor=f4f4f5" alt="Standalone binaries"/></a>
 </p>
 
 ## Contents
@@ -319,7 +347,7 @@ sigma_verdict_t v = sigma_gate(&state);
 </tr>
 </table>
 
-<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 09</strong> — where to look first on this page (adapts to light/dark in supporting clients). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a> · <a href="docs/DOC_INDEX.md">DOC_INDEX</a>.</sub></p>
 
 ---
@@ -431,14 +459,14 @@ BitNet-b1.58 2B4T weights; neither is simulated.  Claim-class rules:
 re-run bundle for the v3.0 wired pipeline (identical numbers, one
 command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 
-<p align="center"><img src="docs/assets/evidence-ladder.svg" width="92%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/evidence-ladder.svg" width="92%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="10" style="margin:0.75rem 0 1.25rem;">
 <tr align="center">
-<td style="border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;"><sub>TruthfulQA 817 · baseline</sub><br/><strong style="font-size:1.35em;">0.261</strong><br/><code>bitnet_only</code></td>
-<td style="border:1px solid #bbf7d0;border-radius:10px;background:#ecfdf5;"><sub>σ-pipeline · scored acc.</sub><br/><strong style="font-size:1.35em;">0.336</strong><br/><code>pipeline</code></td>
-<td style="border:1px solid #bae6fd;border-radius:10px;background:#f0f9ff;"><sub>Conformal τ (SCI-1)</sub><br/><strong style="font-size:1.35em;">0.655</strong><br/><code>α=0.80, δ=0.10</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><sub style="color:#71717a;">TruthfulQA 817 · baseline</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.261</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">bitnet_only</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#ffffff;"><sub style="color:#71717a;">σ-pipeline · scored acc.</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.336</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">pipeline</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><sub style="color:#71717a;">Conformal τ (SCI-1)</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.655</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">α=0.80, δ=0.10</code></td>
 </tr>
 </table>
 
@@ -715,7 +743,7 @@ Full comparison: [`docs/comparison.md`](docs/comparison.md).
 
 ## Architecture
 
-<p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Creation OS architecture stack — kernel layers from world model to BSC core" decoding="async" loading="lazy" style="max-width:min(960px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Creation OS architecture stack — kernel layers from world model to BSC core" decoding="async" loading="lazy" style="max-width:min(960px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 08</strong> — single-file kernel narrative over Hypercube, Oracle, world model, BSC core, Soul, Proconductor. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 ### Full ULTRA pipeline (one turn)
@@ -830,7 +858,7 @@ Figure and palette rules: [`docs/VISUAL_INDEX.md`](docs/VISUAL_INDEX.md).
 
 ### BSC primer
 
-<p align="center"><img src="docs/assets/bsc-primitives.svg" width="92%" alt="BSC primitives — XOR bind, MAJ bundle, popcount to sigma" decoding="async" loading="lazy" style="max-width:min(900px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/bsc-primitives.svg" width="92%" alt="BSC primitives — XOR bind, MAJ bundle, popcount to sigma" decoding="async" loading="lazy" style="max-width:min(900px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 06</strong> — teaching strip for bind / bundle / similarity. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 Binary Spatter Coding (BSC) in a nutshell:
@@ -860,7 +888,7 @@ relaxation.  Binding fidelity on the reference hot path:
 | Memory (13B)   | 48.5 GB       | 4.19 GB         |
 | Power          | 300W GPU      | 5.8W CPU        |
 
-<p align="center"><img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="94%" alt="GEMM vs BSC — memory and op-proxy ratios at README definitions" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="94%" alt="GEMM vs BSC — memory and op-proxy ratios at README definitions" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 07</strong> — <strong>32×</strong> RAM and <strong>192×</strong> op-proxy at <code>D = 4096</code> (see limitations for throughput vs arithmetic). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 Benchmark: [`bench/gemm_vs_bsc.c`](bench/gemm_vs_bsc.c) (`make bench` →
@@ -899,7 +927,7 @@ says so.
 
 Creation OS is not just a chat interface.
 
-<p align="center"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–B–C — analysis map for stack positioning" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–B–C — analysis map for stack positioning" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 05</strong> — Planes A–B–C (where σ-gates sit vs silicon vs product). <a href="docs/ANALYSIS.md">ANALYSIS</a> · <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 | Command              | What it does |
@@ -997,8 +1025,8 @@ Host metadata when publishing numbers:
 ## Proof status
 
 <p align="center">
-  <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-6%2F6%20theorems-c9a962?style=for-the-badge&labelColor=1a1814" alt="Lean 4 theorems"/></a>
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20Wp-15%2F15%20tier--1-9ca3af?style=for-the-badge&labelColor=0a0a0a" alt="Frama-C Wp"/></a>
+  <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-6%2F6%20theorems-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Lean 4 theorems"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20Wp-15%2F15%20tier--1-3f3f46?style=for-the-badge&labelColor=ffffff" alt="Frama-C Wp"/></a>
 </p>
 
 - **Lean 4**: 6 / 6 theorems discharged, **sorry-free** —
@@ -1131,7 +1159,7 @@ with their own evidence-class headers; do not fold their toy outputs
 into the same tables as §7 throughput without an explicit wall — see
 `CLAIM_DISCIPLINE` §1.
 
-<p align="center"><img src="docs/assets/kernel-lineage-evidence.svg" width="96%" alt="Portable proof vs standalone lab demos (evidence classes)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:4px;border:1px solid rgba(0,0,0,0.07);box-shadow:0 28px 56px -12px rgba(0,0,0,0.2);"/></p>
+<p align="center"><img src="docs/assets/kernel-lineage-evidence.svg" width="96%" alt="Portable proof vs standalone lab demos (evidence classes)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
 <p align="center"><sub><strong>FIG 04</strong> — portable proof vs extended lab demos (evidence-class guardrail). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 <p align="center"><sub><tt>— SCOPE —</tt></sub></p>
@@ -1286,15 +1314,19 @@ licensing: `spektre.labs@proton.me` · web: [spektrelabs.org](https://spektrelab
 
 ---
 
-<blockquote>
-<p align="center"><strong>Independent research. No institution. No funding.</strong><br/>
-Helsinki, Finland. One person. One invariant.</p>
-<p align="center">General models answer on demand. <strong>Creation OS measures first</strong> — ACCEPT, RETHINK, or ABSTAIN on the wired interrupt — with archived receipts where claims apply.<br/>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:22px 24px;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);color:#3f3f46;font-size:14px;line-height:1.65;">
+<p align="center" style="margin:0 0 12px;color:#18181b;"><strong>Independent research. No institution. No funding.</strong><br/>
+<span style="color:#71717a;">Helsinki, Finland. One person. One invariant.</span></p>
+<p align="center" style="margin:0 0 12px;">General models answer on demand. <strong style="color:#18181b;">Creation OS measures first</strong> — ACCEPT, RETHINK, or ABSTAIN on the wired interrupt — with archived receipts where claims apply.<br/>
 Every fork ships the code, the theory, and the proofs for inspection.<br/>
 <em>Complete. Sovereign. Auditable.</em></p>
-<p align="center"><code>Ω = argmin ∫σ dt</code> subject to <code>K ≥ K_crit</code>.<br/>
-<code>assert(declared == realized);</code><br/>
-<strong>1 = 1.</strong></p>
-<p align="center"><sub>2026 · Spektre Labs · Lauri Elias Rainio · Helsinki<br/>
-ORCID: <a href="https://orcid.org/0009-0006-0903-8541">0009-0006-0903-8541</a></sub></p>
-</blockquote>
+<p align="center" style="margin:0 0 12px;color:#52525b;"><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">Ω = argmin ∫σ dt</code> subject to <code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">K ≥ K_crit</code>.<br/>
+<code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">assert(declared == realized);</code><br/>
+<strong style="color:#18181b;">1 = 1.</strong></p>
+<p align="center" style="margin:0;color:#a1a1aa;font-size:12px;">2026 · Spektre Labs · Lauri Elias Rainio · Helsinki<br/>
+ORCID: <a href="https://orcid.org/0009-0006-0903-8541">0009-0006-0903-8541</a></p>
+</td>
+</tr>
+</table>
