@@ -8748,6 +8748,7 @@ check-sigma-gate-v4:
 		python/cos/omega/watchdog.py \
 		python/cos/sigma_debate.py python/cos/sigma_selfplay.py python/cos/sigma_proconductor.py \
 		python/cos/sigma_sense.py python/cos/sigma_vla.py python/cos/sigma_sim2real.py \
+		python/cos/sigma_jepa.py python/cos/sigma_imagination.py \
 		python/cos/sigma_router_calibrate.py \
 		python/cos/sigma_gate_complete.py python/cos/sigma_gate_precheck.py python/cos/sigma_precheck.py \
 		python/cos/hide_metric_upstream.py \
@@ -8806,7 +8807,8 @@ check-sigma-gate-python: check-sigma-gate-v4
 			"$(CURDIR)/tests/test_sigma_distill.py" \
 			"$(CURDIR)/tests/test_sigma_debate_stack.py" \
 			"$(CURDIR)/tests/test_sigma_multimodal.py" \
-			"$(CURDIR)/tests/test_omega_loop.py" -q && echo "check-sigma-gate-python: OK"; \
+			"$(CURDIR)/tests/test_omega_loop.py" \
+			"$(CURDIR)/tests/test_sigma_jepa.py" -q && echo "check-sigma-gate-python: OK"; \
 	else \
 		echo "check-sigma-gate-python: SKIP (pip install pytest)"; \
 	fi
