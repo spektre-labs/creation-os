@@ -1,24 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="252" viewBox="0 0 800 252" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="304" viewBox="0 0 900 304" role="img" aria-labelledby="title desc">
   <title id="title">Spektre Labs, Helsinki 2026</title>
-  <desc id="desc">Single monochrome wordmark: SPEKTRE, LABS, and Helsinki 2026 on black.</desc>
-  <rect width="800" height="252" fill="#000000"/>
+  <desc id="desc">Luxury monochrome wordmark: wide-tracked SPEKTRE and LABS, editorial hairline, Helsinki 2026.</desc>
+  <rect width="900" height="304" fill="#000000"/>
+  <rect x="1" y="1" width="898" height="302" fill="none" stroke="#141414" stroke-width="1"/>
   <style>
     .brand {
       font-family: "Times New Roman", Times, ui-serif, serif;
-      font-size: 54px;
+      font-size: 58px;
       font-weight: 600;
-      fill: #ffffff;
-      letter-spacing: 0.34em;
+      fill: #fafafa;
+      letter-spacing: 0.38em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
     .sub {
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 500;
-      fill: #ffffff;
-      letter-spacing: 0.78em;
+      fill: #fafafa;
+      letter-spacing: 0.92em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
@@ -26,13 +27,14 @@
       font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
       font-size: 10px;
       font-weight: 500;
-      fill: #a3a3a3;
-      letter-spacing: 0.48em;
+      fill: #737373;
+      letter-spacing: 0.56em;
       text-anchor: middle;
       dominant-baseline: middle;
     }
   </style>
-  <text x="400" y="102" class="brand">SPEKTRE</text>
-  <text x="400" y="158" class="sub">LABS</text>
-  <text x="400" y="218" class="loc">HELSINKI &#183; 2026</text>
+  <text x="450" y="118" class="brand">SPEKTRE</text>
+  <text x="450" y="186" class="sub">LABS</text>
+  <line x1="240" y1="238" x2="660" y2="238" stroke="#262626" stroke-width="1" stroke-linecap="round"/>
+  <text x="450" y="278" class="loc">HELSINKI &#183; 2026</text>
 </svg>

@@ -2,14 +2,15 @@
   <a href="https://spektrelabs.org">
     <img
       src="./assets/spektre-brand-readme.png"
-      width="640"
-      alt="Spektre Labs — Helsinki 2026"
+      width="720"
+      alt="Spektre Labs — wordmark, Helsinki 2026"
       decoding="async"
+      fetchpriority="high"
     />
   </a>
 </p>
 
-<br/>
+<br />
 
 ![Creation OS](./assets/creation-os-hero.png)
 
