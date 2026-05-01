@@ -1,11 +1,18 @@
 # Visual index — diagrams & figures (Creation OS)
 
-All graphics in this tree are **original SVG** (vector, scalable) — **no stock photos** and **no unlicensed web bitmaps**. Safe for PDF export, slides, and GitHub light theme; dark-theme figures are labeled below. One committed **PNG** ([`evidence_ladder.png`](evidence_ladder.png)) is included for README raster embedding alongside FIG 03 SVG.
+Most graphics in this tree are **original SVG** (vector, scalable) — **no stock photos** and **no unlicensed web bitmaps**. Safe for PDF export, slides, and GitHub light theme; dark-theme figures are labeled below. The root **README** additionally embeds a **Spektre Labs PNG suite** under [`readme/`](readme/) (σ-gate flow, Ω-loop, engram map, signal cascade, eight-layer crop, σ core, plus [`evidence_ladder.png`](evidence_ladder.png)) — original lab rasters, not stock art — alongside FIG 03 / FIG 09 SVGs. On GitHub, README figures use a **zinc “card” HTML frame** (border `~#e4e4e7`, `rounded-xl`, `shadow-sm`) around each asset; edit [`../README.md`](../README.md) accordingly.
 
 ## Asset catalog
 
 | Asset | Theme | Use case |
 |-------|--------|----------|
+| [readme/sigma-gate-flow.png](readme/sigma-gate-flow.png) | Dark | README — σ-gate pipeline (precheck → verdict) |
+| [readme/sigma-core.png](readme/sigma-core.png) | Dark | README — σ primitive / signals |
+| [readme/signal-cascade.png](readme/signal-cascade.png) | Dark | README — cascade / early exit |
+| [readme/architecture-8-layer.png](readme/architecture-8-layer.png) | Dark | README — eight-layer narrative column |
+| [readme/omega-loop.png](readme/omega-loop.png) | Dark | README — fourteen-phase Ω-loop |
+| [readme/engram-memory.png](readme/engram-memory.png) | Dark | README — engram hierarchy |
+| [../assets/creation-os-hero.png](../assets/creation-os-hero.png) | Dark | README — Spektre dashboard hero |
 | [assets/kernel-lineage-evidence.svg](assets/kernel-lineage-evidence.svg) | Light | README doctoral path, thesis — **v2 portable proof vs v6–v26 lab demo (C)** |
 | [assets/architecture-stack.svg](assets/architecture-stack.svg) | Dark | README / decks — single-file kernel over Hypercube, Oracle, World model → BSC core → Soul, Proconductor, Cognition |
 | [assets/bsc-primitives.svg](assets/bsc-primitives.svg) | Light | Teaching — XOR → MAJ → POPCNT / σ definition strip |
@@ -42,13 +49,14 @@ Figures use a **quiet engineering grid**, **corner index brackets**, **`FIG nn` 
 
 ## Design system (editorial)
 
+- **README (GitHub) — zinc / shadcn-style frame:** Figures sit inside a white or `zinc-50` **Card** table: border `#e4e4e7`, radius **12px**, stacked **shadow-sm**-class shadows; inner `<img>` uses **8px** radius and `width:100%` inside padded cell. Dark PNG rasters may use a **soft depth shadow** on the bitmap only (see HTML comment at top of [`README.md`](../README.md)).
 - **Spektral tokens (dark):** background stack `#020617` → `#0f172a` → `#0c2444`; accent spine `#22d3ee` → `#38bdf8` → `#6366f1`; body `#f1f5f9` / muted `#94a3b8` / code `#7dd3fc`.
 - **Spektral tokens (light):** surface `#ffffff` on wash `#f8fafc` → `#e2e8f0`; ink `#0f172a`; secondary `#64748b`; proof accent `#059669` / lab demo `#ea580c` (see kernel-lineage figure).
 - **Typography:** `ui-sans-serif, system-ui, sans-serif` for prose labels; `ui-monospace, monospace` for code-like tokens (`creation_os_v2.c`, `make check-v26`). Avoid custom webfonts so CI and headless renders match GitHub.
 - **Light figures** (`#fafafa` / `#f8fafc` backgrounds): print-first, keynote-friendly. **Drop shadow** via `feDropShadow` at low opacity (~0.06–0.08) for card lift — not heavy skeuomorphism.
 - **Dark figures** (`#0f172a`–`#020617` backgrounds): deck contrast on projectors; top **accent hairline** (cyan–indigo gradient) as brand spine.
 - **Accessibility:** every SVG ships `<title>` + `<desc>` and `role="img"` + `aria-labelledby` for screen readers and PDF export.
-- **README on GitHub:** hero and inline figures use `decoding="async"`, optional `loading="lazy"` below the fold, `max-width: min(…px, 100%)`, `height: auto`, `border-radius`, and a **soft neutral shadow** (`box-shadow: 0 2px 14px rgba(15,23,42,0.09)`) so SVGs read as *cards* on the white canvas; clients that strip inline CSS still get `width="96%"` / `width="100%"` fallbacks. Badges are centered in a **two-row table** for alignment on narrow viewports. **FIG 09** is the primary light/dark adaptive asset on the landing README.
+- **README on GitHub (legacy note):** clients that strip inline CSS still get `width` fallbacks; **FIG 09** stays the primary light/dark adaptive asset. For the **Card** chrome stack and dark-raster depth shadow, prefer the bullet above and the HTML comment in [`README.md`](../README.md).
 - **ASCII in `<text>`** when possible (use `/` not exotic punctuation) — avoids replacement glyphs and invalid UTF-8 in some rasterizers. See [COMMON_MISREADINGS.md](COMMON_MISREADINGS.md) for diagram vs policy.
 
 ## Embedding in Markdown (GitHub)

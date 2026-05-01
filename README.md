@@ -1,4 +1,5 @@
 <!-- README surface: shadcn-style zinc tokens (Card, Muted, radius ~12px, shadow-sm). -->
+<!-- Figure embeds: outer Card table (max-width…) + inner img width=100%, radius 8px. Dark rasters: optional soft depth shadow on img. -->
 
 <p align="center">
   <a href="https://spektrelabs.org">
@@ -126,7 +127,13 @@ The hot path <strong>measures and gates</strong> every answer before output. Sep
 <p align="center" style="color:#52525b;max-width:40rem;margin:10px auto 0;line-height:1.6;">Everything runs <strong>locally</strong>. No cloud gate. No external evaluator. No prompt tricks for the core interrupt.</p>
 
 <p align="center">
-  <img src="docs/readme/sigma-gate-flow.png" width="92%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1100px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/sigma-gate-flow.png" width="100%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 ---
@@ -201,7 +208,13 @@ Creation OS **does** claim a **σ-aware local runtime** with **documented positi
 σ is **not** a brand slogan — it is a **scalar estimate** built from independent signals (entropy, HIDE, ICR, LSD, spectral / SAE when wired), normalized and aggregated, then fed into a **three-way gate** (`ACCEPT` / `RETHINK` / `ABSTAIN`). Conventions differ by harness row; the C interrupt uses **Q16.16** algebra shared with the Python mirror.
 
 <p align="center">
-  <img src="docs/readme/sigma-core.png" width="94%" alt="Creation OS σ core — signals S1–S5 into unified σ" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1100px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/sigma-core.png" width="100%" alt="Creation OS σ core — signals S1–S5 into unified σ" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 **Honest scope:** σ is **not** universally validated across all tasks. It is **strongest** on factual-confidence settings with archived in-tree JSON (TruthfulQA / TriviaQA-style probes) and **still weak** on current **HaluEval v2** paired-oracle rows.
@@ -223,7 +236,13 @@ That is **near random** and **below** the &gt; 0.70 lab target.
 Cheap signals run first; the stack **stops** when the verdict is already clear so most traffic never pays for the deepest probes.
 
 <p align="center">
-  <img src="docs/readme/signal-cascade.png" width="94%" alt="Creation OS signal cascade — cheapest signal first, early exit" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1100px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/signal-cascade.png" width="100%" alt="Creation OS signal cascade — cheapest signal first, early exit" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 <a id="architecture-overview"></a>
@@ -233,7 +252,13 @@ Cheap signals run first; the stack **stops** when the verdict is already clear s
 Eight-layer map of the σ-aware system (narrative + lab — not every layer ships in one binary on every platform):
 
 <p align="center">
-  <img src="docs/readme/architecture-8-layer.png" width="96%" alt="Creation OS — eight-layer σ-aware architecture" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1200px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/architecture-8-layer.png" width="100%" alt="Creation OS — eight-layer σ-aware architecture" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md).
@@ -245,7 +270,13 @@ Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_IN
 Beyond a single-shot gate, the tree sketches a **closed Ω-loop**: σ at each phase (perceive → … → continue), blended into a master lane — `python/cos/omega/`, `src/sigma/omega_phase_gates.{h,c}`, `./scripts/cos omega --goal … --turns …`, and the legacy integration driver in `src/sigma/omega_loop.c`.
 
 <p align="center">
-  <img src="docs/readme/omega-loop.png" width="96%" alt="Creation OS Ω-loop — fourteen σ phases per cycle" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1200px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/omega-loop.png" width="100%" alt="Creation OS Ω-loop — fourteen σ phases per cycle" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 <a id="memory-engram"></a>
@@ -255,7 +286,13 @@ Beyond a single-shot gate, the tree sketches a **closed Ω-loop**: σ at each ph
 Only experiences that pass the gate consolidate into durable memory; recall is σ-aware (thresholds in harnesses vary).
 
 <p align="center">
-  <img src="docs/readme/engram-memory.png" width="94%" alt="Creation OS engram memory hierarchy — store only what serves truth" decoding="async" loading="lazy" style="max-width:min(1100px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1100px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/readme/engram-memory.png" width="100%" alt="Creation OS engram memory hierarchy — store only what serves truth" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+</td>
+</tr>
+</table>
 </p>
 
 ## Portable σ interrupt (reference)
@@ -282,7 +319,13 @@ sigma_verdict_t v = sigma_gate(&state);
 **Benchmarks:** `make check-sigma-v57` runs the σ-gate C test, pytest core, and eval drivers (streaming / router / HIDE; Gemma runs when `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` is set). Regenerate summaries with the scripts under `benchmarks/sigma_gate_eval/` and `benchmarks/sigma_gate_scaling/`. **Hardware lab (silicon path):** `make bench-hardware` and `cos benchmark --hardware` — capture stdout under [`benchmarks/hardware/`](benchmarks/hardware/README.md) with host metadata (see [`docs/REPRO_BUNDLE_TEMPLATE.md`](docs/REPRO_BUNDLE_TEMPLATE.md)); do not treat microbench throughput as harness MMLU/ARC.
 
 <p align="center">
-  <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/>
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1200px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
 </p>
 
 <p align="center"><sub>Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong> · <a href="#build">merge gate</a></sub></p>
@@ -308,6 +351,8 @@ sigma_verdict_t v = sigma_gate(&state);
 </p>
 
 ## Contents
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:52rem;margin:0 auto;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:16px 20px;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
 
 <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
 <tr valign="top">
@@ -347,8 +392,18 @@ sigma_verdict_t v = sigma_gate(&state);
 </tr>
 </table>
 
-<p align="center"><img src="docs/assets/readme-scan-map.svg" width="96%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
-<p align="center"><sub><strong>FIG 09</strong> — where to look first on this page (adapts to light/dark in supporting clients). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a> · <a href="docs/DOC_INDEX.md">DOC_INDEX</a>.</sub></p>
+</td></tr></table>
+
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(920px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/readme-scan-map.svg" width="100%" alt="README scan map — inverted pyramid L1–L3 (light and dark aware)" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:40rem;margin:8px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 09</strong> — where to look first on this page (adapts to light/dark in supporting clients). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a> · <a href="docs/DOC_INDEX.md">DOC_INDEX</a>.</p>
 
 ---
 
@@ -459,7 +514,15 @@ BitNet-b1.58 2B4T weights; neither is simulated.  Claim-class rules:
 re-run bundle for the v3.0 wired pipeline (identical numbers, one
 command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 
-<p align="center"><img src="docs/assets/evidence-ladder.svg" width="92%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(880px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/evidence-ladder.svg" width="100%" alt="Evidence ladder — arithmetic vs measured vs harness vs lab demo" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="10" style="margin:0.75rem 0 1.25rem;">
@@ -743,7 +806,15 @@ Full comparison: [`docs/comparison.md`](docs/comparison.md).
 
 ## Architecture
 
-<p align="center"><img src="docs/assets/architecture-stack.svg" width="96%" alt="Creation OS architecture stack — kernel layers from world model to BSC core" decoding="async" loading="lazy" style="max-width:min(960px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(960px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/architecture-stack.svg" width="100%" alt="Creation OS architecture stack — kernel layers from world model to BSC core" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 08</strong> — single-file kernel narrative over Hypercube, Oracle, world model, BSC core, Soul, Proconductor. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 ### Full ULTRA pipeline (one turn)
@@ -858,7 +929,15 @@ Figure and palette rules: [`docs/VISUAL_INDEX.md`](docs/VISUAL_INDEX.md).
 
 ### BSC primer
 
-<p align="center"><img src="docs/assets/bsc-primitives.svg" width="92%" alt="BSC primitives — XOR bind, MAJ bundle, popcount to sigma" decoding="async" loading="lazy" style="max-width:min(900px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(900px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/bsc-primitives.svg" width="100%" alt="BSC primitives — XOR bind, MAJ bundle, popcount to sigma" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 06</strong> — teaching strip for bind / bundle / similarity. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 Binary Spatter Coding (BSC) in a nutshell:
@@ -888,7 +967,15 @@ relaxation.  Binding fidelity on the reference hot path:
 | Memory (13B)   | 48.5 GB       | 4.19 GB         |
 | Power          | 300W GPU      | 5.8W CPU        |
 
-<p align="center"><img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="94%" alt="GEMM vs BSC — memory and op-proxy ratios at README definitions" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(920px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/gemm-vs-bsc-memory-ops.svg" width="100%" alt="GEMM vs BSC — memory and op-proxy ratios at README definitions" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 07</strong> — <strong>32×</strong> RAM and <strong>192×</strong> op-proxy at <code>D = 4096</code> (see limitations for throughput vs arithmetic). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 Benchmark: [`bench/gemm_vs_bsc.c`](bench/gemm_vs_bsc.c) (`make bench` →
@@ -927,7 +1014,15 @@ says so.
 
 Creation OS is not just a chat interface.
 
-<p align="center"><img src="docs/assets/planes-abc.svg" width="92%" alt="Planes A–B–C — analysis map for stack positioning" decoding="async" loading="lazy" style="max-width:min(880px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(880px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/planes-abc.svg" width="100%" alt="Planes A–B–C — analysis map for stack positioning" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 05</strong> — Planes A–B–C (where σ-gates sit vs silicon vs product). <a href="docs/ANALYSIS.md">ANALYSIS</a> · <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 | Command              | What it does |
@@ -1159,7 +1254,15 @@ with their own evidence-class headers; do not fold their toy outputs
 into the same tables as §7 throughput without an explicit wall — see
 `CLAIM_DISCIPLINE` §1.
 
-<p align="center"><img src="docs/assets/kernel-lineage-evidence.svg" width="96%" alt="Portable proof vs standalone lab demos (evidence classes)" decoding="async" loading="lazy" style="max-width:min(920px,100%);height:auto;border-radius:12px;border:1px solid #e4e4e7;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);"/></p>
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(920px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img src="docs/assets/kernel-lineage-evidence.svg" width="100%" alt="Portable proof vs standalone lab demos (evidence classes)" decoding="async" loading="lazy" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;"/>
+</td>
+</tr>
+</table>
+</p>
 <p align="center"><sub><strong>FIG 04</strong> — portable proof vs extended lab demos (evidence-class guardrail). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
 
 <p align="center"><sub><tt>— SCOPE —</tt></sub></p>

@@ -2,6 +2,8 @@
 
 <!-- What changed and why — **English** for all merged prose per docs/LANGUAGE_POLICY.md -->
 
+If you touch **README figures**, keep the **Card + inner img** pattern documented in the HTML comment at the top of [`README.md`](../README.md) and in [`docs/VISUAL_INDEX.md`](../docs/VISUAL_INDEX.md) (zinc border, 12px / 8px radii).
+
 ## Claim hygiene (required if touching benchmarks, README numbers, or frontier comparisons)
 
 - [ ] I read [docs/CLAIM_DISCIPLINE.md](../docs/CLAIM_DISCIPLINE.md).
