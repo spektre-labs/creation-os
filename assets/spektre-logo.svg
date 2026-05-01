@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-labelledby="title desc">
+  <title id="title">Spektre Labs</title>
+  <desc id="desc">Minimal Spektre Labs wordmark logo</desc>
+  <style>
+    .brand {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 48px;
+      fill: #F5F5F7;
+      letter-spacing: 0.25em;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+    .sub {
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11px;
+      fill: #666666;
+      letter-spacing: 0.7em;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+  </style>
+  <text x="51%" y="45%" class="brand">SPEKTRE</text>
+  <text x="51%" y="70%" class="sub">LABS</text>
+</svg>

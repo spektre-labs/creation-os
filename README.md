@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./assets/spektre-logo.svg" alt="Spektre Labs" width="420" />
+</p>
+
 ![Creation OS](./assets/creation-os-hero.png)
 
 # Creation OS
