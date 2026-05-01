@@ -5,6 +5,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [README.md](../README.md) | Everyone | Slim (~530 lines) front door: Try-it, Measured, Architecture, Build, Proofs, Docs hub, Limitations, License |
+| [evidence_ladder.png](evidence_ladder.png) | Everyone, reviewers | Visual evidence classification (primitive → roadmap); complements [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 | [QUICKSTART.md](QUICKSTART.md) | Integrators | σ-gate Python import, MCP env block, representative AUROC table, Gemma+HIDE eval pointer |
 | [MCP_SIGMA.md](MCP_SIGMA.md) | Agent integrators | FastMCP LSD σ-gate stdio server, tool list, JSON response envelope |
 | [MCP_LISTING.md](MCP_LISTING.md) | Operators / marketplace | Draft marketplace copy + install JSON + submission checklist (evidence-backed numbers only) |

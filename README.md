@@ -15,6 +15,22 @@ Creation OS is an AGI-oriented architecture surface, not a claim of achieved AGI
 
 Full rules: [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)
 
+## Evidence Ladder
+
+![Evidence Ladder](./docs/evidence_ladder.png)
+
+Creation OS does not claim everything. It measures what it can, proves what is wired, and refuses to overclaim.
+
+| Level | What | Status |
+|-------|------|--------|
+| 1. Primitive | 12-byte `sigma_state_t`, C89, Q16.16, zero deps | **shipped** |
+| 2. Runtime | σ-gate ACCEPT/RETHINK/ABSTAIN, single forward pass | **shipped** |
+| 3. Measured | TruthfulQA 0.982, TriviaQA 0.960, BitNet 2B pipeline | **receipts in repo** |
+| 4. Negative | HaluEval 0.514 (near random), HellaSwag bounded, MMLU not dominant | **documented** |
+| 5. Formal | Lean 4: 6/6, Frama-C: 15/15 | **verified** |
+| 6. Architecture | Ω-loop, Engram, JEPA, Swarm, Sovereign, TTT | **built** |
+| 7. Roadmap | AGI-oriented architecture — not AGI achieved | **research direction** |
+
 ---
 
 <h1 align="center">Creation OS</h1>

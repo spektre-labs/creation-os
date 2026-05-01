@@ -1,6 +1,6 @@
 # Visual index — diagrams & figures (Creation OS)
 
-All graphics in this tree are **original SVG** (vector, scalable) — **no stock photos** and **no unlicensed web bitmaps**. Safe for PDF export, slides, and GitHub light theme; dark-theme figures are labeled below.
+All graphics in this tree are **original SVG** (vector, scalable) — **no stock photos** and **no unlicensed web bitmaps**. Safe for PDF export, slides, and GitHub light theme; dark-theme figures are labeled below. One committed **PNG** ([`evidence_ladder.png`](evidence_ladder.png)) is included for README raster embedding alongside FIG 03 SVG.
 
 ## Asset catalog
 
@@ -14,6 +14,7 @@ All graphics in this tree are **original SVG** (vector, scalable) — **no stock
 | [assets/planes-abc.svg](assets/planes-abc.svg) | Light | ANALYSIS / AGI map — Planes A–B–C with flow arrows |
 | [assets/reddit-hook-banner.svg](assets/reddit-hook-banner.svg) | Dark | README **above-the-fold** — drive-by hook + merge-gate / **184** checks @ v26 CTA (lab demo class) |
 | [assets/readme-scan-map.svg](assets/readme-scan-map.svg) | **Light + dark** (`prefers-color-scheme` inside SVG) | README **Contents** — inverted pyramid / L1–L3 scan map (FIG 09) |
+| [evidence_ladder.png](evidence_ladder.png) | Dark | README **Evidence Ladder** — claim-class raster (FIG 10); companion to FIG 03 SVG |
 | [Monorepo landing hero](../../docs/assets/landing-hero.svg) | Dark | Parent **spektre-protocol** README banner (FIG 01 / archive display) |
 
 ## Figure register (stable IDs)
@@ -31,6 +32,9 @@ Use these IDs when citing figures in slides or thesis text so captions stay stab
 | **07** | [`assets/gemm-vs-bsc-memory-ops.svg`](assets/gemm-vs-bsc-memory-ops.svg) |
 | **08** | [`assets/architecture-stack.svg`](assets/architecture-stack.svg) |
 | **09** | [`assets/readme-scan-map.svg`](assets/readme-scan-map.svg) |
+| **10** | [`evidence_ladder.png`](evidence_ladder.png) (raster; README claim discipline) |
+
+**FIG 10 — Evidence Ladder:** from primitive to architecture intent. Claim-class visual.
 
 ## Flight-ops display language (mission-control inspired)
 
