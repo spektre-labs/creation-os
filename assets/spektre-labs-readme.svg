@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 224" role="img" aria-labelledby="title desc">
+  <title id="title">Spektre Labs</title>
+  <desc id="desc">Spektre Labs wordmark for README  high-contrast dark panel, Helsinki 2026.</desc>
+  <rect width="720" height="224" rx="12" fill="#050505" stroke="#2d2d2d" stroke-width="2"/>
+  <line x1="80" y1="172" x2="640" y2="172" stroke="#3f3f46" stroke-width="1"/>
+  <style>
+    .brand {
+      font-family: "Times New Roman", "Liberation Serif", "Noto Serif", Times, serif;
+      font-size: 58px;
+      font-weight: 600;
+      fill: #fafafa;
+      letter-spacing: 0.32em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .sub {
+      font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      fill: #a1a1aa;
+      letter-spacing: 0.62em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .loc {
+      font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11px;
+      font-weight: 500;
+      fill: #71717a;
+      letter-spacing: 0.48em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+  </style>
+  <text x="360" y="100" class="brand">SPEKTRE</text>
+  <text x="360" y="148" class="sub">LABS</text>
+  <text x="360" y="204" class="loc">HELSINKI · 2026</text>
+</svg>
