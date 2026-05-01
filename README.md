@@ -1,5 +1,5 @@
 <!-- README surface: shadcn-style zinc tokens (Card, Muted, radius ~12px, shadow-sm). -->
-<!-- Figure embeds: outer Card table (max-width…) + inner img width=100%, radius 8px. Dark rasters: optional soft depth shadow on img. -->
+<!-- Figure embeds: outer Card table (max-width…) + inner img width=100%, radius 8px. Dark rasters: optional soft depth shadow on img. After a closing </table>, leave a blank line before a GFM markdown table so GitHub parses the table. -->
 
 <p align="center">
   <a href="https://spektrelabs.org">
@@ -31,6 +31,7 @@
   alt="Creation OS — σ-aware architecture overview (Spektre Labs)"
   decoding="async"
   fetchpriority="high"
+  loading="eager"
   style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.35);"
 />
 </td>
@@ -78,6 +79,7 @@ Creation OS does not claim everything. It measures what it can, proves what is w
 </td>
 </tr>
 </table>
+
 | Level | What | Status |
 |-------|------|--------|
 | 1. Primitive | 12-byte `sigma_state_t`, C89, Q16.16, zero deps | **shipped** |
@@ -90,13 +92,10 @@ Creation OS does not claim everything. It measures what it can, proves what is w
 
 <br/>
 
-<hr style="border:0;height:1px;background:linear-gradient(90deg,transparent,#e4e4e7,transparent);margin:20px 0;"/>
+<hr style="border:0;height:1px;background:linear-gradient(90deg,transparent,#e4e4e7,transparent);margin:12px 0 20px;"/>
 
-<br/>
-
-<br/>
-
-<p align="center" style="margin:6px 0 20px;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:56rem;margin:0 auto;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:12px 14px;text-align:center;box-shadow:0 1px 2px 0 rgb(0 0 0 / 0.04);">
+<p align="center" style="margin:0;">
   <a href="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml"><img src="https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml/badge.svg" alt="CI"/></a>
   &nbsp;
   <a href="docs/CLAIM_DISCIPLINE.md" title="Evidence classes — read before citing numbers"><img src="https://img.shields.io/badge/claims-CLAIM__DISCIPLINE-18181b?style=flat-square&labelColor=f4f4f5" alt="Claim discipline"/></a>
@@ -107,6 +106,7 @@ Creation OS does not claim everything. It measures what it can, proves what is w
   &nbsp;
   <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C-15%2F15-3f3f46?style=flat-square&labelColor=f4f4f5" alt="Frama-C 15/15"/></a>
 </p>
+</td></tr></table>
 
 <br/>
 
@@ -130,7 +130,7 @@ The hot path <strong>measures and gates</strong> every answer before output. Sep
 <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1100px,96%);width:96%;margin:0 auto;">
 <tr>
 <td style="background:#ffffff;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
-<img src="docs/readme/sigma-gate-flow.png" width="100%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
+<img src="docs/readme/sigma-gate-flow.png" width="100%" alt="Creation OS σ-gate flow — precheck, streaming σ, post-check, verdict" decoding="async" fetchpriority="high" loading="eager" style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.25);"/>
 </td>
 </tr>
 </table>
@@ -151,6 +151,8 @@ Creation OS is a **local σ-aware AI runtime** that scores internal coherence an
 ## Quick demo / install
 
 <p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.06em;"><tt>CLONE · BUILD · COS CHAT · Ω HARNESS</tt></p>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:48rem;margin:0 auto 14px;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:12px 16px;color:#52525b;font-size:13px;line-height:1.55;"><strong style="color:#18181b;">Pick a path</strong> — one-liner smoke, full <code style="background:#ffffff;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;font-size:12px;">install.sh</code> + BitNet weights, or weights-free Ω harness (see <a href="#install-full">Install</a>).</td></tr></table>
 
 ```bash
 # One-liner (ephemeral clone + build + `cos demo --batch`)
@@ -328,7 +330,7 @@ sigma_verdict_t v = sigma_gate(&state);
 </table>
 </p>
 
-<p align="center"><sub>Forty branchless integer kernels · one composed verdict · <strong>1 = 1</strong> · <a href="#build">merge gate</a></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:42rem;margin:10px auto 0;line-height:1.5;">Forty branchless integer kernels · one composed verdict · <strong style="color:#18181b;">1 = 1</strong> · <a href="#build">merge gate</a></p>
 
 <p align="center">
 <table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
@@ -407,13 +409,13 @@ sigma_verdict_t v = sigma_gate(&state);
 
 ---
 
-<p align="center"><sub><tt>— SHIP —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— SHIP —</tt></p>
 
 <a id="try-it"></a>
 
 ## Try it
 
-<sub>Zero-to-chat on macOS or Linux — weights optional for CI (<code>COS_INSTALL_NO_BITNET=1</code>).</sub>
+<p align="center" style="color:#71717a;font-size:13px;max-width:40rem;margin:0 auto 14px;line-height:1.55;">Zero-to-chat on macOS or Linux — weights optional for CI (<code style="background:#f4f4f5;padding:2px 8px;border-radius:6px;border:1px solid #e4e4e7;font-size:12px;color:#3f3f46;">COS_INSTALL_NO_BITNET=1</code>).</p>
 
 Fast path — under a minute, no GGUF download (recorded sigma from benchmarks):
 
@@ -502,7 +504,7 @@ cd creation-os && make cos cos-demo && ./cos demo --batch
 
 Tagged releases also attach **macOS universal** and **Linux** tarballs from `.github/workflows/release.yml`.
 
-<p align="center"><sub><tt>— EVIDENCE —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— EVIDENCE —</tt></p>
 
 <a id="measured"></a>
 
@@ -523,7 +525,7 @@ command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 03</strong> — which numbers may travel together (never merge microbench throughput with harness MMLU in one headline). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="10" style="margin:0.75rem 0 1.25rem;">
 <tr align="center">
@@ -800,7 +802,7 @@ change daily — they are **not** an engineering scorecard.
 They are bigger.  We measure σ.  Nobody else does.  
 Full comparison: [`docs/comparison.md`](docs/comparison.md).
 
-<p align="center"><sub><tt>— STACK —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— STACK —</tt></p>
 
 <a id="architecture"></a>
 
@@ -815,7 +817,7 @@ Full comparison: [`docs/comparison.md`](docs/comparison.md).
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 08</strong> — single-file kernel narrative over Hypercube, Oracle, world model, BSC core, Soul, Proconductor. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 08</strong> — single-file kernel narrative over Hypercube, Oracle, world model, BSC core, Soul, Proconductor. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
 ### Full ULTRA pipeline (one turn)
 
@@ -938,7 +940,7 @@ Figure and palette rules: [`docs/VISUAL_INDEX.md`](docs/VISUAL_INDEX.md).
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 06</strong> — teaching strip for bind / bundle / similarity. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 06</strong> — teaching strip for bind / bundle / similarity. <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
 Binary Spatter Coding (BSC) in a nutshell:
 `bind = XOR` · `bundle = popcount threshold` · similarity = `1 −
@@ -976,7 +978,7 @@ relaxation.  Binding fidelity on the reference hot path:
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 07</strong> — <strong>32×</strong> RAM and <strong>192×</strong> op-proxy at <code>D = 4096</code> (see limitations for throughput vs arithmetic). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 07</strong> — <strong style="color:#18181b;">32×</strong> RAM and <strong style="color:#18181b;">192×</strong> op-proxy at <code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">D = 4096</code> (see limitations for throughput vs arithmetic). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
 Benchmark: [`bench/gemm_vs_bsc.c`](bench/gemm_vs_bsc.c) (`make bench` →
 `./gemm_vs_bsc`).  Theory: [`data/corpus/`](data/corpus/).  HDC/VSA
@@ -1002,7 +1004,7 @@ says so.
 > **Ω = argmin ∫σ dt** subject to **K ≥ K_crit**.  
 > Implemented: [`src/sigma/evolve/`](src/sigma/evolve/).
 
-<p align="center"><sub><tt>— SURFACE —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— SURFACE —</tt></p>
 
 ---
 
@@ -1023,7 +1025,7 @@ Creation OS is not just a chat interface.
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 05</strong> — Planes A–B–C (where σ-gates sit vs silicon vs product). <a href="docs/ANALYSIS.md">ANALYSIS</a> · <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 05</strong> — Planes A–B–C (where σ-gates sit vs silicon vs product). <a href="docs/ANALYSIS.md">ANALYSIS</a> · <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
 | Command              | What it does |
 |:---------------------|:-------------|
@@ -1062,7 +1064,7 @@ flowchart LR
 
 Every surfaced turn measures σ.  Every gate decision is logged.
 
-<p align="center"><sub><tt>— TOOLCHAIN —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— TOOLCHAIN —</tt></p>
 
 ---
 
@@ -1111,7 +1113,7 @@ Optional (not in `merge-gate`): σ labs, MCP, RTL, native-M4 —
 Host metadata when publishing numbers:
 [`docs/REPRO_BUNDLE_TEMPLATE.md`](docs/REPRO_BUNDLE_TEMPLATE.md).
 
-<p align="center"><sub><tt>— PROOFS —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— PROOFS —</tt></p>
 
 ---
 
@@ -1137,7 +1139,7 @@ Host metadata when publishing numbers:
   P(wrong | σ ≤ τ) ≤ α with confidence 1 − δ on the calibration draw —
   [`docs/v111/CONFORMAL_GUARANTEE.md`](docs/v111/CONFORMAL_GUARANTEE.md).
 
-<p align="center"><sub><tt>— VERSIONS —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— VERSIONS —</tt></p>
 
 ---
 
@@ -1147,7 +1149,7 @@ Host metadata when publishing numbers:
 
 **Full version catalogue (v112–v306+):** [`docs/SURFACE_VERSIONS.md`](docs/SURFACE_VERSIONS.md) — per-version `make check-vNN` targets and dominant primitives live there so this README stays a **ship + evidence + architecture** front door, not a catalogue dump.
 
-<p align="center"><sub><tt>— DOCS —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— DOCS —</tt></p>
 
 ---
 
@@ -1215,7 +1217,7 @@ people associate with trillion-parameter clouds — **without** mixing
 lab toy kernels with harness claims; see
 [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).
 
-<p align="center"><sub><tt>— COMMITTEE —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— COMMITTEE —</tt></p>
 
 ---
 
@@ -1263,9 +1265,9 @@ into the same tables as §7 throughput without an explicit wall — see
 </tr>
 </table>
 </p>
-<p align="center"><sub><strong>FIG 04</strong> — portable proof vs extended lab demos (evidence-class guardrail). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</sub></p>
+<p align="center" style="color:#71717a;font-size:12px;max-width:44rem;margin:6px auto 0;line-height:1.45;"><strong style="color:#52525b;">FIG 04</strong> — portable proof vs extended lab demos (evidence-class guardrail). <a href="docs/VISUAL_INDEX.md">VISUAL_INDEX</a>.</p>
 
-<p align="center"><sub><tt>— SCOPE —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— SCOPE —</tt></p>
 
 ---
 
@@ -1354,7 +1356,7 @@ No payment logic ships in this tree; licence terms are unchanged ([`LICENSE`](LI
 | Pro (positioning) | Commercial support / packaging around the same bits | €49/month (contact Spektre Labs) |
 | Enterprise (positioning) | SLA, custom τ, on-prem | Contact |
 
-<p align="center"><sub><tt>— LICENSE —</tt></sub></p>
+<p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— LICENSE —</tt></p>
 
 ---
 
