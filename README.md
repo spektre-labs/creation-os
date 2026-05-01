@@ -1,3 +1,22 @@
+![Creation OS](./assets/creation-os-hero.png)
+
+# Creation OS
+
+**The first operating system that measures itself.**
+
+Creation OS is a σ-aware closed-loop cognition architecture.
+Not a model. Not a chatbot. Not a prompt framework.
+
+At the center is σ: the internal measure of coherence, uncertainty, alignment and truth-distance.
+
+## Claim Discipline
+
+Creation OS is an AGI-oriented architecture surface, not a claim of achieved AGI.
+
+Full rules: [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md)
+
+---
+
 <h1 align="center">Creation OS</h1>
 
 <p align="center">
@@ -168,7 +187,7 @@ sigma_verdict_t v = sigma_gate(&state);
 /* ABSTAIN → do not emit */
 ```
 
-**Benchmarks:** `make check-sigma-v57` runs the σ-gate C test, pytest core, and eval drivers (streaming / router / HIDE; Gemma runs when `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` is set). Regenerate summaries with the scripts under `benchmarks/sigma_gate_eval/` and `benchmarks/sigma_gate_scaling/`.
+**Benchmarks:** `make check-sigma-v57` runs the σ-gate C test, pytest core, and eval drivers (streaming / router / HIDE; Gemma runs when `HF_TOKEN` or `HUGGING_FACE_HUB_TOKEN` is set). Regenerate summaries with the scripts under `benchmarks/sigma_gate_eval/` and `benchmarks/sigma_gate_scaling/`. **Hardware lab (silicon path):** `make bench-hardware` and `cos benchmark --hardware` — capture stdout under [`benchmarks/hardware/`](benchmarks/hardware/README.md) with host metadata (see [`docs/REPRO_BUNDLE_TEMPLATE.md`](docs/REPRO_BUNDLE_TEMPLATE.md)); do not treat microbench throughput as harness MMLU/ARC.
 
 <p align="center">
   <img src="docs/assets/reddit-hook-banner.svg" width="100%" alt="Creation OS — compile on real silicon" decoding="async" loading="lazy" style="max-width:min(1200px,100%);height:auto;border-radius:14px;box-shadow:0 4px 24px rgba(15,23,42,0.18);"/>
@@ -826,6 +845,7 @@ Creation OS is not just a chat interface.
 | `cos swarm`          | multi-agent σ-coordinated routing (mock σ peers in v0) |
 | `cos sandbox`        | isolated safe process execution (allowlist + rlimits) |
 | `cos plan`           | long-horizon planning with snapshot rollback |
+| `cos predict`        | σ-JEPA lab: latent one-step predict, roll-out imagination, or low-σ plan pick (JSON) |
 | `cos exec`           | digital twin pre-execution simulation |
 | `cos-calibrate`      | conformal bundle helpers (see `make cos-calibrate`) |
 | `cos health`         | system status + coherence monitoring |
@@ -1072,6 +1092,8 @@ This is a research prototype.  Full list with scope and caveats:
 - **Arithmetic vs throughput.**  192× ops and 32× RAM are arithmetic
   ratios at `D = 4096`.  Throughput requires `make bench` plus
   archived host metadata.
+- **BitNet + σ kernel lab:** integer ternary matvec + `sigma_gate_tiny` step + cache/speculative hooks — `make bench-bitnet-sigma` or `cos benchmark --bitnet-sigma` (toy dimensions; archive under [`benchmarks/bitnet/`](benchmarks/bitnet/README.md); not full 2B4T tok/s without a harness bundle).
+- **σ-sparse + SSM hybrid (lab):** `make bench-hybrid` / `cos benchmark --hybrid` — integer sparse attention + toy SSM path ([`benchmarks/sigma_hybrid/`](benchmarks/sigma_hybrid/README.md); not llama.cpp).
 - **BitNet quickstart** downloads real 1.2 GB weights; the local
   runtime is real.  Cloud escalation is opt-in and off by default.
 

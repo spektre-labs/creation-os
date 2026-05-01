@@ -44,6 +44,7 @@ SCOPE_DIRS=(
     "src"
     "cli"
     "core"
+    "python"
     "tools"
     "scripts"
     "tests"
@@ -138,7 +139,8 @@ has_spdx() {
 }
 
 # Skip vendored / third-party trees, build artefacts, dotdirs, and binaries.
-SKIP_PATTERN='/\(\.git\|\.build\|\.cache\|\.venv\|node_modules\|dist\|build\|__pycache__\|third_party\|vendor\|\.pytest_cache\|benchmarks/cache\)/'
+# Extended regex (grep -E): alternation with \| is NOT portable without -E.
+SKIP_PATTERN='/(\.git|\.build|\.cache|\.venv|node_modules|dist|build|__pycache__|third_party|vendor|\.pytest_cache|benchmarks/cache)/'
 
 list_scope_files() {
     {
@@ -148,7 +150,7 @@ list_scope_files() {
         for f in "${ROOT_SCOPE[@]}"; do
             [ -f "${f}" ] && printf '%s\n' "${f}"
         done
-    } | grep -Ev "${SKIP_PATTERN}" | sort -u
+    } | grep -E -v "${SKIP_PATTERN}" | sort -u
 }
 
 apply_to_file() {

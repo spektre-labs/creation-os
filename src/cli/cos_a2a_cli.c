@@ -1,3 +1,10 @@
+/*  SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+ *  SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+ *  Source:        https://github.com/spektre-labs/creation-os-kernel
+ *  Website:       https://spektrelabs.org
+ *  Commercial:    spektre.labs@proton.me
+ *  License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
+ */
 /* cos-a2a — product-level CLI over the σ-A2A kernel (OMEGA-2).
  *
  * Google A2A (Agent2Agent) is a 2026 standard for capability-gated

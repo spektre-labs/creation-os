@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Source:        https://github.com/spektre-labs/creation-os-kernel
+# Website:       https://spektrelabs.org
+# Commercial:    spektre.labs@proton.me
+# License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
 """Validate docs/do178c/trace.csv for DO-178C-oriented traceability scaffolding."""
 from __future__ import annotations
 

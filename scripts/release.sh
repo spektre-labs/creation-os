@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Source:        https://github.com/spektre-labs/creation-os-kernel
+# Website:       https://spektrelabs.org
+# Commercial:    spektre.labs@proton.me
+# License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
 # Maintainer: tag a release on the canonical creation-os tree after gates PASS.
 # Usage: scripts/release.sh v3.3.0
 # Optional: CREATION_OS_RELEASE_SKIP_MERGE_GATE=1  (emergency only; not for CI)
