@@ -1,22 +1,27 @@
 <p align="center">
-  <img
-    src="./assets/spektre-labs-readme.svg"
-    width="560"
-    alt="Spektre Labs — Helsinki 2026"
-    decoding="async"
-  />
+  <a href="https://spektrelabs.org">
+    <img
+      src="./assets/spektre-labs-lockup.jpg"
+      width="720"
+      alt="Spektre Labs — SPEKTRE / LABS wordmark"
+      decoding="async"
+    />
+  </a>
 </p>
+
+<h6 align="center">HELSINKI · 2026</h6>
+
+<br/>
 
 ![Creation OS](./assets/creation-os-hero.png)
 
 # Creation OS
 
-**The first operating system that measures itself.**
+<p align="center"><em>The first operating system that measures itself.</em></p>
 
-Creation OS is a σ-aware closed-loop cognition architecture.
-Not a model. Not a chatbot. Not a prompt framework.
+<p align="center">A σ-aware closed-loop cognition architecture — not a model, not a chatbot, not a prompt framework.</p>
 
-At the center is σ: the internal measure of coherence, uncertainty, alignment and truth-distance.
+<p align="center">σ is the internal measure of coherence, uncertainty, alignment, and truth-distance.</p>
 
 ## Claim Discipline
 
