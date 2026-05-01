@@ -41,9 +41,9 @@ def icr_ratios_from_hidden_stack(hidden_states: Sequence[Any]) -> List[float]:
     if not hidden_states or len(hidden_states) < 2:
         return []
     ratios: List[float] = []
-    for l in range(1, len(hidden_states)):
-        h_prev = hidden_states[l - 1]
-        h_cur = hidden_states[l]
+    for li in range(1, len(hidden_states)):
+        h_prev = hidden_states[li - 1]
+        h_cur = hidden_states[li]
         if not isinstance(h_prev, torch.Tensor) or not isinstance(h_cur, torch.Tensor):
             continue
         if h_prev.ndim < 3 or h_cur.ndim < 3:

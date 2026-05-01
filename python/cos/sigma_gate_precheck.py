@@ -128,8 +128,8 @@ class SigmaPrecheck:
             out = model(**inputs, output_hidden_states=True)
         hs = out.hidden_states
         feats = []
-        for l in range(lo, min(hi, len(hs))):
-            h = hs[l][:, -1, :].float().cpu().numpy().ravel()
+        for li in range(lo, min(hi, len(hs))):
+            h = hs[li][:, -1, :].float().cpu().numpy().ravel()
             feats.append(h)
         vec = np.concatenate(feats).reshape(1, -1)
         xs = scaler.transform(vec)
@@ -160,8 +160,8 @@ class SigmaPrecheck:
         if not layer_idxs:
             return 0.5
         feats: list[np.ndarray] = []
-        for l in layer_idxs:
-            t = hs[int(l)][0].float().cpu().numpy()
+        for li in layer_idxs:
+            t = hs[int(li)][0].float().cpu().numpy()
             feats.append(t.mean(axis=0))
         vec = np.concatenate(feats).reshape(1, -1).astype(np.float64)
 

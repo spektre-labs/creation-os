@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Python: Ruff-clean `python/cos` + `tests` (import/typing/ambiguous-name fixes).
+- Packaging: `pyproject.toml` documents **`[serve]`** optional extra (same deps as **`[mcp]`** for σ HTTP/MCP paths) and adds **`[tool.ruff]`** defaults.
+- Community: **`CODE_OF_CONDUCT.md`** (Contributor Covenant 2.1) and **`.github/FUNDING.yml`**.
+
 ## v3.2.0 — "HORIZON" — 2026-04-22
 
 Eighth tagged release — σ-orchestration surfaces for **multi-peer

@@ -42,9 +42,9 @@ def _layer_spectral_features(attn_avg: np.ndarray) -> Dict[str, float]:
     deg = a.sum(axis=1)
     deg = np.maximum(deg, 1e-8)
     d = np.diag(deg)
-    l = d - a
+    lap = d - a
     inv_sqrt = np.diag(1.0 / np.sqrt(deg))
-    l_norm = inv_sqrt @ l @ inv_sqrt
+    l_norm = inv_sqrt @ lap @ inv_sqrt
     try:
         w = np.linalg.eigvalsh(l_norm)
     except np.linalg.LinAlgError:

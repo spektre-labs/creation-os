@@ -126,7 +126,7 @@ class SigmaSAE:
         Return whether any coordinate in ``known_hallucination_features`` fires above
         ``activation_threshold`` (Anthropic-style “feature dictionary” lab pattern).
         """
-        t = _require_torch()
+        _require_torch()
         z = self._flatten_features(features).detach().float()
         active: List[int] = []
         thr = self.activation_threshold

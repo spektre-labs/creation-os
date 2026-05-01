@@ -1,0 +1,90 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Canonical sdist/wheel for the `cos` Python package (`python/cos/`).
+# The separate OpenAI-compat SDK lives under `sdk/python/` (see that tree's pyproject).
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "creation-os"
+version = "1.0.0"
+description = "σ-aware local AI runtime — measures every output before showing it"
+readme = "README.md"
+license = { text = "LicenseRef-SCSL-1.0 OR AGPL-3.0-only" }
+requires-python = ">=3.9"
+authors = [{ name = "Lauri Elias Rainio", email = "spektre.labs@proton.me" }]
+keywords = [
+  "ai",
+  "llm",
+  "hallucination",
+  "detection",
+  "sigma",
+  "gate",
+  "safety",
+  "runtime",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: C",
+  "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "numpy>=1.24",
+  "torch>=2.0",
+  "transformers>=4.30",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "ruff"]
+# HTTP σ-gate server path (Python `cos serve` / MCP); C binary `cos-serve` ships from `make cos-serve`.
+serve = ["mcp"]
+mcp = ["mcp"]
+# Local STT/TTS for ``python -m cos.voice`` (no cloud APIs in-tree).
+voice = [
+  "faster-whisper>=1.0.0",
+  "sounddevice>=0.4.6",
+]
+eval = ["scikit-learn", "pandas"]
+langchain = ["langchain-core>=0.2"]
+langgraph = ["langgraph>=0.2"]
+crewai = ["crewai>=0.55"]
+autogen = ["autogen-agentchat>=0.4"]
+frameworks = [
+  "langchain-core>=0.2",
+  "langgraph>=0.2",
+  "crewai>=0.55",
+  "autogen-agentchat>=0.4",
+]
+
+[project.scripts]
+cos = "cos.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/spektre-labs/creation-os"
+Documentation = "https://github.com/spektre-labs/creation-os/tree/main/docs"
+Repository = "https://github.com/spektre-labs/creation-os"
+Issues = "https://github.com/spektre-labs/creation-os/issues"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+include = ["cos*"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120
+src = ["python", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = []
+
+[tool.ruff.lint.per-file-ignores]
+"python/cos/cli.py" = ["E501"]
