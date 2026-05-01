@@ -1,15 +1,13 @@
 <p align="center">
   <a href="https://spektrelabs.org">
     <img
-      src="./assets/spektre-labs-lockup.jpg"
-      width="720"
-      alt="Spektre Labs — SPEKTRE / LABS wordmark"
+      src="./assets/spektre-brand-readme.png"
+      width="640"
+      alt="Spektre Labs — Helsinki 2026"
       decoding="async"
     />
   </a>
 </p>
-
-<h6 align="center">HELSINKI · 2026</h6>
 
 <br/>
 

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="252" viewBox="0 0 800 252" role="img" aria-labelledby="title desc">
+  <title id="title">Spektre Labs, Helsinki 2026</title>
+  <desc id="desc">Single monochrome wordmark: SPEKTRE, LABS, and Helsinki 2026 on black.</desc>
+  <rect width="800" height="252" fill="#000000"/>
+  <style>
+    .brand {
+      font-family: "Times New Roman", Times, ui-serif, serif;
+      font-size: 54px;
+      font-weight: 600;
+      fill: #ffffff;
+      letter-spacing: 0.34em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .sub {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      fill: #ffffff;
+      letter-spacing: 0.78em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .loc {
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      fill: #a3a3a3;
+      letter-spacing: 0.48em;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+  </style>
+  <text x="400" y="102" class="brand">SPEKTRE</text>
+  <text x="400" y="158" class="sub">LABS</text>
+  <text x="400" y="218" class="loc">HELSINKI &#183; 2026</text>
+</svg>
