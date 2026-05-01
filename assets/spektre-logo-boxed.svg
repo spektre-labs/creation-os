@@ -1,25 +1,37 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 260" role="img" aria-labelledby="title desc">
   <title id="title">Spektre Labs</title>
-  <desc id="desc">Minimal Spektre Labs boxed wordmark logo</desc>
-  <rect x="0.5" y="0.5" width="599" height="199" fill="#000000" stroke="#1A1A1A" stroke-width="1"/>
+  <desc id="desc">Spektre Labs boxed wordmark on black with Helsinki footer.</desc>
+  <rect x="0.5" y="0.5" width="639" height="259" fill="#000000" stroke="#1a1a1a" stroke-width="1"/>
   <style>
     .brand {
-      font-family: "Times New Roman", Times, serif;
-      font-size: 48px;
-      fill: #F5F5F7;
-      letter-spacing: 0.25em;
+      font-family: "Times New Roman", "Liberation Serif", "Noto Serif", Times, serif;
+      font-size: 52px;
+      font-weight: 600;
+      fill: #f5f5f7;
+      letter-spacing: 0.28em;
       text-anchor: middle;
-      dominant-baseline: central;
+      dominant-baseline: middle;
     }
     .sub {
-      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 11px;
-      fill: #666666;
-      letter-spacing: 0.7em;
+      font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      fill: #9ca3af;
+      letter-spacing: 0.65em;
       text-anchor: middle;
-      dominant-baseline: central;
+      dominant-baseline: middle;
+    }
+    .loc {
+      font-family: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10px;
+      font-weight: 500;
+      fill: #6b7280;
+      letter-spacing: 0.42em;
+      text-anchor: middle;
+      dominant-baseline: middle;
     }
   </style>
-  <text x="51%" y="45%" class="brand">SPEKTRE</text>
-  <text x="51%" y="70%" class="sub">LABS</text>
+  <text x="320" y="108" class="brand">SPEKTRE</text>
+  <text x="320" y="156" class="sub">LABS</text>
+  <text x="320" y="218" class="loc">HELSINKI · 2026</text>
 </svg>

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/spektre-logo.svg" alt="Spektre Labs" width="420" />
+  <img src="./assets/spektre-logo.svg" alt="Spektre Labs — Helsinki 2026" width="480" decoding="async" />
 </p>
 
 ![Creation OS](./assets/creation-os-hero.png)
