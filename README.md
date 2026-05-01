@@ -333,7 +333,8 @@ sigma_verdict_t v = sigma_gate(&state);
 <p align="center" style="color:#71717a;font-size:12px;max-width:42rem;margin:10px auto 0;line-height:1.5;">Forty branchless integer kernels · one composed verdict · <strong style="color:#18181b;">1 = 1</strong> · <a href="#build">merge gate</a></p>
 
 <p align="center">
-<table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:56rem;margin:0 auto;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:16px 14px;box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);">
+<table role="presentation" border="0" cellspacing="10" cellpadding="0" align="center" style="margin:0 auto;">
 <tr>
 <td align="center"><a href="#try-it"><img src="https://img.shields.io/badge/try%20it-in%2030%20seconds-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Try it in 30 seconds"/></a></td>
 <td align="center"><a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-27272a?style=for-the-badge&labelColor=ffffff" alt="TruthfulQA 817 accuracy lift"/></a></td>
@@ -343,13 +344,13 @@ sigma_verdict_t v = sigma_gate(&state);
 <td align="center"><a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-52525b?style=for-the-badge&labelColor=ffffff" alt="hot path: branchless · Q16.16 · libc only"/></a></td>
 </tr>
 </table>
-</p>
-
-<p align="center">
+<p align="center" style="margin:14px 0 0;">
   <a href="Makefile"><img src="https://img.shields.io/badge/merge--gate-check%E2%80%93v6%E2%80%A6v306-18181b?style=flat-square&labelColor=f4f4f5" alt="Merge gate"/></a>
   <a href="#build"><img src="https://img.shields.io/badge/CI-sigma--pipeline-3f3f46?style=flat-square&labelColor=ffffff" alt="Sigma pipeline checks"/></a>
   <a href="docs/LICENSING.md"><img src="https://img.shields.io/badge/license-SCSL%20%2B%20AGPL-52525b?style=flat-square&labelColor=fafafa" alt="License"/></a>
   <a href="docs/FEATURES_AND_STANDALONE_BUILDS.md"><img src="https://img.shields.io/badge/binaries-standalone%20kernels-27272a?style=flat-square&labelColor=f4f4f5" alt="Standalone binaries"/></a>
+</p>
+</td></tr></table>
 </p>
 
 ## Contents
@@ -446,8 +447,9 @@ clones.
 Everything runs **locally**.  Nothing is sent to the cloud.  Nothing
 is logged.  Nothing calls home.  Safe to re-run; idempotent.
 
-> **Local-first by construction** — the default path never phones
-> home; cloud escalation is explicit, opt-in, and σ-gated when wired.
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:14px auto;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;border-left:4px solid #18181b;padding:12px 16px;color:#3f3f46;font-size:14px;line-height:1.55;">
+<strong style="color:#18181b;">Local-first by construction</strong> — the default path never phones home; cloud escalation is explicit, opt-in, and σ-gated when wired.
+</td></tr></table>
 
 ### What `cos chat` can do
 
@@ -510,6 +512,10 @@ Tagged releases also attach **macOS universal** and **Linux** tarballs from `.gi
 
 ## Measured
 
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:48rem;margin:0 auto 14px;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-left:4px solid #18181b;border-radius:12px;padding:12px 16px;font-size:13px;color:#52525b;line-height:1.55;">
+<strong style="color:#18181b;">Evidence hygiene</strong> — read <a href="docs/CLAIM_DISCIPLINE.md">CLAIM_DISCIPLINE</a> before citing metrics from this section. Do not merge microbench throughput with harness MMLU / ARC in one headline.
+</td></tr></table>
+
 Two independent, reproducible evidence surfaces — both use real
 BitNet-b1.58 2B4T weights; neither is simulated.  Claim-class rules:
 [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md).  Compact
@@ -529,9 +535,9 @@ command each): [`benchmarks/final5/README.md`](benchmarks/final5/README.md).
 
 <table role="presentation" width="100%" border="0" cellspacing="0" cellpadding="10" style="margin:0.75rem 0 1.25rem;">
 <tr align="center">
-<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><sub style="color:#71717a;">TruthfulQA 817 · baseline</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.261</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">bitnet_only</code></td>
-<td style="border:1px solid #e4e4e7;border-radius:12px;background:#ffffff;"><sub style="color:#71717a;">σ-pipeline · scored acc.</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.336</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">pipeline</code></td>
-<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><sub style="color:#71717a;">Conformal τ (SCI-1)</sub><br/><strong style="font-size:1.35em;color:#18181b;">0.655</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">α=0.80, δ=0.10</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><span style="display:block;font-size:11px;letter-spacing:0.03em;color:#71717a;text-transform:uppercase;margin-bottom:6px;">TruthfulQA 817 · baseline</span><strong style="font-size:1.35em;color:#18181b;">0.261</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">bitnet_only</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#ffffff;"><span style="display:block;font-size:11px;letter-spacing:0.03em;color:#71717a;text-transform:uppercase;margin-bottom:6px;">σ-pipeline · scored acc.</span><strong style="font-size:1.35em;color:#18181b;">0.336</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">pipeline</code></td>
+<td style="border:1px solid #e4e4e7;border-radius:12px;background:#fafafa;"><span style="display:block;font-size:11px;letter-spacing:0.03em;color:#71717a;text-transform:uppercase;margin-bottom:6px;">Conformal τ (SCI-1)</span><strong style="font-size:1.35em;color:#18181b;">0.655</strong><br/><code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;">α=0.80, δ=0.10</code></td>
 </tr>
 </table>
 
@@ -1001,8 +1007,10 @@ Creation OS improves itself autonomously (evaluator-first; see
 The machine that improves while you sleep — and stops when the gate
 says so.
 
-> **Ω = argmin ∫σ dt** subject to **K ≥ K_crit**.  
-> Implemented: [`src/sigma/evolve/`](src/sigma/evolve/).
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:12px auto;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:12px 16px;color:#52525b;font-size:14px;line-height:1.55;">
+<strong style="color:#18181b;">Ω = argmin ∫σ dt</strong> subject to <strong style="color:#18181b;">K ≥ K_crit</strong>.<br/>
+Implemented: <a href="src/sigma/evolve/">src/sigma/evolve/</a>.
+</td></tr></table>
 
 <p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— SURFACE —</tt></p>
 
@@ -1012,7 +1020,7 @@ says so.
 
 ## Beyond inference
 
-<sub>One <code>cos</code> front door plus dedicated σ binaries — all instrumented.</sub>
+<p align="center" style="color:#71717a;font-size:13px;max-width:42rem;margin:0 auto 12px;line-height:1.55;">One <code style="background:#f4f4f5;padding:2px 6px;border-radius:6px;border:1px solid #e4e4e7;font-size:12px;">cos</code> front door plus dedicated σ binaries — all instrumented.</p>
 
 Creation OS is not just a chat interface.
 
@@ -1121,10 +1129,13 @@ Host metadata when publishing numbers:
 
 ## Proof status
 
-<p align="center">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:48rem;margin:0 auto 16px;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:14px 16px;text-align:center;">
+<p align="center" style="margin:0;">
   <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-6%2F6%20theorems-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Lean 4 theorems"/></a>
+  &nbsp;
   <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20Wp-15%2F15%20tier--1-3f3f46?style=for-the-badge&labelColor=ffffff" alt="Frama-C Wp"/></a>
 </p>
+</td></tr></table>
 
 - **Lean 4**: 6 / 6 theorems discharged, **sorry-free** —
   [`hw/formal/v259/Measurement.lean`](hw/formal/v259/Measurement.lean);
