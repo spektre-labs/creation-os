@@ -15,7 +15,28 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple
+
+_COS_HELP_EPILOG = """
+command groups (surface for first contact; many lab subcommands also exist):
+  CORE            score, chat, bench, serve, version
+  ANALYSIS        explain, cascade, calibrate
+  INFRASTRUCTURE  health, registry, cost
+  ADVANCED        graph, evolve, redteam
+
+Exit codes (where implemented): 0 ok, 1 error / usage, 2 σ-gate ABSTAIN (score/gate).
+""".strip()
+
+
+def _cli_out_json(ns: argparse.Namespace) -> bool:
+    return bool(
+        getattr(ns, "out_json", False)
+        or getattr(ns, "score_as_json", False)  # backward compat
+    )
+
+
+def _cli_verbose(ns: argparse.Namespace) -> bool:
+    return bool(getattr(ns, "cli_verbose", False))
 
 
 def _iter_prompts_jsonl(path: Path) -> Iterator[str]:
@@ -896,6 +917,18 @@ def _cmd_federation(args: argparse.Namespace) -> int:
 
     ws = Path(getattr(args, "workspace", "") or "~/.cos/federation").expanduser()
 
+    if getattr(args, "federated_aggregate", False):
+        from cos.sigma_federated import demo_aggregate_memory
+
+        ws.mkdir(parents=True, exist_ok=True)
+        out = demo_aggregate_memory(include_poison=True, use_byzantine=True)
+        (ws / "fed_v161_stats.json").write_text(
+            json.dumps(out, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
     if getattr(args, "status", False):
         p = ws / "fed_lab_state.json"
         if p.is_file():
@@ -1335,6 +1368,12 @@ def _cmd_ttt(args: argparse.Namespace) -> int:
 
 def _cmd_benchmark(args: argparse.Namespace) -> int:
     """Delegate to ``Makefile`` hardware / BitNet kernel lab targets."""
+    if bool(getattr(args, "spike_vs_continuous", False)):
+        from cos.sigma_spike import benchmark_spike_vs_continuous_mj_per_token
+
+        print(json.dumps(benchmark_spike_vs_continuous_mj_per_token(), ensure_ascii=False))
+        return 0
+
     root = Path(__file__).resolve().parents[2]
     make_cmd = ["make", "-C", str(root)]
     env = dict(os.environ)
@@ -1748,10 +1787,1376 @@ def _cmd_interpret(args: argparse.Namespace) -> int:
     return 2
 
 
+def _gap_lab_twin_bundle() -> Tuple[Any, Any]:
+    from cos.sigma_twin import TwinGateLab, TwinModelLab
+
+    return TwinGateLab(), TwinModelLab(style="default")
+
+
+def _fewshot_state_path(args: argparse.Namespace) -> Path:
+    return Path(str(getattr(args, "fewshot_state", "") or "~/.cos/sigma_fewshot_lab.json")).expanduser()
+
+
+def _symbolic_state_path(args: argparse.Namespace) -> Path:
+    return Path(str(getattr(args, "symbolic_state", "") or "~/.cos/sigma_symbolic_lab.json")).expanduser()
+
+
+def _cmd_fewshot(args: argparse.Namespace) -> int:
+    import json as _json
+
+    from cos.sigma_fewshot import HashEmbeddingEncoder, SigmaFewShot
+
+    path = _fewshot_state_path(args)
+    gate, model = _gap_lab_twin_bundle()
+    fs = SigmaFewShot(gate, model, HashEmbeddingEncoder())
+    if path.is_file():
+        try:
+            fs.import_state(_json.loads(path.read_text(encoding="utf-8")))
+        except (_json.JSONDecodeError, OSError, TypeError, ValueError):
+            pass
+
+    if getattr(args, "fewshot_clear", False):
+        fs.prototypes.clear()
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_json.dumps(fs.export_state(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        print(_json.dumps({"cmd": "fewshot", "cleared": True}, ensure_ascii=False))
+        return 0
+
+    def _persist() -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_json.dumps(fs.export_state(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    if getattr(args, "fewshot_learn", False):
+        task = str(getattr(args, "fewshot_task", "") or "").strip()
+        raw = str(getattr(args, "fewshot_examples", "") or "").strip()
+        if not task or not raw:
+            print("cos fewshot --learn requires --task and --examples JSON", file=sys.stderr)
+            return 2
+        try:
+            examples = _json.loads(raw)
+        except _json.JSONDecodeError as e:
+            print(f"cos fewshot: invalid --examples JSON: {e}", file=sys.stderr)
+            return 2
+        if not isinstance(examples, list):
+            print("cos fewshot: --examples must be a JSON array of pairs", file=sys.stderr)
+            return 2
+        pairs: List[Tuple[str, str]] = []
+        for row in examples:
+            if isinstance(row, (list, tuple)) and len(row) >= 2:
+                pairs.append((str(row[0]), str(row[1])))
+        if not pairs:
+            print("cos fewshot: need at least one [input, output] pair", file=sys.stderr)
+            return 2
+        out = fs.learn(task, pairs)
+        _persist()
+        print(_json.dumps({"cmd": "fewshot", **out}, ensure_ascii=False, indent=2))
+        return 0
+
+    if getattr(args, "fewshot_predict", False):
+        task = str(getattr(args, "fewshot_task", "") or "").strip()
+        q = str(getattr(args, "fewshot_query", "") or "").strip()
+        if not task or not q:
+            print("cos fewshot --predict requires --task and --query", file=sys.stderr)
+            return 2
+        out = fs.predict(task, q)
+        print(_json.dumps({"cmd": "fewshot", **out}, ensure_ascii=False, indent=2, default=str))
+        return 0 if "error" not in out else 3
+
+    if getattr(args, "fewshot_adapt", False):
+        task = str(getattr(args, "fewshot_task", "") or "").strip()
+        raw = str(getattr(args, "fewshot_example", "") or "").strip()
+        if not task or not raw:
+            print("cos fewshot --adapt requires --task and --example JSON pair", file=sys.stderr)
+            return 2
+        try:
+            pair = _json.loads(raw)
+        except _json.JSONDecodeError as e:
+            print(f"cos fewshot: invalid --example: {e}", file=sys.stderr)
+            return 2
+        if not isinstance(pair, (list, tuple)) or len(pair) < 2:
+            print("cos fewshot: --example must be [input, output]", file=sys.stderr)
+            return 2
+        out = fs.adapt(task, (str(pair[0]), str(pair[1])))
+        _persist()
+        print(_json.dumps({"cmd": "fewshot", **out}, ensure_ascii=False, indent=2))
+        return 0
+
+    print("cos fewshot: use --learn | --predict | --adapt | --clear", file=sys.stderr)
+    return 2
+
+
+def _cmd_symbolic(args: argparse.Namespace) -> int:
+    import json as _json
+
+    from cos.sigma_symbolic import SigmaSymbolic, parse_goal, parse_rule
+
+    path = _symbolic_state_path(args)
+    gate, _model = _gap_lab_twin_bundle()
+    sym = SigmaSymbolic(gate)
+    if path.is_file():
+        try:
+            sym.from_dict(_json.loads(path.read_text(encoding="utf-8")))
+        except (_json.JSONDecodeError, OSError, TypeError, ValueError):
+            pass
+
+    def _persist_sym() -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(_json.dumps(sym.to_dict(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    if getattr(args, "symbolic_clear", False):
+        sym.facts.clear()
+        sym.rules.clear()
+        _persist_sym()
+        print(_json.dumps({"cmd": "symbolic", "cleared": True}, ensure_ascii=False))
+        return 0
+
+    s_assert = str(getattr(args, "symbolic_assert", "") or "").strip()
+    if s_assert:
+        try:
+            sym.assert_fact_goal(parse_goal(s_assert))
+        except ValueError as e:
+            print(f"cos symbolic: bad --assert: {e}", file=sys.stderr)
+            return 2
+        _persist_sym()
+        print(_json.dumps({"cmd": "symbolic", "asserted": s_assert}, ensure_ascii=False))
+        return 0
+
+    s_rule = str(getattr(args, "symbolic_rule", "") or "").strip()
+    if s_rule:
+        try:
+            sym.assert_rule_dict(parse_rule(s_rule))
+        except ValueError as e:
+            print(f"cos symbolic: bad --rule: {e}", file=sys.stderr)
+            return 2
+        _persist_sym()
+        print(_json.dumps({"cmd": "symbolic", "rule": s_rule}, ensure_ascii=False))
+        return 0
+
+    s_query = str(getattr(args, "symbolic_query", "") or "").strip()
+    if s_query:
+        try:
+            sols = sym.query(s_query)
+        except ValueError as e:
+            print(f"cos symbolic: bad --query: {e}", file=sys.stderr)
+            return 2
+        print(_json.dumps({"cmd": "symbolic", "query": s_query, "solutions": sols}, ensure_ascii=False, indent=2))
+        return 0
+
+    if getattr(args, "symbolic_resolve_demo", False):
+        c_neg = SigmaSymbolic.literal("human", ["X"], neg=True)
+        c_pos_m = SigmaSymbolic.literal("mortal", ["X"], neg=False)
+        c_a = [c_neg, c_pos_m]
+        c_b = [SigmaSymbolic.literal("human", ["socrates"], neg=False)]
+        r = sym.resolution(c_a, c_b)
+        print(_json.dumps({"cmd": "symbolic", "resolution_demo": r}, ensure_ascii=False, indent=2, default=str))
+        return 0
+
+    ca = str(getattr(args, "symbolic_clause_a", "") or "").strip()
+    cb = str(getattr(args, "symbolic_clause_b", "") or "").strip()
+    if ca and cb:
+        try:
+            la = _json.loads(ca)
+            lb = _json.loads(cb)
+            if not isinstance(la, list) or not isinstance(lb, list):
+                raise ValueError("clauses must be JSON arrays")
+            r = sym.resolution(la, lb)
+        except (ValueError, _json.JSONDecodeError, TypeError) as e:
+            print(f"cos symbolic: --clause-a/b: {e}", file=sys.stderr)
+            return 2
+        print(_json.dumps({"cmd": "symbolic", "resolution": r}, ensure_ascii=False, indent=2, default=str))
+        return 0
+
+    print(
+        "cos symbolic: use --assert, --rule, --query, --resolve-demo, or --clause-a/--clause-b JSON",
+        file=sys.stderr,
+    )
+    return 2
+
+
+def _cmd_gate_score(args: argparse.Namespace) -> int:
+    from cos import SigmaGate
+
+    gate = SigmaGate()
+    sigma, verdict = gate.score(str(args.prompt), str(args.response))
+    if _cli_verbose(args):
+        print(f"[cos] lite_mode={gate._mode!r} tau_accept={gate.tau_accept} tau_abstain={gate.tau_abstain}", file=sys.stderr)
+    if _cli_out_json(args):
+        print(json.dumps({"sigma": float(sigma), "verdict": str(verdict)}, ensure_ascii=False))
+        return 2 if verdict == "ABSTAIN" else 0
+    print(f"σ={sigma:.4f} {verdict}")
+    return 2 if verdict == "ABSTAIN" else 0
+
+
+def _cmd_cos_version(args: argparse.Namespace) -> int:
+    from cos import __version__
+
+    if _cli_out_json(args):
+        print(json.dumps({"package": "creation-os", "version": __version__}, ensure_ascii=False))
+        return 0
+    print(f"creation-os {__version__}")
+    return 0
+
+
+def _cmd_init(args: argparse.Namespace) -> int:
+    from cos.init import run_cos_init
+
+    dest = Path(str(getattr(args, "init_dest", ".")))
+    return run_cos_init(
+        name=str(getattr(args, "init_name")),
+        persona=str(getattr(args, "init_persona", "enterprise")),
+        dest=dest,
+    )
+
+
+def _cmd_bench(args: argparse.Namespace) -> int:
+    ds = str(getattr(args, "bench_dataset", "") or "").strip()
+    if not ds:
+        print(
+            "cos bench: pass --dataset NAME (toy SigmaBench lab). "
+            "Full harnesses live in a git checkout (benchmarks/, Makefile). "
+            "Extras: pip install 'creation-os[probes,dev]'.",
+            file=sys.stderr,
+        )
+        return 1
+    from cos.bench import DATASET_NAMES, SigmaBench
+    from cos import SigmaGate
+
+    if ds not in DATASET_NAMES:
+        print(f"cos bench: unknown dataset {ds!r} (known: {', '.join(DATASET_NAMES)})", file=sys.stderr)
+        return 1
+
+    def _toy_model(prompt: str, ref: str = "") -> str:
+        del ref
+        pl = str(prompt).lower().replace(" ", "")
+        if "2+2" in pl:
+            return "4"
+        if "france" in str(prompt).lower():
+            return "Paris"
+        return "unsure"
+
+    gate = SigmaGate()
+    bench = SigmaBench()
+    behavioral = bool(getattr(args, "bench_behavioral", False))
+    out = bench.run(ds, gate, _toy_model, behavioral=behavioral)
+    if _cli_verbose(args):
+        out = dict(dict(out), note="toy ΣBench rows; not a downloaded MMLU/TruthfulQA harness")
+    if _cli_out_json(args):
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+    print(f"dataset={out['dataset']}\tM_tier={out['M_tier']}\tAUROC={out['AUROC']}\tECE={out['ECE']}")
+    print(f"accuracy={out['accuracy']}\tabstention_rate={out['abstention_rate']}\tn={out['n']}")
+    if behavioral and "bins" in out:
+        print(json.dumps({"behavioral_bins": out.get("bins")}, ensure_ascii=False))
+    return 0
+
+
+def _cmd_chat(args: argparse.Namespace) -> int:
+    """OpenAI-compatible multi-turn σ-chat (local vLLM / SGLang / cloud) or ``--offline`` lab stub."""
+    if bool(getattr(args, "chat_offline", False)):
+        from cos.pipeline import Pipeline
+
+        prompt = str(getattr(args, "chat_prompt", "") or "").strip()
+        if not prompt:
+            print("cos chat: --offline requires --prompt", file=sys.stderr)
+            return 1
+        model_label = str(getattr(args, "chat_model", "stub") or "stub")
+
+        class _CliEchoModel:
+            def generate(self, p: str, **_kw: Any) -> str:
+                return f"[{model_label}] {p[:500]}"
+
+        pipe = Pipeline(model=_CliEchoModel())
+        res = pipe.run(prompt)
+        payload = {
+            "text": res.text,
+            "sigma": res.sigma,
+            "verdict": res.verdict,
+            "model": model_label,
+            "network_calls": 0,
+            "mode": "offline_chat_lab",
+        }
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0
+
+    from cos.chat import run_from_cli_args
+
+    return run_from_cli_args(args)
+
+
+def _cmd_explain(args: argparse.Namespace) -> int:
+    from cos import SigmaGate
+
+    gate = SigmaGate()
+    prompt = str(getattr(args, "explain_prompt", "") or "")
+    response = str(getattr(args, "explain_response", "") or "")
+    sigma, verdict = gate.score(prompt, response)
+    reasons: List[str] = []
+    if sigma < gate.tau_accept:
+        reasons.append("sigma_below_tau_accept")
+    elif sigma < gate.tau_abstain:
+        reasons.append("between_tau_accept_and_tau_abstain_rethink_band")
+    else:
+        reasons.append("sigma_at_or_above_tau_abstain")
+    body = {
+        "sigma": sigma,
+        "verdict": verdict,
+        "tau_accept": gate.tau_accept,
+        "tau_abstain": gate.tau_abstain,
+        "reasons": reasons,
+        "note": "lite gate uses entropy on response; LSD/probe may differ.",
+    }
+    if _cli_out_json(args):
+        print(json.dumps(body, ensure_ascii=False))
+        return 2 if verdict == "ABSTAIN" else 0
+    print(json.dumps(body, ensure_ascii=False, indent=2))
+    return 2 if verdict == "ABSTAIN" else 0
+
+
+def _cmd_cascade_cli(args: argparse.Namespace) -> int:
+    from cos import SigmaGate
+
+    gate = SigmaGate()
+    prompt = str(getattr(args, "cascade_prompt", "") or "")
+    response = str(getattr(args, "cascade_response", "") or "")
+    out = gate.score_cascade(prompt, response)
+    if _cli_verbose(args):
+        out = dict(out, gate_mode=gate._mode)
+    if _cli_out_json(args):
+        print(json.dumps(out, ensure_ascii=False))
+        return 2 if out.get("verdict") == "ABSTAIN" else 0
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 2 if out.get("verdict") == "ABSTAIN" else 0
+
+
+def _cmd_health(args: argparse.Namespace) -> int:
+    import platform
+
+    try:
+        from cos import __version__ as cos_ver
+    except ImportError:
+        cos_ver = "unknown"
+    deps: Dict[str, str] = {}
+    for mod in ("fastapi", "uvicorn", "langchain_core", "openai"):
+        try:
+            __import__(mod if mod != "langchain_core" else "langchain_core")
+            deps[mod] = "import_ok"
+        except ImportError:
+            deps[mod] = "missing"
+    body = {
+        "ok": True,
+        "python": platform.python_version(),
+        "platform": platform.platform(),
+        "creation_os": cos_ver,
+        "optional_deps": deps,
+    }
+    if _cli_out_json(args):
+        print(json.dumps(body, ensure_ascii=False))
+        return 0
+    print(json.dumps(body, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_registry_cli(args: argparse.Namespace) -> int:
+    from pathlib import Path
+
+    from cos.sigma_mcp_registry import SigmaMCPRegistry
+
+    path = Path(str(getattr(args, "registry_path", "") or "~/.cos/sigma_mcp_registry.json")).expanduser()
+    if not bool(getattr(args, "registry_list", False)):
+        print("cos registry: pass --list", file=sys.stderr)
+        return 1
+    reg = SigmaMCPRegistry.load(path)
+    rows = [{"id": sid, **data} for sid, data in sorted(reg.servers.items())]
+    out = {"path": str(path), "servers": rows}
+    if _cli_out_json(args):
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_cost_cli(args: argparse.Namespace) -> int:
+    if bool(getattr(args, "cost_route", False)):
+        from cos.sigma_cost import LabCostGate, SigmaBillingMeter, SigmaCost, save_lab_state
+
+        prompt = str(getattr(args, "cost_route_prompt", "") or "").strip()
+        models_raw = str(getattr(args, "cost_models", "") or "").strip()
+        st_path = Path(str(getattr(args, "cost_state_path", "") or "").strip()).expanduser()
+        if not prompt or not models_raw:
+            print("cos cost --route requires --prompt and --models", file=sys.stderr)
+            return 2
+        chain = [m.strip() for m in models_raw.split(",") if m.strip()]
+
+        def _gen(model: str, p: str) -> str:
+            if model == "bitnet-2b":
+                return "4"
+            return "maybe 5"
+
+        cost = SigmaCost(LabCostGate(), generate=_gen)
+        out = cost.route_by_cost(prompt, models=chain)
+        st_path.parent.mkdir(parents=True, exist_ok=True)
+        save_lab_state(st_path, cost, SigmaBillingMeter())
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    if not bool(getattr(args, "cost_report", False)):
+        print("cos cost: pass --report or --route", file=sys.stderr)
+        return 1
+    from cos.bench import SigmaBench
+
+    ds = str(getattr(args, "cost_dataset", "lab") or "lab")
+    rep = SigmaBench().cost_report(ds, units=float(getattr(args, "cost_units", 1.0) or 1.0))
+    if _cli_out_json(args):
+        print(json.dumps(rep, ensure_ascii=False))
+        return 0
+    print(json.dumps(rep, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_graph_cli(args: argparse.Namespace) -> int:
+    from cos.graph import SigmaGraph
+
+    add_triple = getattr(args, "graph_add", None)
+    hop_from = str(getattr(args, "graph_hop_from", "") or "").strip()
+    hop_to = str(getattr(args, "graph_hop_to", "") or "").strip()
+
+    if add_triple and len(add_triple) == 3:
+        s, r, o = (str(x) for x in add_triple)
+        g = SigmaGraph()
+        raw_sig = getattr(args, "graph_sigma", None)
+        if raw_sig is not None and str(raw_sig).strip() != "":
+            added = g.add(s, r, o, sigma=float(raw_sig))
+        else:
+            added = g.add(s, r, o)
+        out: Dict[str, Any] = {"added": added}
+        if _cli_out_json(args):
+            print(json.dumps(out, ensure_ascii=False))
+        else:
+            print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0
+
+    if hop_from and hop_to:
+        g = SigmaGraph()
+        path = g.multi_hop(hop_from, hop_to, max_hops=int(getattr(args, "graph_hops", 3) or 3))
+        if _cli_out_json(args):
+            print(json.dumps(path, default=str, ensure_ascii=False))
+        else:
+            print(json.dumps(path, default=str, ensure_ascii=False, indent=2))
+        return 0
+
+    print("cos graph: pass --add S R O or --hop-from and --hop-to", file=sys.stderr)
+    return 1
+
+
+def _cmd_evolve_step(args: argparse.Namespace) -> int:
+    et = str(getattr(args, "evolve_target", "") or "").strip()
+    eg = str(getattr(args, "evolve_goal", "") or "").strip()
+    if et and eg and not bool(getattr(args, "evolve_step", False)):
+        from cos.sigma_evolve import SigmaEvolve as SigmaEvolveV137
+        from cos.sigma_evolve import ToyEvolveEvaluator
+        from cos.sigma_split import SigmaSplitGate
+
+        class _MiniEvolveModel:
+            def generate(self, prompt: str) -> str:
+                _ = prompt
+                return "--- a/x.py\n+++ b/x.py\n@@\n+ok\n"
+
+        evo = SigmaEvolveV137(SigmaSplitGate(), _MiniEvolveModel(), ToyEvolveEvaluator(0.0))
+        card = evo.propose_improvement(et, eg)
+        print(json.dumps(card, ensure_ascii=False, default=str))
+        return 0
+    if not bool(getattr(args, "evolve_step", False)):
+        print("cos evolve: pass --step or --target MODULE --goal TEXT", file=sys.stderr)
+        return 1
+    from cos.evolve import SigmaEvolve
+
+    ev = SigmaEvolve()
+    system: Dict[str, Any] = {"step": 0, "note": "cli_lab"}
+
+    def _eval_fn(_sys: Dict[str, Any]) -> float:
+        return 0.5
+
+    out = ev.improve_loop(system, _eval_fn, max_iters=int(getattr(args, "evolve_iters", 1) or 1))
+    if _cli_out_json(args):
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+    print(json.dumps(out, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_redteam_cli(args: argparse.Namespace) -> int:
+    target = str(getattr(args, "redteam_target", "mock") or "mock")
+    if target != "mock":
+        print("cos redteam: only --target mock is wired in minimal install", file=sys.stderr)
+        return 1
+    from cos import SigmaGate
+    from cos.sigma_red_team import MockRedTeamModel, SigmaRedTeam
+
+    n = int(getattr(args, "redteam_attacks", 10) or 10)
+    gate = SigmaGate()
+    rt = SigmaRedTeam(gate, MockRedTeamModel())
+    results = rt.run_all([], n_per_attack=max(1, n))
+    if _cli_out_json(args):
+        print(json.dumps(results, ensure_ascii=False))
+        return 0
+    print(json.dumps(results, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_pipe(args: argparse.Namespace) -> int:
+    from cos import Pipeline
+
+    prompt = str(getattr(args, "pipe_prompt", "") or "").strip()
+    resp = str(getattr(args, "pipe_response", "") or "").strip()
+    pipe = Pipeline()
+    if resp:
+        result = pipe.run(prompt, response=resp)
+    else:
+        result = pipe.run(prompt)
+    print(f"σ={result.sigma:.4f} {result.verdict}")
+    if result.text:
+        print(result.text)
+    if result.reason and result.verdict in ("BLOCKED", "NO_MODEL", "OUTPUT_BLOCKED"):
+        print(result.reason, file=sys.stderr)
+    return 0
+
+
+def _cmd_stats(args: argparse.Namespace) -> int:
+    from cos import Pipeline
+
+    _ = args
+    print(json.dumps(Pipeline().stats.to_dict(), indent=2, ensure_ascii=False))
+    return 0
+
+
+def _cmd_stream(args: argparse.Namespace) -> int:
+    from cos.stream import SigmaStream
+
+    prompt = str(getattr(args, "stream_prompt", "") or "").strip()
+    thresh = float(getattr(args, "interrupt_threshold", 0.8) or 0.8)
+    tok_raw = str(getattr(args, "stream_tokens", "") or "").strip()
+    if tok_raw:
+        tokens = tok_raw.split()
+    else:
+        tokens = ["The", "answer", "is", "42"]
+    stream = SigmaStream(interrupt_threshold=thresh)
+    for event in stream.score_stream(prompt, tokens):
+        print(event)
+    return 0
+
+
+def _cmd_snapshot(args: argparse.Namespace) -> int:
+    from cos import Pipeline
+    from cos.snapshot import SnapshotManager
+
+    action = str(getattr(args, "snapshot_action", "") or "")
+    pipe = Pipeline()
+    mgr = SnapshotManager(pipe)
+    label = getattr(args, "snapshot_label", None)
+
+    if action == "save":
+        print(json.dumps(mgr.checkpoint(label), ensure_ascii=False))
+    elif action == "rollback":
+        print(json.dumps(mgr.rollback(label), ensure_ascii=False))
+    elif action == "list":
+        for s in mgr.list_snapshots():
+            lbl = s.get("label") or ""
+            print(f"  [{s['index']}] {lbl} ({s['checksum']})")
+    elif action == "diff":
+        print(json.dumps(mgr.diff(), ensure_ascii=False))
+    else:
+        print("cos snapshot: unknown action", file=sys.stderr)
+        return 2
+    return 0
+
+
+def _cmd_calibrate(args: argparse.Namespace) -> int:
+    from cos.calibrate import CalibrationReport, SigmaCalibrator, load_calibration_pairs
+
+    action = str(getattr(args, "calibrate_action", "") or "")
+    data_path_str = str(getattr(args, "calibrate_data", "") or "").strip()
+    method = str(getattr(args, "calibrate_method", "platt") or "platt")
+    out_path = Path(str(getattr(args, "calibrate_out", "calibration.json") or "calibration.json"))
+    model_path_str = str(getattr(args, "calibrate_model", "") or "").strip()
+
+    if action == "lab":
+        ds = str(getattr(args, "calibrate_dataset", "") or "").strip()
+        if not ds:
+            print("cos calibrate lab: pass --dataset NAME", file=sys.stderr)
+            return 1
+        from cos.bench import DATASET_NAMES, SigmaBench
+        from cos import SigmaGate
+
+        if ds not in DATASET_NAMES:
+            print(
+                f"cos calibrate lab: unknown dataset {ds!r} (known: {', '.join(DATASET_NAMES)})",
+                file=sys.stderr,
+            )
+            return 1
+
+        def _toy_model(prompt: str, ref: str = "") -> str:
+            del ref
+            pl = str(prompt).lower().replace(" ", "")
+            if "2+2" in pl:
+                return "4"
+            if "france" in str(prompt).lower():
+                return "Paris"
+            return "unsure"
+
+        gate = SigmaGate()
+        bench = SigmaBench()
+        out = bench.run(ds, gate, _toy_model, behavioral=True)
+        if _cli_out_json(args):
+            print(json.dumps(out, ensure_ascii=False))
+            return 0
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0
+
+    if action == "fit":
+        if not data_path_str:
+            print("cos calibrate fit: pass --data PATH.json", file=sys.stderr)
+            return 2
+        pairs = load_calibration_pairs(Path(data_path_str))
+        cal = SigmaCalibrator(method=method)
+        cal.fit(pairs)
+        cal.save(out_path)
+        print(
+            json.dumps(
+                {"fitted": cal.fitted, "method": cal.method, "n_samples": len(pairs), "out": str(out_path)},
+                ensure_ascii=False,
+            )
+        )
+        return 0
+
+    if action == "ece":
+        if not data_path_str or not model_path_str:
+            print("cos calibrate ece: pass --data and --model", file=sys.stderr)
+            return 2
+        pairs = load_calibration_pairs(Path(data_path_str))
+        cal = SigmaCalibrator()
+        cal.load(Path(model_path_str))
+        ece_val = cal.ece(pairs, n_bins=int(getattr(args, "calibrate_bins", 10) or 10))
+        print(json.dumps({"ece": ece_val}, ensure_ascii=False))
+        return 0
+
+    if action == "report":
+        if not data_path_str or not model_path_str:
+            print("cos calibrate report: pass --data and --model", file=sys.stderr)
+            return 2
+        pairs = load_calibration_pairs(Path(data_path_str))
+        cal = SigmaCalibrator()
+        cal.load(Path(model_path_str))
+        rep = CalibrationReport(cal, pairs, n_bins=int(getattr(args, "calibrate_bins", 10) or 10))
+        print(json.dumps(rep.generate(), ensure_ascii=False))
+        return 0
+
+    print("cos calibrate: unknown action", file=sys.stderr)
+    return 2
+
+
+def _cmd_serve(args: argparse.Namespace) -> int:
+    try:
+        from cos.serve import run_server
+    except ImportError:
+        print("cos serve: pip install 'creation-os[serve]'", file=sys.stderr)
+        return 2
+    host = str(getattr(args, "serve_host", "127.0.0.1") or "127.0.0.1")
+    port = int(getattr(args, "serve_port", 8420) or 8420)
+    run_server(host=host, port=port)
+    return 0
+
+
+def _cmd_fabric(args: argparse.Namespace) -> int:
+    from cos.fabric import SigmaFabric
+
+    fabric = SigmaFabric()
+    fabric.boot()
+    cmd = str(getattr(args, "fabric_cmd", "") or "")
+    if cmd == "status":
+        print(json.dumps(fabric.status(), indent=2, ensure_ascii=False))
+        return 0
+    if cmd == "process":
+        prompt = str(getattr(args, "fabric_prompt", "") or "")
+        if not prompt.strip():
+            print("cos fabric process: --prompt is required", file=sys.stderr)
+            return 2
+        resp = str(getattr(args, "fabric_response", "") or "").strip()
+        out = fabric.process(prompt, response=resp if resp else None)
+        print(repr(out))
+        print(repr(out.trace))
+        return 0
+    print("cos fabric: unknown subcommand", file=sys.stderr)
+    return 2
+
+
+def _cmd_silicon(args: argparse.Namespace) -> int:
+    from cos.sigma_silicon import benchmark_targets_json, parse_sim_test, simulate_semantic
+
+    if bool(getattr(args, "silicon_benchmark", False)):
+        print(json.dumps(benchmark_targets_json(), ensure_ascii=False))
+        return 0
+    if bool(getattr(args, "silicon_simulate", False)):
+        spec = str(getattr(args, "silicon_test", "") or "").strip()
+        op, rest = parse_sim_test(spec)
+        body = simulate_semantic(op, rest)
+        print(json.dumps(body, ensure_ascii=False))
+        return 0 if body.get("ok") else 2
+    print("cos silicon: pass --benchmark or --simulate --test …", file=sys.stderr)
+    return 2
+
+
+def _cmd_integrations(args: argparse.Namespace) -> int:
+    if bool(getattr(args, "integrations_check", False)):
+        return 0
+    if bool(getattr(args, "integrations_example", False)):
+        return 2
+    print("cos integrations: pass --check or --example", file=sys.stderr)
+    return 2
+
+
+def _cmd_learn(args: argparse.Namespace) -> int:
+    if not bool(getattr(args, "learn_forgetting_test", False)):
+        print("cos learn: pass --forgetting-test", file=sys.stderr)
+        return 2
+    from cos.sigma_consolidation import SigmaConsolidation, ToyContinualGate, ToyContinualModel
+
+    apath = Path(str(getattr(args, "learn_anchors", "") or "").strip()).expanduser()
+    steps = max(1, int(getattr(args, "learn_steps", 1) or 1))
+    lr = float(getattr(args, "learn_lr", 0.001) or 0.001)
+    rows: List[Tuple[str, str]] = []
+    with apath.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            obj = json.loads(line)
+            if isinstance(obj, dict):
+                p = obj.get("prompt") or obj.get("q")
+                a = obj.get("answer") or obj.get("response") or obj.get("a")
+                if p is not None and a is not None:
+                    rows.append((str(p), str(a)))
+    if not rows:
+        print("cos learn: anchors file has no prompt/answer rows", file=sys.stderr)
+        return 2
+    model = ToyContinualModel()
+    gate = ToyContinualGate(model)
+    cons = SigmaConsolidation(gate, model)
+    cons.set_anchors(rows)
+    for _ in range(steps):
+        out = cons.learn_step([("unrelated stable topic", "ok")], lr=lr, tolerance=0.05)
+        if not out.get("learned"):
+            return 1
+    chk = cons.check_anchors(tolerance=0.05)
+    return 0 if not chk.get("regressed") else 1
+
+
+def _cmd_jepa_cli(args: argparse.Namespace) -> int:
+    from cos.sigma_jepa import LabLatentEncoder, LabLatentPredictor, SigmaJEPA
+
+    j = SigmaJEPA(LabLatentEncoder(dim=8), LabLatentPredictor(drift=0.02), None, k_raw=0.92)
+    obs = str(getattr(args, "jepa_observation", "") or "")
+    act = str(getattr(args, "jepa_action", "") or "")
+    if bool(getattr(args, "jepa_predict", False)):
+        out = j.world_model_predict(obs, act if act else None)
+        print(json.dumps(out, ensure_ascii=False, default=str))
+        return 0
+    print("cos jepa: pass --predict (--observation, --action)", file=sys.stderr)
+    return 2
+
+
+def _cmd_moe_cli(args: argparse.Namespace) -> int:
+    from cos.sigma_moe import load_registry, save_registry
+
+    name = str(getattr(args, "moe_register_name", "") or "").strip()
+    model = str(getattr(args, "moe_register_model", "") or "").strip()
+    reg_path = Path(str(getattr(args, "moe_registry", "") or "").strip()).expanduser()
+    if name:
+        if not model:
+            print("cos moe: --register NAME requires --model", file=sys.stderr)
+            return 2
+        reg = load_registry(reg_path)
+        reg[name] = model
+        save_registry(reg_path, reg)
+        print(json.dumps({"registered": name}, ensure_ascii=False))
+        return 0
+    print("cos moe: pass --register EXPERT --model ID --registry PATH", file=sys.stderr)
+    return 2
+
+
+def _cmd_zkp_cli(args: argparse.Namespace) -> int:
+    from cos.sigma_zkp import SigmaZKP, lab_sigma_zkp_gate
+
+    anchor = str(getattr(args, "zkp_model_anchor", "") or "creation-os-lab-probe-v1").strip()
+    if bool(getattr(args, "zkp_prove", False)):
+        z = SigmaZKP(lab_sigma_zkp_gate(anchor))
+        pr = str(getattr(args, "zkp_prompt", "") or "")
+        rs = str(getattr(args, "zkp_response", "") or "")
+        proof = z.prove_verdict(pr, rs)
+        print(json.dumps(proof, ensure_ascii=False))
+        return 0
+    if bool(getattr(args, "zkp_verify", False)):
+        proof_path = Path(str(getattr(args, "zkp_proof_path", "") or "").strip()).expanduser()
+        proof = json.loads(proof_path.read_text(encoding="utf-8"))
+        exp_mc = str(getattr(args, "zkp_expected_commitment", "") or "").strip()
+        z = SigmaZKP(
+            lab_sigma_zkp_gate(anchor),
+            model_commitment={"algorithm": "sha256", "hash": exp_mc},
+        )
+        pr = str(getattr(args, "zkp_prompt", "") or "")
+        rs = str(getattr(args, "zkp_response", "") or "")
+        body = z.verify_proof(proof, pr, rs)
+        print(json.dumps(body, ensure_ascii=False))
+        return 0 if body.get("valid") else 3
+    print("cos zkp: pass --prove or --verify", file=sys.stderr)
+    return 2
+
+
+def _cmd_spike(args: argparse.Namespace) -> int:
+    from cos.sigma_spike import (
+        OmegaSpikeLab,
+        SigmaSpike,
+        SigmaSpikeNetwork,
+        benchmark_lif_vs_dense_wallclock_lab,
+        benchmark_spike_vs_continuous_mj_per_token,
+        hidden_from_token,
+        prompt_drive_q15,
+    )
+
+    if bool(getattr(args, "spike_omega", False)):
+        lab = OmegaSpikeLab(threshold=float(getattr(args, "spike_threshold", 0.05) or 0.05))
+        turns = max(1, int(getattr(args, "spike_turns", 1) or 1))
+        ph = [hidden_from_token(f"p{i}", dim=8) for i in range(14)]
+        agg: Dict[str, Any] = {"mode": "omega_spike", "turns": turns}
+        for t in range(turns):
+            step = lab.step(ph)
+            agg.update({f"turn_{t}": step})
+        agg["lane_events"] = step.get("lane_events", 0)
+        agg["sparsity"] = float(step.get("sparsity", 0.0))
+        print(json.dumps(agg, ensure_ascii=False))
+        return 0
+
+    if bool(getattr(args, "spike_energy", False)):
+        n_layers = max(1, int(getattr(args, "spike_layers", 14) or 14))
+        net = SigmaSpikeNetwork(n_layers)
+        drive = prompt_drive_q15("", spread=1.0)
+        net.forward(drive)
+        rep = net.energy_report()
+        out = {"mode": "energy", **rep, "benchmark": benchmark_spike_vs_continuous_mj_per_token()}
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+
+    if bool(getattr(args, "spike_benchmark", False)):
+        n = max(1, int(getattr(args, "spike_benchmark_n", 1000) or 1000))
+        body = benchmark_lif_vs_dense_wallclock_lab(n)
+        body["mode"] = "lif_wallclock"
+        print(json.dumps(body, ensure_ascii=False))
+        return 0
+
+    si = getattr(args, "spike_input", None)
+    if si is not None and str(si).strip() != "":
+        n_layers = max(1, int(getattr(args, "spike_layers", 14) or 14))
+        spread = float(getattr(args, "spike_spread", 1.0) or 1.0)
+        net = SigmaSpikeNetwork(n_layers)
+        d = prompt_drive_q15(str(si), spread=spread)
+        o = net.forward(d)
+        print(json.dumps({"mode": "lif_v154", **o}, ensure_ascii=False))
+        return 0
+
+    prompt = str(getattr(args, "spike_prompt", "") or "").strip()
+    toks = [t for t in prompt.split() if t]
+    th = float(getattr(args, "spike_threshold", 0.05) or 0.05)
+    sp = SigmaSpike(threshold=th)
+    suppressed = 0
+    for w in toks:
+        sp.process_token(hidden_from_token(w, dim=8))
+        suppressed = int(sp.stats["suppressed"])
+    print(
+        json.dumps(
+            {
+                "mode": "token_spike",
+                "tokens": len(toks),
+                "suppressed": suppressed,
+                "threshold": th,
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def _cmd_tiny(args: argparse.Namespace) -> int:
+    from cos.sigma_tiny import tiny_footprint_json, tiny_sensor_demo
+
+    if bool(getattr(args, "tiny_footprint", False)):
+        print(json.dumps(tiny_footprint_json(), ensure_ascii=False))
+        return 0
+    if bool(getattr(args, "tiny_sensor", False)):
+        b = int(getattr(args, "tiny_baseline", 0) or 0)
+        tol = int(getattr(args, "tiny_tolerance", 1) or 1)
+        r = int(getattr(args, "tiny_reading", 0) or 0)
+        print(json.dumps(tiny_sensor_demo(baseline=b, tolerance=tol, reading=r), ensure_ascii=False))
+        return 0
+    print("cos tiny: pass --footprint or --sensor (with baseline/tolerance/reading)", file=sys.stderr)
+    return 2
+
+
+def _cmd_think(args: argparse.Namespace) -> int:
+    from cos.sigma_jepa import LabLatentEncoder, LabLatentPredictor, SigmaJEPA
+
+    prompt = str(getattr(args, "think_prompt", "") or "")
+    horizon = max(1, int(getattr(args, "think_horizon", 5) or 5))
+    planning_steps = max(1, int(getattr(args, "think_planning_steps", 100) or 100))
+    j = SigmaJEPA(LabLatentEncoder(dim=8), LabLatentPredictor(drift=0.02), None, k_raw=0.92)
+    if bool(getattr(args, "think_visualize", False)):
+        raw = str(getattr(args, "think_actions", "") or "").strip()
+        actions = [a.strip() for a in raw.split(",") if a.strip()]
+        out = j.latent_trajectory_for_visualize(prompt, actions, max_steps=10)
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+    cands = [["noop", "step"], ["probe", "halt"]]
+    out = j.plan_argmin_sigma(prompt, cands, horizon=horizon, planning_steps=planning_steps)
+    print(json.dumps(out, ensure_ascii=False))
+    return 0
+
+
+def _cmd_split(args: argparse.Namespace) -> int:
+    from cos.sigma_split import SigmaSplitGate, SigmaSplitInference, ToyLocalModel, ToyRemoteModel
+
+    inf = SigmaSplitInference(ToyLocalModel(), remote_endpoint=ToyRemoteModel(), gate=SigmaSplitGate(), spec_sigma_threshold=0.3)
+    if bool(getattr(args, "split_layer", False)):
+        sp = int(getattr(args, "split_point", 8) or 8)
+        pr = str(getattr(args, "split_prompt", "") or "")
+        _tensor, tag = inf.layer_split(pr if pr else " ", split_point=sp)
+        print(json.dumps({"layer_tag": tag}, ensure_ascii=False))
+        return 0
+    pr = str(getattr(args, "split_prompt", "") or "")
+    priv = str(getattr(args, "split_privacy", "normal") or "normal")
+    body = inf.infer(pr, privacy=priv)
+    print(json.dumps(body, ensure_ascii=False, default=str))
+    return 0
+
+
+def _cmd_fleet(args: argparse.Namespace) -> int:
+    from cos.sigma_fleet import SigmaFleet
+
+    state = Path(str(getattr(args, "fleet_state", "") or "").strip()).expanduser()
+    fl = SigmaFleet()
+    if state.is_file():
+        raw = json.loads(state.read_text(encoding="utf-8"))
+        devs = raw.get("devices") or {}
+        if isinstance(devs, dict):
+            for did, row in devs.items():
+                if isinstance(row, dict):
+                    fl.devices[str(did)] = row
+
+    if bool(getattr(args, "fleet_register", False)):
+        did = str(getattr(args, "fleet_device", "device") or "device")
+        model = str(getattr(args, "fleet_model", "unknown") or "unknown")
+        fl.register(
+            did,
+            {
+                "model": model,
+                "local": True,
+                "avg_sigma": 0.2,
+            },
+        )
+        state.parent.mkdir(parents=True, exist_ok=True)
+        state.write_text(json.dumps({"devices": fl.devices}, indent=2, ensure_ascii=False, default=str) + "\n", encoding="utf-8")
+        print(json.dumps({"registered": did}, ensure_ascii=False))
+        return 0
+
+    if bool(getattr(args, "fleet_health", False)):
+        h = fl.fleet_health()
+        print(json.dumps(h, ensure_ascii=False))
+        return 0
+
+    print("cos fleet: pass --register (--device, --model, --state) or --health --state", file=sys.stderr)
+    return 2
+
+
+def _cmd_attention(args: argparse.Namespace) -> int:
+    from cos.sigma_attention import LabTokenSigmaGate, SigmaAttention
+
+    text = str(getattr(args, "attn_input", "") or "")
+    toks = text.split()
+    n = max(1, len(toks))
+    w = max(1, int(getattr(args, "attn_window", 4) or 4))
+    thr = float(getattr(args, "attn_threshold", 0.3) or 0.3)
+    d = 8
+    gate = LabTokenSigmaGate(n, low_fraction=0.25, low_sigma=0.05, high_sigma=0.8)
+    q = [[float((i + k) % 5) / 5.0 for k in range(d)] for i in range(n)]
+    k = [list(row) for row in q]
+    v = [[x * 0.9 for x in row] for row in q]
+    attn = SigmaAttention(gate, window_size=w, sigma_threshold=thr)
+    attn.forward(q, k, v)
+    print(json.dumps({"full_tokens": attn.stats["full"], "pruned_tokens": attn.stats["pruned"]}, ensure_ascii=False))
+    return 0
+
+
+def _cmd_memory(args: argparse.Namespace) -> int:
+    from cos.engram_v2 import EngramV2
+    from cos.sigma_gate_core import Verdict
+
+    st_path = Path(str(getattr(args, "memory_state", "") or "").strip()).expanduser()
+    eg = EngramV2.load_json(st_path) if st_path.is_file() else EngramV2()
+    if getattr(args, "memory_store", None) is not None:
+        content = str(args.memory_store)
+        sigma = float(getattr(args, "memory_sigma", 0.05) or 0.05)
+        vraw = str(getattr(args, "memory_verdict", "ACCEPT") or "ACCEPT").strip().upper()
+        vd = getattr(Verdict, vraw, Verdict.ACCEPT)
+        out = eg.store(content, "cli", sigma, vd)
+        eg.save_json(st_path)
+        print(json.dumps(out, ensure_ascii=False))
+        return 0
+    if getattr(args, "memory_recall", None) is not None:
+        tau = float(getattr(args, "memory_tau", 0.3) or 0.3)
+        hits = eg.recall(str(args.memory_recall), tau=tau, max_results=10)
+        print(json.dumps({"recall": hits}, ensure_ascii=False, default=str))
+        return 0
+    print("cos memory: use --store or --recall with --state-file", file=sys.stderr)
+    return 2
+
+
+def _cmd_bitnet(args: argparse.Namespace) -> int:
+    from cos.sigma_bitnet import sparsity_packed, stack_forward_sigma_gated, toy_layers_for_prompt
+
+    if bool(getattr(args, "bitnet_sparsity", False)):
+        layers = toy_layers_for_prompt("cli-sparsity", dim=8, n_layers=4)
+        fracs = [sparsity_packed(pk, 64) for pk, _r, _c, _sc, _ in layers]
+        avg = sum(fracs) / float(len(fracs)) if fracs else 0.0
+        print(json.dumps({"avg_sparsity": round(avg, 6), "per_layer": fracs}, ensure_ascii=False))
+        return 0
+    prompt = str(getattr(args, "bitnet_prompt", "") or "").strip()
+    if not prompt:
+        print("cos bitnet: pass --sparsity or --prompt …", file=sys.stderr)
+        return 2
+    dim = max(2, int(getattr(args, "bitnet_dim", 8) or 8))
+    n_layers = max(1, int(getattr(args, "bitnet_layers", 4) or 4))
+    k_raw = float(getattr(args, "bitnet_k_raw", 0.92) or 0.92)
+    layers = toy_layers_for_prompt(prompt, dim=dim, n_layers=n_layers)
+    seed = sum(ord(c) for c in prompt) % 97
+    x0 = [(i * 11 + seed) % 101 - 50 for i in range(dim)]
+    code, _out, sigs = stack_forward_sigma_gated(layers, x0, k_raw=k_raw)
+    print(
+        json.dumps(
+            {
+                "code": int(code),
+                "layers_run": len(sigs),
+            },
+            ensure_ascii=False,
+        )
+    )
+    return 0
+
+
+def _cmd_twin(args: argparse.Namespace) -> int:
+    from cos.sigma_twin import SigmaTwin, default_sigma_twin, parse_change_map, workspace_state_path
+
+    ws = str(getattr(args, "twin_workspace", "") or "").strip()
+    if not ws:
+        print("cos twin: pass --workspace DIR", file=sys.stderr)
+        return 2
+    root = Path(ws).expanduser()
+    path = workspace_state_path(root)
+    if bool(getattr(args, "twin_create", False)):
+        tw = default_sigma_twin()
+        tw.create_twin()
+        tw.save(path)
+        print(json.dumps({"ok": True, "path": str(path)}, ensure_ascii=False))
+        return 0
+    if bool(getattr(args, "twin_experiment", False)):
+        tw = SigmaTwin.load(path)
+        name = str(getattr(args, "twin_exp_name", "exp") or "exp")
+        changes = parse_change_map([str(getattr(args, "twin_change", "") or "")])
+        from cos.sigma_twin import DEFAULT_FIXTURE
+
+        out = tw.experiment(name, changes, DEFAULT_FIXTURE)
+        tw.save(path)
+        print(json.dumps(out, ensure_ascii=False, default=str))
+        return 0
+    print("cos twin: pass --create or --experiment (with --name, --change)", file=sys.stderr)
+    return 2
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
-    ap = argparse.ArgumentParser(prog="cos", description="Creation OS cos CLI")
+    ap = argparse.ArgumentParser(
+        prog="cos",
+        description="Creation OS cos CLI — σ-gate-first helpers and lab commands.",
+        epilog=_COS_HELP_EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     sub = ap.add_subparsers(dest="cmd", required=True)
+
+    ver = sub.add_parser("version", help="Print creation-os package version")
+    ver.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
+    ver.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    ver.set_defaults(func=_cmd_cos_version)
+
+    initp = sub.add_parser(
+        "init",
+        help="Bootstrap a σ-gate project dir (cos_config.yaml, probes/, evals/, examples/, README)",
+    )
+    initp.add_argument("--name", type=str, required=True, dest="init_name", metavar="NAME")
+    initp.add_argument(
+        "--persona",
+        type=str,
+        default="enterprise",
+        dest="init_persona",
+        metavar="PERSONA",
+        help="automotive|medical|creative|enterprise|research",
+    )
+    initp.add_argument("--dest", type=str, default=".", dest="init_dest", help="parent directory")
+    initp.set_defaults(func=_cmd_init)
+
+    gatep = sub.add_parser("gate", help="Score --prompt + --response with σ-gate (entropy core; pass probe_path for LSD)")
+    gatep.add_argument("--prompt", type=str, required=True)
+    gatep.add_argument("--response", type=str, required=True)
+    gatep.add_argument("--json", action="store_true", dest="score_as_json", help="print JSON {\"sigma\", \"verdict\"} only")
+    gatep.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    gatep.set_defaults(func=_cmd_gate_score)
+
+    scr = sub.add_parser("score", help="Alias of cos gate")
+    scr.add_argument("--prompt", type=str, required=True)
+    scr.add_argument("--response", type=str, required=True)
+    scr.add_argument("--json", action="store_true", dest="score_as_json", help="print JSON {\"sigma\", \"verdict\"} only")
+    scr.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    scr.set_defaults(func=_cmd_gate_score)
+
+    bench_hint = sub.add_parser(
+        "bench",
+        help="Toy SigmaBench table (--dataset) or pointer to full checkout harnesses",
+    )
+    bench_hint.add_argument("--dataset", type=str, default="", dest="bench_dataset")
+    bench_hint.add_argument(
+        "--behavioral",
+        action="store_true",
+        dest="bench_behavioral",
+        help="include behavioral calibration table fields when supported",
+    )
+    bench_hint.add_argument("--json", action="store_true", dest="out_json")
+    bench_hint.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    bench_hint.set_defaults(func=_cmd_bench)
+
+    chatp = sub.add_parser(
+        "chat",
+        help="σ-gated chat via OpenAI-compatible API (REPL or --prompt); use --offline for echo lab JSON",
+    )
+    chatp.add_argument(
+        "--model",
+        type=str,
+        default="Qwen/Qwen3.6-35B-A3B",
+        dest="chat_model",
+        metavar="MODEL",
+    )
+    chatp.add_argument(
+        "--endpoint",
+        type=str,
+        default="",
+        dest="chat_endpoint",
+        metavar="URL",
+        help="OpenAI base URL (default http://localhost:8000/v1 or CREATION_OS_CHAT_ENDPOINT)",
+    )
+    chatp.add_argument(
+        "--api-key",
+        type=str,
+        default="",
+        dest="chat_api_key",
+        metavar="KEY",
+        help="API key (default OPENAI_API_KEY or 'local')",
+    )
+    chatp.add_argument(
+        "--no-think",
+        action="store_true",
+        dest="chat_no_think",
+        help="disable Qwen preserve_thinking chat_template hint",
+    )
+    chatp.add_argument(
+        "--offline",
+        action="store_true",
+        dest="chat_offline",
+        help="lab JSON on stdout (no network); echo via local Pipeline stub",
+    )
+    chatp.add_argument(
+        "--prompt",
+        type=str,
+        default="",
+        dest="chat_prompt",
+        help="single user turn; omit for interactive REPL",
+    )
+    chatp.add_argument("--json", action="store_true", dest="out_json")
+    chatp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    chatp.set_defaults(func=_cmd_chat)
+
+    lrnp = sub.add_parser(
+        "learn",
+        help="σ-consolidation lab: anchor-gated steps (e.g. --forgetting-test on JSONL anchors)",
+    )
+    lrnp.add_argument(
+        "--forgetting-test",
+        action="store_true",
+        dest="learn_forgetting_test",
+        help="run ToyContinualModel anchor loop (see tests/test_sigma_consolidation_v134.py)",
+    )
+    lrnp.add_argument("--anchors", type=str, default="", dest="learn_anchors", metavar="PATH", help="JSONL anchors")
+    lrnp.add_argument("--steps", type=int, default=100, dest="learn_steps")
+    lrnp.add_argument("--lr", type=float, default=0.001, dest="learn_lr")
+    lrnp.set_defaults(func=_cmd_learn)
+
+    expl = sub.add_parser("explain", help="Why is σ at this value? (threshold bands + lite note)")
+    expl.add_argument("--prompt", type=str, required=True, dest="explain_prompt")
+    expl.add_argument("--response", type=str, required=True, dest="explain_response")
+    expl.add_argument("--json", action="store_true", dest="out_json")
+    expl.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    expl.set_defaults(func=_cmd_explain)
+
+    casc = sub.add_parser("cascade", help="Print score_cascade dict (L1 + optional L2–L5 / LSD)")
+    casc.add_argument("--prompt", type=str, required=True, dest="cascade_prompt")
+    casc.add_argument("--response", type=str, required=True, dest="cascade_response")
+    casc.add_argument("--json", action="store_true", dest="out_json")
+    casc.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    casc.set_defaults(func=_cmd_cascade_cli)
+
+    hlth = sub.add_parser("health", help="Python + optional dependency probe (offline)")
+    hlth.add_argument("--json", action="store_true", dest="out_json")
+    hlth.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    hlth.set_defaults(func=_cmd_health)
+
+    regp = sub.add_parser("registry", help="List σ-MCP JSON registry entries (lab)")
+    regp.add_argument("--list", action="store_true", dest="registry_list", help="print servers map")
+    regp.add_argument(
+        "--path",
+        type=str,
+        default="~/.cos/sigma_mcp_registry.json",
+        dest="registry_path",
+        metavar="PATH",
+    )
+    regp.add_argument("--json", action="store_true", dest="out_json")
+    regp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    regp.set_defaults(func=_cmd_registry_cli)
+
+    cstp = sub.add_parser("cost", help="Stub cost report hook on SigmaBench")
+    cstp.add_argument("--route", action="store_true", dest="cost_route", help="cheapest σ-first routing JSON + --state snapshot")
+    cstp.add_argument("--prompt", type=str, default="", dest="cost_route_prompt", help="with --route")
+    cstp.add_argument("--models", type=str, default="", dest="cost_models", help="comma-separated model ids (with --route)")
+    cstp.add_argument("--state", type=str, default="", dest="cost_state_path", help="write sigma_cost lab JSON (with --route)")
+    cstp.add_argument("--report", action="store_true", dest="cost_report")
+    cstp.add_argument("--dataset", type=str, default="lab", dest="cost_dataset")
+    cstp.add_argument("--units", type=float, default=1.0, dest="cost_units")
+    cstp.add_argument("--json", action="store_true", dest="out_json")
+    cstp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    cstp.set_defaults(func=_cmd_cost_cli)
+
+    grp = sub.add_parser("graph", help="σ knowledge graph add or query (lab)")
+    grp.add_argument("--add", nargs=3, metavar=("S", "R", "O"), dest="graph_add", help="add a triple")
+    grp.add_argument("--sigma", type=float, default=None, dest="graph_sigma", help="optional σ for write gate")
+    grp.add_argument("--hop-from", type=str, default="", dest="graph_hop_from")
+    grp.add_argument("--hop-to", type=str, default="", dest="graph_hop_to")
+    grp.add_argument("--hops", type=int, default=3, dest="graph_hops")
+    grp.add_argument("--json", action="store_true", dest="out_json")
+    grp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    grp.set_defaults(func=_cmd_graph_cli)
+
+    evo = sub.add_parser("evolve", help="σ-evolve lab loop (single improve_loop step by default)")
+    evo.add_argument(
+        "--target",
+        type=str,
+        default="",
+        dest="evolve_target",
+        metavar="PATH",
+        help="v137 evolution target module (use with --goal; immutable paths rejected)",
+    )
+    evo.add_argument("--goal", type=str, default="", dest="evolve_goal", help="improvement objective (with --target)")
+    evo.add_argument("--step", action="store_true", dest="evolve_step", help="run one bounded improve loop")
+    evo.add_argument("--iters", type=int, default=1, dest="evolve_iters")
+    evo.add_argument("--json", action="store_true", dest="out_json")
+    evo.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    evo.set_defaults(func=_cmd_evolve_step)
+
+    rtp = sub.add_parser("redteam", help="Adversarial σ-gate batch (mock model; lab)")
+    rtp.add_argument("--target", type=str, default="mock", dest="redteam_target")
+    rtp.add_argument("--attacks", type=int, default=10, dest="redteam_attacks")
+    rtp.add_argument("--json", action="store_true", dest="out_json")
+    rtp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    rtp.set_defaults(func=_cmd_redteam_cli)
+
+    fab = sub.add_parser("fabric", help="σ-fabric: boot layers + traced process() (lab orchestration)")
+    fab_sub = fab.add_subparsers(dest="fabric_cmd", required=True)
+    fab_st = fab_sub.add_parser("status", help="Print booted layer map as JSON")
+    fab_st.set_defaults(func=_cmd_fabric)
+    fab_pr = fab_sub.add_parser("process", help="Run fabric.process with --prompt and optional --response")
+    fab_pr.add_argument("--prompt", type=str, required=True, dest="fabric_prompt")
+    fab_pr.add_argument("--response", type=str, default="", dest="fabric_response")
+    fab_pr.set_defaults(func=_cmd_fabric)
+
+    pip = sub.add_parser(
+        "pipe",
+        help="σ pipeline: input guard → generate or --response → σ-gate → output guard",
+    )
+    pip.add_argument("--prompt", type=str, required=True, dest="pipe_prompt")
+    pip.add_argument(
+        "--response",
+        type=str,
+        default="",
+        dest="pipe_response",
+        help="if set, score this text instead of calling a model",
+    )
+    pip.set_defaults(func=_cmd_pipe)
+
+    st = sub.add_parser("stats", help="Print default Pipeline stats as JSON")
+    st.set_defaults(func=_cmd_stats)
+
+    stream_p = sub.add_parser(
+        "stream",
+        help="Per-token σ replay (score-only): entropy + repeat + length signals (no live LLM)",
+    )
+    stream_p.add_argument("--prompt", type=str, required=True, dest="stream_prompt")
+    stream_p.add_argument("--interrupt-threshold", type=float, default=0.8)
+    stream_p.add_argument(
+        "--tokens",
+        type=str,
+        default="",
+        dest="stream_tokens",
+        help="space-separated tokens (default: short demo phrase)",
+    )
+    stream_p.set_defaults(func=_cmd_stream)
+
+    snap_p = sub.add_parser(
+        "snapshot",
+        help="Checkpoint and rollback σ-gate EMA/counters + pipeline stats (lab JSON under ./snapshots)",
+    )
+    snap_p.add_argument(
+        "snapshot_action",
+        choices=["save", "rollback", "list", "diff"],
+        metavar="action",
+    )
+    snap_p.add_argument("--label", default=None, dest="snapshot_label")
+    snap_p.set_defaults(func=_cmd_snapshot)
+
+    cal_p = sub.add_parser(
+        "calibrate",
+        help="Fit or evaluate σ→P(error) calibration; 'lab' runs toy behavioral table",
+    )
+    cal_p.add_argument(
+        "calibrate_action",
+        choices=["fit", "ece", "report", "lab"],
+        metavar="action",
+    )
+    cal_p.add_argument("--data", type=str, default="", dest="calibrate_data", help="validation pairs JSON")
+    cal_p.add_argument(
+        "--dataset",
+        type=str,
+        default="",
+        dest="calibrate_dataset",
+        help="for lab: TruthfulQA | TriviaQA | HaluEval | MMLU | HellaSwag",
+    )
+    cal_p.add_argument("--method", default="platt", choices=["platt", "isotonic"], dest="calibrate_method")
+    cal_p.add_argument("--out", type=str, default="calibration.json", dest="calibrate_out", help="fit output JSON")
+    cal_p.add_argument("--model", type=str, default="", dest="calibrate_model", help="calibration JSON (ece/report)")
+    cal_p.add_argument("--bins", type=int, default=10, dest="calibrate_bins", help="ECE / reliability bins")
+    cal_p.add_argument("--json", action="store_true", dest="out_json")
+    cal_p.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    cal_p.set_defaults(func=_cmd_calibrate)
 
     distill = sub.add_parser("distill", help="σ-filtered distillation helpers")
     dsub = distill.add_subparsers(dest="distill_cmd", required=True)
@@ -1837,23 +3242,38 @@ def main(argv: Optional[List[str]] = None) -> int:
     ob.add_argument("--mock-drift", action="store_true", dest="mock_drift", help="synthetic drift for CI / demos")
     ob.set_defaults(func=_cmd_observe)
 
+    _fed_p = argparse.ArgumentParser(add_help=False)
+    _fed_p.add_argument("--workspace", type=str, default="~/.cos/federation", help="state directory")
+    _fed_p.add_argument(
+        "--aggregate",
+        action="store_true",
+        dest="federated_aggregate",
+        help="run in-memory aggregate demo; writes fed_v161_stats.json under --workspace",
+    )
+    _fed_p.add_argument("--train", action="store_true", help="run local toy σ-FL rounds")
+    _fed_p.add_argument("--rounds", type=int, default=3, help="training rounds (with --train)")
+    _fed_p.add_argument("--no-poison", action="store_true", dest="no_poison", help="omit poison toy node")
+    _fed_p.add_argument("--no-byzantine", action="store_true", dest="no_byzantine", help="skip median outlier filter")
+    _fed_p.add_argument("--status", action="store_true", help="print fed_lab_state.json from workspace")
+    _fed_p.add_argument("--server", action="store_true", help="serve GET /status POST /train POST /join")
+    _fed_p.add_argument("--host", type=str, default="127.0.0.1", help="bind address (with --server)")
+    _fed_p.add_argument("--port", type=int, default=8080, help="TCP port (with --server)")
+    _fed_p.add_argument("--join", action="store_true", help="POST /join to --server-url")
+    _fed_p.add_argument("--server-url", type=str, default="", dest="server_url", help="e.g. http://127.0.0.1:8080")
+    _fed_p.add_argument("--data", type=str, default="", help="local data path label (with --join)")
+
     fed = sub.add_parser(
         "federation",
+        parents=[_fed_p],
         help="σ-federated lab (local train + optional stdlib HTTP; share σ-screened updates)",
     )
-    fed.add_argument("--workspace", type=str, default="~/.cos/federation", help="state directory")
-    fed.add_argument("--train", action="store_true", help="run local toy σ-FL rounds")
-    fed.add_argument("--rounds", type=int, default=3, help="training rounds (with --train)")
-    fed.add_argument("--no-poison", action="store_true", dest="no_poison", help="omit poison toy node")
-    fed.add_argument("--no-byzantine", action="store_true", dest="no_byzantine", help="skip median outlier filter")
-    fed.add_argument("--status", action="store_true", help="print fed_lab_state.json from workspace")
-    fed.add_argument("--server", action="store_true", help="serve GET /status POST /train POST /join")
-    fed.add_argument("--host", type=str, default="127.0.0.1", help="bind address (with --server)")
-    fed.add_argument("--port", type=int, default=8080, help="TCP port (with --server)")
-    fed.add_argument("--join", action="store_true", help="POST /join to --server-url")
-    fed.add_argument("--server-url", type=str, default="", dest="server_url", help="e.g. http://127.0.0.1:8080")
-    fed.add_argument("--data", type=str, default="", help="local data path label (with --join)")
     fed.set_defaults(func=_cmd_federation)
+    fed_alt = sub.add_parser(
+        "federated",
+        parents=[_fed_p],
+        help="alias of cos federation (same flags; used by C cos shim and v161 tests)",
+    )
+    fed_alt.set_defaults(func=_cmd_federation)
 
     ex = sub.add_parser("exec", help="σ digital twin / sandbox pre-execution (simulate before run)")
     ex.add_argument("--workspace", type=str, default="~/.cos/exec", help="checkpoint dir for rollback")
@@ -2230,7 +3650,159 @@ def main(argv: Optional[List[str]] = None) -> int:
         dest="hybrid_memory",
         help="with --hybrid: print memory story lines only",
     )
+    bmk.add_argument(
+        "--spike-vs-continuous",
+        action="store_true",
+        dest="spike_vs_continuous",
+        help="emit JSON energy ratio lab model (Python only — no Makefile)",
+    )
     bmk.set_defaults(func=_cmd_benchmark)
+
+    spk = sub.add_parser(
+        "spike",
+        help="σ-spike / LIF lab: token sparsity, Ω lanes, energy JSON (see tests/test_sigma_spike.py)",
+    )
+    spk.add_argument("--prompt", type=str, default="", dest="spike_prompt", help="whitespace token drive for SigmaSpike")
+    spk.add_argument("--threshold", type=float, default=0.05, dest="spike_threshold")
+    spk.add_argument("--omega", action="store_true", dest="spike_omega", help="14-lane OmegaSpikeLab step")
+    spk.add_argument("--turns", type=int, default=1, dest="spike_turns")
+    spk.add_argument("--input", type=str, default=None, dest="spike_input", help="prompt text for LIF drive (v154)")
+    spk.add_argument("--layers", type=int, default=14, dest="spike_layers")
+    spk.add_argument("--spread", type=float, default=1.0, dest="spike_spread")
+    spk.add_argument("--energy", action="store_true", dest="spike_energy", help="σ-spike network energy_report JSON")
+    spk.add_argument("--benchmark", action="store_true", dest="spike_benchmark", help="wall-clock sparse vs dense LIF")
+    spk.add_argument("--n", type=int, default=1000, dest="spike_benchmark_n", help="iterations for --benchmark")
+    spk.set_defaults(func=_cmd_spike)
+
+    tin = sub.add_parser("tiny", help="v160 σ-tiny footprint + sensor σ demo JSON")
+    tin.add_argument("--footprint", action="store_true", dest="tiny_footprint")
+    tin.add_argument("--sensor", action="store_true", dest="tiny_sensor")
+    tin.add_argument("--baseline", type=int, default=0, dest="tiny_baseline")
+    tin.add_argument("--tolerance", type=int, default=1, dest="tiny_tolerance")
+    tin.add_argument("--reading", type=int, default=0, dest="tiny_reading")
+    tin.set_defaults(func=_cmd_tiny)
+
+    thk = sub.add_parser("think", help="σ-JEPA plan_argmin + visualize JSON (v123 lab)")
+    thk.add_argument("--prompt", type=str, required=True, dest="think_prompt")
+    thk.add_argument("--horizon", type=int, default=5, dest="think_horizon")
+    thk.add_argument("--planning-steps", type=int, default=100, dest="think_planning_steps")
+    thk.add_argument("--visualize", action="store_true", dest="think_visualize")
+    thk.add_argument("--actions", type=str, default="", dest="think_actions")
+    thk.set_defaults(func=_cmd_think)
+
+    spl = sub.add_parser("split", help="σ-split routing + layer_split lab JSON (v135)")
+    spl.add_argument("--prompt", type=str, default="", dest="split_prompt")
+    spl.add_argument("--privacy", type=str, default="normal", dest="split_privacy")
+    spl.add_argument("--layer", action="store_true", dest="split_layer")
+    spl.add_argument("--split-point", type=int, default=8, dest="split_point")
+    spl.set_defaults(func=_cmd_split)
+
+    flt = sub.add_parser("fleet", help="σ-fleet device registry JSON (v135 lab)")
+    flt.add_argument("--register", action="store_true", dest="fleet_register")
+    flt.add_argument("--health", action="store_true", dest="fleet_health")
+    flt.add_argument("--device", type=str, default="device", dest="fleet_device")
+    flt.add_argument("--model", type=str, default="unknown", dest="fleet_model")
+    flt.add_argument("--state", type=str, default="", dest="fleet_state")
+    flt.set_defaults(func=_cmd_fleet)
+
+    att = sub.add_parser("attention", help="σ-attention full vs pruned token counts (JSON)")
+    att.add_argument("--input", type=str, required=True, dest="attn_input")
+    att.add_argument("--window", type=int, default=4, dest="attn_window")
+    att.add_argument("--threshold", type=float, default=0.3, dest="attn_threshold")
+    att.set_defaults(func=_cmd_attention)
+
+    mem = sub.add_parser("memory", help="Engram v2 store/recall with --state-file JSON persistence")
+    mem.add_argument("--state-file", type=str, required=True, dest="memory_state")
+    mem.add_argument("--store", type=str, default=None, dest="memory_store")
+    mem.add_argument("--recall", type=str, default=None, dest="memory_recall")
+    mem.add_argument("--sigma", type=float, default=0.05, dest="memory_sigma")
+    mem.add_argument("--verdict", type=str, default="ACCEPT", dest="memory_verdict")
+    mem.add_argument("--tau", type=float, default=0.3, dest="memory_tau")
+    mem.set_defaults(func=_cmd_memory)
+
+    bn = sub.add_parser("bitnet", help="σ-BitNet packed ternary lab JSON (v158)")
+    bn.add_argument("--sparsity", action="store_true", dest="bitnet_sparsity")
+    bn.add_argument("--prompt", type=str, default="", dest="bitnet_prompt")
+    bn.add_argument("--dim", type=int, default=8, dest="bitnet_dim")
+    bn.add_argument("--layers", type=int, default=4, dest="bitnet_layers")
+    bn.add_argument("--k-raw", type=float, default=0.92, dest="bitnet_k_raw")
+    bn.set_defaults(func=_cmd_bitnet)
+
+    twn = sub.add_parser("twin", help="σ-twin lab workspace JSON (v162)")
+    twn.add_argument("--workspace", type=str, required=True, dest="twin_workspace")
+    twn.add_argument("--create", action="store_true", dest="twin_create")
+    twn.add_argument("--experiment", action="store_true", dest="twin_experiment")
+    twn.add_argument("--name", type=str, default="exp", dest="twin_exp_name")
+    twn.add_argument("--change", type=str, default="", dest="twin_change")
+    twn.set_defaults(func=_cmd_twin)
+
+    jp = sub.add_parser("jepa", help="σ-JEPA world_model_predict JSON (lab; alias of deeper predict stack)")
+    jp.add_argument("--predict", action="store_true", dest="jepa_predict")
+    jp.add_argument("--observation", type=str, default="", dest="jepa_observation")
+    jp.add_argument("--action", type=str, default="", dest="jepa_action")
+    jp.set_defaults(func=_cmd_jepa_cli)
+
+    moe = sub.add_parser("moe", help="σ-MoE expert registry JSON (v146 lab)")
+    moe.add_argument("--register", type=str, default="", dest="moe_register_name", metavar="EXPERT")
+    moe.add_argument("--model", type=str, default="", dest="moe_register_model")
+    moe.add_argument("--registry", type=str, default="", dest="moe_registry", metavar="PATH")
+    moe.set_defaults(func=_cmd_moe_cli)
+
+    zkp = sub.add_parser("zkp", help="σ-ZKP lab: prove_verdict / verify_proof JSON (hash commitments)")
+    zkp.add_argument("--prove", action="store_true", dest="zkp_prove")
+    zkp.add_argument("--verify", action="store_true", dest="zkp_verify")
+    zkp.add_argument("--prompt", type=str, default="", dest="zkp_prompt")
+    zkp.add_argument("--response", type=str, default="", dest="zkp_response")
+    zkp.add_argument("--model-anchor", type=str, default="", dest="zkp_model_anchor")
+    zkp.add_argument("--proof", type=str, default="", dest="zkp_proof_path", metavar="PATH")
+    zkp.add_argument("--expected-commitment", type=str, default="", dest="zkp_expected_commitment")
+    zkp.set_defaults(func=_cmd_zkp_cli)
+
+    fs = sub.add_parser(
+        "fewshot",
+        help="v183 σ-fewshot: prototypical embeddings + ICL + σ transfer check (lab)",
+    )
+    fs.add_argument("--learn", action="store_true", dest="fewshot_learn")
+    fs.add_argument("--predict", action="store_true", dest="fewshot_predict")
+    fs.add_argument("--adapt", action="store_true", dest="fewshot_adapt")
+    fs.add_argument("--clear", action="store_true", dest="fewshot_clear")
+    fs.add_argument("--task", type=str, default="", dest="fewshot_task")
+    fs.add_argument("--examples", type=str, default="", dest="fewshot_examples", metavar="JSON")
+    fs.add_argument("--query", type=str, default="", dest="fewshot_query")
+    fs.add_argument("--example", type=str, default="", dest="fewshot_example", metavar="JSON")
+    fs.add_argument("--state", type=str, default="", dest="fewshot_state", metavar="PATH")
+    fs.set_defaults(func=_cmd_fewshot)
+
+    sy = sub.add_parser(
+        "symbolic",
+        help="v184 σ-symbolic: backward chaining + unification + resolution (lab)",
+    )
+    sy.add_argument("--assert", type=str, default="", dest="symbolic_assert", metavar="ATOM")
+    sy.add_argument("--rule", type=str, default="", dest="symbolic_rule", metavar="RULE")
+    sy.add_argument("--query", type=str, default="", dest="symbolic_query", metavar="ATOM")
+    sy.add_argument("--clear", action="store_true", dest="symbolic_clear")
+    sy.add_argument("--state", type=str, default="", dest="symbolic_state", metavar="PATH")
+    sy.add_argument("--resolve-demo", action="store_true", dest="symbolic_resolve_demo")
+    sy.add_argument("--clause-a", type=str, default="", dest="symbolic_clause_a", metavar="JSON")
+    sy.add_argument("--clause-b", type=str, default="", dest="symbolic_clause_b", metavar="JSON")
+    sy.set_defaults(func=_cmd_symbolic)
+
+    sil = sub.add_parser(
+        "silicon",
+        help="v159 σ-silicon lab: benchmark JSON + semantic sigma_update smoke (sigma_gate_core reference)",
+    )
+    sil.add_argument("--benchmark", action="store_true", dest="silicon_benchmark")
+    sil.add_argument("--simulate", action="store_true", dest="silicon_simulate")
+    sil.add_argument("--test", type=str, default="", dest="silicon_test", metavar="SPEC")
+    sil.set_defaults(func=_cmd_silicon)
+
+    srv = sub.add_parser(
+        "serve",
+        help="σ-gate HTTP API: FastAPI REST + WebSocket + SSE (pip install 'creation-os[serve]'; default :8420)",
+    )
+    srv.add_argument("--host", type=str, default="127.0.0.1", dest="serve_host")
+    srv.add_argument("--port", type=int, default=8420, dest="serve_port")
+    srv.set_defaults(func=_cmd_serve)
 
     ag = sub.add_parser("agent", help="σ-gated agent runtime (mock or harness wiring)")
     ag.add_argument("--goal", type=str, required=True)

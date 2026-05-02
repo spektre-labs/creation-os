@@ -32,6 +32,11 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 try:
+    import httpx
+except ImportError:  # pragma: no cover
+    httpx = None  # type: ignore[assignment]
+
+try:
     from fastapi import FastAPI, HTTPException, Query, Request, Response, WebSocket, WebSocketDisconnect
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import PlainTextResponse, StreamingResponse
@@ -48,6 +53,7 @@ except ImportError:  # pragma: no cover
 
 from cos import __version__
 from cos.calibrate import SigmaCalibrator
+from cos.chat import assistant_text_from_completion_dict, last_user_text
 from cos.codex import SigmaCodex
 from cos.compliance import SigmaCompliance
 from cos.explain import SigmaExplain
@@ -306,6 +312,76 @@ def create_app() -> Any:
             combined_ok=combined_ok,
             structure_errors=struct_err,
         )
+
+    @app.post("/v1/chat/completions")
+    async def chat_completions_proxy(request: Request) -> Any:
+        """Forward to an OpenAI-compatible LLM, then attach σ metadata (no streaming)."""
+        nonlocal request_count
+        _optional_bearer_auth(request.headers.get("Authorization"))
+        request_count += 1
+        import os
+
+        if httpx is None:  # pragma: no cover
+            raise HTTPException(
+                status_code=500,
+                detail="httpx is required for /v1/chat/completions (pip install 'creation-os[serve]')",
+            )
+
+        try:
+            body: dict[str, Any] = await request.json()
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"invalid JSON body: {e}") from e
+
+        if body.get("stream"):
+            raise HTTPException(
+                status_code=400,
+                detail="stream=true is not supported on the σ-gated proxy; use stream=false",
+            )
+
+        base = (
+            os.environ.get("CREATION_OS_LLM_BASE_URL")
+            or os.environ.get("CREATION_OS_CHAT_ENDPOINT")
+            or "http://127.0.0.1:8000/v1"
+        ).rstrip("/")
+        fwd_headers: dict[str, str] = {"Content-Type": "application/json"}
+        auth = request.headers.get("Authorization")
+        if auth:
+            fwd_headers["Authorization"] = auth
+
+        t0 = time.monotonic()
+        try:
+            async with httpx.AsyncClient(timeout=httpx.Timeout(600.0)) as ac:
+                r = await ac.post(f"{base}/chat/completions", json=body, headers=fwd_headers)
+        except httpx.ConnectError as e:
+            raise HTTPException(
+                status_code=502,
+                detail=f"LLM backend not reachable at {base}/chat/completions ({e!s})",
+            ) from e
+        except httpx.TimeoutException as e:
+            raise HTTPException(status_code=504, detail=f"LLM backend timeout ({e!s})") from e
+
+        ct = r.headers.get("content-type", "application/json")
+        try:
+            data: Any = r.json()
+        except Exception:
+            return Response(content=r.content, status_code=r.status_code, media_type=ct)
+
+        if r.status_code >= 400:
+            payload = json.dumps(data).encode("utf-8") if isinstance(data, dict) else r.content
+            return Response(content=payload, status_code=r.status_code, media_type="application/json")
+
+        assistant = assistant_text_from_completion_dict(data if isinstance(data, dict) else {})
+        user_prompt = last_user_text(list(body.get("messages") or []))
+        sigma, verdict = gate.score(user_prompt or "", assistant or "")
+        elapsed_ms = (time.monotonic() - t0) * 1000.0
+        if isinstance(data, dict):
+            data = dict(data)
+            data["creation_os"] = {
+                "sigma": round(float(sigma), 6),
+                "verdict": str(verdict),
+                "proxy_elapsed_ms": round(elapsed_ms, 2),
+            }
+        return data
 
     @app.post("/v1/pipe", response_model=PipeResponse)
     async def pipe(req: PipeRequest, request: Request) -> PipeResponse:
