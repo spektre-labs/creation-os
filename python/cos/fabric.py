@@ -179,6 +179,13 @@ class SigmaFabric:
             pass
 
         try:
+            from cos.swarm import SigmaSwarm
+
+            self.layers["swarm"] = SigmaSwarm(gate=gate)
+        except ImportError:
+            pass
+
+        try:
             from cos.snapshot import ConversationHistory, SnapshotManager
 
             self.layers["history"] = ConversationHistory()

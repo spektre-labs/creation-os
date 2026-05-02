@@ -315,16 +315,18 @@ check: standalone test check-text-similarity check-c2pa check-c2pa-stamp \
 	check-bitnet-native
 	@echo "check: OK (standalone + test + text_similarity + c2pa_sigma + stamp/validate + bitnet_native)"
 
-# σ lab Python tests (MoE + σ-latent; cos.sigma_gate only).
+# σ lab Python tests (MoE + σ-latent + σ-swarm; cos.sigma_gate only).
 .PHONY: check-cos-moe
 check-cos-moe:
 	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest \
-			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" -q && \
+			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
+			"$(CURDIR)/tests/test_swarm.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
-			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" -q && \
+			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
+			"$(CURDIR)/tests/test_swarm.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
