@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# Context trims (Python FastAPI image uses pyproject + python/ only; C images may COPY full tree).
+.git
+.github
+.cursor
+docs
+evals
+snapshots
+tests
+.mypy_cache
+.pytest_cache
+node_modules
+**/__pycache__
+**/*.pyc
+**/*.pyo
+.venv*
+.venv-build
+.env
+*.egg-info
+.build
+dist
+build
+logs
+*.tar.gz
+.sigma_pipeline_venv
+web/node_modules
+web/.next
+third_party
+models
+*.gguf

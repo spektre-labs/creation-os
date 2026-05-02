@@ -6,13 +6,12 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import pytest
+
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-try:
-    import torch
-except ImportError as e:  # pragma: no cover
-    raise RuntimeError("torch required for sigma_icr tests") from e
+torch = pytest.importorskip("torch", reason="torch required for sigma_icr tests")
 
 from cos.sigma_icr import (  # noqa: E402
     compute_icr_scores,

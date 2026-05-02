@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+apiVersion: v2
+name: creation-os
+description: FastAPI σ-gate (hallucination firewall) for LLMs — ASGI service on port 8420
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+keywords:
+  - llm
+  - hallucination
+  - safety
+  - sigma
+maintainers:
+  - name: Lauri Elias Rainio
+    url: https://github.com/spektre-labs

@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Default image: GHCR tag ``*-fastapi`` (see .github/workflows/docker-fastapi-serve.yml).
+# Override for the C HTTP image: --set image.repository=... --set image.tag=...
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/spektre-labs/creation-os
+  # Pinned example; CI publishes ``<git-tag>-fastapi`` and ``fastapi-latest``.
+  tag: "fastapi-latest"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 8420
+
+resources:
+  requests:
+    cpu: "100m"
+    memory: "128Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilization: 70
+
+probes:
+  liveness:
+    path: /health
+    port: 8420
+    initialDelaySeconds: 10
+    periodSeconds: 30
+  readiness:
+    path: /health
+    port: 8420
+    initialDelaySeconds: 5
+    periodSeconds: 10
+
+env:
+  - name: COS_LOG_LEVEL
+    value: "info"
+
+podSecurityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  runAsNonRoot: true
+  fsGroup: 10001
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: false
+  capabilities:
+    drop:
+      - ALL

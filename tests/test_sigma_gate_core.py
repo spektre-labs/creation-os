@@ -18,7 +18,6 @@ from cos.sigma_gate_core import (  # noqa: E402
     Verdict,
     sigma_gate,
     sigma_q16,
-    sigma_update,
     sigma_update_q16,
 )
 

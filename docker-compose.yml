@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Production-style stack: σ-gate HTTP (`cos-serve`) + Ollama. Hardened defaults (non-root image;
+# caps dropped; read-only root; writable /tmp + $HOME via tmpfs).
+#
+#   docker compose up -d --build
+#   curl -fsS http://127.0.0.1:3001/v1/health
+#
+# Integration: `make check-docker-compose` (requires Docker).
+
+services:
+  sigma-gate:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - "3001:3001"
+    environment:
+      COS_ENV: production
+      COS_PORT: "3001"
+      COS_AIRGAP: "0"
+      COS_INFERENCE_BACKEND: ollama
+      COS_OLLAMA_HOST: ollama
+      COS_OLLAMA_PORT: "11434"
+      COS_PROBE_PATH: /opt/creation-os/probe/sigma_gate_lsd.pkl
+    depends_on:
+      ollama:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /home/cos
+    mem_limit: 512m
+    cpus: 1.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:3001/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  ollama:
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    mem_limit: 4g
+    cpus: 4.0
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list >/dev/null 2>&1 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+volumes:
+  ollama_data:

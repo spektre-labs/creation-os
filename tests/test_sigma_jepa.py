@@ -9,14 +9,20 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
 
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
 from cos.sigma_gate_core import Verdict  # noqa: E402
 from cos.sigma_imagination import SigmaImagination  # noqa: E402
-from cos.sigma_jepa import LabLatentEncoder, LabLatentPredictor, SigmaJEPA  # noqa: E402
+from cos.sigma_jepa import (  # noqa: E402
+    LAB_UNKNOWN_OBS_TAG,
+    LabLatentEncoder,
+    LabLatentPredictor,
+    SigmaJEPA,
+    TrainableLatentEncoder,
+    TrainableLatentPredictor,
+)
 
 
 def test_sigma_jepa_update_near_zero_when_z_pred_matches_target_latent() -> None:
@@ -94,4 +100,62 @@ def test_cos_predict_cli_smoke() -> None:
     assert r.returncode == 0, r.stderr
     body = json.loads(r.stdout.strip())
     assert "z_predicted" in body and "sigma_model" in body
+
+
+def test_v155_train_step_sigma_trends_down() -> None:
+    import random
+
+    enc = TrainableLatentEncoder(dim=8)
+    pred = TrainableLatentPredictor(dim=8, drift=0.07)
+    j = SigmaJEPA(enc, pred, None, k_raw=0.92, ema_decay=0.996)
+    batch = [f"frame-{i % 20}" for i in range(36)]
+    rng = random.Random(0x155)
+    first = j.train_step(batch, rng=rng)["avg_sigma"]
+    for _ in range(18):
+        j.train_step(batch, rng=rng)
+    last = j.train_step(batch, rng=rng)["avg_sigma"]
+    assert last < first - 1e-6
+
+
+def test_v155_planning_prefers_lower_sigma_action() -> None:
+    enc = LabLatentEncoder(dim=8)
+    pred = LabLatentPredictor(drift=0.02)
+    j = SigmaJEPA(enc, pred, None, k_raw=0.92)
+    out = j.planning_step("planning lab anchor", ["a", "move_forward_very_long_action_name"])
+    assert out["action"] == "a"
+    assert out["predicted_sigma"] < 1.0
+
+
+def test_v155_unknown_observation_not_confident() -> None:
+    enc = LabLatentEncoder(dim=8)
+    pred = LabLatentPredictor(drift=0.02)
+    j = SigmaJEPA(enc, pred, None, k_raw=0.92)
+    p = j.world_model_predict(LAB_UNKNOWN_OBS_TAG + " novel scene", "noop")
+    assert p["sigma"] >= 0.45
+    assert p["confident"] is False
+
+
+def test_cos_jepa_cli_predict_smoke() -> None:
+    env = {**__import__("os").environ, "PYTHONPATH": str(_REPO / "python")}
+    r = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "cos",
+            "jepa",
+            "--predict",
+            "--observation",
+            "cli jepa",
+            "--action",
+            "forward",
+        ],
+        cwd=str(_REPO),
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, r.stderr
+    body = json.loads(r.stdout.strip())
+    assert "predicted_state" in body and "sigma" in body and "confident" in body
 
