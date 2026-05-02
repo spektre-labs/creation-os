@@ -172,6 +172,13 @@ class SigmaFabric:
             pass
 
         try:
+            from cos.latent import SigmaLatent
+
+            self.layers["latent"] = SigmaLatent(gate=gate)
+        except ImportError:
+            pass
+
+        try:
             from cos.snapshot import ConversationHistory, SnapshotManager
 
             self.layers["history"] = ConversationHistory()

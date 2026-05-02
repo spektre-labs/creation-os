@@ -18,7 +18,7 @@ BUILDDIR = .build
 VERILATOR_LINT_FLAGS = -Wall --timing -Wno-WIDTH -Wno-UNUSEDSIGNAL -Wno-MULTITOP -Wno-BLKSEQ
 RTL_SV := rtl/cos_formal_iron_combo.sv rtl/cos_agency_iron_combo.sv rtl/cos_agency_iron_formal.sv rtl/cos_commit_iron_combo.sv rtl/cos_boundary_sync.sv rtl/cos_looplm_drum.sv rtl/cos_geodesic_tick.sv rtl/cos_k_eff_bind.sv rtl/cos_silicon_chip_tb.sv
 
-.PHONY: help infra merge-gate merge-gate-cos-cli check-sigma doctor completion-install standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v71 standalone-v72 standalone-v73 standalone-v74 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened standalone-v76 standalone-v76-hardened standalone-v77 standalone-v77-hardened standalone-v78 standalone-v78-hardened standalone-v79 standalone-v79-hardened standalone-v80 standalone-v80-hardened standalone-v81 standalone-v81-hardened standalone-v82 standalone-v82-hardened standalone-v83 standalone-v83-hardened standalone-v84 standalone-v84-hardened standalone-v85 standalone-v85-hardened standalone-v86 standalone-v86-hardened standalone-v87 standalone-v87-hardened standalone-v88 standalone-v88-hardened standalone-v89 standalone-v89-hardened standalone-v90 standalone-v90-hardened standalone-v91 standalone-v91-hardened standalone-v92 standalone-v92-hardened standalone-v93 standalone-v93-hardened standalone-v94 standalone-v94-hardened standalone-v95 standalone-v95-hardened standalone-v96 standalone-v96-hardened standalone-v97 standalone-v97-hardened standalone-v98 standalone-v98-hardened standalone-v99 standalone-v99-hardened standalone-v100 standalone-v100-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74 asan-v76 ubsan-v76 asan-v77 ubsan-v77 asan-v78 ubsan-v78 asan-v79 ubsan-v79 asan-v80 ubsan-v80 asan-v81 ubsan-v81 asan-v82 ubsan-v82 asan-v83 ubsan-v83 asan-v84 ubsan-v84 asan-v85 ubsan-v85 asan-v86 ubsan-v86 asan-v87 ubsan-v87 asan-v88 ubsan-v88 asan-v89 ubsan-v89 asan-v90 ubsan-v90 asan-v91 ubsan-v91 asan-v92 ubsan-v92 asan-v93 ubsan-v93 asan-v94 ubsan-v94 asan-v95 ubsan-v95 asan-v96 ubsan-v96 asan-v97 ubsan-v97 asan-v98 ubsan-v98 asan-v99 ubsan-v99 asan-v100 ubsan-v100 hardening-check sbom security-scan reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 microbench-v71 microbench-v72 microbench-v73 microbench-v74 microbench-v76 microbench-v77 microbench-v78 microbench-v79 microbench-v80 microbench-v81 microbench-v82 microbench-v83 microbench-v84 microbench-v85 microbench-v86 microbench-v87 microbench-v88 microbench-v89 microbench-v90 microbench-v91 microbench-v92 microbench-v93 microbench-v94 microbench-v95 microbench-v96 microbench-v97 microbench-v98 microbench-v99 microbench-v100 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 test-v71 test-v72 test-v73 test-v74 test-v76 test-v77 test-v78 test-v79 test-v80 test-v81 test-v82 test-v83 test-v84 test-v85 test-v86 test-v87 test-v88 test-v89 test-v90 test-v91 test-v92 test-v93 test-v94 test-v95 test-v96 test-v97 test-v98 test-v99 test-v100 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 check-v71 check-v72 check-v73 check-v74 check-v76 check-v77 check-v78 check-v79 check-v80 check-v81 check-v82 check-v83 check-v84 check-v85 check-v86 check-v87 check-v88 check-v89 check-v90 check-v91 check-v92 check-v93 check-v94 check-v95 check-v96 check-v97 check-v98 check-v99 check-v100 standalone-v101 standalone-v101-real test-v101 check-v101 check-v101-real microbench-v101 bench-v101-smoke check-v102 bench-v102 license_attest license-pin license-check license-apply license-attest license-attest-hardened core oracle bench bench-coherence bench-agi-gate bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp check-mcp-stdio verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean distclean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
+.PHONY: help infra merge-gate merge-gate-cos-cli check-sigma doctor completion-install standalone standalone-v6 standalone-v7 standalone-v9 standalone-v10 standalone-v11 standalone-v12 standalone-v15 standalone-v16 standalone-v20 standalone-v21 standalone-v22 standalone-v23 standalone-v24 standalone-v25 standalone-v26 standalone-v27 standalone-v28 standalone-v29 standalone-v31 standalone-v33 standalone-v34 standalone-v35 standalone-v39 standalone-v40 standalone-v41 standalone-v42 standalone-v43 standalone-proxy standalone-v45 standalone-v46 standalone-v47 standalone-v48 standalone-v51 standalone-v53 standalone-v54 standalone-v55 standalone-v56 standalone-v57 standalone-v58 standalone-v59 standalone-v60 standalone-v61 standalone-v62 standalone-v63 standalone-v64 standalone-v65 standalone-v66 standalone-v67 standalone-v68 standalone-v69 standalone-v70 standalone-v71 standalone-v72 standalone-v73 standalone-v74 standalone-v57-hardened standalone-v58-hardened standalone-v59-hardened standalone-v60-hardened standalone-v61-hardened standalone-v62-hardened standalone-v63-hardened standalone-v64-hardened standalone-v65-hardened standalone-v66-hardened standalone-v67-hardened standalone-v68-hardened standalone-v69-hardened standalone-v70-hardened standalone-v71-hardened standalone-v72-hardened standalone-v73-hardened standalone-v74-hardened standalone-v76 standalone-v76-hardened standalone-v77 standalone-v77-hardened standalone-v78 standalone-v78-hardened standalone-v79 standalone-v79-hardened standalone-v80 standalone-v80-hardened standalone-v81 standalone-v81-hardened standalone-v82 standalone-v82-hardened standalone-v83 standalone-v83-hardened standalone-v84 standalone-v84-hardened standalone-v85 standalone-v85-hardened standalone-v86 standalone-v86-hardened standalone-v87 standalone-v87-hardened standalone-v88 standalone-v88-hardened standalone-v89 standalone-v89-hardened standalone-v90 standalone-v90-hardened standalone-v91 standalone-v91-hardened standalone-v92 standalone-v92-hardened standalone-v93 standalone-v93-hardened standalone-v94 standalone-v94-hardened standalone-v95 standalone-v95-hardened standalone-v96 standalone-v96-hardened standalone-v97 standalone-v97-hardened standalone-v98 standalone-v98-hardened standalone-v99 standalone-v99-hardened standalone-v100 standalone-v100-hardened harden sanitize asan-v58 asan-v59 asan-v60 ubsan-v60 asan-v61 ubsan-v61 asan-v62 ubsan-v62 asan-v63 ubsan-v63 asan-v64 ubsan-v64 asan-v65 ubsan-v65 asan-v66 ubsan-v66 asan-v67 ubsan-v67 asan-v68 ubsan-v68 asan-v69 ubsan-v69 asan-v70 ubsan-v70 asan-v71 ubsan-v71 asan-v72 ubsan-v72 asan-v73 ubsan-v73 asan-v74 ubsan-v74 asan-v76 ubsan-v76 asan-v77 ubsan-v77 asan-v78 ubsan-v78 asan-v79 ubsan-v79 asan-v80 ubsan-v80 asan-v81 ubsan-v81 asan-v82 ubsan-v82 asan-v83 ubsan-v83 asan-v84 ubsan-v84 asan-v85 ubsan-v85 asan-v86 ubsan-v86 asan-v87 ubsan-v87 asan-v88 ubsan-v88 asan-v89 ubsan-v89 asan-v90 ubsan-v90 asan-v91 ubsan-v91 asan-v92 ubsan-v92 asan-v93 ubsan-v93 asan-v94 ubsan-v94 asan-v95 ubsan-v95 asan-v96 ubsan-v96 asan-v97 ubsan-v97 asan-v98 ubsan-v98 asan-v99 ubsan-v99 asan-v100 ubsan-v100 hardening-check sbom security-scan check-docker-compose reproducible-build attest sign slsa wasm-sandbox ebpf-policy sandbox-exec distroless nix-build sel4-check chace cos check-cos standalone-mcp standalone-openai-stub standalone-suite-stub native-m4 metallib-m4 cos_lm standalone-v27-rust gen-cos-codebook bench-v27-all bench-binding-fidelity bench-vocab-scaling bench-vs-transformer formal-sby-tokenizer formal-sby-v37 formal-sby-v47 synth-v37 check-asic-tile librelane-v38 check-crossbar-sim bench-v40-threshold bench-v41-scaling bench-v42-curve bench-v43-distill bench-v44-overhead bench-v45-paradox bench-v46-e2e v50-benchmark microbench-v58 microbench-v59 microbench-v60 microbench-v61 microbench-v62 microbench-v63 microbench-v64 microbench-v65 microbench-v66 microbench-v67 microbench-v68 microbench-v69 microbench-v70 microbench-v71 microbench-v72 microbench-v73 microbench-v74 microbench-v76 microbench-v77 microbench-v78 microbench-v79 microbench-v80 microbench-v81 microbench-v82 microbench-v83 microbench-v84 microbench-v85 microbench-v86 microbench-v87 microbench-v88 microbench-v89 microbench-v90 microbench-v91 microbench-v92 microbench-v93 microbench-v94 microbench-v95 microbench-v96 microbench-v97 microbench-v98 microbench-v99 microbench-v100 test-v62 test-v63 test-v64 test-v65 test-v66 test-v67 test-v68 test-v69 test-v70 test-v71 test-v72 test-v73 test-v74 test-v76 test-v77 test-v78 test-v79 test-v80 test-v81 test-v82 test-v83 test-v84 test-v85 test-v86 test-v87 test-v88 test-v89 test-v90 test-v91 test-v92 test-v93 test-v94 test-v95 test-v96 test-v97 test-v98 test-v99 test-v100 check-v62 check-v63 check-v64 check-v65 check-v66 check-v67 check-v68 check-v69 check-v70 check-v71 check-v72 check-v73 check-v74 check-v76 check-v77 check-v78 check-v79 check-v80 check-v81 check-v82 check-v83 check-v84 check-v85 check-v86 check-v87 check-v88 check-v89 check-v90 check-v91 check-v92 check-v93 check-v94 check-v95 check-v96 check-v97 check-v98 check-v99 check-v100 standalone-v101 standalone-v101-real test-v101 check-v101 check-v101-real microbench-v101 bench-v101-smoke check-v102 bench-v102 license_attest license-pin license-check license-apply license-attest license-attest-hardened core oracle bench bench-coherence bench-agi-gate inference_bench check-v128 cache_bench check-v129-sigma-kv speculative_quant_bench check-v130-inference-quant bench-tokenizer-v27 physics test test-v6 test-v7 test-v9 test-v10 test-v11 test-v12 test-v15 test-v16 test-v20 test-v21 test-v22 test-v23 test-v24 test-v25 test-v26 test-v27 test-v28 test-v29 test-v31 test-v33 test-v34 test-v35 test-v39 test-v40 test-v41 test-v42 test-v43 test-proxy test-v44 test-v45 test-v46 test-v47 test-v48 test-v51 test-v53 test-v54 test-v55 test-v56 test-v57 test-v58 test-v59 test-v60 test-v61 test-mcp test-openai-stub test-suite-stub check check-v6 check-v7 check-v9 check-v10 check-v11 check-v12 check-v15 check-v16 check-v20 check-v21 check-v22 check-v23 check-v24 check-v25 check-v26 check-v27 check-v28 check-v29 check-v31 check-v33 check-v34 check-v35 check-v39 check-v40 check-v41 check-v42 check-v43 check-proxy check-v44 check-v45 check-v46 check-v47 check-v48 check-v51 check-v53 check-v54 check-v55 check-v56 check-v57 check-v58 check-v59 check-v60 check-v61 check-mcp check-mcp-stdio verify-agent check-openai-stub check-suite-stub check-native-m4 bench-native-m4 check-rtl formal-rtl-lint formal-rtl-sim formal-sby-agency formal-sby-cover-agency eqy-agency-self oss-formal-extreme stack-nucleon stack-singularity rust-iron-lint yosys-elab yosys-prove-agency rust-iron-test hardware-supreme stack-ultimate chisel-compile chisel-verilog all clean distclean verify verify-c verify-sv verify-property verify-integration trust-report red-team red-team-garak red-team-deepteam red-team-sigma red-team-property merge-gate-v48 certify certify-formal certify-coverage certify-binary-audit certify-red-team certify-trace publish-github
 
 $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
@@ -120,6 +120,8 @@ help:
 	@echo "  check-v27  — standalone-v27 + test-v27 (v27 tokenizer scaffold only)"
 	@echo "  check-v28  — standalone-v28 + test-v28 (v28 LM integration shell only)"
 	@echo "  check-v29  — standalone-v29 + test-v29 (v29 collapse harness only)"
+	@echo "  check-v128 — inference_bench self-test + cos inference --bench (v128 lab only; not merge-gate)"
+	@echo "  check-v129-sigma-kv — σ-KV cache lab (cache_bench + cos-cache --stats; not merge-gate; v129 kernel remains check-v129)"
 	@echo "  check-v31  — standalone-v31 + test-v31 (v31 lab only; not merge-gate)"
 	@echo "  check-v33  — standalone-v33 + test-v33 (v33 lab only; not merge-gate)"
 	@echo "  test-v34   — ./creation_os_v34 --self-test (v34 lab only)"
@@ -319,10 +321,12 @@ check: standalone test check-text-similarity check-c2pa check-c2pa-stamp \
 .PHONY: check-cos-moe
 check-cos-moe:
 	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest" >/dev/null 2>&1; then \
-		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest "$(CURDIR)/tests/test_moe.py" -q && \
+		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest \
+			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
-		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_moe.py" -q && \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
+			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
@@ -332,6 +336,7 @@ check-cos-moe:
 merge-gate:
 	@$(MAKE) check
 	@$(MAKE) check-mcp-stdio
+	@$(MAKE) check-mcp-v132-trust
 	@$(MAKE) check-cos-moe
 	@$(MAKE) check-v6
 	@$(MAKE) check-v7
@@ -1251,6 +1256,10 @@ sbom:
 
 security-scan:
 	@bash scripts/security/scan.sh
+
+# v151: Docker Compose smoke (build + up + /v1/health); skips if docker missing.
+check-docker-compose:
+	@bash scripts/docker/compose_smoke.sh
 
 reproducible-build:
 	@bash scripts/security/reproducible_build.sh
@@ -3004,6 +3013,15 @@ check-v122-red-team: creation_os_v122_red_team
 check-v122: check-v122-red-team
 	@echo "check-v122: OK (σ-red-team harness)"
 
+# --- Python σ-red-team (gate bypass rate; mock model + quickstart gate in CI) ---
+.PHONY: check-sigma-red-team-py
+check-sigma-red-team-py:
+	@PYTHONPATH=python python3 -m cos red-team --mock --ci --threshold 0.05 --n 20 --quiet
+	@PYTHONPATH=python python3 -m cos red-team --mock --ci --threshold 0.05 --all --quiet
+	@python3 tests/test_sigma_red_team.py -q
+	@python3 tests/test_sigma_red_team_v153.py -q
+	@echo "check-sigma-red-team-py: OK (Python σ-red-team + unit tests)"
+
 # --- v123 σ-Formal (offline TLA+ model check of σ-invariants) ---
 # Two-tier enforcement: pure-C structural validator always runs (no
 # Java), full TLC exhaustive model check runs when `tlc` or
@@ -3021,8 +3039,50 @@ check-v123-formal-tlc: creation_os_v123_formal
 	@bash benchmarks/v123/check_v123_formal_tlc.sh
 	@echo "check-v123-formal-tlc: OK (σ-governance invariants — structural + TLC-if-present)"
 
-check-v123: check-v123-formal-tlc
+check-v123: check-v123-formal-tlc check-sigma-spike-c check-sigma-spike-infer-c check-sigma-attention-infer-c check-ternary-packed-infer-c check-sigma-riscv-lab check-sigma-tiny-c check-sigma-federated-lab check-sigma-twin-lab
 	@echo "check-v123: OK (σ-formal model-check)"
+
+# v160 σ-tiny: host compile σ-sensor + σ-gate tiny (ESP32/AVR sources are not built here).
+check-sigma-tiny-c: hw/tinyml/sigma_sensor.c hw/tinyml/sigma_sensor.h hw/tinyml/sigma_gate_tiny.h tests/tinyml/check_sigma_sensor_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/hw/tinyml" \
+		-o "$(CURDIR)/.tmp_check_sigma_sensor" \
+		"$(CURDIR)/tests/tinyml/check_sigma_sensor_main.c" "$(CURDIR)/hw/tinyml/sigma_sensor.c" && \
+		"$(CURDIR)/.tmp_check_sigma_sensor" && rm -f "$(CURDIR)/.tmp_check_sigma_sensor" && \
+		echo "check-sigma-tiny-c: OK"
+
+# v161 σ-federated Python lab (toy σ-FedAvg + modules for ``cos federation --server``).
+check-sigma-federated-lab: python/cos/sigma_federated.py python/cos/sigma_federation_http.py python/cos/cli.py
+	@PYTHONPATH="$(CURDIR)/python" python3 -c "from cos.sigma_federated import demo_aggregate_memory, run_mock_federation_lab; \
+	import tempfile, pathlib; \
+	tmp = tempfile.mkdtemp(); \
+	run_mock_federation_lab(rounds=1, workspace=tmp, include_poison=True, use_byzantine=True); \
+	assert pathlib.Path(tmp, 'fed_lab_state.json').is_file(); \
+	out = demo_aggregate_memory(include_poison=True, use_byzantine=True, dp=None); \
+	assert out['aggregate'].get('aggregated') is True"; \
+	echo "check-sigma-federated-lab: OK"
+
+# v162 σ-twin lab (what-if shadow control plane; JSON persistence).
+check-sigma-twin-lab: python/cos/sigma_twin.py python/cos/cli.py
+	@PYTHONPATH="$(CURDIR)/python" python3 -c "from cos.sigma_twin import default_sigma_twin, DEFAULT_FIXTURE; \
+		t = default_sigma_twin(); t.create_twin(); \
+		r = t.experiment('gate', {'threshold_accept': 0.05}, DEFAULT_FIXTURE); \
+		assert r['details']['recommendation'] == 'DEPLOY'"; \
+	echo "check-sigma-twin-lab: OK"
+
+# v159 σ-silicon lab (RTL path + Python semantic smoke + cycle-target JSON).
+check-sigma-riscv-lab: python/cos/sigma_silicon.py python/cos/cli.py
+	@PYTHONPATH="$(CURDIR)/python" python3 -m cos silicon --benchmark >/dev/null
+	@PYTHONPATH="$(CURDIR)/python" python3 -m cos silicon --simulate --test "sigma_update 0x1000 0xE000" >/dev/null
+	@echo "check-sigma-riscv-lab: OK (σ-silicon CLI smoke)"
+
+# Optional: Verilator lint on hw/riscv/sigma_core.v (skips if verilator missing).
+check-sigma-riscv-verilator: hw/riscv/sigma_core.v
+	@if command -v verilator >/dev/null 2>&1; then \
+		verilator --lint-only -Wall -Wno-DECLFILENAME "$(CURDIR)/hw/riscv/sigma_core.v" && \
+		echo "check-sigma-riscv-verilator: OK"; \
+	else \
+		echo "check-sigma-riscv-verilator: SKIP (install verilator for RTL lint)"; \
+	fi
 
 check-v119-v123: check-v119 check-v120 check-v121 check-v122 check-v123
 	@echo "check-v119-v123: OK (speculative + distill + planning + red-team + formal)"
@@ -6249,7 +6309,23 @@ check-integration: test_sigma_pipeline_integration
 # quantitatively visible.
 COS_CLI_INC  = -Isrc/sigma/pipeline -Isrc/sigma/ttt -Isrc/cli -Isrc/import \
                -Isrc/sigma/metacog -Isrc/sigma/physics -Isrc/sigma -Isrc/omega \
-               -Isrc/bridge -Isrc/codex -Isrc
+               -Isrc/bridge -Isrc/codex -Isrc -Isrc/inference
+
+COS_INF_CORE_SRCS = src/inference/ternary_engine.c \
+               src/inference/integer_attention.c \
+               src/inference/token_pipeline.c \
+               src/inference/cos_inference_gguf.c
+COS_INF_CLI_SRC   = src/cli/cos_inference_cli.c
+COS_KV_V129_SRCS = src/inference/sigma_kv_cache.c \
+               src/inference/sigma_sliding_window.c \
+               src/inference/sigma_kv_quantize.c \
+               src/inference/semantic_cache_bsc.c
+COS_CACHE_KV_SRC  = src/cli/cos_cache_kv.c
+COS_V130_INF_SRCS = src/inference/sigma_speculative.c \
+               src/inference/sigma_quantize.c \
+               src/cli/cos_quantize_cli.c
+COS_INF_SRCS      = $(COS_INF_CORE_SRCS) $(COS_INF_CLI_SRC) \
+               $(COS_KV_V129_SRCS) $(COS_CACHE_KV_SRC) $(COS_V130_INF_SRCS)
 COS_CLI_SRCS = src/sigma/pipeline/pipeline.c \
                src/sigma/pipeline/codex.c \
                src/sigma/pipeline/engram.c \
@@ -6531,8 +6607,9 @@ check-speculative-sigma: creation_os_check_speculative_sigma
 	@./creation_os_check_speculative_sigma
 	@echo "check-speculative-sigma: OK (speculative sigma self-test)"
 
-cos-cache: src/cli/cos_cache.c $(COS_EDGE_INF)
-	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -o $@ src/cli/cos_cache.c $(COS_EDGE_INF) $(LDFLAGS)
+cos-cache: src/cli/cos_cache.c $(COS_EDGE_INF) $(COS_KV_V129_SRCS) $(COS_CACHE_KV_SRC)
+	$(CC) $(CFLAGS) -Isrc/cli -Isrc/sigma -Isrc/inference \
+	    -o $@ src/cli/cos_cache.c $(COS_KV_V129_SRCS) $(COS_CACHE_KV_SRC) $(COS_EDGE_INF) $(LDFLAGS)
 
 # σ-knowledge graph CLI (SQLite + BSC; no LLM extraction in the C path).
 cos-graph: src/cli/cos_graph.c src/sigma/knowledge_graph.c $(COS_EDGE_INF)
@@ -6695,7 +6772,7 @@ COS_OMEGA_SUPPORT_SRCS = src/sigma/speculative_sigma.c $(COS_SPIKE_ADAPT_SRCS) \
 	src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
-	src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	src/sigma/omega_loop.c src/sigma/sigma_spike.c src/cli/cos_omega_cli.c \
 	src/omega/evolver.c src/omega/pattern_extractor.c \
 	src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
 	src/omega/predictive_world.c src/omega/continual_learning.c
@@ -6725,6 +6802,7 @@ creation_os_check_omega: tests/agi/check_omega_loop_main.c $(COS_CLI_SRCS) \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    src/sigma/sigma_spike.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
 	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
 	    src/omega/predictive_world.c src/omega/continual_learning.c \
@@ -6755,6 +6833,7 @@ cos-omega: $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) src/sigma/skill_distill.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
 	    src/sigma/omega_loop.c \
+	    src/sigma/sigma_spike.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
 	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
 	    src/omega/predictive_world.c src/omega/continual_learning.c \
@@ -8143,13 +8222,14 @@ cos-mcp: $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
          src/sigma/pipeline/multi_sigma.c \
          src/sigma/metacog/introspection.c \
          src/cli/escalation.c src/cli/cos_mcp_server.c
-	$(CC) $(CFLAGS) $(COS_CLI_INC) -Iinclude -o $@ \
+	$(CC) $(CFLAGS) $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude -o $@ \
 	    $(COS_CLI_SRCS) src/sigma/pipeline/engram_persist.c \
 	    src/sigma/ttt/inplace_ttt.c \
 	    src/sigma/pipeline/conformal.c \
 	    src/sigma/pipeline/multi_sigma.c \
 	    src/sigma/metacog/introspection.c \
 	    src/cli/escalation.c src/cli/cos_mcp_server.c \
+	    $(COS_PROOF_LIB) \
 	    $(LDFLAGS) -lsqlite3 -lcurl
 
 check-cos-mcp: cos-mcp
@@ -8188,7 +8268,8 @@ check-serve: check-cos-serve
 
 check-voice: cos
 	@./cos voice --help >/dev/null
-	@echo "check-voice: OK (cos voice --help)"
+	@PYTHONPATH="$(CURDIR)/python" python3 -m cos.voice --dry-run --text "hello" --model echo --tts none
+	@echo "check-voice: OK (cos voice --help + python dry-run)"
 
 cos-bench: src/cli/cos_bench.c src/sigma/adaptive_tau.c src/omega/pattern_keywords.c
 	$(CC) -O2 -Wall -std=c11 -Isrc/sigma -Isrc/omega -o cos-bench \
@@ -8489,9 +8570,11 @@ SIGMA_FRM_SRCS = src/sigma/pipeline/formal.c \
                  $(SIGMA_PROTO_SRCS)
 
 creation_os_sigma_formal: $(SIGMA_FRM_SRCS) \
+                          src/sigma/pipeline/formal_complete.c \
                           src/sigma/pipeline/formal_main.c
 	$(CC) $(CFLAGS) $(SIGMA_FRM_INC) -o $@ \
-	    $(SIGMA_FRM_SRCS) src/sigma/pipeline/formal_main.c $(LDFLAGS)
+	    $(SIGMA_FRM_SRCS) src/sigma/pipeline/formal_complete.c \
+	    src/sigma/pipeline/formal_main.c $(LDFLAGS)
 
 check-sigma-formal: creation_os_sigma_formal
 	@bash benchmarks/sigma_pipeline/check_sigma_formal.sh
@@ -8561,7 +8644,7 @@ check-mesh-2node: cos-mesh-node
 # type-checks the file.
 check-lean-t3-discharged:
 	@bash benchmarks/sigma_pipeline/check_lean_t3_discharged.sh
-	@echo "check-lean-t3-discharged: OK (4 gateα_* theorems discharged, sorry-free)"
+	@echo "check-lean-t3-discharged: OK (T1–T6 + CreationOS.V133 stack lemmas, sorry-free)"
 
 # --- Paper: arXiv-ready LaTeX (FIX-8) ------------------------------
 #
@@ -8734,6 +8817,45 @@ check-sigma-gate-v4:
 		python/cos/sigma_self_modify.py \
 		python/cos/sigma_a2a_card.py \
 		python/cos/sigma_swarm.py \
+		python/cos/sigma_stigmergy.py \
+		python/cos/sigma_swarm_agent.py \
+		python/cos/sigma_quorum.py \
+		python/cos/sigma_conflict.py \
+		python/cos/sigma_kernel_lock.py \
+		python/cos/sigma_node_state.py \
+		python/cos/sigma_reason.py \
+		python/cos/sigma_metacog.py \
+		python/cos/sigma_agency.py \
+		python/cos/sigma_social.py \
+		python/cos/sigma_world.py \
+		python/cos/sigma_memory.py \
+		python/cos/sigma_planning.py \
+		python/cos/sigma_explain.py \
+		python/cos/sigma_align.py \
+		python/cos/sigma_embody.py \
+		python/cos/sigma_drive.py \
+		python/cos/sigma_conscious.py \
+		python/cos/sigma_mcp.py \
+		python/cos/sigma_continual.py \
+		python/cos/sigma_create.py \
+		python/cos/sigma_moral.py \
+		python/cos/sigma_meta_goal.py \
+		python/cos/sigma_fewshot.py \
+		python/cos/pipeline.py \
+		python/cos/stream.py \
+		python/cos/snapshot.py \
+		python/cos/calibrate.py \
+		python/cos/probe.py \
+		python/cos/sigma_symbolic.py \
+		python/cos/integrations/langchain.py \
+		python/cos/integrations/langchain_sigma.py \
+		python/cos/integrations/openai_wrapper.py \
+		python/cos/integrations/openai_sigma.py \
+		python/cos/integrations/decorator.py \
+		python/cos/integrations/litellm.py \
+		python/cos/integrations/litellm_sigma.py \
+		python/cos/api/__init__.py \
+		python/cos/api/serve.py \
 		python/cos/sigma_router.py \
 		python/cos/sigma_cascade.py \
 		python/cos/sigma_calibration.py \
@@ -8763,6 +8885,14 @@ check-sigma-gate-v4:
 		python/cos/sigma_debate.py python/cos/sigma_selfplay.py python/cos/sigma_proconductor.py \
 		python/cos/sigma_sense.py python/cos/sigma_vla.py python/cos/sigma_sim2real.py \
 		python/cos/sigma_jepa.py python/cos/sigma_imagination.py \
+		python/cos/sigma_zkp.py python/cos/sigma_audit_chain.py \
+		python/cos/sigma_attention.py \
+		python/cos/sigma_bitnet.py \
+		python/cos/sigma_silicon.py \
+		python/cos/sigma_tiny.py \
+		python/cos/sigma_federated.py \
+		python/cos/sigma_federation_http.py \
+		python/cos/sigma_twin.py \
 		python/cos/sigma_router_calibrate.py \
 		python/cos/sigma_gate_complete.py python/cos/sigma_gate_precheck.py python/cos/sigma_precheck.py \
 		python/cos/hide_metric_upstream.py \
@@ -8809,20 +8939,94 @@ check-omega-phase-gates-c: src/sigma/omega_phase_gates.c src/sigma/omega_phase_g
 		"$(CURDIR)/.tmp_check_omega_phase_gates" && rm -f "$(CURDIR)/.tmp_check_omega_phase_gates" && \
 		echo "check-omega-phase-gates-c: OK"
 
+# σ-spike: event-thresholded Q16 gate (does not modify ``python/cos/sigma_gate.h``).
+check-sigma-spike-c: src/sigma/sigma_spike.c src/sigma/sigma_spike.h tests/sigma/check_sigma_spike_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/sigma" \
+		-o "$(CURDIR)/.tmp_check_sigma_spike" \
+		"$(CURDIR)/tests/sigma/check_sigma_spike_main.c" "$(CURDIR)/src/sigma/sigma_spike.c" && \
+		"$(CURDIR)/.tmp_check_sigma_spike" && rm -f "$(CURDIR)/.tmp_check_sigma_spike" && \
+		echo "check-sigma-spike-c: OK"
+
+# v154 LIF σ-spike inference (``src/inference/sigma_spike.c``; no ``sigma_gate.h`` edits).
+check-sigma-spike-infer-c: src/inference/sigma_spike.c src/inference/sigma_spike.h tests/inference/check_sigma_spike_infer_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/inference" -I"$(CURDIR)/src/sigma" \
+		-o "$(CURDIR)/.tmp_check_sigma_spike_infer" \
+		"$(CURDIR)/tests/inference/check_sigma_spike_infer_main.c" "$(CURDIR)/src/inference/sigma_spike.c" && \
+		"$(CURDIR)/.tmp_check_sigma_spike_infer" && rm -f "$(CURDIR)/.tmp_check_sigma_spike_infer" && \
+		echo "check-sigma-spike-infer-c: OK"
+
+# v157 σ-attention inference reference (``src/inference/sigma_attention.c``; no ``sigma_gate.h`` edits).
+check-sigma-attention-infer-c: src/inference/sigma_attention.c src/inference/sigma_attention.h tests/inference/check_sigma_attention_infer_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/inference" \
+		-o "$(CURDIR)/.tmp_check_sigma_attention_infer" \
+		"$(CURDIR)/tests/inference/check_sigma_attention_infer_main.c" "$(CURDIR)/src/inference/sigma_attention.c" && \
+		"$(CURDIR)/.tmp_check_sigma_attention_infer" && rm -f "$(CURDIR)/.tmp_check_sigma_attention_infer" && \
+		echo "check-sigma-attention-infer-c: OK"
+
+# v158 σ-BitNet packed ternary reference (``ternary_matmul_packed`` + per-layer σ; no ``sigma_gate.h`` edits).
+check-ternary-packed-infer-c: src/inference/ternary_engine.c src/inference/ternary_engine.h \
+		src/inference/cos_sigma_mirror.h tests/inference/check_ternary_packed_main.c
+	@gcc -std=c99 -O2 -Wall -Werror -I"$(CURDIR)/src/inference" \
+		-o "$(CURDIR)/.tmp_check_ternary_packed" \
+		"$(CURDIR)/tests/inference/check_ternary_packed_main.c" "$(CURDIR)/src/inference/ternary_engine.c" && \
+		"$(CURDIR)/.tmp_check_ternary_packed" && rm -f "$(CURDIR)/.tmp_check_ternary_packed" && \
+		echo "check-ternary-packed-infer-c: OK"
+
 check-sigma-gate-python: check-sigma-gate-v4
 	@if python3 -c "import pytest" >/dev/null 2>&1; then \
-		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_sigma_gate_core.py" \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_integrations.py" \
+			"$(CURDIR)/tests/test_gate.py" \
+			"$(CURDIR)/tests/test_cli.py" \
+			"$(CURDIR)/tests/test_e2e.py" \
+			"$(CURDIR)/tests/test_pipeline.py" \
+			"$(CURDIR)/tests/test_probe.py" \
+			"$(CURDIR)/tests/test_stream.py" \
+			"$(CURDIR)/tests/test_snapshot.py" \
+			"$(CURDIR)/tests/test_calibrate.py" \
+			"$(CURDIR)/tests/test_sigma_gate_core.py" \
 			"$(CURDIR)/tests/test_sigma_integration.py" "$(CURDIR)/tests/test_sigma_self_modify.py" \
 			"$(CURDIR)/tests/test_sigma_a2a_card.py" "$(CURDIR)/tests/test_sigma_swarm.py" \
+			"$(CURDIR)/tests/test_sigma_swarm_fleet.py" \
+			"$(CURDIR)/tests/test_sigma_conflict.py" \
+			"$(CURDIR)/tests/test_agi_gap_lab.py" \
+			"$(CURDIR)/tests/test_sigma_mcp_v2_lab.py" \
+			"$(CURDIR)/tests/test_v180_v182_lab.py" \
+			"$(CURDIR)/tests/test_v183_v186_lab.py" \
 			"$(CURDIR)/tests/test_sigma_icr.py" "$(CURDIR)/tests/test_sigma_fusion.py" \
 			"$(CURDIR)/tests/test_sigma_engram_living.py" "$(CURDIR)/tests/test_sigma_torch_scaffold.py" \
 			"$(CURDIR)/tests/test_sigma_reasoning_budget_liquid.py" \
 			"$(CURDIR)/tests/test_sigma_sae_interpretability.py" \
+			"$(CURDIR)/tests/test_sigma_sae_lab_topk.py" \
 			"$(CURDIR)/tests/test_sigma_distill.py" \
 			"$(CURDIR)/tests/test_sigma_debate_stack.py" \
 			"$(CURDIR)/tests/test_sigma_multimodal.py" \
 			"$(CURDIR)/tests/test_omega_loop.py" \
-			"$(CURDIR)/tests/test_sigma_jepa.py" -q && echo "check-sigma-gate-python: OK"; \
+			"$(CURDIR)/tests/test_sigma_spike.py" \
+			"$(CURDIR)/tests/test_sigma_jepa.py" \
+			"$(CURDIR)/tests/test_sigma_zkp.py" \
+			"$(CURDIR)/tests/test_sigma_attention.py" \
+			"$(CURDIR)/tests/test_sigma_bitnet.py" \
+			"$(CURDIR)/tests/test_sigma_silicon.py" \
+			"$(CURDIR)/tests/test_sigma_tiny.py" \
+			"$(CURDIR)/tests/test_sigma_federated.py" \
+			"$(CURDIR)/tests/test_sigma_twin.py" \
+			"$(CURDIR)/tests/test_sigma_consolidation_v134.py" \
+			"$(CURDIR)/tests/test_sigma_split_v135.py" \
+			"$(CURDIR)/tests/test_sigma_observe_v136.py" \
+			"$(CURDIR)/tests/test_sigma_evolve_v137.py" \
+			"$(CURDIR)/tests/test_sigma_bench_v139.py" \
+			"$(CURDIR)/tests/test_sigma_agent_v140.py" \
+			"$(CURDIR)/tests/test_sigma_lora_v141.py" \
+			"$(CURDIR)/tests/test_sigma_team_v142.py" \
+			"$(CURDIR)/tests/test_sigma_offline_v143.py" \
+			"$(CURDIR)/tests/test_sigma_health_v144.py" \
+			"$(CURDIR)/tests/test_sigma_cost_v145.py" \
+			"$(CURDIR)/tests/test_sigma_moe_v146.py" \
+			"$(CURDIR)/tests/test_sigma_guardrails_v148.py" \
+			"$(CURDIR)/tests/test_sigma_graph_v149.py" \
+			"$(CURDIR)/tests/test_sigma_ttt_v150.py" \
+			"$(CURDIR)/tests/test_sigma_framework_v152.py" \
+			"$(CURDIR)/tests/test_sigma_red_team_v153.py" -q && echo "check-sigma-gate-python: OK"; \
 	else \
 		echo "check-sigma-gate-python: SKIP (pip install pytest)"; \
 	fi
@@ -10571,6 +10775,7 @@ license-attest-hardened: src/license_kernel/license_cli.c $(LICENSE_KERNEL_SRCS)
 # `cos think --goal ...`.  NO_COLOR / TERM=dumb respected; isatty
 # auto-detect for colour.
 cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_version.h $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	$(COS_INF_SRCS) \
 	src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	src/cli/cos_search.c \
@@ -10590,6 +10795,7 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	$(CC) -O2 -Wall -std=c11 $(COS_CLI_INC) $(LICENSE_KERNEL_INC) -Iinclude \
 	    -Isrc/cli -Isrc/sigma -Isrc/sigma/tools -Isrc/sigma/pipeline -Isrc/vendor \
 	    -o cos cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c $(COS_CLI_SRCS) $(COS_THINK_CLI_AUX) \
+	    $(COS_INF_SRCS) \
 	    src/sigma/skill_distill.c src/sigma/knowledge_graph.c \
 	    src/sigma/world_model.c $(COS_EDGE_INF) src/cli/cos_think.c \
 	    src/cli/cos_search.c \
@@ -10612,7 +10818,7 @@ cos: cli/cos.c src/cli/cos_voice.c src/import/ollama_detect.c include/cos_versio
 	    src/sigma/perception.c src/sigma/pipeline/watchdog.c \
 	    src/sigma/federation.c src/sigma/pipeline/a2a.c \
 	    src/sigma/sigma_mcp_gate.c src/sigma/channels.c \
-	    src/sigma/omega_loop.c src/cli/cos_omega_cli.c \
+	    src/sigma/omega_loop.c src/sigma/sigma_spike.c src/cli/cos_omega_cli.c \
 	    src/omega/evolver.c src/omega/pattern_extractor.c \
 	    src/omega/config_persist.c src/omega/prompt_bank.c src/omega/gvu_loop.c \
 	    src/omega/predictive_world.c src/omega/continual_learning.c \
@@ -10824,6 +11030,34 @@ bench-coherence: bench/coherence_gate_batch.c core/cos_bsc.h core/cos_neon_hammi
 bench-agi-gate: bench/hv_agi_gate_neon.c core/cos_bsc.h core/cos_neon_hamming.h core/cos_neon_retrieval.h core/cos_parliament.h
 	$(CC) $(CFLAGS) -o hv_agi_gate_neon bench/hv_agi_gate_neon.c $(LDFLAGS)
 	./hv_agi_gate_neon
+
+# v128: libc-only ternary inference microbench (not merge-gate).
+inference_bench: bench/inference_bench.c $(COS_INF_CORE_SRCS)
+	$(CC) -O2 -Wall -std=c11 -Isrc/inference -o inference_bench bench/inference_bench.c $(COS_INF_CORE_SRCS) $(LDFLAGS)
+
+check-v130-inference-quant: speculative_quant_bench cos
+	./speculative_quant_bench --self-test
+	./cos inference --speculative --draft-len 2 -n 4
+	./cos quantize --compare --auto --target-sigma 0.12
+
+speculative_quant_bench: bench/speculative_quant_bench.c $(COS_INF_CORE_SRCS) \
+		src/inference/sigma_speculative.c src/inference/sigma_quantize.c
+	$(CC) -O2 -Wall -std=c11 -Isrc/inference -o speculative_quant_bench \
+	    bench/speculative_quant_bench.c $(COS_INF_CORE_SRCS) \
+	    src/inference/sigma_speculative.c src/inference/sigma_quantize.c \
+	    $(LDFLAGS)
+
+check-v128: inference_bench cos
+	./inference_bench --self-test
+	./cos inference --bench -n 32
+
+check-v129-sigma-kv: cache_bench cos-cache cos
+	./cache_bench --self-test
+	./cos-cache --stats
+	./cos cache --semantic --stats
+
+cache_bench: bench/cache_bench.c $(COS_KV_V129_SRCS)
+	$(CC) -O2 -Wall -std=c11 -Isrc/inference -o cache_bench bench/cache_bench.c $(COS_KV_V129_SRCS) $(LDFLAGS)
 
 bench-tokenizer-v27: benchmarks/tokenizer_throughput.c $(TOKENIZER_V27_SRCS)
 	$(CC) $(CFLAGS) -I. -o tokenizer_throughput benchmarks/tokenizer_throughput.c $(TOKENIZER_V27_SRCS) $(LDFLAGS)
@@ -11173,6 +11407,11 @@ check-mcp: standalone-mcp test-mcp
 check-mcp-stdio:
 	@bash tests/test_mcp_e2e.sh
 	@echo "check-mcp-stdio: OK (sigma_server.py JSON-RPC envelope)"
+
+# v132: σ-trust + firewall + A2A trust envelope (stdlib; no MCP wheel required).
+check-mcp-v132-trust:
+	@PYTHONPATH="$(CURDIR)/python" python3 -m cos.sigma_mcp_server --self-test
+	@echo "check-mcp-v132-trust: OK (sigma_mcp_server lab self-test)"
 
 all: standalone oracle bench physics test
 	@echo "All targets built successfully."
