@@ -2,8 +2,9 @@
 
 ## Unreleased
 
-- `cos chat` — interactive or `--prompt` σ-gated chat against any OpenAI-compatible base URL; optional Qwen `preserve_thinking` when the model id contains `qwen`; `--endpoint`, `--api-key`, `--no-think`.
-- `POST /v1/chat/completions` on `cos serve` — forward to `CREATION_OS_LLM_BASE_URL` / `CREATION_OS_CHAT_ENDPOINT` (default `http://127.0.0.1:8000/v1`), append `creation_os` object with `sigma` and `verdict` (no `stream=true`).
+- **`cos.chat.SigmaChat`** — one OpenAI client for any OpenAI-compatible `/v1` backend; `send`, `send_stream` (end-of-stream σ), `COS_ENDPOINT` / `COS_MODEL` / `COS_API_KEY` (+ legacy env vars); optional **`[chat]`** extra (`openai>=1.30`).
+- **`cos chat`** — REPL or `--prompt`; `--system`, `--endpoint`, `--model`, `--api-key`, `--no-think`, `--json`; Qwen-class `preserve_thinking` when model id contains `qwen`.
+- **`POST /v1/chat/completions`** on **`cos serve`** — `SigmaChat.complete_from_openai_request` toward `COS_BACKEND` / `CREATION_OS_LLM_BASE_URL` / `COS_ENDPOINT` (default `http://127.0.0.1:8000/v1`); response includes `creation_os` + top-level `sigma` / `verdict`; no `stream=true` on this path.
 - Example **`examples/07_chat_local.py`** — Qwen3.6-style loop with **SigmaGate** scoring.
 - Python: imports without optional extras — `cos.serve` defines a `ConfigDict` stub when FastAPI/Pydantic are absent; `cos.api.serve` exposes `app` only when `[serve]` is installed; `cos.integrations.langchain` and `cos.hide_metric_upstream` import cleanly (use raises `ImportError` with install hint).
 - Python: Ruff-clean `python/cos` + `tests` (import/typing/ambiguous-name fixes).

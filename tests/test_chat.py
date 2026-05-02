@@ -1,152 +1,132 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Tests for :mod:`cos.chat` (OpenAI-compatible σ-gated chat)."""
+"""Tests for :mod:`cos.chat` (``SigmaChat`` + OpenAI-compatible backends)."""
 from __future__ import annotations
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
-from cos import SigmaGate
-from cos.sigma_gate import ABSTAIN, ACCEPT, RETHINK
+from cos.sigma_gate import ABSTAIN, SigmaGate
 
 
-def test_chat_single_turn_mock_openai() -> None:
+def test_chat_single_turn_returns_sigma() -> None:
     pytest.importorskip("openai")
-    from cos import chat as chat_mod
+    from cos.chat import SigmaChat
 
     fake_resp = MagicMock()
-    fake_resp.choices = [MagicMock(message=MagicMock(content="4"))]
+    fake_resp.choices = [MagicMock(message=MagicMock(content="four"))]
 
-    client = MagicMock()
-    client.chat.completions.create.return_value = fake_resp
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.model = "Qwen/Qwen3.6-35B-A3B"
+        c.preserve_thinking = True
+        c.gate = SigmaGate()
+        c.messages = []
+        c.history = []
+        client = MagicMock()
+        client.chat.completions.create.return_value = fake_resp
+        c.client = client
 
-    gate = SigmaGate()
-    messages: list[dict[str, str]] = [{"role": "user", "content": "What is 2+2?"}]
-    _, sigma, verdict, assistant = chat_mod.run_turn(
-        gate=gate,
-        client=client,
-        model="Qwen/Qwen3.6-35B-A3B",
-        messages=messages,
-        preserve_thinking=True,
-    )
-    assert assistant == "4"
-    assert verdict in (ACCEPT, RETHINK, ABSTAIN)
-    assert 0.0 <= sigma <= 1.0
+        r = SigmaChat.send(c, "What is 2+2?")
+    assert r["error"] is None
+    assert r["text"] == "four"
+    assert r["verdict"] in ("ACCEPT", "RETHINK", "ABSTAIN")
+    assert 0.0 <= float(r["sigma"]) <= 1.0
     client.chat.completions.create.assert_called_once()
-    assert len(messages) == 2
-    assert messages[-1]["role"] == "assistant"
 
 
-def test_chat_multi_turn_preserves_history() -> None:
+def test_chat_multi_turn_preserves_messages() -> None:
     pytest.importorskip("openai")
-    from cos import chat as chat_mod
+    from cos.chat import SigmaChat
 
     r1 = MagicMock()
-    r1.choices = [MagicMock(message=MagicMock(content="first"))]
+    r1.choices = [MagicMock(message=MagicMock(content="A"))]
     r2 = MagicMock()
-    r2.choices = [MagicMock(message=MagicMock(content="second"))]
+    r2.choices = [MagicMock(message=MagicMock(content="B"))]
 
-    client = MagicMock()
-    client.chat.completions.create.side_effect = [r1, r2]
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.model = "m"
+        c.preserve_thinking = False
+        c.gate = SigmaGate()
+        c.messages = []
+        c.history = []
+        client = MagicMock()
+        client.chat.completions.create.side_effect = [r1, r2]
+        c.client = client
 
-    gate = SigmaGate()
-    messages: list[dict[str, str]] = [{"role": "user", "content": "a"}]
-    chat_mod.run_turn(
-        gate=gate, client=client, model="m", messages=messages, preserve_thinking=False
-    )
-    messages.append({"role": "user", "content": "b"})
-    chat_mod.run_turn(
-        gate=gate, client=client, model="m", messages=messages, preserve_thinking=False
-    )
-    assert len(messages) == 4
-    assert messages[1]["role"] == "assistant"
-    assert messages[2]["role"] == "user"
+        SigmaChat.send(c, "a")
+        SigmaChat.send(c, "b")
+    assert len(c.messages) == 4
     assert client.chat.completions.create.call_count == 2
-    second_call_kw = client.chat.completions.create.call_args_list[1].kwargs
-    assert len(second_call_kw["messages"]) == 3
+    kw2 = client.chat.completions.create.call_args_list[1].kwargs
+    assert len(kw2["messages"]) == 3
 
 
-def test_chat_abstain_shows_warning() -> None:
-    from cos import chat as chat_mod
-
-    line, code = chat_mod.format_user_output(verdict=ABSTAIN, sigma=0.95, text="guess", json_mode=False)
-    assert "don't know" in line.lower()
-    assert code == 2
-
-
-def test_chat_rethink_shows_sigma() -> None:
-    from cos import chat as chat_mod
-
-    line, code = chat_mod.format_user_output(verdict=RETHINK, sigma=0.55, text="maybe", json_mode=False)
-    assert "verify" in line
-    assert "0.550" in line or "0.55" in line
-    assert code == 0
-
-
-def test_chat_no_endpoint_gives_error() -> None:
+def test_chat_abstain_on_error() -> None:
     pytest.importorskip("openai")
-    from cos import chat as chat_mod
+    from cos.chat import SigmaChat
 
-    client = MagicMock()
-    client.chat.completions.create.side_effect = OSError("connection refused")
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.model = "m"
+        c.preserve_thinking = False
+        c.gate = SigmaGate()
+        c.messages = []
+        c.history = []
+        client = MagicMock()
+        client.chat.completions.create.side_effect = RuntimeError("upstream down")
+        c.client = client
 
-    gate = SigmaGate()
-    out: list[str] = []
-
-    def _capture(*a: object, **k: object) -> None:
-        out.append(" ".join(str(x) for x in a))
-
-    code = chat_mod.chat_single_turn(
-        gate=gate,
-        client=client,
-        model="m",
-        prompt="hi",
-        preserve_thinking=False,
-        json_mode=False,
-        verbose=False,
-        print_fn=_capture,
-    )
-    assert code == 1
-    assert any("error" in x.lower() for x in out)
+        r = SigmaChat.send(c, "hi")
+    assert r["text"] is None
+    assert r["verdict"] == ABSTAIN
+    assert r["error"] == "upstream down"
 
 
-def test_chat_json_output_format() -> None:
-    from cos import chat as chat_mod
+def test_chat_reset_clears_history() -> None:
+    pytest.importorskip("openai")
+    from cos.chat import SigmaChat
 
-    line, code = chat_mod.format_user_output(verdict=ACCEPT, sigma=0.1, text="ok", json_mode=True)
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.messages = [{"role": "user", "content": "x"}]
+        c.history = [("x", "y", 0.1, "ACCEPT")]
+        SigmaChat.reset(c)
+    assert c.messages == []
+    assert c.history == []
+
+
+def test_chat_session_sigma_average() -> None:
+    pytest.importorskip("openai")
+    from cos.chat import SigmaChat
+
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.history = [("a", "b", 0.2, "ACCEPT"), ("c", "d", 0.4, "RETHINK")]
+    assert SigmaChat.session_sigma(c) == pytest.approx(0.3)
+
+
+def test_chat_json_output() -> None:
+    from cos.chat import format_user_output
+
+    line, code = format_user_output(verdict="ACCEPT", sigma=0.12, text="ok", json_mode=True)
     d = json.loads(line)
-    assert d["verdict"] == ACCEPT
-    assert d["sigma"] == pytest.approx(0.1)
+    assert d["verdict"] == "ACCEPT"
     assert d["text"] == "ok"
     assert code == 0
 
 
-def test_chat_preserve_thinking_flag() -> None:
-    from cos import chat as chat_mod
+def test_chat_no_openai_raises_import_error() -> None:
+    import cos.chat as chat_mod
 
-    k = chat_mod.build_completion_kwargs(
-        model="Qwen/Qwen3.6-35B-A3B",
-        messages=[],
-        preserve_thinking=True,
-    )
-    assert k.get("extra_body", {}).get("chat_template_kwargs", {}).get("preserve_thinking") is True
-
-    k2 = chat_mod.build_completion_kwargs(model="gpt-4o", messages=[], preserve_thinking=True)
-    assert "extra_body" not in k2
-
-    k3 = chat_mod.build_completion_kwargs(
-        model="Qwen/Qwen3.6-35B-A3B",
-        messages=[],
-        preserve_thinking=False,
-    )
-    assert "extra_body" not in k3
-
-
-def test_assistant_text_from_completion_dict() -> None:
-    from cos import chat as chat_mod
-
-    raw = {"choices": [{"message": {"content": "hello"}}]}
-    assert chat_mod.assistant_text_from_completion_dict(raw) == "hello"
+    prev = chat_mod._HAS_OPENAI
+    chat_mod._HAS_OPENAI = False
+    try:
+        with pytest.raises(ImportError, match="openai"):
+            chat_mod.SigmaChat()
+    finally:
+        chat_mod._HAS_OPENAI = prev

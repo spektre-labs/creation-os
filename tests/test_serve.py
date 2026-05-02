@@ -4,7 +4,7 @@
 """HTTP tests for :mod:`cos.serve` (FastAPI). Requires ``creation-os[serve]``."""
 from __future__ import annotations
 
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -146,31 +146,27 @@ def test_metrics_prometheus(client: TestClient) -> None:
     assert "cos_" in r.text
 
 
-class _FakeAsyncClient:
-    """Minimal async HTTP client for patching ``httpx.AsyncClient``."""
-
-    def __init__(self, *a: object, **k: object) -> None:
-        pass
-
-    async def __aenter__(self) -> _FakeAsyncClient:
-        return self
-
-    async def __aexit__(self, *a: object) -> None:
-        return None
-
-    async def post(self, url: str, json: object = None, headers: object = None) -> object:
-        class _Resp:
-            status_code = 200
-            headers = {"content-type": "application/json"}
-
-            def json(self) -> dict[str, object]:
-                return {"choices": [{"message": {"content": "assistant hello"}}]}
-
-        return _Resp()
-
-
 def test_v1_chat_completions_proxies(client: TestClient) -> None:
-    with patch("cos.serve.httpx.AsyncClient", _FakeAsyncClient):
+    fake: dict[str, object] = {
+        "id": "chatcmpl-cos-test",
+        "object": "chat.completion",
+        "model": "m",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "assistant hello"},
+                "finish_reason": "stop",
+            }
+        ],
+        "sigma": 0.2,
+        "verdict": "ACCEPT",
+        "creation_os": {"sigma": 0.2, "verdict": "ACCEPT"},
+        "error": None,
+    }
+    with patch("cos.chat.SigmaChat") as sc:
+        inst = MagicMock()
+        sc.return_value = inst
+        inst.complete_from_openai_request.return_value = fake
         r = client.post(
             "/v1/chat/completions",
             json={"model": "m", "messages": [{"role": "user", "content": "hi"}], "stream": False},
@@ -178,13 +174,21 @@ def test_v1_chat_completions_proxies(client: TestClient) -> None:
     assert r.status_code == 200
     data = r.json()
     assert data["choices"][0]["message"]["content"] == "assistant hello"
-    assert "creation_os" in data
     assert data["creation_os"]["verdict"] in ("ACCEPT", "RETHINK", "ABSTAIN")
 
 
 def test_v1_chat_completions_stream_rejected(client: TestClient) -> None:
-    r = client.post(
-        "/v1/chat/completions",
-        json={"model": "m", "messages": [], "stream": True},
-    )
+    with patch("cos.chat.SigmaChat") as sc:
+        inst = MagicMock()
+        sc.return_value = inst
+        inst.complete_from_openai_request.return_value = {
+            "error": "stream=true not supported in SigmaChat.complete_from_openai_request",
+            "text": None,
+            "sigma": 1.0,
+            "verdict": "ABSTAIN",
+        }
+        r = client.post(
+            "/v1/chat/completions",
+            json={"model": "m", "messages": [{"role": "user", "content": "x"}], "stream": True},
+        )
     assert r.status_code == 400

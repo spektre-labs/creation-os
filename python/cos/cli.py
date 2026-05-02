@@ -2972,6 +2972,14 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="disable Qwen preserve_thinking chat_template hint",
     )
     chatp.add_argument(
+        "--system",
+        type=str,
+        default="",
+        dest="chat_system",
+        metavar="TEXT",
+        help="optional system message (first turn only)",
+    )
+    chatp.add_argument(
         "--offline",
         action="store_true",
         dest="chat_offline",

@@ -1,38 +1,30 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
-"""Local Qwen3.6 + σ-gate chat example.
+"""Local Qwen3.6 + σ-gate chat.
 
-Prerequisites:
-  1. Run local OpenAI-compatible server (vLLM, SGLang, or e.g. llama.cpp
-     ``llama-server``) exposing ``/v1/chat/completions``.
-  2. ``pip install 'creation-os[openai]'``
-  3. ``PYTHONPATH=python python examples/07_chat_local.py``
+Start model first (example — adjust for your stack)::
 
-Adjust ``base_url`` and ``model`` to match your deployment.
+    llama-server -hf unsloth/Qwen3.6-35B-A3B-GGUF:UD-Q4_K_XL --port 8001 \\
+      --chat-template-kwargs '{"preserve_thinking":true}'
+
+Then::
+
+    pip install 'creation-os[openai]'
+    PYTHONPATH=python python examples/07_chat_local.py
 """
 from __future__ import annotations
 
-from openai import OpenAI
+from cos.chat import SigmaChat
 
-from cos import SigmaGate
-
-client = OpenAI(base_url="http://localhost:8001/v1", api_key="local")
-gate = SigmaGate()
-
-messages: list[dict[str, str]] = []
-print("Creation OS + Qwen3.6 (type 'quit' to exit)")
+chat = SigmaChat(endpoint="http://localhost:8001/v1")
+print("Qwen3.6 + σ-gate (quit to exit)\n")
 while True:
-    user = input("\n> ")
+    user = input("> ")
     if user.strip().lower() in ("quit", "exit"):
         break
-    messages.append({"role": "user", "content": user})
-    resp = client.chat.completions.create(
-        model="Qwen3.6-35B-A3B",
-        messages=messages,
-        extra_body={"chat_template_kwargs": {"preserve_thinking": True}},
-    )
-    text = resp.choices[0].message.content or ""
-    sigma, verdict = gate.score(user, text)
-    messages.append({"role": "assistant", "content": text})
-    print(f"\n[σ={sigma:.3f} {verdict}]")
-    print(text)
+    result = chat.send(user)
+    if result["error"]:
+        print(f"Error: {result['error']}")
+        continue
+    print(f"[σ={result['sigma']:.3f} {result['verdict']}]")
+    print(result["text"])
