@@ -172,6 +172,7 @@ typedef struct {
     int   n_task_chosen_ok;
     int   n_distinct_chosen;
 
+    int   passing;           /* sum of weighted checks; == denominator when closed */
     float sigma_deltanet;
 
     bool     chain_valid;
