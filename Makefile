@@ -315,10 +315,24 @@ check: standalone test check-text-similarity check-c2pa check-c2pa-stamp \
 	check-bitnet-native
 	@echo "check: OK (standalone + test + text_similarity + c2pa_sigma + stamp/validate + bitnet_native)"
 
+# σ-MoE (Python lab router; depends only on cos.sigma_gate).
+.PHONY: check-cos-moe
+check-cos-moe:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest "$(CURDIR)/tests/test_moe.py" -q && \
+		echo "check-cos-moe: OK"; \
+	elif python3 -c "import pytest" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest "$(CURDIR)/tests/test_moe.py" -q && \
+		echo "check-cos-moe: OK"; \
+	else \
+		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
+	fi
+
 # Portable kernel test + all standalone --self-test matrices (184 @ v26; +70 @ v27; +29 @ v28; +22 @ v29). CI and publish script use this.
 merge-gate:
 	@$(MAKE) check
 	@$(MAKE) check-mcp-stdio
+	@$(MAKE) check-cos-moe
 	@$(MAKE) check-v6
 	@$(MAKE) check-v7
 	@$(MAKE) check-v9
