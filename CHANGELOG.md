@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Python: imports without optional extras — `cos.serve` defines a `ConfigDict` stub when FastAPI/Pydantic are absent; `cos.api.serve` exposes `app` only when `[serve]` is installed; `cos.integrations.langchain` and `cos.hide_metric_upstream` import cleanly (use raises `ImportError` with install hint).
 - Python: Ruff-clean `python/cos` + `tests` (import/typing/ambiguous-name fixes).
 - Packaging: `pyproject.toml` documents **`[serve]`** optional extra (same deps as **`[mcp]`** for σ HTTP/MCP paths) and adds **`[tool.ruff]`** defaults.
 - Community: **`CODE_OF_CONDUCT.md`** (Contributor Covenant 2.1) and **`.github/FUNDING.yml`**.

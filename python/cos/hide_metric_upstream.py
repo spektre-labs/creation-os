@@ -21,8 +21,15 @@ import os
 from typing import Any, List, Sequence, Tuple
 
 import torch
-from keybert import KeyBERT
 from sklearn.feature_extraction.text import CountVectorizer
+
+try:
+    from keybert import KeyBERT
+
+    _HAS_KEYBERT = True
+except ImportError:  # pragma: no cover
+    _HAS_KEYBERT = False
+    KeyBERT = None  # type: ignore[misc, assignment]
 
 
 def rbf_kernel(X: torch.Tensor, Y: torch.Tensor | None = None, gamma: float = 1e-7) -> torch.Tensor:
@@ -67,6 +74,10 @@ def extract_keyword_representation(
     k: int = 20,
 ) -> Tuple[torch.Tensor, torch.Tensor, list, list, list, list]:
     """Keyword-based token selection (upstream ``func/metric.py``)."""
+    if not _HAS_KEYBERT or KeyBERT is None:
+        raise ImportError(
+            "keybert not installed. Run: pip install keybert"
+        )
     keybert_model = os.environ.get(
         "HIDE_KEYBERT_MODEL",
         "sentence-transformers/all-MiniLM-L6-v2",

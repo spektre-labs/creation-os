@@ -26,10 +26,12 @@ from cos.exceptions import SigmaAbstainError
 try:
     from langchain_core.callbacks import BaseCallbackHandler
     from langchain_core.outputs import LLMResult
-except ImportError as e:  # pragma: no cover
-    raise ImportError(
-        "LangChain not installed. Run: pip install 'creation-os[langchain]'"
-    ) from e
+
+    _HAS_LANGCHAIN = True
+except ImportError:  # pragma: no cover
+    _HAS_LANGCHAIN = False
+    BaseCallbackHandler = object  # type: ignore[misc, assignment]
+    LLMResult = Any  # type: ignore[misc, assignment]
 
 
 def _prompts_to_str(prompts: Any) -> List[str]:
@@ -66,6 +68,10 @@ class SigmaGateCallback(BaseCallbackHandler):
         threshold_accept: float = 0.3,
         threshold_abstain: float = 0.8,
     ) -> None:
+        if not _HAS_LANGCHAIN:
+            raise ImportError(
+                "LangChain not installed. Run: pip install 'creation-os[langchain]'"
+            )
         super().__init__()
         self.gate = gate or SigmaGate(
             threshold_accept=threshold_accept,
