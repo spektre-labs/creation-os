@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Local dev: minimal FastAPI σ-gate on :8420
+#   docker compose -f docker-compose.fastapi-serve.yml up --build
+#
+# For the full C ``cos-serve`` + Ollama stack, use docker-compose.yml instead.
+
+services:
+  cos:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi-serve
+    ports:
+      - "8420:8420"
+    environment:
+      COS_LOG_LEVEL: info
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8420/health', timeout=3)",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped

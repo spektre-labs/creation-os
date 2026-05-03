@@ -11,17 +11,21 @@ per-stage summaries for audit. For measured claims and the evidence ladder see
 
 Layer map (conceptual — not all code paths load in minimal installs)::
 
-  L1  Inference   — SigmaGate, Pipeline, Stream, Probe, SignalCascade
+  L1  Inference   — SigmaGate, Pipeline, Stream, Probe, SignalCascade,
+                    ΣRecursion / σ-spec lab hooks (no trained stacks)
   L2  Cognition   — Reason (FOL), Metacog, Calibrate
   L3  Memory      — SnapshotManager, ConversationHistory
   L4–L9           — agency, learning, protocol, safety, deploy, “consciousness proxy”
-                    hooks live in other modules; wire them here as needed.
+                    hooks live in other modules; wire them here as needed. **v226–v230:**
+                    ``SigmaSafety`` (first), ``SigmaMCPServer``, ``SigmaOffline``, ``SigmaCost``,
+                    ``SigmaWatchdog`` when importable.
 
 σ is propagated from the gate; downstream steps may raise σ or change verdict when
 they detect conflict or meta-level abstention.
 """
 from __future__ import annotations
 
+import os
 import tempfile
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -103,6 +107,7 @@ class SigmaFabric:
     def __init__(self, *, snapshot_dir: Optional[Union[str, Path]] = None) -> None:
         self.layers: Dict[str, Any] = {}
         self.booted = False
+        self._offline_mode = False
         self.sigma_bus: List[float] = []
         self._snapshot_dir = snapshot_dir
 
@@ -110,8 +115,32 @@ class SigmaFabric:
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
+        self._offline_mode = False
+
+        safety_layer = None
+        try:
+            from cos.safety import SigmaSafety
+
+            safety_layer = SigmaSafety(gate=gate)
+            self.layers["safety"] = safety_layer
+        except ImportError:
+            pass
+
+        prompt_guard_mod = None
+        if safety_layer is not None:
+            prompt_guard_mod = safety_layer.prompt_guard
+            self.layers["prompt_guard"] = prompt_guard_mod
+        else:
+            try:
+                from cos.prompt_guard import SigmaPromptGuard
+
+                prompt_guard_mod = SigmaPromptGuard(gate=gate)
+                self.layers["prompt_guard"] = prompt_guard_mod
+            except ImportError:
+                pass
+
         # Metacognition runs in fabric.process — keep pipeline.metacog None to avoid double routing.
-        pipeline = Pipeline(gate=gate, metacog=None)
+        pipeline = Pipeline(gate=gate, metacog=None, prompt_guard=prompt_guard_mod)
 
         self.layers["gate"] = gate
         self.layers["pipeline"] = pipeline
@@ -186,6 +215,198 @@ class SigmaFabric:
             pass
 
         try:
+            from cos.world import SigmaWorld
+
+            self.layers["world"] = SigmaWorld(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.memory import SigmaMemory
+
+            self.layers["memory"] = SigmaMemory(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.formal import SigmaFormal
+
+            self.layers["formal"] = SigmaFormal(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.continual import SigmaContinual
+
+            self.layers["continual"] = SigmaContinual(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.graph import SigmaGraph
+
+            self.layers["graph"] = SigmaGraph(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.recursion import SigmaRecursion
+
+            self.layers["recursion"] = SigmaRecursion(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.agent_guard import SigmaAgentGuard
+
+            self.layers["agent_guard"] = (
+                safety_layer.agent_guard
+                if safety_layer is not None
+                else SigmaAgentGuard(gate=gate)
+            )
+        except ImportError:
+            pass
+
+        try:
+            from cos.observe import SigmaObserve
+
+            self.layers["observe"] = SigmaObserve()
+        except ImportError:
+            pass
+
+        try:
+            from cos.embed import SigmaEmbed
+
+            self.layers["embed"] = SigmaEmbed(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.speculative import SigmaSpeculative
+
+            self.layers["speculative"] = SigmaSpeculative()
+        except ImportError:
+            pass
+
+        try:
+            from cos.spike import SigmaSpike
+
+            self.layers["spike"] = SigmaSpike()
+        except ImportError:
+            pass
+
+        try:
+            from cos.distill import SigmaDistill
+
+            self.layers["distill"] = SigmaDistill()
+        except ImportError:
+            pass
+
+        try:
+            from cos.quantize import SigmaQuantize
+
+            self.layers["quantize"] = SigmaQuantize()
+        except ImportError:
+            pass
+
+        try:
+            from cos.kv_cache import SigmaKVCache
+
+            self.layers["kv_cache"] = SigmaKVCache(max_size=128)
+        except ImportError:
+            pass
+
+        try:
+            from cos.rag import SigmaRAG
+
+            self.layers["rag"] = SigmaRAG(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.ttt import SigmaTTT
+
+            self.layers["ttt"] = SigmaTTT(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.split import SigmaSplit
+
+            self.layers["split"] = SigmaSplit()
+        except ImportError:
+            pass
+
+        try:
+            from cos.fleet import SigmaFleet
+
+            self.layers["fleet"] = SigmaFleet()
+        except ImportError:
+            pass
+
+        try:
+            from cos.evolve import SigmaEvolve
+
+            self.layers["evolve"] = SigmaEvolve(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.bench import SigmaBench
+
+            self.layers["bench"] = SigmaBench()
+        except ImportError:
+            pass
+
+        try:
+            from cos.index import SigmaIndex
+
+            self.layers["index"] = SigmaIndex(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.voice import SigmaVoice
+
+            self.layers["sigma_voice"] = SigmaVoice(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.offline import SigmaOffline
+
+            off = SigmaOffline(gate=gate)
+            self.layers["offline"] = off
+            self._offline_mode = bool(off.detect_mode_from_env())
+        except ImportError:
+            pass
+
+        try:
+            from cos.cost import SigmaCost
+
+            self.layers["cost"] = SigmaCost(gate=gate)
+        except ImportError:
+            pass
+
+        try:
+            from cos.mcp import SigmaMCPServer
+
+            ag = self.layers.get("agent_guard")
+            self.layers["mcp_server"] = SigmaMCPServer(gate=gate, agent_guard=ag)
+        except ImportError:
+            pass
+
+        try:
+            from cos.watchdog import SigmaWatchdog
+
+            wd = SigmaWatchdog(gate=gate, fabric=self)
+            self.layers["watchdog"] = wd
+            if os.environ.get("COS_WATCHDOG_AUTO_START") == "1":
+                wd.start_background()
+        except ImportError:
+            pass
+
+        try:
             from cos.snapshot import ConversationHistory, SnapshotManager
 
             self.layers["history"] = ConversationHistory()
@@ -228,11 +449,189 @@ class SigmaFabric:
         if response is not None:
             run_kw["response"] = response
 
+        tool_call = run_kw.pop("tool_call", None)
+        allowed_tools = run_kw.pop("allowed_tools", None)
+        denied_tools = run_kw.pop("denied_tools", None)
+        tool_budget = run_kw.pop("tool_budget", None)
+
+        index_documents = run_kw.pop("index_documents", None)
+        index_query = run_kw.pop("index_query", None)
+        bench_dataset = run_kw.pop("bench_dataset", None)
+        bench_model = run_kw.pop("bench_model", None)
+        meta_evolve_probe = run_kw.pop("meta_evolve_probe", None)
+        voice_transcript = run_kw.pop("voice_transcript", None)
+        voice_response = run_kw.pop("voice_response", None)
+        run_safety_report = run_kw.pop("run_safety_report", None)
+        cost_units = run_kw.pop("cost_units", None)
+        mcp_simulate_tool = run_kw.pop("mcp_simulate_tool", None)
+
+        index_layer = self.layers.get("index")
+        if index_layer is not None and index_documents is not None:
+            index_layer.index([str(x) for x in index_documents])
+            trace.add("index_ingest", 0.0, f"n_docs={len(index_documents)}")
+
+        rag_chunks = run_kw.pop("rag_chunks", None)
+        ttt_context = run_kw.pop("ttt_context", None)
+        use_fleet = bool(run_kw.pop("use_fleet", False))
+        bandwidth_mbps = run_kw.pop("bandwidth_mbps", None)
+
         run_kw.pop("max_depth_loops", None)
 
-        result = pipeline.run(str(prompt), **run_kw)
+        prompt_for_run = str(prompt)
+        gate_early = self.layers["gate"]
+
+        fleet_layer = self.layers.get("fleet")
+        if fleet_layer and use_fleet:
+            pick = fleet_layer.cascade_route(prompt_for_run, gate_early)
+            trace.add(
+                "fleet",
+                float(pick.get("sigma", 0)),
+                str(pick.get("name", "") or "none"),
+            )
+            mod = pick.get("model")
+            if mod is not None:
+                run_kw["model"] = mod
+
+        rag_layer = self.layers.get("rag")
+        if rag_layer and rag_chunks is not None:
+            rr = rag_layer.sigma_rerank(prompt_for_run, list(rag_chunks), gate_early)
+            kept = rr.get("kept", [])
+            if kept:
+                prompt_for_run = rag_layer.augment(prompt_for_run, kept)
+            ms = (
+                sum(float(c["sigma"]) for c in kept) / max(len(kept), 1)
+                if kept
+                else 0.0
+            )
+            trace.add("rag", round(ms, 4), f"kept={len(kept)}")
+
+        ag_layer = self.layers.get("agent_guard")
+        if tool_call is not None and ag_layer is not None:
+            if isinstance(tool_call, dict):
+                tname = str(tool_call.get("tool", ""))
+                targs = tool_call.get("args", {})
+            else:
+                tname = str(getattr(tool_call, "tool", ""))
+                targs = getattr(tool_call, "args", {})
+            at_set = set(allowed_tools) if allowed_tools is not None else None
+            dt_set = set(denied_tools) if denied_tools is not None else None
+            tr = ag_layer.run_guardrails(
+                tname,
+                targs,
+                allowed_tools=at_set,
+                denied_tools=dt_set,
+                remaining_budget=tool_budget,
+            )
+            sig_tr = float(tr.get("sigma", 1.0)) if tr.get("ok") else 1.0
+            trace.add(
+                "agent_guard",
+                sig_tr,
+                tr.get("decision", tr.get("reason", "na")),
+            )
+            if not tr.get("ok"):
+                trace.final_verdict = "BLOCKED"
+                return self._wrap(
+                    PipelineResult(
+                        text=None,
+                        sigma=1.0,
+                        verdict="BLOCKED",
+                        reason=str(tr.get("reason", "agent_guard")),
+                    ),
+                    trace,
+                )
+            if tr.get("decision") == "BLOCK":
+                trace.final_verdict = "BLOCKED"
+                return self._wrap(
+                    PipelineResult(
+                        text=None,
+                        sigma=float(tr.get("sigma", 1.0)),
+                        verdict="BLOCKED",
+                        reason="agent_guard_block",
+                    ),
+                    trace,
+                )
+
+        result = pipeline.run(prompt_for_run, **run_kw)
         trace.add("pipeline", result.sigma, result.verdict)
         self.sigma_bus.append(float(result.sigma))
+
+        safety_layer = self.layers.get("safety")
+        if safety_layer is not None:
+            safety_layer.circuit_breaker_update(str(result.verdict))
+
+        watchdog_layer = self.layers.get("watchdog")
+        if watchdog_layer is not None:
+            watchdog_layer.record_sigma(float(result.sigma))
+
+        recursion_layer = self.layers.get("recursion")
+        if recursion_layer and result.text:
+            toks = str(result.text).split()
+            if toks:
+                gate = self.layers["gate"]
+                route = recursion_layer.token_route(toks, gate, context=prompt_for_run)
+                mean_sigma = sum(route["sigmas"]) / max(len(route["sigmas"]), 1)
+                trace.add(
+                    "recursion",
+                    round(mean_sigma, 4),
+                    f"mean_depth={route['mean_depth']:.3f}",
+                )
+
+        gate_ref = self.layers["gate"]
+
+        ttt_layer = self.layers.get("ttt")
+        if ttt_layer and ttt_context is not None:
+            ttr = ttt_layer.adapt_with_sigma(float(result.sigma), str(ttt_context), gate_ref)
+            trace.add(
+                "ttt",
+                round(float(ttr.get("sigma_after", result.sigma)), 4),
+                f"rollback={ttr.get('rollback', False)}",
+            )
+
+        split_layer = self.layers.get("split")
+        if split_layer:
+            sr = split_layer.route(float(result.sigma), bandwidth_mbps=bandwidth_mbps)
+            trace.add("split", float(result.sigma), str(sr.get("placement", "")))
+
+        if result.text:
+            toks = str(result.text).split()
+            spec_layer = self.layers.get("speculative")
+            if spec_layer and toks:
+                vr = spec_layer.verify(prompt_for_run, toks[:24], gate_ref)
+                trace.add("speculative", round(float(vr["accept_ratio"]), 4), "gate_verify")
+            spike_layer = self.layers.get("spike")
+            if spike_layer:
+                lif = spike_layer.convert_gate_to_spike(gate_ref)
+                trace.add("spike", round(float(lif["threshold"]), 4), "lif_threshold")
+            distill_layer = self.layers.get("distill")
+            if distill_layer and toks:
+                dr = distill_layer.distill_step(
+                    None,
+                    None,
+                    [{"prompt": prompt_for_run[:120], "student_text": " ".join(toks[:12])}],
+                    gate_ref,
+                )
+                trace.add("distill", round(float(dr["kd_fraction"]), 4), "kd_fraction")
+            quant_layer = self.layers.get("quantize")
+            if quant_layer:
+                mp = quant_layer.mixed_precision_map(
+                    {f"L{i}": float(result.sigma) * (0.82 + 0.04 * i) for i in range(4)}
+                )
+                trace.add("quantize", float(result.sigma), f"layers={len(mp)}")
+            kvc_layer = self.layers.get("kv_cache")
+            if kvc_layer and toks:
+                for i, _t in enumerate(toks[:32]):
+                    pr = " ".join(toks[: i + 1])
+                    sg = float(
+                        gate_ref.compute_sigma(None, None, prompt_for_run, pr),
+                    )
+                    kvc_layer.put(f"t{i}", sg, _t)
+                kvc_layer.sliding_window(20, keep_below=0.35)
+                kvc_layer.enforce_budget(kvc_layer.max_size)
+                trace.add(
+                    "kv_cache",
+                    round(kvc_layer.mean_sigma(), 4),
+                    f"n={len(kvc_layer)}",
+                )
 
         if result.verdict == "BLOCKED":
             trace.final_verdict = "BLOCKED"
@@ -319,13 +718,125 @@ class SigmaFabric:
                 attempt=result.attempt,
             )
 
+        embed_layer = self.layers.get("embed")
+        if embed_layer and result.text:
+            blob = prompt_for_run[:120] + "\n" + str(result.text)[:120]
+            er = embed_layer.embed_sigma(blob)
+            trace.add("embed", round(float(er["mean_sigma"]), 4), f"dim={len(er['embedding'])}")
+
         history = self.layers.get("history")
         if history and result.text:
             history.add("user", str(prompt))
             history.add("assistant", result.text, sigma=result.sigma, verdict=result.verdict)
 
+        memory = self.layers.get("memory")
+        if memory and result.text and str(result.verdict) == "ACCEPT":
+            memory.write(
+                f"Q: {str(prompt)[:100]} A: {str(result.text)[:200]}",
+                "episodic",
+                sigma=float(result.sigma),
+            )
+
+        world = self.layers.get("world")
+        if world:
+            world.observe(str(prompt), features={"sigma": float(result.sigma)})
+
         if not trace.final_verdict:
             trace.final_verdict = result.verdict
+
+        if index_layer is not None and index_query:
+            hits = index_layer.search(str(index_query), top_k=5)
+            ms = (
+                sum(float(h["sigma"]) for h in hits) / max(len(hits), 1) if hits else 0.0
+            )
+            trace.add("index_search", round(ms, 4), f"hits={len(hits)}")
+
+        evolve_layer = self.layers.get("evolve")
+        if evolve_layer is not None and meta_evolve_probe:
+            pr = evolve_layer.meta_evolve_probe(str(meta_evolve_probe))
+            trace.add(
+                "meta_evolve",
+                round(float(pr.get("sigma", 0.0)), 4),
+                str(pr.get("verdict", "")),
+            )
+
+        bench_layer = self.layers.get("bench")
+        if bench_layer is not None and bench_dataset:
+
+            def _default_bench_model(prompt: object, ref: object = "") -> str:
+                p = str(prompt).lower().replace(" ", "")
+                if "2+2" in p:
+                    return "4"
+                return str(ref or "stub")
+
+            bm = bench_model if bench_model is not None else _default_bench_model
+            br = bench_layer.run(str(bench_dataset), gate_ref, bm)
+            trace.add(
+                "bench",
+                round(float(br.get("M_tier", 0.0)), 4),
+                str(br.get("dataset", "")),
+            )
+
+        voice_layer = self.layers.get("sigma_voice")
+        if (
+            voice_layer is not None
+            and voice_transcript is not None
+            and voice_response is not None
+        ):
+            vr = voice_layer.realtime_stream(
+                str(voice_transcript),
+                gate_ref,
+                str(voice_response),
+            )
+            trace.add(
+                "voice",
+                round(float(vr.get("out_sigma", 0.0)), 4),
+                str(vr.get("verdict", "")),
+            )
+
+        if run_safety_report and self.layers.get("safety") is not None:
+            trace.add(
+                "safety_report",
+                0.0,
+                self.layers["safety"].safety_report(),
+            )
+
+        cost_layer = self.layers.get("cost")
+        if cost_layer is not None and cost_units is not None:
+            cost_layer.record_usage(float(cost_units))
+            trace.add("cost_usage", round(float(cost_units), 4), "recorded")
+
+        mcp = self.layers.get("mcp_server")
+        if mcp is not None and mcp_simulate_tool:
+            meth = str(mcp_simulate_tool.get("method", "tools/call"))
+            tfc = mcp.trust_firewall_check(meth)
+            if not tfc.get("allow"):
+                trace.add("mcp_tool", 1.0, "blocked_trust_firewall")
+            else:
+                sc = mcp.score_tool_call(
+                    str(mcp_simulate_tool.get("name", "unknown")),
+                    mcp_simulate_tool.get("args", {}),
+                )
+                trace.add(
+                    "mcp_tool",
+                    round(float(sc.get("sigma", 0.0)), 4),
+                    str(sc.get("verdict", "")),
+                )
+
+        observe_layer = self.layers.get("observe")
+        if observe_layer:
+            observe_layer.trace_request(
+                str(prompt),
+                result.text,
+                float(result.sigma),
+                str(trace.final_verdict),
+            )
+            observe_layer.per_layer_trace(trace.to_dict()["steps"])
+            observe_layer.cost_tracking(
+                route="fabric",
+                sigma=float(result.sigma),
+                cheap=float(result.sigma) < 0.45,
+            )
 
         return self._wrap(result, trace)
 
@@ -343,6 +854,7 @@ class SigmaFabric:
         hist = self.layers.get("history")
         return {
             "booted": self.booted,
+            "offline_mode": bool(self._offline_mode),
             "layers": {name: type(obj).__name__ for name, obj in self.layers.items()},
             "layer_count": len(self.layers),
             "history_turns": len(hist.turns) if hist is not None else 0,

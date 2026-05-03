@@ -5,36 +5,70 @@
 # Commercial:    spektre.labs@proton.me
 # License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
 """
-sigma-gate v4: contrastive hidden-state hallucination detector (LSD probe).
+σ-gate: default **zero-dependency** entropy scorer, or full **LSD probe** when a bundle path
+is passed.
 
-Training reference: 5-fold CV AUROC 0.9428 on TruthfulQA-style pairs (see
-``benchmarks/sigma_gate_lsd/results_full/manifest.json``). Scoring uses one
-forward pass through the probe's frozen causal LM (weights in the pickle
-manifest), then trajectory features + logistic head.
+**Lite mode** (``SigmaGate()``): portable ``pip install creation-os`` — no PyTorch.
 
-The ``model`` and ``tokenizer`` arguments on ``__call__`` / ``compute_sigma`` are
-accepted for API compatibility with other gates; they do not replace the
-probe encoders unless you retrain the probe for that checkpoint.
+**LSD mode** (``SigmaGate("path/to/sigma_gate_lsd.pkl")``): contrastive hidden-state
+hallucination detector; requires ``creation-os[probes]`` and probe assets (see
+``benchmarks/sigma_gate_lsd/`` in a full tree checkout).
 
 Usage::
 
-    export PYTHONPATH=python
     from cos.sigma_gate import SigmaGate
+    sigma, verdict = SigmaGate().score("What is 2+2?", "4")
+
     gate = SigmaGate("benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl")
     sigma, decision = gate(None, None, prompt, response)
-
-Based on LSD (arXiv 2510.04933) contrastive pipeline + Creation OS sigma framing.
 """
 from __future__ import annotations
 
 import importlib.util
+import math
+import os
 import sys
 import warnings
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
+
+ACCEPT = "ACCEPT"
+RETHINK = "RETHINK"
+ABSTAIN = "ABSTAIN"
+
+
+def _entropy_signal(blob: str) -> float:
+    """Character-level entropy on ``blob`` → sigma proxy (lower σ = calmer / more repetitive)."""
+    if not blob:
+        return 1.0
+    freq: dict[str, int] = {}
+    for c in blob.lower():
+        freq[c] = freq.get(c, 0) + 1
+    total = len(blob)
+    entropy = -sum(
+        (count / total) * math.log2(count / total) for count in freq.values() if count > 0
+    )
+    normalized = min(1.0, entropy / 4.7)
+    sigma = 1.0 - normalized
+    return max(0.0, min(1.0, sigma))
+
+
+def _lite_entropy_pair(prompt: str, response: str) -> float:
+    """Include **prompt** so terse factual answers (``4``) inherit context entropy."""
+    if not str(response).strip():
+        return 1.0
+    blob = f"{str(prompt).strip()}\n{str(response).strip()}"
+    return float(_entropy_signal(blob))
 
 
 def _repo_root() -> Path:
+    env = (os.environ.get("CREATION_OS_ROOT") or "").strip()
+    if env:
+        return Path(env).expanduser().resolve()
+    here = Path(__file__).resolve()
+    for base in (Path.cwd().resolve(), *here.parents):
+        if (base / "creation_os_v2.c").is_file():
+            return base
     return Path(__file__).resolve().parents[2]
 
 
@@ -53,25 +87,69 @@ def _load_sigma_gate_lsd_module():
 class SigmaGate:
     """Hallucination-oriented sigma in [0, 1] with ACCEPT / RETHINK / ABSTAIN."""
 
+    ACCEPT = ACCEPT
+    RETHINK = RETHINK
+    ABSTAIN = ABSTAIN
+
     def __init__(
         self,
-        probe_path: str | Path,
+        probe_path: str | Path | None = None,
+        *,
         tau_accept: float = 0.3,
         tau_abstain: float = 0.7,
-    ):
+        threshold_accept: Optional[float] = None,
+        threshold_abstain: Optional[float] = None,
+    ) -> None:
+        ta = float(threshold_accept if threshold_accept is not None else tau_accept)
+        tb = float(threshold_abstain if threshold_abstain is not None else tau_abstain)
+        self._mode: str
+        self._ema: float
+        self._count: int
+        self._inner: Any
+        self._mod: Any
+        self._expected_hf: str
+
+        path = probe_path
+        empty = path is None or (isinstance(path, str) and not str(path).strip())
+
+        if empty:
+            self._mode = "lite"
+            self.tau_accept = ta
+            self.tau_abstain = tb
+            self._ema = 0.5
+            self._count = 0
+            self._inner = None
+            self._mod = None
+            self._expected_hf = ""
+            return
+
+        self._mode = "lsd"
         self._mod = _load_sigma_gate_lsd_module()
-        path = Path(probe_path).expanduser()
-        if not path.is_absolute():
-            path = (_repo_root() / path).resolve()
-        if not path.is_file():
-            raise FileNotFoundError(f"Probe bundle not found: {path}")
-        self._inner = self._mod.SigmaGateLSD.from_pickle_bundle(path)
+        p = Path(path).expanduser()
+        if not p.is_absolute():
+            p = (_repo_root() / p).resolve()
+        if not p.is_file():
+            raise FileNotFoundError(f"Probe bundle not found: {p}")
+        self._inner = self._mod.SigmaGateLSD.from_pickle_bundle(p)
         self.tau_accept = float(tau_accept)
         self.tau_abstain = float(tau_abstain)
         self._expected_hf = (self._inner.manifest.get("hf_model") or "").strip()
+        self._ema = 0.5
+        self._count = 0
+
+    @property
+    def threshold_accept(self) -> float:
+        """Alias of ``tau_accept`` (lite / API compatibility)."""
+        return self.tau_accept
+
+    @property
+    def threshold_abstain(self) -> float:
+        """Alias of ``tau_abstain``."""
+        return self.tau_abstain
 
     def close(self) -> None:
-        self._inner.close()
+        if self._mode == "lsd" and self._inner is not None:
+            self._inner.close()
 
     def __enter__(self) -> SigmaGate:
         return self
@@ -79,8 +157,12 @@ class SigmaGate:
     def __exit__(self, *args: object) -> None:
         self.close()
 
+    @property
+    def avg_sigma(self) -> float:
+        return float(self._ema)
+
     def _warn_model_mismatch(self, model: Any) -> None:
-        if model is None or not self._expected_hf:
+        if self._mode != "lsd" or model is None or not self._expected_hf:
             return
         cfg = getattr(model, "config", None)
         name = getattr(cfg, "_name_or_path", None) or getattr(cfg, "name_or_path", None)
@@ -91,6 +173,17 @@ class SigmaGate:
                 stacklevel=3,
             )
 
+    def _verdict(self, sigma: float) -> str:
+        if sigma < self.tau_accept:
+            return ACCEPT
+        if sigma < self.tau_abstain:
+            return RETHINK
+        return ABSTAIN
+
+    def _lite_update_ema(self, sigma: float) -> None:
+        self._ema = 0.9 * self._ema + 0.1 * sigma
+        self._count += 1
+
     def compute_sigma(
         self,
         model: Any,
@@ -100,7 +193,11 @@ class SigmaGate:
         *,
         reference: Optional[str] = None,
     ) -> float:
-        """Return sigma = P(hallucination) in [0, 1] (1 - P(factual) from sklearn head)."""
+        """Return sigma in ``[0, 1]`` (lite: entropy on ``response``; LSD: probe head)."""
+        if self._mode == "lite":
+            del model, tokenizer, reference
+            return float(_lite_entropy_pair(prompt, response))
+
         self._warn_model_mismatch(model)
         del tokenizer
         sigma, _ = self._inner.score(prompt, response, reference=reference)
@@ -116,14 +213,103 @@ class SigmaGate:
         reference: Optional[str] = None,
     ) -> Tuple[float, str]:
         sigma = self.compute_sigma(model, tokenizer, prompt, response, reference=reference)
+        if self._mode == "lite":
+            self._lite_update_ema(sigma)
+            return float(sigma), self._verdict(sigma)
         if sigma < self.tau_accept:
             return sigma, self._mod.GateString.ACCEPT
         if sigma < self.tau_abstain:
             return sigma, self._mod.GateString.RETHINK
         return sigma, self._mod.GateString.ABSTAIN
 
+    def score(
+        self,
+        prompt: str,
+        response: str,
+        *,
+        reference: Optional[str] = None,
+    ) -> Tuple[float, str]:
+        """Score a pair; LSD mode uses the frozen probe only (no external HF model)."""
+        return self(None, None, prompt, response, reference=reference)
+
+    def score_cascade(
+        self,
+        prompt: str,
+        response: str,
+        hidden_states: Any = None,
+        attention_maps: Any = None,
+    ) -> Dict[str, Any]:
+        """
+        Multi-level cascade dict. **L1** always runs. **L2–L5** use ``hidden_states``.
+        **L6** (sink + spectral) uses ``attention_maps`` when provided. Requires ``cos.cascade``.
+        """
+        levels: Dict[str, Any] = {}
+        levels["L1_entropy"] = float(_lite_entropy_pair(prompt, response))
+        sigma = float(levels["L1_entropy"])
+
+        l2_l5_ok = False
+        if hidden_states is not None:
+            try:
+                from cos.cascade import (  # type: ignore[import-not-found]
+                    cascade_L2,
+                    cascade_L3,
+                    cascade_L4,
+                    cascade_L5,
+                )
+
+                levels["L2_hide"] = float(cascade_L2(hidden_states))
+                levels["L3_icr"] = float(cascade_L3(hidden_states))
+                levels["L4_lsd"] = float(cascade_L4(hidden_states))
+                levels["L5_sae"] = float(cascade_L5(hidden_states))
+                l2_l5_ok = True
+            except ImportError:
+                pass
+
+        if attention_maps is not None:
+            try:
+                from cos.cascade import cascade_L6  # type: ignore[import-not-found]
+
+                levels["L6_sink"] = float(cascade_L6(attention_maps, hidden_states))
+            except ImportError:
+                pass
+
+        if not (sigma < 0.1 or sigma > 0.9):
+            has_l6 = "L6_sink" in levels
+            if l2_l5_ok and has_l6:
+                sigma = (
+                    0.24 * levels["L1_entropy"]
+                    + 0.22 * levels["L2_hide"]
+                    + 0.17 * levels["L3_icr"]
+                    + 0.12 * levels["L4_lsd"]
+                    + 0.06 * levels["L5_sae"]
+                    + 0.19 * levels["L6_sink"]
+                )
+            elif l2_l5_ok:
+                sigma = (
+                    0.3 * levels["L1_entropy"]
+                    + 0.3 * levels["L2_hide"]
+                    + 0.2 * levels["L3_icr"]
+                    + 0.15 * levels["L4_lsd"]
+                    + 0.05 * levels["L5_sae"]
+                )
+            elif has_l6:
+                sigma = 0.65 * levels["L1_entropy"] + 0.35 * levels["L6_sink"]
+
+        if self._mode == "lsd" and hidden_states is None:
+            ps, _ = self._inner.score(prompt, response, reference=None)
+            sigma = float(ps)
+            levels["LSD_probe"] = float(ps)
+
+        if self._mode == "lite":
+            self._lite_update_ema(float(sigma))
+
+        verdict = self._verdict(float(sigma))
+        return {"sigma": float(sigma), "verdict": verdict, "levels": levels}
+
     def pack_measurement(self, sigma: float, decision: str, *, tau: Optional[float] = None) -> bytes:
-        """12-byte wire blob (see ``SigmaGateLSD.pack_cos_sigma_measurement``)."""
+        """12-byte wire blob (LSD probe only)."""
+        if self._mode != "lsd" or self._inner is None:
+            raise NotImplementedError("pack_measurement requires SigmaGate(probe_path=...) LSD bundle")
         return self._inner.pack_cos_sigma_measurement(sigma, decision, tau=tau)
 
     @property

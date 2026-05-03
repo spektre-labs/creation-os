@@ -11,7 +11,7 @@ from tests.constants import HALLUCINATION_CASES
 
 
 def test_package_version() -> None:
-    assert __version__ == "0.1.0"
+    assert __version__ == "1.0.0"
 
 
 def test_gate_returns_tuple(gate) -> None:

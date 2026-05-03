@@ -398,12 +398,13 @@ static void tool_cos_health(cos_mcp2_state_t *st, FILE *out) {
             "\"version\":\"%s\",\"codename\":\"%s\","
             "\"mode\":\"HYBRID\","
             "\"proofs_lean\":\"%d/%d\","
-            "\"proofs_frama_c\":\"15/15\","
+            "\"proofs_frama_c\":\"%d/%d\","
             "\"engram_count\":%u,"
             "\"conformal\":{\"loaded\":%s,\"tau\":%.6f,"
                            "\"alpha\":%.6f,\"domain\":",
             COS_VERSION_STRING, COS_CODENAME,
             COS_FORMAL_PROOFS, COS_FORMAL_PROOFS_TOTAL,
+            COS_FORMAL_FRAMA_ACSL_CLAUSES, COS_FORMAL_FRAMA_ACSL_TOTAL,
             st->engram.count,
             st->conformal_loaded ? "true" : "false",
             (double)st->tau, (double)st->alpha);

@@ -51,7 +51,7 @@ PYTHONPATH="$PYDIR" python3 -m unittest discover -s tests -v 2>&1
 
 echo "[v142] 4/4 pyproject.toml sanity"
 [[ -f "$PYDIR/pyproject.toml" ]] || { echo "[v142] FAIL pyproject.toml missing"; exit 1; }
-grep -q '^name *= *"creation-os"' "$PYDIR/pyproject.toml" \
+grep -q '^name *= *"creation-os-interop-sdk"' "$PYDIR/pyproject.toml" \
     || { echo "[v142] FAIL pyproject.toml name"; exit 1; }
 
 PYVER="$(python3 -c 'import sys; print(sys.version_info[:2] >= (3,11))')"
@@ -59,7 +59,7 @@ if [[ "$PYVER" == "True" ]]; then
   python3 - <<PY
 import tomllib, pathlib
 data = tomllib.loads(pathlib.Path("$PYDIR/pyproject.toml").read_text())
-assert data["project"]["name"] == "creation-os"
+assert data["project"]["name"] == "creation-os-interop-sdk"
 assert "langchain" in data["project"]["optional-dependencies"]
 assert "llamaindex" in data["project"]["optional-dependencies"]
 assert "openai" in data["project"]["optional-dependencies"]

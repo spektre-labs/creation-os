@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Creation OS — production σ-gate HTTP server (`cos-serve`) + Python `cos` CLI shim.
+# Multi-stage build: compile `cos-serve` from source + `pip install` the repo; runtime is non-root.
+# Target image size is typically ~150–220MB (slim + curl + SQLite/libcurl); not distroless (needs shell tooling for ops).
+#
+# Build:
+#   docker build -f Dockerfile.prod -t creation-os:1.0.0 .
+# Run:
+#   docker run --rm -p 3001:3001 creation-os:1.0.0
+#   curl -fsS http://127.0.0.1:3001/v1/health
+#
+# syntax=docker/dockerfile:1.6
+
+FROM python:3.11-slim AS builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential gcc make pkg-config \
+    libsqlite3-dev libcurl4-openssl-dev ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /build
+COPY . .
+
+ARG MAKEFLAGS=-j2
+RUN make cos cos-serve CC=gcc CFLAGS="-O2 -Wall -std=c11 -D_GNU_SOURCE -pthread" \
+    && ./cos-serve --self-test
+
+RUN pip install --no-cache-dir . \
+    && if [ -x /usr/local/bin/cos ]; then mv /usr/local/bin/cos /usr/local/bin/cos-py; fi \
+    && cp /build/cos /usr/local/bin/cos-kernel
+
+RUN mkdir -p /opt/creation-os/probe \
+    && if [ -f benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl ]; then \
+      cp benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl /opt/creation-os/probe/sigma_gate_lsd.pkl; \
+    elif [ -f benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl ]; then \
+      cp benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl /opt/creation-os/probe/sigma_gate_lsd.pkl; \
+    else \
+      printf '%s\n' "No sigma_gate_lsd.pkl in build context; mount a probe or train one (see benchmarks/sigma_gate_lsd/)." > /opt/creation-os/probe/README.txt; \
+    fi
+
+FROM python:3.11-slim AS production
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates curl libsqlite3-0 libcurl4 \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r -g 1001 cos \
+    && useradd -r -u 1001 -g cos -d /home/cos -s /usr/sbin/nologin cos \
+    && mkdir -p /home/cos
+
+COPY --from=builder /usr/local/lib/python3.11/site-packages/ /usr/local/lib/python3.11/site-packages/
+COPY --from=builder /usr/local/bin/ /usr/local/bin/
+COPY --from=builder /build/cos-serve /usr/local/bin/cos-serve
+RUN ln -sf cos-py /usr/local/bin/cos
+COPY --from=builder /opt/creation-os/probe/ /opt/creation-os/probe/
+
+RUN chown -R cos:cos /home/cos /usr/local/bin /usr/local/lib/python3.11 /opt/creation-os \
+    && chmod 0755 /usr/local/bin/cos-serve
+
+LABEL org.opencontainers.image.title="Creation OS (cos-serve)" \
+      org.opencontainers.image.description="σ-gate HTTP server — Creation OS" \
+      org.opencontainers.image.source="https://github.com/spektre-labs/creation-os" \
+      org.opencontainers.image.licenses="LicenseRef-SCSL-1.0 OR AGPL-3.0-only" \
+      org.opencontainers.image.vendor="Spektre Labs"
+
+ENV HOME=/home/cos \
+    COS_ENV=production \
+    COS_PORT=3001 \
+    COS_PROBE_PATH=/opt/creation-os/probe/sigma_gate_lsd.pkl \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /home/cos
+
+USER cos
+
+EXPOSE 3001
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD sh -c 'curl -fsS "http://127.0.0.1:$${COS_PORT:-3001}/v1/health" || exit 1'
+
+ENTRYPOINT ["/usr/local/bin/cos-serve"]
+CMD ["--bind", "0.0.0.0", "--port", "3001"]

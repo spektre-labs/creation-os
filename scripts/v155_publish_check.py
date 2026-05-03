@@ -13,7 +13,8 @@ publish surface named in `docs/v155/README.md` exists, parses, and
 carries the minimum metadata needed for `make check-v155` to be a
 truthful pre-flight for the real v155.1 upload path:
 
-    PyPI       python/pyproject.toml          project.name = "creation-os"
+    PyPI       pyproject.toml                 project.name = "creation-os" (cos CLI)
+               python/pyproject.toml        project.name = "creation-os-interop-sdk" (COS SDK)
     Homebrew   packaging/brew/creation-os.rb  class CreationOs
     Docker     packaging/docker/Dockerfile.release   FROM + EXPOSE
     Docker-src Dockerfile                     top-level build recipe
@@ -53,13 +54,34 @@ def must_exist(p: Path, code: str) -> bool:
 
 
 def check_pypi() -> None:
+    root_py = ROOT / "pyproject.toml"
+    if not must_exist(root_py, "P0"):
+        return
+    data_root = tomllib.loads(root_py.read_text(encoding="utf-8"))
+    proj_root = data_root.get("project") or {}
+    if proj_root.get("name") != "creation-os":
+        fail("P0a", f"repo root project.name != 'creation-os' (got {proj_root.get('name')!r})")
+    if not proj_root.get("version"):
+        fail("P0b", "repo root project.version missing")
+    scripts = proj_root.get("scripts") or {}
+    if scripts.get("cos") != "cos.cli:main":
+        fail(
+            "P0c",
+            "repo root [project.scripts] must map cos -> cos.cli:main "
+            f"(got {scripts.get('cos')!r})",
+        )
+
     py = ROOT / "python" / "pyproject.toml"
     if not must_exist(py, "P1"):
         return
     data = tomllib.loads(py.read_text(encoding="utf-8"))
     proj = data.get("project") or {}
-    if proj.get("name") != "creation-os":
-        fail("P2", f"project.name != 'creation-os' (got {proj.get('name')!r})")
+    if proj.get("name") != "creation-os-interop-sdk":
+        fail(
+            "P2",
+            "python/pyproject project.name != 'creation-os-interop-sdk' "
+            f"(got {proj.get('name')!r})",
+        )
     if not proj.get("version"):
         fail("P3", "project.version missing")
     init = ROOT / "python" / "creation_os" / "__init__.py"
@@ -167,7 +189,7 @@ def main() -> int:
         for line in FAILURES:
             print(line)
         return 1
-    print("  PyPI       OK  (python/pyproject.toml)")
+    print("  PyPI       OK  (pyproject.toml + python/pyproject.toml)")
     print("  Homebrew   OK  (packaging/brew/creation-os.rb)")
     print("  Docker     OK  (packaging/docker/Dockerfile.release + Dockerfile)")
     print("  HuggingFace OK (3 model cards)")

@@ -21,6 +21,9 @@
  *     cos doctor                 # full repo health rollup (license + verify + hardening + receipts)
  *     cos sigma                  # σ-Shield + Σ-Citadel + Fabric + Cipher + Intellect + Hypercortex + Silicon
  *     cos think --goal "..."      # σ-orchestrated decomposition + pipeline
+ *     cos inference --bench --n 1000  # v128 ternary toy inference (libc-only)
+ *     cos inference --speculative --draft-len 4  # v130 σ-spec (toy draft/target)
+ *     cos quantize --auto --target-sigma 0.15   # v130 per-layer quant plan (lab)
  *     cos search --query "…"     # σ-ranked web retrieval (curl)
  *     cos seal <file> [ctx]      # v63 σ-Cipher: attestation-bound E2E seal
  *     cos unseal <file> [ctx]    # v63 σ-Cipher: verify + open sealed envelope
@@ -77,6 +80,9 @@
 #include "../src/cli/cos_demo.h"
 #include "../src/cli/cos_verify_claims.h"
 #include "../src/cli/cos_voice.h"
+#include "../src/cli/cos_inference_cli.h"
+#include "../src/cli/cos_quantize_cli.h"
+#include "../src/cli/cos_cache_kv.h"
 #include "../src/cli/cos_web.h"
 #include "../src/cli/cos_life.h"
 #include "../src/sigma/learn_engine.h"
@@ -684,8 +690,17 @@ static int prefer_c_or_hint(const char *c_bin, int argc, char **argv)
     return 127;
 }
 
+static int cos_exec_python_cos_subcommand(const char *sub, int argc, char **argv);
+static int chat_wants_python(int argc, char **argv);
+static int health_wants_python(int argc, char **argv);
+static int watchdog_wants_python(int argc, char **argv);
+static int cost_wants_python(int argc, char **argv);
+static int graph_wants_python(int argc, char **argv);
+
 static int cmd_chat(int argc, char **argv)
 {
+    if (chat_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("chat", argc, argv);
     return prefer_c_or_hint("cos-chat", argc, argv);
 }
 
@@ -721,6 +736,57 @@ static int cmd_self_report(int argc, char **argv)
     return 0;
 }
 
+static int
+bench_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--all") == 0)
+            return 1;
+        if (strcmp(argv[i], "--suite") == 0)
+            return 1;
+        if (strcmp(argv[i], "--suites") == 0)
+            return 1;
+        if (strcmp(argv[i], "--n") == 0)
+            return 1;
+        if (strcmp(argv[i], "--n-samples") == 0)
+            return 1;
+        if (strcmp(argv[i], "--compare") == 0)
+            return 1;
+        if (strcmp(argv[i], "--current") == 0)
+            return 1;
+        if (strcmp(argv[i], "--previous") == 0)
+            return 1;
+        if (strcmp(argv[i], "--trajectory") == 0)
+            return 1;
+        if (strcmp(argv[i], "--ci") == 0)
+            return 1;
+        if (strcmp(argv[i], "--mock") == 0)
+            return 1;
+        if (strcmp(argv[i], "--no-mock") == 0)
+            return 1;
+        if (strcmp(argv[i], "--output-dir") == 0)
+            return 1;
+        if (strcmp(argv[i], "--threshold") == 0)
+            return 1;
+        if (strcmp(argv[i], "--metric") == 0)
+            return 1;
+        if (strcmp(argv[i], "--window") == 0)
+            return 1;
+        if (strcmp(argv[i], "--verbose") == 0 || strcmp(argv[i], "-v") == 0)
+            return 1;
+        if (strcmp(argv[i], "--lsd") == 0)
+            return 1;
+        if (strcmp(argv[i], "--lsd-probe") == 0)
+            return 1;
+        if (strcmp(argv[i], "--quiet") == 0)
+            return 1;
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+            return 1;
+    }
+    return 0;
+}
+
 /* --------------------------------------------------------------------
  *  cos benchmark — end-to-end pipeline benchmark over a JSONL fixture
  *                  (or built-in demo), with markdown + JSON output.
@@ -732,19 +798,114 @@ static int cmd_benchmark(int argc, char **argv)
 
 static int cmd_bench(int argc, char **argv)
 {
+    if (bench_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("bench", argc, argv);
     return prefer_c_or_hint("cos-bench", argc, argv);
 }
 
 /* --------------------------------------------------------------------
  *  cos cost — cost-savings driver: how many € did σ-gating save?
  * -------------------------------------------------------------------- */
+static int
+cost_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--report") == 0)
+            return 1;
+        if (strcmp(argv[i], "--breakdown") == 0)
+            return 1;
+        if (strcmp(argv[i], "--budget") == 0)
+            return 1;
+        if (strcmp(argv[i], "--alert") == 0)
+            return 1;
+        if (strcmp(argv[i], "--billing") == 0)
+            return 1;
+        if (strcmp(argv[i], "--route") == 0)
+            return 1;
+        if (strcmp(argv[i], "--user") == 0)
+            return 1;
+        if (strcmp(argv[i], "--period") == 0)
+            return 1;
+        if (strcmp(argv[i], "--prompt") == 0)
+            return 1;
+        if (strcmp(argv[i], "--models") == 0)
+            return 1;
+        if (strcmp(argv[i], "--state") == 0)
+            return 1;
+    }
+    return 0;
+}
+
 static int cmd_cost(int argc, char **argv)
 {
+    if (cost_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("cost", argc, argv);
     return prefer_c_or_hint("cos-cost", argc, argv);
+}
+
+static int cmd_moe(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("moe", argc, argv);
+}
+
+static int cmd_guard(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("guard", argc, argv);
+}
+
+static int cmd_ttt(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("ttt", argc, argv);
+}
+
+static int cmd_jepa(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("jepa", argc, argv);
+}
+
+static int cmd_zkp(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("zkp", argc, argv);
+}
+
+static int cmd_attention(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("attention", argc, argv);
+}
+
+static int cmd_bitnet(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("bitnet", argc, argv);
+}
+
+static int cmd_silicon(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("silicon", argc, argv);
+}
+
+static int cmd_tiny(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("tiny", argc, argv);
+}
+
+static int cmd_federated(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("federated", argc, argv);
+}
+
+static int cmd_twin(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("twin", argc, argv);
 }
 
 static int cmd_cache(int argc, char **argv)
 {
+    int d = cos_cache_kv_dispatch(argc, argv);
+    if (d == 0)
+        return 0;
+    if (d == 2)
+        return 2;
     return prefer_c_or_hint("cos-cache", argc, argv);
 }
 
@@ -753,8 +914,50 @@ static int cmd_skills(int argc, char **argv)
     return prefer_c_or_hint("cos-skills", argc, argv);
 }
 
+/* σ-graph (v149): Python reference when flags present; else legacy cos-graph sibling. */
+static int
+graph_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--add") == 0)
+            return 1;
+        if (strcmp(argv[i], "--query") == 0)
+            return 1;
+        if (strcmp(argv[i], "--conflicts") == 0)
+            return 1;
+        if (strcmp(argv[i], "--forget") == 0)
+            return 1;
+        if (strcmp(argv[i], "--stats") == 0)
+            return 1;
+        if (strcmp(argv[i], "--hop-from") == 0)
+            return 1;
+        if (strcmp(argv[i], "--hop-to") == 0)
+            return 1;
+        if (strcmp(argv[i], "--hops") == 0)
+            return 1;
+        if (strcmp(argv[i], "--load-json") == 0)
+            return 1;
+        if (strcmp(argv[i], "--export") == 0)
+            return 1;
+        if (strcmp(argv[i], "--viz") == 0)
+            return 1;
+        if (strcmp(argv[i], "--tau") == 0)
+            return 1;
+        if (strcmp(argv[i], "--max-sigma") == 0)
+            return 1;
+        if (strcmp(argv[i], "--help") == 0)
+            return 1;
+        if (strcmp(argv[i], "-h") == 0)
+            return 1;
+    }
+    return 0;
+}
+
 static int cmd_graph(int argc, char **argv)
 {
+    if (graph_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("graph", argc, argv);
     return prefer_c_or_hint("cos-graph", argc, argv);
 }
 
@@ -921,6 +1124,84 @@ static int exec_sibling(const char *bin_name, int argc, char **argv)
     return 126;
 }
 
+/* v135: cos split / cos fleet — delegate to python3 -m cos … (σ edge/cloud lab). */
+static int cos_exec_python_cos_subcommand(const char *sub, int argc, char **argv)
+{
+    char *av[640];
+    int   j = 0;
+    int   i;
+    char  pbuf[8192];
+    char  subbuf[64];
+    const char *pp;
+    pid_t pid;
+
+    if (snprintf(subbuf, sizeof subbuf, "%s", sub) >= (int)sizeof subbuf)
+        return 2;
+    pid = fork();
+    if (pid < 0) {
+        perror("cos");
+        return 126;
+    }
+    if (pid == 0) {
+        av[j++] = "python3";
+        av[j++] = "-m";
+        av[j++] = "cos";
+        av[j++] = subbuf;
+        for (i = 0; i < argc && j < (int)(sizeof av / sizeof av[0]) - 1; ++i)
+            av[j++] = argv[i];
+        av[j] = NULL;
+        pp = getenv("PYTHONPATH");
+        if (pp == NULL || pp[0] == '\0')
+            snprintf(pbuf, sizeof pbuf, "python");
+        else if (strstr(pp, "python") != NULL)
+            snprintf(pbuf, sizeof pbuf, "%s", pp);
+        else
+            snprintf(pbuf, sizeof pbuf, "python:%s", pp);
+        if (setenv("PYTHONPATH", pbuf, 1) != 0) {
+            fprintf(stderr, "cos: setenv PYTHONPATH: %s\n", strerror(errno));
+            _exit(126);
+        }
+        execvp("python3", av);
+        fprintf(stderr, "cos: cannot exec python3: %s\n", strerror(errno));
+        _exit(errno == ENOENT ? 127 : 126);
+    } else {
+        int st = 0;
+        if (waitpid(pid, &st, 0) < 0)
+            return 126;
+        if (WIFEXITED(st))
+            return WEXITSTATUS(st);
+        return 126;
+    }
+}
+
+static int cmd_split(int argc, char **argv) { return cos_exec_python_cos_subcommand("split", argc, argv); }
+static int cmd_fleet(int argc, char **argv) { return cos_exec_python_cos_subcommand("fleet", argc, argv); }
+static int cmd_observe(int argc, char **argv) { return cos_exec_python_cos_subcommand("observe", argc, argv); }
+static int cmd_evolve(int argc, char **argv) { return cos_exec_python_cos_subcommand("evolve", argc, argv); }
+static int cmd_tool_safety(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("tool-safety", argc, argv);
+}
+
+static int cmd_dream_py(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("dream", argc, argv);
+}
+
+static int cmd_ingest_py(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("ingest", argc, argv);
+}
+
+static int cmd_ui_py(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("ui", argc, argv);
+}
+static int cmd_integrations(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("integrations", argc, argv);
+}
+
 static int cmd_agent  (int argc, char **argv) { return exec_sibling("cos-agent",                argc, argv); }
 static int cmd_network(int argc, char **argv) { return exec_sibling("cos-network",              argc, argv); }
 static int cmd_selfplay(int argc, char **argv) { return exec_sibling("creation_os_agi_selfplay", argc, argv); }
@@ -1013,14 +1294,168 @@ static int exec_preferred(const char *short_name,
 static int cmd_mcp     (int argc, char **argv) { return exec_preferred("cos-mcp",      "creation_os_sigma_mcp",      argc, argv); }
 static int cmd_serve(int argc, char **argv) { return cos_serve_main(argc, argv); }
 static int cmd_a2a     (int argc, char **argv) { return exec_preferred("cos-a2a",      "creation_os_sigma_a2a",      argc, argv); }
-static int cmd_team    (int argc, char **argv) { return exec_preferred("cos-team",     "creation_os_sigma_team",     argc, argv); }
-static int cmd_lora    (int argc, char **argv) { return exec_preferred("cos-lora",     "creation_os_sigma_lora",     argc, argv); }
+static int
+team_wants_python(int argc, char **argv)
+{
+    int i;
+    if (argc <= 0)
+        return 1;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--create") == 0)
+            return 1;
+        if (strcmp(argv[i], "--team") == 0)
+            return 1;
+        if (strcmp(argv[i], "--add-member") == 0)
+            return 1;
+        if (strcmp(argv[i], "--role") == 0)
+            return 1;
+        if (strcmp(argv[i], "--user") == 0)
+            return 1;
+        if (strcmp(argv[i], "--prompt") == 0)
+            return 1;
+        if (strcmp(argv[i], "--dashboard") == 0)
+            return 1;
+        if (strcmp(argv[i], "--budget") == 0)
+            return 1;
+        if (strcmp(argv[i], "--audit") == 0)
+            return 1;
+        if (strcmp(argv[i], "--export") == 0)
+            return 1;
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+            return 1;
+    }
+    return 0;
+}
+
+static int
+cmd_team(int argc, char **argv)
+{
+    if (team_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("team", argc, argv);
+    return exec_preferred("cos-team", "creation_os_sigma_team", argc, argv);
+}
+
+static int
+lora_wants_python(int argc, char **argv)
+{
+    int i;
+    if (argc <= 0)
+        return 1;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--register") == 0)
+            return 1;
+        if (strcmp(argv[i], "--list") == 0)
+            return 1;
+        if (strcmp(argv[i], "--name") == 0)
+            return 1;
+        if (strcmp(argv[i], "--path") == 0)
+            return 1;
+        if (strcmp(argv[i], "--domain") == 0)
+            return 1;
+        if (strcmp(argv[i], "--prompt") == 0)
+            return 1;
+        if (strcmp(argv[i], "--train") == 0)
+            return 1;
+        if (strcmp(argv[i], "--merge") == 0)
+            return 1;
+        if (strcmp(argv[i], "--compare") == 0)
+            return 1;
+        if (strcmp(argv[i], "--adapters") == 0)
+            return 1;
+        if (strcmp(argv[i], "--merge-sigma-max") == 0)
+            return 1;
+        if (strcmp(argv[i], "--state") == 0)
+            return 1;
+        if (strcmp(argv[i], "--mock") == 0)
+            return 1;
+        if (strcmp(argv[i], "--synthetic-curve") == 0)
+            return 1;
+        if (strcmp(argv[i], "--sigma-stop") == 0)
+            return 1;
+        if (strcmp(argv[i], "--validation-prompt") == 0)
+            return 1;
+        if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
+            return 1;
+    }
+    return 0;
+}
+
+static int
+cmd_lora(int argc, char **argv)
+{
+    if (lora_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("lora", argc, argv);
+    return exec_preferred("cos-lora", "creation_os_sigma_lora", argc, argv);
+}
+static int
+voice_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--listen-mock") == 0)
+            return 1;
+        if (strcmp(argv[i], "--check") == 0)
+            return 1;
+        if (strcmp(argv[i], "--speak") == 0)
+            return 1;
+        if (strcmp(argv[i], "--audio") == 0)
+            return 1;
+    }
+    return 0;
+}
+
 static int cmd_voice(int argc, char **argv)
 {
+    if (voice_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("voice", argc, argv);
     return cos_voice_main(argc, argv, g_cos_exe0 != NULL ? g_cos_exe0 : "cos");
 }
-static int cmd_offline (int argc, char **argv) { return exec_preferred("cos-offline",  "creation_os_sigma_offline",  argc, argv); }
-static int cmd_watchdog(int argc, char **argv) { return exec_preferred("cos-watchdog", "creation_os_sigma_watchdog", argc, argv); }
+
+/* v143: air-gap verify/enforce/package/deploy — Python reference in ``python/cos/sigma_offline.py``. */
+static int
+cmd_offline(int argc, char **argv)
+{
+    return cos_exec_python_cos_subcommand("offline", argc, argv);
+}
+
+static int
+chat_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--offline") == 0)
+            return 1;
+    }
+    return 0;
+}
+static int
+watchdog_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--start") == 0)
+            return 1;
+        if (strcmp(argv[i], "--stop") == 0)
+            return 1;
+        if (strcmp(argv[i], "--status") == 0)
+            return 1;
+        if (strcmp(argv[i], "--log") == 0)
+            return 1;
+        if (strcmp(argv[i], "--once") == 0)
+            return 1;
+        if (strcmp(argv[i], "--interval") == 0)
+            return 1;
+    }
+    return 0;
+}
+
+static int
+cmd_watchdog(int argc, char **argv)
+{
+    if (watchdog_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("watchdog", argc, argv);
+    return exec_preferred("cos-watchdog", "creation_os_sigma_watchdog", argc, argv);
+}
 
 /* CLOSE-4: `cos index` is a tiny shim that calls the existing
  * index-substrate kernel.  Shipped for discoverability in
@@ -1131,8 +1566,25 @@ static void cmd_health_embedded(void)
     printf("  %s  Model id     %s%s%s\n", ok, C_DIM, m, C_RESET);
 }
 
+static int
+health_wants_python(int argc, char **argv)
+{
+    int i;
+    for (i = 0; i < argc; ++i) {
+        if (strcmp(argv[i], "--runtime") == 0)
+            return 1;
+        if (strcmp(argv[i], "--watch") == 0)
+            return 1;
+        if (strcmp(argv[i], "--interval") == 0)
+            return 1;
+    }
+    return 0;
+}
+
 static int cmd_health(int argc, char **argv)
 {
+    if (health_wants_python(argc, argv))
+        return cos_exec_python_cos_subcommand("health", argc, argv);
     char path[512];
     if (snprintf(path, sizeof path, "./cos-health") > 0 &&
         file_exists(path))
@@ -2827,6 +3279,12 @@ static int cmd_help_topic(const char *topic, const char *prog)
         {"chat",
          "Interactive sigma-gated REPL — needs weights or "
          "COS_BITNET_SERVER_EXTERNAL."},
+        {"inference",
+         "v128+ libc-only ternary toy inference — --bench / --compare / "
+         "--speculative / --model PATH (GGUF parse stub)."},
+        {"quantize",
+         "v130 σ-guided per-layer quant planner — --auto / --compare / "
+         "--target-sigma (synthetic planes; no GGUF write yet)."},
         {"introspect", "Runtime snapshot — ledger, gates, substrate health."},
         {"memory", "Mnemos-style domains + tau snapshot."},
         {"energy", "Session energy receipt — joules, CO2, euro."},
@@ -2838,9 +3296,15 @@ static int cmd_help_topic(const char *topic, const char *prog)
         {"think", "Goal-oriented decomposition + sigma pipeline."},
         {"monitor", "Live telemetry (Ω JSONL — --summary / --csv / --follow)."},
         {"report", "Pilot: stdout summary of ~/.cos/audit/*.jsonl."},
-        {"cache", "Inference cache hits, stats, sizing."},
+        {"cache",
+         "Inference cache (cos-cache). v129 flags: --stats (σ-KV demo), "
+         "--semantic, --prune --threshold, --bench --context (synthetic budget)."},
         {"skills", "Skill library health + reliability."},
         {"graph", "Knowledge-graph introspection."},
+        {"ttt", "σ-TTT v150 inference + v123 lab (test-time adaptation; JSON state)."},
+        {"voice",
+         "v131 σ-gated speech UI: `--dry-run --text … --model echo --tts none` "
+         "runs fully offline; legacy path uses whisper.cpp HTTP + cos-chat."},
     };
 
     if (topic == NULL || !topic[0]) {
@@ -2907,6 +3371,10 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "think", C_RESET);
     printf("  %s%-12s%s  σ-gated chat REPL (reinforce + speculative + generate_until + TTT + engram)\n",
            C_BOLD, "chat", C_RESET);
+    printf("  %s%-12s%s  libc-only ternary toy inference (v128+ — --bench / --speculative / --model)\n",
+           C_BOLD, "inference", C_RESET);
+    printf("  %s%-12s%s  v130 σ-guided quant planner (--auto / --compare; lab planes only)\n",
+           C_BOLD, "quantize", C_RESET);
     printf("  %s%-12s%s  end-to-end pipeline benchmark (accuracy / cost / latency; --energy for ULTRA-7)\n",
            C_BOLD, "benchmark", C_RESET);
     printf("  %s%-12s%s  cost-savings driver (€saved vs always-API); for Joules and gCO₂ use `cos energy`\n",
@@ -2919,6 +3387,8 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "cache", C_RESET);
     printf("  %s%-12s%s  σ-distilled skills DB — list / retire / detail (cos-skills --help)\n",
            C_BOLD, "skills", C_RESET);
+    printf("  %s%-12s%s  σ-TTT v2 + v123 lab: gate-guided test-time adaptation (python3 -m cos ttt --help)\n",
+           C_BOLD, "ttt", C_RESET);
     printf("  %s%-12s%s  runtime σ-knowledge graph — stats / query / contradictions (cos-graph --help)\n",
            C_BOLD, "graph", C_RESET);
     printf("  %s%-12s%s  σ-gated image perception (build `cos-sense` first; cos see --image …)\n",
@@ -2955,7 +3425,8 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "report", C_RESET);
     printf("  %s%-12s%s  σ-guided self-play curriculum (AGI-2; deterministic harness)\n",
            C_BOLD, "selfplay", C_RESET);
-    printf("  %s%-12s%s  T3/T4/T5/T6 evidence ledger (H4: monotonicity + commutativity + encode/decode + latency)\n",
+    printf("  %s%-12s%s  T3/T4/T5/T6 ledger; flags: --lean --check-all, --frama-c --wp-all,"
+           " --summary, --no-sorry\n",
            C_BOLD, "formal", C_RESET);
     printf("  %s%-12s%s  σ-gate arXiv paper — deterministic Markdown generator (H5)\n",
            C_BOLD, "paper", C_RESET);
@@ -2971,9 +3442,18 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "memory", C_RESET);
     printf("  %s%-12s%s  ULTRA-6: σ-guided toy architecture search (--generations)\n",
            C_BOLD, "search", C_RESET);
-    printf("  %s%-12s%s  σ-gated web gap fill (engram + COS_SEARCH_API_URL; "
-           "--once / --report)\n",
+    printf("  %s%-12s%s  σ-gated web gap fill (--once / --report) + v134 continual "
+           "(--data/--anchors → python3 -m cos learn)\n",
            C_BOLD, "learn", C_RESET);
+    printf("  %s%-12s%s  v135 σ-split: local vs cloud routing (python3 -m cos split)\n",
+           C_BOLD, "split", C_RESET);
+    printf("  %s%-12s%s  v135 σ-fleet: device registry + health (python3 -m cos fleet)\n",
+           C_BOLD, "fleet", C_RESET);
+    printf("  %s%-12s%s  v136 σ-observe: JSON dashboard HTTP (--port) or batch traces (python3 -m cos observe)\n",
+           C_BOLD, "observe", C_RESET);
+    printf("  %s%-12s%s  v137 σ-evolve: improvement cards + ∆σ gate (python3 -m cos evolve); "
+           "`evolve --code` stays on C codegen path\n",
+           C_BOLD, "evolve", C_RESET);
     printf("  %s%-12s%s  Web search + optional --verify (COS_SEARCH_API_URL / "
            "COS_SEARCH_ENDPOINT)\n",
            C_BOLD, "web", C_RESET);
@@ -2991,7 +3471,8 @@ static int cmd_help_full(const char *prog)
            C_BOLD, "team",     C_RESET);
     printf("  %s%-12s%s  LoRA/QLoRA adapter stack: load + compose + σ-gate + export\n",
            C_BOLD, "lora",     C_RESET);
-    printf("  %s%-12s%s  Voice: whisper.cpp STT → cos-chat → say (see scripts/real/setup_whisper.sh)\n",
+    printf("  %s%-12s%s  STT + σ + chat: legacy whisper.cpp HTTP path; "
+           "`cos voice --dry-run --text …` → local Python engines (v131)\n",
            C_BOLD, "voice",    C_RESET);
     printf("  %s%-12s%s  Offline corpus ingest + σ-gated retrieval (no network required)\n",
            C_BOLD, "offline",  C_RESET);
@@ -3486,9 +3967,22 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "think")     == 0) return cmd_think(argc - 2, argv + 2);
     if (strcmp(argv[1], "search")   == 0) return cmd_search(argc - 2, argv + 2);
     if (strcmp(argv[1], "chat")      == 0) return cmd_chat(argc - 2, argv + 2);
+    if (strcmp(argv[1], "inference") == 0) return cos_inference_main(argc, argv);
+    if (strcmp(argv[1], "quantize") == 0) return cos_quantize_main(argc, argv);
     if (strcmp(argv[1], "benchmark") == 0) return cmd_benchmark(argc - 2, argv + 2);
     if (strcmp(argv[1], "bench") == 0) return cmd_bench(argc - 2, argv + 2);
     if (strcmp(argv[1], "cost")      == 0) return cmd_cost(argc - 2, argv + 2);
+    if (strcmp(argv[1], "moe")       == 0) return cmd_moe(argc - 2, argv + 2);
+    if (strcmp(argv[1], "guard")     == 0) return cmd_guard(argc - 2, argv + 2);
+    if (strcmp(argv[1], "ttt")       == 0) return cmd_ttt(argc - 2, argv + 2);
+    if (strcmp(argv[1], "jepa")      == 0) return cmd_jepa(argc - 2, argv + 2);
+    if (strcmp(argv[1], "zkp")       == 0) return cmd_zkp(argc - 2, argv + 2);
+    if (strcmp(argv[1], "attention") == 0) return cmd_attention(argc - 2, argv + 2);
+    if (strcmp(argv[1], "bitnet")    == 0) return cmd_bitnet(argc - 2, argv + 2);
+    if (strcmp(argv[1], "silicon")  == 0) return cmd_silicon(argc - 2, argv + 2);
+    if (strcmp(argv[1], "tiny")     == 0) return cmd_tiny(argc - 2, argv + 2);
+    if (strcmp(argv[1], "federated") == 0) return cmd_federated(argc - 2, argv + 2);
+    if (strcmp(argv[1], "twin")      == 0) return cmd_twin(argc - 2, argv + 2);
     if (strcmp(argv[1], "cache")     == 0) return cmd_cache(argc - 2, argv + 2);
     if (strcmp(argv[1], "skills")    == 0) return cmd_skills(argc - 2, argv + 2);
     if (strcmp(argv[1], "graph")     == 0) return cmd_graph(argc - 2, argv + 2);
@@ -3527,6 +4021,8 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "evolve") == 0 && argc >= 3
         && strcmp(argv[2], "--code") == 0)
         return cos_evolve_code_main(argc, argv);
+    if (strcmp(argv[1], "evolve") == 0)
+        return cmd_evolve(argc - 2, argv + 2);
     if (strcmp(argv[1], "self-play") == 0)
         return cmd_self_play_cli(argc - 2, argv + 2);
     if (strcmp(argv[1], "calibrate") == 0) return cmd_calibrate(argc - 2, argv + 2);
@@ -3552,6 +4048,10 @@ int main(int argc, char **argv)
     if (strcmp(argv[1], "search")     == 0) return cmd_ultra_search(argc - 2, argv + 2);
     if (strcmp(argv[1], "web")       == 0) return cmd_web   (argc - 2, argv + 2);
     if (strcmp(argv[1], "learn")      == 0) return cmd_learn(argc - 2, argv + 2);
+    if (strcmp(argv[1], "split")      == 0) return cmd_split(argc - 2, argv + 2);
+    if (strcmp(argv[1], "fleet")      == 0) return cmd_fleet(argc - 2, argv + 2);
+    if (strcmp(argv[1], "observe")    == 0) return cmd_observe(argc - 2, argv + 2);
+    if (strcmp(argv[1], "integrations") == 0) return cmd_integrations(argc - 2, argv + 2);
     if (strcmp(argv[1], "coherence")  == 0) return cmd_coherence(argc - 2, argv + 2);
     if (strcmp(argv[1], "formal")    == 0) return cmd_formal (argc - 2, argv + 2);
     if (strcmp(argv[1], "paper")     == 0) return cmd_paper  (argc - 2, argv + 2);
@@ -3559,6 +4059,10 @@ int main(int argc, char **argv)
         strcmp(argv[1], "meta-status") == 0) return cmd_sigma_meta(argc - 2, argv + 2);
     /* CLOSE-4: long-tail kernels exposed on the front door. */
     if (strcmp(argv[1], "mcp")      == 0) return cmd_mcp     (argc - 2, argv + 2);
+    if (strcmp(argv[1], "tool-safety") == 0) return cmd_tool_safety(argc - 2, argv + 2);
+    if (strcmp(argv[1], "dream")     == 0) return cmd_dream_py (argc - 2, argv + 2);
+    if (strcmp(argv[1], "ingest")    == 0) return cmd_ingest_py(argc - 2, argv + 2);
+    if (strcmp(argv[1], "ui")        == 0) return cmd_ui_py    (argc - 2, argv + 2);
     if (strcmp(argv[1], "serve")    == 0) return cmd_serve   (argc - 2, argv + 2);
     if (strcmp(argv[1], "a2a")      == 0) return cmd_a2a     (argc - 2, argv + 2);
     if (strcmp(argv[1], "team")     == 0) return cmd_team    (argc - 2, argv + 2);

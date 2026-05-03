@@ -8,6 +8,8 @@
 # Build trees
 .build/
 build/
+dist/
+*.egg-info/
 *.o
 *.sig
 *.dSYM/
@@ -90,7 +92,12 @@ __pycache__/
 .pytest_cache/
 .tmp_pytest_*/
 .venv/
+.venv-ci/
 .venv-bitnet/
+.venv-pipcore/
+
+# Local full-tree audits (often huge; not source)
+/FULL_REPO_AUDIT.txt
 
 # macOS Finder "duplicate" files and directories (whole-tree accidents)
 * 2
@@ -111,6 +118,11 @@ polyglot/nim/cos_gate
 web/spektre-diagrams/node_modules/
 web/spektre-diagrams/dist/
 
+# Next.js docs site (v123+; tracked sources; local npm build)
+web/node_modules/
+web/.next/
+web/out/
+
 # Hardware build dirs (Chisel / Rust gate / formal agency)
 hw/chisel/target/
 hw/chisel/project/target/
@@ -124,6 +136,8 @@ hw/formal/agency_ctrl_cover/
 hw/formal/agency_self/
 hw/formal/**/.lake/
 hw/formal/**/lake-manifest.json
+formal/lean/.lake/
+formal/lean/lake-manifest.json
 
 # Yosys / SymbiYosys / Verilator intermediates
 hdl/v37/yosys.log

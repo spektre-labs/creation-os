@@ -7,7 +7,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
 
-from cos.sigma_gate_core import K_CRIT, SigmaState, Verdict
+from cos.sigma_gate_core import K_CRIT, SigmaState
 
 from .state import OmegaContext
 

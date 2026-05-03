@@ -10,11 +10,21 @@ decompose superposed activations; reconstruction error is a **lab prior** for ep
 strain, not a calibrated production hallucination score without harness JSON.
 
 See ``docs/CLAIM_DISCIPLINE.md`` — do not merge SAE toy numbers with harness AUROC headlines.
+
+**SplInterp-style caution:** random or trivial baselines can still yield salient dictionary
+atoms; treat feature attributions as diagnostic priors, not proven causal structure.
+
+**σ-SAE cascade L5 (v165):** :class:`SigmaSAELabTopK` is a CPU **Top-K sparse** encoder/decoder
+lab for ``explain`` / ``steer`` / hallucination correlation — separate from the PyTorch
+:class:`SigmaSAE` adapter used by superposition and fusion paths.
 """
 from __future__ import annotations
 
+import hashlib
+import json
 import math
-from typing import Any, Dict, List, Protocol, Sequence, Tuple, runtime_checkable
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Protocol, Sequence, Tuple, runtime_checkable
 
 try:
     import torch
@@ -224,6 +234,261 @@ class SigmaSAE:
         }
 
 
+@runtime_checkable
+class _SigmaSAELabGateLike(Protocol):
+    """Minimal gate surface for :meth:`SigmaSAELabTopK.find_hallucination_features`."""
+
+    def get_hidden_state(self, prompt: str, response: str) -> Sequence[float]: ...
+
+    def score(self, prompt: str, response: str) -> Tuple[float, str]: ...
+
+
+def lab_activation_from_text(prompt: str, response: str, dim: int) -> List[float]:
+    """Deterministic pseudo-activation in ``[0, 1]`` (no HF model; reproducible lab vectors)."""
+    d = max(1, int(dim))
+    out: List[float] = []
+    seed = hashlib.sha256(f"{prompt}\n{response}".encode("utf-8")).digest()
+    i = 0
+    while len(out) < d:
+        chunk = hashlib.sha256(seed + i.to_bytes(4, "big")).digest()
+        for j in range(0, len(chunk), 2):
+            if len(out) >= d:
+                break
+            out.append(int.from_bytes(chunk[j : j + 2], "big") / 65535.0)
+        i += 1
+    return out
+
+
+class SigmaSAELabGate:
+    """
+    TwinGateLab σ scoring plus a reproducible ``get_hidden_state`` for the Top-K diagnostic SAE.
+    """
+
+    def __init__(self, input_dim: int) -> None:
+        from cos.sigma_twin import TwinGateLab
+
+        self.input_dim = int(input_dim)
+        self.lab = TwinGateLab()
+
+    def get_hidden_state(self, prompt: str, response: str) -> List[float]:
+        return lab_activation_from_text(prompt, response, self.input_dim)
+
+    def score(self, prompt: str, response: str) -> Tuple[float, str]:
+        return self.lab.score(str(prompt), str(response))
+
+    def score_from_activation(self, prompt: str, activation: Sequence[float]) -> Tuple[float, str]:
+        """Lab hook: σ on a synthetic response fingerprinted by ``activation`` (for steer A/B)."""
+        blob = ",".join(f"{float(x):.8f}" for x in activation)
+        syn = "⟨act⟩:" + hashlib.sha256(blob.encode("utf-8")).hexdigest()[:48]
+        return self.lab.score(str(prompt), syn)
+
+
+class SigmaSAELabTopK:
+    """
+    Top-K sparse autoencoder (lists, no PyTorch) — **σ-SAE L5 diagnostic** / interpretability lab.
+
+    Encoder applies a linear map, keeps the top ``sparsity_k`` positive pre-activations,
+    zeros the rest; decoder is linear back to input space.
+    """
+
+    def __init__(
+        self,
+        input_dim: int,
+        dict_size: int,
+        sparsity_k: int = 32,
+        *,
+        seed: int = 0,
+    ) -> None:
+        self.input_dim = int(input_dim)
+        self.dict_size = int(dict_size)
+        self.k = max(1, int(sparsity_k))
+        self._rng_seed = int(seed)
+
+        self.encoder_weights = self._init_matrix(self.input_dim, self.dict_size, salt=1)
+        self.encoder_bias = [0.0] * self.dict_size
+        self.decoder_weights = self._init_matrix(self.dict_size, self.input_dim, salt=2)
+        self.decoder_bias = [0.0] * self.input_dim
+
+        self.feature_labels: Dict[int, str] = {}
+        self.feature_stats: Dict[int, Dict[str, Any]] = {
+            i: {"activations": 0, "avg_sigma_when_active": 0.0} for i in range(self.dict_size)
+        }
+
+    def _init_matrix(self, rows: int, cols: int, *, salt: int) -> List[List[float]]:
+        scale = 0.07
+        w: List[List[float]] = []
+        for i in range(rows):
+            row: List[float] = []
+            for j in range(cols):
+                z = math.sin((i * 12.9898 + j * 78.233 + salt * 3.14 + self._rng_seed) * 0.001)
+                row.append(scale * z)
+            w.append(row)
+        return w
+
+    def encode(self, activation: Sequence[float]) -> Tuple[List[float], List[int]]:
+        """Linear encoder + Top-K positive sparsity → ``(sparse_vector, active_indices)``."""
+        if len(activation) != self.input_dim:
+            raise ValueError(f"activation dim {len(activation)} != input_dim {self.input_dim}")
+        act = [float(x) for x in activation]
+        pre_act: List[float] = []
+        for i in range(self.dict_size):
+            s = float(self.encoder_bias[i]) + sum(
+                act[j] * self.encoder_weights[j][i] for j in range(self.input_dim)
+            )
+            pre_act.append(s)
+        indexed = [(val, idx) for idx, val in enumerate(pre_act)]
+        indexed.sort(reverse=True, key=lambda t: t[0])
+        sparse = [0.0] * self.dict_size
+        active_features: List[int] = []
+        for val, idx in indexed[: self.k]:
+            if val > 0.0:
+                sparse[idx] = val
+                active_features.append(int(idx))
+        return sparse, active_features
+
+    def decode(self, sparse: Sequence[float]) -> List[float]:
+        if len(sparse) != self.dict_size:
+            raise ValueError(f"sparse len {len(sparse)} != dict_size {self.dict_size}")
+        sp = [float(x) for x in sparse]
+        return [
+            float(self.decoder_bias[i])
+            + sum(sp[j] * self.decoder_weights[j][i] for j in range(self.dict_size))
+            for i in range(self.input_dim)
+        ]
+
+    def reconstruction_sigma(self, activation: Sequence[float]) -> float:
+        """Relative L2 reconstruction error in ``[0, 1]`` (aligned with the torch adapter intuition)."""
+        act = [float(x) for x in activation]
+        sparse, _ = self.encode(act)
+        recon = self.decode(sparse)
+        num = math.sqrt(sum((a - r) ** 2 for a, r in zip(act, recon)))
+        den = math.sqrt(sum(a * a for a in act)) + 1e-8
+        return float(min(1.0, num / den))
+
+    def explain_sigma(self, activation: Sequence[float], sigma: float) -> Dict[str, Any]:
+        """
+        Attribute a scalar σ (from the gate) to active dictionary features.
+
+        ``likely_cause`` uses running ``avg_sigma_when_active`` (from ``find_hallucination_features`` /
+        online updates); without prior stats, defaults hover near zero and the flag is conservative.
+        """
+        sparse, active = self.encode([float(x) for x in activation])
+        ranked = sorted(active, key=lambda i: float(sparse[int(i)]), reverse=True)
+        head = {int(x) for x in ranked[: min(3, len(ranked))]}
+        explanations: List[Dict[str, Any]] = []
+        alpha = 0.05
+        for feat_id in active:
+            stats = self.feature_stats[int(feat_id)]
+            stats["activations"] = int(stats["activations"]) + 1
+            stats["avg_sigma_when_active"] = float(
+                alpha * float(sigma) + (1.0 - alpha) * float(stats["avg_sigma_when_active"])
+            )
+            label = self.feature_labels.get(int(feat_id), f"feature_{feat_id}")
+            avg_s = float(stats["avg_sigma_when_active"])
+            explanations.append(
+                {
+                    "feature": int(feat_id),
+                    "label": label,
+                    "activation_strength": float(sparse[feat_id]),
+                    "avg_sigma_when_active": avg_s,
+                    "likely_cause": bool(avg_s > 0.5) or (float(sigma) > 0.55 and int(feat_id) in head),
+                }
+            )
+        explanations.sort(key=lambda x: x["avg_sigma_when_active"], reverse=True)
+        return {
+            "sigma": float(sigma),
+            "active_features": len(active),
+            "likely_causes": [e for e in explanations if e["likely_cause"]],
+            "all_features": explanations[:10],
+            "cascade_level": "L5_SAE",
+        }
+
+    def steer(self, activation: Sequence[float], feature_id: int, strength: float = 0.0) -> List[float]:
+        """Override Top-K coordinate ``feature_id`` then decode (lab steering primitive)."""
+        sparse, _ = self.encode([float(x) for x in activation])
+        fid = int(feature_id)
+        if not (0 <= fid < self.dict_size):
+            raise IndexError(f"feature_id {fid} out of range [0,{self.dict_size})")
+        sparse[fid] = float(strength)
+        return self.decode(sparse)
+
+    def find_hallucination_features(
+        self,
+        dataset: Iterable[Any],
+        gate: _SigmaSAELabGateLike,
+        *,
+        min_support: int = 11,
+    ) -> List[Dict[str, Any]]:
+        """
+        Correlate dictionary features with labelled hallucination rows.
+
+        ``dataset`` yields either ``(prompt, response, is_hallucination)`` tuples or dicts with
+        keys ``prompt`` / ``response`` / ``is_hallucination`` (or ``hallucination`` bool).
+
+        Features with fewer than ``min_support`` firings are omitted (default 11: SplInterp-safe
+        small-sample guard; lower in unit tests).
+        """
+        hallucination_features: Dict[int, Dict[str, int]] = {}
+        alpha = 0.01
+
+        for row in dataset:
+            prompt, response, is_hall = _sae_lab_coerce_row(row)
+            act = [float(x) for x in gate.get_hidden_state(prompt, response)]
+            sigma, _v = gate.score(prompt, response)
+            sparse, active = self.encode(act)
+            for feat_id in active:
+                fid = int(feat_id)
+                if fid not in hallucination_features:
+                    hallucination_features[fid] = {"total": 0, "hallucination": 0}
+                hallucination_features[fid]["total"] += 1
+                if is_hall:
+                    hallucination_features[fid]["hallucination"] += 1
+                stats = self.feature_stats[fid]
+                stats["activations"] = int(stats["activations"]) + 1
+                stats["avg_sigma_when_active"] = float(
+                    alpha * float(sigma) + (1.0 - alpha) * float(stats["avg_sigma_when_active"])
+                )
+
+        results: List[Dict[str, Any]] = []
+        for fid, st in hallucination_features.items():
+            total = int(st["total"])
+            if total <= int(min_support):
+                continue
+            rate = float(st["hallucination"]) / float(total)
+            results.append(
+                {
+                    "feature": int(fid),
+                    "hallucination_rate": rate,
+                    "total_activations": total,
+                    "is_hallucination_feature": bool(rate > 0.7),
+                }
+            )
+        results.sort(key=lambda x: x["hallucination_rate"], reverse=True)
+        return results
+
+
+def _sae_lab_coerce_row(row: Any) -> Tuple[str, str, bool]:
+    if isinstance(row, (list, tuple)) and len(row) >= 3:
+        return str(row[0]), str(row[1]), bool(row[2])
+    if isinstance(row, dict):
+        pr = str(row.get("prompt", ""))
+        rs = str(row.get("response", ""))
+        h = row.get("is_hallucination")
+        if h is None:
+            h = row.get("hallucination", False)
+        return pr, rs, bool(h)
+    raise TypeError("dataset row must be tuple/list of length ≥3 or a dict with prompt/response flags")
+
+
+def sigma_sae_lab_load_dataset_json(path: str) -> List[Any]:
+    """Load a JSON list of rows for ``find_hallucination_features``."""
+    p = Path(path).expanduser()
+    raw = json.loads(p.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError("dataset JSON must be a list")
+    return raw
+
+
 SIGMA_CONCEPT_BOTTLENECK: Tuple[str, ...] = (
     "factuality",
     "uncertainty",
@@ -232,4 +497,11 @@ SIGMA_CONCEPT_BOTTLENECK: Tuple[str, ...] = (
 )
 
 
-__all__ = ["SIGMA_CONCEPT_BOTTLENECK", "SigmaSAE"]
+__all__ = [
+    "SIGMA_CONCEPT_BOTTLENECK",
+    "SigmaSAE",
+    "SigmaSAELabGate",
+    "SigmaSAELabTopK",
+    "lab_activation_from_text",
+    "sigma_sae_lab_load_dataset_json",
+]

@@ -12,7 +12,7 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 Target = Union[None, int, str]
 
@@ -286,4 +286,100 @@ class ConversationHistory:
         self.turns = []
 
 
-__all__ = ["StateSnapshot", "SnapshotManager", "ConversationHistory"]
+class SigmaSnapshot:
+    """System-wide persistence (gate + opaque graph/registry handles) — v274 lab."""
+
+    def __init__(self) -> None:
+        self._last_periodic = 0.0
+
+    @staticmethod
+    def _serialize(obj: Any) -> Any:
+        if obj is None:
+            return None
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        if isinstance(obj, Mapping):
+            return {str(k): SigmaSnapshot._serialize(v) for k, v in obj.items()}
+        if isinstance(obj, (list, tuple)):
+            return [SigmaSnapshot._serialize(v) for v in obj]
+        return {"__type__": type(obj).__name__}
+
+    @staticmethod
+    def _gate_blob(gate: Any) -> Dict[str, Any]:
+        return {
+            "tau_accept": float(getattr(gate, "tau_accept", getattr(gate, "threshold_accept", 0.3))),
+            "tau_abstain": float(getattr(gate, "tau_abstain", getattr(gate, "threshold_abstain", 0.7))),
+            "ema": float(getattr(gate, "_ema", 0.5)),
+            "count": int(getattr(gate, "_count", 0)),
+        }
+
+    @classmethod
+    def save(cls, gate: Any, graph: Any, registry: Any, path: Union[str, Path]) -> Dict[str, Any]:
+        state = {"gate": cls._gate_blob(gate), "graph": cls._serialize(graph), "registry": cls._serialize(registry)}
+        snap = StateSnapshot(state, {"kind": "sigma_system_v274", "format": 1})
+        snap.save(path)
+        return {"saved": True, "path": str(Path(path)), "checksum": snap.checksum}
+
+    @classmethod
+    def load(cls, path: Union[str, Path]) -> Dict[str, Any]:
+        return StateSnapshot.load(path).to_dict()
+
+    @staticmethod
+    def diff(snapshot_a: Mapping[str, Any], snapshot_b: Mapping[str, Any]) -> Dict[str, Any]:
+        def _state(x: Mapping[str, Any]) -> Dict[str, Any]:
+            return dict(x["state"]) if "state" in x and isinstance(x["state"], Mapping) else dict(x)
+
+        a, b = _state(snapshot_a), _state(snapshot_b)
+        changes: Dict[str, Any] = {}
+        for k in set(a) | set(b):
+            if a.get(k) != b.get(k):
+                changes[k] = {"before": a.get(k), "after": b.get(k)}
+        return {"n_changed": len(changes), "changes": changes}
+
+    def periodic_save(
+        self,
+        interval_minutes: float,
+        gate: Any,
+        graph: Any,
+        registry: Any,
+        path: Union[str, Path],
+    ) -> Dict[str, Any]:
+        now = time.time()
+        if now - self._last_periodic < float(interval_minutes) * 60.0:
+            return {"saved": False}
+        self._last_periodic = now
+        return SigmaSnapshot.save(gate, graph, registry, path)
+
+    @staticmethod
+    def restore_point(snapshot: Mapping[str, Any], gate: Any) -> Dict[str, Any]:
+        st = snapshot.get("state") if isinstance(snapshot.get("state"), Mapping) else snapshot
+        if not isinstance(st, Mapping):
+            return {"restored": False, "reason": "bad_snapshot"}
+        gs = st.get("gate") or {}
+        if "tau_accept" in gs and hasattr(gate, "tau_accept"):
+            gate.tau_accept = float(gs["tau_accept"])
+        if "tau_abstain" in gs and hasattr(gate, "tau_abstain"):
+            gate.tau_abstain = float(gs["tau_abstain"])
+        if "ema" in gs and hasattr(gate, "_ema"):
+            gate._ema = float(gs["ema"])
+        if "count" in gs and hasattr(gate, "_count"):
+            gate._count = int(gs["count"])
+        return {"restored": True}
+
+    @staticmethod
+    def export_portable(snapshot: Mapping[str, Any]) -> str:
+        return json.dumps(dict(snapshot), sort_keys=True, default=str, indent=2)
+
+    @staticmethod
+    def verify_integrity(snapshot: Mapping[str, Any]) -> Dict[str, Any]:
+        st = snapshot.get("state") if isinstance(snapshot.get("state"), Mapping) else snapshot
+        if not isinstance(st, Mapping):
+            return {"ok": False, "component_hashes": {}}
+        hashes: Dict[str, str] = {}
+        for k, v in st.items():
+            raw = json.dumps(v, sort_keys=True, default=str)
+            hashes[str(k)] = hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+        return {"ok": True, "component_hashes": hashes}
+
+
+__all__ = ["StateSnapshot", "SnapshotManager", "ConversationHistory", "SigmaSnapshot"]

@@ -1,5 +1,7 @@
 # Creation OS — Security Policy
 
+**Report vulnerabilities privately:** [security@spektrelabs.com](mailto:security@spektrelabs.com). Do **not** open a public GitHub issue for undisclosed security bugs.
+
 Creation OS is an **offline, zero-telemetry, formally-verified-where-possible**
 AGI kernel.  Security is not a layer; it is the architecture.  This document
 states the reporting process, the supported surface, the guarantees we

@@ -33,7 +33,14 @@ import uuid
 from typing import Any, Dict, List, Optional
 
 try:
-    from fastapi import FastAPI, HTTPException, Query, Request, Response, WebSocket, WebSocketDisconnect
+    from fastapi import (
+        FastAPI,
+        HTTPException,
+        Request,
+        Response,
+        WebSocket,
+        WebSocketDisconnect,
+    )
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import PlainTextResponse, StreamingResponse
     from pydantic import BaseModel, ConfigDict
@@ -54,7 +61,6 @@ from cos.compliance import SigmaCompliance
 from cos.explain import SigmaExplain
 from cos.feedback import SigmaFeedback
 from cos.metric import SigmaMetrics
-from cos.persona import SigmaPersona
 from cos.pipeline import Pipeline
 from cos.plugin import SigmaPlugin
 from cos.report import SigmaReport
@@ -234,7 +240,6 @@ def create_app() -> Any:
     explainer = SigmaExplain(gate=gate)
     compliance_engine = SigmaCompliance(gate=gate)
     webhook_hub = SigmaWebhook()
-    persona_engine = SigmaPersona()
     plugin_hub = SigmaPlugin(gate=gate)
     pipeline = Pipeline(gate=gate)
     stream_engine = SigmaStream(gate=gate)
@@ -656,17 +661,20 @@ def create_app() -> Any:
 
     @app.get("/v1/evidence")
     async def evidence() -> dict[str, Any]:
+        from cos.bench import SigmaBench
+
+        snap = SigmaBench().mtier_v2()
         return {
             "status": "NOT_AGI_ACHIEVED",
-            "metrics_embedded_here": False,
+            "metrics_embedded_here": True,
+            "mtier_v2": snap,
             "read_path": [
                 "docs/CLAIM_DISCIPLINE.md",
+                "docs/REDDIT_MACHINELEARNING_STRATEGY.md",
                 "docs/RESEARCH_AND_THESIS_ARCHITECTURE.md",
-                "README.md#measured",
             ],
             "note": (
-                "Archived benchmark JSON lives under benchmarks/; "
-                "do not hardcode headline AUROC in the API."
+                "Default M-tier includes saturated and failed rows; archive harness JSON under benchmarks/ for run-specific numbers."
             ),
         }
 

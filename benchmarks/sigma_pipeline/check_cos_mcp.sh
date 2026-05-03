@@ -28,8 +28,8 @@ grep -q '"code":-32601'                       <<<"$DEMO" || { echo "unknown-meth
 echo "  · cos-mcp --stdio tools/call cos.health"
 H="$(printf '{"jsonrpc":"2.0","id":77,"method":"tools/call","params":{"name":"cos.health","arguments":{}}}\n' | ./cos-mcp --once)"
 grep -q '"id":77'                             <<<"$H" || { echo "no id=77 echo"        >&2; exit 13; }
-grep -q '"proofs_lean":"6/6"'                 <<<"$H" || { echo "no proofs_lean"       >&2; exit 14; }
-grep -q '"proofs_frama_c":"15/15"'            <<<"$H" || { echo "no proofs_frama_c"    >&2; exit 15; }
+grep -q '"proofs_lean":"14/14"'               <<<"$H" || { echo "no proofs_lean"       >&2; exit 14; }
+grep -q '"proofs_frama_c":"30/30"'            <<<"$H" || { echo "no proofs_frama_c"    >&2; exit 15; }
 
 echo "  · cos-mcp --stdio tools/call cos.chat"
 C="$(printf '{"jsonrpc":"2.0","id":88,"method":"tools/call","params":{"name":"cos.chat","arguments":{"prompt":"What is 2+2?"}}}\n' | ./cos-mcp --once)"

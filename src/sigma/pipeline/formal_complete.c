@@ -127,7 +127,7 @@ static int extract_theorem_name(const char *line, char *name, size_t cap) {
 /* Walk buffer line by line.  Whenever we see a theorem header, read
  * the body until the next line starts with one of the Lean block
  * starters. */
-static int scan_lean(const char *buf, cos_formal_report_t *r) {
+static int scan_lean_buffer(const char *buf, cos_formal_report_t *r) {
     const char *p = buf;
     int lineno = 0;
     while (*p) {
@@ -262,58 +262,85 @@ static void compute_effective(cos_formal_report_t *r) {
         (r->header_proofs <= hi);
 }
 
-int cos_formal_complete_scan(const char *lean_path,
-                             const char *acsl_path,
+int cos_formal_complete_scan(const char *const *lean_paths, int n_lean_paths,
+                             const char *const *acsl_paths, int n_acsl_paths,
                              const char *version_header_path,
                              cos_formal_report_t *r) {
+    size_t nhdr = 0;
+    int    rc;
+    int    i;
+
     if (!r) return -1;
     memset(r, 0, sizeof *r);
 
-    size_t nlean = 0, nacsl = 0, nhdr = 0;
-    char *lean = slurp_file(lean_path, &nlean);
-    char *acsl = slurp_file(acsl_path, &nacsl);
-    char *hdr  = slurp_file(version_header_path, &nhdr);
-    if (!lean || !acsl || !hdr) {
-        free(lean); free(acsl); free(hdr);
+    if (!lean_paths || n_lean_paths <= 0)
         return -1;
+    if (!acsl_paths || n_acsl_paths <= 0)
+        return -1;
+
+    for (i = 0; i < n_lean_paths; i++) {
+        size_t nlean = 0;
+        char *lean = slurp_file(lean_paths[i], &nlean);
+        if (!lean)
+            return -1;
+        rc = scan_lean_buffer(lean, r);
+        free(lean);
+        if (rc != 0)
+            return rc;
+    }
+    count_categories(r);
+
+    for (i = 0; i < n_acsl_paths; i++) {
+        size_t nacsl = 0;
+        char *acsl = slurp_file(acsl_paths[i], &nacsl);
+        if (!acsl)
+            return -1;
+        scan_acsl(acsl, r);
+        r->acsl_file_bytes += (int)nacsl;
+        free(acsl);
     }
 
-    int rc = scan_lean(lean, r);
-    if (rc == 0) count_categories(r);
-    scan_acsl(acsl, r);
-    r->acsl_file_bytes = (int)nacsl;
-    scan_version_header(hdr, r);
-    compute_effective(r);
-
-    free(lean); free(acsl); free(hdr);
-    return rc;
+    {
+        char *hdr = slurp_file(version_header_path, &nhdr);
+        if (!hdr)
+            return -1;
+        scan_version_header(hdr, r);
+        compute_effective(r);
+        free(hdr);
+    }
+    return 0;
 }
 
 int cos_formal_complete_self_test(void) {
     cos_formal_report_t r;
-    int rc = cos_formal_complete_scan(
+    static const char *lean_paths[] = {
         "hw/formal/v259/Measurement.lean",
+        "formal/lean/CreationOS/V133.lean",
+    };
+    static const char *acsl_paths[] = {
         "hw/formal/v259/sigma_measurement.h.acsl",
+        "hw/formal/v133/sigma_stack_contracts.acsl",
+    };
+    int rc = cos_formal_complete_scan(
+        lean_paths, 2,
+        acsl_paths, 2,
         "include/cos_version.h",
         &r);
     if (rc != 0)                          return -1;
 
-    /* v2.0 Omega CLOSE-1 state:
-     *   All T1..T6 theorems are discharged over core Lean 4 (Nat);
-     *   the Float fragment is delegated to sigma_measurement.h.acsl
-     *   (Frama-C Wp).  Post-CLOSE invariants:
-     *     * at least 6 theorems in the Lean file,
-     *     * at least 6 concrete discharges (T1..T6),
-     *     * zero `sorry` pending — we have stopped underclaiming,
-     *     * the α-family is optional (may be 0 now that we dropped
-     *       the Mathlib-dependent LinearOrder lifts).
+    /* v133 σ-formal stack:
+     *   v259 Measurement.lean (T1–T6 + aux lemmas) plus
+     *   formal/lean/CreationOS/V133.lean (8 stack models).
+     *   Banner: COS_FORMAL_PROOFS == 14 (six gate theorems + eight
+     *   stack lemmas counted for the public ledger — see docs).
+     *   ACSL: v259 companion + v133 stack stub; clause-line sum ≥ 30.
      */
-    if (r.n_theorems < 6)                 return -2;
-    if (r.discharged_concrete < 6)        return -3;
-    if (r.pending != 0)                   return -4;
-    if (r.header_proofs_total != 6)       return -5;
-    if (!r.ledger_matches_truth)          return -6;
-    if (r.acsl_requires < 3)              return -7;
-    if (r.acsl_ensures < 5)               return -8;
+    if (r.n_theorems < 14)               return -2;
+    if (r.discharged_concrete < 14)     return -3;
+    if (r.pending != 0)                 return -4;
+    if (r.header_proofs_total != 14)    return -5;
+    if (!r.ledger_matches_truth)        return -6;
+    if (r.acsl_requires + r.acsl_ensures < 30)
+                                         return -7;
     return 0;
 }

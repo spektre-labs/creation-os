@@ -23,6 +23,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#if defined(__unix__) || defined(__APPLE__)
+#include <sys/wait.h>
+#endif
+
 static sqlite3 *g_learn_db;
 
 static const char *learn_home(void) {
@@ -301,13 +305,83 @@ static void learn_usage(FILE *fp) {
         "cos learn — autonomous gap fill (engram σ + COS_SEARCH_API_URL)\n"
         "  --once       run one identify→research→store cycle\n"
         "  --report     print ~/.cos/learning_log.db tail\n"
+        "  v134 continual (forwards to: python3 -m cos learn … when flags match;\n"
+        "                  set PYTHONPATH=python or run from repo root)\n"
+        "    --data … --anchors …   σ-anchor regression guard + optional replay mix\n"
         "  COS_LEARNING_LOG_DB   override SQLite path\n",
         fp);
 }
 
+#if defined(__unix__) || defined(__APPLE__)
+static int learn_argv_needs_python_forward(int argc, char **argv) {
+    int i;
+    int replay = 0, stats = 0;
+    for (i = 0; i < argc; ++i) {
+        if (argv[i] == NULL)
+            continue;
+        if (strcmp(argv[i], "--replay") == 0)
+            replay = 1;
+        if (strcmp(argv[i], "--stats") == 0)
+            stats = 1;
+        if (strcmp(argv[i], "--data") == 0 || strcmp(argv[i], "--anchors") == 0 ||
+            strcmp(argv[i], "--ewc") == 0 || strcmp(argv[i], "--consolidate") == 0 ||
+            strcmp(argv[i], "--forgetting-test") == 0 || strcmp(argv[i], "--use-replay") == 0)
+            return 1;
+    }
+    return replay && stats;
+}
+
+static int learn_forward_python(int argc, char **argv) {
+    pid_t pid;
+    char *av[640];
+    int   j = 0;
+    int   i;
+    const char *pp;
+    char   pbuf[8192];
+
+    pid = fork();
+    if (pid < 0) {
+        perror("cos learn");
+        return 126;
+    }
+    if (pid == 0) {
+        av[j++] = "python3";
+        av[j++] = "-m";
+        av[j++] = "cos";
+        av[j++] = "learn";
+        for (i = 0; i < argc && j < (int)(sizeof av / sizeof av[0]) - 1; ++i)
+            av[j++] = argv[i];
+        av[j] = NULL;
+        pp = getenv("PYTHONPATH");
+        if (pp == NULL || pp[0] == '\0')
+            snprintf(pbuf, sizeof pbuf, "python");
+        else if (strstr(pp, "python") != NULL)
+            snprintf(pbuf, sizeof pbuf, "%s", pp);
+        else
+            snprintf(pbuf, sizeof pbuf, "python:%s", pp);
+        setenv("PYTHONPATH", pbuf, 1);
+        execvp("python3", av);
+        perror("cos learn");
+        _exit(127);
+    } else {
+        int st = 0;
+        if (waitpid(pid, &st, 0) < 0)
+            return 126;
+        if (WIFEXITED(st))
+            return WEXITSTATUS(st);
+        return 126;
+    }
+}
+#endif
+
 int cos_learn_main(int argc, char **argv) {
     int once = 0, report = 0;
     int i;
+
+#if defined(__unix__) || defined(__APPLE__)
+    if (learn_argv_needs_python_forward(argc, argv))
+        return learn_forward_python(argc, argv);
+#endif
 
     for (i = 0; i < argc; ++i) {
         if (strcmp(argv[i], "--once") == 0)

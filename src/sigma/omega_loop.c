@@ -29,6 +29,7 @@
 #include "skill_distill.h"
 #include "speculative_sigma.h"
 #include "spike_engine.h"
+#include "sigma_spike.h"
 #include "ttt_runtime.h"
 #include "sovereign_limits.h"
 #include "state_ledger.h"
@@ -833,6 +834,32 @@ static int omega_step_inner(struct cos_omega_state *state)
         }
 
         memcpy(&g_last_tr, &tr, sizeof tr);
+
+        /* Optional: σ-spike 14-phase bundle (set COS_OMEGA_PHASE_SPIKE=1). Lab energy accounting only. */
+        if (getenv("COS_OMEGA_PHASE_SPIKE") != NULL
+            && getenv("COS_OMEGA_PHASE_SPIKE")[0] == '1') {
+            static cos_sigma_spike_omega_bundle_t s_ob;
+            static int                           s_ob_inited;
+            int32_t                              ph[COS_OMEGA_N_PHASES];
+            int                                  pi;
+            if (!s_ob_inited) {
+                cos_sigma_spike_omega_init(&s_ob, COS_SIGMA_SPIKE_Q16_SCALE / 256);
+                s_ob_inited = 1;
+            }
+            for (pi = 0; pi < (int)COS_OMEGA_N_PHASES; pi++) {
+                float f = tr.sigma_mean;
+                if (pi < nf && pi < 8)
+                    f = spvals[pi];
+                else
+                    f = tr.sigma_mean + 0.01f * (float)(pi % 4);
+                if (f < 0.0f)
+                    f = 0.0f;
+                if (f > 0.999f)
+                    f = 0.999f;
+                ph[pi] = (int32_t)(f * 65536.0f);
+            }
+            cos_sigma_spike_omega_step(&s_ob, ph, (int32_t)(65536 * 0.9));
+        }
 
         if (!omega_turn_timed_out && local_tau > 1e-6f && tr.sigma_mean > local_tau
             && g_cfg.enable_ttt) {

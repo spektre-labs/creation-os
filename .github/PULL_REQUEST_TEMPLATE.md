@@ -2,6 +2,13 @@
 
 <!-- What changed and why — **English** for all merged prose per docs/LANGUAGE_POLICY.md -->
 
+## Python / `cos` package checklist (when touching `python/cos/` or examples)
+
+- [ ] SPDX header on all **new** files (`LicenseRef-SCSL-1.0 OR AGPL-3.0-only`).
+- [ ] **pytest** passes for affected tests: `PYTHONPATH=python pytest tests/ -v` (or CI equivalent).
+- [ ] **`python/cos/sigma_gate.h`** not modified unless explicitly agreed with maintainers.
+- [ ] No new **required** third-party dependencies for the default `cos` install (optional extras OK).
+
 If you touch **README figures**, keep the **Card + inner img** pattern documented in the HTML comment at the top of [`README.md`](../README.md) and in [`docs/VISUAL_INDEX.md`](../docs/VISUAL_INDEX.md) (zinc border, 12px / 8px radii).
 
 ## Claim hygiene (required if touching benchmarks, README numbers, or frontier comparisons)

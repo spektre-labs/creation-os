@@ -1,11 +1,9 @@
-"""σ-gate helpers for LangChain apps (optional LangChain dependency).
+"""σ-gate helpers for LangChain apps (legacy HTTP client entrypoint).
 
-Install: ``pip install requests`` and either ``pip install -e sdk/python`` or set
-``PYTHONPATH`` to the repo ``sdk/python`` directory.  For callbacks, also
-``pip install langchain-core`` (or ``langchain``).
+For **pip-installed** scoring against ``SigmaGate`` / quickstart σ, prefer
+``cos.integrations.langchain_sigma`` (see README § Framework integrations).
 
-``SigmaGateClient`` exposes ``check`` and ``gate_or_raise``.  ``SigmaGateCallback``
-delegates to ``gate_or_raise`` on each ``on_llm_end`` when LangChain is installed.
+This module wraps :class:`creation_os.CreationOS` and optional LangChain callbacks.
 """
 
 from __future__ import annotations

@@ -12,6 +12,7 @@ search, DSL-to-solver pipelines, and unsat-core-style verbalization.
 """
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
@@ -21,7 +22,7 @@ Subst = Dict[str, "Term"]
 class Term:
     """FOL term: variable, constant, or function application."""
 
-    pass
+    __slots__ = ()
 
 
 @dataclass(frozen=True, eq=True)
@@ -231,6 +232,96 @@ def prove_by_refutation(
     return {"proved": False, "steps": max_steps, "trace": trace}
 
 
+_LIT_RE = re.compile(
+    r"^(?P<neg>(?:¬|not\s+|NOT\s+))?(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*"
+    r"\(\s*(?P<args>[^)]*)\)\s*$",
+)
+
+
+def _parse_literal(raw: str) -> Predicate:
+    s = raw.strip()
+    m = _LIT_RE.match(s)
+    if not m:
+        raise ValueError(f"cannot parse literal: {raw!r}")
+    neg = bool(m.group("neg"))
+    name = str(m.group("name"))
+    args_raw = (m.group("args") or "").strip()
+    args: List[Term] = []
+    if args_raw:
+        for part in args_raw.split(","):
+            part = part.strip()
+            if not part:
+                continue
+            if part.startswith("?"):
+                args.append(Var(part[1:].strip()))
+            else:
+                args.append(Const(part))
+    return Predicate(name, args, negated=neg)
+
+
+def fol_parse(text: str) -> List[Clause]:
+    """Parse one clause per line; OR is ``|`` between literals.
+
+    Literals: ``P(a)``, ``¬Q(?x)``, ``not R(b,c)``. Variables use a ``?`` prefix.
+    """
+    clauses: List[Clause] = []
+    for raw_line in str(text).splitlines():
+        line = raw_line.split("//")[0].strip()
+        if not line:
+            continue
+        parts = [p.strip() for p in line.split("|")]
+        lits = [_parse_literal(p) for p in parts if p]
+        if lits:
+            clauses.append(Clause(lits))
+    return clauses
+
+
+def prove_by_refutation_with_sigma(
+    clauses: List[Clause],
+    goal: Predicate,
+    gate: Any,
+    max_steps: int = 100,
+) -> Dict[str, Any]:
+    """Resolution refutation with a σ readout per derived clause (via ``gate.score``)."""
+    neg_goal = Clause([goal.negate()])
+    all_clauses: List[Clause] = list(clauses) + [neg_goal]
+    known: Set[frozenset[Predicate]] = {c.literals for c in all_clauses}
+    trace: List[str] = []
+    step_sigmas: List[float] = []
+
+    def _score(msg: str) -> None:
+        s, _ = gate.score("fol_resolution_step", msg[:1500])
+        step_sigmas.append(round(float(s), 4))
+
+    for step in range(max_steps):
+        new_batch: List[Clause] = []
+        n = len(all_clauses)
+        for i in range(n):
+            for j in range(i + 1, n):
+                for r in resolve(all_clauses[i], all_clauses[j]):
+                    if r.is_empty():
+                        msg = f"step {step}: □ from {all_clauses[i]!r} ∧ {all_clauses[j]!r}"
+                        trace.append(msg)
+                        _score(msg)
+                        return {
+                            "proved": True,
+                            "steps": step + 1,
+                            "trace": trace,
+                            "step_sigmas": step_sigmas,
+                        }
+                    if r.literals not in known:
+                        known.add(r.literals)
+                        new_batch.append(r)
+                        msg = f"step {step}: {r!r} from {all_clauses[i]!r} ∧ {all_clauses[j]!r}"
+                        trace.append(msg)
+                        _score(msg)
+        if not new_batch:
+            break
+        all_clauses.extend(new_batch)
+
+    return {"proved": False, "steps": max_steps, "trace": trace, "step_sigmas": step_sigmas}
+
+
 class SigmaReason:
     """Consistency and refutation checks; ``sigma`` rises with detected conflicts."""
 
@@ -315,6 +406,17 @@ class SigmaReason:
             "trace": result["trace"],
         }
 
+    def resolution_with_sigma(
+        self,
+        knowledge_base: List[Clause],
+        claim: Predicate,
+        gate: Any,
+        *,
+        max_steps: int = 100,
+    ) -> Dict[str, Any]:
+        """Refutation search with σ attached to each resolution trace line."""
+        return prove_by_refutation_with_sigma(knowledge_base, claim, gate, max_steps=max_steps)
+
 
 __all__ = [
     "Clause",
@@ -326,8 +428,10 @@ __all__ = [
     "Var",
     "apply_subst",
     "apply_subst_pred",
+    "fol_parse",
     "occurs_check",
     "prove_by_refutation",
+    "prove_by_refutation_with_sigma",
     "resolve",
     "unify",
     "unify_predicates",

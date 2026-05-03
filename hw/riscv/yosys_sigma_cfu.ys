@@ -1,0 +1,11 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# Yosys driver: sigma_rv_cfu combinatorial sizing (generic liberty-free stat).
+# Run: yosys -s yosys_sigma_cfu.ys   or   python3 -m cos silicon --synth
+
+read_verilog sigma_core.v
+hierarchy -top sigma_rv_cfu
+proc
+opt
+flatten
+opt
+stat

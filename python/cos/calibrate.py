@@ -196,7 +196,9 @@ class CalibrationReport:
         self.n_bins = max(1, int(n_bins))
 
     def generate(self) -> Dict[str, Any]:
-        bins: List[Dict[str, List[float]]] = [ {"predicted": [], "actual": []} for _ in range(self.n_bins)]
+        bins: List[Dict[str, List[float]]] = [
+            {"predicted": [], "actual": []} for _ in range(self.n_bins)
+        ]
 
         for raw_sigma, is_error in self.data:
             cal = self.calibrator.calibrate(float(raw_sigma))
@@ -231,4 +233,159 @@ class CalibrationReport:
         }
 
 
-__all__ = ["SigmaCalibrator", "CalibrationReport", "load_calibration_pairs"]
+def smECE(
+    confidences: Sequence[float],
+    errors: Sequence[float],
+    *,
+    n_grid: int = 40,
+    bandwidth: Optional[float] = None,
+) -> float:
+    """Smooth ECE: kernel-weighted calibration gap on a grid (no hard bins)."""
+    c_list = [max(0.0, min(1.0, float(x))) for x in confidences]
+    e_list = [float(e) for e in errors]
+    n = len(c_list)
+    if n < 2 or len(e_list) != n:
+        return 0.0
+    bw = bandwidth if bandwidth is not None else max(0.04, n ** (-0.2))
+    n_grid = max(4, int(n_grid))
+    total_gap = 0.0
+    for k in range(n_grid):
+        x = k / max(1, n_grid - 1)
+        num_e = 0.0
+        den = 0.0
+        for c, e in zip(c_list, e_list):
+            w = math.exp(-0.5 * ((c - x) / bw) ** 2)
+            num_e += w * e
+            den += w
+        if den <= 1e-12:
+            continue
+        e_hat = num_e / den
+        total_gap += abs(e_hat - x)
+    return float(total_gap / n_grid)
+
+
+def log_snr_accuracy_hallucination(
+    accuracy: float,
+    hallucination_rate: float,
+    *,
+    eps: float = 1e-9,
+) -> float:
+    """Log10 SNR style ratio (accuracy vs hallucination mass); lab scalar, not claimed paper SNR."""
+    num = max(eps, float(accuracy))
+    den = max(eps, float(hallucination_rate))
+    return float(math.log10(num / den))
+
+
+def true_positive_answered_accuracy(
+    records: Sequence[Dict[str, Any]],
+    *,
+    min_confidence: float = 0.0,
+) -> float:
+    """Accuracy restricted to non-ABSTAIN rows with ``confidence >= min_confidence``."""
+    rows = [
+        r
+        for r in records
+        if r.get("answered") and float(r.get("confidence", 1.0)) >= min_confidence
+    ]
+    if not rows:
+        return 0.0
+    return float(sum(1 for r in rows if r.get("correct")) / len(rows))
+
+
+def false_negative_abstain_rate(records: Sequence[Dict[str, Any]]) -> float:
+    """Among ABSTAIN rows, fraction where ``oracle_correct`` is true (should have answered)."""
+    abst = [r for r in records if r.get("abstain")]
+    if not abst:
+        return 0.0
+    wrong_abst = sum(1 for r in abst if bool(r.get("oracle_correct")))
+    return float(wrong_abst / len(abst))
+
+
+def behavioral_calibration_table(
+    records: Sequence[Dict[str, Any]],
+    *,
+    n_grid: int = 40,
+) -> Dict[str, Any]:
+    """Aggregate behavioral / σ rows into M-tier helpers (host-run; not harness claims)."""
+    recs = list(records)
+    n = max(len(recs), 1)
+    answered = [r for r in recs if r.get("answered")]
+    acc_answered = (
+        sum(1 for r in answered if r.get("correct")) / max(len(answered), 1) if answered else 0.0
+    )
+    abst_rate = sum(1 for r in recs if r.get("abstain")) / n
+    confidences = []
+    for r in answered:
+        conf = float(r.get("confidence", 1.0 - float(r.get("sigma", 0.5))))
+        confidences.append(max(0.0, min(1.0, conf)))
+    errors = [0.0 if r.get("correct") else 1.0 for r in answered]
+    smooth = smECE(confidences, errors, n_grid=n_grid) if len(confidences) > 1 else 0.0
+    halluc_rate = sum(errors) / max(len(errors), 1) if errors else 0.0
+    snr = log_snr_accuracy_hallucination(acc_answered, halluc_rate)
+    calib_gap = float(smooth + abst_rate * 0.1)
+    m_tier = round(acc_answered * (1.0 - abst_rate) * (1.0 - min(1.0, calib_gap)), 6)
+    return {
+        "accuracy_answered": round(acc_answered, 6),
+        "abstention_rate": round(abst_rate, 6),
+        "smECE": round(smooth, 6),
+        "calibration_gap": round(calib_gap, 6),
+        "SNR_log": round(snr, 6),
+        "true_positive_answered_accuracy": round(
+            true_positive_answered_accuracy(recs),
+            6,
+        ),
+        "false_negative_abstain_rate": round(false_negative_abstain_rate(recs), 6),
+        "M_tier_behavioral": m_tier,
+        "n": len(recs),
+        "disclaimer": "Lab table from σ-bench style rows; do not substitute for harness cards.",
+    }
+
+
+def adaptive_threshold_snr(
+    records: Sequence[Dict[str, Any]],
+    *,
+    taus: Optional[Sequence[float]] = None,
+) -> Dict[str, Any]:
+    """Grid search abstain threshold on ``sigma`` to maximize behavioral SNR (lite)."""
+    base = list(records)
+    grid = [float(t) for t in (taus or [i / 40 for i in range(6, 28)])]
+    best_tau = 0.35
+    best_snr = -1e9
+    for tau in grid:
+        synth: List[Dict[str, Any]] = []
+        for r in base:
+            sigma = float(r.get("sigma", 0.5))
+            oracle_ok = bool(r.get("oracle_correct", r.get("correct")))
+            abst = sigma > tau
+            ans = not abst
+            # When abstaining, mark correct=False for accuracy path; oracle tracks regret
+            out_ok = bool(r.get("correct")) if ans else False
+            synth.append(
+                {
+                    "sigma": sigma,
+                    "answered": ans,
+                    "abstain": abst,
+                    "correct": out_ok,
+                    "oracle_correct": oracle_ok,
+                    "confidence": max(0.0, min(1.0, 1.0 - sigma)),
+                },
+            )
+        tab = behavioral_calibration_table(synth)
+        sn = float(tab["SNR_log"])
+        if sn > best_snr:
+            best_snr = sn
+            best_tau = tau
+    return {"tau_accept_proxy": best_tau, "SNR_log": round(best_snr, 6)}
+
+
+__all__ = [
+    "CalibrationReport",
+    "SigmaCalibrator",
+    "adaptive_threshold_snr",
+    "behavioral_calibration_table",
+    "false_negative_abstain_rate",
+    "load_calibration_pairs",
+    "log_snr_accuracy_hallucination",
+    "smECE",
+    "true_positive_answered_accuracy",
+]

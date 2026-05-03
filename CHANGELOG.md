@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0] — 2026-04-24
+
+PyPI distribution `creation-os` **1.0.0** — install with `pip install creation-os`; entry point `cos` unchanged. CI runs a full **`tests/`** matrix on Ubuntu (Python 3.11–3.13) with **ruff** + **`make check`** on every push/PR to `main`; **merge gate** is a dedicated workflow; **GitHub Releases** trigger **Trusted Publisher** upload via **`publish.yml`** (environment `pypi`, no repository tokens).
+
 ## Unreleased
 
 - **`cos.chat.SigmaChat`** — one OpenAI client for any OpenAI-compatible `/v1` backend; `send`, `send_stream` (end-of-stream σ), `COS_ENDPOINT` / `COS_MODEL` / `COS_API_KEY` (+ legacy env vars); optional **`[chat]`** extra (`openai>=1.30`).

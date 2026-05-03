@@ -10,7 +10,7 @@ known risky coordinates, zero those dictionary entries and decode back to activa
 """
 from __future__ import annotations
 
-from typing import Any, Optional, Tuple
+from typing import Any, Optional
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update
 from .sigma_sae import SigmaSAE

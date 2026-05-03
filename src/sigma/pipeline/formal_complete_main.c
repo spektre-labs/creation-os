@@ -21,9 +21,17 @@ static const char *kind_str(int k) {
 
 int main(void) {
     cos_formal_report_t r;
-    int rc = cos_formal_complete_scan(
+    static const char *lean_paths[] = {
         "hw/formal/v259/Measurement.lean",
+        "formal/lean/CreationOS/V133.lean",
+    };
+    static const char *acsl_paths[] = {
         "hw/formal/v259/sigma_measurement.h.acsl",
+        "hw/formal/v133/sigma_stack_contracts.acsl",
+    };
+    int rc = cos_formal_complete_scan(
+        lean_paths, 2,
+        acsl_paths, 2,
         "include/cos_version.h",
         &r);
     int st = cos_formal_complete_self_test();

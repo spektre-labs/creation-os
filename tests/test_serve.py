@@ -138,6 +138,8 @@ def test_evidence(client: TestClient) -> None:
     assert r.status_code == 200
     body = r.json()
     assert body.get("status") == "NOT_AGI_ACHIEVED"
+    assert body.get("metrics_embedded_here") is True
+    assert "mtier_v2" in body and body["mtier_v2"].get("rows")
 
 
 def test_metrics_prometheus(client: TestClient) -> None:

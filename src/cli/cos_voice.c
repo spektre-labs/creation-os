@@ -29,6 +29,112 @@ typedef struct {
 
 static volatile sig_atomic_t g_voice_stop;
 
+static int voice_args_use_python(int argc, char **argv)
+{
+    static const char *triggers[] = {
+        "--python",  "--local",   "--stt",       "--tts",    "--stt-only",
+        "--tts-only", "--verbose", "--model",    "--text",   "--dry-run",
+        "--output",   "--probe",   "--cos-chat", "--seconds", "--stt-tau",
+        NULL};
+    int i, j;
+    for (i = 0; i < argc; ++i) {
+        if (argv[i] == NULL)
+            continue;
+        for (j = 0; triggers[j] != NULL; ++j) {
+            if (strcmp(argv[i], triggers[j]) == 0)
+                return 1;
+        }
+    }
+    return 0;
+}
+
+static int cos_voice_find_python_pkg(char *out, size_t cap, const char *exe0)
+{
+    const char *root = getenv("CREATION_OS_ROOT");
+    char        probe[4096];
+    char        tmp[4096];
+    if (root != NULL && root[0] != '\0') {
+        if (snprintf(probe, sizeof probe, "%s/python/cos/voice.py", root)
+            >= (int)sizeof probe)
+            return -1;
+        if (access(probe, R_OK) == 0) {
+            if (snprintf(out, cap, "%s/python", root) >= (int)cap)
+                return -1;
+            return 0;
+        }
+    }
+    if (exe0 == NULL || exe0[0] == '\0')
+        return -1;
+    if (realpath(exe0, tmp) == NULL) {
+        if (strlen(exe0) + 1u >= sizeof tmp)
+            return -1;
+        memcpy(tmp, exe0, strlen(exe0) + 1u);
+    }
+    for (;;) {
+        char *slash = strrchr(tmp, '/');
+        if (slash == NULL)
+            return -1;
+        *slash = '\0';
+        if (snprintf(probe, sizeof probe, "%s/python/cos/voice.py", tmp)
+            >= (int)sizeof probe)
+            return -1;
+        if (access(probe, R_OK) == 0) {
+            if (snprintf(out, cap, "%s/python", tmp) >= (int)cap)
+                return -1;
+            return 0;
+        }
+        if (slash == tmp || tmp[0] == '\0')
+            return -1;
+    }
+}
+
+static int cos_voice_exec_python(int argc, char **argv, const char *exe0)
+{
+    char   pyd[4096];
+    char **av;
+    size_t n;
+    pid_t  pid;
+    int    st;
+
+    if (cos_voice_find_python_pkg(pyd, sizeof pyd, exe0) != 0) {
+        fprintf(stderr,
+                "cos voice: python/cos/voice.py not found — set CREATION_OS_ROOT "
+                "or run from a repo checkout.\n");
+        return 126;
+    }
+    n  = (size_t)argc + 4u;
+    av = calloc(n, sizeof *av);
+    if (av == NULL)
+        return 127;
+    av[0] = "python3";
+    av[1] = "-m";
+    av[2] = "cos.voice";
+    for (int i = 0; i < argc; ++i)
+        av[3 + i] = argv[i];
+    av[3 + argc] = NULL;
+    if (setenv("PYTHONPATH", pyd, 1) != 0) {
+        free(av);
+        return 127;
+    }
+    pid = fork();
+    if (pid < 0) {
+        perror("fork");
+        free(av);
+        return 127;
+    }
+    if (pid == 0) {
+        (void)execvp("python3", av);
+        perror("python3");
+        _exit(127);
+    }
+    free(av);
+    if (waitpid(pid, &st, 0) < 0)
+        return 127;
+    if (WIFEXITED(st))
+        return WEXITSTATUS(st);
+    return 128;
+}
+
 static void voice_sigint(int sig)
 {
     (void)sig;
@@ -307,6 +413,8 @@ static void cos_voice_speak(const char *text, int no_tts) {
 }
 
 int cos_voice_main(int argc, char **argv, const char *exe0) {
+    if (voice_args_use_python(argc, argv))
+        return cos_voice_exec_python(argc, argv, exe0);
     const char *lang = NULL;
     int           no_tts = 0;
     int           use_multi_sigma = 1;
@@ -319,12 +427,16 @@ int cos_voice_main(int argc, char **argv, const char *exe0) {
             lang = argv[++i];
         } else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
             fputs(
-                "cos voice — local speech → whisper.cpp → cos-chat → TTS\n"
-                "  Requires: ./cos-chat, ffmpeg, whisper.cpp server\n"
-                "  Setup: bash scripts/real/setup_whisper.sh\n"
+                "cos voice — default: ffmpeg → whisper.cpp HTTP → cos-chat → say/espeak.\n"
+                "  Local STT/TTS (v131): same flags as `python -m cos.voice` when you pass e.g.\n"
+                "    --dry-run --text '…' --model echo --tts none\n"
+                "  or explicitly: --python\n"
+                "  Requires: pip install 'creation-os[voice]' for faster-whisper + sounddevice.\n"
+                "  Setup (default path): bash scripts/real/setup_whisper.sh\n"
                 "  Env: COS_WHISPER_URL (default http://127.0.0.1:2022/v1/audio/transcriptions)\n"
                 "       COS_VOICE_WAV — skip mic; transcribe this WAV once then exit\n"
                 "       COS_VOICE_RECORD_CMD — snprintf pattern with %%s for wav path\n"
+                "       COS_VOICE_SIGMA_PROBE — optional path to LSD pickle for output σ\n"
                 "  Flags: --lang <code>   whisper language (e.g. fi)\n"
                 "         --no-tts        no say/espeak\n"
                 "         --no-multi-sigma  skip cos-chat --multi-sigma\n",

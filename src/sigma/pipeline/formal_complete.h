@@ -6,8 +6,8 @@
  *  License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
  */
 /*
- * σ-formal-complete — honest status reporter for v259's Lean 4 +
- * Frama-C obligations.
+ * σ-formal-complete — honest status reporter for Lean 4 theorems +
+ * Frama-C ACSL companion clauses (v259 σ-measurement + v133 stack).
  *
  * The kernel does NOT prove anything on its own — it parses the
  * existing artefacts and reports what's actually discharged.  That
@@ -77,11 +77,12 @@ typedef struct {
     int effective_discharged; /* the number the banner may claim */
 } cos_formal_report_t;
 
-/* Scan the two artefact files (paths supplied so tests can use
- * fixtures) and populate `report`.  Returns 0 on success, -1 on
- * missing-files, -2 on parse overflow. */
-int cos_formal_complete_scan(const char *lean_path,
-                             const char *acsl_path,
+/* Scan Lean / ACSL artefacts (paths supplied so tests can use
+ * fixtures) and populate `report`.  Multiple Lean files are merged
+ * in order; ACSL clause counts accumulate across companion stubs.
+ * Returns 0 on success, -1 on missing files, -2 on parse overflow. */
+int cos_formal_complete_scan(const char *const *lean_paths, int n_lean_paths,
+                             const char *const *acsl_paths, int n_acsl_paths,
                              const char *version_header_path,
                              cos_formal_report_t *report);
 

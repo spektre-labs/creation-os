@@ -31,7 +31,7 @@ def test_cli_version() -> None:
     )
     assert result.returncode == 0
     out = (result.stdout or "") + (result.stderr or "")
-    assert "creation-os" in out or "0.1.0" in out
+    assert "creation-os" in out or "1.0.0" in out
 
 
 def test_cli_score() -> None:

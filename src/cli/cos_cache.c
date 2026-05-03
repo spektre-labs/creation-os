@@ -8,6 +8,7 @@
 #endif
 
 #include "../sigma/inference_cache.h"
+#include "cos_cache_kv.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,7 +28,15 @@ static int infer_cap_from_env(void)
 
 int main(int argc, char **argv)
 {
+    int d;
     int cap = infer_cap_from_env();
+
+    d = cos_cache_kv_dispatch(argc - 1, argv + 1);
+    if (d == 0)
+        return 0;
+    if (d == 2)
+        return 2;
+
     if (cos_inference_cache_init(cap) != 0) {
         fprintf(stderr, "cos-cache: inference cache init failed\n");
         return 1;
@@ -51,6 +60,10 @@ int main(int argc, char **argv)
         fprintf(stdout,
                 "cos-cache — semantic inference cache\n"
                 "  (default)       print statistics\n"
+                "  --stats            σ-KV demo stats (v129)\n"
+                "  --semantic [--stats]  BSC semantic cache demo\n"
+                "  --prune --threshold X  σ-KV bulk prune demo\n"
+                "  --bench --context N,N  synthetic KV byte model\n"
                 "  --clear         drop all entries and delete persist file\n"
                 "  --similar TEXT  rank cached rows by BSC Hamming similarity\n"
                 "  --help          this text\n"

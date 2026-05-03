@@ -4,9 +4,11 @@
      Website:       https://spektrelabs.org
      Commercial:    spektre.labs@proton.me
      License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt -->
-# `creation-os` — Python SDK for Creation OS
+# `creation-os-interop-sdk` — Python SDK for Creation OS
 
-`pip install creation-os` — stdlib-only, σ-gated, OpenAI-compatible.
+`pip install creation-os-interop-sdk` — stdlib-only, σ-gated, OpenAI-compatible.
+
+For the `cos` CLI and runtime package, use **`pip install creation-os`** (repo-root `pyproject.toml`).
 
 ## Quick start
 

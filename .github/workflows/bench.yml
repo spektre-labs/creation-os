@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+name: σ-bench
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package + pytest
+        run: pip install -e ".[dev]"
+      - name: σ-bench mock (seed receipt)
+        run: PYTHONPATH=python python3 -m cos bench --mock --suite truthfulqa,triviaqa,mmlu --output-dir benchmarks/results_ci
+      - name: σ-bench CI (regression vs previous)
+        run: PYTHONPATH=python python3 -m cos bench --ci --mock --suite truthfulqa,triviaqa,mmlu --output-dir benchmarks/results_ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-receipts
+          path: benchmarks/results_ci/

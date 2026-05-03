@@ -1,0 +1,89 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+#
+# Default limits suit cos-serve; raise memory if pods load heavy Python stacks at runtime.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/spektre-labs/creation-os
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 3001
+
+serviceAccount:
+  create: false
+  name: ""
+
+podAnnotations: {}
+
+resources:
+  limits:
+    cpu: "1"
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 128Mi
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsNonRoot: true
+  runAsUser: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+  capabilities:
+    drop:
+      - ALL
+
+extraVolumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cos-home
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: cos-home
+    mountPath: /home/cos
+
+livenessProbe:
+  httpGet:
+    path: /v1/health
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 30
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /v1/health
+    port: http
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+env:
+  - name: HOME
+    value: /home/cos
+  - name: COS_ENV
+    value: production
+  - name: COS_PORT
+    value: "3001"
+  - name: COS_PROBE_PATH
+    value: /opt/creation-os/probe/sigma_gate_lsd.pkl
+
+extraEnv: []
+
+args:
+  - --bind
+  - 0.0.0.0
+  - --port
+  - "3001"

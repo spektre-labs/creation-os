@@ -10,7 +10,7 @@ Do **not** claim reproduce paper metrics here — see ``docs/CLAIM_DISCIPLINE.md
 """
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence
 
 try:
     import torch

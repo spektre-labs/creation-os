@@ -1,20 +1,20 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""σ-latent — latent-reasoning *proxy*, ponder-style budgeting, and consistency checks.
+"""σ-latent — reasoning proxy, ponder budgeting, multi-answer checks, and hidden consistency.
 
-This is a **lab harness**: multi-pass agreement + σ-gate aggregation + a simple
-complexity heuristic for compute budgeting. It does **not** require latent-token
-training (e.g. Coconut-style) or a trained halting head (e.g. ACT/PonderNet).
-
-Literature (ACT, PonderNet, latent chain-of-thought) motivates the knobs; this
-module **scores behaviour** (cross-sample consistency + gate) rather than
-inspecting hidden states. Do not merge with measured harness headlines; see
-``docs/CLAIM_DISCIPLINE.md``."""
+This is a **lab harness**: cross-sample text consistency + σ-gate aggregation, optional
+**INSIDE-style** hidden-vector covariance stress, and semantic bucketing entropy — without
+claiming harness or silicon parity. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+import hashlib
+import math
 import re
-from typing import Any, List, Optional
+import statistics
+from typing import Any, Dict, List, Mapping, Optional, Sequence
+
+__all__ = ["SigmaLatent", "ConsistencyResult", "PonderBudget"]
 
 
 class ConsistencyResult:
@@ -94,7 +94,7 @@ class PonderBudget:
 
 
 class SigmaLatent:
-    """Proxy for latent-style reliability: multi-answer consistency + σ-gate + ponder budget."""
+    """Latent-style reliability: text consistency + σ-gate + hidden-vector stress + ponder budget."""
 
     def __init__(self, gate: Any = None, n_samples: int = 5) -> None:
         from cos.sigma_gate import SigmaGate
@@ -103,11 +103,7 @@ class SigmaLatent:
         self.n_samples = int(n_samples)
 
     def consistency_probe(self, prompt: str, responses: List[str]) -> ConsistencyResult:
-        """Score agreement across several answers to the same prompt (no model internals).
-
-        Low cross-answer consistency and high average σ suggest unstable or
-        shortcut behaviour; agreement with low σ supports acceptance.
-        """
+        """Score agreement across several answers to the same prompt (no model internals)."""
         if not responses:
             return ConsistencyResult(
                 1.0,
@@ -189,6 +185,71 @@ class SigmaLatent:
             return PonderBudget(3, "deep", True, True, 5.0)
         return PonderBudget(5, "deep", True, True, 10.0)
 
+    def consistency_score(self, hidden_states_per_sample: Sequence[Sequence[float]]) -> Dict[str, Any]:
+        """Top eigenvalue proxy of covariance of mean-pooled hidden vectors (power iteration)."""
+        vecs = [[float(x) for x in row] for row in hidden_states_per_sample if row]
+        n = len(vecs)
+        if n < 2:
+            return {"score": 0.0, "eigenvalue_proxy": 0.0}
+        d = len(vecs[0])
+        mu = [sum(vecs[i][j] for i in range(n)) / n for j in range(d)]
+        centered = [[vecs[i][j] - mu[j] for j in range(d)] for i in range(n)]
+        v = [1.0 / math.sqrt(d)] * d
+        lam = 0.0
+        for _ in range(16):
+            tmp = [0.0] * d
+            for row in centered:
+                dot = sum(row[j] * v[j] for j in range(d))
+                for j in range(d):
+                    tmp[j] += dot * row[j]
+            for j in range(d):
+                tmp[j] /= float(max(n - 1, 1))
+            norm = math.sqrt(sum(x * x for x in tmp)) or 1.0
+            v = [x / norm for x in tmp]
+            lam = sum(v[j] * tmp[j] for j in range(d))
+        stress = min(1.0, max(0.0, abs(lam) / max(d, 1) ** 0.5))
+        return {"score": round(stress, 6), "eigenvalue_proxy": round(float(lam), 6)}
+
+    @staticmethod
+    def semantic_clustering(responses: Sequence[str]) -> Dict[str, List[int]]:
+        """Bucket by stable hash of sorted token multiset (no embedding model)."""
+        buckets: Dict[str, List[int]] = {}
+        for idx, r in enumerate(responses):
+            toks = sorted(t.lower() for t in str(r).split())
+            key = hashlib.sha256(" ".join(toks).encode()).hexdigest()[:16]
+            buckets.setdefault(key, []).append(idx)
+        return buckets
+
+    @staticmethod
+    def semantic_entropy(clusters: Mapping[str, Sequence[int]]) -> float:
+        """Normalized Shannon entropy of cluster occupancy."""
+        counts = [len(v) for v in clusters.values() if v]
+        if not counts:
+            return 0.0
+        tot = sum(counts) or 1
+        h = 0.0
+        for c in counts:
+            p = c / tot
+            h -= p * math.log(p + 1e-12)
+        denom = math.log(len(counts) + 1e-12 + 1)
+        return float(min(1.0, h / denom)) if denom > 0 else 0.0
+
+    def sigma_from_latent(self, consistency: float, semantic_entropy: float) -> float:
+        """Both low ⇒ trustworthy (mapped to low σ); both high ⇒ stress."""
+        c = float(consistency)
+        e = float(semantic_entropy)
+        return float(max(0.0, min(1.0, 0.55 * c + 0.45 * e)))
+
+    def single_pass_approximation(self, hidden_state: Sequence[float], sep_probe: Any) -> Dict[str, Any]:
+        """Delegate to ``sep_probe.score_hidden_vector(vec)`` if present, else mean-abs proxy."""
+        vec = [float(x) for x in hidden_state]
+        fn = getattr(sep_probe, "score_hidden_vector", None)
+        if callable(fn):
+            s = float(fn(vec))
+        else:
+            s = min(1.0, statistics.mean(abs(x) for x in vec) if vec else 0.5)
+        return {"sigma_proxy": round(s, 6), "mode": "sep" if callable(fn) else "norm"}
+
     def _text_similarity(self, a: str, b: str) -> float:
         words_a = set(a.lower().split())
         words_b = set(b.lower().split())
@@ -244,6 +305,3 @@ class SigmaLatent:
         score += min(0.3, sum(0.1 for d in deep if d in prompt_lower))
 
         return min(1.0, score)
-
-
-__all__ = ["SigmaLatent", "ConsistencyResult", "PonderBudget"]

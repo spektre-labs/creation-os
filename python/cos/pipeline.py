@@ -126,6 +126,7 @@ class Pipeline:
         tokenizer: Any = None,
         calibrator: Any = None,
         metacog: Any = None,
+        prompt_guard: Any = None,
     ) -> None:
         self.gate = gate or SigmaGate()
         self.model = model
@@ -136,6 +137,7 @@ class Pipeline:
         self.cascade = SignalCascade()
         self.calibrator = calibrator
         self.metacog = metacog
+        self.prompt_guard = prompt_guard
 
     def run(self, prompt: str, **kwargs: Any) -> PipelineResult:
         # 1. INPUT CHECK
@@ -314,6 +316,11 @@ class Pipeline:
         words = len(str(text).split())
         if words > self.config.max_input_tokens:
             return {"blocked": True, "reason": "input too long"}
+
+        if self.prompt_guard is not None:
+            screen = self.prompt_guard.screen_input(str(text))
+            if screen.get("blocked"):
+                return {"blocked": True, "reason": f"prompt_guard:{screen.get('reason')}"}
 
         lowered = str(text).lower()
         for rx in _INJECTION_PATTERNS:

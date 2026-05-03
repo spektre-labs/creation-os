@@ -10,6 +10,8 @@ from pathlib import Path
 
 import pytest
 
+from cos import SigmaGate
+
 _ROOT = Path(__file__).resolve().parent.parent
 _PYTHON = str(_ROOT / "python")
 
@@ -22,9 +24,35 @@ def _ensure_repo_pythonpath() -> None:
 
 @pytest.fixture
 def gate():
-    from cos.sigma_gate import SigmaGate
-
     return SigmaGate()
+
+
+@pytest.fixture
+def gate_strict():
+    return SigmaGate(threshold_accept=0.1, threshold_abstain=0.5)
+
+
+@pytest.fixture
+def gate_loose():
+    return SigmaGate(threshold_accept=0.5, threshold_abstain=0.9)
+
+
+@pytest.fixture
+def sample_triplets():
+    return [
+        ("Paris", "capital_of", "France"),
+        ("Berlin", "capital_of", "Germany"),
+        ("Tokyo", "capital_of", "Japan"),
+    ]
+
+
+@pytest.fixture
+def sample_prompts():
+    return [
+        ("What is 2+2?", "4"),
+        ("Who discovered radium?", "Marie Curie"),
+        ("What is the capital of France?", "Paris"),
+    ]
 
 
 @pytest.fixture
@@ -74,10 +102,3 @@ def tmp_dir():
     with tempfile.TemporaryDirectory() as d:
         yield d
 
-
-from tests.constants import CLEAN_INPUTS, HALLUCINATION_CASES, INJECTION_CASES  # noqa: E402
-
-
-def pytest_configure(config: pytest.Config) -> None:
-    config.addinivalue_line("markers", "slow: tests that are intentionally slow")
-    config.addinivalue_line("markers", "integration: optional third-party imports (e.g. langchain-core)")

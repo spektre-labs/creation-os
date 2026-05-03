@@ -8,7 +8,7 @@ Shipping a 153-kernel, dual-license, σ-governed local AGI runtime
 to five different package ecosystems is an assembly-line: each
 target has its own manifest format, its own metadata schema, and
 its own failure mode. The failure mode we protect against in v155
-is **silent drift**: a rename in `python/pyproject.toml` that the
+is **silent drift**: a rename in `pyproject.toml` or `python/pyproject.toml` that the
 Homebrew formula forgets to mirror, a Docker tag that the HF
 model card still names in its reproducibility block, a `bin`
 entry in `package.json` that points at a launcher which no longer
@@ -22,7 +22,7 @@ metadata fields, and cross-checks every back-link.
 
 | Surface | Artefact | Primary contract |
 |---|---|---|
-| **PyPI** | [`python/pyproject.toml`](../../python/pyproject.toml) + [`python/creation_os/__init__.py`](../../python/creation_os/__init__.py) + [`packaging/pypi/PUBLISH.md`](../../packaging/pypi/PUBLISH.md) | `project.name == "creation-os"` · exports `class COS` · `PUBLISH.md` describes `twine upload` |
+| **PyPI** | Repo-root [`pyproject.toml`](../../pyproject.toml) (`creation-os`, `cos` entry point) + [`python/pyproject.toml`](../../python/pyproject.toml) + [`python/creation_os/__init__.py`](../../python/creation_os/__init__.py) + [`packaging/pypi/PUBLISH.md`](../../packaging/pypi/PUBLISH.md) | root `project.name == "creation-os"` · interop `project.name == "creation-os-interop-sdk"` · exports `class COS` · `PUBLISH.md` describes `twine upload` |
 | **Homebrew** | [`packaging/brew/creation-os.rb`](../../packaging/brew/creation-os.rb) | `class CreationOs < Formula` · canonical homepage · `test do` block |
 | **Docker** | [`packaging/docker/Dockerfile.release`](../../packaging/docker/Dockerfile.release) + top-level [`Dockerfile`](../../Dockerfile) | `FROM` + `EXPOSE 8080` + `creation_os_server` |
 | **Hugging Face** | [`packaging/huggingface/creation-os-benchmark.md`](../../packaging/huggingface/creation-os-benchmark.md), [`creation-os-corpus-qa.md`](../../packaging/huggingface/creation-os-corpus-qa.md), [`bitnet-2b-sigma-lora.md`](../../packaging/huggingface/bitnet-2b-sigma-lora.md) | YAML front-matter · `license:` field · link back to `spektre-labs/creation-os` |
@@ -43,7 +43,7 @@ of sync.
 * **v155.1** — the actual publish path. Requires `$PYPI_API_TOKEN`,
   `$HF_TOKEN`, a signed Docker Hub login, and a tap PR on
   `homebrew-spektre-labs`. The order is fixed:
-  1. `twine upload dist/*` from `python/`.
+  1. `twine upload dist/*` for the repo-root `creation-os` wheel, then from `python/` for `creation-os-interop-sdk`.
   2. `brew bump-formula-pr spektre-labs/tap/creation-os`.
   3. `docker buildx build -f packaging/docker/Dockerfile.release
      --platform linux/amd64,linux/arm64 --push` to

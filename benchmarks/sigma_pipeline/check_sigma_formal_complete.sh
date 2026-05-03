@@ -5,13 +5,12 @@
 # Honest invariants (no toolchain runs here — we parse the
 # artefacts and cross-check the banner):
 #   self_test == 0
-#   lean.n_theorems >= 6       (T1..T6 at minimum; currently 11)
-#   lean.discharged_concrete >= 6   (T1..T6, all discharged over Nat)
-#   lean.pending == 0          (zero `sorry` in Measurement.lean)
-#   acsl.requires >= 3
-#   acsl.ensures  >= 5
-#   ledger.header_proofs == 6
-#   ledger.header_proofs_total == 6
+#   lean.n_theorems >= 14      (v259 + formal/lean/CreationOS/V133.lean)
+#   lean.discharged_concrete >= 14
+#   lean.pending == 0          (zero `sorry` in scanned Lean files)
+#   acsl.requires + acsl.ensures >= 30 (v259 companion + v133 stack stub)
+#   ledger.header_proofs == 14
+#   ledger.header_proofs_total == 14
 #   ledger.ledger_matches_truth == true
 #   ledger.header_proofs <= ledger.effective_discharged
 #   Two invocations produce byte-identical output.
@@ -47,8 +46,8 @@ assert doc["self_test"] == 0, doc
 assert doc["scan_rc"] == 0, doc
 
 lean = doc["lean"]
-assert lean["n_theorems"] >= 6, lean
-assert lean["discharged_concrete"] >= 6, lean
+assert lean["n_theorems"] >= 14, lean
+assert lean["discharged_concrete"] >= 14, lean
 assert lean["pending"] == 0, lean
 assert lean["discharged_concrete"] + lean["discharged_abstract"] + lean["pending"] == lean["n_theorems"], lean
 
@@ -68,14 +67,26 @@ present = {t["name"] for t in lean["entries"]}
 missing = expected_theorems - present
 assert not missing, f"missing T1..T6 theorems: {missing}"
 
+expected_v133 = {
+    "engram_stores_only_accept",
+    "abstain_does_not_propagate",
+    "cascade_monotone",
+    "circuit_breaker_trips",
+    "proconductor_overrides_all",
+    "kv_eviction_removes_highest_sigma",
+    "speculative_skip_safe",
+    "staleness_increases_sigma",
+}
+missing133 = expected_v133 - present
+assert not missing133, f"missing v133 stack theorems: {missing133}"
+
 acsl = doc["acsl"]
-assert acsl["requires"] >= 3, acsl
-assert acsl["ensures"]  >= 5, acsl
+assert acsl["requires"] + acsl["ensures"] >= 30, acsl
 assert acsl["file_bytes"] > 1000, acsl
 
 ledger = doc["ledger"]
-assert ledger["header_proofs"] == 6, ledger
-assert ledger["header_proofs_total"] == 6, ledger
+assert ledger["header_proofs"] == 14, ledger
+assert ledger["header_proofs_total"] == 14, ledger
 assert ledger["ledger_matches_truth"] is True, ledger
 assert 0 <= ledger["header_proofs"] <= ledger["effective_discharged"], ledger
 

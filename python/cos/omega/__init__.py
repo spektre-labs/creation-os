@@ -4,7 +4,7 @@
 """Creation OS Ω-loop Python harness (14 σ phases)."""
 
 from .loop import OmegaLoop
-from .state import N_PHASES, OmegaContext, OmegaPhase, OmegaState, PHASE_NAMES, phase_verdict
+from .state import N_PHASES, PHASE_NAMES, OmegaContext, OmegaPhase, OmegaState, phase_verdict
 
 __all__ = [
     "N_PHASES",

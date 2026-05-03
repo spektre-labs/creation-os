@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Build and push Dockerfile.prod to GHCR on version tags; SBOM + provenance; Trivy (HIGH/CRITICAL).
+#
+# Pushed tags: latest, semver tag (e.g. v1.0.0), sha-<full-git-sha>.
+
+name: Docker Build and Push
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+env:
+  IMAGE_BASE: ghcr.io/spektre-labs/creation-os
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.prod
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.IMAGE_BASE }}:latest
+            ${{ env.IMAGE_BASE }}:${{ github.ref_name }}
+            ${{ env.IMAGE_BASE }}:sha-${{ github.sha }}
+          sbom: true
+          provenance: mode=max
+
+      - name: Wait for registry
+        if: startsWith(github.ref, 'refs/tags/')
+        run: sleep 25
+
+      - name: Run Trivy vulnerability scanner
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          image-ref: "${{ env.IMAGE_BASE }}:${{ github.ref_name }}"
+          severity: CRITICAL,HIGH
+          exit-code: "1"

@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional, Tuple
 import numpy as np
 
 from .sigma_gate import SigmaGate
-from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update
+from .sigma_gate_core import SigmaState, sigma_gate, sigma_update
 from .sigma_hide import SigmaHIDE
 from .sigma_spectral import SpectralSigma
 

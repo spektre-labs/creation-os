@@ -12,6 +12,29 @@ Thank you for improving the kernel, tests, or documentation. **All committed mat
    This runs **`make check`** (portable `creation_os` + `tests/test_bsc_core`) and **`make check-v6` … `make check-v29`** (every flagship `--self-test` in the merge matrix — e.g. **184** checks on v26, **70** on v27, **29** on v28, **22** on v29). Same command as CI and `make publish-github` preflight. **σ labs (v31+, MCP, HDL)** are optional; see README [σ labs (v31–v54)](README.md#sigma-labs-v31-v40) and `make help`. While iterating on a single `creation_os_vN.c`, you may run only **`make check-vN`** until the final rebase, then **`make merge-gate`** once. If you touch **`rtl/*.sv`**, **`hw/chisel/**`**, or **`hw/rust/spektre-iron-gate`**, also run **`make stack-ultimate`** and **`make rust-iron-lint`** (Verilator + Yosys + Rust; Chisel steps SKIP without sbt).
 3. If you change **reported throughput** or tables in the README, attach or describe a **repro bundle** per [docs/REPRO_BUNDLE_TEMPLATE.md](docs/REPRO_BUNDLE_TEMPLATE.md).
 
+## Quick contribution flow (Python `cos` / PyPI examples)
+
+1. Fork the repository and clone your fork locally.
+2. Create a branch: `git checkout -b feature/my-feature`.
+3. Add the dual-license SPDX header to every new file, for example:  
+   `# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only`
+4. Add or extend tests under `tests/` (for example `tests/test_my_feature.py`). For a fast Python-only loop:  
+   `PYTHONPATH=python pytest tests/ -v`  
+   **Kernel and flagship C changes** must still pass **`make merge-gate`** before merge.
+5. Open a pull request against `main`.
+
+### Package rules (in addition to licensing above)
+
+- **`python/cos/sigma_gate.h`** is treated as a frozen portable ABI surface; do not edit it in drive-by PRs — coordinate with maintainers first.
+- Keep **default-install** `cos.sigma_gate` free of **required** third-party Python dependencies (optional extras are fine).
+- **Evidence ladder:** negative benchmark or lab outcomes must be reported; see [docs/CLAIM_DISCIPLINE.md](docs/CLAIM_DISCIPLINE.md). Do not merge microbench throughput claims with harness headlines in prose.
+
+### Style
+
+- **Python:** format with **Ruff** where configured (`ruff format`).
+- **C:** follow the surrounding module; Creation OS kernels target **C11** (`-std=c11`) for new work.
+- **Tests:** **pytest**, no external paid APIs for default test paths unless the test is explicitly skipped in CI.
+
 ## Build targets
 
 | Target | Purpose |

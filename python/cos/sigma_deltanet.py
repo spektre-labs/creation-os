@@ -17,7 +17,7 @@ See ``docs/CLAIM_DISCIPLINE.md`` — no throughput or downstream headline withou
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple
 
 import torch
 import torch.nn as nn

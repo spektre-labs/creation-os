@@ -25,6 +25,8 @@ labels: bug
 - OS: 
 - CPU (if relevant): 
 - Commit SHA: 
+- **`creation-os` / `cos` version** (if Python): `python -c "import cos; print(cos.__version__)"`
+- **Python version**: `python -V`
 
 ## Expected vs actual
 

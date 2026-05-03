@@ -13,7 +13,7 @@ This is not a faithful reproduction of any commercial ``o*`` stack; see
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import Callable, List, Optional, Sequence
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update
 

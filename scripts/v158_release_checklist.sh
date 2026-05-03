@@ -97,7 +97,8 @@ for d in v154 v155 v156 v157 v158; do
 done
 ok "B1..B6 artefacts present on disk"
 
-[ -f python/pyproject.toml ]                           || die "C1: pyproject.toml missing"
+[ -f pyproject.toml ]                                 || die "C1a: repo-root pyproject.toml missing (PyPI creation-os / cos)"
+[ -f python/pyproject.toml ]                           || die "C1: python/pyproject.toml missing"
 [ -f packaging/brew/creation-os.rb ]                   || die "C2: brew formula missing"
 [ -f packaging/docker/Dockerfile.release ]             || die "C3: release Dockerfile missing"
 for c in creation-os-benchmark.md creation-os-corpus-qa.md bitnet-2b-sigma-lora.md; do

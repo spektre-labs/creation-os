@@ -1,47 +1,119 @@
+# Creation OS — Quickstart (< 5 minutes)
 
- Creation OS — quickstart (σ-gate)
+**Goal:** from `pip install` to a real **σ** score and verdict on your machine.
 
-Canonical repository: [spektre-labs/creation-os](https://github.com/spektre-labs/creation-os).
+---
 
-## Score a `(prompt, response)` with the LSD probe (Python)
-
-From the repository root, with `PYTHONPATH` pointing at `python/`:
-
-```python
-from cos.sigma_gate import SigmaGate
-gate = SigmaGate("benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl")
-sigma, decision = gate(model, tokenizer, prompt, response)
-```
-
-`decision` is `ACCEPT`, `RETHINK`, or `ABSTAIN`. The bundled pickle is trained on a **GPT-2** hidden-state layout; other HF checkpoints need a new probe (see `benchmarks/sigma_gate_lsd/adapt_lsd.py`).
-
-## MCP (one config block)
-
-Run the stdio server (requires `pip install 'mcp[cli]'` in your venv):
+## Install
 
 ```bash
-export PYTHONPATH=python
-export SIGMA_PROBE_PATH=benchmarks/sigma_gate_lsd/results_holdout/sigma_gate_lsd.pkl
-python3 -m cos.mcp_sigma_server
+pip install creation-os
 ```
 
-Gateway-style example (paths must be absolute on your machine): `configs/mcp/bifrost_sigma_gate.example.yaml`. Full notes: [`docs/MCP_SIGMA.md`](MCP_SIGMA.md).
+Optional extras: `pip install 'creation-os[chat]'`, `'creation-os[serve]'`, `'creation-os[langchain]'` (see `pyproject.toml`).
 
-## Representative lab AUROCs (LSD, wrong vs σ)
+---
 
-These numbers come from checked-in JSON summaries under `benchmarks/sigma_gate_eval/` (semantic MiniLM labeling, threshold **0.45**; see `docs/CLAIM_DISCIPLINE.md` before citing externally).
+## Score your first response (CLI)
 
-| Setting | AUROC (wrong vs σ) |
-|---------|---------------------|
-| TruthfulQA holdout (GPT-2 generator) | **0.982** (`results_holdout/holdout_summary.json`) |
-| TriviaQA smoke (GPT-2 generator, cross-task) | **0.960** (`results_cross_domain/cross_domain_summary.json`) |
+```bash
+cos score --prompt "What is the capital of France?" --response "Paris"
+```
 
-Cross-task rows are **not** comparable to TruthfulQA CV as a single headline metric.
+Typical **lite** output (entropy probe; numbers vary slightly by text and version):
 
-## Gemma + HIDE (training-free, separate harness)
+`σ≈0.18 ACCEPT`
 
-To score **google/gemma-2-2b-it** greedy completions with `SigmaHIDE(backend="lab")` on the first *N* holdout prompts (default 30), run `benchmarks/sigma_gate_scaling/run_gemma_eval.py`. Outputs: `benchmarks/sigma_gate_scaling/results_gemma/gemma_hide_summary.json`. Set **`HF_TOKEN`** or **`HUGGING_FACE_HUB_TOKEN`** in the environment if the Hub requires auth — **never** commit tokens.
+A **middle-band** example (repetitive answer → higher σ with default thresholds):
 
-## License
+```bash
+cos score --prompt "Name any color." --response "red red red red red red"
+```
 
-`SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only` (per-file headers in new Python sources). See repository `LICENSE`.
+Typical output: `σ≈0.31 RETHINK`
+
+> **Note:** Default `SigmaGate()` is an **entropy / statistics** probe, not a fact checker. Wrong-but-fluent answers can still score low σ. For probe bundles and harness metrics see `docs/CLAIM_DISCIPLINE.md`.
+
+---
+
+## Python API
+
+```python
+from cos import SigmaGate
+
+gate = SigmaGate()
+sigma, verdict = gate.score("What is 2+2?", "4")
+print(f"σ={sigma:.3f} → {verdict}")
+```
+
+Typical lite output: `σ≈0.25 → ACCEPT` (exact value depends on the prompt+response text).
+
+---
+
+## Chat (OpenAI-compatible server)
+
+Start any **OpenAI-compatible** `/v1` server (vLLM, llama.cpp `llama-server`, SGLang, …). Example (your model path will differ):
+
+```bash
+# Example only — pick a model you have licensed and downloaded.
+llama-server -hf unsloth/Qwen3.6-35B-A3B-GGUF:UD-Q4_K_XL --port 8001
+```
+
+Then:
+
+```bash
+pip install 'creation-os[chat]'
+cos chat --endpoint http://127.0.0.1:8001/v1
+```
+
+---
+
+## Protect any Python function
+
+```python
+from cos.integrations.decorator import sigma_gated
+
+@sigma_gated
+def my_llm(prompt: str) -> str:
+    return call_my_model(prompt)
+
+result = my_llm("What is quantum computing?")
+print(f"σ={result.sigma:.3f} {result.verdict}: {result.text}")
+```
+
+---
+
+## HTTP API server (`cos serve`)
+
+```bash
+pip install 'creation-os[serve]'
+cos serve --port 8420
+```
+
+Score endpoint (OpenAPI at `/docs`), e.g.:
+
+`POST http://127.0.0.1:8420/v1/score` with JSON `{"prompt":"...","response":"..."}`.
+
+---
+
+## What the verdicts mean
+
+| Verdict   | Meaning (operator-facing) |
+|-----------|---------------------------|
+| **ACCEPT**  | σ below the accept threshold — treat as lower-risk for the configured probe. |
+| **RETHINK** | σ in the middle band — verify before trusting downstream. |
+| **ABSTAIN** | σ above the abstain threshold — treat as unreliable for the configured probe. |
+
+Thresholds default to τ_accept=0.3 and τ_abstain=0.7 unless you pass `SigmaGate(tau_accept=..., tau_abstain=...)`.
+
+---
+
+## Next steps
+
+- `examples/` — runnable scripts (see `examples/README.md`).
+- `docs/ARCHITECTURE.md` — how σ-gate is structured (L1 vs cascade vs probe).
+- `docs/CLAIM_DISCIPLINE.md` — what we claim, what we do **not** claim, and the evidence ladder (**NOT AGI ACHIEVED**).
+
+---
+
+*Spektre Labs · Creation OS · 2026*

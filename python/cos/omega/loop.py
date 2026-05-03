@@ -15,8 +15,8 @@ from typing import Any, Dict, List
 from cos.sigma_gate_core import Verdict, sigma_gate, sigma_update
 
 from .act import OmegaAct
-from .continue_phase import OmegaContinue
 from .consolidate import OmegaConsolidate
+from .continue_phase import OmegaContinue
 from .gate import OmegaGate
 from .learn import OmegaLearn
 from .perceive import OmegaPerceive
@@ -26,7 +26,7 @@ from .reflect import OmegaReflect
 from .remember import OmegaRemember
 from .safety import OmegaSafety
 from .simulate import OmegaSimulate
-from .state import N_PHASES, OmegaContext, OmegaState, PHASE_NAMES
+from .state import N_PHASES, PHASE_NAMES, OmegaContext, OmegaState
 from .think import OmegaThink
 from .watchdog import OmegaWatchdog
 

@@ -325,6 +325,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
 			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" \
 			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
+			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
 			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
 			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
@@ -335,6 +336,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
 			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
+			"$(CURDIR)/tests/test_hypervector.py" \
 			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_safety.py" \
 			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_cost.py" \
 			"$(CURDIR)/tests/test_watchdog.py" \
@@ -349,6 +351,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
 			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" \
 			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
+			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
 			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
 			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
@@ -359,6 +362,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
 			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
+			"$(CURDIR)/tests/test_hypervector.py" \
 			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_safety.py" \
 			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_cost.py" \
 			"$(CURDIR)/tests/test_watchdog.py" \

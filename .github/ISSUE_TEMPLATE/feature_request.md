@@ -6,6 +6,16 @@ labels: ["feature", "kernel-proposal", "needs-triage"]
 assignees: []
 ---
 
+## Python package / `cos` CLI (optional short form)
+
+Skip this block if you are proposing a new **`vNNN` kernel** below.
+
+- **Problem:** 
+- **Proposed solution:** 
+- **σ-gate connection:** (how does this relate to σ-scoring, ACCEPT/RETHINK/ABSTAIN, or calibration?)
+
+---
+
 <!--
 Before opening a feature request, please read:
   - docs/CLAIM_DISCIPLINE.md

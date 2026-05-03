@@ -2607,6 +2607,49 @@ def _cmd_ui_cli(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_hdc_cli(args: argparse.Namespace) -> int:
+    import json
+
+    from cos.hypervector import HyperVector, SigmaHDC
+
+    sub = str(getattr(args, "hdc_cmd", "") or "").strip()
+    dim = int(getattr(args, "hdc_dim", 10_000) or 10_000)
+    seed = int(getattr(args, "hdc_seed", 0) or 0)
+    lab = SigmaHDC(dim=dim, seed=seed)
+    if sub == "encode":
+        s, r, o = str(args.hdc_s), str(args.hdc_r), str(args.hdc_o)
+        hv = lab.encode_triple(s, r, o)
+        payload = {
+            "subject": s,
+            "relation": r,
+            "object": o,
+            "dim": hv.dim,
+            "memory_bytes": hv.memory_bytes(),
+            "bitpacked_bytes": hv.bitpacked_bytes(),
+        }
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0
+    if sub == "query":
+        s, r, o = str(args.hdc_s), str(args.hdc_r), str(args.hdc_o)
+        t = lab.encode_triple(s, r, o)
+        q = lab.query_triple(t, s, r)
+        po = HyperVector.permute(lab.book[o], 1)
+        sim = HyperVector.similarity(q, po)
+        print(json.dumps({"similarity": round(sim, 6), "dim": dim}, ensure_ascii=False))
+        return 0
+    if sub == "sequence":
+        raw = str(getattr(args, "hdc_sequence", "") or "")
+        tokens = [x.strip() for x in raw.split(",") if x.strip()]
+        if len(tokens) < 2:
+            print("cos hdc sequence: pass comma-separated --tokens", file=sys.stderr)
+            return 2
+        s_sig = lab.sequence_sigma(tokens)
+        print(json.dumps({"tokens": tokens, "sequence_sigma": round(s_sig, 6)}, ensure_ascii=False))
+        return 0
+    print("cos hdc: use encode | query | sequence", file=sys.stderr)
+    return 2
+
+
 def _cmd_evolve_step(args: argparse.Namespace) -> int:
     et = str(getattr(args, "evolve_target", "") or "").strip()
     eg = str(getattr(args, "evolve_goal", "") or "").strip()
@@ -3535,6 +3578,31 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     uip.set_defaults(func=_cmd_ui_cli)
 
+    hdc = sub.add_parser(
+        "hdc",
+        help="BSC-style hypervectors: encode triple, query unbind, sequence σ (pip install numpy)",
+    )
+    hdc_sub = hdc.add_subparsers(dest="hdc_cmd", required=True)
+    hdc_enc = hdc_sub.add_parser("encode", help="encode subject–relation–object superposition")
+    hdc_enc.add_argument("--subject", type=str, required=True, dest="hdc_s")
+    hdc_enc.add_argument("--relation", type=str, required=True, dest="hdc_r")
+    hdc_enc.add_argument("--object", type=str, required=True, dest="hdc_o")
+    hdc_enc.add_argument("--dim", type=int, default=10_000, dest="hdc_dim")
+    hdc_enc.add_argument("--seed", type=int, default=0, dest="hdc_seed")
+    hdc_enc.set_defaults(func=_cmd_hdc_cli)
+    hdc_q = hdc_sub.add_parser("query", help="similarity of unbind to permuted object vector")
+    hdc_q.add_argument("--subject", type=str, required=True, dest="hdc_s")
+    hdc_q.add_argument("--relation", type=str, required=True, dest="hdc_r")
+    hdc_q.add_argument("--object", type=str, required=True, dest="hdc_o")
+    hdc_q.add_argument("--dim", type=int, default=10_000, dest="hdc_dim")
+    hdc_q.add_argument("--seed", type=int, default=0, dest="hdc_seed")
+    hdc_q.set_defaults(func=_cmd_hdc_cli)
+    hdc_seq = hdc_sub.add_parser("sequence", help="σ-gated lab score for a token sequence")
+    hdc_seq.add_argument("--tokens", type=str, required=True, dest="hdc_sequence", metavar="CSV", help="comma-separated tokens")
+    hdc_seq.add_argument("--dim", type=int, default=10_000, dest="hdc_dim")
+    hdc_seq.add_argument("--seed", type=int, default=0, dest="hdc_seed")
+    hdc_seq.set_defaults(func=_cmd_hdc_cli)
+
     evo = sub.add_parser("evolve", help="σ-evolve lab loop (single improve_loop step by default)")
     evo.add_argument(
         "--target",
@@ -3793,9 +3861,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     mcp.add_argument(
         "--transport",
-        choices=["stdio", "http"],
+        choices=["stdio", "http", "streamable-http"],
         default="stdio",
-        help="MCP transport for the σ-gate server: stdio (local) or HTTP (streamable HTTP on 127.0.0.1)",
+        help="MCP transport: stdio | http | streamable-http (streamable HTTP on 127.0.0.1)",
     )
     mcp.add_argument(
         "--port",

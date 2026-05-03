@@ -11,7 +11,9 @@ from cos.reason import (
     Predicate,
     SigmaReason,
     Var,
+    fol_parse,
     prove_by_refutation,
+    prove_by_refutation_with_sigma,
     resolve,
     unify,
 )
@@ -100,3 +102,28 @@ def test_direct_contradiction() -> None:
         ]
     )
     assert not result["consistent"]
+
+
+def test_fol_parse_single_literal() -> None:
+    clauses = fol_parse("P(a)")
+    assert len(clauses) == 1
+    lit = next(iter(clauses[0].literals))
+    assert lit.name == "P" and not lit.negated
+
+
+def test_fol_parse_negated() -> None:
+    clauses = fol_parse("not Q(b)")
+    lit = next(iter(clauses[0].literals))
+    assert lit.negated
+
+
+def test_prove_with_sigma_trace() -> None:
+    from cos.sigma_gate import SigmaGate
+
+    gate = SigmaGate()
+    clauses = fol_parse("P(a)\nnot P(a) | Q(a)")
+    goal = Predicate("Q", [Const("a")])
+    out = prove_by_refutation_with_sigma(clauses, goal, gate, max_steps=50)
+    assert out.get("proved") is True
+    assert "step_sigmas" in out
+    assert len(out["step_sigmas"]) == len(out["trace"])

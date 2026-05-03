@@ -33,8 +33,14 @@ extern "C" {
 #define COS_SIGMA_PRIMITIVES  20
 #define COS_CHECK_TARGETS     56   /* +check-swarm +check-sandbox over v3.1.0 */
 #define COS_SUBSTRATES         4
-#define COS_FORMAL_PROOFS      6   /* 6/6 discharged; Lean 4 core, zero sorry, zero Mathlib */
-#define COS_FORMAL_PROOFS_TOTAL 6
+#define COS_FORMAL_PROOFS      14  /* T1–T6 + 8 stack lemmas; Lean 4 core, zero sorry, zero Mathlib */
+#define COS_FORMAL_PROOFS_TOTAL 14
+
+/* ACSL clause lines (requires + ensures) across v259 + v133 companion stubs,
+ * as counted by creation_os_sigma_formal_complete — distinct from tier-1 Wp
+ * goals (15) on cos_sigma_measurement_gate+clamp. */
+#define COS_FORMAL_FRAMA_ACSL_CLAUSES 30
+#define COS_FORMAL_FRAMA_ACSL_TOTAL   30
 
 /* Canonical one-line banner, for `cos --version`. */
 #define COS_VERSION_BANNER \

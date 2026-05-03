@@ -70,7 +70,28 @@ This document is the line between them.
 
 ---
 
-## 6. Peer-reviewed and community anchors (outside the diff)
+## 6. What we claim (public M-tier context)
+
+- σ-gate **L1 entropy probe** works **without** optional Python dependencies (lite `SigmaGate()`).
+- **TruthfulQA MC** AUROC **0.982** (⚠ **benchmark is saturated since 2024** — do not use as the only headline).
+- **TriviaQA** AUROC **0.960** (bind to harness JSON + SHA; not interchangeable with microbench throughput).
+
+## 7. What we do NOT claim
+
+- **HaluEval** AUROC **0.514** — the shipped single-probe story **fails** on this distribution; the M-tier table always includes this **negative** row.
+- **TruthfulQA** is **no longer** a reliable **standalone** “hallucination rate” benchmark (community saturation + shortcut baselines that do not read the question).
+- **HaluEval** is **partially solvable** by trivial answer-length rules — report methodology alongside AUROC.
+- **No single benchmark** yields a universal **hallucination rate**; use **multiple** tasks + held-out / dynamic checks.
+- **SimpleQA**, **FACTS Grounding**, **FaithDial**, **HaluEval 2.0**, and **custom dynamic** pools — primary numerics **pending** until archived harness output exists (`docs/REPRO_BUNDLE_TEMPLATE.md`).
+
+## 8. Evidence ladder (mandatory)
+
+- **Positives and negatives** are both reported in operator-facing tables (M-tier v2); silent omission of failures is a claim discipline violation.
+- **NOT AGI ACHIEVED.**
+
+---
+
+## 9. Peer-reviewed and community anchors (outside the diff)
 
 For **bibliography-ready** links and a short “what the field already agrees on vs what this git tree proves” table, see **[EXTERNAL_EVIDENCE_AND_POSITIONING.md](EXTERNAL_EVIDENCE_AND_POSITIONING.md)**.
 

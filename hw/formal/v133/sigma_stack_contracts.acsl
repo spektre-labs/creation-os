@@ -1,0 +1,113 @@
+/*
+ * v133 σ-stack — ACSL companion (KV eviction, σ-spike, speculative).
+ *
+ * This file is a **human-readable contract ledger** paired with the
+ * production implementations in:
+ *   `src/inference/sigma_kv_cache.c`
+ *   `src/sigma/sigma_spike.c`
+ *   `src/inference/sigma_speculative.c`
+ *
+ * Tier-1 Frama-C Wp for the σ-measurement primitive remains
+ * `scripts/v259/run_frama_c_wp.sh` (gate + clamp).  Stack-level Wp
+ * is optional R&D: when present, pass the `.c` unit with matching
+ * annotations; the kernel ledger counts `requires` / `ensures` lines
+ * here via `creation_os_sigma_formal_complete`.
+ *
+ * SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+ */
+
+#include <stdint.h>
+
+typedef struct {
+    int32_t *keys;
+    int32_t *values;
+    int32_t *token_sigmas;
+    int32_t  cache_len;
+    int32_t  max_len;
+    int32_t  n_layers;
+    int32_t  head_dim;
+    int32_t  n_evicted;
+    int32_t  n_tokens_seen;
+} sigma_kv_cache_t;
+
+typedef struct {
+    int32_t  gate_sigma;
+    int32_t  gate_d_sigma;
+    int32_t  gate_k_eff;
+    int32_t  last_input;
+    int32_t  spike_threshold;
+    uint32_t spikes_fired;
+    uint32_t spikes_suppressed;
+    int      last_verdict;
+} cos_sigma_spike_lane_t;
+
+typedef struct {
+    void    *draft;
+    void    *target;
+    int32_t  gate_reserved[8];
+    int32_t  draft_len;
+    int32_t  sigma_skip_tau_q16;
+    uint32_t target_skipped;
+    uint32_t target_called;
+    int32_t  same_geometry;
+} sigma_speculative_t;
+
+/* --- KV: interior eviction drops one slot; sigmas left are ≤ removed --- */
+
+/*@
+  requires \valid(cache);
+  requires cache->cache_len > 2;
+  assigns cache->keys[0 .. cache->max_len * cache->head_dim * cache->n_layers - 1];
+  assigns cache->values[0 .. cache->max_len * cache->head_dim * cache->n_layers - 1];
+  assigns cache->token_sigmas[0 .. cache->max_len - 1];
+  assigns cache->cache_len, cache->n_evicted;
+  ensures cache->cache_len == \old(cache->cache_len) - 1;
+  ensures cache->max_len == \old(cache->max_len);
+  ensures cache->head_dim == \old(cache->head_dim);
+  ensures cache->n_layers == \old(cache->n_layers);
+*/
+void sigma_kv_evict_worst_interior(sigma_kv_cache_t *cache);
+
+/*@
+  requires \valid(cache);
+  requires 0 <= idx < cache->cache_len;
+  assigns cache->keys[0 .. cache->max_len * cache->head_dim * cache->n_layers - 1];
+  assigns cache->values[0 .. cache->max_len * cache->head_dim * cache->n_layers - 1];
+  assigns cache->token_sigmas[0 .. cache->max_len - 1];
+  assigns cache->cache_len, cache->n_evicted;
+  ensures cache->cache_len <= \old(cache->cache_len);
+  ensures cache->n_layers == \old(cache->n_layers);
+*/
+void sigma_kv_evict_at(sigma_kv_cache_t *cache, int32_t idx);
+
+/* --- Spike lane: every step accounts for exactly one event --- */
+
+/*@
+  requires \valid(ss);
+  requires ss->spike_threshold > 0;
+  assigns ss->last_input, ss->spikes_fired, ss->spikes_suppressed;
+  assigns ss->gate_sigma, ss->gate_d_sigma, ss->gate_k_eff, ss->last_verdict;
+  ensures ss->spikes_fired + ss->spikes_suppressed ==
+      \old(ss->spikes_fired) + \old(ss->spikes_suppressed) + 1;
+  ensures \result == 0 || \result == 1 || \result == 2;
+  ensures ss->spike_threshold == \old(ss->spike_threshold);
+*/
+int cos_sigma_spike_lane_step(cos_sigma_spike_lane_t *ss,
+                               int32_t input_q16, int32_t k_raw_q16);
+
+/* --- Speculative: bounded accept count; monotonic verify/skip counters --- */
+
+/*@
+  requires \valid(spec);
+  requires spec->draft_len > 0;
+  assigns spec->gate_reserved[0..7];
+  assigns spec->target_skipped, spec->target_called;
+  ensures \result >= 0;
+  ensures spec->target_skipped + spec->target_called >=
+      \old(spec->target_skipped) + \old(spec->target_called);
+  ensures spec->draft_len == \old(spec->draft_len);
+  ensures spec->same_geometry == \old(spec->same_geometry);
+*/
+int32_t sigma_speculative_step(sigma_speculative_t *spec, int32_t cur_token,
+                               int32_t *draft_tokens_out, int32_t draft_cap,
+                               int32_t *accepted, int32_t accepted_cap);

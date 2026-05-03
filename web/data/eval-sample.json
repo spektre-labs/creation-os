@@ -1,0 +1,8 @@
+{
+  "title": "Lab eval teaser",
+  "metrics": [
+    { "name": "merge_gate", "value": "portable + v6..v29", "note": "See Makefile target merge-gate" },
+    { "name": "mmlu_harness", "value": null, "note": "Populate from repro bundle JSON only; do not ship placeholder scores" }
+  ],
+  "source": "Replace this file with CI-exported JSON; keep eval page local/offline."
+}

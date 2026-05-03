@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+apiVersion: v2
+name: creation-os
+description: σ-aware cognitive architecture — cos-serve HTTP API (/v1/health, /v1/gate, /v1/verify)
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

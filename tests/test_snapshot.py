@@ -85,3 +85,58 @@ def test_snapshot_save_load() -> None:
     loaded = StateSnapshot.load(path)
     assert loaded.state == snap.state
     assert loaded.checksum == snap.checksum
+
+
+def test_sigma_snapshot_save_load_diff(tmp_path) -> None:
+    from cos import SigmaGate
+    from cos.snapshot import SigmaSnapshot
+
+    g = SigmaGate()
+    p = tmp_path / "sys.json"
+    SigmaSnapshot.save(g, {"nodes": 1}, {"models": []}, p)
+    blob = SigmaSnapshot.load(p)
+    assert "state" in blob and blob["state"]["gate"]
+
+
+def test_sigma_snapshot_restore_point(tmp_path) -> None:
+    from cos import SigmaGate
+    from cos.snapshot import SigmaSnapshot
+
+    g = SigmaGate()
+    g.tau_accept = 0.11
+    p = tmp_path / "r.json"
+    SigmaSnapshot.save(g, None, None, p)
+    blob = SigmaSnapshot.load(p)
+    g2 = SigmaGate()
+    SigmaSnapshot.restore_point(blob, g2)
+    assert abs(float(g2.tau_accept) - 0.11) < 1e-5
+
+
+def test_sigma_snapshot_verify_integrity() -> None:
+    from cos.snapshot import SigmaSnapshot
+
+    r = SigmaSnapshot.verify_integrity({"state": {"gate": {"a": 1}, "x": [2, 3]}})
+    assert r["ok"] and len(r["component_hashes"]) == 2
+
+
+def test_sigma_snapshot_periodic_save(tmp_path) -> None:
+    from cos import SigmaGate
+    from cos.snapshot import SigmaSnapshot
+
+    ss = SigmaSnapshot()
+    g = SigmaGate()
+    p = tmp_path / "q.json"
+    first = ss.periodic_save(0.0, g, {}, {}, p)
+    assert first["saved"] is True
+    second = ss.periodic_save(60.0, g, {}, {}, p)
+    assert second.get("saved") is False
+
+
+def test_sigma_snapshot_diff() -> None:
+    from cos.snapshot import SigmaSnapshot
+
+    a = {"state": {"gate": {"x": 1}}}
+    b = {"state": {"gate": {"x": 2}}}
+    d = SigmaSnapshot.diff(a, b)
+    assert d["n_changed"] >= 1
+

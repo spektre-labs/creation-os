@@ -40,7 +40,9 @@ try:
 except ImportError:  # pragma: no cover
     FastMCP = None  # type: ignore[misc, assignment]
 
-from .mcp_sigma_audit import append_record, stats as audit_stats, tail as audit_tail
+from .mcp_sigma_audit import append_record
+from .mcp_sigma_audit import stats as audit_stats
+from .mcp_sigma_audit import tail as audit_tail
 from .sigma_gate import SigmaGate
 from .sigma_gate_core import Q16, SigmaState, Verdict, sigma_gate, sigma_update
 from .sigma_gate_precheck import SigmaPrecheck

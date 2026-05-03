@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Optional CI: build docker-compose stack and probe /v1/health (heavy; ollama pull).
+# Manual: workflow_dispatch only by default to conserve runner minutes.
+
+name: Docker Compose Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "Dockerfile.prod"
+      - "docker-compose.yml"
+      - "scripts/docker/compose_smoke.sh"
+      - "src/cli/cos_serve.c"
+
+jobs:
+  compose-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Smoke test (single-container; /v1/health)
+        env:
+          COS_DOCKER_SMOKE: single
+        run: bash scripts/docker/compose_smoke.sh

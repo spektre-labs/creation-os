@@ -1,6 +1,10 @@
 <!-- README surface: shadcn-style zinc tokens (Card, Muted, radius ~12px, shadow-sm). -->
 <!-- Figure embeds: outer Card table (max-width…) + inner img width=100%, radius 8px. Dark rasters: optional soft depth shadow on img. After a closing </table>, leave a blank line before a GFM markdown table so GitHub parses the table. -->
 
+[![PyPI](https://img.shields.io/pypi/v/creation-os)](https://pypi.org/project/creation-os/)
+[![CI](https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml/badge.svg)](https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-SCSL--1.0%20OR%20AGPL--3.0--only-blue)](./LICENSE)
+
 <p align="center">
   <a href="https://spektrelabs.org">
     <img
@@ -49,6 +53,72 @@
 
 <br/>
 
+## Quick Start (Python package)
+
+```bash
+pip install creation-os
+```
+
+### σ pipeline (prompt → guard → σ → decision)
+
+```python
+from cos import Pipeline
+
+pipe = Pipeline()
+result = pipe.score("What is 2+2?", "4")
+print(result.sigma, result.verdict, result.text)
+
+if result:
+    print("Reliable!")
+else:
+    print("Unreliable!")
+```
+
+Extras: ``pip install 'creation-os[langchain]'`` (LangChain callback), ``'creation-os[litellm]'``, ``'creation-os[probes]'`` (LSD probe / torch), ``'creation-os[serve]'`` (FastAPI).
+
+### Score any LLM output
+
+```python
+from cos import SigmaGate
+
+gate = SigmaGate()
+sigma, verdict = gate.score("What is 2+2?", "4")
+```
+
+### LangChain integration
+
+```python
+from cos.integrations.langchain import SigmaGateCallback
+
+handler = SigmaGateCallback()
+chain.invoke({"input": "..."}, config={"callbacks": [handler]})
+print(handler.last_sigma, handler.last_verdict)
+```
+
+Advanced tracing (run-id maps, ``on_abstain=...``): import from ``cos.integrations.langchain_sigma``.
+
+### OpenAI-style client wrapper
+
+```python
+from cos.integrations.openai_wrapper import sigma_chat
+
+response = sigma_chat(client, messages=[{"role": "user", "content": "Hello"}])
+print(response.sigma, response.verdict)
+```
+
+### Decorator — any function
+
+```python
+from cos.integrations.decorator import sigma_gated
+
+@sigma_gated
+def my_llm(prompt: str) -> str:
+    return call_any_model(prompt)
+
+result = my_llm("Explain gravity")
+print(result.sigma, result.verdict, result.text)
+```
+
 ## Claim Discipline
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:44rem;margin:0 auto 8px;">
@@ -86,7 +156,7 @@ Creation OS does not claim everything. It measures what it can, proves what is w
 | 2. Runtime | σ-gate ACCEPT/RETHINK/ABSTAIN, single forward pass | **shipped** |
 | 3. Measured | TruthfulQA 0.982, TriviaQA 0.960, BitNet 2B pipeline | **receipts in repo** |
 | 4. Negative | HaluEval 0.514 (near random), HellaSwag bounded, MMLU not dominant | **documented** |
-| 5. Formal | Lean 4: 6/6, Frama-C: 15/15 | **verified** |
+| 5. Formal | Lean 4: 14/14, ACSL clauses: 30/30 (Frama-C Wp tier-1: 15 goals) | **verified** |
 | 6. Architecture | Ω-loop, Engram, JEPA, Swarm, Sovereign, TTT | **built** |
 | 7. Roadmap | AGI-oriented architecture — not AGI achieved | **research direction** |
 
@@ -102,9 +172,9 @@ Creation OS does not claim everything. It measures what it can, proves what is w
   &nbsp;
   <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/release-v3.2.0--HORIZON-27272a?style=flat-square&labelColor=ffffff" alt="Release v3.2.0 HORIZON"/></a>
   &nbsp;
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-6%2F6-18181b?style=flat-square&labelColor=f4f4f5" alt="Lean 6/6"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Lean-14%2F14-18181b?style=flat-square&labelColor=f4f4f5" alt="Lean 14/14"/></a>
   &nbsp;
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C-15%2F15-3f3f46?style=flat-square&labelColor=f4f4f5" alt="Frama-C 15/15"/></a>
+  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20ACSL-30%2F30-3f3f46?style=flat-square&labelColor=f4f4f5" alt="Frama-C ACSL 30/30"/></a>
 </p>
 </td></tr></table>
 
@@ -145,6 +215,26 @@ The hot path <strong>measures and gates</strong> every answer before output. Sep
 ## What this is
 
 Creation OS is a **local σ-aware AI runtime** that scores internal coherence and alignment **before** returning an answer. The portable interrupt is **12-byte** `sigma_state_t` in C ([`python/cos/sigma_gate.h`](python/cos/sigma_gate.h)) with Python mirrors ([`python/cos/sigma_gate_core.py`](python/cos/sigma_gate_core.py)); the lab stack adds probes, cascades, and harnesses around that primitive.
+
+## Modules (79)
+
+Creation OS ships with a broad **in-tree module surface** (documentation sometimes rounds to “79” integrated areas spanning inference through ops). The bullets below are a **coverage map** for navigation — not a capability matrix, AGI claim, or substitute for harness evidence. Read [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) before citing outcomes.
+
+- **Inference**: BitNet ternary engine, σ-attention, KV cache, speculative decoding
+- **Safety**: σ-gate multi-level cascade, guardrails, red team, ZKP attestation
+- **Intelligence**: neuro-symbolic reasoning, JEPA world model, continual learning, TTT
+- **Memory**: episodic + semantic + consolidation + forgetting, knowledge graph
+- **Planning**: hierarchical planning with risk analysis and fallbacks
+- **Social**: theory-of-mind lab scaffolds, trust dynamics, social learning
+- **Multi-agent**: swarm (stigmergy), conflict resolution, federated learning
+- **Protocol**: MCP (FastMCP stdio + JSON-RPC lab), A2A lab tasks, Agent Cards
+- **Alignment**: value learning, human-in-the-loop escalation, explainability
+- **Embodiment**: sensorimotor loop lab, symbol grounding, physical world model
+- **Drives**: curiosity, competence, homeostasis (lab intrinsic signals)
+- **Consciousness**: Φ and integration **proxies only** — no phenomenal consciousness claim
+- **Hardware**: RISC-V σ ISA lab mirrors, TinyML, Soul LED paths where present
+- **Deployment**: Docker, Helm, air-gap options per docs, sovereign accounting lab, pip install
+- **Ops**: registry, digital twin lab, observability hooks, cos-evolve RSI lab
 
 <a id="quick-demo"></a>
 
@@ -263,6 +353,29 @@ Eight-layer map of the σ-aware system (narrative + lab — not every layer ship
 </table>
 </p>
 
+<a id="sigma-fabric"></a>
+
+### σ-Fabric: full system connection
+
+[`SigmaFabric`](python/cos/fabric.py) is the **wiring layer**: `boot()` loads available Python modules (gate, pipeline, stream, metacog, reason, snapshots, …) and `process()` runs a **traced** path with σ carried stage to stage. The map below is **conceptual** (not every box is present in a minimal `pip install`); **L9** stays a research-facing proxy — not a consciousness product claim (see [Claim discipline](#claim-discipline)).
+
+<p align="center">
+<table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1200px,96%);width:96%;margin:0 auto;">
+<tr>
+<td style="background:#0a0a0a;border:1px solid #e4e4e7;border-radius:12px;padding:clamp(10px,2vw,22px);box-shadow:0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);">
+<img
+  src="./assets/sigma-fabric-full-stack.png"
+  width="100%"
+  alt="Creation OS — σ-fabric: full system connection (L0–L9 stack, σ flow, SigmaFabric API; Spektre Labs)"
+  decoding="async"
+  loading="lazy"
+  style="max-width:100%;height:auto;border-radius:8px;display:block;border:0;box-shadow:0 10px 40px -18px rgb(0 0 0 / 0.35);"
+/>
+</td>
+</tr>
+</table>
+</p>
+
 Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md).
 
 <a id="continuous-omega-loop"></a>
@@ -340,7 +453,7 @@ sigma_verdict_t v = sigma_gate(&state);
 <td align="center"><a href="#measured"><img src="https://img.shields.io/badge/TruthfulQA%20817-0.261%20%E2%86%92%200.336-27272a?style=for-the-badge&labelColor=ffffff" alt="TruthfulQA 817 accuracy lift"/></a></td>
 </tr>
 <tr>
-<td align="center"><a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%206%2F6%20%C2%B7%20Frama--C%2015%2F15-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Proofs — Lean 6/6, Frama-C 15/15"/></a></td>
+<td align="center"><a href="#proof-status"><img src="https://img.shields.io/badge/proofs-Lean%2014%2F14%20%C2%B7%20Frama--C%20ACSL%2030%2F30-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Proofs — Lean 14/14, Frama-C ACSL 30/30"/></a></td>
 <td align="center"><a href="#architecture"><img src="https://img.shields.io/badge/hot%20path-branchless%20%C2%B7%20Q16.16%20%C2%B7%20libc%20only-52525b?style=for-the-badge&labelColor=ffffff" alt="hot path: branchless · Q16.16 · libc only"/></a></td>
 </tr>
 </table>
@@ -367,7 +480,7 @@ sigma_verdict_t v = sigma_gate(&state);
 <li><a href="#what-this-is"><strong>What this is</strong></a></li>
 <li><a href="#quick-demo"><strong>Quick demo</strong></a></li>
 <li><a href="#the-core-primitive-sigma"><strong>σ primitive</strong></a> · <a href="#signal-cascade"><strong>Cascade</strong></a></li>
-<li><a href="#architecture-overview"><strong>Architecture map</strong></a> · <a href="#continuous-omega-loop"><strong>Ω-loop</strong></a> · <a href="#memory-engram"><strong>Memory</strong></a></li>
+<li><a href="#architecture-overview"><strong>Architecture map</strong></a> · <a href="#sigma-fabric"><strong>σ-Fabric</strong></a> · <a href="#continuous-omega-loop"><strong>Ω-loop</strong></a> · <a href="#memory-engram"><strong>Memory</strong></a></li>
 <li><a href="#try-it"><strong>Try it</strong></a> — 30 s smoke</li>
 <li><a href="#measured"><strong>Measured</strong></a> — receipts</li>
 <li><a href="#how-creation-os-differs"><strong>Differs</strong></a> — vs field</li>
@@ -418,7 +531,43 @@ sigma_verdict_t v = sigma_gate(&state);
 
 <p align="center" style="color:#71717a;font-size:13px;max-width:40rem;margin:0 auto 14px;line-height:1.55;">Zero-to-chat on macOS or Linux — weights optional for CI (<code style="background:#f4f4f5;padding:2px 8px;border-radius:6px;border:1px solid #e4e4e7;font-size:12px;color:#3f3f46;">COS_INSTALL_NO_BITNET=1</code>).</p>
 
-Fast path — under a minute, no GGUF download (recorded sigma from benchmarks):
+Fastest path — PyPI (`cos` CLI; default `cos gate` uses a deterministic **quickstart** scorer so you can run without cloning; the trained LSD probe is `cos gate --lsd` from a full checkout):
+
+```bash
+pip install creation-os
+cos version
+cos gate --prompt "What is the capital of France?" --response "Berlin"
+# → σ=0.890 verdict=ABSTAIN
+cos gate --prompt "What is 2+2?" --response "4"
+# → σ=0.060 verdict=ACCEPT
+```
+
+**Ops — production HTTP** ([`Dockerfile.prod`](Dockerfile.prod): `cos-serve` on port 3001; image does not bake model weights — use Ollama or mount a backend):
+
+```bash
+docker build -f Dockerfile.prod -t creation-os:prod .
+docker run --rm -p 3001:3001 creation-os:prod
+curl -fsS http://127.0.0.1:3001/v1/health
+
+# Published builds (on tag `v*`): see `.github/workflows/docker.yml`
+# docker run --rm -p 3001:3001 ghcr.io/spektre-labs/creation-os:latest
+
+# Compose: σ-gate + Ollama (see docker-compose.yml)
+docker compose up -d
+curl -fsS http://127.0.0.1:3001/v1/health
+# POST /v1/gate runs generation + σ against the inference backend (requires a healthy Ollama/model).
+
+# Kubernetes
+helm install creation-os ./helm/creation-os
+```
+
+**Air-gapped bundle** (after `make cos cos-serve` from a checkout):
+
+```bash
+cos sovereign --package --output creation-os-sovereign.tar.gz
+```
+
+Fast path — under a minute in a checkout, no GGUF download (recorded sigma from benchmarks):
 
 ```bash
 git clone https://github.com/spektre-labs/creation-os
@@ -494,10 +643,15 @@ curl -fsSL https://raw.githubusercontent.com/spektre-labs/creation-os/main/scrip
 brew tap spektre-labs/cos
 brew install creation-os
 
-# Docker — minimal cos image (separate from the main v106 HTTP Dockerfile)
+# Docker — Alpine cos + cos-demo (lab smoke; see Dockerfile.cos)
 docker build -f Dockerfile.cos -t creation-os:cos .
 docker run --rm creation-os:cos
-# When published: docker run --rm ghcr.io/spektre-labs/creation-os:<tag>
+
+# Docker — production σ-gate HTTP (cos-serve + Python cos stack; see Dockerfile.prod)
+docker build -f Dockerfile.prod -t creation-os:prod .
+docker run --rm -p 3001:3001 creation-os:prod
+
+# When published: docker run --rm -p 3001:3001 ghcr.io/spektre-labs/creation-os:latest
 
 # From source
 git clone https://github.com/spektre-labs/creation-os.git
@@ -505,6 +659,85 @@ cd creation-os && make cos cos-demo && ./cos demo --batch
 ```
 
 Tagged releases also attach **macOS universal** and **Linux** tarballs from `.github/workflows/release.yml`.
+
+<a id="framework-integrations"></a>
+
+## Framework integrations (LangChain · LangGraph · CrewAI · AutoGen)
+
+Thin **optional** shims live under [`python/cos/integrations/`](python/cos/integrations/). Default scoring uses the same deterministic **quickstart** τ bands as `cos gate` without an LSD pickle; pass a trained [`SigmaGate`](python/cos/sigma_gate.py) for trajectory-probe scores (see [`docs/CLAIM_DISCIPLINE.md`](docs/CLAIM_DISCIPLINE.md) before mixing lab demos with harness receipts).
+
+```bash
+pip install 'creation-os[langchain]'      # or [langgraph] / [crewai] / [autogen] / [frameworks]
+```
+
+**LangChain** (callbacks on each LLM end):
+
+```python
+from cos.integrations.langchain_sigma import SigmaGateCallback, SigmaAbstainError
+# llm = ChatOpenAI(callbacks=[SigmaGateCallback()])
+```
+
+**LangGraph** (state node + router names `output` / `regenerate` / `abstain`):
+
+```python
+from cos.integrations.langgraph_sigma import sigma_gate_node, sigma_gate_router
+# graph.add_node("sigma_gate", lambda s: sigma_gate_node(s))
+# graph.add_conditional_edges("sigma_gate", sigma_gate_router)
+```
+
+**CrewAI** (tool):
+
+```python
+from cos.integrations.crewai_sigma import SigmaGateTool
+# Agent(tools=[SigmaGateTool()])
+```
+
+**AutoGen-style dict messages** (hook on a full thread):
+
+```python
+from cos.integrations.autogen_sigma import SigmaAutoGenHook, SigmaGateHook
+# hook.process_last_received_message(messages, sender)  # mutates last dict; ABSTAIN adds suffix
+# SigmaGateHook(...).process_message(sender, receiver, {"content": text})  # single-message copy
+```
+
+Copy-paste recipes and `cos integrations --check` / `--example`: [`docs/v152/INTEGRATIONS.md`](docs/v152/INTEGRATIONS.md).
+
+**Any Python callable**:
+
+```python
+from cos.decorators import sigma_gated
+
+@sigma_gated
+def my_agent(prompt: str) -> str:
+    return model.generate(prompt)
+```
+
+**Interop SDK re-exports** (requires `creation-os` installed in the same env): `from creation_os.integrations import SigmaGateCallback`, `SigmaAutoGenHook`, **`sigma_gated_llm`** (dict-returning wrapper with a gate), and `sigma_gated` (decorator from `cos.decorators`) — see [`python/creation_os/integrations/__init__.py`](python/creation_os/integrations/__init__.py).
+
+### σ-red-team (gate robustness)
+
+Adversarial batch aimed at the **σ-gate** (can a hallucinated completion still earn **ACCEPT**?). Offline CI uses a mock generator + quickstart gate:
+
+```bash
+pip install -e ".[dev]"   # from a checkout, or pip install creation-os
+python -m cos red-team --mock --n 50 --ci --threshold 0.05
+python -m cos red-team --mock --ci --threshold 0.05 --all
+# or: ./scripts/cos red-team --mock --ci --threshold 0.05 --n 20
+```
+
+Optional: `--attack confident_hallucination`, `--output report.json`, `--lsd` with a pickle for the real probe. See [`python/cos/sigma_red_team.py`](python/cos/sigma_red_team.py), [`.github/workflows/red-team.yml`](.github/workflows/red-team.yml).
+
+| Integration | LangSmith | Guardrails AI | NeMo | Creation OS |
+|-------------|-----------|---------------|------|-------------|
+| σ per assistant/LLM step | ✗ | partial | ✗ | ✓ |
+| Trajectory / hidden-state probe | ✗ | ✗ | partial | ✓ (LSD pickle when configured) |
+| ACCEPT / RETHINK / ABSTAIN | ✗ | mostly block/pass | ✗ | ✓ |
+| LangChain | native | ✓ | ✗ | ✓ callback |
+| LangGraph | native | partial | ✗ | ✓ node + router |
+| CrewAI | partial | partial | ✗ | ✓ tool |
+| AutoGen | ✗ | ✗ | ✗ | ✓ hook |
+| Decorator | ✗ | ✗ | ✗ | ✓ `@sigma_gated` |
+| Local-first default | ✗ | ✓ | ✗ | ✓ |
 
 <p align="center" style="color:#71717a;font-size:12px;letter-spacing:0.1em;"><tt>— EVIDENCE —</tt></p>
 
@@ -1131,17 +1364,22 @@ Host metadata when publishing numbers:
 
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:48rem;margin:0 auto 16px;"><tr><td style="background:#fafafa;border:1px solid #e4e4e7;border-radius:12px;padding:14px 16px;text-align:center;">
 <p align="center" style="margin:0;">
-  <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-6%2F6%20theorems-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Lean 4 theorems"/></a>
+  <a href="hw/formal/v259/Measurement.lean"><img src="https://img.shields.io/badge/Lean%204-14%2F14%20theorems-18181b?style=for-the-badge&labelColor=f4f4f5" alt="Lean 4 theorems"/></a>
   &nbsp;
-  <a href="#proof-status"><img src="https://img.shields.io/badge/Frama--C%20Wp-15%2F15%20tier--1-3f3f46?style=for-the-badge&labelColor=ffffff" alt="Frama-C Wp"/></a>
+  <a href="docs/v259/formal_status.md"><img src="https://img.shields.io/badge/Frama--C-ACSL%2030%20%C2%B7%20Wp%20tier--1%2015-3f3f46?style=for-the-badge&labelColor=ffffff" alt="Frama-C ACSL + Wp"/></a>
 </p>
 </td></tr></table>
 
-- **Lean 4**: 6 / 6 theorems discharged, **sorry-free** —
-  [`hw/formal/v259/Measurement.lean`](hw/formal/v259/Measurement.lean);
-  `make check-v259`.
-- **Frama-C Wp**: 15 / 15 tier-1 proof obligations discharged —
-  `make check-framac-tier1`.
+- **Lean 4**: 14 / 14 proof obligations discharged, **sorry-free** —
+  T1–T6 in [`hw/formal/v259/Measurement.lean`](hw/formal/v259/Measurement.lean)
+  plus eight stack lemmas in
+  [`formal/lean/CreationOS/V133.lean`](formal/lean/CreationOS/V133.lean);
+  `make check-v259` (primitive) + `make check-lean-t3-discharged` (Lean gate + v133).
+- **Frama-C**: **ACSL clause ledger** 30 tracked lines (v259 companion +
+  [`hw/formal/v133/sigma_stack_contracts.acsl`](hw/formal/v133/sigma_stack_contracts.acsl)),
+  via `creation_os_sigma_formal_complete`; **tier-1 Wp** remains 15 goals on
+  `cos_sigma_measurement_gate` + `cos_sigma_measurement_clamp`
+  ([`scripts/v259/run_frama_c_wp.sh`](scripts/v259/run_frama_c_wp.sh)).
 - **SBY + EQY** (YosysHQ OSS CAD Suite, optional): `make stack-singularity` —
   [`hw/formal/README.md`](hw/formal/README.md).
 - **Formalism → silicon map**:

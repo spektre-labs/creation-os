@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# σ-gate red team: mock model + quickstart gate; fails closed if bypass_rate > threshold.
+
+name: σ-gate Red Team
+
+on:
+  push:
+    paths:
+      - "python/cos/sigma_gate*.py"
+      - "python/cos/sigma_red_team.py"
+      - "python/cos/sigma_robustness.py"
+      - "python/cos/sigma_hardening.py"
+      - "python/cos/sigma_gate_quickscore.py"
+      - "python/cos/scoring.py"
+      - "python/cos/cli.py"
+      - ".github/workflows/red-team.yml"
+
+jobs:
+  red-team:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install package (editable)
+        run: pip install -e ".[dev]"
+
+      - name: σ-red-team (mock, CI gate)
+        run: python -m cos red-team --mock --ci --threshold 0.05 --n 24 --quiet --output red_team_report.json
+
+      - name: σ-red-team v153 suite (mock, CI)
+        run: python -m cos red-team --mock --ci --threshold 0.05 --all --quiet --output red_team_v153_report.json
+
+      - name: Unit tests (red team)
+        run: |
+          python tests/test_sigma_red_team.py -v
+          python tests/test_sigma_red_team_v153.py -v
