@@ -15,7 +15,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterator, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
@@ -118,6 +118,21 @@ def _cmd_firewall(args: argparse.Namespace) -> int:
     )
     print(json.dumps(payload, ensure_ascii=False))
     return 4 if not ok else 0
+
+
+def _cmd_tool_safety(args: argparse.Namespace) -> int:
+    from cos.tool_safety import ToolSafety
+
+    tool = str(getattr(args, "ts_tool", "") or "").strip()
+    if not tool:
+        print("cos tool-safety: --tool NAME is required", file=sys.stderr)
+        return 2
+    astr = str(getattr(args, "ts_args", "") or "")
+    intent = str(getattr(args, "ts_intent", "") or "")
+    ts = ToolSafety()
+    out = ts.sigma_before_execute(tool, astr, intent)
+    print(json.dumps(out, ensure_ascii=False, default=str))
+    return 0
 
 
 def _cmd_distill_generate(args: argparse.Namespace) -> int:
@@ -1199,11 +1214,20 @@ def _cmd_mcp(args: argparse.Namespace) -> int:
         did_any = True
 
     if not did_any:
-        print(
-            "cos mcp: use --list, --wrap --server CMD, and/or --register --server-id ID …",
-            file=sys.stderr,
-        )
-        return 2
+        try:
+            from cos.mcp_server import run_server
+        except ImportError as exc:
+            print(f"cos mcp: {exc}", file=sys.stderr)
+            return 1
+        try:
+            run_server(
+                transport=str(getattr(args, "transport", "stdio")),
+                port=int(getattr(args, "port", 8000)),
+            )
+        except ImportError as exc:
+            print(f"cos mcp: {exc}", file=sys.stderr)
+            return 1
+        return 0
     return 0
 
 
@@ -2008,18 +2032,200 @@ def _cmd_init(args: argparse.Namespace) -> int:
     )
 
 
+def _bench_resume(args: argparse.Namespace) -> int:
+    from cos import SigmaGate
+    from cos.eval.checkpoint_eval import CheckpointEval, load_checkpoint_meta
+    from cos.eval.multi_model_eval import (
+        MultiModelEval,
+        compute_metrics_from_result_rows,
+        load_eval_tuples,
+    )
+
+    ckpt = Path(str(getattr(args, "bench_resume", "") or "").strip())
+    if not ckpt.is_file():
+        print(f"cos bench: checkpoint not found: {ckpt}", file=sys.stderr)
+        return 1
+    meta = load_checkpoint_meta(ckpt)
+    if not meta.get("model_key") or not meta.get("benchmark"):
+        print(
+            "cos bench: checkpoint meta missing model_key/benchmark (regenerate with --multi-model).",
+            file=sys.stderr,
+        )
+        return 1
+    gate = SigmaGate()
+    benchmark = str(meta["benchmark"])
+    model_key = str(meta["model_key"])
+    endpoint = str(meta.get("endpoint", "http://127.0.0.1:8000/v1"))
+    n = int(meta.get("n", getattr(args, "bench_n", 30) or 30))
+    ck_every = int(meta.get("checkpoint_every", getattr(args, "bench_checkpoint_every", 5) or 5))
+    out_dir = meta.get("output_dir", getattr(args, "bench_output_dir", "eval_results") or "eval_results")
+    data_path_raw = meta.get("data_path") or str(getattr(args, "bench_data_path", "") or "").strip()
+    dp = Path(data_path_raw) if data_path_raw else None
+    pairs = load_eval_tuples(benchmark, data_path=dp)
+    me = MultiModelEval(gate, endpoint)
+
+    def eval_fn(i: int, pair: tuple[str, str]):
+        prompt, gold = pair
+        response = me._generate(model_key, prompt)
+        sigma, verdict = gate.score(prompt, response)
+        correct = MultiModelEval._check_correct(response, gold)
+        return {
+            "prompt": prompt[:2000],
+            "response": response[:4000],
+            "gold": gold[:500],
+            "sigma": float(sigma),
+            "verdict": str(verdict),
+            "correct": bool(correct),
+            "model": model_key,
+            "benchmark": benchmark,
+            "index": i,
+        }
+
+    ck_ob = CheckpointEval(out_dir)
+    rows = ck_ob.continue_from_path(ckpt, eval_fn, pairs, n, checkpoint_every=ck_every)
+    metrics = compute_metrics_from_result_rows(rows)
+    metrics.update({"model": model_key, "benchmark": benchmark, "rows": rows, "resumed": True})
+    if _cli_out_json(args):
+        print(json.dumps(metrics, ensure_ascii=False, indent=2))
+        return 0
+    print(
+        f"resumed model={model_key} benchmark={benchmark} n_done={metrics.get('n')} "
+        f"AUROC={metrics.get('auroc')} abstain={metrics.get('abstention_rate')}"
+    )
+    return 0
+
+
+def _bench_multi_model(args: argparse.Namespace) -> int:
+    import hashlib
+    import time
+
+    from cos import SigmaGate
+    from cos.eval.multi_model_eval import (
+        EVAL_MODELS,
+        format_r_ml_markdown_table,
+        run_one_model_checkpointed,
+    )
+
+    raw_models = str(getattr(args, "bench_models_list", "") or "").strip()
+    if not raw_models:
+        print("cos bench: --multi-model requires --models key1,key2 (see eval/multi_model_eval.py)", file=sys.stderr)
+        return 1
+    models = [m.strip() for m in raw_models.split(",") if m.strip()]
+    for m in models:
+        if m not in EVAL_MODELS:
+            print(
+                f"cos bench: unknown model {m!r}; known: {', '.join(sorted(EVAL_MODELS))}",
+                file=sys.stderr,
+            )
+            return 1
+    bench_raw = str(getattr(args, "bench_dataset", "") or "").strip().lower()
+    if not bench_raw:
+        print("cos bench: --multi-model requires --dataset truthfulqa[,simpleqa,…]", file=sys.stderr)
+        return 1
+    benchmarks = [b.strip() for b in bench_raw.split(",") if b.strip()]
+    n = int(getattr(args, "bench_n", 30) or 30)
+    endpoint = str(getattr(args, "bench_endpoint", "http://127.0.0.1:8000/v1") or "http://127.0.0.1:8000/v1")
+    ck_every = int(getattr(args, "bench_checkpoint_every", 5) or 5)
+    out_dir = Path(str(getattr(args, "bench_output_dir", "eval_results") or "eval_results"))
+    dpath = str(getattr(args, "bench_data_path", "") or "").strip()
+    data_path = Path(dpath) if dpath else None
+    run_id = hashlib.sha256(str(time.time()).encode()).hexdigest()[:8]
+    gate = SigmaGate()
+    flat: List[Dict[str, Any]] = []
+    payload_models: Dict[str, Any] = {}
+
+    def _prog(cur: int, total: int, _row: Mapping[str, Any]) -> None:
+        if _cli_verbose(args):
+            print(f"  [{cur}/{total}] checkpoint", file=sys.stderr)
+
+    for model in models:
+        for bmark in benchmarks:
+            try:
+                out = run_one_model_checkpointed(
+                    gate,
+                    model_key=model,
+                    benchmark=bmark,
+                    n=n,
+                    endpoint=endpoint,
+                    output_dir=out_dir,
+                    checkpoint_every=ck_every,
+                    run_id=run_id,
+                    data_path=data_path,
+                    progress=_prog if _cli_verbose(args) else None,
+                )
+            except Exception as exc:
+                payload_models[f"{model}:{bmark}"] = {"error": str(exc), "model": model, "benchmark": bmark}
+                flat.append(
+                    {
+                        "model": model,
+                        "benchmark": bmark,
+                        "error": str(exc),
+                        "status": "—",
+                    }
+                )
+                continue
+            payload_models[f"{model}:{bmark}"] = out
+            flat.append(
+                {
+                    "model": model,
+                    "auroc": out.get("auroc"),
+                    "abstention_rate": out.get("abstention_rate"),
+                    "smece": out.get("smece"),
+                    "snr": out.get("snr"),
+                    "benchmark": bmark,
+                    "status": out.get("status", "—"),
+                    "checkpoint_file": out.get("checkpoint_file"),
+                }
+            )
+
+    md = format_r_ml_markdown_table(flat, include_known_halu=True)
+    bundle = {
+        "version": "multi_model_eval_v1",
+        "not_agi_achieved": True,
+        "run_id": run_id,
+        "n": n,
+        "models": payload_models,
+        "flat": flat,
+        "markdown": md,
+    }
+    if _cli_out_json(args):
+        print(json.dumps(bundle, ensure_ascii=False, indent=2))
+        return 0
+    print(md)
+    return 0
+
+
+def _fmt_mtier_text(payload: dict) -> str:
+    from cos.report import SigmaReport
+
+    rows = payload.get("rows") or []
+    return SigmaReport().mtier_table_markdown(rows)
+
+
 def _cmd_bench(args: argparse.Namespace) -> int:
+    resume = str(getattr(args, "bench_resume", "") or "").strip()
+    if resume:
+        return _bench_resume(args)
+    if bool(getattr(args, "bench_multi_model", False)):
+        return _bench_multi_model(args)
+    from cos import SigmaGate
+    from cos.bench import DATASET_NAMES, SigmaBench
+
+    if bool(getattr(args, "bench_mtier", False)):
+        bench = SigmaBench()
+        payload = bench.mtier_v2()
+        print(json.dumps(payload, ensure_ascii=False, indent=2) if _cli_out_json(args) else _fmt_mtier_text(payload))
+        return 0
+
     ds = str(getattr(args, "bench_dataset", "") or "").strip()
     if not ds:
         print(
-            "cos bench: pass --dataset NAME (toy SigmaBench lab). "
+            "cos bench: pass --dataset NAME (toy lab), --mtier, --multi-model, or --resume CHECKPOINT.jsonl. "
             "Full harnesses live in a git checkout (benchmarks/, Makefile). "
             "Extras: pip install 'creation-os[probes,dev]'.",
             file=sys.stderr,
         )
         return 1
-    from cos.bench import DATASET_NAMES, SigmaBench
-    from cos import SigmaGate
 
     if ds not in DATASET_NAMES:
         print(f"cos bench: unknown dataset {ds!r} (known: {', '.join(DATASET_NAMES)})", file=sys.stderr)
@@ -2215,28 +2421,30 @@ def _cmd_cost_cli(args: argparse.Namespace) -> int:
 
 def _cmd_graph_cli(args: argparse.Namespace) -> int:
     from cos.graph import SigmaGraph
+    from cos.graph_export import GraphExport, load_graph_from_json
 
-    add_triple = getattr(args, "graph_add", None)
+    loadp = str(getattr(args, "graph_load_json", "") or "").strip()
+    g = load_graph_from_json(loadp) if loadp else SigmaGraph()
+
     hop_from = str(getattr(args, "graph_hop_from", "") or "").strip()
     hop_to = str(getattr(args, "graph_hop_to", "") or "").strip()
+    exp = getattr(args, "graph_export", None)
+    wants_export = bool(exp) and len(exp) == 2
+    viz_path = str(getattr(args, "graph_viz", "") or "").strip()
 
+    add_triple = getattr(args, "graph_add", None)
+    did_add = False
+    added_payload: Optional[Dict[str, Any]] = None
     if add_triple and len(add_triple) == 3:
         s, r, o = (str(x) for x in add_triple)
-        g = SigmaGraph()
         raw_sig = getattr(args, "graph_sigma", None)
         if raw_sig is not None and str(raw_sig).strip() != "":
-            added = g.add(s, r, o, sigma=float(raw_sig))
+            added_payload = g.add(s, r, o, sigma=float(raw_sig))
         else:
-            added = g.add(s, r, o)
-        out: Dict[str, Any] = {"added": added}
-        if _cli_out_json(args):
-            print(json.dumps(out, ensure_ascii=False))
-        else:
-            print(json.dumps(out, ensure_ascii=False, indent=2))
-        return 0
+            added_payload = g.add(s, r, o)
+        did_add = True
 
     if hop_from and hop_to:
-        g = SigmaGraph()
         path = g.multi_hop(hop_from, hop_to, max_hops=int(getattr(args, "graph_hops", 3) or 3))
         if _cli_out_json(args):
             print(json.dumps(path, default=str, ensure_ascii=False))
@@ -2244,8 +2452,159 @@ def _cmd_graph_cli(args: argparse.Namespace) -> int:
             print(json.dumps(path, default=str, ensure_ascii=False, indent=2))
         return 0
 
-    print("cos graph: pass --add S R O or --hop-from and --hop-to", file=sys.stderr)
+    if wants_export:
+        mode, outp = str(exp[0]).lower().strip(), str(exp[1]).strip()  # type: ignore[index]
+        if mode == "json":
+            GraphExport(g).to_json(outp)
+        elif mode == "obsidian":
+            GraphExport(g).to_obsidian(outp)
+        else:
+            print(f"cos graph: unknown export mode {mode!r} (use json|obsidian)", file=sys.stderr)
+            return 2
+
+    if viz_path:
+        try:
+            from cos.graph_viz import visualize
+        except ImportError as exc:
+            print(f"cos graph: {exc}", file=sys.stderr)
+            return 1
+        visualize(g, viz_path)
+
+    if did_add and not wants_export and not viz_path:
+        out_add = {"added": added_payload}
+        if _cli_out_json(args):
+            print(json.dumps(out_add, ensure_ascii=False))
+        else:
+            print(json.dumps(out_add, ensure_ascii=False, indent=2))
+        return 0
+
+    if wants_export or viz_path or loadp:
+        summary = {"stats": g.stats()}
+        if _cli_out_json(args):
+            print(json.dumps(summary, ensure_ascii=False))
+        else:
+            print(json.dumps(summary, ensure_ascii=False, indent=2))
+        return 0
+
+    print(
+        "cos graph: pass --add S R O, --hop-from/--hop-to, --load-json, --export MODE PATH, or --viz PATH",
+        file=sys.stderr,
+    )
     return 1
+
+
+def _cmd_dream_cli(args: argparse.Namespace) -> int:
+    from cos.dream import run_dream_maintenance
+    from cos.graph import SigmaGraph
+    from cos.graph_export import GraphExport, load_graph_from_json
+
+    loadp = str(getattr(args, "dream_load_json", "") or "").strip()
+    g = load_graph_from_json(loadp) if loadp else SigmaGraph()
+    add_t = getattr(args, "dream_add", None)
+    if add_t and len(add_t) == 3:
+        g.add(str(add_t[0]), str(add_t[1]), str(add_t[2]))
+
+    out = run_dream_maintenance(
+        g,
+        dedup_threshold=float(getattr(args, "dream_dedup_threshold", 0.93) or 0.93),
+        max_age_days=float(getattr(args, "dream_max_age_days", 30.0) or 30.0),
+        run_decay=not bool(getattr(args, "dream_no_decay", False)),
+        run_dedup=not bool(getattr(args, "dream_no_dedup", False)),
+        run_orphans=not bool(getattr(args, "dream_no_orphans", False)),
+        run_infer=not bool(getattr(args, "dream_no_infer", False)),
+    )
+    savep = str(getattr(args, "dream_save_json", "") or "").strip()
+    if savep:
+        GraphExport(g).to_json(savep)
+        out = {**out, "saved_json": savep}
+    if _cli_out_json(args):
+        print(json.dumps(out, default=str, ensure_ascii=False))
+    else:
+        print(json.dumps(out, default=str, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_ingest_cli(args: argparse.Namespace) -> int:
+    from cos.graph import SigmaGraph
+    from cos.graph_export import GraphExport, load_graph_from_json
+    from cos.ingest import SigmaIngest
+
+    path = str(getattr(args, "ingest_path", "") or "").strip()
+    if not path:
+        print("cos ingest: pass a FILE path", file=sys.stderr)
+        return 2
+    try:
+        loadp = str(getattr(args, "ingest_load_json", "") or "").strip()
+        g = load_graph_from_json(loadp) if loadp else SigmaGraph()
+        report = SigmaIngest(g).ingest(path)
+        out = {**report, "graph_stats": g.stats(), "triples_added": report.get("accepted", 0)}
+        savep = str(getattr(args, "ingest_save_json", "") or "").strip()
+        if savep:
+            GraphExport(g).to_json(savep)
+            out = {**out, "saved_json": savep}
+    except (OSError, ValueError) as exc:
+        print(f"cos ingest: {exc}", file=sys.stderr)
+        return 2
+    if _cli_out_json(args):
+        print(json.dumps(out, default=str, ensure_ascii=False))
+    else:
+        print(json.dumps(out, default=str, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_voice_cli(args: argparse.Namespace) -> int:
+    from cos.voice_local import SigmaVoice, listen, sigma_before_speak, speak
+
+    mock = str(getattr(args, "voice_mock", "") or "").strip()
+    audio = str(getattr(args, "voice_audio", "") or "").strip()
+    speak_txt = str(getattr(args, "voice_speak", "") or "").strip()
+    check_txt = str(getattr(args, "voice_check", "") or "").strip()
+    whisper_model = str(getattr(args, "voice_whisper_model", "tiny") or "tiny").strip()
+    kokoro_voice = str(getattr(args, "voice_kokoro_voice", "af_bella") or "af_bella").strip()
+    out: Dict[str, Any]
+    if mock:
+        out = listen(mock_text=mock)
+    elif audio:
+        try:
+            voice = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
+            raw = voice.listen(audio_path=audio)
+            out = {
+                "text": raw.get("text", ""),
+                "sigma_transcription": raw.get("sigma_transcription", raw.get("sigma")),
+                "verdict": raw.get("verdict"),
+                "sigma": raw.get("sigma"),
+            }
+        except ImportError as exc:
+            print(f"cos voice: {exc}", file=sys.stderr)
+            return 1
+    elif speak_txt:
+        captured: list[str] = []
+        out = speak(speak_txt, play_fn=lambda s: captured.append(s))
+        out["captured"] = captured
+    elif check_txt:
+        out = sigma_before_speak(check_txt)
+    else:
+        print("cos voice: use --listen-mock TEXT | --audio PATH | --speak TEXT | --check TEXT", file=sys.stderr)
+        return 2
+    if _cli_out_json(args):
+        print(json.dumps(out, default=str, ensure_ascii=False))
+    else:
+        print(json.dumps(out, default=str, ensure_ascii=False, indent=2))
+    return 0
+
+
+def _cmd_ui_cli(args: argparse.Namespace) -> int:
+    try:
+        from cos.ui.app import run_ui
+    except ImportError as exc:
+        print(f"cos ui: {exc}", file=sys.stderr)
+        return 1
+    run_ui(
+        port=int(getattr(args, "ui_port", 8765) or 8765),
+        show=not bool(getattr(args, "ui_headless", False)),
+        native=bool(getattr(args, "ui_native", False)),
+    )
+    return 0
 
 
 def _cmd_evolve_step(args: argparse.Namespace) -> int:
@@ -2384,8 +2743,8 @@ def _cmd_calibrate(args: argparse.Namespace) -> int:
         if not ds:
             print("cos calibrate lab: pass --dataset NAME", file=sys.stderr)
             return 1
-        from cos.bench import DATASET_NAMES, SigmaBench
         from cos import SigmaGate
+        from cos.bench import DATASET_NAMES, SigmaBench
 
         if ds not in DATASET_NAMES:
             print(
@@ -2925,7 +3284,62 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     bench_hint = sub.add_parser(
         "bench",
-        help="Toy SigmaBench table (--dataset) or pointer to full checkout harnesses",
+        help="Toy SigmaBench, --mtier disclosure, --multi-model σ eval, or --resume checkpoint",
+    )
+    bench_hint.add_argument(
+        "--resume",
+        type=str,
+        default="",
+        dest="bench_resume",
+        help="continue eval from eval_results/checkpoint_<id>.jsonl (uses sidecar .meta.json)",
+    )
+    bench_hint.add_argument(
+        "--multi-model",
+        action="store_true",
+        dest="bench_multi_model",
+        help="evaluate σ-gate on OpenAI-compatible /v1 for each --models entry (checkpoint every 5 by default)",
+    )
+    bench_hint.add_argument(
+        "--models",
+        type=str,
+        default="",
+        dest="bench_models_list",
+        help="comma-separated keys from cos.eval.multi_model_eval.EVAL_MODELS",
+    )
+    bench_hint.add_argument("--n", type=int, default=30, dest="bench_n", help="rows per model per dataset (default 30)")
+    bench_hint.add_argument(
+        "--endpoint",
+        type=str,
+        default="http://127.0.0.1:8000/v1",
+        dest="bench_endpoint",
+        help="OpenAI-compatible root (default local vLLM/SGLang)",
+    )
+    bench_hint.add_argument(
+        "--checkpoint-every",
+        type=int,
+        default=5,
+        dest="bench_checkpoint_every",
+        help="JSONL append frequency for --multi-model (default 5)",
+    )
+    bench_hint.add_argument(
+        "--output-dir",
+        type=str,
+        default="eval_results",
+        dest="bench_output_dir",
+        help="directory for checkpoint_*.jsonl and results_*.json",
+    )
+    bench_hint.add_argument(
+        "--data-path",
+        type=str,
+        default="",
+        dest="bench_data_path",
+        help="optional JSONL path for TruthfulQA/SimpleQA/HaluEval loaders",
+    )
+    bench_hint.add_argument(
+        "--mtier",
+        action="store_true",
+        dest="bench_mtier",
+        help="print M-tier v2 table (positives + negatives + pending; use with --json for machine bundle)",
     )
     bench_hint.add_argument("--dataset", type=str, default="", dest="bench_dataset")
     bench_hint.add_argument(
@@ -3061,9 +3475,65 @@ def main(argv: Optional[List[str]] = None) -> int:
     grp.add_argument("--hop-from", type=str, default="", dest="graph_hop_from")
     grp.add_argument("--hop-to", type=str, default="", dest="graph_hop_to")
     grp.add_argument("--hops", type=int, default=3, dest="graph_hops")
+    grp.add_argument("--load-json", type=str, default="", dest="graph_load_json", help="load triples from export_json file")
+    grp.add_argument(
+        "--export",
+        nargs=2,
+        metavar=("MODE", "PATH"),
+        dest="graph_export",
+        default=None,
+        help="export graph: json PATH | obsidian DIR",
+    )
+    grp.add_argument("--viz", type=str, default="", dest="graph_viz", help="render PNG (optional networkx+matplotlib)")
     grp.add_argument("--json", action="store_true", dest="out_json")
     grp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     grp.set_defaults(func=_cmd_graph_cli)
+
+    drm = sub.add_parser("dream", help="σ graph maintenance (dedup, decay, infer, orphans, σ report)")
+    drm.add_argument("--load-json", type=str, default="", dest="dream_load_json")
+    drm.add_argument("--add", nargs=3, metavar=("S", "R", "O"), dest="dream_add", default=None)
+    drm.add_argument("--dedup-threshold", type=float, default=0.93, dest="dream_dedup_threshold")
+    drm.add_argument("--max-age-days", type=float, default=30.0, dest="dream_max_age_days")
+    drm.add_argument("--no-decay", action="store_true", dest="dream_no_decay")
+    drm.add_argument("--no-dedup", action="store_true", dest="dream_no_dedup")
+    drm.add_argument("--no-orphans", action="store_true", dest="dream_no_orphans")
+    drm.add_argument("--no-infer", action="store_true", dest="dream_no_infer")
+    drm.add_argument("--json", action="store_true", dest="out_json")
+    drm.set_defaults(func=_cmd_dream_cli)
+
+    ing = sub.add_parser(
+        "ingest",
+        help="Ingest document into σ-graph (word chunks, relation-regex or LLM extract, σ filter)",
+    )
+    ing.add_argument("ingest_path", nargs="?", default="", help="file path (.txt .md .html .docx .pdf .epub)")
+    ing.add_argument("--load-json", type=str, default="", dest="ingest_load_json", help="start from existing GraphExport JSON")
+    ing.add_argument("--save-json", type=str, default="", dest="ingest_save_json", help="write graph after ingest (GraphExport JSON)")
+    ing.add_argument("--json", action="store_true", dest="out_json")
+    ing.set_defaults(func=_cmd_ingest_cli)
+
+    voi = sub.add_parser(
+        "voice",
+        help="Local voice lab: σ on transcript + before speak (optional faster-whisper / kokoro)",
+    )
+    voi.add_argument("--listen-mock", type=str, default="", dest="voice_mock", metavar="TEXT")
+    voi.add_argument("--audio", type=str, default="", dest="voice_audio", metavar="PATH")
+    voi.add_argument("--speak", type=str, default="", dest="voice_speak", metavar="TEXT")
+    voi.add_argument("--check", type=str, default="", dest="voice_check", metavar="TEXT")
+    voi.add_argument("--model", type=str, default="tiny", dest="voice_whisper_model", help="faster-whisper model id")
+    voi.add_argument("--voice", type=str, default="af_bella", dest="voice_kokoro_voice", help="Kokoro voice id (TTS)")
+    voi.add_argument("--json", action="store_true", dest="out_json")
+    voi.set_defaults(func=_cmd_voice_cli)
+
+    uip = sub.add_parser("ui", help="NiceGUI σ-gauge lab desktop (optional nicegui+pywebview)")
+    uip.add_argument("--port", type=int, default=8765, dest="ui_port")
+    uip.add_argument("--headless", action="store_true", dest="ui_headless", help="do not auto-open browser")
+    uip.add_argument(
+        "--native",
+        action="store_true",
+        dest="ui_native",
+        help="native desktop window (pywebview) when supported",
+    )
+    uip.set_defaults(func=_cmd_ui_cli)
 
     evo = sub.add_parser("evolve", help="σ-evolve lab loop (single improve_loop step by default)")
     evo.add_argument(
@@ -3319,7 +3789,19 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     mcp = sub.add_parser(
         "mcp",
-        help="σ-MCP registry + middleware integration hints (Python lab; see also creation_os_sigma_mcp)",
+        help="σ-gate FastMCP server (default) or registry / wrap / register (see docs/MCP.md)",
+    )
+    mcp.add_argument(
+        "--transport",
+        choices=["stdio", "http"],
+        default="stdio",
+        help="MCP transport for the σ-gate server: stdio (local) or HTTP (streamable HTTP on 127.0.0.1)",
+    )
+    mcp.add_argument(
+        "--port",
+        type=int,
+        default=8000,
+        help="TCP port when --transport http (default: 8000)",
     )
     mcp.add_argument(
         "--list",
@@ -3469,6 +3951,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     fw.add_argument("--check", type=str, default=None, help="classify user/tool-param shaped text")
     fw.add_argument("--check-tool", type=str, default=None, dest="check_tool", help="classify tool output shaped text")
     fw.set_defaults(func=_cmd_firewall)
+
+    tsf = sub.add_parser(
+        "tool-safety",
+        help="Deterministic tool policy + σ-before-execute (SAFE/MODERATE/BLOCKED + SigmaGate)",
+    )
+    tsf.add_argument("--tool", type=str, required=True, dest="ts_tool", metavar="NAME", help="tool name")
+    tsf.add_argument("--args", type=str, default="", dest="ts_args", metavar="STR", help="argument string")
+    tsf.add_argument("--intent", type=str, default="", dest="ts_intent", metavar="STR", help="optional intent text for σ prompt")
+    tsf.set_defaults(func=_cmd_tool_safety)
 
     ttt = sub.add_parser(
         "ttt",

@@ -315,18 +315,56 @@ check: standalone test check-text-similarity check-c2pa check-c2pa-stamp \
 	check-bitnet-native
 	@echo "check: OK (standalone + test + text_similarity + c2pa_sigma + stamp/validate + bitnet_native)"
 
-# σ lab Python tests (MoE + σ-latent + σ-swarm; cos.sigma_gate only).
+# σ lab Python tests (MoE through fleet, evolve, bench, voice, index, mcp, safety, offline, cost, watchdog, probe_v2, calibrate_v2, eval, redteam; cos.sigma_gate only).
 .PHONY: check-cos-moe
 check-cos-moe:
 	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest \
 			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
-			"$(CURDIR)/tests/test_swarm.py" -q && \
+			"$(CURDIR)/tests/test_swarm.py" "$(CURDIR)/tests/test_world.py" \
+			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
+			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" \
+			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
+			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
+			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
+			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
+			"$(CURDIR)/tests/test_embed.py" "$(CURDIR)/tests/test_prompt_guard.py" \
+			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
+			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
+			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_bench.py" \
+			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
+			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
+			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
+			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_safety.py" \
+			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_cost.py" \
+			"$(CURDIR)/tests/test_watchdog.py" \
+			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
+			"$(CURDIR)/tests/test_eval.py" \
+			"$(CURDIR)/tests/test_redteam.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
 			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
-			"$(CURDIR)/tests/test_swarm.py" -q && \
+			"$(CURDIR)/tests/test_swarm.py" "$(CURDIR)/tests/test_world.py" \
+			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
+			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" \
+			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
+			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
+			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
+			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
+			"$(CURDIR)/tests/test_embed.py" "$(CURDIR)/tests/test_prompt_guard.py" \
+			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
+			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
+			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_bench.py" \
+			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
+			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
+			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
+			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_safety.py" \
+			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_cost.py" \
+			"$(CURDIR)/tests/test_watchdog.py" \
+			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
+			"$(CURDIR)/tests/test_eval.py" \
+			"$(CURDIR)/tests/test_redteam.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
