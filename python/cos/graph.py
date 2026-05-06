@@ -119,6 +119,11 @@ class SigmaGraph:
 
         return {"added": True, "id": triple.id, "sigma": sigma}
 
+    def embed_triple(self, subject: str, relation: str, obj: str, jepa: Any) -> Any:
+        """Encode ``(subject, relation, object)`` into the same latent space as ``jepa.encode``."""
+        statement = f"{subject} {relation} {obj}"
+        return jepa.encode(statement)
+
     def extract(self, text: str, source: Optional[str] = None) -> Dict[str, Any]:
         triples_found = self._simple_extract(text)
         results: List[Dict[str, Any]] = []

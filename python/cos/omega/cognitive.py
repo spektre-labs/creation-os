@@ -25,11 +25,14 @@ class OmegaLoop:
         memory: Any,
         graph: Any,
         config: Optional[Any] = None,
+        *,
+        world_model: Optional[Any] = None,
     ) -> None:
         self.gate = gate
         self.memory = memory
         self.graph = graph
         self.config = config
+        self.world_model = world_model
         self.σ_history: List[Dict[str, Any]] = []
 
     def _perceive(self, input_data: Input) -> str:
@@ -43,18 +46,7 @@ class OmegaLoop:
             perceived = str(input_data).strip()
         return perceived or "∅"
 
-    def _remember(self, perceived: str) -> str:
-        rows: List[Any] = []
-        try:
-            rows = self.memory.recall(perceived, top_k=5)
-        except Exception:
-            rows = []
-        if not rows:
-            return ""
-        lines = [str(r.get("content", r)) for r in rows if r]
-        return "\n".join(lines)[:4000]
-
-    def _predict(self, perceived: str, context: str) -> str:
+    def _predict_baseline(self, perceived: str, context: str) -> str:
         glimpses: List[str] = []
         try:
             tokens = [t for t in perceived.replace(",", " ").split() if len(t) > 2][:3]
@@ -74,6 +66,32 @@ class OmegaLoop:
         if context:
             base += " | mem: " + context[:200]
         return base
+
+    def _predict(self, perceived: str, context: str) -> str:
+        base = self._predict_baseline(perceived, context)
+        wm = self.world_model
+        if wm is None:
+            return base
+        try:
+            wm_out = wm.step(perceived)
+            jepa_line = (
+                f"jepa_wm: σ_pred={float(wm_out['σ']):.4f} verdict={wm_out['verdict']} "
+                f"surprise={wm_out['surprise']}"
+            )
+            return f"{jepa_line} | {base}"
+        except Exception:
+            return base
+
+    def _remember(self, perceived: str) -> str:
+        rows: List[Any] = []
+        try:
+            rows = self.memory.recall(perceived, top_k=5)
+        except Exception:
+            rows = []
+        if not rows:
+            return ""
+        lines = [str(r.get("content", r)) for r in rows if r]
+        return "\n".join(lines)[:4000]
 
     def _think(self, perceived: str, context: str, prediction: str, *, rethink: bool = False) -> str:
         tag = " [rethink]" if rethink else ""

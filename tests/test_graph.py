@@ -5,6 +5,14 @@
 from __future__ import annotations
 
 from cos.graph import SigmaGraph
+from cos.jepa import SigmaJEPA
+
+
+def test_embed_triple_in_jepa_latent() -> None:
+    graph = SigmaGraph()
+    j = SigmaJEPA(dim=32)
+    v = graph.embed_triple("Paris", "is_capital_of", "France", j)
+    assert len(v) == 32 or (hasattr(v, "shape") and int(v.shape[0]) == 32)  # type: ignore[attr-defined]
 
 
 def test_add_triple() -> None:

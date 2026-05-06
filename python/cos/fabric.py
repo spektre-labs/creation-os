@@ -242,13 +242,22 @@ class SigmaFabric:
             self._note_skip('graph')
         try:
             from cos.config import SigmaConfig
+            from cos.jepa import SigmaJEPA
             from cos.omega import OmegaLoop
 
             cfg = SigmaConfig()
             mem = self.layers.get("memory")
             gr = self.layers.get("graph")
             if mem is not None and gr is not None:
-                self.layers["omega"] = OmegaLoop(gate=gate, memory=mem, graph=gr, config=cfg)
+                jm = SigmaJEPA(gate=gate, dim=128)
+                self.layers["jepa_wm"] = jm
+                self.layers["omega"] = OmegaLoop(
+                    gate=gate,
+                    memory=mem,
+                    graph=gr,
+                    config=cfg,
+                    world_model=jm,
+                )
             else:
                 self._note_skip("omega")
         except ImportError:

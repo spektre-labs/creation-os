@@ -2442,6 +2442,36 @@ def _cmd_cost_cli(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_world_cli(args: argparse.Namespace) -> int:
+    from cos.jepa import SigmaJEPA
+
+    wm = SigmaJEPA(
+        dim=int(getattr(args, "world_dim", 256) or 256),
+    )
+    obs_seq = [str(x) for x in (getattr(args, "world_observe", None) or [])]
+    if not obs_seq:
+        print("cos world: pass --observe TEXT [TEXT ...]", file=sys.stderr)
+        return 1
+    rows: List[Dict[str, Any]] = []
+    for obs in obs_seq:
+        result = wm.step(obs)
+        rows.append(dict(result))
+        if not _cli_out_json(args):
+            print(
+                f"  [{result['verdict']}] σ={float(result['σ']):.3f} surprise={result['surprise']}",
+            )
+    payload: Dict[str, Any] = {
+        "avg_sigma": wm.avg_σ(),
+        "surprise_rate": wm.surprise_rate(),
+        "history": rows,
+    }
+    if _cli_out_json(args):
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0
+    print(f"\nAvg σ: {wm.avg_σ():.3f}, Surprise rate: {wm.surprise_rate():.1%}")
+    return 0
+
+
 def _cmd_graph_cli(args: argparse.Namespace) -> int:
     from cos.graph import SigmaGraph
     from cos.graph_export import GraphExport, load_graph_from_json
@@ -3571,6 +3601,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     grp.add_argument("--json", action="store_true", dest="out_json")
     grp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     grp.set_defaults(func=_cmd_graph_cli)
+
+    wrd = sub.add_parser(
+        "world",
+        help="Heuristic σ-JEPA world model over --observe sequence (numpy optional; lab)",
+    )
+    wrd.add_argument(
+        "--observe",
+        nargs="+",
+        required=True,
+        dest="world_observe",
+        metavar="TEXT",
+        help="one or more observation strings (latent prediction σ vs realization)",
+    )
+    wrd.add_argument("--dim", type=int, default=256, dest="world_dim", help="latent dimension (default 256)")
+    wrd.add_argument("--json", action="store_true", dest="out_json", help="emit JSON summary only")
+    wrd.set_defaults(func=_cmd_world_cli)
 
     drm = sub.add_parser("dream", help="σ graph maintenance (dedup, decay, infer, orphans, σ report)")
     drm.add_argument("--load-json", type=str, default="", dest="dream_load_json")
