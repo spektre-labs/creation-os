@@ -21,19 +21,36 @@ class OmegaLoop:
 
     def __init__(
         self,
-        gate: Any,
-        memory: Any,
-        graph: Any,
+        gate: Optional[Any] = None,
+        memory: Optional[Any] = None,
+        graph: Optional[Any] = None,
         config: Optional[Any] = None,
         *,
         world_model: Optional[Any] = None,
     ) -> None:
-        self.gate = gate
-        self.memory = memory
-        self.graph = graph
-        self.config = config
+        from cos.config import SigmaConfig
+        from cos.graph import SigmaGraph
+        from cos.memory import SigmaMemory
+        from cos.sigma_gate import SigmaGate
+
+        g = gate if gate is not None else SigmaGate()
+        self.gate = g
+        self.memory = memory if memory is not None else SigmaMemory(gate=g)
+        self.graph = graph if graph is not None else SigmaGraph(gate=g)
+        self.config = config if config is not None else SigmaConfig()
         self.world_model = world_model
         self.σ_history: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def _verdict_token(verdict: Any) -> str:
+        s = str(verdict).upper()
+        if "ABSTAIN" in s:
+            return "ABSTAIN"
+        if "RETHINK" in s:
+            return "RETHINK"
+        if "ACCEPT" in s:
+            return "ACCEPT"
+        return str(verdict)
 
     def _perceive(self, input_data: Input) -> str:
         if isinstance(input_data, dict):
@@ -121,8 +138,9 @@ class OmegaLoop:
         except Exception:
             pass
 
-    def _reflect(self, σ: float, verdict: str, result: Dict[str, Any]) -> float:
-        penalty = 0.15 if verdict == "ABSTAIN" else 0.0
+    def _reflect(self, σ: float, verdict: Any, result: Dict[str, Any]) -> float:
+        vn = self._verdict_token(verdict)
+        penalty = 0.15 if vn == "ABSTAIN" else 0.0
         if not result.get("ok", False):
             penalty += 0.1
         return max(0.0, min(1.0, float(σ) * 0.85 + penalty))
@@ -134,15 +152,17 @@ class OmegaLoop:
         prediction = self._predict(perceived, context)
         reasoning = self._think(perceived, context, prediction, rethink=False)
         σ, verdict = self.gate.score(str(perceived), str(reasoning))
+        vn = self._verdict_token(verdict)
 
-        if verdict == "ABSTAIN":
+        if vn == "ABSTAIN":
             action: Dict[str, Any] = {"type": "abstain", "reason": "σ too high"}
-        elif verdict == "RETHINK":
+        elif vn == "RETHINK":
             reasoning = self._think(perceived, context, prediction, rethink=True)
             σ, verdict = self.gate.score(str(perceived), str(reasoning))
-            if verdict == "ABSTAIN":
+            vn = self._verdict_token(verdict)
+            if vn == "ABSTAIN":
                 action = {"type": "abstain", "reason": "σ too high after rethink"}
-            elif verdict == "ACCEPT":
+            elif vn == "ACCEPT":
                 action = {"type": "accept", "result": reasoning}
             else:
                 action = {"type": "rethink", "result": reasoning}
@@ -150,13 +170,13 @@ class OmegaLoop:
             action = {"type": "accept", "result": reasoning}
 
         result = self._act(action)
-        self._learn(perceived, reasoning, σ, verdict)
-        σ_meta = self._reflect(σ, verdict, result)
+        self._learn(perceived, reasoning, σ, str(vn))
+        σ_meta = self._reflect(σ, vn, result)
         self.σ_history.append(
             {
                 "σ": float(σ),
                 "σ_meta": float(σ_meta),
-                "verdict": str(verdict),
+                "verdict": str(vn),
                 "input": str(input_data)[:100],
             }
         )
@@ -164,7 +184,7 @@ class OmegaLoop:
             "result": result,
             "σ": float(σ),
             "σ_meta": float(σ_meta),
-            "verdict": str(verdict),
+            "verdict": str(vn),
             "step": len(self.σ_history),
         }
 

@@ -7,7 +7,7 @@
 No 128K / 2M speed claims; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple, Union, cast
 
 __all__ = ["SigmaTTT"]
 
@@ -27,19 +27,34 @@ class SigmaTTT:
 
     def adapt(
         self,
-        arg0: Any,
-        arg1: Any | None = None,
-        *,
+        a: Any,
+        b: Any,
         learning_rate: float = 0.001,
         chunks: int = 5,
-        gate: Any | None = None,
-    ) -> Any:
-        """Fast-weight nudge (str, dict) **or** σ-gate threshold TTT (examples list, gate)."""
-        if isinstance(arg0, str) and isinstance(arg1, dict):
-            return self._adapt_fast_weights(arg0, arg1)
-        examples = arg0
-        g = arg1 if gate is None else gate
-        return self._adapt_thresholds_from_examples(examples, g, learning_rate=learning_rate, chunks=chunks)
+    ) -> Union[Dict[str, float], Dict[str, Any]]:
+        """Fast-weight nudge **or** threshold nudge on labeled ``(prompt, response, correct)`` pairs.
+
+        * ``adapt(context_tokens: str, fast_weights: dict)`` → updated weights (legacy).
+        * ``adapt(examples: list[tuple], gate: SigmaGate, ...)`` → σ report dict (lab TTT).
+        """
+        del learning_rate  # reserved for smoother future nudges
+        if isinstance(a, (list, tuple)) and hasattr(b, "score"):
+            if not a:
+                z = 0.0
+                return {
+                    "examples": 0,
+                    "σ_before_avg": z,
+                    "σ_after_avg": z,
+                    "sigma_before_avg": z,
+                    "sigma_after_avg": z,
+                    "improved": False,
+                }
+            return self._adapt_labeled_examples(
+                cast(List[Tuple[str, str, bool]], list(a)),
+                b,
+                chunks=int(chunks),
+            )
+        return self._adapt_fast_weights(str(a), dict(b))
 
     def _adapt_fast_weights(self, context_tokens: str, fast_weights: Dict[str, float]) -> Dict[str, float]:
         fw = dict(fast_weights)
@@ -47,48 +62,41 @@ class SigmaTTT:
         fw["mlp_proj"] = float(fw.get("mlp_proj", 1.0)) * (1.0 - 2.0 * h)
         return fw
 
-    def _adapt_thresholds_from_examples(
+    def _adapt_labeled_examples(
         self,
-        examples: Sequence[Tuple[str, str, bool]],
+        examples: List[Tuple[str, str, bool]],
         gate: Any,
         *,
-        learning_rate: float = 0.001,
-        chunks: int = 5,
+        chunks: int,
     ) -> Dict[str, Any]:
-        """Chunk-wise threshold nudge from labeled (prompt, response, correct) rows (lab)."""
-        if not examples:
-            return {
-                "examples": 0,
-                "σ_before_avg": 0.0,
-                "σ_after_avg": 0.0,
-                "improved": False,
-            }
-        rows: List[Tuple[str, str, bool]] = [(str(a[0]), str(a[1]), bool(a[2])) for a in examples]
-        n_chunk = max(1, int(chunks))
-        size = max(1, (len(rows) + n_chunk - 1) // n_chunk)
         σ_before: List[float] = []
         σ_after: List[float] = []
-        scale = float(learning_rate) / 0.001
-        for i in range(0, len(rows), size):
-            chunk = rows[i : i + size]
+        n_chunks = max(1, int(chunks))
+        step = max(1, (len(examples) + n_chunks - 1) // n_chunks)
+        for i in range(0, len(examples), step):
+            chunk = examples[i : i + step]
             for prompt, response, correct in chunk:
-                σ, _ = gate.score(prompt, response)
+                σ, _ver = gate.score(str(prompt), str(response))
                 σ_before.append(float(σ))
-                t_accept = float(getattr(gate, "threshold_accept", 0.15))
-                t_abstain = float(getattr(gate, "threshold_abstain", 0.85))
-                if float(σ) < t_accept and not correct:
-                    gate.adjust_threshold("accept", -0.01 * scale)
-                elif float(σ) > t_abstain and correct:
-                    gate.adjust_threshold("abstain", 0.01 * scale)
-                σ_new, _ = gate.score(prompt, response)
+                if float(σ) < float(gate.threshold_accept) and not bool(correct):
+                    gate.adjust_threshold("accept", -0.01)
+                elif float(σ) > float(gate.threshold_abstain) and bool(correct):
+                    gate.adjust_threshold("abstain", 0.01)
+                σ_new, _ = gate.score(str(prompt), str(response))
                 σ_after.append(float(σ_new))
-        b = sum(σ_before)
-        a = sum(σ_after)
+        s0 = sum(σ_before)
+        s1 = sum(σ_after)
+        nb = max(len(σ_before), 1)
+        na = max(len(σ_after), 1)
+        avg_b = s0 / nb
+        avg_a = s1 / na
         return {
-            "examples": len(rows),
-            "σ_before_avg": b / max(len(σ_before), 1),
-            "σ_after_avg": a / max(len(σ_after), 1),
-            "improved": a < b,
+            "examples": len(examples),
+            "σ_before_avg": avg_b,
+            "σ_after_avg": avg_a,
+            "sigma_before_avg": avg_b,
+            "sigma_after_avg": avg_a,
+            "improved": s1 < s0,
         }
 
     def chunk_wise_update(

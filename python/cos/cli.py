@@ -797,28 +797,25 @@ def _cmd_agent(args: argparse.Namespace) -> int:
 
 
 def _cmd_omega(args: argparse.Namespace) -> int:
-    from cos.config import SigmaConfig
-    from cos.graph import SigmaGraph
-    from cos.memory import SigmaMemory
     from cos.omega import OmegaLoop, OmegaPhaseHarness
-    from cos.sigma_gate import SigmaGate
 
     if getattr(args, "omega_cognitive_step", False):
-        gate = SigmaGate()
-        oloop = OmegaLoop(
-            gate=gate,
-            memory=SigmaMemory(gate=gate),
-            graph=SigmaGraph(gate=gate),
-            config=SigmaConfig(),
-        )
+        goal = str(getattr(args, "goal", "") or "").strip() or "lab_step"
+        oloop = OmegaLoop()
         _ = getattr(args, "mock", False)
-        out = oloop.step(str(args.goal))
+        out = oloop.step(goal)
         if getattr(args, "json", False):
             print(json.dumps(out, ensure_ascii=False))
             return 0
         print(json.dumps({"mode": "cognitive_step", "step": out["step"], "verdict": out["verdict"], "σ": out["σ"]}, ensure_ascii=False))
         return 0
 
+    if not str(getattr(args, "goal", "") or "").strip():
+        print(
+            "cos omega: pass --goal for 14-phase harness, or use --step (optional --goal)",
+            file=sys.stderr,
+        )
+        return 1
     loop = OmegaPhaseHarness()
     if getattr(args, "mock", False):
         _ = loop  # reserved: swap mock backends in harness builds
@@ -3909,7 +3906,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     pr.set_defaults(func=_cmd_proconductor)
 
     om = sub.add_parser("omega", help="Ω-loop harness (14 σ phases per turn; lab scaffold)")
-    om.add_argument("--goal", type=str, required=True, help="task / objective string")
+    om.add_argument("--goal", type=str, default="", help="task / objective (required for harness; optional with --step)")
     om.add_argument("--turns", type=int, default=50, help="maximum Ω turns (default 50)")
     om.add_argument(
         "--step",
