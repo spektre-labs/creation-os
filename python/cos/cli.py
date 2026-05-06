@@ -1220,6 +1220,7 @@ def _cmd_mcp(args: argparse.Namespace) -> int:
         try:
             run_server(
                 transport=str(getattr(args, "transport", "stdio")),
+                host=str(getattr(args, "host", "127.0.0.1")),
                 port=int(getattr(args, "port", 8000)),
             )
         except ImportError as exc:
@@ -3866,6 +3867,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         choices=["stdio", "http", "streamable-http"],
         default="stdio",
         help="MCP transport: stdio | http | streamable-http (streamable HTTP on 127.0.0.1)",
+    )
+    mcp.add_argument(
+        "--host",
+        type=str,
+        default="127.0.0.1",
+        help="bind address when --transport http / streamable-http (default: 127.0.0.1)",
     )
     mcp.add_argument(
         "--port",

@@ -1,17 +1,15 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
-"""Creation OS MCP Server v3 — σ-gate tools for MCP clients (FastMCP / MCP SDK).
+"""Creation OS MCP Server — σ-gate as tools/resources for any MCP client.
 
-Tools: ``score``, ``score_cascade``, ``batch_score``, ``explain``.
-
-Resources: ``config://thresholds``, ``evidence://ladder``.
+Prefer the official MCP SDK (:mod:`mcp.server.fastmcp`); fall back to the
+standalone ``fastmcp`` package (Prefect) when the SDK is absent.
 
 Usage:
-    stdio:  ``cos mcp`` (Claude Desktop, Cursor, local agents)
-    http:   ``cos mcp --transport http`` (streamable HTTP; remote agents)
+    stdio: ``cos mcp``
+    streamable HTTP: ``cos mcp --transport http --port 8000``
 
-Install: ``pip install 'creation-os[mcp]'`` (FastMCP 3.x + ``mcp``).
-The σ-gate core (:class:`~cos.sigma_gate.SigmaGate`) needs no MCP.
+Install: ``pip install 'creation-os[mcp]'`` (optional; core σ-gate needs no MCP).
 """
 from __future__ import annotations
 
@@ -19,15 +17,40 @@ import json
 import sys
 from typing import Any
 
-_FASTMCP_IMPORT_ERROR: str | None = None
-try:  # pragma: no cover - exercised when fastmcp installed
-    from fastmcp import FastMCP
-except ImportError:
+_HAS_MCP = False
+_MCP_BACKEND = "none"  # "official" | "standalone"
+_MCP_IMPORT_ERROR: str | None = None
+FastMCP = None  # type: ignore[misc, assignment]
+
+try:  # pragma: no cover - import path depends on extras
+    from mcp.server.fastmcp import FastMCP as _FastMCP
+
+    FastMCP = _FastMCP
+    _HAS_MCP = True
+    _MCP_BACKEND = "official"
+except ImportError as exc_official:
     try:
-        from mcp.server.fastmcp import FastMCP
-    except ImportError as exc:
-        FastMCP = None  # type: ignore[misc, assignment]
-        _FASTMCP_IMPORT_ERROR = str(exc)
+        from fastmcp import FastMCP as _FastMCP
+
+        FastMCP = _FastMCP
+        _HAS_MCP = True
+        _MCP_BACKEND = "standalone"
+    except ImportError as exc_standalone:
+        _MCP_IMPORT_ERROR = str(exc_standalone or exc_official)
+
+_MCP_INSTRUCTIONS = (
+    "σ-gate hallucination detection for any LLM output. "
+    "Measures the gap between what a model claims and what is reliable."
+)
+
+EVIDENCE_LADDER_TEXT = (
+    "POSITIVE:\n"
+    "  TruthfulQA AUROC 0.982 (saturated since 2024; interpret with care)\n"
+    "  TriviaQA AUROC 0.960\n"
+    "NEGATIVE:\n"
+    "  HaluEval AUROC 0.514 (fail; not a reliability claim)\n"
+    "  NOT AGI ACHIEVED"
+)
 
 
 def _verdict_str(verdict: object) -> str:
@@ -37,27 +60,24 @@ def _verdict_str(verdict: object) -> str:
     return str(raw)
 
 
-def _require_fastmcp() -> Any:
-    if FastMCP is None:
+def _require_mcp() -> Any:
+    if not _HAS_MCP or FastMCP is None:
         raise ImportError(
-            "FastMCP / MCP SDK not installed. Install optional extra: "
-            "pip install 'creation-os[mcp]'  "
-            f"(import error: {_FASTMCP_IMPORT_ERROR or 'unknown'})"
+            "MCP SDK not installed. Run: pip install 'creation-os[mcp]'  "
+            f"(import error: {_MCP_IMPORT_ERROR or 'unknown'})"
         )
     return FastMCP
 
 
-def build_mcp() -> Any:
-    """Construct the FastMCP app (v3: four tools + two resources)."""
-    MCP = _require_fastmcp()
-    mcp = MCP(
-        "creation-os",
-        instructions="σ-gate hallucination detection — score, cascade, batch, explain; read thresholds and evidence ladder.",
-    )
+def _register_components(mcp: Any) -> Any:
+    """Attach tools/resources/prompts to a FastMCP instance (official or standalone)."""
 
     @mcp.tool()
     def score(prompt: str, response: str) -> dict[str, Any]:
-        """Score a prompt-response pair. Returns σ ∈ [0,1] and verdict."""
+        """Score a prompt-response pair for hallucination.
+
+        Returns σ ∈ [0, 1] and verdict (ACCEPT / RETHINK / ABSTAIN). Low σ = more reliable.
+        """
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
@@ -66,7 +86,7 @@ def build_mcp() -> Any:
 
     @mcp.tool()
     def score_cascade(prompt: str, response: str) -> dict[str, Any]:
-        """Score with full L1–L5 cascade where available. Returns per-level σ."""
+        """Score with full L1–L5 cascade where available (L1 entropy; L2–L5 need hidden states)."""
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
@@ -78,7 +98,9 @@ def build_mcp() -> Any:
 
         Input: [{"prompt": "...", "response": "..."}, ...]
 
-        Returns a dict with key ``results`` (MCP serializes bare lists inconsistently).
+        Returns ``{"results": [...]}`` — each entry is
+        ``{prompt, response, sigma, verdict}``. (Plain lists are wrapped as
+        ``{"result": ...}`` by some MCP runtimes; a dict keeps the key stable.)
         """
         from cos.sigma_gate import SigmaGate
 
@@ -100,29 +122,26 @@ def build_mcp() -> Any:
 
     @mcp.tool()
     def explain(prompt: str, response: str) -> dict[str, Any]:
-        """Explain why σ-gate produced this verdict."""
+        """Explain why σ-gate produced this verdict (σ, verdict, short rationale)."""
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
         sigma, verdict = gate.score(prompt, response)
         vn = _verdict_str(verdict)
-        if vn == "ACCEPT":
-            note = "Response appears reliable."
-        elif vn == "RETHINK":
-            note = "Response needs verification."
-        elif vn == "ABSTAIN":
-            note = "Response is unreliable — abstaining."
-        else:
-            note = f"Verdict {vn}."
+        explanations = {
+            "ACCEPT": "Response appears reliable — σ below accept threshold.",
+            "RETHINK": "Response needs verification — σ in uncertain zone.",
+            "ABSTAIN": "Response is unreliable — σ above abstain threshold.",
+        }
         return {
             "sigma": round(float(sigma), 4),
             "verdict": vn,
-            "explanation": (f"σ={float(sigma):.3f}. " + note),
+            "explanation": explanations.get(vn, "Unknown verdict."),
         }
 
     @mcp.resource("config://thresholds")
     def get_thresholds() -> str:
-        """Current σ-gate threshold configuration (:data:`~cos.config.DEFAULT_CONFIG` + live gate)."""
+        """Current σ-gate threshold configuration."""
         from cos.config import DEFAULT_CONFIG
         from cos.sigma_gate import SigmaGate
 
@@ -139,25 +158,56 @@ def build_mcp() -> Any:
 
     @mcp.resource("evidence://ladder")
     def get_evidence_ladder() -> str:
-        """Evidence ladder — strengths, saturation warnings, and explicit failures."""
-        return """
-POSITIVE:
-- TruthfulQA AUROC 0.982 (saturated / ceiling-limited; interpret with care)
-- TriviaQA AUROC 0.960
-NEGATIVE:
-- HaluEval AUROC 0.514 (fail; not a reliability claim)
-- NOT AGI ACHIEVED
-"""
+        """Evidence ladder — positives, saturation note, and explicit negative results (always)."""
+        return EVIDENCE_LADDER_TEXT
+
+    @mcp.prompt()
+    def verify(text: str) -> str:
+        """Ask σ-gate to verify any LLM output for hallucinations."""
+        return f"Please score this output for hallucinations:\n\n{text}"
 
     return mcp
 
 
+def create_mcp_server(*, host: str = "127.0.0.1", port: int = 8000) -> Any:
+    """Build the FastMCP app (tools, resources, prompts). Only when an MCP backend is importable."""
+    MCP = _require_mcp()
+    if _MCP_BACKEND == "official":
+        mcp = MCP(
+            "creation-os-sigma-gate",
+            instructions=_MCP_INSTRUCTIONS,
+            host=host,
+            port=port,
+        )
+    else:
+        mcp = MCP(
+            "creation-os-sigma-gate",
+            instructions=_MCP_INSTRUCTIONS,
+        )
+    return _register_components(mcp)
+
+
+def build_mcp(*, host: str = "127.0.0.1", port: int = 8000) -> Any:
+    """Backward-compatible alias for :func:`create_mcp_server`."""
+    return create_mcp_server(host=host, port=port)
+
+
 def run_server(transport: str = "stdio", *, host: str = "127.0.0.1", port: int = 8000) -> None:
     """Run the MCP server (blocking)."""
-    app = build_mcp()
     t = (transport or "stdio").strip().lower().replace("_", "-")
-    if t in ("http", "streamable-http", "streamablehttp"):
-        app.run(transport="streamable-http", host=str(host), port=int(port))
+    is_http = t in ("http", "streamable-http", "streamablehttp")
+
+    if is_http:
+        app = create_mcp_server(host=host, port=port)
+        if _MCP_BACKEND == "official":
+            app.run(transport="streamable-http")
+        else:
+            app.run(transport="streamable-http", host=host, port=port)
+        return
+
+    app = create_mcp_server(host=host, port=port)
+    if _MCP_BACKEND == "official":
+        app.run()
     else:
         app.run(transport="stdio")
 
@@ -167,9 +217,9 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if FastMCP is None:
+    if not _HAS_MCP:
         print(
-            "cos mcp_server: install FastMCP: pip install 'creation-os[mcp]'",
+            "cos mcp_server: install MCP extras: pip install 'creation-os[mcp]'",
             file=sys.stderr,
         )
         sys.exit(1)
