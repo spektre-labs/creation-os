@@ -91,6 +91,8 @@ def test_grandparent_rule() -> None:
     out = eng.query("grandparent", "alice", "?G")
     grandchildren = {str(apply_bindings(Term("?G"), sol)) for sol in out["solutions"]}
     assert grandchildren == {"carol"}
+    assert any(t.get("type") == "rule" for t in out["trace"])
+    assert any(t.get("type") == "fact" for t in out["trace"])
 
 
 def test_sigma_per_inference_step() -> None:
@@ -109,4 +111,4 @@ def test_sigma_per_inference_step() -> None:
     out = eng.query("edge", "1", "?Y")
     sigmas = [step["σ"] for step in out["trace"] if step.get("type") == "fact"]
     assert sigmas == [0.05, 0.1]
-    assert eng.σ_proof(out["trace"]) == max(sigmas)
+    assert eng.σ_proof(out["trace"]) == max(step["σ"] for step in out["trace"])

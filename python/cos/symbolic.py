@@ -3,9 +3,12 @@
 # All rights reserved. See LICENSE for binding terms.
 """Prolog-style backward chaining over ground facts and definite clauses.
 
-Robinson unification with occurs-check, σ-gate scoring per successful unification,
-and fresh variable renaming per rule application. Pure Python — no external solver.
-See ``docs/CLAIM_DISCIPLINE.md`` for lab vs measured claims scope."""
+``Term`` / ``unify`` implement Robinson unification with an **occurs check** (pure Python).
+:class:`SigmaSymbolic` performs depth-bounded backward chaining, renames rule variables
+(standardise-apart), and records **σ** from :class:`~cos.sigma_gate.SigmaGate` on each
+successful **fact** match and each **rule-head** unification. This is a lab neuro-symbolic
+hook (training-free KB + shallow proofs), not a full Prolog or SMT backend; see
+``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
@@ -203,6 +206,18 @@ class SigmaSymbolic:
             u = unify(g, fresh.head, dict(bindings))
             if u is None:
                 continue
+            σ_h, verdict_h = self.gate.score(str(apply_bindings(g, u)), str(fresh.head))
+            trace.append(
+                {
+                    "depth": depth,
+                    "type": "rule",
+                    "goal": str(apply_bindings(g, u)),
+                    "matched": str(fresh.head),
+                    "rule": str(fresh),
+                    "σ": float(σ_h),
+                    "verdict": str(verdict_h),
+                }
+            )
             self._solve_goals(fresh.body, u, solutions, trace, depth + 1, max_depth)
 
     def _solve_goals(

@@ -3418,7 +3418,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     rea = sub.add_parser(
         "reason",
-        help="Prolog-style backward chaining (facts/rules, colon syntax) + σ per fact step",
+        help="Natlog-style backward chaining: facts/rules (colon args), σ on each fact + rule-head step",
     )
     rea.add_argument("--query", type=str, required=True, dest="reason_query", metavar="PRED:ARG:...")
     rea.add_argument(
