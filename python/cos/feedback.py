@@ -19,8 +19,8 @@ class SigmaFeedback:
 
     def __init__(self) -> None:
         self._rows: List[Dict[str, Any]] = []
-        self.tau_accept = 0.35
-        self.tau_abstain = 0.75
+        self.threshold_accept = 0.35
+        self.threshold_abstain = 0.75
 
     def collect(
         self,
@@ -41,7 +41,7 @@ class SigmaFeedback:
         return {"stored": True, "reaction": rk, "threshold_hint": adj}
 
     def sigma_correction(self, feedback_type: str) -> Dict[str, float]:
-        """How much to nudge τ thresholds given feedback class (toy)."""
+        """How much to nudge thresholds given feedback class (toy)."""
         ft = str(feedback_type).lower()
         d_accept = 0.0
         d_abstain = 0.0
@@ -55,7 +55,7 @@ class SigmaFeedback:
             d_accept = 0.03
         elif ft == "correct":
             d_accept = -0.01
-        return {"delta_tau_accept": d_accept, "delta_tau_abstain": d_abstain}
+        return {"delta_threshold_accept": d_accept, "delta_threshold_abstain": d_abstain}
 
     def rlhf_signal(self, user_reaction: str, sigma: float) -> float:
         """Scalar reward in [-1,1] for logging / offline training stubs."""
@@ -77,8 +77,8 @@ class SigmaFeedback:
             k = str(r.get("reaction", "")).lower()
             if k in counts:
                 counts[k] += 1
-        sug_accept = self.tau_accept
-        sug_abs = self.tau_abstain
+        sug_accept = self.threshold_accept
+        sug_abs = self.threshold_abstain
         if counts["too_cautious"] > counts["too_aggressive"] + 2:
             sug_accept -= 0.03
             sug_abs -= 0.03
@@ -86,14 +86,17 @@ class SigmaFeedback:
             sug_accept += 0.04
         return {
             "counts": counts,
-            "suggested_tau_accept": round(sug_accept, 4),
-            "suggested_tau_abstain": round(sug_abs, 4),
+            "suggested_threshold_accept": round(sug_accept, 4),
+            "suggested_threshold_abstain": round(sug_abs, 4),
             "privacy": "No prompt bodies stored; only verdict hashes and categories.",
         }
 
     def apply_aggregate_to_thresholds(self) -> Dict[str, float]:
-        """Update internal τ from accumulated rows (lab)."""
+        """Update internal thresholds from accumulated rows (lab)."""
         ag = self.aggregate()
-        self.tau_accept = float(ag["suggested_tau_accept"])
-        self.tau_abstain = float(ag["suggested_tau_abstain"])
-        return {"tau_accept": self.tau_accept, "tau_abstain": self.tau_abstain}
+        self.threshold_accept = float(ag["suggested_threshold_accept"])
+        self.threshold_abstain = float(ag["suggested_threshold_abstain"])
+        return {
+            "threshold_accept": self.threshold_accept,
+            "threshold_abstain": self.threshold_abstain,
+        }

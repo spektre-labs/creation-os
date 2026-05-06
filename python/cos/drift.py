@@ -97,11 +97,14 @@ class SigmaDrift:
             s, _ = g.score(str(row.get("prompt", "")), str(row.get("response", "")))
             xs.append(float(s))
         mu = float(statistics.mean(xs)) if xs else 0.5
-        ta = float(getattr(g, "tau_accept", getattr(g, "threshold_accept", 0.35)))
-        tb = float(getattr(g, "tau_abstain", getattr(g, "threshold_abstain", 0.75)))
-        g.tau_accept = max(0.05, min(0.9, ta + 0.5 * (mu - ta)))
-        g.tau_abstain = max(g.tau_accept + 0.05, min(0.95, tb + 0.5 * (mu - tb)))
-        return {"tau_accept": round(float(g.tau_accept), 6), "tau_abstain": round(float(g.tau_abstain), 6)}
+        ta = float(getattr(g, "threshold_accept", getattr(g, "tau_accept", 0.35)))
+        tb = float(getattr(g, "threshold_abstain", getattr(g, "tau_abstain", 0.75)))
+        g.threshold_accept = max(0.05, min(0.9, ta + 0.5 * (mu - ta)))
+        g.threshold_abstain = max(g.threshold_accept + 0.05, min(0.95, tb + 0.5 * (mu - tb)))
+        return {
+            "threshold_accept": round(float(g.threshold_accept), 6),
+            "threshold_abstain": round(float(g.threshold_abstain), 6),
+        }
 
     @staticmethod
     def root_cause(drift_details: Mapping[str, Any]) -> Dict[str, Any]:

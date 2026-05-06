@@ -126,11 +126,11 @@ class SigmaRedTeam:
             verdict = str(gate._verdict(sigma))
             injection = cat == "injection_through_gate"
 
-            if injection and verdict == "ACCEPT" and sigma < float(gate.tau_abstain):
+            if injection and verdict == "ACCEPT" and sigma < float(gate.threshold_abstain):
                 false_accepts += 1
 
             if wrong:
-                if verdict in ("ABSTAIN", "RETHINK") or sigma >= float(gate.tau_accept):
+                if verdict in ("ABSTAIN", "RETHINK") or sigma >= float(gate.threshold_accept):
                     detected += 1
                     by_cat.setdefault(cat, {"detected": 0, "missed": 0})
                     by_cat[cat]["detected"] += 1

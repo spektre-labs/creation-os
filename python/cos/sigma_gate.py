@@ -32,6 +32,8 @@ import warnings
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
 
+from cos.config import DEFAULT_CONFIG
+
 ACCEPT = "ACCEPT"
 RETHINK = "RETHINK"
 ABSTAIN = "ABSTAIN"
@@ -95,13 +97,21 @@ class SigmaGate:
         self,
         probe_path: str | Path | None = None,
         *,
-        tau_accept: float = 0.3,
-        tau_abstain: float = 0.7,
         threshold_accept: Optional[float] = None,
         threshold_abstain: Optional[float] = None,
+        tau_accept: Optional[float] = None,
+        tau_abstain: Optional[float] = None,
     ) -> None:
-        ta = float(threshold_accept if threshold_accept is not None else tau_accept)
-        tb = float(threshold_abstain if threshold_abstain is not None else tau_abstain)
+        ta = float(
+            threshold_accept
+            if threshold_accept is not None
+            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+        )
+        tb = float(
+            threshold_abstain
+            if threshold_abstain is not None
+            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+        )
         self._mode: str
         self._ema: float
         self._count: int

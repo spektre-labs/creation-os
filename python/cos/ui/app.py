@@ -12,6 +12,7 @@ __all__ = [
     "NOT_AGI_BANNER",
     "EVIDENCE_LADDER",
     "verdict_to_color",
+    "bind_gate_threshold_from_sliders",
     "bind_gate_tau_from_sliders",
     "build_app",
     "create_ui",
@@ -38,21 +39,24 @@ def verdict_to_color(verdict: str) -> str:
     return "#dc2626"
 
 
-def bind_gate_tau_from_sliders(
+def bind_gate_threshold_from_sliders(
     accept_slider: Any,
     abstain_slider: Any,
     gate: Any,
 ) -> None:
-    """Wire NiceGUI sliders to mutate ``gate.tau_accept`` / ``gate.tau_abstain``."""
+    """Wire NiceGUI sliders to mutate ``gate.threshold_accept`` / ``gate.threshold_abstain``."""
 
     def _sync_accept(_: Any) -> None:
-        gate.tau_accept = float(accept_slider.value)
+        gate.threshold_accept = float(accept_slider.value)
 
     def _sync_abstain(_: Any) -> None:
-        gate.tau_abstain = float(abstain_slider.value)
+        gate.threshold_abstain = float(abstain_slider.value)
 
     accept_slider.on_value_change(_sync_accept)
     abstain_slider.on_value_change(_sync_abstain)
+
+
+bind_gate_tau_from_sliders = bind_gate_threshold_from_sliders
 
 
 class SigmaUIConfig:
@@ -99,11 +103,11 @@ def build_app(
 
         with ui.left_drawer(value=False).classes("bg-grey-2").style("width: 280px"):
             ui.label("σ configuration").classes("text-subtitle1 text-weight-bold")
-            accept_slider = ui.slider(min=0.0, max=1.0, step=0.01, value=gate.tau_accept)
+            accept_slider = ui.slider(min=0.0, max=1.0, step=0.01, value=gate.threshold_accept)
             ui.label("Accept τ (lower σ = calmer)")
-            abstain_slider = ui.slider(min=0.0, max=1.0, step=0.01, value=gate.tau_abstain)
+            abstain_slider = ui.slider(min=0.0, max=1.0, step=0.01, value=gate.threshold_abstain)
             ui.label("Abstain τ")
-            bind_gate_tau_from_sliders(accept_slider, abstain_slider, gate)
+            bind_gate_threshold_from_sliders(accept_slider, abstain_slider, gate)
 
             ui.separator()
             ui.label("Evidence (lab)").classes("text-subtitle1 text-weight-bold")

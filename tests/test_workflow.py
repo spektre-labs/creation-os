@@ -9,6 +9,12 @@ from cos.workflow import SigmaWorkflow
 
 
 def _good(st: dict) -> dict:
+    st["prompt"] = "What is the capital of France?"
+    st["response"] = "Yes."
+    return st
+
+
+def _arith_good(st: dict) -> dict:
     st["prompt"] = "What is 2+2?"
     st["response"] = "4"
     return st
@@ -37,7 +43,7 @@ def test_rethink_triggers_retry() -> None:
         if n == 0:
             st["prompt"], st["response"] = "ping", "pong"
         else:
-            st["prompt"], st["response"] = "What is 2+2?", "4"
+            st["prompt"], st["response"] = "What is the capital of France?", "Yes."
         return st
 
     wf = SigmaWorkflow(gate=gate)
@@ -130,13 +136,13 @@ def test_parallel_selects_lowest_sigma() -> None:
 
 
 def test_cascade_error_prevented_at_step_3() -> None:
-    wf = SigmaWorkflow()
+    wf = SigmaWorkflow(gate=SigmaGate(threshold_accept=0.26, threshold_abstain=0.85))
     spec = wf.define(
         [
-            {"name": "t1", "fn": _good, "sigma_threshold": 1.0, "max_retries": 1},
-            {"name": "t2", "fn": _good, "sigma_threshold": 1.0, "max_retries": 1},
-            {"name": "t3", "fn": _good, "sigma_threshold": 1.0, "max_retries": 1},
-            {"name": "t4", "fn": _good, "sigma_threshold": 1.0, "max_retries": 1},
+            {"name": "t1", "fn": _arith_good, "sigma_threshold": 1.0, "max_retries": 1},
+            {"name": "t2", "fn": _arith_good, "sigma_threshold": 1.0, "max_retries": 1},
+            {"name": "t3", "fn": _arith_good, "sigma_threshold": 1.0, "max_retries": 1},
+            {"name": "t4", "fn": _arith_good, "sigma_threshold": 1.0, "max_retries": 1},
         ]
     )
     out = wf.execute(spec, "run", cascade_limit=0.22)

@@ -148,12 +148,12 @@ class SignalCascade:
         thresholds: Optional[Dict[str, float]] = None,
     ) -> None:
         _ = _probe
-        t = thresholds or {}
+        t: Dict[str, float] = dict(thresholds) if thresholds else {}
         self.thresholds = {
             "early_accept": float(t.get("early_accept", 0.1)),
             "early_abstain": float(t.get("early_abstain", 0.9)),
-            "tau_accept": float(t.get("tau_accept", 0.3)),
-            "tau_abstain": float(t.get("tau_abstain", 0.8)),
+            "threshold_accept": float(t.get("threshold_accept", t.get("tau_accept", 0.15))),
+            "threshold_abstain": float(t.get("threshold_abstain", t.get("tau_abstain", 0.85))),
         }
 
     def score(
@@ -304,12 +304,12 @@ class SignalCascade:
         return []
 
     def _result(self, sigma: float, signals: Dict[str, float], level: int) -> Dict[str, Any]:
-        if sigma < self.thresholds["tau_accept"]:
+        if sigma < self.thresholds["threshold_accept"]:
             verdict = "ACCEPT"
-        elif sigma > self.thresholds["tau_abstain"]:
-            verdict = "ABSTAIN"
-        else:
+        elif sigma < self.thresholds["threshold_abstain"]:
             verdict = "RETHINK"
+        else:
+            verdict = "ABSTAIN"
         return {
             "sigma": float(sigma),
             "verdict": verdict,

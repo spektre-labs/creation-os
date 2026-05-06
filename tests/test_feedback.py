@@ -16,7 +16,7 @@ def test_collect_stores_reaction() -> None:
 def test_sigma_correction_direction() -> None:
     f = SigmaFeedback()
     c = f.sigma_correction("too_cautious")
-    assert c["delta_tau_accept"] < 0
+    assert c["delta_threshold_accept"] < 0
 
 
 def test_rlhf_signal_range() -> None:
@@ -30,7 +30,7 @@ def test_aggregate_suggests_thresholds() -> None:
     for _ in range(4):
         f.collect("ACCEPT", "too_cautious", kind="too_cautious")
     ag = f.aggregate()
-    assert "suggested_tau_accept" in ag
+    assert "suggested_threshold_accept" in ag
     assert "no prompt" in ag["privacy"].lower()
 
 
@@ -39,4 +39,4 @@ def test_apply_aggregate_updates_internal() -> None:
     for _ in range(4):
         f.collect("RETHINK", "incorrect", kind="incorrect")
     t = f.apply_aggregate_to_thresholds()
-    assert "tau_accept" in t
+    assert "threshold_accept" in t

@@ -31,7 +31,7 @@ def test_auto_recalibrate_returns_taus() -> None:
     g = SigmaGate()
     d = SigmaDrift()
     out = d.auto_recalibrate(g, [{"prompt": str(i), "response": str(i * 2)} for i in range(5)])
-    assert "tau_accept" in out and "tau_abstain" in out
+    assert "threshold_accept" in out and "threshold_abstain" in out
 
 
 def test_root_cause() -> None:

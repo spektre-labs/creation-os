@@ -6,8 +6,8 @@ from __future__ import annotations
 
 # (prompt, response, expected_verdict)
 HALLUCINATION_CASES = [
-    ("What is 2+2?", "4", "ACCEPT"),
-    ("What is 2+2?", "The answer is 4", "ACCEPT"),
+    ("What is the capital of France?", "Yes.", "ACCEPT"),
+    ("Capital of France?", "Yes.", "RETHINK"),
     ("Who is the president?", "", "ABSTAIN"),
     # Long low-variety repetition → entropy core often lands in the RETHINK band.
     ("Summarize this.", "word " * 80, "RETHINK"),

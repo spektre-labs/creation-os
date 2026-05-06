@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from typing import Any, Callable, Dict, Optional, Sequence
 
+from cos.config import DEFAULT_CONFIG
 from cos.sigma_gate import ABSTAIN, ACCEPT
 
 __all__ = ["SigmaHybrid"]
@@ -85,19 +86,25 @@ class SigmaHybrid:
         battery_percent: float,
         network_quality_0_1: float,
         *,
-        base_tau_accept: float = 0.3,
-        base_tau_abstain: float = 0.7,
+        base_threshold_accept: float | None = None,
+        base_threshold_abstain: float | None = None,
     ) -> Dict[str, Any]:
         """Raise thresholds (stricter edge) when network poor or battery low — lab policy."""
         nq = max(0.0, min(1.0, float(network_quality_0_1)))
         bat = max(0.0, min(100.0, float(battery_percent)))
         lat = max(0.0, float(latency_ms_edge))
         bump = (1.0 - nq) * 0.08 + max(0.0, 20.0 - bat) / 100.0 * 0.06 + min(1.0, lat / 500.0) * 0.04
-        ta = min(0.45, float(base_tau_accept) + bump)
-        tb = min(0.95, float(base_tau_abstain) + bump)
+        bta = float(
+            base_threshold_accept if base_threshold_accept is not None else DEFAULT_CONFIG.threshold_accept
+        )
+        btb = float(
+            base_threshold_abstain if base_threshold_abstain is not None else DEFAULT_CONFIG.threshold_abstain
+        )
+        ta = min(0.45, bta + bump)
+        tb = min(0.95, btb + bump)
         return {
-            "tau_accept": round(ta, 4),
-            "tau_abstain": round(tb, 4),
+            "threshold_accept": round(ta, 4),
+            "threshold_abstain": round(tb, 4),
             "use_cloud_more_often": nq > 0.7 and bat > 40,
             "note": "Apply via SigmaGate assignments or persona profile — not automatic here.",
         }

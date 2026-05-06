@@ -24,6 +24,8 @@ import numpy as np
 from .sigma_gate import SigmaGate
 from .sigma_spectral import SpectralSigma
 
+from cos.config import DEFAULT_CONFIG
+
 
 def _norm_weights(w: Dict[str, float]) -> Dict[str, float]:
     s = sum(max(0.0, float(v)) for v in w.values())
@@ -42,10 +44,22 @@ class SigmaUnified:
         spectral_k: int = 10,
         spectral_laplacian_backend: str = "normalized_symmetric",
         weights: Optional[Dict[str, float]] = None,
-        tau_accept: float = 0.3,
-        tau_abstain: float = 0.7,
+        threshold_accept: float | None = None,
+        threshold_abstain: float | None = None,
+        tau_accept: float | None = None,
+        tau_abstain: float | None = None,
     ):
-        self.lsd = SigmaGate(lsd_probe_path, tau_accept=tau_accept, tau_abstain=tau_abstain)
+        ta = float(
+            threshold_accept
+            if threshold_accept is not None
+            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+        )
+        tb = float(
+            threshold_abstain
+            if threshold_abstain is not None
+            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+        )
+        self.lsd = SigmaGate(lsd_probe_path, threshold_accept=ta, threshold_abstain=tb)
         self.spectral = SpectralSigma(
             k=int(spectral_k),
             laplacian_backend=str(spectral_laplacian_backend),
@@ -57,8 +71,8 @@ class SigmaUnified:
             "logprob": 0.1,
         }
         self.weights = _norm_weights(base)
-        self.tau_accept = float(tau_accept)
-        self.tau_abstain = float(tau_abstain)
+        self.threshold_accept = float(ta)
+        self.threshold_abstain = float(tb)
 
     def close(self) -> None:
         self.lsd.close()
@@ -109,9 +123,9 @@ class SigmaUnified:
         )
         sigma = float(np.clip(sigma, 0.0, 1.0))
 
-        if sigma < self.tau_accept:
+        if sigma < self.threshold_accept:
             decision = "ACCEPT"
-        elif sigma < self.tau_abstain:
+        elif sigma < self.threshold_abstain:
             decision = "RETHINK"
         else:
             decision = "ABSTAIN"

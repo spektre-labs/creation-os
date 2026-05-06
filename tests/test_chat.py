@@ -130,3 +130,42 @@ def test_chat_no_openai_raises_import_error() -> None:
             chat_mod.SigmaChat()
     finally:
         chat_mod._HAS_OPENAI = prev
+
+
+def test_send_stream_sets_preserve_thinking_extra_body_for_qwen() -> None:
+    pytest.importorskip("openai")
+    from cos.chat import SigmaChat
+
+    captured: dict = {}
+
+    class _Delta:
+        def __init__(self, content: str) -> None:
+            self.content = content
+
+    class _Ch:
+        def __init__(self, content: str) -> None:
+            self.delta = _Delta(content)
+
+    class _Chunk:
+        def __init__(self, content: str) -> None:
+            self.choices = [_Ch(content)]
+
+    def _fake_create(**kwargs: object) -> list:
+        captured.update(kwargs)
+        return [_Chunk("a"), _Chunk("b")]
+
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.model = "Qwen/Qwen3.6-35B-A3B"
+        c.preserve_thinking = True
+        c.gate = SigmaGate()
+        c.messages = []
+        c.history = []
+        client = MagicMock()
+        client.chat.completions.create = _fake_create
+        c.client = client
+        list(SigmaChat.send_stream(c, "ping"))
+
+    eb = captured.get("extra_body") or {}
+    assert eb.get("chat_template_kwargs", {}).get("preserve_thinking") is True
+    assert captured.get("stream") is True

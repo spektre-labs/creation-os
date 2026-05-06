@@ -64,4 +64,4 @@ def test_adaptive_threshold_snr_runs() -> None:
         {"sigma": 0.9, "correct": False, "oracle_correct": False},
     ]
     out = adaptive_threshold_snr(base, taus=(0.25, 0.5, 0.75))
-    assert "tau_accept_proxy" in out
+    assert "threshold_accept_proxy" in out

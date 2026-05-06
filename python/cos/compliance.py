@@ -99,8 +99,8 @@ class SigmaCompliance:
 
     def art13_transparency(self, gate: Any) -> Dict[str, Any]:
         g = gate or self.gate
-        ta = float(getattr(g, "tau_accept", getattr(g, "threshold_accept", 0.35)))
-        tb = float(getattr(g, "tau_abstain", getattr(g, "threshold_abstain", 0.75)))
+        ta = float(getattr(g, "threshold_accept", getattr(g, "tau_accept", 0.35)))
+        tb = float(getattr(g, "threshold_abstain", getattr(g, "tau_abstain", 0.75)))
         return {
             "article": 13,
             "deployer_summary": (

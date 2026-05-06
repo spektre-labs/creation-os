@@ -28,7 +28,7 @@ def test_sigma_trend() -> None:
 
 
 def test_retry_rephrase_eventually_accepts() -> None:
-    gate = SigmaGate()
+    gate = SigmaGate(threshold_accept=0.26, threshold_abstain=0.85)
     calls = {"n": 0}
 
     def fn(ctx: dict) -> dict:

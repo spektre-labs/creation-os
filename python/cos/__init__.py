@@ -8,10 +8,19 @@
 
 from __future__ import annotations
 
+from cos.config import DEFAULT_CONFIG, SigmaConfig
 from cos.fabric import SigmaFabric
 from cos.pipeline import Pipeline, PipelineResult
 from cos.sigma_gate import SigmaGate
 
 __version__ = "1.0.0"
 
-__all__ = ["SigmaFabric", "SigmaGate", "Pipeline", "PipelineResult", "__version__"]
+__all__ = [
+    "DEFAULT_CONFIG",
+    "SigmaConfig",
+    "SigmaFabric",
+    "SigmaGate",
+    "Pipeline",
+    "PipelineResult",
+    "__version__",
+]

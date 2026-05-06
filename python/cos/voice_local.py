@@ -53,8 +53,8 @@ def _heuristic_transcription_sigma(text: str, language_probability: Optional[flo
 
 
 def _verdict_from_sigma(sigma: float, gate: SigmaGate) -> str:
-    ta = float(gate.tau_accept)
-    tb = float(gate.tau_abstain)
+    ta = float(gate.threshold_accept)
+    tb = float(gate.threshold_abstain)
     if sigma < ta:
         return "ACCEPT"
     if sigma > tb:

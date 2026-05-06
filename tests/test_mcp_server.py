@@ -66,22 +66,11 @@ def test_explain_tool_gives_explanation() -> None:
     assert len(out["explanation"]) > 10
 
 
-def test_graph_add_scores_triplet() -> None:
-    out = asyncio.run(
-        _call_tool(
-            "graph_add",
-            {"subject": "Paris", "relation": "capital_of", "obj": "France"},
-        )
-    )
-    assert "sigma" in out and "verdict" in out and "added" in out
-    assert 0.0 <= float(out["sigma"]) <= 1.0
-
-
 def test_thresholds_resource_returns_config() -> None:
     raw = asyncio.run(_read_resource("config://thresholds"))
     cfg = json.loads(raw)
     assert "threshold_accept" in cfg and "threshold_abstain" in cfg
-    assert "accept" in cfg and "abstain" in cfg
+    assert "default_threshold_accept" in cfg and "default_threshold_abstain" in cfg
     assert cfg.get("version") == "1.0.0"
 
 
@@ -109,11 +98,10 @@ def test_evidence_ladder_includes_negatives() -> None:
     assert "not agi" in low
 
 
-def test_verify_output_prompt_template() -> None:
-    async def _list() -> set[str]:
+def test_mcp_v3_exposes_four_tools_only() -> None:
+    async def _names() -> set[str]:
         app = build_mcp()
-        prompts = await app.list_prompts()
-        return {p.name for p in prompts}
+        tools = await app.list_tools()
+        return {t.name for t in tools}
 
-    names = asyncio.run(_list())
-    assert "verify_output" in names
+    assert asyncio.run(_names()) == {"score", "score_cascade", "batch_score", "explain"}

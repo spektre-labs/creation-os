@@ -76,7 +76,10 @@ class SigmaMultilingual:
                 acc.append(s)
             mean_s = sum(acc) / len(acc)
             tau_shift = round(0.05 * mean_s, 4)
-            out["languages"][lang] = {"mean_sigma": round(mean_s, 6), "suggested_tau_accept_shift": tau_shift}
+            out["languages"][lang] = {
+                "mean_sigma": round(mean_s, 6),
+                "suggested_threshold_accept_shift": tau_shift,
+            }
         return out
 
     def sigma_translation_quality(self, source: str, target: str, gate: Any) -> Dict[str, Any]:

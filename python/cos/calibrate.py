@@ -375,7 +375,7 @@ def adaptive_threshold_snr(
         if sn > best_snr:
             best_snr = sn
             best_tau = tau
-    return {"tau_accept_proxy": best_tau, "SNR_log": round(best_snr, 6)}
+    return {"threshold_accept_proxy": best_tau, "SNR_log": round(best_snr, 6)}
 
 
 __all__ = [

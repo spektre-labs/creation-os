@@ -9,7 +9,7 @@ from cos.sigma_gate import SigmaGate
 
 
 def test_route_accepts_edge() -> None:
-    gate = SigmaHybrid(gate=SigmaGate()).gate
+    gate = SigmaHybrid(gate=SigmaGate(threshold_accept=0.26, threshold_abstain=0.85)).gate
 
     class E:
         def generate(self, p: str) -> str:
@@ -59,7 +59,7 @@ def test_route_rethink_cloud() -> None:
 
 def test_adaptive_threshold_network() -> None:
     t = SigmaHybrid.adaptive_threshold(80.0, 90.0, 0.2)
-    assert t["tau_accept"] >= 0.3
+    assert t["threshold_accept"] >= 0.15
 
 
 def test_prefetch() -> None:

@@ -2001,7 +2001,11 @@ def _cmd_gate_score(args: argparse.Namespace) -> int:
     gate = SigmaGate()
     sigma, verdict = gate.score(str(args.prompt), str(args.response))
     if _cli_verbose(args):
-        print(f"[cos] lite_mode={gate._mode!r} tau_accept={gate.tau_accept} tau_abstain={gate.tau_abstain}", file=sys.stderr)
+        print(
+            f"[cos] lite_mode={gate._mode!r} threshold_accept={gate.threshold_accept} "
+            f"threshold_abstain={gate.threshold_abstain}",
+            file=sys.stderr,
+        )
     if _cli_out_json(args):
         print(json.dumps({"sigma": float(sigma), "verdict": str(verdict)}, ensure_ascii=False))
         return 2 if verdict == "ABSTAIN" else 0
@@ -2295,17 +2299,17 @@ def _cmd_explain(args: argparse.Namespace) -> int:
     response = str(getattr(args, "explain_response", "") or "")
     sigma, verdict = gate.score(prompt, response)
     reasons: List[str] = []
-    if sigma < gate.tau_accept:
-        reasons.append("sigma_below_tau_accept")
-    elif sigma < gate.tau_abstain:
-        reasons.append("between_tau_accept_and_tau_abstain_rethink_band")
+    if sigma < gate.threshold_accept:
+        reasons.append("sigma_below_threshold_accept")
+    elif sigma < gate.threshold_abstain:
+        reasons.append("between_threshold_accept_and_threshold_abstain_rethink_band")
     else:
-        reasons.append("sigma_at_or_above_tau_abstain")
+        reasons.append("sigma_at_or_above_threshold_abstain")
     body = {
         "sigma": sigma,
         "verdict": verdict,
-        "tau_accept": gate.tau_accept,
-        "tau_abstain": gate.tau_abstain,
+        "threshold_accept": gate.threshold_accept,
+        "threshold_abstain": gate.threshold_abstain,
         "reasons": reasons,
         "note": "lite gate uses entropy on response; LSD/probe may differ.",
     }

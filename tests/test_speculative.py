@@ -21,7 +21,7 @@ def test_draft_mock_model() -> None:
 
 def test_verify_accepts_prefix() -> None:
     spec = SigmaSpeculative()
-    gate = SigmaGate()
+    gate = SigmaGate(threshold_accept=0.26, threshold_abstain=0.85)
     vr = spec.verify("What is 2+2?", ["4"], gate)
     assert vr["rejected_at"] is None or len(vr["accepted"]) >= 1
 

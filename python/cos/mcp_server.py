@@ -1,13 +1,16 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
-# All rights reserved. See LICENSE for binding terms.
-"""Creation OS MCP Server — σ-gate as a tool for any MCP client (FastMCP 3.x).
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+"""Creation OS MCP Server v3 — σ-gate tools for MCP clients (FastMCP / MCP SDK).
+
+Tools: ``score``, ``score_cascade``, ``batch_score``, ``explain``.
+
+Resources: ``config://thresholds``, ``evidence://ladder``.
 
 Usage:
     stdio:  ``cos mcp`` (Claude Desktop, Cursor, local agents)
     http:   ``cos mcp --transport http`` (streamable HTTP; remote agents)
 
-Install MCP transport: ``pip install 'creation-os[mcp]'`` (pulls FastMCP 3.x).
+Install: ``pip install 'creation-os[mcp]'`` (FastMCP 3.x + ``mcp``).
 The σ-gate core (:class:`~cos.sigma_gate.SigmaGate`) needs no MCP.
 """
 from __future__ import annotations
@@ -45,11 +48,11 @@ def _require_fastmcp() -> Any:
 
 
 def build_mcp() -> Any:
-    """Construct the FastMCP app (tools, resources, prompts)."""
+    """Construct the FastMCP app (v3: four tools + two resources)."""
     MCP = _require_fastmcp()
     mcp = MCP(
         "creation-os",
-        instructions="σ-gate hallucination detection — tools score LLM outputs and graph edges.",
+        instructions="σ-gate hallucination detection — score, cascade, batch, explain; read thresholds and evidence ladder.",
     )
 
     @mcp.tool()
@@ -117,38 +120,19 @@ def build_mcp() -> Any:
             "explanation": (f"σ={float(sigma):.3f}. " + note),
         }
 
-    @mcp.tool()
-    def graph_add(subject: str, relation: str, obj: str) -> dict[str, Any]:
-        """Add a σ-scored triplet to the knowledge graph (honors graph write threshold)."""
-        from cos.graph import SigmaGraph
-        from cos.sigma_gate import SigmaGate
-
-        statement = f"{subject} {relation} {obj}"
-        gate = SigmaGate()
-        kg = SigmaGraph(gate=gate)
-        sigma, verdict = gate.score(f"Is it true that {statement}?", statement)
-        out = kg.add(subject, relation, obj, sigma=float(sigma))
-        payload: dict[str, Any] = {
-            "added": bool(out.get("added", False)),
-            "sigma": round(float(sigma), 4),
-            "verdict": _verdict_str(verdict),
-        }
-        if not payload["added"] and out.get("reason"):
-            payload["reason"] = out["reason"]
-        return payload
-
     @mcp.resource("config://thresholds")
     def get_thresholds() -> str:
-        """Current σ-gate threshold configuration."""
+        """Current σ-gate threshold configuration (:data:`~cos.config.DEFAULT_CONFIG` + live gate)."""
+        from cos.config import DEFAULT_CONFIG
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
         return json.dumps(
             {
-                "accept": gate.threshold_accept,
-                "abstain": gate.threshold_abstain,
                 "threshold_accept": gate.threshold_accept,
                 "threshold_abstain": gate.threshold_abstain,
+                "default_threshold_accept": DEFAULT_CONFIG.threshold_accept,
+                "default_threshold_abstain": DEFAULT_CONFIG.threshold_abstain,
                 "version": "1.0.0",
             }
         )
@@ -165,21 +149,15 @@ NEGATIVE:
 - NOT AGI ACHIEVED
 """
 
-    @mcp.prompt()
-    def verify_output(text: str) -> str:
-        """Template: ask σ-gate to verify any LLM output."""
-        return f"Please verify this output for hallucinations:\n\n{text}"
-
     return mcp
 
 
-def run_server(transport: str = "stdio", *, port: int = 8000) -> None:
+def run_server(transport: str = "stdio", *, host: str = "127.0.0.1", port: int = 8000) -> None:
     """Run the MCP server (blocking)."""
     app = build_mcp()
     t = (transport or "stdio").strip().lower().replace("_", "-")
     if t in ("http", "streamable-http", "streamablehttp"):
-        # MCP streamable HTTP (remote agents)
-        app.run(transport="streamable-http", host="127.0.0.1", port=int(port))
+        app.run(transport="streamable-http", host=str(host), port=int(port))
     else:
         app.run(transport="stdio")
 

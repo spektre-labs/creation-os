@@ -15,6 +15,8 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
+from cos.config import DEFAULT_CONFIG
+
 from .sigma_gate import SigmaGate
 from .sigma_gate_core import SigmaState, sigma_gate, sigma_update
 from .sigma_hide import SigmaHIDE
@@ -37,11 +39,22 @@ class SigmaUltimate:
         spectral_laplacian_backend: str = "normalized_symmetric",
         hide_backend: str = "auto",
         weights: Optional[Dict[str, float]] = None,
-        tau_accept: float = 0.3,
-        tau_abstain: float = 0.7,
+        threshold_accept: float | None = None,
+        threshold_abstain: float | None = None,
+        tau_accept: float | None = None,
+        tau_abstain: float | None = None,
         vote_tau: float = 0.6,
     ):
-        self._legacy_tau = (float(tau_accept), float(tau_abstain))
+        self.threshold_accept = float(
+            threshold_accept
+            if threshold_accept is not None
+            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+        )
+        self.threshold_abstain = float(
+            threshold_abstain
+            if threshold_abstain is not None
+            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+        )
         self.lsd: Optional[SigmaGate] = None
         if lsd_probe_path is not None:
             self.lsd = SigmaGate(lsd_probe_path)
@@ -111,5 +124,6 @@ class SigmaUltimate:
             "cognitive_verdict": decision,
             "k_eff_q16": st.k_eff,
             "d_sigma_q16": st.d_sigma,
-            "legacy_tau_unused": self._legacy_tau,
+            "threshold_accept": self.threshold_accept,
+            "threshold_abstain": self.threshold_abstain,
         }

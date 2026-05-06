@@ -13,7 +13,7 @@ __all__ = ["SigmaPersona"]
 
 
 class SigmaPersona:
-    """Named personas: τ_accept / τ_abstain + latency budgets + policy blurbs."""
+    """Named personas: ``threshold_accept`` / ``threshold_abstain`` + latency budgets + policy blurbs."""
 
     def __init__(self) -> None:
         self.personas: Dict[str, Dict[str, Any]] = {
@@ -96,9 +96,9 @@ class SigmaPersona:
         }
         if p not in table:
             return {
-                "ACCEPT": "Meets persona τ_accept.",
-                "RETHINK": "Between τ_accept and τ_abstain — review.",
-                "ABSTAIN": "Above τ_abstain — withhold or block.",
+                "ACCEPT": "Meets persona threshold_accept.",
+                "RETHINK": "Between threshold_accept and threshold_abstain — review.",
+                "ABSTAIN": "Above threshold_abstain — withhold or block.",
             }
         return table[p]
 
@@ -120,16 +120,16 @@ class SigmaPersona:
         return "enterprise"
 
     def apply_gate_overrides(self, gate: Any, persona_name: str) -> Optional[Tuple[float, float]]:
-        """Temporarily set ``gate.tau_accept`` / ``tau_abstain``; returns previous pair or ``None``."""
+        """Temporarily set gate thresholds; returns previous ``(threshold_accept, threshold_abstain)`` or ``None``."""
         spec = self.personas.get(str(persona_name))
         if not spec:
             return None
-        old = (float(gate.tau_accept), float(gate.tau_abstain))
-        gate.tau_accept = float(spec["threshold_accept"])
-        gate.tau_abstain = float(spec["threshold_abstain"])
+        old = (float(gate.threshold_accept), float(gate.threshold_abstain))
+        gate.threshold_accept = float(spec["threshold_accept"])
+        gate.threshold_abstain = float(spec["threshold_abstain"])
         self._active = str(persona_name)
         return old
 
     @staticmethod
     def restore_gate(gate: Any, previous: Tuple[float, float]) -> None:
-        gate.tau_accept, gate.tau_abstain = float(previous[0]), float(previous[1])
+        gate.threshold_accept, gate.threshold_abstain = float(previous[0]), float(previous[1])

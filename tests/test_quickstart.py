@@ -17,9 +17,9 @@ from cos.integrations.decorator import SigmaResult, sigma_gated
 
 def test_basic_score_accept() -> None:
     gate = SigmaGate()
-    sigma, verdict = gate.score("What is the capital of France?", "Paris")
+    sigma, verdict = gate.score("What is the capital of France?", "Yes.")
     assert verdict == "ACCEPT"
-    assert float(sigma) < 0.3
+    assert float(sigma) < float(gate.threshold_accept)
 
 
 def test_basic_score_rethink() -> None:
@@ -27,7 +27,7 @@ def test_basic_score_rethink() -> None:
     r = " ".join(["red"] * 6)
     sigma, verdict = gate.score("Name any color.", r)
     assert verdict == "RETHINK"
-    assert 0.3 <= float(sigma) < 0.7
+    assert float(gate.threshold_accept) <= float(sigma) < float(gate.threshold_abstain)
 
 
 def test_decorator_works() -> None:

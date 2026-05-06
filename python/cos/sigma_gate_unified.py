@@ -97,8 +97,8 @@ class SigmaGateUnified:
         sigma_l = logprob_tail_entropy_sigma(model, tokenizer, prompt, response)
         sigma = self.w_probe * float(sigma_p) + self.w_spectral * float(sigma_s) + self.w_log * float(sigma_l)
         sigma = float(max(0.0, min(1.0, sigma)))
-        if sigma < self.probe_gate.tau_accept:
+        if sigma < self.probe_gate.threshold_accept:
             return sigma, "ACCEPT"
-        if sigma < self.probe_gate.tau_abstain:
+        if sigma < self.probe_gate.threshold_abstain:
             return sigma, "RETHINK"
         return sigma, "ABSTAIN"

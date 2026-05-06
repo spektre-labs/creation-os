@@ -27,11 +27,25 @@ class SigmaGateFull:
         *,
         precheck_mode: str = "entropy",
         precheck_head_path: Optional[str] = None,
-        tau_accept: float = 0.3,
-        tau_abstain: float = 0.7,
+        threshold_accept: Optional[float] = None,
+        threshold_abstain: Optional[float] = None,
+        tau_accept: Optional[float] = None,
+        tau_abstain: Optional[float] = None,
         tau_skip: float = 0.85,
     ):
-        self.post_gate = SigmaGate(probe_path, tau_accept=tau_accept, tau_abstain=tau_abstain)
+        from cos.config import DEFAULT_CONFIG
+
+        ta = float(
+            threshold_accept
+            if threshold_accept is not None
+            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+        )
+        tb = float(
+            threshold_abstain
+            if threshold_abstain is not None
+            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+        )
+        self.post_gate = SigmaGate(probe_path, threshold_accept=ta, threshold_abstain=tb)
         self.pre_gate = SigmaPrecheck(
             tau_skip=tau_skip,
             mode=precheck_mode,

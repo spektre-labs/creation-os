@@ -16,6 +16,7 @@ import logging
 import warnings
 from typing import Any, Dict, List, Optional
 
+from cos.config import DEFAULT_CONFIG
 from cos.exceptions import SigmaAbstainError
 from cos.sigma_gate import SigmaGate
 
@@ -71,16 +72,28 @@ if BaseCallbackHandler is not None:
             gate: Any = None,
             *,
             on_abstain: str = "warn",
-            tau_hi: float = 0.7,
-            tau_lo: float = 0.3,
+            threshold_accept: float | None = None,
+            threshold_abstain: float | None = None,
+            tau_lo: float | None = None,
+            tau_hi: float | None = None,
         ) -> None:
             super().__init__()
             if on_abstain not in ("raise", "warn", "log"):
                 raise ValueError("on_abstain must be 'raise', 'warn', or 'log'")
-            self.gate = gate or SigmaGate(threshold_accept=tau_lo, threshold_abstain=tau_hi)
+            ta = float(
+                threshold_accept
+                if threshold_accept is not None
+                else (tau_lo if tau_lo is not None else DEFAULT_CONFIG.threshold_accept)
+            )
+            tb = float(
+                threshold_abstain
+                if threshold_abstain is not None
+                else (tau_hi if tau_hi is not None else DEFAULT_CONFIG.threshold_abstain)
+            )
+            self.gate = gate or SigmaGate(threshold_accept=ta, threshold_abstain=tb)
             self.on_abstain = str(on_abstain)
-            self.tau_hi = float(tau_hi)
-            self.tau_lo = float(tau_lo)
+            self.threshold_abstain = float(tb)
+            self.threshold_accept = float(ta)
             self.traces: List[Dict[str, Any]] = []
             self._current_prompts: Dict[str, str] = {}
 

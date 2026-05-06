@@ -160,7 +160,7 @@ class SigmaChat:
         try:
             req: Dict[str, Any] = {
                 "model": self.model,
-                "messages": self.messages,
+                "messages": [dict(m) for m in self.messages],
                 "temperature": temperature,
                 "max_tokens": max_tokens,
             }
@@ -198,7 +198,7 @@ class SigmaChat:
         try:
             req: Dict[str, Any] = {
                 "model": self.model,
-                "messages": self.messages,
+                "messages": [dict(m) for m in self.messages],
                 "temperature": temperature,
                 "max_tokens": max_tokens,
                 "stream": True,

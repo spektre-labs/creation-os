@@ -187,8 +187,12 @@ class SnapshotManager:
         state["gate"] = {
             "ema": float(getattr(gate, "_ema", 0.5)),
             "count": int(getattr(gate, "_count", 0)),
-            "tau_accept": float(getattr(gate, "tau_accept", getattr(gate, "threshold_accept", 0.3))),
-            "tau_abstain": float(getattr(gate, "tau_abstain", getattr(gate, "threshold_abstain", 0.7))),
+            "threshold_accept": float(
+                getattr(gate, "threshold_accept", getattr(gate, "tau_accept", 0.15))
+            ),
+            "threshold_abstain": float(
+                getattr(gate, "threshold_abstain", getattr(gate, "tau_abstain", 0.85))
+            ),
         }
         state["stats"] = self.pipeline.stats.to_dict()
         return state
@@ -202,8 +206,10 @@ class SnapshotManager:
             gate = self.pipeline.gate
             gate._ema = float(gs["ema"])
             gate._count = int(gs["count"])
-            gate.tau_accept = float(gs.get("tau_accept", gs.get("threshold_accept", 0.3)))
-            gate.tau_abstain = float(gs.get("tau_abstain", gs.get("threshold_abstain", 0.7)))
+            ta = gs.get("threshold_accept", gs.get("tau_accept", 0.15))
+            tb = gs.get("threshold_abstain", gs.get("tau_abstain", 0.85))
+            gate.threshold_accept = float(ta)
+            gate.threshold_abstain = float(tb)
 
         if "stats" in state:
             s = state["stats"]
@@ -307,8 +313,12 @@ class SigmaSnapshot:
     @staticmethod
     def _gate_blob(gate: Any) -> Dict[str, Any]:
         return {
-            "tau_accept": float(getattr(gate, "tau_accept", getattr(gate, "threshold_accept", 0.3))),
-            "tau_abstain": float(getattr(gate, "tau_abstain", getattr(gate, "threshold_abstain", 0.7))),
+            "threshold_accept": float(
+                getattr(gate, "threshold_accept", getattr(gate, "tau_accept", 0.15))
+            ),
+            "threshold_abstain": float(
+                getattr(gate, "threshold_abstain", getattr(gate, "tau_abstain", 0.85))
+            ),
             "ema": float(getattr(gate, "_ema", 0.5)),
             "count": int(getattr(gate, "_count", 0)),
         }
@@ -356,10 +366,14 @@ class SigmaSnapshot:
         if not isinstance(st, Mapping):
             return {"restored": False, "reason": "bad_snapshot"}
         gs = st.get("gate") or {}
-        if "tau_accept" in gs and hasattr(gate, "tau_accept"):
-            gate.tau_accept = float(gs["tau_accept"])
-        if "tau_abstain" in gs and hasattr(gate, "tau_abstain"):
-            gate.tau_abstain = float(gs["tau_abstain"])
+        if "threshold_accept" in gs and hasattr(gate, "threshold_accept"):
+            gate.threshold_accept = float(gs["threshold_accept"])
+        elif "tau_accept" in gs and hasattr(gate, "threshold_accept"):
+            gate.threshold_accept = float(gs["tau_accept"])
+        if "threshold_abstain" in gs and hasattr(gate, "threshold_abstain"):
+            gate.threshold_abstain = float(gs["threshold_abstain"])
+        elif "tau_abstain" in gs and hasattr(gate, "threshold_abstain"):
+            gate.threshold_abstain = float(gs["tau_abstain"])
         if "ema" in gs and hasattr(gate, "_ema"):
             gate._ema = float(gs["ema"])
         if "count" in gs and hasattr(gate, "_count"):
