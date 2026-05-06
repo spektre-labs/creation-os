@@ -2034,6 +2034,37 @@ def _cmd_gate_score(args: argparse.Namespace) -> int:
     return 2 if verdict == "ABSTAIN" else 0
 
 
+def _cmd_reason_cli(args: argparse.Namespace) -> int:
+    from cos.symbolic import SigmaSymbolic
+
+    eng = SigmaSymbolic()
+    for raw in getattr(args, "reason_facts", None) or []:
+        parts = str(raw).split(":")
+        pred = parts[0].strip()
+        if not pred:
+            print("cos reason: empty predicate in --facts entry", file=sys.stderr)
+            return 1
+        eng.add_fact(pred, *parts[1:])
+    q = str(getattr(args, "reason_query", "") or "").strip()
+    if not q:
+        print("cos reason: pass --query predicate:arg1:arg2 (colon-separated)", file=sys.stderr)
+        return 1
+    qparts = q.split(":")
+    out = eng.query(qparts[0], *qparts[1:])
+    if _cli_out_json(args):
+        payload = {
+            "solutions": [{k: str(v) for k, v in sol.items()} for sol in out["solutions"]],
+            "trace": out["trace"],
+            "proof_sigma": eng.σ_proof(out["trace"]),
+        }
+        print(json.dumps(payload, ensure_ascii=False))
+        return 0
+    for sol in out["solutions"]:
+        print("  Solution:", {k: str(v) for k, v in sol.items()})
+    print(f"  Proof σ: {eng.σ_proof(out['trace']):.3f}")
+    return 0
+
+
 def _cmd_cos_version(args: argparse.Namespace) -> int:
     from cos import __version__
 
@@ -3387,6 +3418,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     gatep.add_argument("--json", action="store_true", dest="score_as_json", help="print JSON {\"sigma\", \"verdict\"} only")
     gatep.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     gatep.set_defaults(func=_cmd_gate_score)
+
+    rea = sub.add_parser(
+        "reason",
+        help="Prolog-style backward chaining (facts/rules, colon syntax) + σ per fact step",
+    )
+    rea.add_argument("--query", type=str, required=True, dest="reason_query", metavar="PRED:ARG:...")
+    rea.add_argument(
+        "--facts",
+        nargs="*",
+        default=[],
+        dest="reason_facts",
+        metavar="PRED:ARG:...",
+        help="ground facts predicate:arg1:arg2 (repeatable)",
+    )
+    rea.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
+    rea.set_defaults(func=_cmd_reason_cli)
 
     scr = sub.add_parser("score", help="Alias of cos gate")
     scr.add_argument("--prompt", type=str, required=True)
