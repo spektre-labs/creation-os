@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+-->
+
 # Claim discipline — Creation OS (standalone kernel + full tree)
 
 **Purpose:** make every sentence in READMEs, papers, and investor decks **survive cross-examination** — not by louder adjectives, but by **binding claims to evidence classes** and **forbidding known failure modes** (mixed baselines, silent precision drift, demo-as-harness).
@@ -83,6 +87,8 @@ This document is the line between them.
 - **HaluEval** is **partially solvable** by trivial answer-length rules — report methodology alongside AUROC.
 - **No single benchmark** yields a universal **hallucination rate**; use **multiple** tasks + held-out / dynamic checks.
 - **SimpleQA**, **FACTS Grounding**, **FaithDial**, **HaluEval 2.0**, and **custom dynamic** pools — primary numerics **pending** until archived harness output exists (`docs/REPRO_BUNDLE_TEMPLATE.md`).
+- **Multimodal** (vision, audio) helpers in-tree are **heuristic / proxy** surfaces unless a row binds to an archived harness artifact with its own evidence class.
+- **EU AI Act**-oriented documentation packs (e.g. `cos.compliance` article-shaped JSON) are **operator drafts** for transparency workflows — **not** legal advice, conformity assessment, or validated filings.
 
 ## 8. Evidence ladder (mandatory)
 
