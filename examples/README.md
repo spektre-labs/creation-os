@@ -26,9 +26,11 @@ For chat, LangChain, or HTTP samples, install the matching extra from `pyproject
 | 5 | `05_langchain.py` | LangChain-oriented sample (needs `[langchain]`) |
 | 6 | `06_knowledge_graph.py` | σ-validated knowledge-graph lab path |
 | 7 | `07_chat_local.py` | Local OpenAI-compatible chat + σ (needs `[chat]` + running server) |
+| 8 | `08_mcp_demo.py` | MCP server tool simulation (or `cos mcp` stdio server) |
 
 ## Next steps
 
+- `docs/LOCAL_MODEL_SETUP.md` — llama.cpp, Ollama, LM Studio, OpenAI-compatible endpoints for `cos chat`.
 - `docs/QUICKSTART.md` — install → score → MCP in one pass.
 - `docs/ARCHITECTURE.md` — L1 vs cascade vs C core.
 - `docs/CLAIM_DISCIPLINE.md` — positives **and** negatives (**HaluEval 0.514**); **NOT AGI ACHIEVED**.
