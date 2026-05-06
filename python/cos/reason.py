@@ -417,6 +417,119 @@ class SigmaReason:
         """Refutation search with σ attached to each resolution trace line."""
         return prove_by_refutation_with_sigma(knowledge_base, claim, gate, max_steps=max_steps)
 
+    def parse(self, statement: str) -> Optional[Tuple[str, str, str]]:
+        """Parse ``A rel B-phrase`` → ``(A, rel, B-phrase)`` (whitespace/token heuristic)."""
+        parts = statement.strip().split()
+        if len(parts) >= 3:
+            return (parts[0], parts[1], " ".join(parts[2:]))
+        return None
+
+    def unify(
+        self,
+        term_a: Any,
+        term_b: Any,
+        substitution: Optional[Dict[str, str]] = None,
+    ) -> Optional[Dict[str, str]]:
+        """FOL-style unification for strings (``?var``) and nested tuples (lab)."""
+        return self._unify_terms(term_a, term_b, dict(substitution or {}))
+
+    def _fol_apply(self, term: Any, sub: Dict[str, str]) -> Any:
+        if isinstance(term, str) and term.startswith("?") and term in sub:
+            return self._fol_apply(sub[term], sub)
+        if isinstance(term, tuple):
+            return tuple(self._fol_apply(x, sub) for x in term)
+        return term
+
+    def _unify_terms(self, term_a: Any, term_b: Any, sub: Dict[str, str]) -> Optional[Dict[str, str]]:
+        term_a = self._fol_apply(term_a, sub)
+        term_b = self._fol_apply(term_b, sub)
+        if term_a == term_b:
+            return sub
+        if isinstance(term_a, str) and term_a.startswith("?"):
+            if term_a in sub:
+                return self._unify_terms(sub[term_a], term_b, sub)
+            out = dict(sub)
+            out[term_a] = str(term_b)
+            return out
+        if isinstance(term_b, str) and term_b.startswith("?"):
+            if term_b in sub:
+                return self._unify_terms(term_a, sub[term_b], sub)
+            out = dict(sub)
+            out[term_b] = str(term_a)
+            return out
+        if isinstance(term_a, tuple) and isinstance(term_b, tuple):
+            if len(term_a) != len(term_b):
+                return None
+            cur = dict(sub)
+            for x, y in zip(term_a, term_b):
+                nxt = self._unify_terms(x, y, cur)
+                if nxt is None:
+                    return None
+                cur = nxt
+            return cur
+        return None
+
+    def resolve(
+        self,
+        knowledge_base: List[Tuple[str, str, str]],
+        query: Tuple[str, str, str],
+        gate: Any,
+        *,
+        max_depth: int = 10,
+    ) -> Dict[str, Any]:
+        """Backward-style KB lookup with σ per attempted match; verdict from max step σ."""
+        steps: List[Dict[str, Any]] = []
+        result = self._resolve_recursive(knowledge_base, query, gate, steps, 0, int(max_depth))
+        total_σ = max((float(s["σ"]) for s in steps), default=0.0)
+        ta = float(getattr(gate, "threshold_accept", 0.15))
+        tb = float(getattr(gate, "threshold_abstain", 0.85))
+        if total_σ < ta:
+            verdict = "ACCEPT"
+        elif total_σ > tb:
+            verdict = "ABSTAIN"
+        else:
+            verdict = "RETHINK"
+        return {
+            "proven": result,
+            "steps": steps,
+            "total_σ": round(total_σ, 4),
+            "total_sigma": round(total_σ, 4),
+            "verdict": verdict,
+        }
+
+    def _resolve_recursive(
+        self,
+        kb: List[Tuple[str, str, str]],
+        query: Tuple[str, str, str],
+        gate: Any,
+        steps: List[Dict[str, Any]],
+        depth: int,
+        max_depth: int,
+    ) -> bool:
+        if depth >= max_depth:
+            return False
+        for fact in kb:
+            u = self._unify_triple_pattern(query, fact)
+            if u is not None:
+                σ, _ = gate.score(str(query), str(fact))
+                steps.append(
+                    {
+                        "depth": depth,
+                        "query": str(query),
+                        "matched": str(fact),
+                        "σ": float(σ),
+                    }
+                )
+                return True
+        return False
+
+    def _unify_triple_pattern(
+        self,
+        pattern: Tuple[str, str, str],
+        fact: Tuple[str, str, str],
+    ) -> Optional[Dict[str, str]]:
+        return self._unify_terms(pattern, fact, {})
+
 
 __all__ = [
     "Clause",

@@ -10,6 +10,7 @@ see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 import hashlib
+import heapq
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -162,45 +163,241 @@ class SigmaGraph:
         start: str,
         target: str,
         *,
-        max_hops: int = 3,
+        max_hops: int = 5,
     ) -> Dict[str, Any]:
-        target_lower = target.lower()
-        queue: List[Tuple[str, List[Triple], float]] = [(start.lower(), [], 0.0)]
-        visited: Set[str] = set()
+        """Lowest cumulative-σ path (Dijkstra over entity graph; max ``max_hops`` edges).
 
-        while queue:
-            current, path, cum_sigma = queue.pop(0)
+        Returns ``path`` as :class:`Triple` list (API-stable), plus ``path_entities``,
+        ``cumulative_sigma`` / ``avg_sigma``, and Unicode aliases ``cumulative_σ`` / ``avg_σ``.
+        """
+        start_l = start.strip().lower()
+        target_l = target.strip().lower()
+        max_h = max(0, int(max_hops))
+        if start_l == target_l:
+            return {
+                "found": True,
+                "path": [],
+                "path_entities": [start],
+                "hops": 0,
+                "cumulative_sigma": 0.0,
+                "cumulative_σ": 0.0,
+                "avg_sigma": 0.0,
+                "avg_σ": 0.0,
+                "reliable": True,
+            }
 
-            if current == target_lower:
-                n = max(len(path), 1)
-                return {
-                    "found": True,
-                    "path": path,
-                    "hops": len(path),
-                    "cumulative_sigma": round(cum_sigma, 4),
-                    "reliable": (cum_sigma / n) < 0.3,
-                }
+        INF = float("inf")
+        heap: List[Tuple[float, int, str, List[Triple]]] = [(0.0, 0, start_l, [])]
+        best_at: Dict[Tuple[str, int], float] = {}
 
-            if current in visited or len(path) >= max_hops:
+        best_hit: Optional[Tuple[float, int, List[Triple]]] = None
+
+        def _tid_set(cur: str) -> Set[str]:
+            s: Set[str] = set()
+            s |= set(self.index_subject.get(cur, set()))
+            s |= set(self.index_object.get(cur, set()))
+            return s
+
+        while heap:
+            cost, h, cur, tpath = heapq.heappop(heap)
+            key = (cur, h)
+            if best_at.get(key, INF) < cost - 1e-12:
+                continue
+            if cur == target_l:
+                if best_hit is None or cost < best_hit[0] - 1e-12:
+                    best_hit = (cost, h, list(tpath))
+                continue
+            if h >= max_h:
                 continue
 
-            visited.add(current)
-
-            for tid in self.index_subject.get(current, set()):
+            for tid in _tid_set(cur):
                 triple = self.triples.get(tid)
-                if triple:
+                if triple is None:
+                    continue
+                if triple.subject.lower() == cur:
                     nxt = triple.object.lower()
-                    if nxt not in visited:
-                        queue.append((nxt, path + [triple], cum_sigma + triple.sigma))
-
-            for tid in self.index_object.get(current, set()):
-                triple = self.triples.get(tid)
-                if triple:
+                elif triple.object.lower() == cur:
                     nxt = triple.subject.lower()
-                    if nxt not in visited:
-                        queue.append((nxt, path + [triple], cum_sigma + triple.sigma))
+                else:
+                    continue
+                nc = cost + float(triple.sigma)
+                nh = h + 1
+                nkey = (nxt, nh)
+                if nc < best_at.get(nkey, INF):
+                    best_at[nkey] = nc
+                    heapq.heappush(heap, (nc, nh, nxt, tpath + [triple]))
 
-        return {"found": False, "hops": max_hops, "reason": "no path found"}
+        if best_hit is None:
+            return {
+                "found": False,
+                "path": [],
+                "path_entities": [],
+                "hops": 0,
+                "hops_limit": max_h,
+                "cumulative_sigma": 1.0,
+                "cumulative_σ": 1.0,
+                "avg_sigma": 1.0,
+                "avg_σ": 1.0,
+                "reason": "no path found",
+                "reliable": False,
+            }
+
+        csum, nhops, trip_path = best_hit
+        labels: List[str] = [self._label_display(start_l)]
+        cur_l = start_l
+        for t in trip_path:
+            if t.subject.lower() == cur_l:
+                cur_l = t.object.lower()
+                labels.append(t.object)
+            else:
+                cur_l = t.subject.lower()
+                labels.append(t.subject)
+
+        avg = float(csum) / max(nhops, 1)
+        return {
+            "found": True,
+            "path": trip_path,
+            "path_entities": labels,
+            "hops": nhops,
+            "cumulative_sigma": round(float(csum), 4),
+            "cumulative_σ": round(float(csum), 4),
+            "avg_sigma": round(float(avg), 4),
+            "avg_σ": round(float(avg), 4),
+            "reliable": float(avg) < 0.3,
+        }
+
+    def query_fol(
+        self,
+        *,
+        subject: Optional[str] = None,
+        relation: Optional[str] = None,
+        obj: Optional[str] = None,
+    ) -> List[Dict[str, Any]]:
+        """Match stored triples; unknown slots act as wildcards. Results sorted by ascending σ."""
+        rows: List[Dict[str, Any]] = []
+        for d in self.all_triples():
+            if subject is not None and str(d.get("subject")) != str(subject):
+                continue
+            if relation is not None and str(d.get("relation")) != str(relation):
+                continue
+            if obj is not None and str(d.get("object")) != str(obj):
+                continue
+            rows.append(dict(d))
+        rows.sort(key=lambda t: float(t.get("sigma", 1.0)))
+        return rows
+
+    def subgraph_ball(self, center: str, radius: int = 2) -> Dict[str, Any]:
+        """BFS neighborhood (undirected): entities within ``radius`` hops; induced edge list (read-only)."""
+        center_l = center.strip().lower()
+        rlim = max(0, int(radius))
+        visited: Set[str] = set()
+        frontier: Set[str] = {center_l}
+        visited.add(center_l)
+        for _ in range(rlim):
+            nxt: Set[str] = set()
+            for ent in frontier:
+                el = str(ent).lower()
+                for rel in self.relations_of(ent):
+                    sub_l = str(rel["subject"]).lower()
+                    obl = str(rel["object"]).lower()
+                    if sub_l == el:
+                        other = obl
+                    elif obl == el:
+                        other = sub_l
+                    else:
+                        continue
+                    if other not in visited:
+                        visited.add(other)
+                        nxt.add(other)
+            frontier = nxt
+            if not frontier:
+                break
+
+        triples: List[Dict[str, Any]] = []
+        for d in self.all_triples():
+            if str(d.get("subject", "")).lower() in visited and str(d.get("object", "")).lower() in visited:
+                triples.append(dict(d))
+        canon_entities = sorted(
+            ({self._label_display(lbl) for lbl in visited}),
+            key=lambda x: x.lower(),
+        )
+        return {
+            "entities": canon_entities,
+            "triples": triples,
+            "size": len(visited),
+        }
+
+    def reason_chain(self, question: str, gate: Any) -> Dict[str, Any]:
+        """Token/entity hit → optional σ-multi-hop or best incident triple; ΣGate verdict."""
+        canon = {e.lower(): e for e in self.entities()}
+        tokens = "".join(ch if ch.isalnum() or ch.isspace() else " " for ch in question).split()
+        entities_found: List[str] = []
+        for tok in tokens:
+            tl = tok.lower()
+            if tl in canon and canon[tl] not in entities_found:
+                entities_found.append(canon[tl])
+
+        if not entities_found:
+            return {
+                "answer": None,
+                "σ": 1.0,
+                "sigma": 1.0,
+                "verdict": "ABSTAIN",
+                "reason": "No known entities in question",
+            }
+
+        if len(entities_found) >= 2:
+            path = self.multi_hop(entities_found[0], entities_found[1], max_hops=5)
+            if not path.get("found"):
+                σ = 1.0
+                return {
+                    "answer": path,
+                    "σ": round(σ, 4),
+                    "sigma": round(σ, 4),
+                    "verdict": "ABSTAIN",
+                    "reason": "No multi-hop path",
+                }
+            σ = float(path.get("avg_sigma", path.get("avg_σ", 1.0)))
+        else:
+            rels = self.relations_of(entities_found[0])
+            if not rels:
+                return {
+                    "answer": None,
+                    "σ": 1.0,
+                    "sigma": 1.0,
+                    "verdict": "ABSTAIN",
+                    "reason": "No relations found",
+                }
+            best = min(rels, key=lambda r: float(r.get("sigma", 1.0)))
+            σ = float(best.get("sigma", 0.5))
+            path = {
+                "found": True,
+                "path_entities": [entities_found[0], str(best.get("object", "?"))],
+                "single_relation": best,
+            }
+
+        ta = float(getattr(gate, "threshold_accept", 0.15))
+        tb = float(getattr(gate, "threshold_abstain", 0.85))
+        if σ < ta:
+            verdict = "ACCEPT"
+        elif σ > tb:
+            verdict = "ABSTAIN"
+        else:
+            verdict = "RETHINK"
+        return {
+            "answer": path,
+            "σ": round(σ, 4),
+            "sigma": round(σ, 4),
+            "verdict": verdict,
+        }
+
+    def _label_display(self, entity_lower: str) -> str:
+        for t in self.triples.values():
+            if t.subject.lower() == entity_lower:
+                return t.subject
+            if t.object.lower() == entity_lower:
+                return t.object
+        return entity_lower
 
     def subgraph(self, entity: str, depth: int = 2) -> Dict[str, Any]:
         center = entity.lower()

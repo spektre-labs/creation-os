@@ -323,9 +323,9 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
 			"$(CURDIR)/tests/test_swarm.py" "$(CURDIR)/tests/test_world.py" \
 			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
-			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" "$(CURDIR)/tests/test_jepa.py" \
+			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" "$(CURDIR)/tests/test_graph_reasoning.py" "$(CURDIR)/tests/test_jepa.py" \
 			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
-			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
+			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_reason_fol.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
 			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
 			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
@@ -350,9 +350,9 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_moe.py" "$(CURDIR)/tests/test_latent.py" \
 			"$(CURDIR)/tests/test_swarm.py" "$(CURDIR)/tests/test_world.py" \
 			"$(CURDIR)/tests/test_memory.py" "$(CURDIR)/tests/test_formal.py" \
-			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" "$(CURDIR)/tests/test_jepa.py" \
+			"$(CURDIR)/tests/test_continual.py" "$(CURDIR)/tests/test_graph.py" "$(CURDIR)/tests/test_graph_reasoning.py" "$(CURDIR)/tests/test_jepa.py" \
 			"$(CURDIR)/tests/test_recursion.py" "$(CURDIR)/tests/test_speculative.py" \
-			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
+			"$(CURDIR)/tests/test_reason.py" "$(CURDIR)/tests/test_reason_fol.py" "$(CURDIR)/tests/test_v1_modules_deepening.py" \
 			"$(CURDIR)/tests/test_spike.py" "$(CURDIR)/tests/test_distill.py" \
 			"$(CURDIR)/tests/test_quantize.py" "$(CURDIR)/tests/test_kv_cache.py" \
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
