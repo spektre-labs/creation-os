@@ -3,8 +3,10 @@
 # All rights reserved. See LICENSE for binding terms.
 """Neuro-symbolic ``σ``-reasoning: FOL clauses, Robinson unification, binary resolution.
 
-LLM (or parser) supplies facts and clauses; this module checks consistency and
-refutation proofs **without** external SMT or Prover9 — a minimal educational core.
+:class:`SigmaReason` also exposes lightweight **triplet KB** helpers (``parse`` / ``unify`` /
+``resolve``) for graph-aligned queries with σ per match. Full clause machinery uses
+``Predicate`` / ``Clause``; this module checks consistency and refutation proofs **without**
+external SMT or Prover9 — a minimal educational core.
 
 Related lines of work (citations are positioning only; this file does not embed
 external provers): LLM + first-order backends, backward chaining with SLD-style

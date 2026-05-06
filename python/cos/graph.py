@@ -5,8 +5,9 @@
 
 Each edge is ``(subject, relation, object)`` scored by ``SigmaGate`` before storage; high
 σ is rejected or loses to a lower-σ rival on the same ``(subject, relation)`` key.
-This is a **portable lab** graph (naive extraction, BFS paths), not a GraphRAG benchmark;
-see ``docs/CLAIM_DISCIPLINE.md``."""
+This is a **portable lab** graph (naive extraction, σ-weighted multi-hop paths, FOL-shaped
+``query_fol``, and :meth:`reason_chain` with :class:`~cos.sigma_gate.SigmaGate` verdicts),
+not a GraphRAG benchmark; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 import hashlib
@@ -399,7 +400,20 @@ class SigmaGraph:
                 return t.object
         return entity_lower
 
-    def subgraph(self, entity: str, depth: int = 2) -> Dict[str, Any]:
+    def subgraph(
+        self,
+        entity: str,
+        depth: int = 2,
+        *,
+        radius: Optional[int] = None,
+    ) -> Dict[str, Any]:
+        """Bounded neighborhood: default BFS over triple end-points (``depth``).
+
+        With ``radius=`` (keyword), returns the undirected ball from :meth:`subgraph_ball`
+        (entities + induced triple dicts; read-only).
+        """
+        if radius is not None:
+            return self.subgraph_ball(entity, int(radius))
         center = entity.lower()
         nodes: Set[str] = set()
         edge_objs: List[Triple] = []

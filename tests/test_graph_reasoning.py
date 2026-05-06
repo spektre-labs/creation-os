@@ -62,7 +62,7 @@ def test_subgraph_extracts_neighborhood() -> None:
     g.add("A", "rel", "B", sigma=0.1)
     g.add("B", "rel", "C", sigma=0.1)
     g.add("C", "rel", "D", sigma=0.1)
-    sub = g.subgraph_ball("A", radius=2)
+    sub = g.subgraph("A", radius=2)
     assert sub["size"] >= 3
     assert len(sub["triples"]) >= 2
     labels = {x.lower() for x in sub["entities"]}
