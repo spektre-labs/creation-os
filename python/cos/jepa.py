@@ -3,11 +3,12 @@
 # All rights reserved. See LICENSE for binding terms.
 """Heuristic JEPA-style world model with σ-gate verdicts (latent-space prediction error).
 
-Predictions live in a fixed-dimension latent vector (no pixel decoder). **σ** is the
-normalized cosine mismatch between predicted and realized latents. This complements
-:class:`~cos.sigma_gate.SigmaGate` text scoring; it does not replace it. Numpy is
-optional; without it, pure-Python fallbacks apply. See ``docs/CLAIM_DISCIPLINE.md`` for
-lab vs trained-model scope."""
+This module is a **portable lab stub**: predictions are fixed-dimension latent vectors
+(heuristic encoder; no ViT/CNN). **σ** is normalized cosine mismatch between predicted and
+realized latents—internal “surprise” in representation space, complementary to
+:class:`~cos.sigma_gate.SigmaGate` on text. It does **not** ship a trained V-JEPA-class
+video encoder; optional ``numpy`` speeds vector math. See ``docs/CLAIM_DISCIPLINE.md``.
+"""
 from __future__ import annotations
 
 import math

@@ -84,3 +84,12 @@ def test_reflect_produces_sigma_meta() -> None:
     out = OmegaLoop().step("reflect ok")
     assert "σ_meta" in out
     assert isinstance(out["σ_meta"], float)
+
+
+def test_world_model_populates_last_jepa() -> None:
+    from cos.jepa import SigmaJEPA
+
+    o = OmegaLoop(world_model=SigmaJEPA(dim=16))
+    o.step("probe")
+    assert o._last_jepa is not None
+    assert "σ" in o._last_jepa

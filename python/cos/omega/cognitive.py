@@ -40,6 +40,7 @@ class OmegaLoop:
         self.config = config if config is not None else SigmaConfig()
         self.world_model = world_model
         self.σ_history: List[Dict[str, Any]] = []
+        self._last_jepa: Optional[Dict[str, Any]] = None
 
     @staticmethod
     def _verdict_token(verdict: Any) -> str:
@@ -87,10 +88,12 @@ class OmegaLoop:
     def _predict(self, perceived: str, context: str) -> str:
         base = self._predict_baseline(perceived, context)
         wm = self.world_model
+        self._last_jepa = None
         if wm is None:
             return base
         try:
             wm_out = wm.step(perceived)
+            self._last_jepa = dict(wm_out)
             jepa_line = (
                 f"jepa_wm: σ_pred={float(wm_out['σ']):.4f} verdict={wm_out['verdict']} "
                 f"surprise={wm_out['surprise']}"
