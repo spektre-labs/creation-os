@@ -169,3 +169,61 @@ class SigmaEvolve:
         }
         self.audit_log.append(dict(evidence))
         return {"system": proposal if accepted else system, "evidence": evidence}
+
+    def _rsi_evaluate(self, gate: Any, eval_data: List[Any]) -> float:
+        """Lower is better: mean σ plus light penalty on verdict vs optional boolean label."""
+        if not eval_data:
+            return 0.0
+        total = 0.0
+        for row in eval_data:
+            if len(row) == 3:
+                p, r, want_ok = str(row[0]), str(row[1]), bool(row[2])
+                sigma, verdict = gate.score(p, r)
+                cost = float(sigma)
+                if want_ok and verdict in ("ABSTAIN", "RETHINK"):
+                    cost += 0.2
+                if (not want_ok) and verdict == "ACCEPT":
+                    cost += 0.3
+                total += cost
+            else:
+                p, r = str(row[0]), str(row[1])
+                sigma, _ = gate.score(p, r)
+                total += float(sigma)
+        return total / len(eval_data)
+
+    def _rsi_mutate(self, gate: Any) -> Any:
+        """Threshold nudge on a copied σ-gate (lite lab; LSD shares inner via shallow copy)."""
+        g = copy.copy(gate)
+        ta = min(0.55, float(getattr(g, "threshold_accept", 0.15)) + 0.12)
+        g.threshold_accept = ta
+        return g
+
+    def step(self, gate: Any, eval_data: List[Any], formal: Optional[Any] = None) -> Dict[str, Any]:
+        """One RSI-style step: evaluate → mutate → optional formal check → accept if cost drops."""
+        baseline_σ = self._rsi_evaluate(gate, eval_data)
+        candidate = self._rsi_mutate(gate)
+        if formal is not None:
+            invariant_ok = bool(formal.check_invariants(candidate))
+            if not invariant_ok:
+                return {"accepted": False, "reason": "invariant violation", "candidate": candidate}
+        candidate_σ = self._rsi_evaluate(candidate, eval_data)
+        if candidate_σ < baseline_σ:
+            return {
+                "accepted": True,
+                "σ_before": baseline_σ,
+                "σ_after": candidate_σ,
+                "improvement": baseline_σ - candidate_σ,
+                "candidate": candidate,
+            }
+        return {"accepted": False, "reason": "no improvement", "candidate": candidate}
+
+    def run(self, gate: Any, eval_data: List[Any], max_steps: int = 10, formal: Optional[Any] = None) -> List[Dict[str, Any]]:
+        """Multi-step RSI loop; promotes ``gate`` when an accepted candidate appears."""
+        history: List[Dict[str, Any]] = []
+        cur = gate
+        for _ in range(max(1, int(max_steps))):
+            result = self.step(cur, eval_data, formal)
+            history.append(result)
+            if result.get("accepted"):
+                cur = result["candidate"]
+        return history

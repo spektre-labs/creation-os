@@ -87,3 +87,84 @@ def test_iter_has_sigma_before_after_delta() -> None:
     row = out["iters"][0]
     for k in ("sigma_before", "sigma_after", "delta_sigma", "accepted"):
         assert k in row
+
+
+class _EvoGate:
+    """Controllable σ / bands for RSI lab tests."""
+
+    def __init__(self, stress: float = 0.25, ta: float = 0.15, tb: float = 0.85) -> None:
+        self.stress = float(stress)
+        self.threshold_accept = float(ta)
+        self.threshold_abstain = float(tb)
+
+    def score(self, p: str, r: str) -> tuple[float, str]:
+        _ = (p, r)
+        s = self.stress
+        if s < self.threshold_accept:
+            v = "ACCEPT"
+        elif s < self.threshold_abstain:
+            v = "RETHINK"
+        else:
+            v = "ABSTAIN"
+        return s, v
+
+
+def test_rsi_step_accepts_improvement() -> None:
+    ev = SigmaEvolve()
+    g = _EvoGate(0.25, 0.15, 0.85)
+    ed = [("q", "r", True)]
+
+    def _mut(gate: object) -> object:
+        og = gate  # type: _EvoGate
+        return _EvoGate(og.stress, min(0.55, og.threshold_accept + 0.12), og.threshold_abstain)
+
+    ev._rsi_mutate = _mut  # type: ignore[method-assign]
+    out = ev.step(g, ed)
+    assert out["accepted"] is True
+    assert out["improvement"] > 0
+
+
+def test_rsi_step_rejects_regression() -> None:
+    ev = SigmaEvolve()
+    g = _EvoGate(0.25, 0.15, 0.85)
+    ed = [("q", "r", True)]
+
+    def _mut_worse(gate: object) -> object:
+        og = gate  # type: _EvoGate
+        return _EvoGate(min(0.95, og.stress + 0.5), og.threshold_accept, og.threshold_abstain)
+
+    ev._rsi_mutate = _mut_worse  # type: ignore[method-assign]
+    out = ev.step(g, ed)
+    assert out["accepted"] is False
+
+
+def test_rsi_invariant_violation_blocks() -> None:
+    class _BadFormal:
+        def check_invariants(self, candidate: object) -> bool:
+            _ = candidate
+            return False
+
+    ev = SigmaEvolve()
+    out = ev.step(_EvoGate(), [("a", "b", True)], formal=_BadFormal())
+    assert out["accepted"] is False
+    assert out.get("reason") == "invariant violation"
+
+
+def test_rsi_run_loop_can_accept() -> None:
+    ev = SigmaEvolve()
+    g = _EvoGate(0.25, 0.15, 0.85)
+    ed = [("omega rsi lab question text", "omega rsi lab answer text repeated", True)]
+
+    def _mut(gate: object) -> object:
+        og = gate  # type: _EvoGate
+        return _EvoGate(og.stress, min(0.55, og.threshold_accept + 0.12), og.threshold_abstain)
+
+    ev._rsi_mutate = _mut  # type: ignore[method-assign]
+    hist = ev.run(g, ed, max_steps=3)
+    assert any(h.get("accepted") for h in hist)
+
+
+def test_rsi_history_tracks_all_steps() -> None:
+    ev = SigmaEvolve()
+    hist = ev.run(SigmaGate(), [("omega rsi lab question text", "omega rsi lab answer text repeated", True)], max_steps=4)
+    assert len(hist) == 4

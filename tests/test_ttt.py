@@ -51,3 +51,64 @@ def test_adapt_with_sigma_structure() -> None:
 def test_fast_weight_key_present() -> None:
     t = SigmaTTT()
     assert "mlp_proj" in t.fast_weights
+
+
+def test_adapt_improves_sigma() -> None:
+    """σ average drops when σ tracks tightened accept band (test double)."""
+
+    class _TunableVolGate:
+        threshold_accept = 0.5
+        threshold_abstain = 0.9
+
+        def score(self, p: str, r: str) -> tuple[float, str]:
+            _ = (p, r)
+            s = max(0.0, float(self.threshold_accept) - 0.2)
+            if s < self.threshold_accept:
+                v = "ACCEPT"
+            elif s < self.threshold_abstain:
+                v = "RETHINK"
+            else:
+                v = "ABSTAIN"
+            return s, v
+
+        def adjust_threshold(self, band: str, delta: float, *, floor: float = 0.02, ceil: float = 0.99) -> None:
+            step = float(delta)
+            key = str(band).lower()
+            eps = 0.01
+            if key in ("accept", "threshold_accept", "a"):
+                v = float(self.threshold_accept) + step
+                self.threshold_accept = max(floor, min(v, float(self.threshold_abstain) - eps))
+            elif key in ("abstain", "threshold_abstain", "ab"):
+                v = float(self.threshold_abstain) + step
+                self.threshold_abstain = min(ceil, max(v, float(self.threshold_accept) + eps))
+            else:
+                raise ValueError(band)
+
+    g = _TunableVolGate()
+    out = SigmaTTT().adapt([("p", "r", False)], g, chunks=1)
+    assert out["improved"] is True
+
+
+def test_wrong_accept_tightens_threshold() -> None:
+    g = SigmaGate(threshold_accept=0.5, threshold_abstain=0.9)
+    before = g.threshold_accept
+    SigmaTTT().adapt([("hello", "world", False)], g, chunks=1)
+    assert g.threshold_accept < before
+
+
+def test_correct_abstain_loosens_threshold() -> None:
+    g = SigmaGate(threshold_accept=0.1, threshold_abstain=0.2)
+    before = g.threshold_abstain
+    SigmaTTT().adapt([("a", "b", True)], g, chunks=1)
+    assert g.threshold_abstain > before
+
+
+def test_empty_examples_returns_zero() -> None:
+    out = SigmaTTT().adapt([], SigmaGate(), chunks=3)
+    assert out["examples"] == 0
+    assert out["σ_before_avg"] == 0.0 and out["σ_after_avg"] == 0.0
+
+
+def test_before_after_sigma_reported() -> None:
+    out = SigmaTTT().adapt([("openai", "gpt", False)], SigmaGate(), chunks=2)
+    assert "σ_before_avg" in out and "σ_after_avg" in out

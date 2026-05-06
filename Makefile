@@ -331,6 +331,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
 			"$(CURDIR)/tests/test_embed.py" "$(CURDIR)/tests/test_prompt_guard.py" \
 			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
+			"$(CURDIR)/tests/test_omega.py" "$(CURDIR)/tests/test_omega_loop.py" \
 			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
 			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_bench.py" \
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
@@ -357,6 +358,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_agent_guard.py" "$(CURDIR)/tests/test_observe.py" \
 			"$(CURDIR)/tests/test_embed.py" "$(CURDIR)/tests/test_prompt_guard.py" \
 			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
+			"$(CURDIR)/tests/test_omega.py" "$(CURDIR)/tests/test_omega_loop.py" \
 			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
 			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_bench.py" \
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \

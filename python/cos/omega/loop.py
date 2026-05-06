@@ -32,7 +32,7 @@ from .watchdog import OmegaWatchdog
 
 
 @dataclass
-class OmegaLoop:
+class OmegaPhaseHarness:
     """Ω = argmin ∫σ dt subject to ``K ≥ K_crit`` (discrete harness approximation)."""
 
     k_raw: float = 0.92
@@ -186,4 +186,6 @@ class OmegaLoop:
         return history
 
 
-__all__ = ["OmegaLoop", "N_PHASES", "PHASE_NAMES"]
+OmegaLoopPhaseHarness = OmegaPhaseHarness
+
+__all__ = ["OmegaLoopPhaseHarness", "OmegaPhaseHarness", "N_PHASES", "PHASE_NAMES"]

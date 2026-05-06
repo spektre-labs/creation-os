@@ -797,9 +797,29 @@ def _cmd_agent(args: argparse.Namespace) -> int:
 
 
 def _cmd_omega(args: argparse.Namespace) -> int:
-    from cos.omega import OmegaLoop
+    from cos.config import SigmaConfig
+    from cos.graph import SigmaGraph
+    from cos.memory import SigmaMemory
+    from cos.omega import OmegaLoop, OmegaPhaseHarness
+    from cos.sigma_gate import SigmaGate
 
-    loop = OmegaLoop()
+    if getattr(args, "omega_cognitive_step", False):
+        gate = SigmaGate()
+        oloop = OmegaLoop(
+            gate=gate,
+            memory=SigmaMemory(gate=gate),
+            graph=SigmaGraph(gate=gate),
+            config=SigmaConfig(),
+        )
+        _ = getattr(args, "mock", False)
+        out = oloop.step(str(args.goal))
+        if getattr(args, "json", False):
+            print(json.dumps(out, ensure_ascii=False))
+            return 0
+        print(json.dumps({"mode": "cognitive_step", "step": out["step"], "verdict": out["verdict"], "σ": out["σ"]}, ensure_ascii=False))
+        return 0
+
+    loop = OmegaPhaseHarness()
     if getattr(args, "mock", False):
         _ = loop  # reserved: swap mock backends in harness builds
     history = loop.run(str(args.goal), max_turns=int(args.turns))
@@ -2656,6 +2676,23 @@ def _cmd_hdc_cli(args: argparse.Namespace) -> int:
 def _cmd_evolve_step(args: argparse.Namespace) -> int:
     et = str(getattr(args, "evolve_target", "") or "").strip()
     eg = str(getattr(args, "evolve_goal", "") or "").strip()
+    rsi_n = int(getattr(args, "evolve_rsi_steps", 0) or 0)
+    if rsi_n > 0:
+        from cos.evolve import SigmaEvolve
+        from cos.sigma_gate import SigmaGate
+
+        ev = SigmaEvolve()
+        gate = SigmaGate()
+        eval_data = [
+            ("omega rsi lab question text", "omega rsi lab answer text repeated", True),
+        ]
+        hist = ev.run(gate, eval_data, max_steps=max(1, rsi_n), formal=None)
+        payload: Dict[str, Any] = {"mode": "rsi", "steps_requested": rsi_n, "history": hist}
+        if _cli_out_json(args):
+            print(json.dumps(payload, ensure_ascii=False))
+            return 0
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+        return 0
     if et and eg and not bool(getattr(args, "evolve_step", False)):
         from cos.sigma_evolve import SigmaEvolve as SigmaEvolveV137
         from cos.sigma_evolve import ToyEvolveEvaluator
@@ -3617,6 +3654,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     evo.add_argument("--goal", type=str, default="", dest="evolve_goal", help="improvement objective (with --target)")
     evo.add_argument("--step", action="store_true", dest="evolve_step", help="run one bounded improve loop")
+    evo.add_argument(
+        "--steps",
+        type=int,
+        default=0,
+        dest="evolve_rsi_steps",
+        metavar="N",
+        help="RSI σ-gate lab loop length (0 = disabled)",
+    )
     evo.add_argument("--iters", type=int, default=1, dest="evolve_iters")
     evo.add_argument("--json", action="store_true", dest="out_json")
     evo.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
@@ -3773,6 +3818,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     om = sub.add_parser("omega", help="Ω-loop harness (14 σ phases per turn; lab scaffold)")
     om.add_argument("--goal", type=str, required=True, help="task / objective string")
     om.add_argument("--turns", type=int, default=50, help="maximum Ω turns (default 50)")
+    om.add_argument(
+        "--step",
+        action="store_true",
+        dest="omega_cognitive_step",
+        help="single cognitive Ω step (σ-gate + memory + graph lab path)",
+    )
     om.add_argument("--mock", action="store_true", help="reserved for mock backends in harness wiring")
     om.add_argument("--json", action="store_true", help="print full turn history as JSON")
     om.set_defaults(func=_cmd_omega)

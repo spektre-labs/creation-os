@@ -159,6 +159,22 @@ class SigmaGate:
     def threshold_abstain(self, v: float) -> None:
         self._threshold_abstain = float(v)
 
+    def adjust_threshold(self, band: str, delta: float, *, floor: float = 0.02, ceil: float = 0.99) -> None:
+        """Nudge accept/abstain bands (Python lab hook for TTT / evolve); keeps accept < abstain."""
+        step = float(delta)
+        key = str(band).lower()
+        eps = 0.01
+        if key in ("accept", "threshold_accept", "a"):
+            v = self.threshold_accept + step
+            v = max(floor, min(v, self.threshold_abstain - eps))
+            self.threshold_accept = float(v)
+        elif key in ("abstain", "threshold_abstain", "ab"):
+            v = self.threshold_abstain + step
+            v = min(ceil, max(v, self.threshold_accept + eps))
+            self.threshold_abstain = float(v)
+        else:
+            raise ValueError(f"Unknown threshold band: {band!r}")
+
     def close(self) -> None:
         if self._mode == "lsd" and self._inner is not None:
             self._inner.close()

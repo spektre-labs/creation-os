@@ -241,6 +241,19 @@ class SigmaFabric:
         except ImportError:
             self._note_skip('graph')
         try:
+            from cos.config import SigmaConfig
+            from cos.omega import OmegaLoop
+
+            cfg = SigmaConfig()
+            mem = self.layers.get("memory")
+            gr = self.layers.get("graph")
+            if mem is not None and gr is not None:
+                self.layers["omega"] = OmegaLoop(gate=gate, memory=mem, graph=gr, config=cfg)
+            else:
+                self._note_skip("omega")
+        except ImportError:
+            self._note_skip("omega")
+        try:
             from cos.recursion import SigmaRecursion
 
             self.layers["recursion"] = SigmaRecursion(gate=gate)
