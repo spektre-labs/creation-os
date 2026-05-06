@@ -103,13 +103,13 @@ def test_sigma_snapshot_restore_point(tmp_path) -> None:
     from cos.snapshot import SigmaSnapshot
 
     g = SigmaGate()
-    g.tau_accept = 0.11
+    g.threshold_accept = 0.11
     p = tmp_path / "r.json"
     SigmaSnapshot.save(g, None, None, p)
     blob = SigmaSnapshot.load(p)
     g2 = SigmaGate()
     SigmaSnapshot.restore_point(blob, g2)
-    assert abs(float(g2.tau_accept) - 0.11) < 1e-5
+    assert abs(float(g2.threshold_accept) - 0.11) < 1e-5
 
 
 def test_sigma_snapshot_verify_integrity() -> None:

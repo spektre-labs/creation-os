@@ -67,7 +67,6 @@ serve = [
 ]
 mcp = [
   "mcp>=1.27",
-  "fastmcp>=3.0",
 ]
 viz = ["networkx>=3.2", "matplotlib>=3.8"]
 ui = ["nicegui>=2.0", "pywebview>=5.0"]
@@ -100,6 +99,7 @@ dev = [
   "pytest-cov>=5.0",
   "numpy>=1.24",
   "openai>=1.30",
+  "mcp>=1.27",
   "fastmcp>=3.0",
   "networkx>=3.2",
   "matplotlib>=3.8",

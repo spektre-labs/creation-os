@@ -137,7 +137,7 @@ def main() -> None:
             sum(1 for r in accepted if r["correct"]) / len(accepted) if accepted else float("nan")
         )
         abstain_rate = sum(1 for d in decisions if d == "ABSTAIN") / len(decisions) if decisions else 0.0
-        wrong_confident = sum(1 for r in results if r["sigma"] < gate.tau_accept and not r["correct"])
+        wrong_confident = sum(1 for r in results if r["sigma"] < gate.threshold_accept and not r["correct"])
         coverage = sum(1 for d in decisions if d != "ABSTAIN") / len(decisions) if decisions else 0.0
 
         manifest_cv = float("nan")
@@ -162,8 +162,8 @@ def main() -> None:
             "ece_wrong_vs_sigma_coarse": ece,
             "method": "sigma_gate_v4_lsd_contrastive",
             "cv_auroc_training_manifest": manifest_cv,
-            "tau_accept": gate.tau_accept,
-            "tau_abstain": gate.tau_abstain,
+            "threshold_accept": gate.threshold_accept,
+            "threshold_abstain": gate.threshold_abstain,
         }
 
         out_dir = repo / "benchmarks" / "sigma_gate_eval" / "results"

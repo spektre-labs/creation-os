@@ -46,18 +46,12 @@ class SigmaUnified:
         weights: Optional[Dict[str, float]] = None,
         threshold_accept: float | None = None,
         threshold_abstain: float | None = None,
-        tau_accept: float | None = None,
-        tau_abstain: float | None = None,
     ):
         ta = float(
-            threshold_accept
-            if threshold_accept is not None
-            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+            threshold_accept if threshold_accept is not None else DEFAULT_CONFIG.threshold_accept
         )
         tb = float(
-            threshold_abstain
-            if threshold_abstain is not None
-            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+            threshold_abstain if threshold_abstain is not None else DEFAULT_CONFIG.threshold_abstain
         )
         self.lsd = SigmaGate(lsd_probe_path, threshold_accept=ta, threshold_abstain=tb)
         self.spectral = SpectralSigma(

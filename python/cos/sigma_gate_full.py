@@ -29,21 +29,15 @@ class SigmaGateFull:
         precheck_head_path: Optional[str] = None,
         threshold_accept: Optional[float] = None,
         threshold_abstain: Optional[float] = None,
-        tau_accept: Optional[float] = None,
-        tau_abstain: Optional[float] = None,
         tau_skip: float = 0.85,
     ):
         from cos.config import DEFAULT_CONFIG
 
         ta = float(
-            threshold_accept
-            if threshold_accept is not None
-            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+            threshold_accept if threshold_accept is not None else DEFAULT_CONFIG.threshold_accept
         )
         tb = float(
-            threshold_abstain
-            if threshold_abstain is not None
-            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+            threshold_abstain if threshold_abstain is not None else DEFAULT_CONFIG.threshold_abstain
         )
         self.post_gate = SigmaGate(probe_path, threshold_accept=ta, threshold_abstain=tb)
         self.pre_gate = SigmaPrecheck(

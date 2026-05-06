@@ -190,7 +190,7 @@ def main() -> None:
             sum(1 for r in accepted if r["correct"]) / len(accepted) if accepted else float("nan")
         )
         abstain_rate = sum(1 for r in results if r["decision"] == "ABSTAIN") / len(results) if results else 0.0
-        wrong_confident = sum(1 for r in results if r["sigma"] < gate.tau_accept and not r["correct"])
+        wrong_confident = sum(1 for r in results if r["sigma"] < gate.threshold_accept and not r["correct"])
         coverage = 1.0 - abstain_rate
 
         correct_sigmas = sigmas[labels == 0]

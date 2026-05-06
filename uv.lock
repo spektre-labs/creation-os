@@ -1186,6 +1186,7 @@ crewai = [
 dev = [
     { name = "fastmcp" },
     { name = "matplotlib" },
+    { name = "mcp" },
     { name = "networkx", version = "3.4.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "networkx", version = "3.6.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "nicegui" },
@@ -1223,7 +1224,6 @@ litellm = [
     { name = "litellm" },
 ]
 mcp = [
-    { name = "fastmcp" },
     { name = "mcp" },
 ]
 openai = [
@@ -1276,7 +1276,6 @@ requires-dist = [
     { name = "faster-whisper", marker = "extra == 'voice'", specifier = ">=1.0.0" },
     { name = "fastmcp", marker = "extra == 'all'", specifier = ">=3.0" },
     { name = "fastmcp", marker = "extra == 'dev'", specifier = ">=3.0" },
-    { name = "fastmcp", marker = "extra == 'mcp'", specifier = ">=3.0" },
     { name = "fastmcp", marker = "extra == 'serve'", specifier = ">=3.0" },
     { name = "httpx", marker = "extra == 'all'", specifier = ">=0.27" },
     { name = "httpx", marker = "extra == 'serve'", specifier = ">=0.27" },
@@ -1294,6 +1293,7 @@ requires-dist = [
     { name = "matplotlib", marker = "extra == 'all'", specifier = ">=3.8" },
     { name = "matplotlib", marker = "extra == 'dev'", specifier = ">=3.8" },
     { name = "matplotlib", marker = "extra == 'viz'", specifier = ">=3.8" },
+    { name = "mcp", marker = "extra == 'dev'", specifier = ">=1.27" },
     { name = "mcp", marker = "extra == 'mcp'", specifier = ">=1.27" },
     { name = "networkx", marker = "extra == 'all'", specifier = ">=3.2" },
     { name = "networkx", marker = "extra == 'dev'", specifier = ">=3.2" },

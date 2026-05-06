@@ -41,19 +41,13 @@ class SigmaUltimate:
         weights: Optional[Dict[str, float]] = None,
         threshold_accept: float | None = None,
         threshold_abstain: float | None = None,
-        tau_accept: float | None = None,
-        tau_abstain: float | None = None,
         vote_tau: float = 0.6,
     ):
         self.threshold_accept = float(
-            threshold_accept
-            if threshold_accept is not None
-            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+            threshold_accept if threshold_accept is not None else DEFAULT_CONFIG.threshold_accept
         )
         self.threshold_abstain = float(
-            threshold_abstain
-            if threshold_abstain is not None
-            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
+            threshold_abstain if threshold_abstain is not None else DEFAULT_CONFIG.threshold_abstain
         )
         self.lsd: Optional[SigmaGate] = None
         if lsd_probe_path is not None:

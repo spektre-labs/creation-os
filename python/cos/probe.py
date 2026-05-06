@@ -18,7 +18,7 @@ import contextlib
 import math
 from typing import Any, Callable, Dict, List, Optional
 
-# --- SigmaProbe -----------------------------------------------------------------
+from cos.config import DEFAULT_CONFIG
 
 
 class SigmaProbe:
@@ -152,8 +152,12 @@ class SignalCascade:
         self.thresholds = {
             "early_accept": float(t.get("early_accept", 0.1)),
             "early_abstain": float(t.get("early_abstain", 0.9)),
-            "threshold_accept": float(t.get("threshold_accept", t.get("tau_accept", 0.15))),
-            "threshold_abstain": float(t.get("threshold_abstain", t.get("tau_abstain", 0.85))),
+            "threshold_accept": float(
+                t.get("threshold_accept", t.get("tau_accept", DEFAULT_CONFIG.threshold_accept))
+            ),
+            "threshold_abstain": float(
+                t.get("threshold_abstain", t.get("tau_abstain", DEFAULT_CONFIG.threshold_abstain))
+            ),
         }
 
     def score(

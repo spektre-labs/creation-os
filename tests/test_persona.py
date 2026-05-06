@@ -40,9 +40,9 @@ def test_context_detect() -> None:
 def test_apply_and_restore_gate() -> None:
     p = SigmaPersona()
     g = SigmaGate()
-    orig = (g.tau_accept, g.tau_abstain)
+    orig = (g.threshold_accept, g.threshold_abstain)
     prev = p.apply_gate_overrides(g, "creative")
     assert prev is not None
-    assert g.tau_accept == p.personas["creative"]["threshold_accept"]
+    assert g.threshold_accept == p.personas["creative"]["threshold_accept"]
     p.restore_gate(g, prev)
-    assert g.tau_accept == orig[0] and g.tau_abstain == orig[1]
+    assert g.threshold_accept == orig[0] and g.threshold_abstain == orig[1]

@@ -74,8 +74,8 @@ def test_threshold_sliders_bind_tau() -> None:
     bind_gate_tau_from_sliders(a, b, g)
     a.fire(0.11)
     b.fire(0.88)
-    assert g.tau_accept == pytest.approx(0.11)
-    assert g.tau_abstain == pytest.approx(0.88)
+    assert g.threshold_accept == pytest.approx(0.11)
+    assert g.threshold_abstain == pytest.approx(0.88)
 
 
 def test_evidence_ladder_shows_negatives() -> None:

@@ -99,19 +99,13 @@ class SigmaGate:
         *,
         threshold_accept: Optional[float] = None,
         threshold_abstain: Optional[float] = None,
-        tau_accept: Optional[float] = None,
-        tau_abstain: Optional[float] = None,
     ) -> None:
-        ta = float(
-            threshold_accept
-            if threshold_accept is not None
-            else (tau_accept if tau_accept is not None else DEFAULT_CONFIG.threshold_accept)
+        _bands = type(DEFAULT_CONFIG)(
+            threshold_accept=float(threshold_accept if threshold_accept is not None else DEFAULT_CONFIG.threshold_accept),
+            threshold_abstain=float(threshold_abstain if threshold_abstain is not None else DEFAULT_CONFIG.threshold_abstain),
         )
-        tb = float(
-            threshold_abstain
-            if threshold_abstain is not None
-            else (tau_abstain if tau_abstain is not None else DEFAULT_CONFIG.threshold_abstain)
-        )
+        ta = float(_bands.threshold_accept)
+        tb = float(_bands.threshold_abstain)
         self._mode: str
         self._ema: float
         self._count: int
@@ -146,24 +140,6 @@ class SigmaGate:
         self._expected_hf = (self._inner.manifest.get("hf_model") or "").strip()
         self._ema = 0.5
         self._count = 0
-
-    @property
-    def tau_accept(self) -> float:
-        """Backward-compatible alias for :attr:`threshold_accept`."""
-        return self.threshold_accept
-
-    @tau_accept.setter
-    def tau_accept(self, v: float) -> None:
-        self.threshold_accept = float(v)
-
-    @property
-    def tau_abstain(self) -> float:
-        """Backward-compatible alias for :attr:`threshold_abstain`."""
-        return self.threshold_abstain
-
-    @tau_abstain.setter
-    def tau_abstain(self, v: float) -> None:
-        self.threshold_abstain = float(v)
 
     @property
     def threshold_accept(self) -> float:

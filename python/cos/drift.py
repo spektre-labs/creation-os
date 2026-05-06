@@ -12,6 +12,8 @@ import statistics
 import time
 from typing import Any, Dict, List, Mapping, Sequence
 
+from cos.config import DEFAULT_CONFIG
+
 __all__ = ["SigmaDrift"]
 
 
@@ -97,8 +99,8 @@ class SigmaDrift:
             s, _ = g.score(str(row.get("prompt", "")), str(row.get("response", "")))
             xs.append(float(s))
         mu = float(statistics.mean(xs)) if xs else 0.5
-        ta = float(getattr(g, "threshold_accept", getattr(g, "tau_accept", 0.35)))
-        tb = float(getattr(g, "threshold_abstain", getattr(g, "tau_abstain", 0.75)))
+        ta = float(getattr(g, "threshold_accept", DEFAULT_CONFIG.threshold_accept))
+        tb = float(getattr(g, "threshold_abstain", DEFAULT_CONFIG.threshold_abstain))
         g.threshold_accept = max(0.05, min(0.9, ta + 0.5 * (mu - ta)))
         g.threshold_abstain = max(g.threshold_accept + 0.05, min(0.95, tb + 0.5 * (mu - tb)))
         return {

@@ -13,6 +13,8 @@ import statistics
 from datetime import date, datetime, timezone
 from typing import Any, Dict, List, Mapping, Optional, Sequence
 
+from cos.config import DEFAULT_CONFIG
+
 __all__ = ["SigmaCompliance"]
 
 _ART50_DEADLINE = date(2026, 8, 2)
@@ -99,8 +101,8 @@ class SigmaCompliance:
 
     def art13_transparency(self, gate: Any) -> Dict[str, Any]:
         g = gate or self.gate
-        ta = float(getattr(g, "threshold_accept", getattr(g, "tau_accept", 0.35)))
-        tb = float(getattr(g, "threshold_abstain", getattr(g, "tau_abstain", 0.75)))
+        ta = float(getattr(g, "threshold_accept", DEFAULT_CONFIG.threshold_accept))
+        tb = float(getattr(g, "threshold_abstain", DEFAULT_CONFIG.threshold_abstain))
         return {
             "article": 13,
             "deployer_summary": (

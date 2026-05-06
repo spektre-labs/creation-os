@@ -14,6 +14,8 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Union
 
+from cos.config import DEFAULT_CONFIG
+
 Target = Union[None, int, str]
 
 
@@ -187,12 +189,8 @@ class SnapshotManager:
         state["gate"] = {
             "ema": float(getattr(gate, "_ema", 0.5)),
             "count": int(getattr(gate, "_count", 0)),
-            "threshold_accept": float(
-                getattr(gate, "threshold_accept", getattr(gate, "tau_accept", 0.15))
-            ),
-            "threshold_abstain": float(
-                getattr(gate, "threshold_abstain", getattr(gate, "tau_abstain", 0.85))
-            ),
+            "threshold_accept": float(getattr(gate, "threshold_accept", DEFAULT_CONFIG.threshold_accept)),
+            "threshold_abstain": float(getattr(gate, "threshold_abstain", DEFAULT_CONFIG.threshold_abstain)),
         }
         state["stats"] = self.pipeline.stats.to_dict()
         return state
@@ -206,8 +204,8 @@ class SnapshotManager:
             gate = self.pipeline.gate
             gate._ema = float(gs["ema"])
             gate._count = int(gs["count"])
-            ta = gs.get("threshold_accept", gs.get("tau_accept", 0.15))
-            tb = gs.get("threshold_abstain", gs.get("tau_abstain", 0.85))
+            ta = gs.get("threshold_accept", gs.get("tau_accept", DEFAULT_CONFIG.threshold_accept))
+            tb = gs.get("threshold_abstain", gs.get("tau_abstain", DEFAULT_CONFIG.threshold_abstain))
             gate.threshold_accept = float(ta)
             gate.threshold_abstain = float(tb)
 
@@ -313,12 +311,8 @@ class SigmaSnapshot:
     @staticmethod
     def _gate_blob(gate: Any) -> Dict[str, Any]:
         return {
-            "threshold_accept": float(
-                getattr(gate, "threshold_accept", getattr(gate, "tau_accept", 0.15))
-            ),
-            "threshold_abstain": float(
-                getattr(gate, "threshold_abstain", getattr(gate, "tau_abstain", 0.85))
-            ),
+            "threshold_accept": float(getattr(gate, "threshold_accept", DEFAULT_CONFIG.threshold_accept)),
+            "threshold_abstain": float(getattr(gate, "threshold_abstain", DEFAULT_CONFIG.threshold_abstain)),
             "ema": float(getattr(gate, "_ema", 0.5)),
             "count": int(getattr(gate, "_count", 0)),
         }
