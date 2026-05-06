@@ -44,13 +44,14 @@ class SigmaTable:
         s = str(table).strip()
         if not s:
             return []
+        j: object | None = None
         if s.startswith("[") or s.startswith("{"):
             try:
                 j = json.loads(s)
-                if isinstance(j, list):
-                    return [dict(r) for r in j if isinstance(r, Mapping)]
             except json.JSONDecodeError:
-                pass
+                j = None
+        if isinstance(j, list):
+            return [dict(r) for r in j if isinstance(r, Mapping)]
         return SigmaTable._parse_markdown_table(s)
 
     @staticmethod

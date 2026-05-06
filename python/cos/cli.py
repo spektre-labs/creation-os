@@ -1138,9 +1138,7 @@ def _cmd_prove(args: argparse.Namespace) -> int:
     ph = hashlib.sha256(prompt.encode("utf-8")).hexdigest()
     rh = hashlib.sha256(response.encode("utf-8")).hexdigest()
     st = SigmaState()
-    if getattr(args, "no_warm", False):
-        pass
-    else:
+    if not getattr(args, "no_warm", False):
         st.sigma = sigma_q16(0.99)
         st.d_sigma = 0
         st.k_eff = Q16
@@ -1376,7 +1374,7 @@ def _cmd_ttt(args: argparse.Namespace) -> int:
         if tag.startswith("RETHINK"):
             liv["application_updates"] = int(liv.get("application_updates", 0)) + 1
         if tag.startswith("ACCEPT"):
-            pass
+            liv["accept_events"] = int(liv.get("accept_events", 0)) + 1
         _ttt_save(path, st)
         print(
             json.dumps(
@@ -1837,7 +1835,7 @@ def _cmd_fewshot(args: argparse.Namespace) -> int:
         try:
             fs.import_state(_json.loads(path.read_text(encoding="utf-8")))
         except (_json.JSONDecodeError, OSError, TypeError, ValueError):
-            pass
+            print(f"cos fewshot: ignoring unreadable state file {path}", file=sys.stderr)
 
     if getattr(args, "fewshot_clear", False):
         fs.prototypes.clear()
@@ -1921,7 +1919,7 @@ def _cmd_symbolic(args: argparse.Namespace) -> int:
         try:
             sym.from_dict(_json.loads(path.read_text(encoding="utf-8")))
         except (_json.JSONDecodeError, OSError, TypeError, ValueError):
-            pass
+            print(f"cos symbolic: ignoring unreadable state file {path}", file=sys.stderr)
 
     def _persist_sym() -> None:
         path.parent.mkdir(parents=True, exist_ok=True)

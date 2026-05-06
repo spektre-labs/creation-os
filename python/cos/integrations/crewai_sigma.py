@@ -58,7 +58,7 @@ if BaseTool is not None and Field is not None and PrivateAttr is not None:
 else:  # pragma: no cover
 
     class SigmaGateInput:  # type: ignore[no-redef]
-        pass
+        """Unavailable without crewai + pydantic; install ``creation-os[crewai]``."""
 
     class SigmaGateTool:  # type: ignore[no-redef]
         def __init__(self, *args: Any, **kwargs: Any) -> None:

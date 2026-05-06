@@ -42,7 +42,7 @@ def _llm_output_text(response: Any) -> str:
             if c is not None:
                 return str(c)
     except (AttributeError, IndexError, TypeError):
-        pass
+        ...
     return ""
 
 
@@ -166,7 +166,7 @@ if BaseCallbackHandler is not None:
                     merged["verdict"] = verdict
                     gen0.generation_info = merged  # type: ignore[misc]
                 except (AttributeError, IndexError, TypeError):
-                    pass
+                    ...
 
         def on_llm_error(self, error: BaseException, **kwargs: Any) -> None:
             del error

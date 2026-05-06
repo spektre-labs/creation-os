@@ -57,15 +57,17 @@ def load_token_pricing_usd_per_1k() -> Dict[str, float]:
     """Merge defaults with optional ``COS_TOKEN_PRICING_JSON`` (object of str → float)."""
     out = default_token_pricing_usd_per_1k()
     raw = (os.environ.get("COS_TOKEN_PRICING_JSON") or "").strip()
+    extra: Optional[dict] = None
     if raw:
         try:
-            extra = json.loads(raw)
-            if isinstance(extra, dict):
-                for k, v in extra.items():
-                    if isinstance(k, str) and isinstance(v, (int, float)):
-                        out[str(k)] = float(v)
+            loaded = json.loads(raw)
+            extra = loaded if isinstance(loaded, dict) else None
         except json.JSONDecodeError:
-            pass
+            extra = None
+    if isinstance(extra, dict):
+        for k, v in extra.items():
+            if isinstance(k, str) and isinstance(v, (int, float)):
+                out[str(k)] = float(v)
     return out
 
 

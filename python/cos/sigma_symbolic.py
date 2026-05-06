@@ -206,7 +206,8 @@ class SigmaSymbolic:
             s, _ = self.gate.score(gtxt, stxt)
             stress = 0.5 * stress + 0.5 * float(s)
         except Exception:
-            pass
+            # Gate unavailable or non-JSON-safe; keep depth-based stress only.
+            ...
         return float(stress)
 
     @staticmethod

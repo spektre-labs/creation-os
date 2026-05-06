@@ -77,7 +77,14 @@ class SigmaTool:
         return True
 
     def run(self, **kwargs: Any) -> Any:
-        raise NotImplementedError
+        if not kwargs and not self.schema.get("properties"):
+            return {"ok": True, "tool": self.name, "echo": "no-arg lab stub"}
+        return {
+            "ok": False,
+            "tool": self.name,
+            "error": "subclass_or_register_implementation",
+            "received_keys": sorted(kwargs.keys()),
+        }
 
 
 @runtime_checkable

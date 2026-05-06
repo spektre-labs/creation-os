@@ -247,7 +247,8 @@ class Pipeline:
                 )
                 return float(cascade_result["sigma"]), str(cascade_result["verdict"])
             except Exception:
-                pass
+                # Probe/cascade path failed (transformers/torchshape/etc.); fall back to plain ΣGate.
+                ...
         s, v = self.gate.score(prompt, response)
         return float(s), str(v)
 

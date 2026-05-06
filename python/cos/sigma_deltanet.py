@@ -19,13 +19,27 @@ from __future__ import annotations
 
 from typing import Callable, Optional, Tuple
 
-import torch
-import torch.nn as nn
+try:
+    import torch
+    import torch.nn as nn
+except ImportError:  # pragma: no cover
+    torch = None  # type: ignore[assignment]
+    nn = None  # type: ignore[assignment]
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update
 
 
-class SigmaDeltaNet(nn.Module):
+def _require_torch_deltanet() -> None:
+    if torch is None or nn is None:
+        raise ImportError(
+            "cos.sigma_deltanet requires PyTorch — install e.g. pip install torch",
+        ) from None
+
+
+_TorchBase = nn.Module if nn is not None else object
+
+
+class SigmaDeltaNet(_TorchBase):
     """
     σ-hybrid: linear path first, dense fallback on ``RETHINK``.
 
@@ -41,6 +55,7 @@ class SigmaDeltaNet(nn.Module):
         delta_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
         full_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ) -> None:
+        _require_torch_deltanet()
         super().__init__()
         self.d_model = int(d_model)
         self._scale = float(scale_sigma)

@@ -205,7 +205,7 @@ def load_stats_into_guardrails(path: Path, gr: SigmaGuardrails) -> None:
                 try:
                     gr.stats[k] = int(stats[k])
                 except (TypeError, ValueError):
-                    pass
+                    continue
 
 
 def save_stats_from_guardrails(path: Path, gr: SigmaGuardrails) -> None:

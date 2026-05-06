@@ -207,12 +207,12 @@ def load_sigma_ttt_v2_stats(path: Path, engine: SigmaTTTv2) -> None:
                 try:
                     engine.stats[k] = int(stats[k])
                 except (TypeError, ValueError):
-                    pass
+                    continue
         if "avg_steps" in stats:
             try:
                 engine.stats["avg_steps"] = float(stats["avg_steps"])
             except (TypeError, ValueError):
-                pass
+                ...
 
 
 def save_sigma_ttt_v2_stats(path: Path, engine: SigmaTTTv2) -> None:

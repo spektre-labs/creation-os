@@ -110,12 +110,18 @@ class SigmaFabric:
         self._offline_mode = False
         self.sigma_bus: List[float] = []
         self._snapshot_dir = snapshot_dir
+        self._optional_import_skips: List[str] = []
+
+    def _note_skip(self, component: str) -> None:
+        """Record an optional layer that failed to import (audit / diagnostics)."""
+        self._optional_import_skips.append(str(component))
 
     def boot(self) -> Dict[str, Any]:
         from cos.sigma_gate import SigmaGate
 
         gate = SigmaGate()
         self._offline_mode = False
+        self._optional_import_skips.clear()
 
         safety_layer = None
         try:
@@ -124,8 +130,7 @@ class SigmaFabric:
             safety_layer = SigmaSafety(gate=gate)
             self.layers["safety"] = safety_layer
         except ImportError:
-            pass
-
+            self._note_skip('safety')
         prompt_guard_mod = None
         if safety_layer is not None:
             prompt_guard_mod = safety_layer.prompt_guard
@@ -137,7 +142,7 @@ class SigmaFabric:
                 prompt_guard_mod = SigmaPromptGuard(gate=gate)
                 self.layers["prompt_guard"] = prompt_guard_mod
             except ImportError:
-                pass
+                self._note_skip("prompt_guard_standalone")
 
         # Metacognition runs in fabric.process — keep pipeline.metacog None to avoid double routing.
         pipeline = Pipeline(gate=gate, metacog=None, prompt_guard=prompt_guard_mod)
@@ -150,45 +155,39 @@ class SigmaFabric:
 
             self.layers["stream"] = SigmaStream(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('stream')
         try:
             from cos.probe import SigmaProbe, SignalCascade
 
             self.layers["cascade"] = SignalCascade()
             self.layers["probe"] = SigmaProbe()
         except ImportError:
-            pass
-
+            self._note_skip('probe')
         try:
             from cos.metacog import SigmaMetacog
 
             self.layers["metacog"] = SigmaMetacog()
         except ImportError:
-            pass
-
+            self._note_skip('metacog')
         try:
             from cos.reason import SigmaReason
 
             self.layers["reason"] = SigmaReason()
         except ImportError:
-            pass
-
+            self._note_skip('reason')
         try:
             from cos.calibrate import SigmaCalibrator
 
             self.layers["calibrator"] = SigmaCalibrator()
         except ImportError:
-            pass
-
+            self._note_skip('calibrate')
         try:
             from cos.depth import AdaptiveDepth, DepthRouter
 
             self.layers["depth"] = AdaptiveDepth(gate=gate)
             self.layers["depth_router"] = DepthRouter(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('depth')
         try:
             from cos.moe import SigmaMoE
 
@@ -198,64 +197,55 @@ class SigmaFabric:
             moe.add_expert("deep", cost=1.0, min_sigma=0.7)
             self.layers["moe"] = moe
         except ImportError:
-            pass
-
+            self._note_skip('moe')
         try:
             from cos.latent import SigmaLatent
 
             self.layers["latent"] = SigmaLatent(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('latent')
         try:
             from cos.swarm import SigmaSwarm
 
             self.layers["swarm"] = SigmaSwarm(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('swarm')
         try:
             from cos.world import SigmaWorld
 
             self.layers["world"] = SigmaWorld(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('world')
         try:
             from cos.memory import SigmaMemory
 
             self.layers["memory"] = SigmaMemory(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('memory')
         try:
             from cos.formal import SigmaFormal
 
             self.layers["formal"] = SigmaFormal(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('formal')
         try:
             from cos.continual import SigmaContinual
 
             self.layers["continual"] = SigmaContinual(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('continual')
         try:
             from cos.graph import SigmaGraph
 
             self.layers["graph"] = SigmaGraph(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('graph')
         try:
             from cos.recursion import SigmaRecursion
 
             self.layers["recursion"] = SigmaRecursion(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('recursion')
         try:
             from cos.agent_guard import SigmaAgentGuard
 
@@ -265,113 +255,97 @@ class SigmaFabric:
                 else SigmaAgentGuard(gate=gate)
             )
         except ImportError:
-            pass
-
+            self._note_skip('agent_guard')
         try:
             from cos.observe import SigmaObserve
 
             self.layers["observe"] = SigmaObserve()
         except ImportError:
-            pass
-
+            self._note_skip('observe')
         try:
             from cos.embed import SigmaEmbed
 
             self.layers["embed"] = SigmaEmbed(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('embed')
         try:
             from cos.speculative import SigmaSpeculative
 
             self.layers["speculative"] = SigmaSpeculative()
         except ImportError:
-            pass
-
+            self._note_skip('speculative')
         try:
             from cos.spike import SigmaSpike
 
             self.layers["spike"] = SigmaSpike()
         except ImportError:
-            pass
-
+            self._note_skip('spike')
         try:
             from cos.distill import SigmaDistill
 
             self.layers["distill"] = SigmaDistill()
         except ImportError:
-            pass
-
+            self._note_skip('distill')
         try:
             from cos.quantize import SigmaQuantize
 
             self.layers["quantize"] = SigmaQuantize()
         except ImportError:
-            pass
-
+            self._note_skip('quantize')
         try:
             from cos.kv_cache import SigmaKVCache
 
             self.layers["kv_cache"] = SigmaKVCache(max_size=128)
         except ImportError:
-            pass
-
+            self._note_skip('kv_cache')
         try:
             from cos.rag import SigmaRAG
 
             self.layers["rag"] = SigmaRAG(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('rag')
         try:
             from cos.ttt import SigmaTTT
 
             self.layers["ttt"] = SigmaTTT(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('ttt')
         try:
             from cos.split import SigmaSplit
 
             self.layers["split"] = SigmaSplit()
         except ImportError:
-            pass
-
+            self._note_skip('split')
         try:
             from cos.fleet import SigmaFleet
 
             self.layers["fleet"] = SigmaFleet()
         except ImportError:
-            pass
-
+            self._note_skip('fleet')
         try:
             from cos.evolve import SigmaEvolve
 
             self.layers["evolve"] = SigmaEvolve(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('evolve')
         try:
             from cos.bench import SigmaBench
 
             self.layers["bench"] = SigmaBench()
         except ImportError:
-            pass
-
+            self._note_skip('bench')
         try:
             from cos.index import SigmaIndex
 
             self.layers["index"] = SigmaIndex(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('index')
         try:
             from cos.voice import SigmaVoice
 
             self.layers["sigma_voice"] = SigmaVoice(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('voice')
         try:
             from cos.offline import SigmaOffline
 
@@ -379,23 +353,20 @@ class SigmaFabric:
             self.layers["offline"] = off
             self._offline_mode = bool(off.detect_mode_from_env())
         except ImportError:
-            pass
-
+            self._note_skip('offline')
         try:
             from cos.cost import SigmaCost
 
             self.layers["cost"] = SigmaCost(gate=gate)
         except ImportError:
-            pass
-
+            self._note_skip('cost')
         try:
             from cos.mcp import SigmaMCPServer
 
             ag = self.layers.get("agent_guard")
             self.layers["mcp_server"] = SigmaMCPServer(gate=gate, agent_guard=ag)
         except ImportError:
-            pass
-
+            self._note_skip('mcp')
         try:
             from cos.watchdog import SigmaWatchdog
 
@@ -404,8 +375,7 @@ class SigmaFabric:
             if os.environ.get("COS_WATCHDOG_AUTO_START") == "1":
                 wd.start_background()
         except ImportError:
-            pass
-
+            self._note_skip('watchdog')
         try:
             from cos.snapshot import ConversationHistory, SnapshotManager
 
@@ -415,10 +385,13 @@ class SigmaFabric:
                 snap_dir = Path(tempfile.mkdtemp(prefix="cos_fabric_snap_"))
             self.layers["snapshots"] = SnapshotManager(pipeline, snapshot_dir=snap_dir)
         except ImportError:
-            pass
-
+            self._note_skip('snapshot')
         self.booted = True
-        return {"booted": True, "layers": list(self.layers.keys())}
+        return {
+            "booted": True,
+            "layers": list(self.layers.keys()),
+            "optional_import_skips": list(self._optional_import_skips),
+        }
 
     def process(
         self,

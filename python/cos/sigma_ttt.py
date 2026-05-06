@@ -23,16 +23,31 @@ import json
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import torch
-import torch.nn as nn
+try:
+    import torch
+    import torch.nn as nn
+    _TorchBase: type = nn.Module
+except ImportError:  # pragma: no cover
+    torch = None  # type: ignore[assignment]
+    nn = None  # type: ignore[assignment]
+    _TorchBase = object
+
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update
 
 
-class SigmaTTT(nn.Module):
+def _require_torch_ttt() -> None:
+    if torch is None or nn is None:
+        raise ImportError(
+            "cos.sigma_ttt requires PyTorch — install e.g. pip install torch",
+        ) from None
+
+
+class SigmaTTT(_TorchBase):
     """Low-rank delta on activations; TTT step only on ``RETHINK``."""
 
     def __init__(self, *, d_model: int, lr: float = 1e-2) -> None:
+        _require_torch_ttt()
         super().__init__()
         self.d_model = int(d_model)
         self.lr = float(lr)
@@ -77,6 +92,7 @@ class SigmaTTTInPlace(nn.Module):
     """
 
     def __init__(self, *, d_in: int, d_out: int, lr: float = 5e-3) -> None:
+        _require_torch_ttt()
         super().__init__()
         self.d_in = int(d_in)
         self.d_out = int(d_out)
@@ -117,6 +133,7 @@ class SigmaTTTInPlace(nn.Module):
 
 
 def _prompt_embedding(prompt: str, context: Optional[str], dim: int) -> torch.Tensor:
+    _require_torch_ttt()
     raw = f"{prompt}\n{context or ''}".encode("utf-8", errors="ignore")
     vec = [0.0] * dim
     for i, b in enumerate(raw[: dim * 4]):
@@ -157,6 +174,7 @@ class SigmaGatedTTTOrchestrator:
         lr: float = 5e-3,
         engram_path: Optional[Path] = None,
     ) -> None:
+        _require_torch_ttt()
         self.dim = int(dim)
         self.chunk_size = int(chunk_size)
         self.max_steps = int(max_steps)
@@ -179,7 +197,7 @@ class SigmaGatedTTTOrchestrator:
                     with torch.no_grad():
                         self.module.delta.copy_(t)
         except (OSError, json.JSONDecodeError, TypeError):
-            pass
+            return
 
     def _save_engram_delta(self, key: str) -> None:
         if self._engram_path is None:

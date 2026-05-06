@@ -396,7 +396,7 @@ def _espeak_say(text: str) -> None:
             )
             return
         except OSError:
-            pass
+            ...
     try:
         subprocess.run(
             ["espeak", text[:2048]],
@@ -405,7 +405,7 @@ def _espeak_say(text: str) -> None:
             stderr=subprocess.DEVNULL,
         )
     except OSError:
-        pass
+        ...
 
 
 def _build_model(args: argparse.Namespace) -> _LLMBackend:

@@ -29,6 +29,7 @@ scaffold**, not a reproduction of their probe.
 """
 from __future__ import annotations
 
+import logging
 import math
 import pickle
 from pathlib import Path
@@ -36,7 +37,7 @@ from typing import Any, Dict, Optional, Tuple
 
 import numpy as np
 
-
+_LOG = logging.getLogger(__name__)
 def _layer_range_indices(n_layers: int, layer_range: str) -> range:
     """``n_layers`` counts embedding + blocks (HF ``hidden_states`` length)."""
     lr = (layer_range or "middle").strip().lower()
@@ -178,7 +179,7 @@ class SigmaPrecheck:
                         return float(max(0.0, min(1.0, pr[0, 1])))
                     return float(max(0.0, min(1.0, pr.ravel()[0])))
                 except Exception:
-                    pass
+                    _LOG.debug("SigmaPrecheck head.predict_proba failed; using norm heuristic", exc_info=True)
 
         norms = [float(np.linalg.norm(f)) for f in feats]
         nv = float(np.var(norms)) if len(norms) > 1 else 0.0

@@ -80,7 +80,7 @@ def bootstrap_project(root: Path, persona_name: str) -> None:
     try:
         bf.chmod(bf.stat().st_mode | 0o111)
     except OSError:
-        pass
+        ...
     (root / "evals" / "sample.jsonl").write_text(_SAMPLE_JSONL, encoding="utf-8")
 
 

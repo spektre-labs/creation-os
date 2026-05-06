@@ -66,11 +66,11 @@ def load_document_text(path: str | Path) -> str:
 def _docx_to_text(p: Path) -> str:
     try:
         from docx import Document  # type: ignore[import-not-found]
-
+    except ImportError:
+        Document = None  # type: ignore[misc, assignment]
+    else:
         doc = Document(str(p))
         return "\n".join(paragraph.text for paragraph in doc.paragraphs if paragraph.text.strip())
-    except ImportError:
-        pass
     out: List[str] = []
     try:
         with zipfile.ZipFile(p) as zf:
@@ -87,14 +87,14 @@ def _docx_to_text(p: Path) -> str:
 def _pdf_to_text(p: Path) -> str:
     try:
         import fitz  # type: ignore[import-not-found]
-
+    except ImportError:
+        fitz = None  # type: ignore[misc, assignment]
+    if fitz is not None:
         doc = fitz.open(str(p))
         try:
             return "\n".join(page.get_text() for page in doc)
         finally:
             doc.close()
-    except ImportError:
-        pass
     try:
         from pypdf import PdfReader  # type: ignore[import-not-found]
     except ImportError:

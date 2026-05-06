@@ -215,6 +215,7 @@ class SigmaObserve:
         self.metrics = SigmaMetrics()
         self.alerts = SigmaAlertEngine()
         self._otel_endpoint = (otel_endpoint or "").strip() or None
+        self._otel_export_failures = 0
 
     def set_otel_endpoint(self, url: Optional[str]) -> None:
         self._otel_endpoint = (url or "").strip() or None
@@ -225,7 +226,7 @@ class SigmaObserve:
         try:
             post_otlp_http(self._otel_endpoint, entry)
         except Exception:
-            pass
+            self._otel_export_failures += 1
 
     def trace_llm(
         self,

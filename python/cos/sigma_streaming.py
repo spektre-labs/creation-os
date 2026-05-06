@@ -193,7 +193,8 @@ class StreamingSigmaGate:
                     return float(np.clip(pr[0, 1], 0.0, 1.0))
                 return float(np.clip(float(pr.ravel()[0]), 0.0, 1.0))
             except Exception:
-                pass
+                # Pickle probe predict_proba failed; use norm logistic below.
+                ...
         v = float(np.linalg.norm(hs))
         return float(np.clip(1.0 / (1.0 + np.exp(-(v - 50.0) / 10.0)), 0.0, 1.0))
 
@@ -243,7 +244,8 @@ class StreamingSigmaGate:
             self.gen_sigmas.append(float(sigma))
             self._apply_cognitive_step(float(sigma))
         except Exception:
-            pass
+            # Forward hook tensor path failed; skip scoring for this step.
+            ...
 
     def register(self, model: Any, *, layer_selector: Optional[Callable[[Any], Any]] = None) -> None:
         if self._probe is None:

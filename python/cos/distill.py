@@ -17,7 +17,7 @@ class SigmaDistill:
     """σ-masked batch steps, token difficulty from logits distance, σ curriculum sort."""
 
     def __init__(self) -> None:
-        pass
+        self.steps_applied = 0
 
     def distill_step(
         self,
@@ -27,6 +27,7 @@ class SigmaDistill:
         gate: Any,
     ) -> Dict[str, Any]:
         del teacher, student
+        self.steps_applied += 1
         rows: List[Dict[str, Any]] = []
         full_kd_flags: List[bool] = []
         for item in batch:

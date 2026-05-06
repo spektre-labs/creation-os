@@ -251,13 +251,15 @@ def default_sigma_graph_path() -> Path:
 
 def load_graph_from_path(path: Path, gate: Any, *, extract_triples: Optional[TripleExtractor] = None) -> SigmaGraph:
     g = SigmaGraph(gate, extract_triples=extract_triples)
+    blob: dict[str, Any] | None = None
     if path.is_file():
         try:
-            blob = json.loads(path.read_text(encoding="utf-8"))
-            if isinstance(blob, dict):
-                g.load_blob(blob)
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            blob = raw if isinstance(raw, dict) else None
         except (OSError, json.JSONDecodeError):
-            pass
+            blob = None
+    if blob is not None:
+        g.load_blob(blob)
     return g
 
 

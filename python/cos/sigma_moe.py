@@ -40,14 +40,15 @@ def _gate_score(gate: Any, prompt: str, response: str) -> Tuple[float, str]:
 
 def _default_feature_sigma(out: Array) -> float:
     try:
-        import numpy as np
-
-        if isinstance(out, np.ndarray):
-            nrm = float(np.linalg.norm(out.astype("float64")))
-            dim = max(int(np.size(out)), 1)
-            return float(np.clip(nrm / (math.sqrt(dim) + 1e-9), 0.0, 1.0))
+        import numpy as np  # optional dependency
     except ImportError:
-        pass
+        np = None  # type: ignore[misc, assignment]
+    if np is not None and isinstance(out, np.ndarray):
+        nrm = float(np.linalg.norm(out.astype("float64")))
+        dim = max(int(np.size(out)), 1)
+        return float(np.clip(nrm / (math.sqrt(dim) + 1e-9), 0.0, 1.0))
+    if isinstance(out, (list, tuple)) and out:
+        return float(abs(hash(str(out))) % 10000) / 10000.0
     if isinstance(out, (int, float)):
         return float(abs(float(out)) % 1.0)
     return 0.5
@@ -69,7 +70,8 @@ def _add_scaled(acc: Optional[Array], term: Array, w: float) -> Array:
         if isinstance(term, np.ndarray):
             return acc + term * w
     except ImportError:
-        pass
+        if isinstance(term, (int, float)) and isinstance(acc, (int, float)):
+            return float(acc) + float(term) * w
     return acc + term * w  # type: ignore[operator]
 
 

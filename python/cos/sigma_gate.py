@@ -114,8 +114,8 @@ class SigmaGate:
 
         if empty:
             self._mode = "lite"
-            self.tau_accept = ta
-            self.tau_abstain = tb
+            self.threshold_accept = ta
+            self.threshold_abstain = tb
             self._ema = 0.5
             self._count = 0
             self._inner = None
@@ -131,21 +131,47 @@ class SigmaGate:
         if not p.is_file():
             raise FileNotFoundError(f"Probe bundle not found: {p}")
         self._inner = self._mod.SigmaGateLSD.from_pickle_bundle(p)
-        self.tau_accept = float(tau_accept)
-        self.tau_abstain = float(tau_abstain)
+        self.threshold_accept = ta
+        self.threshold_abstain = tb
         self._expected_hf = (self._inner.manifest.get("hf_model") or "").strip()
         self._ema = 0.5
         self._count = 0
 
     @property
+    def tau_accept(self) -> float:
+        """Backward-compatible alias for :attr:`threshold_accept`."""
+        return self.threshold_accept
+
+    @tau_accept.setter
+    def tau_accept(self, v: float) -> None:
+        self.threshold_accept = float(v)
+
+    @property
+    def tau_abstain(self) -> float:
+        """Backward-compatible alias for :attr:`threshold_abstain`."""
+        return self.threshold_abstain
+
+    @tau_abstain.setter
+    def tau_abstain(self, v: float) -> None:
+        self.threshold_abstain = float(v)
+
+    @property
     def threshold_accept(self) -> float:
-        """Alias of ``tau_accept`` (lite / API compatibility)."""
-        return self.tau_accept
+        """σ below this → ACCEPT (lite / LSD)."""
+        return self._threshold_accept
+
+    @threshold_accept.setter
+    def threshold_accept(self, v: float) -> None:
+        self._threshold_accept = float(v)
 
     @property
     def threshold_abstain(self) -> float:
-        """Alias of ``tau_abstain``."""
-        return self.tau_abstain
+        """σ at or above this → ABSTAIN."""
+        return self._threshold_abstain
+
+    @threshold_abstain.setter
+    def threshold_abstain(self, v: float) -> None:
+        self._threshold_abstain = float(v)
 
     def close(self) -> None:
         if self._mode == "lsd" and self._inner is not None:
@@ -174,9 +200,9 @@ class SigmaGate:
             )
 
     def _verdict(self, sigma: float) -> str:
-        if sigma < self.tau_accept:
+        if sigma < self.threshold_accept:
             return ACCEPT
-        if sigma < self.tau_abstain:
+        if sigma < self.threshold_abstain:
             return RETHINK
         return ABSTAIN
 
@@ -216,9 +242,9 @@ class SigmaGate:
         if self._mode == "lite":
             self._lite_update_ema(sigma)
             return float(sigma), self._verdict(sigma)
-        if sigma < self.tau_accept:
+        if sigma < self.threshold_accept:
             return sigma, self._mod.GateString.ACCEPT
-        if sigma < self.tau_abstain:
+        if sigma < self.threshold_abstain:
             return sigma, self._mod.GateString.RETHINK
         return sigma, self._mod.GateString.ABSTAIN
 
@@ -263,7 +289,7 @@ class SigmaGate:
                 levels["L5_sae"] = float(cascade_L5(hidden_states))
                 l2_l5_ok = True
             except ImportError:
-                pass
+                levels["cascade_import"] = "L2_L5_unavailable_optional_cos_cascade"
 
         if attention_maps is not None:
             try:
@@ -271,7 +297,7 @@ class SigmaGate:
 
                 levels["L6_sink"] = float(cascade_L6(attention_maps, hidden_states))
             except ImportError:
-                pass
+                levels["cascade_import_L6"] = "L6_unavailable_optional_cos_cascade"
 
         if not (sigma < 0.1 or sigma > 0.9):
             has_l6 = "L6_sink" in levels

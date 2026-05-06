@@ -472,7 +472,7 @@ def create_app() -> Any:
                     await ws.send_json({"pong": True})
 
         except WebSocketDisconnect:
-            pass
+            return
 
     @app.post("/v1/feedback")
     async def feedback_v1(req: FeedbackRequest, request: Request) -> dict[str, Any]:

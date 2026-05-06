@@ -20,8 +20,23 @@ from __future__ import annotations
 import os
 from typing import Any, List, Sequence, Tuple
 
-import torch
-from sklearn.feature_extraction.text import CountVectorizer
+try:
+    import torch
+except ImportError:  # pragma: no cover
+    torch = None  # type: ignore[assignment, misc]
+
+try:
+    from sklearn.feature_extraction.text import CountVectorizer
+except ImportError:  # pragma: no cover
+    CountVectorizer = None  # type: ignore[misc, assignment]
+
+
+def _require_sklearn_count() -> None:
+    if CountVectorizer is None:
+        raise ImportError(
+            "cos.hide_metric_upstream requires scikit-learn — install e.g. pip install scikit-learn",
+        ) from None
+
 
 try:
     from keybert import KeyBERT
@@ -32,8 +47,16 @@ except ImportError:  # pragma: no cover
     KeyBERT = None  # type: ignore[misc, assignment]
 
 
+def _require_hide_torch() -> None:
+    if torch is None:
+        raise ImportError(
+            "cos.hide_metric_upstream requires PyTorch — install e.g. pip install torch",
+        ) from None
+
+
 def rbf_kernel(X: torch.Tensor, Y: torch.Tensor | None = None, gamma: float = 1e-7) -> torch.Tensor:
     """Radial Basis Function (RBF) kernel (upstream ``func/kernels.py``)."""
+    _require_hide_torch()
     if Y is None:
         Y = X
     pairwise_sq_dists = torch.cdist(X, Y) ** 2
@@ -45,6 +68,7 @@ KERNEL_FUNCTIONS: dict[str, Any] = {"rbf": rbf_kernel}
 
 def unbiased_HSIC(K_X: torch.Tensor, K_Y: torch.Tensor) -> torch.Tensor:
     """Unbiased HSIC (upstream ``func/metric.py``)."""
+    _require_hide_torch()
     tK = K_X - torch.diag(torch.diag(K_X))
     tL = K_Y - torch.diag(torch.diag(K_Y))
 
@@ -74,6 +98,8 @@ def extract_keyword_representation(
     k: int = 20,
 ) -> Tuple[torch.Tensor, torch.Tensor, list, list, list, list]:
     """Keyword-based token selection (upstream ``func/metric.py``)."""
+    _require_hide_torch()
+    _require_sklearn_count()
     if not _HAS_KEYBERT or KeyBERT is None:
         raise ImportError(
             "keybert not installed. Run: pip install keybert"
@@ -87,6 +113,7 @@ def extract_keyword_representation(
     input_text = tokenizer.decode(input_tokens, skip_special_tokens=True)
     output_text = tokenizer.decode(output_tokens, skip_special_tokens=True)
 
+    _require_sklearn_count()
     vectorizer = CountVectorizer(
         ngram_range=(1, 1),
         stop_words=None,
@@ -201,6 +228,7 @@ def get_unbiased_hsic_score_keybert(
     **kwargs: Any,
 ) -> Tuple[float, Any, Any, Any, Any]:
     """Greedy-decoding hidden-state layout (upstream ``func/metric.py``)."""
+    _require_hide_torch()
     selected_layer = int(layer)
     selected_states = [token_tuple[selected_layer] for token_tuple in hidden_states]
 
@@ -233,10 +261,4 @@ def get_unbiased_hsic_score_keybert(
 
 
 def upstream_metric_dependencies_available() -> bool:
-    try:
-        import keybert  # noqa: F401
-        import torch  # noqa: F401
-
-        return True
-    except Exception:
-        return False
+    return bool(torch is not None and _HAS_KEYBERT and CountVectorizer is not None)
