@@ -15,6 +15,11 @@ class SigmaDrive:
         self.sigma_history: List[float] = []
         self.emotion_log: List[Dict[str, Any]] = []
 
+    @property
+    def σ_history(self) -> List[float]:
+        """Alias for ``sigma_history`` (σ-only drive buffer)."""
+        return self.sigma_history
+
     def record(self, sigma: float) -> None:
         self.sigma_history.append(float(sigma))
 
