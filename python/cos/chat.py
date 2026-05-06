@@ -10,11 +10,15 @@ Requires optional ``openai``: ``pip install 'creation-os[openai]'`` or ``pip ins
 
 Environment (optional): ``COS_ENDPOINT``, ``COS_MODEL``, ``COS_API_KEY`` — also
 ``CREATION_OS_CHAT_ENDPOINT`` / ``OPENAI_API_KEY`` for compatibility.
+
+**Qwen3.6:** optional thinking preservation (Dashscope vs OpenAI-compatible ``extra_body``),
+model-specific sampling defaults, and σ scores **assistant content only** — not chain-of-thought.
 """
 from __future__ import annotations
 
 import json
 import os
+import re
 import sys
 import uuid
 from typing import Any, Dict, Iterator, List, Optional, Tuple
@@ -31,6 +35,22 @@ from cos.sigma_gate import ABSTAIN, ACCEPT, RETHINK, SigmaGate
 
 DEFAULT_CHAT_ENDPOINT = "http://localhost:8000/v1"
 DEFAULT_CHAT_MODEL = "Qwen/Qwen3.6-35B-A3B"
+
+# Qwen3.6 — HuggingFace / llama.cpp style sampling hints (A3B MoE vs 27B dense).
+QWEN36_A3B_DEFAULTS: Dict[str, Any] = {
+    "temperature": 0.7,
+    "top_p": 0.8,
+    "top_k": 20,
+    "presence_penalty": 1.5,
+    "max_tokens": 32768,
+}
+QWEN36_27B_DEFAULTS: Dict[str, Any] = {
+    "temperature": 0.6,
+    "top_p": 0.95,
+    "top_k": 20,
+    "presence_penalty": 0.0,
+    "max_tokens": 32768,
+}
 
 OPENAI_INSTALL_HINT = "openai not installed. Run: pip install 'creation-os[openai]'"
 
@@ -87,7 +107,9 @@ def assistant_text_from_completion_dict(data: Dict[str, Any]) -> str:
     if not choices:
         return ""
     msg = (choices[0] or {}).get("message") or {}
-    return _message_content_to_text(msg.get("content"))
+    raw = _message_content_to_text(msg.get("content"))
+    _, content = extract_thinking_from_parts(raw, msg.get("reasoning_content"))
+    return content
 
 
 def assistant_text_from_response(resp: Any) -> str:
@@ -97,7 +119,10 @@ def assistant_text_from_response(resp: Any) -> str:
     msg = getattr(ch0, "message", None)
     if msg is None:
         return ""
-    return _message_content_to_text(getattr(msg, "content", None))
+    raw = _message_content_to_text(getattr(msg, "content", None))
+    reasoning = getattr(msg, "reasoning_content", None)
+    _, content = extract_thinking_from_parts(raw, reasoning)
+    return content
 
 
 def should_preserve_thinking(preserve_thinking: bool, model: str) -> bool:
@@ -107,10 +132,84 @@ def should_preserve_thinking(preserve_thinking: bool, model: str) -> bool:
     return "qwen" in model.lower()
 
 
-def _extra_body_for_model(preserve_thinking: bool, model: str) -> Optional[Dict[str, Any]]:
+def _qwen36_sampling_base(model: str) -> Dict[str, Any]:
+    m = model.lower()
+    if "qwen" not in m:
+        return {"temperature": 0.7, "max_tokens": 32768}
+    if "a3b" in m or "35b-a3b" in m:
+        return dict(QWEN36_A3B_DEFAULTS)
+    if "27b" in m:
+        return dict(QWEN36_27B_DEFAULTS)
+    return dict(QWEN36_A3B_DEFAULTS)
+
+
+def build_sampling_request_params(
+    model: str,
+    *,
+    temperature: Optional[float] = None,
+    max_tokens: Optional[int] = None,
+    top_p: Optional[float] = None,
+    top_k: Optional[int] = None,
+    presence_penalty: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Merge caller overrides with Qwen3.6 recommendation tables (non-Qwen: temperature + max_tokens only)."""
+    base = _qwen36_sampling_base(model)
+    out: Dict[str, Any] = {
+        "temperature": float(temperature if temperature is not None else base["temperature"]),
+        "max_tokens": int(max_tokens if max_tokens is not None else base["max_tokens"]),
+    }
+    tp = top_p if top_p is not None else base.get("top_p")
+    tk = top_k if top_k is not None else base.get("top_k")
+    pp = presence_penalty if presence_penalty is not None else base.get("presence_penalty")
+    if tp is not None:
+        out["top_p"] = float(tp)
+    if tk is not None:
+        out["top_k"] = int(tk)
+    if pp is not None:
+        out["presence_penalty"] = float(pp)
+    return out
+
+
+def build_extra_body(endpoint: str, preserve_thinking: bool, model: str) -> Optional[Dict[str, Any]]:
+    """Thinking preservation: different payloads per backend (Dashscope vs OpenAI-compatible)."""
     if not should_preserve_thinking(preserve_thinking, model):
         return None
+    ep = (endpoint or "").lower()
+    if "dashscope" in ep:
+        return {"preserve_thinking": True}
     return {"chat_template_kwargs": {"preserve_thinking": True}}
+
+
+def extract_thinking_from_parts(
+    content: str,
+    reasoning_content: Any,
+) -> Tuple[Optional[str], str]:
+    """Split thinking (vLLM ``reasoning_content`` or llama.cpp tags) from visible assistant content."""
+    thinking: Optional[str] = None
+    if reasoning_content is not None and str(reasoning_content).strip():
+        thinking = str(reasoning_content).strip()
+    text = content or ""
+    if not thinking and "<think>" in text:
+        match = re.search(r"<think>(.*?)</think>(.*)", text, re.DOTALL)
+        if match:
+            thinking = match.group(1).strip()
+            text = match.group(2).strip()
+    return thinking, text
+
+
+def parse_openai_completion_response(response: Any, *, fallback_model: str) -> Dict[str, Any]:
+    """Parse one chat completion — separate thinking from content for σ-gate (content only)."""
+    if not getattr(response, "choices", None):
+        return {"thinking": None, "content": "", "model": fallback_model}
+    choice = response.choices[0]
+    message = getattr(choice, "message", None)
+    if message is None:
+        return {"thinking": None, "content": "", "model": getattr(response, "model", None) or fallback_model}
+    reasoning = getattr(message, "reasoning_content", None)
+    raw_content = _message_content_to_text(getattr(message, "content", None))
+    thinking, content = extract_thinking_from_parts(raw_content, reasoning)
+    model = getattr(response, "model", None) or fallback_model
+    return {"thinking": thinking, "content": content, "model": model}
 
 
 class SigmaChat:
@@ -144,25 +243,41 @@ class SigmaChat:
             return 0.0
         return sum(h[2] for h in self.history) / len(self.history)
 
+    def _build_extra_body(self) -> Optional[Dict[str, Any]]:
+        return build_extra_body(self.endpoint, self.preserve_thinking, self.model)
+
+    def _parse_response(self, response: Any) -> Dict[str, Any]:
+        return parse_openai_completion_response(response, fallback_model=self.model)
+
     def send(
         self,
         user_message: str,
         system: Optional[str] = None,
         *,
-        temperature: float = 0.7,
-        max_tokens: int = 32768,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
     ) -> Dict[str, Any]:
         if system and not self.messages:
             self.messages.append({"role": "system", "content": system})
         self.messages.append({"role": "user", "content": user_message})
 
-        eb = _extra_body_for_model(self.preserve_thinking, self.model)
+        sampling = build_sampling_request_params(
+            self.model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            top_k=top_k,
+            presence_penalty=presence_penalty,
+        )
+        eb = self._build_extra_body()
         try:
             req: Dict[str, Any] = {
                 "model": self.model,
                 "messages": [dict(m) for m in self.messages],
-                "temperature": temperature,
-                "max_tokens": max_tokens,
+                **sampling,
             }
             if eb is not None:
                 req["extra_body"] = eb
@@ -171,36 +286,55 @@ class SigmaChat:
             self.messages.pop()
             return {
                 "text": None,
+                "thinking": None,
                 "sigma": 1.0,
                 "verdict": ABSTAIN,
                 "error": str(e),
             }
 
-        text = assistant_text_from_response(resp) or ""
-        sigma, verdict = self.gate.score(user_message, text)
-        self.messages.append({"role": "assistant", "content": text})
-        self.history.append((user_message, text, float(sigma), str(verdict)))
-        return {"text": text, "sigma": float(sigma), "verdict": str(verdict), "error": None}
+        parsed = self._parse_response(resp)
+        content = parsed["content"]
+        thinking = parsed["thinking"]
+        sigma, verdict = self.gate.score(user_message, content)
+        self.messages.append({"role": "assistant", "content": content})
+        self.history.append((user_message, content, float(sigma), str(verdict)))
+        return {
+            "text": content,
+            "thinking": thinking,
+            "sigma": float(sigma),
+            "verdict": str(verdict),
+            "error": None,
+        }
 
     def send_stream(
         self,
         user_message: str,
         system: Optional[str] = None,
         *,
-        temperature: float = 0.7,
-        max_tokens: int = 32768,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        presence_penalty: Optional[float] = None,
     ) -> Iterator[Dict[str, Any]]:
         if system and not self.messages:
             self.messages.append({"role": "system", "content": system})
         self.messages.append({"role": "user", "content": user_message})
 
-        eb = _extra_body_for_model(self.preserve_thinking, self.model)
+        sampling = build_sampling_request_params(
+            self.model,
+            temperature=temperature,
+            max_tokens=max_tokens,
+            top_p=top_p,
+            top_k=top_k,
+            presence_penalty=presence_penalty,
+        )
+        eb = self._build_extra_body()
         try:
             req: Dict[str, Any] = {
                 "model": self.model,
                 "messages": [dict(m) for m in self.messages],
-                "temperature": temperature,
-                "max_tokens": max_tokens,
+                **sampling,
                 "stream": True,
             }
             if eb is not None:
@@ -213,26 +347,50 @@ class SigmaChat:
                 "done": True,
                 "sigma": 1.0,
                 "verdict": ABSTAIN,
+                "thinking": None,
                 "error": str(e),
             }
             return
 
-        full_text: List[str] = []
+        content_parts: List[str] = []
+        reasoning_parts: List[str] = []
         for chunk in stream:
             delta = ""
+            rpiece = ""
             try:
                 if chunk.choices and chunk.choices[0].delta is not None:
-                    delta = chunk.choices[0].delta.content or ""
+                    d = chunk.choices[0].delta
+                    delta = getattr(d, "content", None) or ""
+                    rpiece = getattr(d, "reasoning_content", None) or ""
             except Exception:
                 delta = ""
-            full_text.append(delta)
-            yield {"chunk": delta, "done": False, "sigma": None, "verdict": None, "error": None}
+                rpiece = ""
+            content_parts.append(str(delta))
+            if rpiece:
+                reasoning_parts.append(str(rpiece))
+            yield {
+                "chunk": delta,
+                "done": False,
+                "sigma": None,
+                "verdict": None,
+                "thinking": None,
+                "error": None,
+            }
 
-        text = "".join(full_text)
-        sigma, verdict = self.gate.score(user_message, text)
-        self.messages.append({"role": "assistant", "content": text})
-        self.history.append((user_message, text, float(sigma), str(verdict)))
-        yield {"chunk": None, "done": True, "sigma": float(sigma), "verdict": str(verdict), "error": None}
+        raw = "".join(content_parts)
+        reasoning_joined = "".join(reasoning_parts).strip() or None
+        thinking, content = extract_thinking_from_parts(raw, reasoning_joined)
+        sigma, verdict = self.gate.score(user_message, content)
+        self.messages.append({"role": "assistant", "content": content})
+        self.history.append((user_message, content, float(sigma), str(verdict)))
+        yield {
+            "chunk": None,
+            "done": True,
+            "sigma": float(sigma),
+            "verdict": str(verdict),
+            "thinking": thinking,
+            "error": None,
+        }
 
     def complete_from_openai_request(self, body: Dict[str, Any]) -> Dict[str, Any]:
         """Run one non-streaming completion from a raw OpenAI ``chat.completions`` body."""
@@ -243,16 +401,21 @@ class SigmaChat:
             return {"error": "stream=true not supported in SigmaChat.complete_from_openai_request", "text": None, "sigma": 1.0, "verdict": ABSTAIN}
 
         model = str(body.get("model") or self.model)
-        temperature = float(body.get("temperature", 0.7))
-        max_tokens = int(body.get("max_tokens", 32768))
+        sampling = build_sampling_request_params(
+            model,
+            temperature=body.get("temperature"),
+            max_tokens=body.get("max_tokens"),
+            top_p=body.get("top_p"),
+            top_k=body.get("top_k"),
+            presence_penalty=body.get("presence_penalty"),
+        )
 
-        eb = _extra_body_for_model(self.preserve_thinking, model)
+        eb = build_extra_body(self.endpoint, self.preserve_thinking, model)
         try:
             req: Dict[str, Any] = {
                 "model": model,
                 "messages": messages,
-                "temperature": temperature,
-                "max_tokens": max_tokens,
+                **sampling,
             }
             if eb is not None:
                 req["extra_body"] = eb
@@ -260,9 +423,10 @@ class SigmaChat:
         except Exception as e:
             return {"text": None, "sigma": 1.0, "verdict": ABSTAIN, "error": str(e)}
 
-        text = assistant_text_from_response(resp) or ""
+        parsed = parse_openai_completion_response(resp, fallback_model=model)
+        content = parsed["content"]
         user_prompt = last_user_text(messages)
-        sigma, verdict = self.gate.score(user_prompt, text)
+        sigma, verdict = self.gate.score(user_prompt, content)
         out_id = f"chatcmpl-cos-{uuid.uuid4().hex[:12]}"
         return {
             "id": out_id,
@@ -271,7 +435,7 @@ class SigmaChat:
             "choices": [
                 {
                     "index": 0,
-                    "message": {"role": "assistant", "content": text},
+                    "message": {"role": "assistant", "content": content},
                     "finish_reason": "stop",
                 }
             ],
@@ -288,9 +452,12 @@ def format_user_output(
     sigma: float,
     text: str,
     json_mode: bool,
+    thinking: Optional[str] = None,
 ) -> Tuple[str, int]:
     if json_mode:
-        out = {"verdict": verdict, "sigma": round(float(sigma), 6), "text": text}
+        out: Dict[str, Any] = {"verdict": verdict, "sigma": round(float(sigma), 6), "text": text}
+        if thinking:
+            out["thinking"] = thinking
         return json.dumps(out, ensure_ascii=False), (2 if verdict == ABSTAIN else 0)
     if verdict == ACCEPT:
         return text, 0
@@ -333,7 +500,12 @@ def run_from_cli_args(args: Any) -> int:
             sigma=float(result["sigma"]),
             text=str(result["text"] or ""),
             json_mode=json_mode,
+            thinking=result.get("thinking") if isinstance(result.get("thinking"), str) else None,
         )
+        if verbose and result.get("thinking") and not json_mode:
+            th = str(result["thinking"])
+            preview = th[:200] + ("..." if len(th) > 200 else "")
+            print(f"\n[thinking] {preview}", file=sys.stderr)
         print(line)
         if verbose and not json_mode:
             print(f"[σ={float(result['sigma']):.4f} {result['verdict']}]", file=sys.stderr)
@@ -358,6 +530,10 @@ def run_from_cli_args(args: Any) -> int:
         if json_mode:
             print(json.dumps(result, default=str))
         else:
+            if verbose and result.get("thinking"):
+                th = str(result["thinking"])
+                preview = th[:200] + ("..." if len(th) > 200 else "")
+                print(f"\n[thinking] {preview}")
             print(f"\n[σ={result['sigma']:.3f} {result['verdict']}]")
             print(result["text"])
         if result["verdict"] == ABSTAIN:
@@ -372,11 +548,17 @@ __all__ = [
     "DEFAULT_CHAT_ENDPOINT",
     "DEFAULT_CHAT_MODEL",
     "OPENAI_INSTALL_HINT",
+    "QWEN36_27B_DEFAULTS",
+    "QWEN36_A3B_DEFAULTS",
     "SigmaChat",
     "assistant_text_from_completion_dict",
     "assistant_text_from_response",
+    "build_extra_body",
+    "build_sampling_request_params",
+    "extract_thinking_from_parts",
     "format_user_output",
     "last_user_text",
+    "parse_openai_completion_response",
     "run_from_cli_args",
     "should_preserve_thinking",
 ]

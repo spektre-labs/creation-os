@@ -21,6 +21,7 @@ def test_chat_single_turn_returns_sigma() -> None:
 
     with patch.object(SigmaChat, "__init__", lambda s, **k: None):
         c = SigmaChat.__new__(SigmaChat)
+        c.endpoint = "http://localhost:8000/v1"
         c.model = "Qwen/Qwen3.6-35B-A3B"
         c.preserve_thinking = True
         c.gate = SigmaGate()
@@ -49,6 +50,7 @@ def test_chat_multi_turn_preserves_messages() -> None:
 
     with patch.object(SigmaChat, "__init__", lambda s, **k: None):
         c = SigmaChat.__new__(SigmaChat)
+        c.endpoint = "http://localhost:8000/v1"
         c.model = "m"
         c.preserve_thinking = False
         c.gate = SigmaGate()
@@ -72,6 +74,7 @@ def test_chat_abstain_on_error() -> None:
 
     with patch.object(SigmaChat, "__init__", lambda s, **k: None):
         c = SigmaChat.__new__(SigmaChat)
+        c.endpoint = "http://localhost:8000/v1"
         c.model = "m"
         c.preserve_thinking = False
         c.gate = SigmaGate()
@@ -156,6 +159,7 @@ def test_send_stream_sets_preserve_thinking_extra_body_for_qwen() -> None:
 
     with patch.object(SigmaChat, "__init__", lambda s, **k: None):
         c = SigmaChat.__new__(SigmaChat)
+        c.endpoint = "http://localhost:8000/v1"
         c.model = "Qwen/Qwen3.6-35B-A3B"
         c.preserve_thinking = True
         c.gate = SigmaGate()
@@ -169,3 +173,70 @@ def test_send_stream_sets_preserve_thinking_extra_body_for_qwen() -> None:
     eb = captured.get("extra_body") or {}
     assert eb.get("chat_template_kwargs", {}).get("preserve_thinking") is True
     assert captured.get("stream") is True
+
+
+def test_parse_thinking_tags() -> None:
+    """Parse ``<think>...</think>`` from assistant ``content``."""
+    pytest.importorskip("openai")
+    from cos.chat import SigmaChat
+
+    raw = (
+        "<think>Let me reason about this</think>"
+        "The answer is 42"
+    )
+    fake_resp = MagicMock()
+    fake_resp.model = "Qwen/Qwen3.6-35B-A3B"
+    fake_resp.choices = [
+        MagicMock(message=MagicMock(content=raw, reasoning_content=None))
+    ]
+
+    chat = SigmaChat.__new__(SigmaChat)
+    chat.model = "Qwen/Qwen3.6-35B-A3B"
+    parsed = SigmaChat._parse_response(chat, fake_resp)
+    assert parsed["thinking"] == "Let me reason about this"
+    assert parsed["content"] == "The answer is 42"
+
+
+def test_sigma_scores_content_not_thinking() -> None:
+    """σ-gate receives stripped assistant content only (not chain-of-thought)."""
+    pytest.importorskip("openai")
+    from cos.chat import SigmaChat
+
+    raw = (
+        "<think>secret chain</think>"
+        "The answer is 42"
+    )
+    fake_resp = MagicMock()
+    fake_resp.model = "Qwen/Qwen3.6-35B-A3B"
+    fake_resp.choices = [
+        MagicMock(message=MagicMock(content=raw, reasoning_content=None))
+    ]
+
+    gate = MagicMock()
+    gate.score.return_value = (0.1, "ACCEPT")
+
+    with patch.object(SigmaChat, "__init__", lambda s, **k: None):
+        c = SigmaChat.__new__(SigmaChat)
+        c.endpoint = "http://localhost:8000/v1"
+        c.model = "Qwen/Qwen3.6-35B-A3B"
+        c.preserve_thinking = True
+        c.gate = gate
+        c.messages = []
+        c.history = []
+        client = MagicMock()
+        client.chat.completions.create.return_value = fake_resp
+        c.client = client
+
+        SigmaChat.send(c, "What is the answer?")
+
+    gate.score.assert_called_once()
+    assert gate.score.call_args[0][0] == "What is the answer?"
+    assert gate.score.call_args[0][1] == "The answer is 42"
+    assert "secret" not in gate.score.call_args[0][1]
+
+
+def test_build_extra_body_dashscope_top_level_preserve() -> None:
+    from cos.chat import build_extra_body
+
+    eb = build_extra_body("https://dashscope.aliyuncs.com/compatible-mode/v1", True, "Qwen/Qwen3.6-35B-A3B")
+    assert eb == {"preserve_thinking": True}
