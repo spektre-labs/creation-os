@@ -5,6 +5,12 @@ from __future__ import annotations
 from cos.codex import SigmaCodex
 
 
+def test_codex_has_evolveable_rules() -> None:
+    cx = SigmaCodex()
+    assert "prompt_strictness" in cx.rules
+    assert "threshold_nudge" in cx.rules
+
+
 def test_codex_identity() -> None:
     cx = SigmaCodex()
     assert "Creation OS" in cx.identity

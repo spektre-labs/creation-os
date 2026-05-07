@@ -74,10 +74,11 @@ class SigmaObserve:
         endpoint: Optional[str] = None,
         tokens: Optional[Any] = None,
         cost: Optional[float] = None,
+        trace: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """Record one σ-gate call."""
         vraw = str(verdict.name) if hasattr(verdict, "name") else str(verdict)
-        entry = {
+        entry: Dict[str, Any] = {
             "timestamp": time.time(),
             "sigma": round(float(sigma), 4),
             "verdict": vraw,
@@ -89,11 +90,34 @@ class SigmaObserve:
             "prompt_len": len(str(prompt)),
             "response_len": len(str(response)),
         }
+        if trace:
+            entry["trace"] = trace
         self.window.append(entry)
         self._check_alerts(entry)
         self._log_to_disk(entry)
         self._maybe_otel(entry)
         return entry
+
+    def record_with_trace(
+        self,
+        prompt: str,
+        response: str,
+        sigma: float,
+        verdict: str,
+        latency_ms: float,
+        trace: Optional[Dict[str, Any]] = None,
+        **kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Record σ plus an optional evidence chain (levels, thresholds, triggering component)."""
+        return self.record(
+            prompt,
+            response,
+            sigma,
+            verdict,
+            latency_ms,
+            trace=trace,
+            **kwargs,
+        )
 
     def summary(self, last_n: Optional[int] = None) -> Dict[str, Any]:
         """Dashboard summary over the in-memory window (optionally last ``last_n`` rows)."""

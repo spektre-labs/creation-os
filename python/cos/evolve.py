@@ -12,11 +12,62 @@ import copy
 import hashlib
 import json
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
-__all__ = ["SigmaEvolve"]
+__all__ = ["SigmaAdapter", "SigmaEvolve"]
 
 MutationTarget = str
+
+EvalRow = Union[Tuple[Any, ...], List[Any]]
+
+
+class SigmaAdapter:
+    """GEPA-style adapter: evaluate prompt–response rows and expose trace rows for reflection.
+
+    Decouples the optimizer loop from the concrete scorer; traces carry enough context for
+    :meth:`SigmaEvolve.mutate_reflective` without tying to a single object shape."""
+
+    def evaluate(self, gate: Any, test_data: Sequence[EvalRow]) -> List[Dict[str, Any]]:
+        results: List[Dict[str, Any]] = []
+        for row in test_data:
+            if not isinstance(row, (list, tuple)):
+                continue
+            items = list(row)
+            if len(items) < 2:
+                continue
+            prompt, response = items[0], items[1]
+            gold: Any = items[2] if len(items) > 2 else None
+            comp = "gate"
+            if len(items) > 3 and isinstance(items[3], str) and items[3]:
+                comp = str(items[3])
+            score_fn = getattr(gate, "score", None)
+            if not callable(score_fn):
+                continue
+            σ, verdict = score_fn(str(prompt), str(response))
+            results.append(
+                {
+                    "σ": float(σ),
+                    "verdict": verdict,
+                    "correct": gold,
+                    "component": comp,
+                    "prompt": str(prompt)[:200],
+                    "response": str(response)[:200],
+                },
+            )
+        return results
+
+    def extract_traces(self, results: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        traces: List[Dict[str, Any]] = []
+        for r in results:
+            traces.append(
+                {
+                    "component": str(r.get("component", "gate")),
+                    "σ": float(r.get("σ", r.get("sigma", 0.0))),
+                    "correct": r.get("correct"),
+                    "verdict": r.get("verdict"),
+                },
+            )
+        return traces
 
 
 class SigmaEvolve:
@@ -37,6 +88,8 @@ class SigmaEvolve:
         self.improvement_archive: List[Dict[str, Any]] = []
         self.audit_log: List[Dict[str, Any]] = []
         self.domain_sigma_ceiling: Dict[str, float] = {}
+        self.history: List[Dict[str, Any]] = []
+        self._run_cost_accum: float = 0.0
 
     def set_safety_constraint(self, domain: str, max_sigma: float) -> None:
         """Do not promote changes that push domain stress above ``max_sigma`` (lab hook)."""
@@ -211,7 +264,12 @@ class SigmaEvolve:
         candidate_sigma = float(self._rsi_evaluate(candidate, eval_data))
         if formal is not None:
             if not bool(formal.check_invariants(candidate)):
-                return {"accepted": False, "reason": "invariant violation"}
+                return {
+                    "accepted": False,
+                    "reason": "invariant violation",
+                    "σ_before": baseline,
+                    "σ_after": baseline,
+                }
         if candidate_sigma < baseline:
             return {
                 "accepted": True,
@@ -220,7 +278,80 @@ class SigmaEvolve:
                 "improvement": baseline - candidate_sigma,
                 "candidate": candidate,
             }
-        return {"accepted": False, "reason": "no improvement"}
+        return {
+            "accepted": False,
+            "reason": "no improvement",
+            "σ_before": baseline,
+            "σ_after": baseline,
+        }
+
+    def _targeted_mutation(
+        self,
+        component: str,
+        sigma: float,
+        base_rules: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """GEPA-style targeted rule nudge from the worst-scoring trace component (not random)."""
+        merged = dict(base_rules or {})
+        s = float(sigma)
+        c = str(component)
+        strict = float(merged.get("prompt_strictness", 0.5))
+        if c == "latent":
+            merged["routing_depth_bias"] = int(merged.get("routing_depth_bias", 0)) + 1
+        elif c == "gate" and s > 0.5:
+            merged["prompt_strictness"] = min(1.0, strict + 0.05)
+            tn = float(merged.get("threshold_nudge", 0.02))
+            merged["threshold_nudge"] = max(0.005, round(tn - 0.005, 4))
+        elif c == "gate":
+            merged["prompt_strictness"] = max(0.05, round(strict - 0.02, 4))
+        return merged
+
+    def mutate_reflective(
+        self,
+        gate: Any,
+        eval_data: List[Any],
+        trace: List[Dict[str, Any]],
+        *,
+        base_rules: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Mutation informed by the prior iteration trace — prioritize the highest-σ component."""
+        del gate, eval_data
+        if not trace:
+            return dict(base_rules or {})
+        worst = max(trace, key=lambda t: float(t.get("σ", t.get("sigma", 0.0))))
+        comp = str(worst.get("component", "gate"))
+        sig = float(worst.get("σ", worst.get("sigma", 0.0)))
+        return self._targeted_mutation(comp, sig, base_rules)
+
+    @staticmethod
+    def pareto_select(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        """Non-dominated front — lower σ, latency, and cost are better (Pareto-minimize all three)."""
+        front: List[Dict[str, Any]] = []
+        for c in candidates:
+            dominated = False
+            σc = float(c.get("σ", c.get("sigma", 1.0)))
+            lc = float(c.get("latency", 0.0))
+            kc = float(c.get("cost", 0.0))
+            for other in candidates:
+                if other is c:
+                    continue
+                σo = float(other.get("σ", other.get("sigma", 1.0)))
+                lo = float(other.get("latency", 0.0))
+                ko = float(other.get("cost", 0.0))
+                if (
+                    σo <= σc
+                    and lo <= lc
+                    and ko <= kc
+                    and (σo < σc or lo < lc or ko < kc)
+                ):
+                    dominated = True
+                    break
+            if not dominated:
+                front.append(c)
+        return front
+
+    def _total_cost(self) -> float:
+        return float(self._run_cost_accum)
 
     def run(
         self,
@@ -230,14 +361,33 @@ class SigmaEvolve:
         formal: Any = None,
         *,
         mutate_sign: float = 1.0,
+        max_cost: Optional[float] = None,
+        step_cost: float = 0.0,
+        diminishing_delta: float = 0.001,
     ) -> List[Dict[str, Any]]:
+        """RSI-style steps with optional GEPA budget stop (cost) and diminishing σ gains."""
         history: List[Dict[str, Any]] = []
         g = gate
+        self.history = history
+        self._run_cost_accum = 0.0
+        sc = max(0.0, float(step_cost))
         for _ in range(max(1, int(max_steps))):
+            self._run_cost_accum += sc
+            if max_cost is not None and self._total_cost() > float(max_cost):
+                break
             result = self.step(g, eval_data, formal, mutate_sign=mutate_sign)
             history.append(result)
             if result.get("accepted"):
                 c = result.get("candidate")
                 if c is not None:
                     g = c
+            if (
+                len(history) >= 3
+                and any(_h.get("accepted") for _h in history)
+            ):
+                recent = [float(_h.get("σ_after", 0.0)) for _h in history[-3:]]
+                improvement = recent[0] - recent[-1]
+                if improvement < float(diminishing_delta):
+                    break
+        self.history = history
         return history

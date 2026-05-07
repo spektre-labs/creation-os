@@ -4,11 +4,104 @@
 
 from __future__ import annotations
 
-from cos.evolve import SigmaEvolve
+from cos.codex import SigmaCodex
+from cos.evolve import SigmaAdapter, SigmaEvolve
 from cos.sigma_gate import SigmaGate
 
 
-def test_improve_loop_returns_system_and_iters() -> None:
+def test_reflective_mutation_targets_worst() -> None:
+    ev = SigmaEvolve()
+    trace = [
+        {"component": "gate", "σ": 0.1},
+        {"component": "latent", "σ": 0.95},
+    ]
+    base = {"prompt_strictness": 0.5, "routing_depth_bias": 0}
+    out = ev.mutate_reflective(
+        gate=None,
+        eval_data=[],
+        trace=trace,
+        base_rules=base,
+    )
+    assert out["routing_depth_bias"] == 1
+
+
+def test_pareto_front_keeps_non_dominated() -> None:
+    ev = SigmaEvolve()
+    cands = [
+        {"σ": 0.5, "latency": 10.0, "cost": 1.0, "id": "a"},
+        {"σ": 0.6, "latency": 5.0, "cost": 0.5, "id": "b"},
+        {"σ": 0.8, "latency": 20.0, "cost": 2.0, "id": "c"},
+    ]
+    front = ev.pareto_select(cands)
+    ids = {x["id"] for x in front}
+    assert "a" in ids and "b" in ids
+    assert "c" not in ids
+
+
+def test_adapter_evaluate_returns_traces() -> None:
+    g = SigmaGate()
+    ad = SigmaAdapter()
+    data = [("p1", "r1", True), ("p2", "r2rrr", False)]
+    results = ad.evaluate(g, data)
+    assert len(results) == 2 and all("σ" in r for r in results)
+    traces = ad.extract_traces(results)
+    assert traces[0]["component"] == "gate"
+    assert "σ" in traces[0]
+
+
+def test_budget_stop_on_cost() -> None:
+    ev = SigmaEvolve()
+    hist = ev.run(
+        SigmaGate(threshold_accept=0.05, threshold_abstain=0.9),
+        [("lab", "lab" * 8)],
+        max_steps=20,
+        step_cost=1.0,
+        max_cost=2.0,
+    )
+    assert len(hist) <= 2
+
+
+def test_budget_stop_on_diminishing_returns() -> None:
+    class _FlatAccept(SigmaEvolve):
+        def step(
+            self,
+            gate: object,
+            eval_data: list,
+            formal: object | None = None,
+            *,
+            mutate_sign: float = 1.0,
+        ) -> dict:
+            return {
+                "accepted": True,
+                "σ_before": 0.5,
+                "σ_after": 0.5,
+                "candidate": gate,
+            }
+
+    ev = _FlatAccept()
+    hist = ev.run(SigmaGate(), [("x", "y")], max_steps=20)
+    assert len(hist) == 3
+
+
+def test_codex_evolution_improves_sigma() -> None:
+    class _RulesGate:
+        def __init__(self, rules: dict) -> None:
+            self._rules = rules
+
+        def score(self, prompt: str, response: str):
+            del prompt, response
+            strict = float(self._rules.get("prompt_strictness", 0.35))
+            sigma = max(0.05, min(1.0, 0.88 - strict))
+            return sigma, "RETHINK"
+
+    cx = SigmaCodex()
+    gate = _RulesGate(cx.rules)
+    data = [("q", "a", None)]
+    out = cx.evolve_codex(data, gate, max_iterations=6)
+    assert out["iterations"] >= 1
+    assert out["final_mean_σ"] is not None
+    assert float(out["final_mean_σ"]) < float(out["history"][0]["mean_σ"])
+
     ev = SigmaEvolve()
     system = {"thresholds": {"tau": 0.3}, "prompts": {}, "routing": {}}
 

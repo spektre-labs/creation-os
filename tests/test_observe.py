@@ -9,6 +9,15 @@ from pathlib import Path
 from cos.observe import SigmaObserve
 
 
+def test_record_with_trace(tmp_path: Path) -> None:
+    o = SigmaObserve(log_dir=str(tmp_path))
+    tr = {"levels": {"L1": 0.2}, "thresholds": {"abstain": 0.85}, "trigger": "entropy"}
+    e = o.record_with_trace("p", "r", 0.4, "ACCEPT", 5.0, trace=tr)
+    assert e["sigma"] == 0.4
+    assert e["trace"] == tr
+    assert o.window[0]["trace"] == tr
+
+
 def test_record_stores_entry(tmp_path: Path) -> None:
     o = SigmaObserve(log_dir=str(tmp_path))
     e = o.record("p", "r", 0.25, "ACCEPT", 12.3)
