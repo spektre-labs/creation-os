@@ -3,15 +3,23 @@
 # All rights reserved. See LICENSE for binding terms.
 """σ-RAG — dependency-light retrieval lab with σ as chunk filter (no cross-encoder).
 
-Hybrid and semantic-chunk paths are **toy** stand-ins for BM25/vector/RRF; use real indices
-in production. See ``docs/CLAIM_DISCIPLINE.md``."""
+**Ingest path:** word windows with configurable overlap (~10–20%), persist ``chunks.json``,
+:meth:`retrieve` σ-filters and reranks with query–chunk gate scores. BM25/semantic-chunk
+helpers remain for harness-style experiments. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+import json
 import math
 import re
-from typing import Any, Callable, Dict, List, Optional, Sequence
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 __all__ = ["SigmaRAG"]
+
+
+def _norm_verdict(v: Any) -> str:
+    raw = str(getattr(v, "name", v))
+    return raw.split(".")[-1] if "." in raw else raw
 
 
 class SigmaRAG:
@@ -21,6 +29,7 @@ class SigmaRAG:
         self,
         gate: Any = None,
         *,
+        store_dir: Optional[Union[str, Path]] = None,
         sigma_keep_below: float = 0.55,
         rrf_k: int = 60,
     ) -> None:
@@ -30,6 +39,117 @@ class SigmaRAG:
         self.sigma_keep_below = float(sigma_keep_below)
         self.rrf_k = int(rrf_k)
         self._corpus: List[str] = []
+        base = store_dir if store_dir is not None else Path("~/.cos/rag")
+        self.store_dir = Path(base).expanduser()
+        self.store_dir.mkdir(parents=True, exist_ok=True)
+        self.chunks: List[Dict[str, Any]] = []
+        self._load()
+
+    def ingest(self, text: str, source: str = "", chunk_size: int = 200, overlap: int = 40) -> Dict[str, Any]:
+        """Split *text* into word windows (overlap ~10–20% when overlap/chunk_size ≈ 0.2) and persist."""
+        words = str(text).split()
+        new_chunks: List[Dict[str, Any]] = []
+        cs = max(1, int(chunk_size))
+        ov = max(0, int(overlap))
+        if cs <= ov:
+            ov = max(0, cs - 1)
+        step = max(1, cs - ov)
+        base_idx = len(self.chunks)
+        for i in range(0, len(words), step):
+            chunk_words = words[i : i + cs]
+            if not chunk_words:
+                continue
+            chunk_text = " ".join(chunk_words)
+            σ, verdict = self.gate.score("document chunk", chunk_text)
+            new_chunks.append(
+                {
+                    "text": chunk_text,
+                    "source": str(source),
+                    "index": base_idx + len(new_chunks),
+                    "σ": round(float(σ), 4),
+                    "verdict": _norm_verdict(verdict),
+                    "word_count": len(chunk_words),
+                }
+            )
+        self.chunks.extend(new_chunks)
+        self._save()
+        return {"chunks_added": len(new_chunks), "total": len(self.chunks)}
+
+    def query(
+        self,
+        question: str,
+        *,
+        top_k: int = 3,
+        max_σ: float = 0.8,
+    ) -> Dict[str, Any]:
+        """Full RAG over persisted chunks: retrieve → format context → σ-score bundle."""
+        chunks = self.retrieve(str(question), top_k=int(top_k), max_σ=float(max_σ))
+        if not chunks:
+            return {
+                "answer": None,
+                "σ": 1.0,
+                "verdict": "ABSTAIN",
+                "context_chunks": 0,
+                "reason": "No relevant chunks found",
+            }
+        context = "\n\n".join(str(c["text"]) for c in chunks)
+        σ, verdict = self.gate.score(str(question), context)
+        vstr = _norm_verdict(verdict)
+        avg_qσ = sum(float(c.get("σ_query", 0.0)) for c in chunks) / max(len(chunks), 1)
+        return {
+            "context": context,
+            "context_chunks": len(chunks),
+            "avg_chunk_σ": round(avg_qσ, 4),
+            "σ": round(float(σ), 4),
+            "verdict": vstr,
+        }
+
+    def stats(self) -> Dict[str, Any]:
+        """Summary over persisted :attr:`chunks` (ingest store)."""
+        n = len(self.chunks)
+        if not n:
+            return {"total_chunks": 0, "avg_σ": 0.0, "sources": []}
+        return {
+            "total_chunks": n,
+            "avg_σ": round(sum(float(c.get("σ", 0.0)) for c in self.chunks) / n, 4),
+            "sources": sorted({str(c.get("source", "")) for c in self.chunks if c.get("source")}),
+        }
+
+    def _relevance(self, query: str, text: str) -> float:
+        q_words = set(str(query).lower().split())
+        t_words = set(str(text).lower().split())
+        if not q_words:
+            return 0.0
+        return len(q_words & t_words) / len(q_words)
+
+    def _retrieve_store(self, query: str, top_k: int, max_σ: float) -> List[Dict[str, Any]]:
+        scored: List[Dict[str, Any]] = []
+        for chunk in self.chunks:
+            if float(chunk.get("σ", 1.0)) > float(max_σ):
+                continue
+            relevance = self._relevance(query, str(chunk.get("text", "")))
+            σ_query, _v = self.gate.score(str(query), str(chunk.get("text", "")))
+            σq = float(σ_query)
+            combined = float(relevance) * (1.0 - σq)
+            row = {**chunk, "relevance": round(relevance, 4), "σ_query": round(σq, 4), "combined_score": round(combined, 4)}
+            scored.append(row)
+        scored.sort(key=lambda x: x["combined_score"], reverse=True)
+        return scored[: max(1, int(top_k))]
+
+    def _save(self) -> None:
+        path = self.store_dir / "chunks.json"
+        path.write_text(json.dumps(self.chunks, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    def _load(self) -> None:
+        path = self.store_dir / "chunks.json"
+        if not path.is_file():
+            self.chunks = []
+            return
+        try:
+            raw = json.loads(path.read_text(encoding="utf-8"))
+            self.chunks = list(raw) if isinstance(raw, list) else []
+        except (json.JSONDecodeError, OSError, TypeError):
+            self.chunks = []
 
     def index_documents(self, chunks: Sequence[str]) -> None:
         self._corpus = [str(c) for c in chunks]
@@ -37,9 +157,13 @@ class SigmaRAG:
     def retrieve(
         self,
         query: str,
-        top_k: int,
+        top_k: int = 5,
         corpus: Optional[Sequence[str]] = None,
+        *,
+        max_σ: float = 0.8,
     ) -> List[Dict[str, Any]]:
+        if corpus is None and self.chunks:
+            return self._retrieve_store(str(query), int(top_k), float(max_σ))
         corp = [str(c) for c in (corpus if corpus is not None else self._corpus)]
         ranked: List[tuple[float, int, str]] = []
         for i, ch in enumerate(corp):

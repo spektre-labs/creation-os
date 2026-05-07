@@ -2790,6 +2790,43 @@ def _cmd_ingest_cli(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_rag(args: argparse.Namespace) -> int:
+    from cos.rag import SigmaRAG
+
+    action = str(getattr(args, "rag_action", "") or "").strip()
+    store = str(getattr(args, "rag_store_dir", "") or "").strip()
+    rag = SigmaRAG(store_dir=store) if store else SigmaRAG()
+    if action == "ingest":
+        fp = str(getattr(args, "rag_file", "") or "").strip()
+        if not fp:
+            print("cos rag ingest: --file PATH required", file=sys.stderr)
+            return 2
+        try:
+            text = Path(fp).read_text(encoding="utf-8")
+        except OSError as exc:
+            print(f"cos rag ingest: {exc}", file=sys.stderr)
+            return 2
+        result = rag.ingest(text, source=fp)
+        print(f"Ingested: {result['chunks_added']} chunks")
+        return 0
+    if action == "query":
+        q = str(getattr(args, "rag_query", "") or "").strip()
+        if not q:
+            print("cos rag query: --query TEXT required", file=sys.stderr)
+            return 2
+        result = rag.query(q)
+        sig = float(result.get("σ", 0.0))
+        verdict = str(result.get("verdict", ""))
+        print(f"[σ={sig:.3f} {verdict}]")
+        print(f"Context from {int(result.get('context_chunks', 0))} chunks")
+        return 0
+    if action == "stats":
+        print(json.dumps(rag.stats(), indent=2, ensure_ascii=False))
+        return 0
+    print("cos rag: unknown action", file=sys.stderr)
+    return 2
+
+
 def _cmd_voice_cli(args: argparse.Namespace) -> int:
     from cos.voice_local import SigmaVoice, listen, sigma_before_speak, speak
 
@@ -4028,6 +4065,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     ing.add_argument("--save-json", type=str, default="", dest="ingest_save_json", help="write graph after ingest (GraphExport JSON)")
     ing.add_argument("--json", action="store_true", dest="out_json")
     ing.set_defaults(func=_cmd_ingest_cli)
+
+    ragp = sub.add_parser(
+        "rag",
+        help="σ-RAG lab: word-chunk ingest + persist, retrieve with σ gate rerank, stats",
+    )
+    ragp.add_argument(
+        "rag_action",
+        choices=["ingest", "query", "stats"],
+        help="ingest (--file), query (--query), or stats",
+    )
+    ragp.add_argument("--file", type=str, default="", dest="rag_file", metavar="PATH", help="document path (ingest)")
+    ragp.add_argument("--query", type=str, default="", dest="rag_query", metavar="TEXT", help="question (query)")
+    ragp.add_argument(
+        "--store-dir",
+        type=str,
+        default="",
+        dest="rag_store_dir",
+        metavar="DIR",
+        help="chunk store directory (default ~/.cos/rag)",
+    )
+    ragp.set_defaults(func=_cmd_rag)
 
     voi = sub.add_parser(
         "voice",
