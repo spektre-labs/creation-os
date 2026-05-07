@@ -11,6 +11,7 @@ from __future__ import annotations
 from cos.eval.checkpoint_eval import CheckpointEval, iter_checkpoint_results, load_checkpoint_meta
 from cos.eval.dynamic import generate_questions, hash_question_set, run_dynamic_eval, verify_answers
 from cos.eval.facts_grounding import load_facts, run_facts_grounding_eval
+from cos.eval.harness import SigmaHarness, default_harness_dataset
 from cos.eval.metrics import auroc_binary, sm_ece_binary, snr_sigma_separation
 from cos.eval.multi_model_eval import (
     EVAL_MODELS,
@@ -26,6 +27,8 @@ from cos.eval.simpleqa import load_simpleqa, run_simpleqa_eval
 
 __all__ = [
     "EVAL_MODELS",
+    "SigmaHarness",
+    "default_harness_dataset",
     "CheckpointEval",
     "MultiModelEval",
     "auroc_binary",

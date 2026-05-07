@@ -2318,12 +2318,44 @@ def _fmt_mtier_text(payload: dict) -> str:
     return SigmaReport().mtier_table_markdown(rows)
 
 
+def _bench_sigma_harness(args: argparse.Namespace) -> int:
+    """σ-gate eval on bundled (prompt, response, gold) tuples — no external dataset fetch."""
+    from pathlib import Path
+
+    from cos.eval.harness import SigmaHarness, default_harness_dataset
+
+    ds_name = str(getattr(args, "bench_dataset") or "TruthfulQA").strip() or "TruthfulQA"
+    dataset = default_harness_dataset(ds_name)
+    safe = ds_name.replace(" ", "_").lower()
+    out_dir = Path(str(getattr(args, "bench_output_dir") or "eval_results"))
+    harness = SigmaHarness(output_dir=out_dir)
+    bn = int(getattr(args, "bench_n") or len(dataset))
+    ck_every = int(getattr(args, "bench_checkpoint_every") or 5)
+    metrics = harness.run(dataset, name=safe, n=bn, checkpoint_every=ck_every)
+
+    if bool(getattr(args, "bench_mtier", False)):
+        row = dict(metrics)
+        row["name"] = ds_name
+        harness.mtier_table([row])
+    elif _cli_out_json(args):
+        print(json.dumps(metrics, ensure_ascii=False))
+    else:
+        print(
+            f"harness={safe}\taccuracy={metrics.get('accuracy')}\tauroc={metrics.get('auroc')}\t"
+            f"abstention_rate={metrics.get('abstention_rate')}\tsmece={metrics.get('smece')}\t"
+            f"n={metrics.get('n')}\tstatus={metrics.get('status')}",
+        )
+    return 0
+
+
 def _cmd_bench(args: argparse.Namespace) -> int:
     resume = str(getattr(args, "bench_resume", "") or "").strip()
     if resume:
         return _bench_resume(args)
     if bool(getattr(args, "bench_multi_model", False)):
         return _bench_multi_model(args)
+    if bool(getattr(args, "bench_sigma_harness", False)):
+        return _bench_sigma_harness(args)
     from cos import SigmaGate
     from cos.bench import DATASET_NAMES, SigmaBench
 
@@ -2336,8 +2368,8 @@ def _cmd_bench(args: argparse.Namespace) -> int:
     ds = str(getattr(args, "bench_dataset", "") or "").strip()
     if not ds:
         print(
-            "cos bench: pass --dataset NAME (toy lab), --mtier, --multi-model, or --resume CHECKPOINT.jsonl. "
-            "Full harnesses live in a git checkout (benchmarks/, Makefile). "
+            "cos bench: pass --dataset NAME (toy lab), --sigma-harness, --mtier, --multi-model, "
+            "or --resume CHECKPOINT.jsonl. Full harnesses live in a git checkout (benchmarks/, Makefile). "
             "Extras: pip install 'creation-os[probes,dev]'.",
             file=sys.stderr,
         )
@@ -3684,7 +3716,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     bench_hint = sub.add_parser(
         "bench",
-        help="Toy SigmaBench, --mtier disclosure, --multi-model σ eval, or --resume checkpoint",
+        help="Toy SigmaBench, --sigma-harness σ tuples, --mtier disclosure, --multi-model, or --resume",
     )
     bench_hint.add_argument(
         "--resume",
@@ -3740,6 +3772,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         action="store_true",
         dest="bench_mtier",
         help="print M-tier v2 table (positives + negatives + pending; use with --json for machine bundle)",
+    )
+    bench_hint.add_argument(
+        "--sigma-harness",
+        action="store_true",
+        dest="bench_sigma_harness",
+        help="run σ-gate on bundled (prompt, response, gold) tuples; honors --dataset --n --output-dir --checkpoint-every",
     )
     bench_hint.add_argument("--dataset", type=str, default="", dest="bench_dataset")
     bench_hint.add_argument(
