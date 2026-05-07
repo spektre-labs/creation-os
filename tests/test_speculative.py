@@ -92,3 +92,106 @@ def test_deterministic_verify() -> None:
     b = spec.verify("ctx", toks, gate)
     assert a["accepted"] == b["accepted"]
     assert a["rejected_at"] == b["rejected_at"]
+
+
+class _GateVerdict:
+    def __init__(self, verdict: str, sigma: float = 0.5) -> None:
+        self._verdict = verdict
+        self._sigma = sigma
+
+    def score(self, _prompt: str, _response: str) -> tuple[float, str]:
+        return self._sigma, self._verdict
+
+
+def test_decode_produces_tokens() -> None:
+    spec = SigmaSpeculative(gate=_GateVerdict("ACCEPT", 0.1))
+    n = {"i": 0}
+
+    def draft_fn(_p: str, k: int) -> list[str]:
+        k = min(k, 3)
+        out = []
+        for _ in range(k):
+            out.append(f"w{n['i']}")
+            n["i"] += 1
+        return out
+
+    def verify_fn(_p: str, _t: str | None) -> str | None:
+        return "BAD"
+
+    out = spec.decode("start", draft_fn, verify_fn, max_tokens=5, k=3)
+    assert len(out["tokens"]) == 5
+    assert out["text"].startswith("w")
+
+
+def test_low_sigma_skips_verification() -> None:
+    calls: list[str | None] = []
+    spec = SigmaSpeculative(gate=_GateVerdict("ACCEPT", 0.05))
+
+    def draft_fn(_p: str, k: int) -> list[str]:
+        return ["a", "b", "c"][:k]
+
+    def verify_fn(_p: str, tok: str | None) -> str | None:
+        calls.append(tok)
+        return "v"
+
+    spec.decode("p", draft_fn, verify_fn, max_tokens=4, k=3)
+    assert calls == []
+
+
+def test_high_sigma_uses_target() -> None:
+    calls: list[str | None] = []
+    spec = SigmaSpeculative(gate=_GateVerdict("ABSTAIN", 0.95))
+
+    def draft_fn(_p: str, _k: int) -> list[str]:
+        return ["draft"]
+
+    def verify_fn(_p: str, tok: str | None) -> str | None:
+        calls.append(tok)
+        return "from_target" if tok is None else None
+
+    out = spec.decode("p", draft_fn, verify_fn, max_tokens=3, k=2)
+    assert None in calls
+    assert "from_target" in out["text"]
+
+
+def test_efficiency_stats() -> None:
+    spec = SigmaSpeculative(gate=_GateVerdict("ACCEPT", 0.1))
+
+    def draft_fn(_p: str, k: int) -> list[str]:
+        return ["t1", "t2"][:k]
+
+    def verify_fn(_p: str, _t: str | None) -> str | None:
+        return None
+
+    out = spec.decode("p", draft_fn, verify_fn, max_tokens=2, k=2)
+    stats = out["stats"]
+    for key in ("draft_accept_rate", "verify_rate", "reject_rate", "speedup_estimate", "tokens_generated"):
+        assert key in stats
+
+
+def test_speedup_estimate() -> None:
+    spec = SigmaSpeculative(gate=_GateVerdict("ACCEPT", 0.02))
+
+    def draft_fn(_p: str, k: int) -> list[str]:
+        return [f"x{i}" for i in range(k)]
+
+    def verify_fn(_p: str, _t: str | None) -> str | None:
+        raise RuntimeError("verify should not run")
+
+    out = spec.decode("p", draft_fn, verify_fn, max_tokens=8, k=4)
+    assert out["stats"]["speedup_estimate"] > 1.0
+    assert out["stats"]["draft_accept_rate"] >= 0.99
+
+
+def test_empty_draft_stops() -> None:
+    spec = SigmaSpeculative(gate=_GateVerdict("ACCEPT", 0.1))
+
+    def draft_fn(_p: str, _k: int) -> list[str]:
+        return []
+
+    def verify_fn(_p: str, _t: str | None) -> str | None:
+        return "no"
+
+    out = spec.decode("p", draft_fn, verify_fn, max_tokens=5, k=3)
+    assert out["tokens"] == []
+    assert out["text"] == ""

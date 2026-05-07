@@ -1,32 +1,192 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""σ-speculative — lab sketch for draft-then-verify with ``SigmaGate`` as the verifier.
+"""σ-speculative — draft + verify with ``SigmaGate`` as the acceptance criterion.
 
-Production stacks combine draft and target models; here the gate stands in for a target
-**accept/reject** signal on cumulative prefixes (same lite entropy kernel as
-:class:`cos.stream.SigmaStream`). No throughput or speedup claims; see
-``docs/CLAIM_DISCIPLINE.md``."""
+**Decode path:** cheap draft tokens are scored with :meth:`SigmaGate.score`; ACCEPT skips
+target verification, RETHINK runs ``verify_fn``, ABSTAIN hands off to the target. Legacy
+helpers (draft length from σ, prefix verify, tree draft) remain for harness experiments.
+No throughput claims without host metadata; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
+
+from cos.sigma_gate import SigmaGate
 
 __all__ = ["SigmaSpeculative"]
 
 DraftModel = Union[Callable[..., List[str]], Any]
 
 
+def _norm_verdict(v: Any) -> str:
+    raw = str(getattr(v, "name", v))
+    return raw.split(".")[-1] if "." in raw else raw
+
+
 class SigmaSpeculative:
-    """Draft tokens, verify per prefix with σ, optional target fallback (callable)."""
+    """Draft tokens; σ-gate decides accept vs verify vs target takeover."""
 
     def __init__(
         self,
+        gate: Any = None,
         *,
         min_draft: int = 1,
         max_draft: int = 8,
     ) -> None:
+        self.gate = gate or SigmaGate()
         self.min_draft = max(1, int(min_draft))
         self.max_draft = max(self.min_draft, int(max_draft))
+        self.stats: Dict[str, int] = {
+            "drafted": 0,
+            "accepted": 0,
+            "verified": 0,
+            "rejected": 0,
+            "output_tokens": 0,
+        }
+
+    def decode(
+        self,
+        prompt: str,
+        draft_fn: Callable[[str, int], Sequence[str]],
+        verify_fn: Callable[[str, Optional[str]], Optional[str]],
+        max_tokens: int = 100,
+        k: int = 5,
+    ) -> Dict[str, Any]:
+        """Draft → σ-score → accept / verify / target; σ is the acceptance rule."""
+        self.stats = {
+            "drafted": 0,
+            "accepted": 0,
+            "verified": 0,
+            "rejected": 0,
+            "output_tokens": 0,
+        }
+        output: List[Dict[str, Any]] = []
+        current_prompt = str(prompt)
+        cap = max(0, int(max_tokens))
+        k = max(1, int(k))
+
+        while len(output) < cap:
+            drafts = list(draft_fn(current_prompt, k))
+            if not drafts:
+                break
+
+            accepted_in_batch = 0
+            for draft_token in drafts:
+                if len(output) >= cap:
+                    break
+                dt = str(draft_token).strip()
+                if not dt:
+                    continue
+                self.stats["drafted"] += 1
+                σ, verdict = self.gate.score(current_prompt, dt)
+                v = _norm_verdict(verdict)
+
+                if v == "ACCEPT":
+                    output.append(
+                        {
+                            "token": dt,
+                            "σ": float(σ),
+                            "source": "draft",
+                            "verified": False,
+                        }
+                    )
+                    current_prompt = f"{current_prompt} {dt}".strip()
+                    self.stats["accepted"] += 1
+                    self.stats["output_tokens"] += 1
+                    accepted_in_batch += 1
+                elif v == "RETHINK":
+                    self.stats["verified"] += 1
+                    verified = verify_fn(current_prompt, dt)
+                    if verified:
+                        vt = str(verified).strip()
+                        output.append(
+                            {
+                                "token": vt,
+                                "σ": float(σ),
+                                "source": "verified",
+                                "verified": True,
+                            }
+                        )
+                        current_prompt = f"{current_prompt} {vt}".strip()
+                        self.stats["output_tokens"] += 1
+                        accepted_in_batch += 1
+                    else:
+                        self.stats["rejected"] += 1
+                        break
+                else:
+                    self.stats["rejected"] += 1
+                    self.stats["verified"] += 1
+                    verified = verify_fn(current_prompt, None)
+                    if verified:
+                        vt = str(verified).strip()
+                        output.append(
+                            {
+                                "token": vt,
+                                "σ": float(σ),
+                                "source": "target",
+                                "verified": True,
+                            }
+                        )
+                        current_prompt = f"{current_prompt} {vt}".strip()
+                        self.stats["output_tokens"] += 1
+                        accepted_in_batch += 1
+                    break
+
+            if len(output) >= cap:
+                break
+            if accepted_in_batch == 0:
+                self.stats["verified"] += 1
+                verified = verify_fn(current_prompt, None)
+                if verified:
+                    vt = str(verified).strip()
+                    output.append(
+                        {
+                            "token": vt,
+                            "σ": 0.0,
+                            "source": "target_fallback",
+                            "verified": True,
+                        }
+                    )
+                    current_prompt = f"{current_prompt} {vt}".strip()
+                    self.stats["output_tokens"] += 1
+                else:
+                    break
+
+        return {
+            "tokens": output,
+            "text": " ".join(str(t["token"]) for t in output),
+            "stats": self.efficiency(),
+        }
+
+    def efficiency(self) -> Dict[str, Any]:
+        """Rough compute mix: draft 1×, verify / target steps 10× (lab estimate only)."""
+        total = int(self.stats["drafted"])
+        if total == 0:
+            return {
+                "draft_accept_rate": 0.0,
+                "verify_rate": 0.0,
+                "reject_rate": 0.0,
+                "speedup_estimate": 1.0,
+                "tokens_generated": int(self.stats.get("output_tokens", 0)),
+            }
+
+        draft_rate = self.stats["accepted"] / total
+        verify_rate = self.stats["verified"] / total
+        reject_rate = self.stats["rejected"] / total
+        draft_cost = total * 1
+        verify_cost = self.stats["verified"] * 10
+        target_cost = self.stats["rejected"] * 10
+        total_cost = draft_cost + verify_cost + target_cost
+        baseline_cost = total * 10
+        speedup = baseline_cost / max(total_cost, 1)
+        out_tok = int(self.stats.get("output_tokens", 0))
+        return {
+            "draft_accept_rate": round(draft_rate, 4),
+            "verify_rate": round(verify_rate, 4),
+            "reject_rate": round(reject_rate, 4),
+            "speedup_estimate": round(float(speedup), 2),
+            "tokens_generated": out_tok,
+        }
 
     def draft(
         self,
