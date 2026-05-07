@@ -84,7 +84,7 @@ def test_memory_consolidate_and_dream() -> None:
     m.write("alpha beta semantic fact two overlap", memory_type="semantic", sigma=0.1, force=True)
     for e in m.entries:
         e.access_count = 3
-    c = m.consolidate(min_access=2, overlap_threshold=0.2)
+    c = m.consolidate(mode="semantic_dedup", min_access=2, overlap_threshold=0.2)
     assert "merged" in c
     d = m.dream(n_samples=2)
     assert d["replayed"] >= 1

@@ -148,6 +148,7 @@ class DreamCycle:
 def run_dream_maintenance(
     graph: SigmaGraph,
     *,
+    memory: Optional[Any] = None,
     dedup_threshold: float = 0.93,
     max_age_days: float = 30.0,
     run_decay: bool = True,
@@ -166,6 +167,12 @@ def run_dream_maintenance(
         "orphans": 0,
         "insights": [],
     }
+    memory_report: Dict[str, Any] = {}
+    if memory is not None:
+        if hasattr(memory, "consolidate"):
+            memory_report["consolidate"] = memory.consolidate()
+        if hasattr(memory, "decay"):
+            memory_report["memory_decay_cells"] = memory.decay(max_age_days=float(max_age_days))
     if run_dedup:
         dc.deduplicate(threshold=float(dedup_threshold))
     if run_decay:
@@ -175,10 +182,13 @@ def run_dream_maintenance(
     if run_orphans:
         dc.cleanup_orphans()
     dc.generate_insights(top_n=int(insight_top_n))
-    return {
+    out: Dict[str, Any] = {
         "report": dc.report,
         "sigma_after_maintenance": sigma_after_maintenance(graph),
     }
+    if memory_report:
+        out["memory_maintenance"] = memory_report
+    return out
 
 
 def sigma_after_maintenance(graph: SigmaGraph, *, before: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

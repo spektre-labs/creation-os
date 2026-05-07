@@ -2633,8 +2633,15 @@ def _cmd_dream_cli(args: argparse.Namespace) -> int:
     if add_t and len(add_t) == 3:
         g.add(str(add_t[0]), str(add_t[1]), str(add_t[2]))
 
+    mem = None
+    if bool(getattr(args, "dream_with_memory", False)):
+        from cos.memory import SigmaMemory
+
+        mem = SigmaMemory(gate=g.gate, graph=g)
+
     out = run_dream_maintenance(
         g,
+        memory=mem,
         dedup_threshold=float(getattr(args, "dream_dedup_threshold", 0.93) or 0.93),
         max_age_days=float(getattr(args, "dream_max_age_days", 30.0) or 30.0),
         run_decay=not bool(getattr(args, "dream_no_decay", False)),
@@ -3070,6 +3077,45 @@ def _cmd_cognitive_process(args: argparse.Namespace) -> int:
     result = f.process(str(getattr(args, "cognitive_input", "") or ""))
     print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
     return 0
+
+
+def _cmd_memory_cli(args: argparse.Namespace) -> int:
+    from cos.memory import SigmaMemory
+
+    pd = str(getattr(args, "mem_persist_dir", "") or "").strip()
+    mem = SigmaMemory(persist_dir=pd) if pd else SigmaMemory()
+    action = str(getattr(args, "mem_action", "") or "")
+    if action == "store":
+        content = str(getattr(args, "mem_content", "") or "").strip()
+        if not content:
+            print("cos memory store: pass --content TEXT", file=sys.stderr)
+            return 2
+        ctx = str(getattr(args, "mem_context", "") or "").strip()
+        mtype = str(getattr(args, "mem_type", "episodic") or "episodic")
+        result = mem.store(content, context=ctx, memory_type=mtype)
+        sig = float(result.get("σ", result.get("sigma", 0.0)))
+        print(f"Stored: σ={sig:.3f} {result.get('verdict', '')}")
+        return 0
+    if action == "recall":
+        q = str(getattr(args, "mem_query", "") or "").strip()
+        if not q:
+            print("cos memory recall: pass --query TEXT", file=sys.stderr)
+            return 2
+        for r in mem.recall(q):
+            print(f"  σ={float(r['σ']):.3f} [{r['type']}] {str(r['content'])[:80]}")
+        return 0
+    if action == "stats":
+        print(json.dumps(mem.stats(), indent=2, ensure_ascii=False))
+        return 0
+    if action == "consolidate":
+        result = mem.consolidate()
+        print(f"Consolidated: {result}")
+        return 0
+    if action == "forget":
+        out = mem.forget()
+        print(f"Forgot {out.get('forgotten', 0)} memories (σ ≥ 0.95)")
+        return 0
+    return 2
 
 
 def _cmd_silicon(args: argparse.Namespace) -> int:
@@ -3754,6 +3800,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     drm.add_argument("--no-dedup", action="store_true", dest="dream_no_dedup")
     drm.add_argument("--no-orphans", action="store_true", dest="dream_no_orphans")
     drm.add_argument("--no-infer", action="store_true", dest="dream_no_infer")
+    drm.add_argument(
+        "--with-memory",
+        action="store_true",
+        dest="dream_with_memory",
+        help="also run SigmaMemory consolidate() + decay() (same gate/graph)",
+    )
     drm.add_argument("--json", action="store_true", dest="out_json")
     drm.set_defaults(func=_cmd_dream_cli)
 
@@ -3871,6 +3923,35 @@ def main(argv: Optional[List[str]] = None) -> int:
     cproc = sub.add_parser("process", help="One cognitive Fabric step (Ω-loop or gate-only fallback)")
     cproc.add_argument("cognitive_input", type=str, help="input text / goal")
     cproc.set_defaults(func=_cmd_cognitive_process)
+
+    memp = sub.add_parser(
+        "memory",
+        help="Three-tier σ memory: store, recall, stats, consolidate, forget",
+    )
+    memp.add_argument(
+        "mem_action",
+        choices=["store", "recall", "stats", "consolidate", "forget"],
+        metavar="action",
+    )
+    memp.add_argument("--content", type=str, default="", dest="mem_content")
+    memp.add_argument("--context", type=str, default="", dest="mem_context")
+    memp.add_argument("--query", type=str, default="", dest="mem_query")
+    memp.add_argument(
+        "--type",
+        type=str,
+        default="episodic",
+        dest="mem_type",
+        metavar="TYPE",
+        help="tier for store: working|episodic|semantic|procedural",
+    )
+    memp.add_argument(
+        "--persist-dir",
+        type=str,
+        default="",
+        dest="mem_persist_dir",
+        help="directory for memories.json (default ~/.cos/memory)",
+    )
+    memp.set_defaults(func=_cmd_memory_cli)
 
     pip = sub.add_parser(
         "pipe",

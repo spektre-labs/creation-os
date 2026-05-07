@@ -96,6 +96,7 @@ class Fabric:
             try:
                 self._modules["memory"] = __import__("cos.memory", fromlist=["SigmaMemory"]).SigmaMemory(
                     gate=self.gate,
+                    graph=self._modules.get("graph"),
                 )
             except ImportError:
                 self._modules["memory"] = None
@@ -461,9 +462,15 @@ class SigmaFabric:
         except ImportError:
             self._note_skip('world')
         try:
+            from cos.graph import SigmaGraph
+
+            self.layers["graph"] = SigmaGraph(gate=gate)
+        except ImportError:
+            self._note_skip('graph')
+        try:
             from cos.memory import SigmaMemory
 
-            self.layers["memory"] = SigmaMemory(gate=gate)
+            self.layers["memory"] = SigmaMemory(gate=gate, graph=self.layers.get("graph"))
         except ImportError:
             self._note_skip('memory')
         try:
@@ -478,12 +485,6 @@ class SigmaFabric:
             self.layers["continual"] = SigmaContinual(gate=gate)
         except ImportError:
             self._note_skip('continual')
-        try:
-            from cos.graph import SigmaGraph
-
-            self.layers["graph"] = SigmaGraph(gate=gate)
-        except ImportError:
-            self._note_skip('graph')
         try:
             from cos.config import SigmaConfig
             from cos.jepa import SigmaJEPA
