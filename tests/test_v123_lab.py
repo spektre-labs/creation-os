@@ -73,7 +73,19 @@ def test_sigma_jepa_plan_argmin_returns_keys() -> None:
 def test_cos_think_cli_smoke() -> None:
     env = {**__import__("os").environ, "PYTHONPATH": str(_REPO / "python")}
     r = subprocess.run(
-        [sys.executable, "-m", "cos", "think", "--prompt", "cli planning smoke", "--horizon", "3", "--planning-steps", "8"],
+        [
+            sys.executable,
+            "-m",
+            "cos",
+            "think",
+            "--jepa",
+            "--prompt",
+            "cli planning smoke",
+            "--horizon",
+            "3",
+            "--planning-steps",
+            "8",
+        ],
         cwd=str(_REPO),
         env=env,
         capture_output=True,
@@ -93,6 +105,7 @@ def test_cos_think_visualize_cli_smoke() -> None:
             "-m",
             "cos",
             "think",
+            "--jepa",
             "--prompt",
             "viz smoke",
             "--visualize",

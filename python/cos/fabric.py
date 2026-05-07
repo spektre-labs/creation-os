@@ -22,6 +22,10 @@ Layer map (conceptual — not all code paths load in minimal installs)::
 
 σ is propagated from the gate; downstream steps may raise σ or change verdict when
 they detect conflict or meta-level abstention.
+
+**NOT AGI ACHIEVED** — :meth:`Fabric.process` is an integration / observability path
+(perceive → remember → reason hooks → gate → metacognition → safety → …), not a
+claim of human-level autonomy. See ``docs/CLAIM_DISCIPLINE.md``.
 """
 from __future__ import annotations
 
@@ -34,6 +38,11 @@ from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Uni
 from cos.config import DEFAULT_CONFIG, SigmaConfig
 from cos.pipeline import Pipeline, PipelineResult
 from cos.sigma_gate import SigmaGate
+
+
+def _fabric_verdict_str(verdict: Any) -> str:
+    raw = str(getattr(verdict, "name", verdict))
+    return raw.split(".")[-1] if "." in raw else raw
 
 
 class Fabric:
@@ -148,6 +157,14 @@ class Fabric:
             "tool_safety",
             lambda: __import__("cos.tool_safety", fromlist=["ToolSafety"]).ToolSafety(gate=self.gate),
         )
+        self._install_optional(
+            "causal",
+            lambda: __import__("cos.causal", fromlist=["CausalGraph"]).CausalGraph(gate=self.gate),
+        )
+        self._install_optional(
+            "moral",
+            lambda: __import__("cos.moral", fromlist=["SigmaMoral"]).SigmaMoral(gate=self.gate),
+        )
 
         if "omega" in self._disabled_modules:
             self._modules["omega"] = None
@@ -204,49 +221,210 @@ class Fabric:
             return str(inner.get("reasoning", inner.get("result", inner)))
         return str(inner or "")
 
-    def process(self, input_data: Any) -> Dict[str, Any]:
-        """One cognitive step: Ω-loop when available, else σ-gate reflex on mirrored text."""
+    def process(self, input_data: Any, context: str = "") -> Dict[str, Any]:
+        """Full cognitive pipeline: optional layers + **always-on** σ-gate (lab integration).
+
+        Order: perceive (JEPA) → memory recall → light FOL/symbolic hook → causal →
+        **gate** → metacognition (conscious) → tool safety (if ACCEPT) → moral (if
+        \"should\") → drive → meta-goal → memory store (if not ABSTAIN) → observe.
+
+        Ω-loop (:class:`~cos.omega.OmegaLoop`) remains available as a loaded module for
+        callers that invoke it directly; this method composes the wider layer stack so
+        each stage appears in ``trace`` for dashboards and ``cos think``.
+        """
         if not self._booted:
             self.boot()
 
         t0 = time.perf_counter()
-        omega = self._modules.get("omega")
-        if omega is not None:
-            result: Dict[str, Any] = dict(omega.step(input_data))
+        trace: List[Dict[str, Any]] = []
+        text_in = str(input_data).strip()
+        ctx = str(context or "").strip()
+
+        # 1. PERCEIVE — world model (JEPA) step when loaded
+        perception_sigma = 0.5
+        wm = self._modules.get("world_model")
+        if wm is not None and hasattr(wm, "step"):
+            try:
+                perc = wm.step(text_in)
+                perception_sigma = float(perc.get("σ", perc.get("sigma", 0.5)))
+                trace.append({"layer": "perceive", "σ": round(perception_sigma, 4)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "perceive", "error": repr(exc)})
         else:
-            s = str(input_data)
-            sigma, verdict = self.gate.score(s, s)
-            vn = str(verdict.name) if hasattr(verdict, "name") else str(verdict)
-            result = {"result": None, "sigma": float(sigma), "σ": float(sigma), "verdict": vn, "step": 0}
+            trace.append({"layer": "perceive", "skipped": True})
 
-        if "σ" not in result and "sigma" in result:
-            result["σ"] = float(result["sigma"])
-        latency_ms = (time.perf_counter() - t0) * 1000.0
+        # 2. REMEMBER — episodic recall (token overlap)
+        memory = self._modules.get("memory")
+        context_memories: List[Any] = []
+        if memory is not None and hasattr(memory, "recall"):
+            try:
+                context_memories = memory.recall(text_in, top_k=3, max_σ=1.0)
+                trace.append({"layer": "memory", "n_recalled": len(context_memories)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "memory", "error": repr(exc)})
+        else:
+            trace.append({"layer": "memory", "skipped": True})
 
-        observe = self._modules.get("observe")
-        if observe is not None and hasattr(observe, "record"):
-            v = result.get("verdict", "RETHINK")
-            vs = v.name if hasattr(v, "name") else str(v)
-            observe.record(
-                prompt=str(input_data),
-                response=self._result_body(result),
-                sigma=float(result.get("σ", result.get("sigma", 0.5))),
-                verdict=vs,
-                latency_ms=latency_ms,
-            )
+        # 3. REASON — FOL lines only when input looks structured (backward-chaining lab)
+        reasoning: Any = None
+        reasoning_text = ""
+        reason_mod = self._modules.get("reason")
+        if reason_mod is not None and "(" in text_in and any(c in text_in for c in (":", "|", ".")):
+            try:
+                from cos.reason import fol_parse
 
+                clauses = fol_parse(text_in)
+                if clauses:
+                    reasoning = {"kind": "fol_clauses", "n": len(clauses)}
+                    reasoning_text = f"fol:{len(clauses)}_clauses"
+                    trace.append({"layer": "reason", "n_clauses": len(clauses)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "reason", "error": repr(exc)})
+        sym = self._modules.get("symbolic")
+        if sym is not None and getattr(sym, "facts", None) and reasoning is None:
+            trace.append({"layer": "symbolic", "note": "kb_loaded_nl_query_skipped"})
+        elif reasoning is None:
+            trace.append({"layer": "symbolic", "skipped": True})
+
+        response_for_gate = text_in
+        if reasoning is not None:
+            response_for_gate = reasoning_text
+        elif context_memories:
+            m0 = context_memories[0].get("content", "")
+            if m0:
+                response_for_gate = f"{text_in}\n[recalled:{str(m0)[:400]}]"
+
+        # 4. CAUSAL — effects of first token-ish subject when graph present
+        causal = self._modules.get("causal")
+        if causal is not None and hasattr(causal, "effects_of") and text_in:
+            try:
+                key = "".join(ch for ch in text_in.split()[0][:48] if ch.isalnum() or ch in "_-").lower()
+                if not key:
+                    key = "node"
+                effects = causal.effects_of(key)
+                trace.append({"layer": "causal", "n_effects": len(effects), "subject": key})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "causal", "error": repr(exc)})
+        else:
+            trace.append({"layer": "causal", "skipped": True})
+
+        # 5. GATE — always
+        σ, verdict = self.gate.score(text_in, response_for_gate)
+        vn = _fabric_verdict_str(verdict)
+        trace.append({"layer": "gate", "σ": round(float(σ), 4), "verdict": vn})
+
+        # 6. METACOGNITION
+        σ_meta_val = 0.5
+        conscious = self._modules.get("conscious")
+        if conscious is not None and hasattr(conscious, "predict_own_σ"):
+            try:
+                meta_result = conscious.predict_own_σ(text_in, response_for_gate)
+                σ_meta_val = float(meta_result.get("σ_meta", 0.5))
+                trace.append({"layer": "metacognition", "σ_meta": round(σ_meta_val, 4)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "metacognition", "error": repr(exc)})
+        else:
+            trace.append({"layer": "metacognition", "skipped": True})
+
+        # 7. SAFETY — σ-before-execute on the proposed pipeline step when gate accepted
+        tool_safety = self._modules.get("tool_safety")
+        if tool_safety is not None and hasattr(tool_safety, "sigma_before_execute") and vn == "ACCEPT":
+            try:
+                safety = tool_safety.sigma_before_execute("process", text_in[:2000])
+                if not safety.get("allow", True):
+                    vn = "RETHINK"
+                    trace.append(
+                        {
+                            "layer": "safety",
+                            "blocked": True,
+                            "reason": safety.get("reason"),
+                        }
+                    )
+                else:
+                    trace.append({"layer": "safety", "allow": True})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "safety", "error": repr(exc)})
+        elif tool_safety is None:
+            trace.append({"layer": "safety", "skipped": True})
+        else:
+            trace.append({"layer": "safety", "note": "verdict_not_accept"})
+
+        # 8. MORAL — heuristic trigger on \"should\" (normative phrasing)
+        moral = self._modules.get("moral")
+        if moral is not None and hasattr(moral, "analyze") and "should" in text_in.lower():
+            try:
+                moral_analysis = moral.analyze(text_in, ctx or "fabric process")
+                trace.append({"layer": "moral", "dimensions": len(moral_analysis)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "moral", "error": repr(exc)})
+        else:
+            trace.append({"layer": "moral", "skipped": True})
+
+        # 9. DRIVE
         drive = self._modules.get("drive")
         if drive is not None and hasattr(drive, "record"):
-            drive.record(float(result.get("σ", result.get("sigma", 0.5))))
+            try:
+                drive.record(float(σ))
+                emotion = drive.emotion()
+                trace.append({"layer": "drive", "emotion": emotion.get("state", "unknown")})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "drive", "error": repr(exc)})
+        else:
+            trace.append({"layer": "drive", "skipped": True})
 
-        meta = self._modules.get("meta_goal")
-        if meta is not None and hasattr(meta, "record"):
-            skill = "general"
-            if isinstance(input_data, str) and "skill:" in input_data.lower():
-                skill = "tagged"
-            meta.record(skill, float(result.get("σ", result.get("sigma", 0.5))))
+        # 10. META-GOAL
+        meta_goal = self._modules.get("meta_goal")
+        if meta_goal is not None and hasattr(meta_goal, "record"):
+            try:
+                meta_goal.record("general", float(σ))
+                ng = meta_goal.next_goal()
+                trace.append(
+                    {
+                        "layer": "meta_goal",
+                        "next_goal_preview": (str(ng)[:80] if ng is not None else ""),
+                    }
+                )
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "meta_goal", "error": repr(exc)})
+        else:
+            trace.append({"layer": "meta_goal", "skipped": True})
 
-        return result
+        # 11. LEARN — store episodic trace when not abstaining
+        if memory is not None and hasattr(memory, "store") and vn != "ABSTAIN":
+            try:
+                memory.store(text_in, context=ctx or "fabric process")
+                trace.append({"layer": "learn", "stored": True})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "learn", "error": repr(exc)})
+        else:
+            trace.append({"layer": "learn", "skipped": True})
+
+        latency_ms = (time.perf_counter() - t0) * 1000.0
+
+        # 12. OBSERVE
+        observe = self._modules.get("observe")
+        if observe is not None and hasattr(observe, "record"):
+            try:
+                observe.record(text_in, response_for_gate, float(σ), vn, latency_ms)
+                trace.append({"layer": "observe", "latency_ms": round(latency_ms, 1)})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "observe", "error": repr(exc)})
+        else:
+            trace.append({"layer": "observe", "skipped": True})
+
+        layers_active = sum(1 for row in trace if row.get("skipped") is not True)
+
+        out: Dict[str, Any] = {
+            "result": reasoning if reasoning is not None else text_in,
+            "σ": round(float(σ), 4),
+            "sigma": round(float(σ), 4),
+            "σ_meta": round(float(σ_meta_val), 4),
+            "verdict": vn,
+            "latency_ms": round(latency_ms, 1),
+            "trace": trace,
+            "layers_active": layers_active,
+        }
+        return out
 
     def cognitive_state(self) -> Dict[str, Any]:
         """Snapshot for dashboards — metacognition / awareness-metric proxies only (lab)."""

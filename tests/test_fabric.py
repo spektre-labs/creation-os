@@ -49,6 +49,8 @@ def test_status_shows_all_modules() -> None:
         "observe",
         "drift",
         "tool_safety",
+        "causal",
+        "moral",
         "omega",
     ):
         assert name in st["modules"]

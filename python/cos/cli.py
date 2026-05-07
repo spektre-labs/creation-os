@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
-  CORE            score, chat, bench, serve, version
+  CORE            score, chat, think, bench, serve, version
   ANALYSIS        explain, cascade, calibrate
   INFRASTRUCTURE  health, registry, cost
   ADVANCED        graph, evolve, redteam
@@ -3383,21 +3383,51 @@ def _cmd_tiny(args: argparse.Namespace) -> int:
 
 
 def _cmd_think(args: argparse.Namespace) -> int:
-    from cos.sigma_jepa import LabLatentEncoder, LabLatentPredictor, SigmaJEPA
+    """Default: full :class:`~cos.fabric.Fabric` pipeline; ``--jepa`` keeps v123 lab JSON."""
+    if bool(getattr(args, "think_jepa_lab", False)):
+        from cos.sigma_jepa import LabLatentEncoder, LabLatentPredictor, SigmaJEPA
 
-    prompt = str(getattr(args, "think_prompt", "") or "")
-    horizon = max(1, int(getattr(args, "think_horizon", 5) or 5))
-    planning_steps = max(1, int(getattr(args, "think_planning_steps", 100) or 100))
-    j = SigmaJEPA(LabLatentEncoder(dim=8), LabLatentPredictor(drift=0.02), None, k_raw=0.92)
-    if bool(getattr(args, "think_visualize", False)):
-        raw = str(getattr(args, "think_actions", "") or "").strip()
-        actions = [a.strip() for a in raw.split(",") if a.strip()]
-        out = j.latent_trajectory_for_visualize(prompt, actions, max_steps=10)
+        prompt = str(getattr(args, "think_prompt", "") or "").strip()
+        if not prompt:
+            print("cos think --jepa: pass --prompt TEXT", file=sys.stderr)
+            return 2
+        horizon = max(1, int(getattr(args, "think_horizon", 5) or 5))
+        planning_steps = max(1, int(getattr(args, "think_planning_steps", 100) or 100))
+        j = SigmaJEPA(LabLatentEncoder(dim=8), LabLatentPredictor(drift=0.02), None, k_raw=0.92)
+        if bool(getattr(args, "think_visualize", False)):
+            raw = str(getattr(args, "think_actions", "") or "").strip()
+            actions = [a.strip() for a in raw.split(",") if a.strip()]
+            out = j.latent_trajectory_for_visualize(prompt, actions, max_steps=10)
+            print(json.dumps(out, ensure_ascii=False))
+            return 0
+        cands = [["noop", "step"], ["probe", "halt"]]
+        out = j.plan_argmin_sigma(prompt, cands, horizon=horizon, planning_steps=planning_steps)
         print(json.dumps(out, ensure_ascii=False))
         return 0
-    cands = [["noop", "step"], ["probe", "halt"]]
-    out = j.plan_argmin_sigma(prompt, cands, horizon=horizon, planning_steps=planning_steps)
-    print(json.dumps(out, ensure_ascii=False))
+
+    text = str(getattr(args, "think_input", "") or "").strip()
+    if not text:
+        print(
+            "cos think: pass INPUT (full σ-Fabric pipeline), e.g. cos think 'What causes rain?'\n"
+            "       or cos think --jepa --prompt '…' for v123 plan_argmin JSON.",
+            file=sys.stderr,
+        )
+        return 2
+    from cos.fabric import Fabric
+
+    fab = Fabric()
+    fab.boot()
+    result = fab.process(text)
+    sigma = float(result.get("σ", result.get("sigma", 0.0)))
+    smeta = float(result.get("σ_meta", 0.0))
+    verdict = str(result.get("verdict", "RETHINK"))
+    print(f"\n[σ={sigma:.3f} σ_meta={smeta:.3f} {verdict}]")
+    print(f"Latency: {result.get('latency_ms', 0):.0f}ms, layers_active: {result.get('layers_active', 0)}")
+    if bool(getattr(args, "think_trace", False)):
+        for row in result.get("trace") or []:
+            print(f"  {row.get('layer')}: {row}")
+    body = result.get("result")
+    print(f"\n{body}")
     return 0
 
 
@@ -4685,12 +4715,33 @@ def main(argv: Optional[List[str]] = None) -> int:
     tin.add_argument("--reading", type=int, default=0, dest="tiny_reading")
     tin.set_defaults(func=_cmd_tiny)
 
-    thk = sub.add_parser("think", help="σ-JEPA plan_argmin + visualize JSON (v123 lab)")
-    thk.add_argument("--prompt", type=str, required=True, dest="think_prompt")
+    thk = sub.add_parser(
+        "think",
+        help="Full cognitive Fabric pipeline (default); use --jepa for v123 σ-JEPA JSON lab",
+    )
+    thk.add_argument(
+        "think_input",
+        nargs="?",
+        default="",
+        help="Question or goal for the full σ-Fabric stack (perceive→…→gate→observe)",
+    )
+    thk.add_argument(
+        "--jepa",
+        action="store_true",
+        dest="think_jepa_lab",
+        help="Run legacy v123 plan_argmin / visualize mode (--prompt required)",
+    )
+    thk.add_argument("--prompt", type=str, dest="think_prompt", default="", help="With --jepa: planning prompt")
     thk.add_argument("--horizon", type=int, default=5, dest="think_horizon")
     thk.add_argument("--planning-steps", type=int, default=100, dest="think_planning_steps")
     thk.add_argument("--visualize", action="store_true", dest="think_visualize")
     thk.add_argument("--actions", type=str, default="", dest="think_actions")
+    thk.add_argument(
+        "--trace",
+        action="store_true",
+        dest="think_trace",
+        help="Print per-layer trace rows after the Fabric step",
+    )
     thk.set_defaults(func=_cmd_think)
 
     spl = sub.add_parser("split", help="σ-split routing + layer_split lab JSON (v135)")
