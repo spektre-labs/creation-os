@@ -59,6 +59,15 @@ def test_score_with_persona_query(client: TestClient) -> None:
     assert "sigma" in r.json()
 
 
+def test_observe_summary(client: TestClient) -> None:
+    client.post("/v1/score", json={"prompt": "ping", "response": "pong"})
+    r = client.get("/v1/observe")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["count"] >= 1
+    assert "σ_avg" in body
+
+
 def test_plugins_list(client: TestClient) -> None:
     r = client.get("/v1/plugins")
     assert r.status_code == 200

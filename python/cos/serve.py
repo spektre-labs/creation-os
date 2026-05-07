@@ -61,6 +61,7 @@ from cos.compliance import SigmaCompliance
 from cos.explain import SigmaExplain
 from cos.feedback import SigmaFeedback
 from cos.metric import SigmaMetrics
+from cos.observe import SigmaObserve
 from cos.pipeline import Pipeline
 from cos.plugin import SigmaPlugin
 from cos.report import SigmaReport
@@ -234,6 +235,7 @@ def create_app() -> Any:
         return response
 
     gate = SigmaGate()
+    sigma_observe = SigmaObserve()
     sigma_serving = SigmaServing()
     batch_throughput = sigma_serving.throughput_monitor(120.0, name="v1_batch")
     feedback_engine = SigmaFeedback()
@@ -303,6 +305,17 @@ def create_app() -> Any:
             calibrated = True
 
         elapsed = (time.monotonic() - t0) * 1000.0
+        sigma_observe.record(
+            req.prompt,
+            req.response,
+            out_sigma,
+            str(verdict),
+            elapsed,
+            model=None,
+            endpoint=None,
+            tokens=None,
+            cost=None,
+        )
         return ScoreResponse(
             sigma=round(out_sigma, 6),
             verdict=str(verdict),
@@ -312,6 +325,11 @@ def create_app() -> Any:
             combined_ok=combined_ok,
             structure_errors=struct_err,
         )
+
+    @app.get("/v1/observe")
+    async def observe_summary(request: Request) -> dict[str, Any]:
+        _optional_bearer_auth(request.headers.get("Authorization"))
+        return dict(sigma_observe.summary())
 
     @app.post("/v1/chat/completions")
     async def chat_completions_proxy(request: Request) -> Any:

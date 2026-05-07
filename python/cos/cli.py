@@ -871,7 +871,7 @@ def _mock_drift_rows() -> List[Dict[str, Any]]:
     ]
 
 
-def _cmd_observe(args: argparse.Namespace) -> int:
+def _cmd_observe_traces(args: argparse.Namespace) -> int:
     from cos.sigma_alert import SigmaAlert
     from cos.sigma_observe import SigmaObserve
 
@@ -902,6 +902,54 @@ def _cmd_observe(args: argparse.Namespace) -> int:
         print("cos observe: pass at least one of --traces --alerts", file=sys.stderr)
         return 2
     print(json.dumps(payload, ensure_ascii=False, default=str))
+    return 0
+
+
+def _cmd_observe(args: argparse.Namespace) -> int:
+    """Default: σ dashboard from today's JSONL; use --from-file / --mock-drift for legacy trace mode."""
+    if getattr(args, "from_file", "") or getattr(args, "mock_drift", False):
+        return _cmd_observe_traces(args)
+
+    from cos.observe import SigmaObserve
+
+    obs = SigmaObserve(log_dir=str(getattr(args, "observe_log_dir", "~/.cos/logs")))
+    obs.load_today_jsonl()
+    summary = obs.summary(last_n=getattr(args, "observe_last", 100))
+    if getattr(args, "out_json", False):
+        print(json.dumps(summary, ensure_ascii=False, default=str))
+    else:
+        print(f"Calls: {summary['count']}")
+        print(f"σ avg: {summary.get('σ_avg', 'N/A')}")
+        print(f"σ p95: {summary.get('σ_p95', 'N/A')}")
+        print(f"Accept: {summary.get('accept_rate', 'N/A')}")
+        print(f"Abstain: {summary.get('abstain_rate', 'N/A')}")
+    return 0
+
+
+def _cmd_drift(args: argparse.Namespace) -> int:
+    from cos.drift import SigmaDrift
+
+    try:
+        base_raw = Path(args.drift_baseline).expanduser().read_text(encoding="utf-8")
+        cur_raw = Path(args.drift_current).expanduser().read_text(encoding="utf-8")
+        base = json.loads(base_raw)
+        cur = json.loads(cur_raw)
+    except (OSError, json.JSONDecodeError) as e:
+        print(f"cos drift: {e}", file=sys.stderr)
+        return 2
+    if not isinstance(base, list) or not isinstance(cur, list):
+        print("cos drift: --baseline and --current must be JSON arrays of σ values", file=sys.stderr)
+        return 2
+    d = SigmaDrift()
+    d.set_baseline([float(x) for x in base])
+    r = d.detect([float(x) for x in cur])
+    if getattr(args, "out_json", False):
+        print(json.dumps(r, ensure_ascii=False, default=str))
+    else:
+        print(
+            f"drift={r['drift']} kl={r['kl_divergence']} alert={r['alert']} "
+            f"baseline_mean={r.get('baseline_mean')} current_mean={r.get('current_mean')} — {r['reason']}",
+        )
     return 0
 
 
@@ -3925,12 +3973,33 @@ def main(argv: Optional[List[str]] = None) -> int:
     mon.add_argument("--mock-drift", action="store_true", dest="mock_drift", help="built-in drifting σ fixture")
     mon.set_defaults(func=_cmd_monitor)
 
-    ob = sub.add_parser("observe", help="σ-native observability (traces + alerts JSON)")
-    ob.add_argument("--traces", action="store_true", help="include normalized σ-traces")
-    ob.add_argument("--alerts", action="store_true", help="include σ-alert list")
+    ob = sub.add_parser(
+        "observe",
+        help="σ observability: default dashboard from ~/.cos/logs; or trace JSON via --from-file",
+    )
+    ob.add_argument("--last", type=int, default=100, dest="observe_last", help="summary over last N rows from today's log")
+    ob.add_argument(
+        "--log-dir",
+        type=str,
+        default="~/.cos/logs",
+        dest="observe_log_dir",
+        help="directory for sigma_YYYY-MM-DD.jsonl logs",
+    )
+    ob.add_argument("--json", action="store_true", dest="out_json", help="machine-readable summary (dashboard mode)")
+    ob.add_argument("--traces", action="store_true", help="(legacy) include normalized σ-traces from --from-file")
+    ob.add_argument("--alerts", action="store_true", help="(legacy) include σ-alert list")
     ob.add_argument("--from-file", type=str, default="", dest="from_file", help="JSON / JSONL same as cos monitor")
     ob.add_argument("--mock-drift", action="store_true", dest="mock_drift", help="synthetic drift for CI / demos")
     ob.set_defaults(func=_cmd_observe)
+
+    dr = sub.add_parser(
+        "drift",
+        help="σ distribution drift vs baseline (JSON arrays of floats)",
+    )
+    dr.add_argument("--baseline", type=str, required=True, dest="drift_baseline", help="JSON file: [σ, ...]")
+    dr.add_argument("--current", type=str, required=True, dest="drift_current", help="JSON file: [σ, ...]")
+    dr.add_argument("--json", action="store_true", dest="out_json", help="print detection payload only")
+    dr.set_defaults(func=_cmd_drift)
 
     _fed_p = argparse.ArgumentParser(add_help=False)
     _fed_p.add_argument("--workspace", type=str, default="~/.cos/federation", help="state directory")
