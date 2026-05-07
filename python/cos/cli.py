@@ -2548,6 +2548,59 @@ def _cmd_world_cli(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_causal_cli(args: argparse.Namespace) -> int:
+    import json
+
+    from cos.causal import CausalGraph
+    from cos.graph_export import load_graph_from_json
+
+    loadp = str(getattr(args, "causal_load_json", "") or "").strip()
+    cg: CausalGraph
+    if loadp:
+        sg = load_graph_from_json(loadp)
+        cg = sg.to_causal_graph()
+    else:
+        cg = CausalGraph()
+
+    action = str(getattr(args, "causal_action", "") or "").strip()
+    var = str(getattr(args, "causal_var", "") or "").strip()
+    target = str(getattr(args, "causal_target", "") or "").strip()
+
+    if action in ("causes", "effects", "do", "why") and not var:
+        print("cos causal: --var is required for this action", file=sys.stderr)
+        return 2
+
+    if action == "causes":
+        payload = cg.causes_of(var)
+    elif action == "effects":
+        payload = cg.effects_of(var)
+    elif action == "do":
+        payload = cg.do(var)
+    elif action == "why":
+        payload = cg.root_cause(var)
+    elif action == "what-if":
+        try:
+            observed = json.loads(str(getattr(args, "causal_observed", "{}") or "{}"))
+            intervention = json.loads(str(getattr(args, "causal_intervene", "{}") or "{}"))
+        except json.JSONDecodeError as exc:
+            print(f"cos causal: invalid JSON: {exc}", file=sys.stderr)
+            return 2
+        outv = target or var
+        if not outv:
+            print("cos causal: what-if needs --target (outcome variable) or --var", file=sys.stderr)
+            return 2
+        payload = cg.counterfactual(observed, intervention, outv)
+    else:
+        print("cos causal: unknown action", file=sys.stderr)
+        return 2
+
+    if _cli_out_json(args):
+        print(json.dumps(payload, default=str, ensure_ascii=False))
+    else:
+        print(json.dumps(payload, default=str, ensure_ascii=False, indent=2))
+    return 0
+
+
 def _cmd_graph_cli(args: argparse.Namespace) -> int:
     from cos.graph import SigmaGraph
     from cos.graph_export import GraphExport, load_graph_from_json
@@ -3442,7 +3495,7 @@ def _cmd_memory(args: argparse.Namespace) -> int:
         hits = eg.recall(str(args.memory_recall), tau=tau, max_results=10)
         print(json.dumps({"recall": hits}, ensure_ascii=False, default=str))
         return 0
-    print("cos memory: use --store or --recall with --state-file", file=sys.stderr)
+    print("cos engram: use --store or --recall with --state-file", file=sys.stderr)
     return 2
 
 
@@ -3774,6 +3827,38 @@ def main(argv: Optional[List[str]] = None) -> int:
     grp.add_argument("--json", action="store_true", dest="out_json")
     grp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     grp.set_defaults(func=_cmd_graph_cli)
+
+    cau = sub.add_parser("causal", help="Causal DAG: causes/effects (see), do(), root-cause, what-if (lab)")
+    cau.add_argument(
+        "causal_action",
+        choices=["causes", "effects", "do", "why", "what-if"],
+        metavar="ACTION",
+    )
+    cau.add_argument("--var", type=str, default="", dest="causal_var", help="variable (entity name)")
+    cau.add_argument("--target", type=str, default="", dest="causal_target", help="outcome variable (what-if)")
+    cau.add_argument(
+        "--observed",
+        type=str,
+        default="{}",
+        dest="causal_observed",
+        help='what-if: JSON object of observed assignments (e.g. {"smoke": 1})',
+    )
+    cau.add_argument(
+        "--intervene",
+        type=str,
+        default="{}",
+        dest="causal_intervene",
+        help='what-if: JSON intervention dict (e.g. {"fire": 0})',
+    )
+    cau.add_argument(
+        "--load-graph",
+        type=str,
+        default="",
+        dest="causal_load_json",
+        help="load SigmaGraph JSON export as causal edges (caus*/leads_to relations)",
+    )
+    cau.add_argument("--json", action="store_true", dest="out_json")
+    cau.set_defaults(func=_cmd_causal_cli)
 
     wrd = sub.add_parser(
         "world",
@@ -4629,14 +4714,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     att.add_argument("--threshold", type=float, default=0.3, dest="attn_threshold")
     att.set_defaults(func=_cmd_attention)
 
-    mem = sub.add_parser("memory", help="Engram v2 store/recall with --state-file JSON persistence")
-    mem.add_argument("--state-file", type=str, required=True, dest="memory_state")
-    mem.add_argument("--store", type=str, default=None, dest="memory_store")
-    mem.add_argument("--recall", type=str, default=None, dest="memory_recall")
-    mem.add_argument("--sigma", type=float, default=0.05, dest="memory_sigma")
-    mem.add_argument("--verdict", type=str, default="ACCEPT", dest="memory_verdict")
-    mem.add_argument("--tau", type=float, default=0.3, dest="memory_tau")
-    mem.set_defaults(func=_cmd_memory)
+    engram = sub.add_parser(
+        "engram",
+        help="Engram v2 store/recall with --state-file JSON (legacy; prefer `cos memory`)",
+    )
+    engram.add_argument("--state-file", type=str, required=True, dest="memory_state")
+    engram.add_argument("--store", type=str, default=None, dest="memory_store")
+    engram.add_argument("--recall", type=str, default=None, dest="memory_recall")
+    engram.add_argument("--sigma", type=float, default=0.05, dest="memory_sigma")
+    engram.add_argument("--verdict", type=str, default="ACCEPT", dest="memory_verdict")
+    engram.add_argument("--tau", type=float, default=0.3, dest="memory_tau")
+    engram.set_defaults(func=_cmd_memory)
 
     bn = sub.add_parser("bitnet", help="σ-BitNet packed ternary lab JSON (v158)")
     bn.add_argument("--sparsity", action="store_true", dest="bitnet_sparsity")

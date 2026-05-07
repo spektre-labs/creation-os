@@ -453,6 +453,17 @@ class SigmaGraph:
             "n_edges": len(edge_objs),
         }
 
+    def to_causal_graph(
+        self,
+        gate: Any = None,
+        *,
+        causal_relations: Optional[Set[str]] = None,
+    ) -> Any:
+        """Export causal ``subject → object`` edges into a :class:`~cos.causal.CausalGraph` (lab)."""
+        from cos.causal import CausalGraph
+
+        return CausalGraph.from_sigma_graph(self, gate=gate or self.gate, causal_relations=causal_relations)
+
     def stats(self) -> Dict[str, Any]:
         vals = list(self.triples.values())
         n = len(vals)
