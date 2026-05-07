@@ -61,6 +61,23 @@ jobs:
       - name: make check-green-score
         run: make check-green-score
 
+  cyclonedx-sbom:
+    name: CycloneDX Python SBOM
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate sbom/creation-os.cdx.json
+        run: bash scripts/sbom/generate_creation_os_cdx.sh
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: sbom/
+
   ubuntu-python-dev-matrix:
     runs-on: ubuntu-latest
     timeout-minutes: 90

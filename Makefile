@@ -246,6 +246,7 @@ help:
 	@echo "  sanitize   — build+run asan-v58/v59/v60/v61 and ubsan-v60/v61 against their self-tests"
 	@echo "  hardening-check — verify hardened binary retains PIE, stack canaries, fortify references (scripts/security/hardening_check.sh)"
 	@echo "  sbom       — emit SBOM.json (CycloneDX-lite 1.5 JSON) of all source components"
+	@echo "  sbom-cdx   — emit sbom/creation-os.cdx.json (CycloneDX JSON, Python env + [dev])"
 	@echo "  security-scan — run layered gitleaks / grep-only secret scan and hardcoded-URL check (scripts/security/scan.sh)"
 	@echo "  reproducible-build — rebuild standalone-v60 twice, compare SHA-256 digests (scripts/security/reproducible_build.sh)"
 	@echo "  verify-agent — live aggregate driver (scripts/v57/verify_agent.sh); dispatches each composition slot's owning make target and reports PASS / SKIP / FAIL honestly (SKIP on missing tools, never silent PASS)"
@@ -1296,6 +1297,10 @@ hardening-check: standalone-v60-hardened
 sbom:
 	@bash scripts/security/sbom.sh > SBOM.json
 	@echo "sbom: OK (SBOM.json written in CycloneDX-lite 1.5 JSON form)"
+
+# CycloneDX 1.6 JSON for Python dependencies (editable + dev extra; PyPI supply-chain).
+sbom-cdx:
+	@bash scripts/sbom/generate_creation_os_cdx.sh
 
 security-scan:
 	@bash scripts/security/scan.sh
