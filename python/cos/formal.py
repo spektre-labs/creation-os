@@ -11,10 +11,12 @@ from __future__ import annotations
 
 import hashlib
 import os
+import shutil
 import subprocess
 import tempfile
 import time
-from typing import Any, Dict, List, Tuple
+from pathlib import Path
+from typing import Any, Dict, List, Tuple, Union
 
 __all__ = ["SigmaFormal"]
 
@@ -28,6 +30,128 @@ class SigmaFormal:
         self.gate = gate or SigmaGate()
         self.lean_path = str(lean_path)
         self.proofs: List[Dict[str, Any]] = []
+
+    @property
+    def lean_available(self) -> bool:
+        """True when the configured ``lean`` executable is on ``PATH``."""
+        return shutil.which(self.lean_path) is not None
+
+    def check_invariants(self, gate: Any = None) -> Dict[str, Any]:
+        """Runtime checks for a small σ-gate contract (no Lean required).
+
+        Checks: σ range, verdict enum, empty response ⇒ high σ (lite path), determinism,
+        and ``threshold_accept < threshold_abstain``.
+        """
+        g = gate or self.gate
+        results: Dict[str, Any] = {}
+
+        test_cases = [
+            ("", ""),
+            ("a", "b"),
+            ("x" * 10000, "y" * 10000),
+            ("What is 2+2?", "4"),
+            ("Capital?", "Moon"),
+        ]
+        bounded = True
+        for p, r in test_cases:
+            σ, _v = g.score(p, r)
+            if not (0.0 <= float(σ) <= 1.0):
+                bounded = False
+                break
+        results["σ_bounded"] = bounded
+
+        _σl, v_low = g.score("test", "test")
+        del _σl
+        vstr = str(getattr(v_low, "name", v_low))
+        if "." in vstr:
+            vstr = vstr.split(".")[-1]
+        results["verdict_consistency"] = vstr in ("ACCEPT", "RETHINK", "ABSTAIN")
+
+        σ_empty, _ve = g.score("question", "")
+        results["empty_response_high_σ"] = float(σ_empty) > 0.5
+
+        σ_a, v_a = g.score("What is 2+2?", "4")
+        σ_b, v_b = g.score("What is 2+2?", "4")
+        va = str(getattr(v_a, "name", v_a))
+        vb = str(getattr(v_b, "name", v_b))
+        if "." in va:
+            va = va.split(".")[-1]
+        if "." in vb:
+            vb = vb.split(".")[-1]
+        results["deterministic"] = float(σ_a) == float(σ_b) and va == vb
+
+        ta = float(g.threshold_accept)
+        tb = float(g.threshold_abstain)
+        results["threshold_order"] = ta < tb
+
+        all_pass = all(bool(v) for v in results.values())
+        return {"passed": all_pass, "checks": results}
+
+    def generate_lean_spec(self, output_path: Union[str, Path] = "formal/SigmaGate.lean") -> str:
+        """Write Lean 4 specification stubs (``sorry``) for σ-gate-aligned claims.
+
+        Intentionally **stdlib-only** (no Mathlib): typechecks under a plain ``lean`` install.
+        Link to Python :class:`~cos.sigma_gate.SigmaGate` only in comments.
+        """
+        spec = '''/- SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+  σ-gate formal sketches — Creation OS ``SigmaFormal.generate_lean_spec``.
+  Proofs deferred as ``sorry``; not a certified proof of the Python implementation. -/
+
+namespace COS.SigmaGate
+
+/-- Opaque model of lite-mode σ after scoring ``(prompt, response)``. -/
+opaque scoreSigma (p r : String) : Float
+
+theorem score_deterministic (p r : String) : scoreSigma p r = scoreSigma p r :=
+  rfl
+
+/-- Goal: ``0 ≤ scoreSigma p r ≤ 1`` under the Python ``SigmaGate`` contract. -/
+theorem sigma_bounded (p r : String) : True := by
+  sorry
+
+/-- Goal: empty ``response`` ⇒ high σ (lite entropy path returns 1.0). -/
+theorem empty_response_high_sigma (p : String) : True := by
+  sorry
+
+/-- Goal: configured ``threshold_accept < threshold_abstain``. -/
+theorem threshold_strict_order : True := by
+  sorry
+
+/-- Goal: verdict ∈ Accept / Rethink / Abstain for modeled thresholds. -/
+theorem verdict_membership : True := by
+  sorry
+
+end COS.SigmaGate
+'''
+        path = Path(output_path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(spec, encoding="utf-8")
+        return str(path.resolve())
+
+    def verify_lean(self, lean_file: Union[str, Path]) -> Dict[str, Any]:
+        """Run Lean 4 on an existing ``.lean`` file (optional tool)."""
+        lf = Path(lean_file)
+        if not self.lean_available:
+            return {"verified": False, "reason": "Lean 4 not installed"}
+        if not lf.is_file():
+            return {"verified": False, "reason": f"file not found: {lf}"}
+        try:
+            result = subprocess.run(
+                [self.lean_path, str(lf)],
+                capture_output=True,
+                text=True,
+                timeout=60,
+                check=False,
+            )
+            return {
+                "verified": result.returncode == 0,
+                "stdout": (result.stdout or "")[:4000],
+                "stderr": (result.stderr or "")[:4000],
+            }
+        except subprocess.TimeoutExpired:
+            return {"verified": False, "reason": "timeout"}
+        except Exception as exc:  # noqa: BLE001
+            return {"verified": False, "reason": str(exc)}
 
     def verify_verdict(self, prompt: str, response: str) -> Dict[str, Any]:
         """Run property checks, repeat ``score`` for determinism, then optional Lean."""

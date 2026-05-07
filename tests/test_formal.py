@@ -45,3 +45,41 @@ def test_lean_not_installed() -> None:
     formal = SigmaFormal(lean_path="/nonexistent/lean")
     result = formal.verify_verdict("test", "hello")
     assert result["lean_check"]["status"] in ("lean_not_installed", "error")
+
+
+def test_sigma_bounded() -> None:
+    inv = SigmaFormal().check_invariants()
+    assert inv["checks"]["σ_bounded"]
+
+
+def test_verdict_consistency() -> None:
+    inv = SigmaFormal().check_invariants()
+    assert inv["checks"]["verdict_consistency"]
+
+
+def test_empty_response_high_sigma() -> None:
+    inv = SigmaFormal().check_invariants()
+    assert inv["checks"]["empty_response_high_σ"]
+
+
+def test_deterministic() -> None:
+    inv = SigmaFormal().check_invariants()
+    assert inv["checks"]["deterministic"]
+
+
+def test_threshold_order() -> None:
+    inv = SigmaFormal().check_invariants()
+    assert inv["checks"]["threshold_order"]
+    assert inv["passed"]
+
+
+def test_generate_lean_spec_creates_file(tmp_path) -> None:
+    from pathlib import Path
+
+    formal = SigmaFormal()
+    out = Path(tmp_path) / "SigmaGate.lean"
+    p = formal.generate_lean_spec(output_path=out)
+    assert Path(p).is_file()
+    text = Path(p).read_text(encoding="utf-8")
+    assert "sorry" in text.lower()
+    assert "score_deterministic" in text
