@@ -11,12 +11,12 @@ Install::
 
 Usage::
 
-    cos serve                     # default http://127.0.0.1:8420
-    cos serve --host 0.0.0.0 --port 9000
+    cos serve                     # default http://0.0.0.0:8000 (bind all interfaces)
+    cos serve --host 127.0.0.1 --port 8420
 
 Example::
 
-    curl -s -X POST http://127.0.0.1:8420/v1/score \\
+    curl -s -X POST http://127.0.0.1:8000/v1/score \\
       -H 'Content-Type: application/json' \\
       -d '{"prompt": "What is 2+2?", "response": "4"}'
 
@@ -30,7 +30,8 @@ import json
 import os
 import time
 import uuid
-from typing import Any, Dict, List, Optional, Union, Union
+from collections import deque
+from typing import Any, Deque, Dict, List, Optional, Union
 
 try:
     from fastapi import (
@@ -221,9 +222,10 @@ class HealthResponse(BaseModel):
     sigma_gate: str = "operational"
     tests_passed: int = _HEALTH_TESTS_PASSED_BANNER
     gate_ready: bool = True
+    gate: str = "loaded"
 
 
-def create_app(config: Optional[SigmaConfig] = None) -> Any:
+def create_app(gate: Any = None, config: Optional[SigmaConfig] = None) -> Any:
     if not HAS_FASTAPI:  # pragma: no cover
         raise ImportError("pip install 'creation-os[serve]'")
 
@@ -258,6 +260,34 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
     )
 
     metrics_hub = SigmaMetrics()
+    _rate_buckets: Dict[str, Deque[float]] = {}
+    _rate_lock = asyncio.Lock()
+
+    @app.middleware("http")
+    async def cos_rate_limit(request: Request, call_next: Any) -> Any:
+        """Best-effort in-memory limiter; set ``CREATION_OS_RATE_LIMIT_PER_MIN`` > 0 to enable."""
+        try:
+            lim_raw = (os.environ.get("CREATION_OS_RATE_LIMIT_PER_MIN") or "").strip()
+            limit = int(lim_raw) if lim_raw else 0
+        except ValueError:
+            limit = 0
+        if limit <= 0:
+            return await call_next(request)
+        ident = request.client.host if request.client else "unknown"
+        now = time.monotonic()
+        async with _rate_lock:
+            bucket = _rate_buckets.setdefault(ident, deque(maxlen=max(limit * 2, 16)))
+            while bucket and now - bucket[0] > 60.0:
+                bucket.popleft()
+            if len(bucket) >= limit:
+                from fastapi.responses import JSONResponse
+
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "rate limit exceeded (per client IP, rolling 60s window)"},
+                )
+            bucket.append(now)
+        return await call_next(request)
 
     @app.middleware("http")
     async def cos_session_scope(request: Request, call_next: Any) -> Any:
@@ -268,20 +298,26 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         return response
 
     cfg = config if config is not None else DEFAULT_CONFIG
-    gate = SigmaGate(
-        threshold_accept=float(cfg.threshold_accept),
-        threshold_abstain=float(cfg.threshold_abstain),
-    )
-    sigma_observe = SigmaObserve()
+    if gate is None:
+        active_gate = SigmaGate(
+            threshold_accept=float(cfg.threshold_accept),
+            threshold_abstain=float(cfg.threshold_abstain),
+        )
+    else:
+        active_gate = gate
+    try:
+        sigma_observe = SigmaObserve()
+    except (ImportError, OSError, TypeError):  # pragma: no cover
+        sigma_observe = None  # type: ignore[assignment]
     sigma_serving = SigmaServing()
     batch_throughput = sigma_serving.throughput_monitor(120.0, name="v1_batch")
     feedback_engine = SigmaFeedback()
-    explainer = SigmaExplain(gate=gate)
-    compliance_engine = SigmaCompliance(gate=gate)
+    explainer = SigmaExplain(gate=active_gate)
+    compliance_engine = SigmaCompliance(gate=active_gate)
     webhook_hub = SigmaWebhook()
-    plugin_hub = SigmaPlugin(gate=gate)
-    pipeline = Pipeline(gate=gate)
-    stream_engine = SigmaStream(gate=gate)
+    plugin_hub = SigmaPlugin(gate=active_gate)
+    pipeline = Pipeline(gate=active_gate)
+    stream_engine = SigmaStream(gate=active_gate)
     calibrator = SigmaCalibrator()
     start_time = time.monotonic()
     request_count = 0
@@ -297,6 +333,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
             sigma_gate="operational",
             tests_passed=_HEALTH_TESTS_PASSED_BANNER,
             gate_ready=True,
+            gate="loaded",
         )
 
     @app.get("/")
@@ -321,7 +358,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         tr = SigmaTrace()
         response.headers["X-Trace-Id"] = tr.trace_id
         with tr.span("sigma_gate") as span_rec:
-            sigma, verdict = gate.score(req.prompt, req.response)
+            sigma, verdict = active_gate.score(req.prompt, req.response)
             span_rec["sigma"] = float(sigma)
             span_rec["verdict"] = str(verdict)
 
@@ -329,7 +366,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         combined_ok: Optional[bool] = None
         struct_err: Optional[List[str]] = None
         if req.json_schema:
-            comb = SigmaStruct().combined_score(req.response, req.json_schema, req.prompt, gate)
+            comb = SigmaStruct().combined_score(req.response, req.json_schema, req.prompt, active_gate)
             struct_ok = bool(comb.get("structure_ok"))
             combined_ok = bool(comb.get("ok"))
             struct_err = list(comb.get("structure_errors") or [])
@@ -345,17 +382,18 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
             calibrated = True
 
         elapsed = (time.monotonic() - t0) * 1000.0
-        sigma_observe.record(
-            req.prompt,
-            req.response,
-            out_sigma,
-            str(verdict),
-            elapsed,
-            model=None,
-            endpoint=None,
-            tokens=None,
-            cost=None,
-        )
+        if sigma_observe is not None:
+            sigma_observe.record(
+                req.prompt,
+                req.response,
+                out_sigma,
+                str(verdict),
+                elapsed,
+                model=None,
+                endpoint=None,
+                tokens=None,
+                cost=None,
+            )
         return ScoreResponse(
             sigma=round(out_sigma, 6),
             verdict=str(verdict),
@@ -369,6 +407,8 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
     @app.get("/v1/observe")
     async def observe_summary(request: Request) -> dict[str, Any]:
         _optional_bearer_auth(request.headers.get("Authorization"))
+        if sigma_observe is None:
+            return {"error": "observe not available"}
         return dict(sigma_observe.summary())
 
     @app.post("/v1/chat/completions")
@@ -436,7 +476,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
             request_count += len(req.pairs)
             pair_results: List[Dict[str, Any]] = []
             for pair in req.pairs:
-                sigma, verdict = gate.score(pair.prompt, pair.response)
+                sigma, verdict = active_gate.score(pair.prompt, pair.response)
                 pair_results.append(
                     {
                         "prompt": pair.prompt,
@@ -450,7 +490,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         request_count += len(items)
         t0 = time.monotonic()
         rows = [{"prompt": item.prompt, "response": item.response} for item in items]
-        scored = sigma_serving.batch_score(rows, gate, monitor=batch_throughput)
+        scored = sigma_serving.batch_score(rows, active_gate, monitor=batch_throughput)
         results: List[ScoreResponse] = []
         for item, rec in zip(items, scored):
             calibrated = False
@@ -487,7 +527,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
                 await asyncio.sleep(0)
 
             full = " ".join(req.tokens)
-            sigma, verdict = gate.score(req.prompt, full)
+            sigma, verdict = active_gate.score(req.prompt, full)
             final = json.dumps(
                 {
                     "token": None,
@@ -514,7 +554,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
                 if action == "score":
                     prompt = str(data.get("prompt", ""))
                     response = str(data.get("response", ""))
-                    sigma, verdict = gate.score(prompt, response)
+                    sigma, verdict = active_gate.score(prompt, response)
                     await ws.send_json(
                         {"sigma": round(float(sigma), 6), "verdict": str(verdict)}
                     )
@@ -532,7 +572,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
                             }
                         )
                     full = " ".join(tokens)
-                    sigma, verdict = gate.score(prompt, full)
+                    sigma, verdict = active_gate.score(prompt, full)
                     await ws.send_json(
                         {
                             "sigma": round(float(sigma), 4),
@@ -562,7 +602,7 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         if req.sigma is not None and req.verdict is not None:
             s, v = float(req.sigma), str(req.verdict)
         else:
-            s, v = gate.score(req.prompt, req.response)
+            s, v = active_gate.score(req.prompt, req.response)
         vkey = str(v).split(".")[-1] if "." in str(v) else str(v)
         reasons = {
             "ACCEPT": "σ below threshold — response appears reliable.",
@@ -583,8 +623,8 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
     async def get_gate_config(request: Request) -> dict[str, Any]:
         _optional_bearer_auth(request.headers.get("Authorization"))
         return {
-            "threshold_accept": float(gate.threshold_accept),
-            "threshold_abstain": float(gate.threshold_abstain),
+            "threshold_accept": float(active_gate.threshold_accept),
+            "threshold_abstain": float(active_gate.threshold_abstain),
         }
 
     @app.get("/v1/compliance")
@@ -759,6 +799,11 @@ def create_app(config: Optional[SigmaConfig] = None) -> Any:
         return {
             "status": "NOT_AGI_ACHIEVED",
             "claim": "NOT AGI ACHIEVED",
+            "evidence_summary": {
+                "positive": {"TruthfulQA": 0.982, "TriviaQA": 0.960},
+                "negative": {"HaluEval": 0.514},
+                "note": "NOT AGI ACHIEVED",
+            },
             "positive": [
                 {"benchmark": "TruthfulQA", "auroc": 0.982, "status": "saturated"},
                 {"benchmark": "TriviaQA", "auroc": 0.960, "status": "ok"},
@@ -798,6 +843,11 @@ def run_server(host: str = "127.0.0.1", port: int = 8420) -> None:
     uvicorn.run(app, host=host, port=port, log_level="info")
 
 
+def run(host: str = "0.0.0.0", port: int = 8000) -> None:
+    """Production-oriented bind (all interfaces, port 8000). See :func:`run_server` for lab defaults."""
+    run_server(host=host, port=port)
+
+
 __all__ = [
     "BatchPair",
     "BatchScoreResponse",
@@ -815,5 +865,6 @@ __all__ = [
     "WebhookCreateRequest",
     "WorkflowRequest",
     "create_app",
+    "run",
     "run_server",
 ]

@@ -3176,13 +3176,13 @@ def _cmd_calibrate(args: argparse.Namespace) -> int:
 
 def _cmd_serve(args: argparse.Namespace) -> int:
     try:
-        from cos.serve import run_server
+        from cos.serve import run
     except ImportError:
         print("cos serve: pip install 'creation-os[serve]'", file=sys.stderr)
         return 2
-    host = str(getattr(args, "serve_host", "127.0.0.1") or "127.0.0.1")
-    port = int(getattr(args, "serve_port", 8420) or 8420)
-    run_server(host=host, port=port)
+    host = str(getattr(args, "serve_host", "0.0.0.0") or "0.0.0.0")
+    port = int(getattr(args, "serve_port", 8000) or 8000)
+    run(host=host, port=port)
     return 0
 
 
@@ -5025,10 +5025,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     srv = sub.add_parser(
         "serve",
-        help="σ-gate HTTP API: FastAPI REST + WebSocket + SSE (pip install 'creation-os[serve]'; default :8420)",
+        help="σ-gate HTTP API: FastAPI REST + WebSocket + SSE (pip install 'creation-os[serve]'; default 0.0.0.0:8000)",
     )
-    srv.add_argument("--host", type=str, default="127.0.0.1", dest="serve_host")
-    srv.add_argument("--port", type=int, default=8420, dest="serve_port")
+    srv.add_argument("--host", type=str, default="0.0.0.0", dest="serve_host")
+    srv.add_argument("--port", type=int, default=8000, dest="serve_port")
     srv.set_defaults(func=_cmd_serve)
 
     ag = sub.add_parser("agent", help="σ-gated agent runtime (mock or harness wiring)")

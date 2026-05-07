@@ -27,6 +27,7 @@ def test_health(client: TestClient) -> None:
     assert data["status"] == "ok"
     assert "version" in data
     assert data["sigma_gate"] == "operational"
+    assert data.get("gate") == "loaded"
     assert data.get("tests_passed") == 1080
     assert data.get("gate_ready") is True
 
@@ -173,6 +174,9 @@ def test_evidence(client: TestClient) -> None:
     neg = body.get("negative") or []
     halu = [x for x in neg if x.get("benchmark") == "HaluEval"]
     assert halu and float(halu[0].get("auroc", 0)) == 0.514
+    summ = body.get("evidence_summary") or {}
+    assert summ.get("note") == "NOT AGI ACHIEVED"
+    assert float((summ.get("negative") or {}).get("HaluEval", 0)) == 0.514
 
 
 def test_metrics_prometheus(client: TestClient) -> None:
@@ -255,3 +259,12 @@ def test_no_fastapi_raises(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(srv, "HAS_FASTAPI", False)
     with pytest.raises(ImportError, match="creation-os"):
         srv.create_app()
+
+
+def test_rate_limit_429(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("CREATION_OS_RATE_LIMIT_PER_MIN", "2")
+    client2 = TestClient(create_app())
+    assert client2.get("/health").status_code == 200
+    assert client2.get("/health").status_code == 200
+    assert client2.get("/health").status_code == 429
+    monkeypatch.delenv("CREATION_OS_RATE_LIMIT_PER_MIN", raising=False)
