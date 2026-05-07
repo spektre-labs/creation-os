@@ -1238,6 +1238,45 @@ def _cmd_prove(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_verify_commitment_lab(args: argparse.Namespace) -> int:
+    """Lab SHA-256 commitment over a fixed σ-gate demo string pair (not a succinct zk-SNARK)."""
+
+    from cos.sigma_gate import SigmaGate
+    from cos.zkp import SigmaCommitment
+
+    gate = SigmaGate()
+    zkp = SigmaCommitment()
+    demo_p, demo_r = "What is 2+2?", "4"
+    sigma, verdict = gate.score(demo_p, demo_r)
+    record = zkp.commit(demo_p, demo_r, sigma, verdict)
+    if _cli_out_json(args):
+        print(json.dumps(record, ensure_ascii=False))
+        return 0
+    print(zkp.proof_receipt(record))
+    return 0
+
+
+def _cmd_constitution(args: argparse.Namespace) -> int:
+    from cos.sigma_gate import SigmaGate
+    from cos.zkp import SigmaConstitution
+
+    const = SigmaConstitution()
+    gate = SigmaGate()
+    result = const.check(gate)
+    if _cli_out_json(args):
+        print(json.dumps(result, ensure_ascii=False))
+        return 0 if result["compliant"] else 3
+    print(f"Compliant: {result['compliant']}")
+    print(f"Rules: {result['rules']}")
+    print(f"Hash: {result['constitution_hash'][:16]}...")
+    if result["violations"]:
+        for v in result["violations"]:
+            print(f"  x {v}")
+    else:
+        print("  ok: all checked rules satisfied")
+    return 0 if result["compliant"] else 3
+
+
 def _cmd_mcp(args: argparse.Namespace) -> int:
     from cos.sigma_mcp_registry import SigmaMCPRegistry
 
@@ -4541,6 +4580,17 @@ def main(argv: Optional[List[str]] = None) -> int:
     prv.add_argument("--chain-file", type=str, default="", dest="chain_file", help="input JSONL for --export-chain")
     prv.add_argument("--output", type=str, default="", help="output path (export-chain)")
     prv.set_defaults(func=_cmd_prove)
+
+    vlab = sub.add_parser(
+        "verify",
+        help="lab SHA-256 σ commitment demo (integrity receipt; not cos prove / cos zkp succinct proof)",
+    )
+    vlab.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
+    vlab.set_defaults(func=_cmd_verify_commitment_lab)
+
+    cst = sub.add_parser("constitution", help="σ constitution probe vs SigmaGate() (declarative lab checks)")
+    cst.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
+    cst.set_defaults(func=_cmd_constitution)
 
     mcp = sub.add_parser(
         "mcp",
