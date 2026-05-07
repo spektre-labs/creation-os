@@ -189,6 +189,11 @@ class Fabric:
                 self._modules["engram"] = None
                 self._module_errors["engram"] = repr(e)
 
+        self._install_optional(
+            "planner",
+            lambda: __import__("cos.planner", fromlist=["SigmaPlanner"]).SigmaPlanner(gate=self.gate),
+        )
+
         if "omega" in self._disabled_modules:
             self._modules["omega"] = None
         else:
@@ -421,6 +426,19 @@ class Fabric:
                 trace.append({"layer": "meta_goal", "error": repr(exc)})
         else:
             trace.append({"layer": "meta_goal", "skipped": True})
+
+        # 10b. PLANNER — σ-guided plan / replan (lab bookkeeping)
+        planner = self.get("planner")
+        if planner is not None:
+            trace.append(
+                {
+                    "layer": "planner",
+                    "ready": True,
+                    "replan_total": int(getattr(planner, "replan_count", 0)),
+                }
+            )
+        else:
+            trace.append({"layer": "planner", "skipped": True})
 
         # 11. LEARN — store episodic trace when not abstaining
         if memory is not None and hasattr(memory, "store") and vn != "ABSTAIN":
