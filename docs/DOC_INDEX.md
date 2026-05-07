@@ -14,6 +14,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [MCP_SIGMA.md](MCP_SIGMA.md) | Agent integrators | FastMCP LSD σ-gate stdio server, tool list, JSON response envelope |
 | [MCP_LISTING.md](MCP_LISTING.md) | Operators / marketplace | Draft marketplace copy + install JSON + submission checklist (evidence-backed numbers only) |
 | [EU_AI_ACT_COMPLIANCE.md](EU_AI_ACT_COMPLIANCE.md) | Operators / counsel prep | Article 50 transparency **support** mapping — not legal advice or certification |
+| [COMPLIANCE.md](COMPLIANCE.md) | Architects / GRC prep | EU AI Act · OWASP LLM · NIST AI RMF **illustrative** component map — not certification; see [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 | [v58/BITNET_SIGMA_SAMPLER.md](v58/BITNET_SIGMA_SAMPLER.md) | Integrators | BitNet / bitnet.cpp + `sigma_sampler.h` wiring checklist (v58; no energy claims without repro) |
 | [v58/SIGMA_A2A_SWARM.md](v58/SIGMA_A2A_SWARM.md) | Integrators | A2A Agent Card σ-extension (`sigma_a2a_card.py`) + σ-swarm / HAP scaffold (`sigma_swarm.py`); complements `A2A_COS_TRUST.md` / `MCP_SIGMA.md` |
 | [README_FULL.md](README_FULL.md) | Reviewers, narrative readers | Archived pre-slim README (1 906 lines) with full diagrams, forty-kernel receipt, capability layers, composed-decision stack |
