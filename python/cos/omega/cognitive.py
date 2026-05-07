@@ -27,6 +27,8 @@ class OmegaLoop:
         config: Optional[Any] = None,
         *,
         world_model: Optional[Any] = None,
+        meta_goal: Optional[Any] = None,
+        open_ended: Optional[Any] = None,
     ) -> None:
         from cos.config import SigmaConfig
         from cos.graph import SigmaGraph
@@ -39,6 +41,15 @@ class OmegaLoop:
         self.graph = graph if graph is not None else SigmaGraph(gate=g)
         self.config = config if config is not None else SigmaConfig()
         self.world_model = world_model
+        self.meta_goal_link = meta_goal
+        self.open_ended = open_ended
+        if self.open_ended is None:
+            try:
+                from cos.openended import SigmaOpenEnded
+
+                self.open_ended = SigmaOpenEnded(gate=self.gate, graph=self.graph, meta_goal=meta_goal)
+            except ImportError:
+                self.open_ended = None
         self.σ_history: List[Dict[str, Any]] = []
         self._last_jepa: Optional[Dict[str, Any]] = None
 
@@ -183,13 +194,23 @@ class OmegaLoop:
                 "input": str(input_data)[:100],
             }
         )
-        return {
+        out: Dict[str, Any] = {
             "result": result,
             "σ": float(σ),
             "σ_meta": float(σ_meta),
             "verdict": str(vn),
             "step": len(self.σ_history),
         }
+        if self.open_ended is not None:
+            try:
+                out["open_ended"] = {
+                    "mode": self.open_ended.should_explore_or_exploit(),
+                    "exploration_goals": self.open_ended.generate_exploration_goals(n=3),
+                    "agi_claim": "NOT AGI ACHIEVED",
+                }
+            except Exception:
+                out["open_ended"] = {"error": "open_ended_skip"}
+        return out
 
     def run(self, inputs: Sequence[Input], max_steps: Optional[int] = None) -> List[Dict[str, Any]]:
         """Run :meth:`step` over ``inputs`` (optional cap)."""

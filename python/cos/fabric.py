@@ -140,6 +140,14 @@ class Fabric:
             lambda: __import__("cos.meta_goal", fromlist=["SigmaMetaGoal"]).SigmaMetaGoal(gate=self.gate),
         )
         self._install_optional(
+            "open_ended",
+            lambda: __import__("cos.openended", fromlist=["SigmaOpenEnded"]).SigmaOpenEnded(
+                gate=self.gate,
+                graph=self._modules.get("graph"),
+                meta_goal=self._modules.get("meta_goal"),
+            ),
+        )
+        self._install_optional(
             "conscious",
             lambda: __import__("cos.conscious", fromlist=["SigmaConscious"]).SigmaConscious(gate=self.gate),
         )
@@ -227,6 +235,8 @@ class Fabric:
                     graph=self._modules.get("graph"),
                     config=self.config,
                     world_model=self._modules.get("world_model"),
+                    meta_goal=self._modules.get("meta_goal"),
+                    open_ended=self._modules.get("open_ended"),
                 )
             except ImportError:
                 self._modules["omega"] = None
@@ -774,6 +784,25 @@ class SigmaFabric:
         except ImportError:
             self._note_skip('graph')
         try:
+            from cos.meta_goal import SigmaMetaGoal
+
+            self.layers["meta_goal"] = SigmaMetaGoal(gate=gate)
+        except ImportError:
+            self._note_skip("meta_goal")
+        try:
+            from cos.openended import SigmaOpenEnded
+
+            og = self.layers.get("graph")
+            self.layers["open_ended"] = SigmaOpenEnded(
+                gate=gate,
+                graph=og,
+                meta_goal=self.layers.get("meta_goal"),
+            ) if og is not None else None
+            if self.layers["open_ended"] is None:
+                self._note_skip("open_ended_no_graph")
+        except ImportError:
+            self._note_skip("open_ended")
+        try:
             from cos.memory import SigmaMemory
 
             self.layers["memory"] = SigmaMemory(gate=gate, graph=self.layers.get("graph"))
@@ -808,6 +837,8 @@ class SigmaFabric:
                     graph=gr,
                     config=cfg,
                     world_model=jm,
+                    meta_goal=self.layers.get("meta_goal"),
+                    open_ended=self.layers.get("open_ended"),
                 )
             else:
                 self._note_skip("omega")
