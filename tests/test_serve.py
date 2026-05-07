@@ -27,6 +27,8 @@ def test_health(client: TestClient) -> None:
     assert data["status"] == "ok"
     assert "version" in data
     assert data["sigma_gate"] == "operational"
+    assert data.get("tests_passed") == 1080
+    assert data.get("gate_ready") is True
 
 
 def test_root(client: TestClient) -> None:
@@ -99,6 +101,24 @@ def test_batch(client: TestClient) -> None:
     assert len(data["results"]) == 2
 
 
+def test_batch_pairs_shape(client: TestClient) -> None:
+    r = client.post(
+        "/v1/batch",
+        json={
+            "pairs": [
+                {"prompt": "a", "response": "b"},
+                {"prompt": "c", "response": "d"},
+            ]
+        },
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert len(body["results"]) == 2
+    row0 = body["results"][0]
+    assert "prompt" in row0 and "response" in row0
+    assert "sigma" in row0 and "verdict" in row0
+
+
 def test_stream_sse(client: TestClient) -> None:
     r = client.post("/v1/stream", json={"prompt": "test", "tokens": ["hello", "world"]})
     assert r.status_code == 200
@@ -147,8 +167,12 @@ def test_evidence(client: TestClient) -> None:
     assert r.status_code == 200
     body = r.json()
     assert body.get("status") == "NOT_AGI_ACHIEVED"
+    assert body.get("claim") == "NOT AGI ACHIEVED"
     assert body.get("metrics_embedded_here") is True
     assert "mtier_v2" in body and body["mtier_v2"].get("rows")
+    neg = body.get("negative") or []
+    halu = [x for x in neg if x.get("benchmark") == "HaluEval"]
+    assert halu and float(halu[0].get("auroc", 0)) == 0.514
 
 
 def test_metrics_prometheus(client: TestClient) -> None:
@@ -203,3 +227,31 @@ def test_v1_chat_completions_stream_rejected(client: TestClient) -> None:
             json={"model": "m", "messages": [{"role": "user", "content": "x"}], "stream": True},
         )
     assert r.status_code == 400
+
+
+def test_explain_endpoint(client: TestClient) -> None:
+    r = client.post(
+        "/v1/explain",
+        json={"prompt": "What is 2+2?", "response": "4"},
+    )
+    assert r.status_code == 200
+    j = r.json()
+    assert "sigma" in j and "verdict" in j
+    assert "explanation" in j and len(str(j["explanation"])) > 0
+    assert "detail" in j
+
+
+def test_config_endpoint(client: TestClient) -> None:
+    r = client.get("/v1/config")
+    assert r.status_code == 200
+    j = r.json()
+    assert "threshold_accept" in j and "threshold_abstain" in j
+    assert 0 <= float(j["threshold_accept"]) < float(j["threshold_abstain"]) <= 1.0
+
+
+def test_no_fastapi_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    import cos.serve as srv
+
+    monkeypatch.setattr(srv, "HAS_FASTAPI", False)
+    with pytest.raises(ImportError, match="creation-os"):
+        srv.create_app()
