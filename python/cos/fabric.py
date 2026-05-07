@@ -164,6 +164,12 @@ class Fabric:
             lambda: __import__("cos.tool_safety", fromlist=["ToolSafety"]).ToolSafety(gate=self.gate),
         )
         self._install_optional(
+            "prompt_guard",
+            lambda: __import__("cos.prompt_guard", fromlist=["SigmaPromptGuard"]).SigmaPromptGuard(
+                gate=self.gate,
+            ),
+        )
+        self._install_optional(
             "causal",
             lambda: __import__("cos.causal", fromlist=["CausalGraph"]).CausalGraph(gate=self.gate),
         )
@@ -253,7 +259,7 @@ class Fabric:
         """Full cognitive pipeline: optional layers + **always-on** σ-gate (lab integration).
 
         Order: perceive (JEPA) → memory recall → light FOL/symbolic hook → causal →
-        **gate** → Engram narrative (σ) → metacognition (conscious) → tool safety (if ACCEPT) → moral (if
+        **prompt_guard** (injection scan) → **gate** → Engram narrative (σ) → metacognition (conscious) → tool safety (if ACCEPT) → moral (if
         \"should\") → drive → meta-goal → memory store (if not ABSTAIN) → observe.
 
         Ω-loop (:class:`~cos.omega.OmegaLoop`) remains available as a loaded module for
@@ -336,10 +342,45 @@ class Fabric:
         else:
             trace.append({"layer": "causal", "skipped": True})
 
-        # 5. GATE — always
-        σ, verdict = self.gate.score(text_in, response_for_gate)
-        vn = _fabric_verdict_str(verdict)
-        trace.append({"layer": "gate", "σ": round(float(σ), 4), "verdict": vn})
+        # 5. PROMPT GUARD — injection / coherence (before main σ-gate on pipeline body)
+        pg = self._modules.get("prompt_guard")
+        guard_scan: Optional[Dict[str, Any]] = None
+        gate_skipped = False
+        if pg is not None and hasattr(pg, "scan"):
+            try:
+                guard_scan = pg.scan(text_in, system_prompt=ctx or "fabric user query")
+                trace.append(
+                    {
+                        "layer": "prompt_guard",
+                        "verdict": guard_scan.get("verdict"),
+                        "combined_risk": guard_scan.get("combined_risk"),
+                        "blocked": guard_scan.get("blocked"),
+                    }
+                )
+                if guard_scan.get("blocked"):
+                    σ_pg = float(guard_scan.get("layers", {}).get("σ_input", {}).get("σ", guard_scan.get("combined_risk", 0.95)))
+                    σ = max(0.0, min(1.0, σ_pg))
+                    vn = "RETHINK"
+                    gate_skipped = True
+                    trace.append(
+                        {
+                            "layer": "gate",
+                            "σ": round(float(σ), 4),
+                            "verdict": vn,
+                            "note": "skipped_prompt_guard_block",
+                        }
+                    )
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "prompt_guard", "error": repr(exc)})
+                guard_scan = None
+        else:
+            trace.append({"layer": "prompt_guard", "skipped": True})
+
+        # 6/GATE — σ-gate on recall-augmented text (skipped when prompt_guard BLOCK)
+        if not gate_skipped:
+            σ, verdict = self.gate.score(text_in, response_for_gate)
+            vn = _fabric_verdict_str(verdict)
+            trace.append({"layer": "gate", "σ": round(float(σ), 4), "verdict": vn})
 
         engram_mod = self._modules.get("engram")
         if engram_mod is not None and hasattr(engram_mod, "record_event"):
@@ -351,7 +392,7 @@ class Fabric:
         else:
             trace.append({"layer": "engram", "skipped": True})
 
-        # 6. METACOGNITION
+        # 7. METACOGNITION
         σ_meta_val = 0.5
         conscious = self._modules.get("conscious")
         if conscious is not None and hasattr(conscious, "predict_own_σ"):
@@ -364,7 +405,7 @@ class Fabric:
         else:
             trace.append({"layer": "metacognition", "skipped": True})
 
-        # 7. SAFETY — σ-before-execute on the proposed pipeline step when gate accepted
+        # 8. SAFETY — σ-before-execute on the proposed pipeline step when gate accepted
         tool_safety = self._modules.get("tool_safety")
         if tool_safety is not None and hasattr(tool_safety, "sigma_before_execute") and vn == "ACCEPT":
             try:
@@ -387,7 +428,7 @@ class Fabric:
         else:
             trace.append({"layer": "safety", "note": "verdict_not_accept"})
 
-        # 8. MORAL — heuristic trigger on \"should\" (normative phrasing)
+        # 9. MORAL — heuristic trigger on \"should\" (normative phrasing)
         moral = self._modules.get("moral")
         if moral is not None and hasattr(moral, "analyze") and "should" in text_in.lower():
             try:
@@ -398,7 +439,7 @@ class Fabric:
         else:
             trace.append({"layer": "moral", "skipped": True})
 
-        # 9. DRIVE
+        # 10. DRIVE
         drive = self._modules.get("drive")
         if drive is not None and hasattr(drive, "record"):
             try:
@@ -410,7 +451,7 @@ class Fabric:
         else:
             trace.append({"layer": "drive", "skipped": True})
 
-        # 10. META-GOAL
+        # 11. META-GOAL
         meta_goal = self._modules.get("meta_goal")
         if meta_goal is not None and hasattr(meta_goal, "record"):
             try:
@@ -427,7 +468,7 @@ class Fabric:
         else:
             trace.append({"layer": "meta_goal", "skipped": True})
 
-        # 10b. PLANNER — σ-guided plan / replan (lab bookkeeping)
+        # 11b. PLANNER — σ-guided plan / replan (lab bookkeeping)
         planner = self.get("planner")
         if planner is not None:
             trace.append(
@@ -440,7 +481,7 @@ class Fabric:
         else:
             trace.append({"layer": "planner", "skipped": True})
 
-        # 11. LEARN — store episodic trace when not abstaining
+        # 12. LEARN — store episodic trace when not abstaining
         if memory is not None and hasattr(memory, "store") and vn != "ABSTAIN":
             try:
                 memory.store(text_in, context=ctx or "fabric process")
@@ -452,7 +493,7 @@ class Fabric:
 
         latency_ms = (time.perf_counter() - t0) * 1000.0
 
-        # 12. OBSERVE
+        # 13. OBSERVE
         observe = self._modules.get("observe")
         if observe is not None and hasattr(observe, "record"):
             try:
