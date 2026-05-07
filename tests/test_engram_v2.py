@@ -4,7 +4,6 @@
 """Tests for Engram v2 (σ-gated store, graph, staleness, consolidation)."""
 from __future__ import annotations
 
-import json
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -106,22 +105,23 @@ def test_save_load_json_roundtrip(tmp_path: Path) -> None:
 
 
 def test_cos_memory_cli_store_recall(tmp_path: Path) -> None:
-    env = {**__import__("os").environ, "PYTHONPATH": str(_REPO / "python")}
-    st = tmp_path / "mem.json"
+    """``cos memory store|recall`` uses :class:`~cos.memory.SigmaMemory` (three-tier lab)."""
+    import os
+
+    env = {**os.environ, "PYTHONPATH": str(_REPO / "python")}
+    mem_dir = tmp_path / "mem_dir"
+    mem_dir.mkdir()
     r1 = subprocess.run(
         [
             sys.executable,
             "-m",
             "cos",
             "memory",
-            "--state-file",
-            str(st),
-            "--store",
+            "store",
+            "--content",
             "Python powers data pipelines",
-            "--sigma",
-            "0.05",
-            "--verdict",
-            "ACCEPT",
+            "--persist-dir",
+            str(mem_dir),
         ],
         cwd=str(_REPO),
         env=env,
@@ -129,21 +129,19 @@ def test_cos_memory_cli_store_recall(tmp_path: Path) -> None:
         text=True,
         check=False,
     )
-    assert r1.returncode == 0, r1.stderr
-    body = json.loads(r1.stdout.strip())
-    assert body.get("stored") is True
+    assert r1.returncode == 0, r1.stderr + r1.stdout
+    assert "Stored" in r1.stdout or "σ=" in r1.stdout
     r2 = subprocess.run(
         [
             sys.executable,
             "-m",
             "cos",
             "memory",
-            "--state-file",
-            str(st),
-            "--recall",
+            "recall",
+            "--query",
             "data pipelines",
-            "--tau",
-            "0.4",
+            "--persist-dir",
+            str(mem_dir),
         ],
         cwd=str(_REPO),
         env=env,
@@ -151,9 +149,9 @@ def test_cos_memory_cli_store_recall(tmp_path: Path) -> None:
         text=True,
         check=False,
     )
-    assert r2.returncode == 0, r2.stderr
-    out = json.loads(r2.stdout.strip())
-    assert len(out.get("recall", [])) >= 1
+    assert r2.returncode == 0, r2.stderr + r2.stdout
+    out = r2.stdout.lower()
+    assert "pipeline" in out or "python" in out
 
 
 def test_graph_conflict_detection_stub() -> None:
