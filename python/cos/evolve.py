@@ -3,6 +3,9 @@
 # All rights reserved. See LICENSE for binding terms.
 """σ-evolve v2 — lab loop for propose / evaluate / σ-gate / rollback.
 
+``SigmaEvolve.evolve_safe`` adds a **lab** cumulative-risk budget over σ-margin
+proposals (bounded-risk scaffolding; not a proof of external theorems).
+
 This is **not** recursive self-improvement in the strong sense and **not** an AGI claim.
 Each accepted change is gated by σ movement and optional safety caps. See
 ``docs/CLAIM_DISCIPLINE.md`` and README evidence ladder: **NOT AGI ACHIEVED**."""
@@ -391,3 +394,149 @@ class SigmaEvolve:
                     break
         self.history = history
         return history
+
+    def _goal_drift(
+        self,
+        original: Any,
+        mutated: Any,
+        eval_data: List[Any],
+        *,
+        drift_threshold: float = 0.2,
+    ) -> Dict[str, Any]:
+        """Lab-style goal drift index on σ-margin aggregates (SAHOO-inspired; not a harness metric)."""
+        σ_orig = float(self._rsi_evaluate(original, eval_data))
+        σ_mut = float(self._rsi_evaluate(mutated, eval_data))
+        return self._goal_drift_from_sigmas(σ_orig, σ_mut, threshold=drift_threshold)
+
+    def _goal_drift_from_sigmas(
+        self,
+        σ_orig: float,
+        σ_mut: float,
+        *,
+        threshold: float = 0.2,
+    ) -> Dict[str, Any]:
+        d = abs(float(σ_orig) - float(σ_mut))
+        return {"drift_score": round(d, 4), "drifted": d > float(threshold)}
+
+    def _regression_check(self, original: Any, mutated: Any, eval_data: List[Any]) -> bool:
+        """True if aggregate margin stress regresses materially (>10% worse)."""
+        σ_orig = float(self._rsi_evaluate(original, eval_data))
+        σ_mut = float(self._rsi_evaluate(mutated, eval_data))
+        return self._regression_check_scalar(σ_orig, σ_mut)
+
+    @staticmethod
+    def _regression_check_scalar(σ_orig: float, σ_mut: float) -> bool:
+        o = float(σ_orig)
+        if o <= 0.0:
+            return float(σ_mut) > 0.0
+        return float(σ_mut) > o * 1.1
+
+    def evolve_safe(
+        self,
+        gate: Any,
+        eval_data: List[Any],
+        max_steps: int = 10,
+        risk_budget: float = 1.0,
+        formal: Any = None,
+        *,
+        mutate_sign: float = 1.0,
+        mutate_fn: Optional[Callable[[Any], Any]] = None,
+        drift_threshold: float = 0.2,
+    ) -> Dict[str, Any]:
+        """Bounded-risk propose/eval loop (lab scaffold).
+
+        Interprets positive increments of the σ-margin aggregate as **risk** and decreases
+        as **utility**. Cumulative accepted risk is capped by ``risk_budget`` (halt when the
+        next proposal cannot fit). Inspired by bounded-risk RSI discussions in the literature;
+        **not** a proof of any external theorem in-tree — **NOT AGI ACHIEVED**.
+        See ``docs/CLAIM_DISCIPLINE.md``."""
+        cumulative_risk = 0.0
+        cumulative_utility = 0.0
+        history: List[Dict[str, Any]] = []
+
+        for step in range(max(1, int(max_steps))):
+            baseline_σ = float(self._rsi_evaluate(gate, eval_data))
+            if mutate_fn is not None:
+                candidate = mutate_fn(gate)
+            else:
+                candidate = self._rsi_mutate(gate, sign=mutate_sign)
+            candidate_σ = float(self._rsi_evaluate(candidate, eval_data))
+            δ = max(0.0, candidate_σ - baseline_σ)
+            utility = max(0.0, baseline_σ - candidate_σ)
+
+            budget = float(risk_budget)
+            if cumulative_risk + δ > budget:
+                history.append(
+                    {
+                        "step": step,
+                        "action": "HALT",
+                        "reason": "risk budget exhausted",
+                        "cumulative_risk": round(cumulative_risk, 4),
+                    }
+                )
+                break
+
+            drift = self._goal_drift_from_sigmas(baseline_σ, candidate_σ, threshold=drift_threshold)
+
+            if formal is not None and hasattr(formal, "check_invariants"):
+                try:
+                    if not bool(formal.check_invariants(candidate)):
+                        history.append(
+                            {
+                                "step": step,
+                                "action": "REJECT",
+                                "reason": "invariant violation",
+                            }
+                        )
+                        continue
+                except Exception:  # noqa: BLE001 — formal hook is best-effort
+                    history.append(
+                        {
+                            "step": step,
+                            "action": "REJECT",
+                            "reason": "invariant check error",
+                        }
+                    )
+                    continue
+
+            regression = self._regression_check_scalar(baseline_σ, candidate_σ)
+
+            if utility > δ and not drift["drifted"] and not regression:
+                gate = candidate
+                cumulative_risk += δ
+                cumulative_utility += utility
+                history.append(
+                    {
+                        "step": step,
+                        "action": "ACCEPT",
+                        "σ_before": round(baseline_σ, 4),
+                        "σ_after": round(candidate_σ, 4),
+                        "δ": round(δ, 4),
+                        "utility": round(utility, 4),
+                        "cumulative_risk": round(cumulative_risk, 4),
+                        "cumulative_utility": round(cumulative_utility, 4),
+                    }
+                )
+            else:
+                if drift["drifted"]:
+                    reason = "drift"
+                elif regression:
+                    reason = "regression"
+                else:
+                    reason = "negative utility"
+                history.append(
+                    {
+                        "step": step,
+                        "action": "REJECT",
+                        "reason": reason,
+                    }
+                )
+
+        return {
+            "history": history,
+            "final_risk": round(cumulative_risk, 4),
+            "final_utility": round(cumulative_utility, 4),
+            "risk_budget_remaining": round(float(risk_budget) - cumulative_risk, 4),
+            "steps_taken": len(history),
+            "accepted": sum(1 for h in history if h.get("action") == "ACCEPT"),
+        }

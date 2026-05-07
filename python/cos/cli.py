@@ -21,7 +21,7 @@ _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
   CORE            score, chat, think, bench, serve, version, identity
   ANALYSIS        explain, cascade, calibrate
-  INFRASTRUCTURE  health, hardware, registry, cost
+  INFRASTRUCTURE  health, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
 
 Exit codes (where implemented): 0 ok, 1 error / usage, 2 σ-gate ABSTAIN (score/gate).
@@ -2531,6 +2531,28 @@ def _cmd_hardware(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_layers(args: argparse.Namespace) -> int:
+    import json
+
+    from cos.fabric import Fabric
+
+    f = Fabric()
+    layers = f.layer_status()
+    if _cli_out_json(args):
+        print(json.dumps(layers, ensure_ascii=False))
+        return 0
+    for layer, info in layers.items():
+        cov_pct = int(round(float(info["coverage"]) * 100))
+        filled = max(0, min(10, cov_pct // 10))
+        bar = "\u2588" * filled + "\u2591" * (10 - filled)
+        n_lo = len(info["loaded"])
+        n_mi = len(info["missing"])
+        print(f"  {layer:15s} {bar} {cov_pct:3d}% ({n_lo}/{n_lo + n_mi})")
+        if info["missing"]:
+            print(f"    missing: {', '.join(info['missing'])}")
+    return 0
+
+
 def _cmd_registry_cli(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -3972,6 +3994,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     hw.add_argument("--json", action="store_true", dest="out_json")
     hw.set_defaults(func=_cmd_hardware)
+
+    lyr = sub.add_parser(
+        "layers",
+        help="L0–L9 module coverage after Fabric.boot() (FABRIC_LAYER_MAP; NOT AGI ACHIEVED)",
+    )
+    lyr.add_argument("--json", action="store_true", dest="out_json")
+    lyr.set_defaults(func=_cmd_layers)
 
     regp = sub.add_parser("registry", help="List σ-MCP JSON registry entries (lab)")
     regp.add_argument("--list", action="store_true", dest="registry_list", help="print servers map")

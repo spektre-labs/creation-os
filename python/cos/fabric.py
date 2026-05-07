@@ -40,6 +40,20 @@ from cos.pipeline import Pipeline, PipelineResult
 from cos.sigma_gate import SigmaGate
 
 
+FABRIC_LAYER_MAP: Dict[str, List[str]] = {
+    "L0_HARDWARE": ["gate"],
+    "L1_INFERENCE": ["gate", "speculative"],
+    "L2_COGNITION": ["symbolic", "reason", "conscious", "attention", "moe"],
+    "L3_MEMORY": ["memory", "engram", "graph", "rag"],
+    "L4_AGENCY": ["agency", "planner", "a2a_network"],
+    "L5_LEARNING": ["ttt", "evolve", "fewshot", "world_model"],
+    "L6_PROTOCOL": ["mcp", "a2a_network"],
+    "L7_SAFETY": ["tool_safety", "prompt_guard", "redteam", "formal"],
+    "L8_DEPLOYMENT": ["serve", "observe", "drift"],
+    "L9_CONSCIOUS": ["conscious", "drive", "social", "moral", "meta_goal", "create"],
+}
+
+
 def _fabric_verdict_str(verdict: Any) -> str:
     raw = str(getattr(verdict, "name", verdict))
     return raw.split(".")[-1] if "." in raw else raw
@@ -201,6 +215,58 @@ class Fabric:
             "moral",
             lambda: __import__("cos.moral", fromlist=["SigmaMoral"]).SigmaMoral(gate=self.gate),
         )
+        self._install_optional(
+            "speculative",
+            lambda: __import__("cos.speculative", fromlist=["SigmaSpeculative"]).SigmaSpeculative(gate=self.gate),
+        )
+        self._install_optional(
+            "moe",
+            lambda: __import__("cos.moe", fromlist=["SigmaMoE"]).SigmaMoE(gate=self.gate),
+        )
+        self._install_optional(
+            "rag",
+            lambda: __import__("cos.rag", fromlist=["SigmaRAG"]).SigmaRAG(gate=self.gate),
+        )
+        self._install_optional(
+            "agency",
+            lambda: __import__("cos.agency", fromlist=["SigmaAgency"]).SigmaAgency(gate=self.gate),
+        )
+        self._install_optional(
+            "formal",
+            lambda: __import__("cos.formal", fromlist=["SigmaFormal"]).SigmaFormal(gate=self.gate),
+        )
+        self._install_optional(
+            "fewshot",
+            lambda: __import__("cos.fewshot", fromlist=["SigmaFewShot"]).SigmaFewShot(gate=self.gate),
+        )
+        self._install_optional(
+            "create",
+            lambda: __import__("cos.create", fromlist=["SigmaCreate"]).SigmaCreate(
+                gate=self.gate,
+                graph=self._modules.get("graph"),
+            ),
+        )
+        self._install_optional(
+            "social",
+            lambda: __import__("cos.social", fromlist=["SigmaSocial"]).SigmaSocial(gate=self.gate),
+        )
+        self._install_optional(
+            "redteam",
+            lambda: __import__("cos.redteam", fromlist=["SigmaRedTeam"]).SigmaRedTeam(gate=self.gate),
+        )
+        self._install_optional(
+            "attention",
+            lambda: __import__("cos.attention", fromlist=["AttentionAnalyzer"]).AttentionAnalyzer(
+                gate=self.gate,
+            ),
+        )
+        self._install_optional(
+            "mcp",
+            lambda: __import__("cos.mcp", fromlist=["SigmaMCPServer"]).SigmaMCPServer(
+                gate=self.gate,
+                agent_guard=self._modules.get("tool_safety"),
+            ),
+        )
 
         if "engram" in self._disabled_modules:
             self._modules["engram"] = None
@@ -273,6 +339,23 @@ class Fabric:
 
     def get(self, module_name: str) -> Any:
         return self._modules.get(module_name)
+
+    def layer_status(self) -> Dict[str, Dict[str, Any]]:
+        """L0–L9 poster-style coverage map over :data:`FABRIC_LAYER_MAP` module keys."""
+        if not self._booted:
+            self.boot()
+        out: Dict[str, Dict[str, Any]] = {}
+        for layer, modules in FABRIC_LAYER_MAP.items():
+            loaded = [m for m in modules if self.get(m) is not None]
+            missing = [m for m in modules if self.get(m) is None]
+            nmod = len(modules)
+            cov = round(len(loaded) / max(nmod, 1), 2)
+            out[layer] = {
+                "loaded": loaded,
+                "missing": missing,
+                "coverage": cov,
+            }
+        return out
 
     @staticmethod
     def _result_body(result: Dict[str, Any]) -> str:
