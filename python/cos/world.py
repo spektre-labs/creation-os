@@ -1,15 +1,24 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""σ-world — lightweight world-model lab harness (JEPA-style *idea*, not a trained JEPA).
 
-Track observations, run coarse “what if” simulations scored by ``SigmaGate``, and
-iterate a trivial plan loop. This does **not** train latent encoders or claim
-embedding-level prediction quality; see ``docs/CLAIM_DISCIPLINE.md``."""
+"""σ-world — lightweight world-model lab (commonsense check, action prediction, rollout).
+
+Uses an optional :class:`~cos.graph.SigmaGraph` for **heuristic** grounding. This is **not**
+a physics engine or AGI world model. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Sequence
+
+from cos.sigma_gate import SigmaGate
+
+__all__ = ["SigmaWorld", "WorldState"]
+
+
+def _verdict_str(verdict: Any) -> str:
+    raw = str(getattr(verdict, "name", verdict))
+    return raw.split(".")[-1] if "." in raw else raw
 
 
 class WorldState:
@@ -30,12 +39,17 @@ class WorldState:
 
 
 class SigmaWorld:
-    """Observe → predict (heuristic) → simulate (gate) → plan (gate loop)."""
+    """Observe → forecast → one-step transition (gate); optional graph for commonsense."""
 
-    def __init__(self, gate: Any = None, max_history: int = 100) -> None:
-        from cos.sigma_gate import SigmaGate
-
+    def __init__(
+        self,
+        gate: Any = None,
+        max_history: int = 100,
+        *,
+        graph: Any = None,
+    ) -> None:
         self.gate = gate or SigmaGate()
+        self.graph = graph
         self.states: List[WorldState] = []
         self.max_history = int(max_history)
         self.predictions: List[Dict[str, Any]] = []
@@ -52,9 +66,9 @@ class SigmaWorld:
         self._validate_predictions(description)
         return state
 
-    def predict(self, query: str, n_steps: int = 1) -> Dict[str, Any]:
-        """Heuristic forecast metadata from recent state text + numeric feature drift."""
-        del n_steps  # reserved for richer policies
+    def forecast(self, query: str, n_steps: int = 1) -> Dict[str, Any]:
+        """Heuristic forecast from recent state text + feature drift (legacy path)."""
+        del n_steps
         if not self.states:
             return {"prediction": None, "confidence": 0.0, "basis": "no history", "query": query}
 
@@ -70,7 +84,8 @@ class SigmaWorld:
         self.predictions.append(prediction)
         return prediction
 
-    def simulate(self, action: str, current_state: Optional[WorldState] = None) -> Dict[str, Any]:
+    def transition(self, action: str, current_state: Optional[WorldState] = None) -> Dict[str, Any]:
+        """Score a single action against the latest (or given) :class:`WorldState`."""
         if current_state is None:
             current_state = self.states[-1] if self.states else None
 
@@ -91,7 +106,7 @@ class SigmaWorld:
         steps: List[Dict[str, Any]] = []
         for i in range(max_steps):
             step_desc = f"Step {i + 1} toward: {goal}"
-            sim = self.simulate(step_desc)
+            sim = self.transition(step_desc)
             steps.append(
                 {
                     "step": i + 1,
@@ -112,6 +127,82 @@ class SigmaWorld:
             "total_sigma": round(total_sigma, 4),
             "feasible": total_sigma < 0.5,
             "n_steps": len(steps),
+        }
+
+    def commonsense_check(self, statement: str, context: str = "") -> Dict[str, Any]:
+        """Graph-grounded sketch + gate fallback; high σ on a stored triple vs claim → implausible."""
+        stmt = str(statement).strip()
+        ctx = str(context).strip()
+
+        g = self.graph
+        if g is not None and hasattr(g, "entities") and callable(g.entities):
+            words = stmt.lower().split()
+            entities_list = list(g.entities())
+            entities = [e for e in entities_list if e.lower() in stmt.lower()]
+            if entities and hasattr(g, "relations_of"):
+                for entity in entities:
+                    rels = g.relations_of(entity)
+                    for rel in rels:
+                        contradiction = f"{rel['subject']} {rel['relation']} {rel['object']}"
+                        σ_check, _ = self.gate.score(contradiction, stmt)
+                        if float(σ_check) > 0.7:
+                            return {
+                                "plausible": False,
+                                "σ": round(float(σ_check), 4),
+                                "sigma": round(float(σ_check), 4),
+                                "contradiction": contradiction,
+                                "verdict": "RETHINK",
+                            }
+
+        σ, verdict = self.gate.score(ctx or "common sense", stmt)
+        vn = _verdict_str(verdict)
+        sf = round(float(σ), 4)
+        return {
+            "plausible": vn != "ABSTAIN",
+            "σ": sf,
+            "sigma": sf,
+            "verdict": vn,
+        }
+
+    def predict(self, current_state: str, action: str) -> Dict[str, Any]:
+        """Predict outcome of *action* in *current_state* (template response + σ)."""
+        cs, act = str(current_state).strip(), str(action).strip()
+        prompt = f"State: {cs}. Action: {act}. What happens?"
+        response = f"After {act}, the state changes"
+        σ, verdict = self.gate.score(prompt, response)
+        vn = _verdict_str(verdict)
+        return {
+            "predicted_outcome": f"Effect of {act} on {cs}",
+            "σ": round(float(σ), 4),
+            "confidence": round(1.0 - float(σ), 4),
+            "verdict": vn,
+        }
+
+    def simulate(self, initial_state: str, actions: Sequence[str]) -> Dict[str, Any]:
+        """Roll out a list of actions; accumulate σ along the trajectory."""
+        state = str(initial_state).strip()
+        trajectory: List[Dict[str, Any]] = []
+        cumulative_σ = 0.0
+        acts = list(actions)
+
+        for action in acts:
+            result = self.predict(state, str(action))
+            sg = float(result["σ"])
+            cumulative_σ += sg
+            trajectory.append(
+                {
+                    "state": state,
+                    "action": str(action),
+                    "σ": sg,
+                    "cumulative_σ": round(cumulative_σ, 4),
+                }
+            )
+            state = str(result["predicted_outcome"])
+
+        return {
+            "trajectory": trajectory,
+            "final_σ": round(cumulative_σ / max(len(acts), 1), 4),
+            "steps": len(acts),
         }
 
     def _validate_predictions(self, actual: str) -> None:
@@ -140,12 +231,7 @@ class SigmaWorld:
                     trends[key] = "stable"
         return trends
 
-    def commonsense_check(self, claim: str) -> Dict[str, Any]:
-        sigma, verdict = self.gate.score("commonsense_claim", str(claim)[:2000])
-        return {"claim": claim, "sigma": round(float(sigma), 4), "verdict": str(verdict)}
-
     def predict_next_state(self, hint: str = "") -> Dict[str, Any]:
-        """Heuristic successor narrative from trend tags + last observation."""
         if not self.states:
             return {"predicted_description": None, "sigma": 1.0, "verdict": "ABSTAIN", "feature_trend": {}}
         tr = self._analyze_feature_trend()
@@ -164,6 +250,3 @@ class SigmaWorld:
             "verdict": str(verdict),
             "feature_trend": tr,
         }
-
-
-__all__ = ["SigmaWorld", "WorldState"]
