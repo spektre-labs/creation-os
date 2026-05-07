@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 """AutoGen-style σ hook for message lists (optional ``autogen-agentchat``).
 
 Mutates the last message in place with ``sigma`` / ``verdict`` and optional

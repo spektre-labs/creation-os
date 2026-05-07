@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 """Aggregate σ-red-team batches into a single robustness report."""
 from __future__ import annotations
 

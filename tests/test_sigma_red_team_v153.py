@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 """v153 adversarial suite tests (quickstart gate + mock model)."""
 from __future__ import annotations
 

@@ -1,5 +1,5 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
-# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 """Deterministic demo σ for `cos gate` without the LSD pickle (pip quickstart).
 
 This is **not** the trained LSD probe; it exists so `pip install creation-os` can run

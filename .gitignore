@@ -17,6 +17,13 @@ dist/
 # Local Python venv for sigma_eval_pipeline_nightly.sh (optional)
 .sigma_pipeline_venv/
 
+# Editor / agent / local venv + pytest venv (never commit)
+.pytest-venv/
+*.pyc
+
+# Local σ-runtime scratch (memory logs, CLI defaults)
+.cos/
+
 # Attestations / SBOM / provenance (generated locally; CI emits canonical)
 SBOM.json
 ATTESTATION.json
@@ -91,10 +98,7 @@ metrics/session_*.jsonl
 __pycache__/
 .pytest_cache/
 .tmp_pytest_*/
-.venv/
-.venv-ci/
-.venv-bitnet/
-.venv-pipcore/
+.venv*/
 
 # Local full-tree audits (often huge; not source)
 /FULL_REPO_AUDIT.txt

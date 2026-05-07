@@ -14,7 +14,7 @@ import json
 import math
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 __all__ = ["Memory", "MemoryEntry", "SigmaMemory"]
 
