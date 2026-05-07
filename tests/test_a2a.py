@@ -72,3 +72,78 @@ def test_protocol_extension_shape() -> None:
     a = SigmaA2A(SigmaGate())
     ext = a.protocol_extension()
     assert "mcp_tools_endpoint" in ext and "a2a_peers" in ext
+
+
+# --- σ-validated multi-agent hub (SigmaA2ANetwork) --------------------------------
+
+from cos.a2a import AgentCard, SigmaA2ANetwork  # noqa: E402
+
+
+class _ConstGate:
+    def __init__(self, sigma: float, verdict: str) -> None:
+        self._sigma = sigma
+        self._v = verdict
+
+    def score(self, _p: str, _r: str) -> tuple[float, str]:
+        return self._sigma, self._v
+
+
+def test_agent_card_to_json() -> None:
+    c = AgentCard("alpha", ["code", "review"], endpoint="http://a", avg_σ=0.35)
+    d = json.loads(c.to_json())
+    assert d["name"] == "alpha"
+    assert d["σ_profile"]["avg_σ"] == 0.35
+    assert "jsonrpc" in c.jsonrpc_result()
+
+
+def test_register_agent() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.2, "ACCEPT"))
+    peer = AgentCard("peer", ["code"], avg_σ=0.4)
+    hub.register_agent(peer)
+    assert "peer" in hub.known_agents
+
+
+def test_best_agent_for_task() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.1, "ACCEPT"))
+    hub.register_agent(AgentCard("low", ["python"], avg_σ=0.2))
+    hub.register_agent(AgentCard("high", ["python"], avg_σ=0.8))
+    pick = hub.best_agent_for("need python help")
+    assert pick is not None and pick.name == "low"
+
+
+def test_delegate_creates_task() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.15, "ACCEPT"))
+    hub.register_agent(AgentCard("worker", ["summarize"], avg_σ=0.3))
+    out = hub.delegate("summarize this doc", execute_fn=lambda _: "ok")
+    assert out["task_id"].startswith("task_")
+    assert out["assignee"] == "worker"
+    assert out["status"] in ("completed", "completed_uncertain")
+
+
+def test_receive_result_sigma_validates() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.1, "ACCEPT"))
+    hub.register_agent(AgentCard("w", ["fix"], avg_σ=0.3))
+    hub.delegate("fix bug in fix handler")
+    tid = next(iter(hub.tasks.keys()))
+    r = hub.receive_result(tid, "patch applied")
+    assert r.get("trusted") is True
+    assert "σ" in r
+
+
+def test_no_capable_agent_returns_error() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.5, "RETHINK"))
+    out = hub.delegate("cryptic task xyz")
+    assert out.get("error") == "No capable agent found"
+
+
+def test_network_sigma() -> None:
+    me = AgentCard("me", ["coordination"], avg_σ=0.5)
+    hub = SigmaA2ANetwork(me, gate=_ConstGate(0.2, "ACCEPT"))
+    hub.register_agent(AgentCard("a", ["x"], avg_σ=0.2))
+    hub.register_agent(AgentCard("b", ["y"], avg_σ=0.6))
+    assert hub.network_σ() == 0.4

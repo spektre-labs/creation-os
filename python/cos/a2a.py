@@ -4,8 +4,10 @@
 """σ-A2A v2 — Agent Card, capability negotiation, task lifecycle, σ per channel (lab).
 
 MCP gives tools; this module models **peer agents** (discover / delegate / audit).
-No mandatory wire transport — fetch ``/.well-known/agent.json`` when you pass HTTP URLs.
-Complements :mod:`cos.sigma_a2a` (hint encoder path). See ``docs/CLAIM_DISCIPLINE.md``."""
+:class:`SigmaA2ANetwork` coordinates **local** peer :class:`AgentCard` records with
+σ on every task result. No mandatory wire transport — fetch ``/.well-known/agent.json``
+when you pass HTTP URLs. Complements :mod:`cos.sigma_a2a` (hint encoder path).
+See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 import json
@@ -18,7 +20,90 @@ from typing import Any, Callable, Dict, List, Mapping, Optional
 
 from cos.sigma_a2a_card import build_sigma_verifier_agent_card
 
-__all__ = ["SigmaA2A", "A2ATaskLifecycle"]
+__all__ = [
+    "AgentCard",
+    "A2ATaskLifecycle",
+    "SigmaA2A",
+    "SigmaA2ANetwork",
+    "Task",
+]
+
+
+def _norm_verdict(v: Any) -> str:
+    raw = str(getattr(v, "name", v))
+    return raw.split(".")[-1] if "." in raw else raw
+
+
+class AgentCard:
+    """Capability advertisement for a peer agent (σ profile for trust routing)."""
+
+    def __init__(
+        self,
+        name: str,
+        capabilities: List[str],
+        endpoint: str = "",
+        avg_σ: float = 0.5,
+        specialties: Optional[List[str]] = None,
+    ) -> None:
+        self.name = str(name)
+        self.capabilities = [str(x) for x in capabilities]
+        self.endpoint = str(endpoint)
+        self.avg_σ = float(avg_σ)
+        self.specialties = list(specialties or [])
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "capabilities": self.capabilities,
+            "endpoint": self.endpoint,
+            "σ_profile": {"avg_σ": round(float(self.avg_σ), 4)},
+            "specialties": self.specialties,
+        }
+
+    def to_json(self) -> str:
+        return json.dumps(self.to_dict(), indent=2, ensure_ascii=False)
+
+    def jsonrpc_result(self) -> Dict[str, Any]:
+        """JSON-RPC 2.0-shaped payload (client wraps as request/response)."""
+        return {"jsonrpc": "2.0", "result": self.to_dict()}
+
+
+class Task:
+    """Delegated unit of work with σ metadata (lab; not a full A2A wire DTO)."""
+
+    def __init__(self, task_id: str, description: str, delegator: str, assignee: str) -> None:
+        self.task_id = str(task_id)
+        self.description = str(description)
+        self.delegator = str(delegator)
+        self.assignee = str(assignee)
+        self.status = "submitted"
+        self.result: Any = None
+        self.σ: Optional[float] = None
+        self.created = time.time()
+
+    def complete(self, result: Any, σ: float) -> None:
+        self.result = result
+        self.σ = float(σ)
+        self.status = "completed" if float(σ) < 0.5 else "completed_uncertain"
+
+    def fail(self, reason: str) -> None:
+        self.result = reason
+        self.σ = 1.0
+        self.status = "failed"
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "task_id": self.task_id,
+            "description": self.description,
+            "delegator": self.delegator,
+            "assignee": self.assignee,
+            "status": self.status,
+            "σ": round(float(self.σ), 4) if self.σ is not None else None,
+            "result": self.result,
+        }
+
+    def jsonrpc_task_notification(self, *, method: str = "a2a/taskUpdate") -> Dict[str, Any]:
+        return {"jsonrpc": "2.0", "method": method, "params": self.to_dict()}
 
 
 class A2ATaskLifecycle(str, Enum):
@@ -207,3 +292,81 @@ class SigmaA2A:
     def governance_trail(self) -> List[Dict[str, Any]]:
         """Append-only audit rows written from negotiate/delegate."""
         return list(self._governance_log)
+
+
+class SigmaA2ANetwork:
+    """σ-validated multi-agent hub: register :class:`AgentCard` peers, delegate :class:`Task` rows."""
+
+    def __init__(self, my_card: AgentCard, gate: Any = None) -> None:
+        from cos.sigma_gate import SigmaGate
+
+        self.card = my_card
+        self.gate = gate or SigmaGate()
+        self.known_agents: Dict[str, AgentCard] = {}
+        self.tasks: Dict[str, Task] = {}
+        self.task_counter = 0
+
+    def register_agent(self, card: AgentCard) -> None:
+        self.known_agents[card.name] = card
+
+    def best_agent_for(self, task_description: str) -> Optional[AgentCard]:
+        """Pick capability-matched peer with **lowest** historical ``avg_σ`` (calmer peer)."""
+        desc = str(task_description).lower()
+        candidates: List[tuple[float, str, AgentCard]] = []
+        for name, card in self.known_agents.items():
+            for cap in card.capabilities:
+                if str(cap).lower() in desc:
+                    candidates.append((float(card.avg_σ), name, card))
+                    break
+        if not candidates:
+            return None
+        candidates.sort(key=lambda x: x[0])
+        return candidates[0][2]
+
+    def delegate(
+        self,
+        description: str,
+        execute_fn: Optional[Callable[[str], Any]] = None,
+    ) -> Dict[str, Any]:
+        agent = self.best_agent_for(description)
+        if agent is None:
+            return {"error": "No capable agent found", "σ": 1.0}
+
+        self.task_counter += 1
+        task = Task(f"task_{self.task_counter}", description, self.card.name, agent.name)
+        self.tasks[task.task_id] = task
+        task.status = "working"
+
+        if execute_fn is not None:
+            try:
+                result = execute_fn(description)
+                σ, verdict = self.gate.score(description, str(result))
+                task.complete(result, float(σ))
+            except Exception as exc:  # noqa: BLE001
+                task.fail(str(exc))
+        else:
+            σ, _v = self.gate.score(description, f"Delegated to {agent.name}")
+            task.complete(f"Delegated to {agent.name}", float(σ))
+
+        return task.to_dict()
+
+    def receive_result(self, task_id: str, result: Any) -> Dict[str, Any]:
+        task = self.tasks.get(str(task_id))
+        if task is None:
+            return {"error": "Unknown task"}
+
+        σ, verdict = self.gate.score(task.description, str(result))
+        task.complete(result, float(σ))
+        v = _norm_verdict(verdict)
+        return {
+            "task_id": task_id,
+            "σ": round(float(σ), 4),
+            "verdict": v,
+            "trusted": v == "ACCEPT",
+        }
+
+    def network_σ(self) -> float:
+        if not self.known_agents:
+            return 0.5
+        vals = [float(a.avg_σ) for a in self.known_agents.values()]
+        return round(sum(vals) / len(vals), 4)

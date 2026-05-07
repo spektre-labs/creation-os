@@ -160,6 +160,18 @@ class Fabric:
             lambda: __import__("cos.self_model", fromlist=["SelfModel"]).SelfModel(gate=self.gate),
         )
         self._install_optional(
+            "a2a_network",
+            lambda: __import__("cos.a2a", fromlist=["AgentCard", "SigmaA2ANetwork"]).SigmaA2ANetwork(
+                __import__("cos.a2a", fromlist=["AgentCard"]).AgentCard(
+                    name="fabric-agent",
+                    capabilities=["coordination", "sigma_gate"],
+                    endpoint="",
+                    avg_σ=0.5,
+                ),
+                gate=self.gate,
+            ),
+        )
+        self._install_optional(
             "drift",
             lambda: __import__("cos.drift", fromlist=["SigmaDrift"]).SigmaDrift(),
         )
@@ -735,6 +747,20 @@ class SigmaFabric:
             self.layers["swarm"] = SigmaSwarm(gate=gate)
         except ImportError:
             self._note_skip('swarm')
+        try:
+            from cos.a2a import AgentCard, SigmaA2ANetwork
+
+            self.layers["a2a_network"] = SigmaA2ANetwork(
+                AgentCard(
+                    "sigma-fabric",
+                    ["coordination", "sigma_gate"],
+                    endpoint="",
+                    avg_σ=0.5,
+                ),
+                gate=gate,
+            )
+        except ImportError:
+            self._note_skip("a2a_network")
         try:
             from cos.world import SigmaWorld
 
