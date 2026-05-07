@@ -4,6 +4,7 @@
 """Shared fixtures: repo ``python/`` on ``sys.path``, gates, pipeline, probes (no live models)."""
 from __future__ import annotations
 
+import os
 import sys
 import tempfile
 from pathlib import Path
@@ -20,6 +21,20 @@ _PYTHON = str(_ROOT / "python")
 def _ensure_repo_pythonpath() -> None:
     if _PYTHON not in sys.path:
         sys.path.insert(0, _PYTHON)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _isolate_cos_engram_for_tests(tmp_path_factory: pytest.TempPathFactory) -> None:
+    """Avoid polluting ``~/.cos/engram.json`` during ``Fabric.boot()`` / Engram tests."""
+    if os.environ.get("COS_ENGRAM_PATH", "").strip():
+        yield
+        return
+    p = tmp_path_factory.mktemp("cos_engram") / "engram.json"
+    os.environ["COS_ENGRAM_PATH"] = str(p)
+    try:
+        yield
+    finally:
+        os.environ.pop("COS_ENGRAM_PATH", None)
 
 
 @pytest.fixture

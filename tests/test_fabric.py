@@ -51,6 +51,7 @@ def test_status_shows_all_modules() -> None:
         "tool_safety",
         "causal",
         "moral",
+        "engram",
         "omega",
     ):
         assert name in st["modules"]
@@ -104,6 +105,18 @@ def test_disabled_module_skipped() -> None:
     st = f.boot()
     assert _module_entry(st, "graph")["state"] == "disabled"
     assert _module_entry(st, "graph")["error"] is None
+
+
+def test_process_records_engram_after_gate(tmp_path: Path) -> None:
+    path = tmp_path / "eg.json"
+    f = Fabric(engram_path=path)
+    f.boot()
+    before = len(f.get("engram").narrative)
+    f.process("hello fabric engram")
+    after = len(f.get("engram").narrative)
+    assert after >= before
+    proc = [e for e in f.get("engram").narrative if e.get("type") == "process"]
+    assert proc, "expected at least one process narrative row"
 
 
 def test_failed_module_reports_error(monkeypatch: pytest.MonkeyPatch) -> None:

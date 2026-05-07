@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
-  CORE            score, chat, think, bench, serve, version
+  CORE            score, chat, think, bench, serve, version, identity
   ANALYSIS        explain, cascade, calibrate
   INFRASTRUCTURE  health, registry, cost
   ADVANCED        graph, evolve, redteam
@@ -132,6 +132,23 @@ def _cmd_tool_safety(args: argparse.Namespace) -> int:
     ts = ToolSafety()
     out = ts.sigma_before_execute(tool, astr, intent)
     print(json.dumps(out, ensure_ascii=False, default=str))
+    return 0
+
+
+def _cmd_identity(args: argparse.Namespace) -> int:
+    """Print Engram-backed session count, narrative size, identity σ, and continuity axes."""
+    from cos.engram import Engram
+
+    raw = str(getattr(args, "identity_path", "") or "").strip()
+    e = Engram(path=raw) if raw else Engram()
+    print(f"Sessions: {e.identity['sessions']}")
+    print(f"Events: {len(e.narrative)}")
+    print(f"Identity σ: {e.identity_σ()}")
+    cont = e.continuity_check()
+    print(f"Continuity: {cont['continuity_score']}")
+    for axis, val in cont["axes"].items():
+        mark = "+" if val else "-"
+        print(f"  {mark} {axis}")
     return 0
 
 
@@ -3604,6 +3621,20 @@ def main(argv: Optional[List[str]] = None) -> int:
     ver.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
     ver.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     ver.set_defaults(func=_cmd_cos_version)
+
+    idp = sub.add_parser(
+        "identity",
+        help="Persistent identity + narrative continuity (σ-scored Engram JSON; lab bookkeeping)",
+    )
+    idp.add_argument(
+        "--path",
+        type=str,
+        default="",
+        dest="identity_path",
+        metavar="PATH",
+        help="engram JSON path (default: ~/.cos/engram.json, or COS_ENGRAM_PATH if set)",
+    )
+    idp.set_defaults(func=_cmd_identity)
 
     initp = sub.add_parser(
         "init",

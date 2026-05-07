@@ -60,6 +60,7 @@ class Fabric:
         config: Optional[SigmaConfig] = None,
         *,
         disabled_modules: Optional[Iterable[str]] = None,
+        engram_path: Optional[Union[str, Path]] = None,
     ) -> None:
         self.config = config if config is not None else DEFAULT_CONFIG
         ta = float(self.config.threshold_accept)
@@ -70,6 +71,11 @@ class Fabric:
         self._disabled_modules: FrozenSet[str] = frozenset(
             str(x).strip() for x in (disabled_modules or ()) if str(x).strip()
         )
+        if engram_path is not None:
+            self._engram_path = Path(engram_path).expanduser()
+        else:
+            env_ep = str(os.environ.get("COS_ENGRAM_PATH", "") or "").strip()
+            self._engram_path = Path(env_ep).expanduser() if env_ep else None
         self._booted = False
 
     def _install_optional(self, name: str, loader: Callable[[], Any]) -> None:
@@ -166,6 +172,23 @@ class Fabric:
             lambda: __import__("cos.moral", fromlist=["SigmaMoral"]).SigmaMoral(gate=self.gate),
         )
 
+        if "engram" in self._disabled_modules:
+            self._modules["engram"] = None
+        else:
+            try:
+                Engram = __import__("cos.engram", fromlist=["Engram"]).Engram
+                if self._engram_path is not None:
+                    eg = Engram(gate=self.gate, path=self._engram_path)
+                else:
+                    eg = Engram(gate=self.gate)
+                eg.begin_session()
+                self._modules["engram"] = eg
+            except ImportError:
+                self._modules["engram"] = None
+            except Exception as e:  # noqa: BLE001
+                self._modules["engram"] = None
+                self._module_errors["engram"] = repr(e)
+
         if "omega" in self._disabled_modules:
             self._modules["omega"] = None
         else:
@@ -225,7 +248,7 @@ class Fabric:
         """Full cognitive pipeline: optional layers + **always-on** σ-gate (lab integration).
 
         Order: perceive (JEPA) → memory recall → light FOL/symbolic hook → causal →
-        **gate** → metacognition (conscious) → tool safety (if ACCEPT) → moral (if
+        **gate** → Engram narrative (σ) → metacognition (conscious) → tool safety (if ACCEPT) → moral (if
         \"should\") → drive → meta-goal → memory store (if not ABSTAIN) → observe.
 
         Ω-loop (:class:`~cos.omega.OmegaLoop`) remains available as a loaded module for
@@ -312,6 +335,16 @@ class Fabric:
         σ, verdict = self.gate.score(text_in, response_for_gate)
         vn = _fabric_verdict_str(verdict)
         trace.append({"layer": "gate", "σ": round(float(σ), 4), "verdict": vn})
+
+        engram_mod = self._modules.get("engram")
+        if engram_mod is not None and hasattr(engram_mod, "record_event"):
+            try:
+                engram_mod.record_event("process", text_in[:200], σ=float(σ))
+                trace.append({"layer": "engram", "recorded": True})
+            except Exception as exc:  # noqa: BLE001
+                trace.append({"layer": "engram", "error": repr(exc)})
+        else:
+            trace.append({"layer": "engram", "skipped": True})
 
         # 6. METACOGNITION
         σ_meta_val = 0.5
