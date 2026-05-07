@@ -24,12 +24,12 @@ def test_listen_returns_sigma_mock_whisper(monkeypatch) -> None:
     def _fake_init(self, *_a, **_k):
         self._stt = _StubSTT()
         self.gate = __import__("cos.sigma_gate", fromlist=["SigmaGate"]).SigmaGate()
-        self.language = "en"
+        self.lang = "en"
         self.kokoro_voice = "af_bella"
         self.kokoro_lang_code = "a"
         self._tts = None
 
-    monkeypatch.setattr("cos.voice_local._HAS_WHISPER", True)
+    monkeypatch.setattr("cos.voice._HAS_WHISPER", True)
     monkeypatch.setattr(SigmaVoice, "__init__", _fake_init)
     v = SigmaVoice()
     out = v.listen(audio_path="/dev/null/unused")
@@ -65,7 +65,7 @@ def test_sigma_before_speak_abstain_safe_phrase(monkeypatch) -> None:
 
 
 def test_voice_without_whisper_raises_import(monkeypatch, tmp_path) -> None:
-    monkeypatch.setattr("cos.voice_local._HAS_WHISPER", False)
+    monkeypatch.setattr("cos.voice._HAS_WHISPER", False)
     p = tmp_path / "x.wav"
     p.write_bytes(b"RIFF")
     v = SigmaVoice.__new__(SigmaVoice)

@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from cos.sigma_gate import SigmaGate
 from cos.voice import SigmaVoice
 
@@ -41,3 +43,73 @@ def test_realtime_stream_roundtrip_keys() -> None:
     r = sv.realtime_stream("What is 2+2?", g, "4")
     for k in ("in_sigma", "out_sigma", "verdict", "tts", "indicator", "voice"):
         assert k in r
+
+
+def test_available_always_gate() -> None:
+    av = SigmaVoice().available()
+    assert av["gate"] is True
+    assert "stt" in av and "tts" in av
+
+
+def test_transcribe_without_whisper_errors(monkeypatch) -> None:
+    from cos import voice as voice_mod
+
+    monkeypatch.setattr(voice_mod, "_HAS_WHISPER", False)
+    bad = object.__new__(SigmaVoice)
+    bad.gate = SigmaGate()
+    bad.lang = "en"
+    bad._stt = None
+    out = SigmaVoice.transcribe(bad, "/noop.wav")  # type: ignore[arg-type]
+    assert out.get("error") == "whisper not installed"
+    assert out.get("sigma") == 1.0
+
+
+def test_synthesize_without_kokoro_errors(monkeypatch) -> None:
+    from cos import voice as voice_mod
+
+    monkeypatch.setattr(voice_mod, "_HAS_KOKORO", False)
+    bad = object.__new__(SigmaVoice)
+    bad.gate = SigmaGate()
+    bad.kokoro_voice = "af_heart"
+    bad._tts = None
+    out = SigmaVoice.synthesize(bad, "hello")  # type: ignore[arg-type]
+    assert out.get("error") == "kokoro not installed"
+
+
+def test_process_voice_pipeline(monkeypatch) -> None:
+    sv = SigmaVoice()
+
+    def _fake_transcribe(_path: str):
+        return {"text": "hello there", "sigma": 0.2, "verdict": "ACCEPT", "σ": 0.2}
+
+    def _fake_synth(text: str, output_path: str = "output.wav"):
+        return {"path": "/tmp/voice_unit.wav", "sigma": 0.15, "verdict": "ACCEPT"}
+
+    monkeypatch.setattr(sv, "transcribe", _fake_transcribe)
+    monkeypatch.setattr(sv, "synthesize", _fake_synth)
+    out = sv.process_voice("any.wav", respond_fn=lambda u: f"echo:{u}")
+    assert out["input_text"] == "hello there"
+    assert "echo:" in out["response_text"]
+    assert out["sigma_output"] is not None
+
+
+def test_voice_status() -> None:
+    import json
+    import os
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    repo = Path(__file__).resolve().parents[1]
+    env = {**os.environ, "PYTHONPATH": str(repo / "python")}
+    r = subprocess.run(
+        [sys.executable, "-m", "cos", "voice", "status", "--json"],
+        cwd=str(repo),
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert r.returncode == 0, r.stderr
+    body = json.loads(r.stdout.strip())
+    assert body.get("gate") is True

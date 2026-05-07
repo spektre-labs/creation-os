@@ -2979,15 +2979,69 @@ def _cmd_rag(args: argparse.Namespace) -> int:
 
 
 def _cmd_voice_cli(args: argparse.Namespace) -> int:
-    from cos.voice_local import SigmaVoice, listen, sigma_before_speak, speak
+    from cos.voice import SigmaVoice, listen, sigma_before_speak, speak
 
+    act = getattr(args, "voice_action", None)
     mock = str(getattr(args, "voice_mock", "") or "").strip()
     audio = str(getattr(args, "voice_audio", "") or "").strip()
     speak_txt = str(getattr(args, "voice_speak", "") or "").strip()
     check_txt = str(getattr(args, "voice_check", "") or "").strip()
+    vin = str(getattr(args, "voice_input", "") or "").strip()
+    vtxt = str(getattr(args, "voice_text", "") or "").strip()
     whisper_model = str(getattr(args, "voice_whisper_model", "tiny") or "tiny").strip()
     kokoro_voice = str(getattr(args, "voice_kokoro_voice", "af_bella") or "af_bella").strip()
     out: Dict[str, Any]
+
+    if act == "status":
+        v = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
+        out = v.available()
+        if _cli_out_json(args):
+            print(json.dumps(out, ensure_ascii=False))
+        else:
+            print(json.dumps(out, indent=2, ensure_ascii=False))
+        return 0
+
+    if act == "transcribe":
+        p = vin or audio
+        if not p:
+            print("cos voice transcribe: pass --input PATH", file=sys.stderr)
+            return 2
+        v = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
+        result = v.transcribe(p)
+        if _cli_out_json(args):
+            print(json.dumps(result, default=str, ensure_ascii=False))
+        else:
+            sig = result.get("σ", result.get("sigma", 0.0))
+            print(f"[σ={float(sig):.3f}] {result.get('text', '')}")
+        return 0
+
+    if act == "speak":
+        t = vtxt or speak_txt
+        if not t:
+            print("cos voice speak: pass --text STR", file=sys.stderr)
+            return 2
+        v = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
+        result = v.synthesize(t)
+        if _cli_out_json(args):
+            print(json.dumps(result, default=str, ensure_ascii=False))
+        else:
+            sig = result.get("σ", result.get("sigma", 0.0))
+            print(f"[σ={float(sig):.3f}] → {result.get('path', result.get('error', ''))}")
+        return 0
+
+    if act == "chat":
+        p = vin or audio
+        if not p:
+            print("cos voice chat: pass --input PATH (audio file)", file=sys.stderr)
+            return 2
+        v = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
+        result = v.process_voice(p)
+        if _cli_out_json(args):
+            print(json.dumps(result, default=str, ensure_ascii=False))
+        else:
+            print(json.dumps(result, default=str, ensure_ascii=False, indent=2))
+        return 0
+
     if mock:
         out = listen(mock_text=mock)
     elif audio:
@@ -3010,7 +3064,11 @@ def _cmd_voice_cli(args: argparse.Namespace) -> int:
     elif check_txt:
         out = sigma_before_speak(check_txt)
     else:
-        print("cos voice: use --listen-mock TEXT | --audio PATH | --speak TEXT | --check TEXT", file=sys.stderr)
+        print(
+            "cos voice: use ACTION transcribe|speak|chat|status | "
+            "legacy: --listen-mock TEXT | --audio PATH | --speak TEXT | --check TEXT",
+            file=sys.stderr,
+        )
         return 2
     if _cli_out_json(args):
         print(json.dumps(out, default=str, ensure_ascii=False))
@@ -4256,6 +4314,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         "voice",
         help="Local voice lab: σ on transcript + before speak (optional faster-whisper / kokoro)",
     )
+    voi.add_argument(
+        "voice_action",
+        nargs="?",
+        default=None,
+        choices=["transcribe", "speak", "chat", "status"],
+        help="optional: transcribe | speak | chat | status (else use legacy flags)",
+    )
+    voi.add_argument("--input", type=str, default="", dest="voice_input", metavar="PATH", help="audio path for transcribe/chat")
+    voi.add_argument("--text", type=str, default="", dest="voice_text", metavar="STR", help="text for speak action")
     voi.add_argument("--listen-mock", type=str, default="", dest="voice_mock", metavar="TEXT")
     voi.add_argument("--audio", type=str, default="", dest="voice_audio", metavar="PATH")
     voi.add_argument("--speak", type=str, default="", dest="voice_speak", metavar="TEXT")
