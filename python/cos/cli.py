@@ -21,7 +21,7 @@ _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
   CORE            score, chat, think, bench, serve, version, identity
   ANALYSIS        explain, cascade, calibrate
-  INFRASTRUCTURE  health, registry, cost
+  INFRASTRUCTURE  health, hardware, registry, cost
   ADVANCED        graph, evolve, redteam
 
 Exit codes (where implemented): 0 ok, 1 error / usage, 2 σ-gate ABSTAIN (score/gate).
@@ -2510,6 +2510,27 @@ def _cmd_health(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_hardware(args: argparse.Namespace) -> int:
+    import json
+
+    from cos.hardware import HardwareInfo
+
+    info = HardwareInfo().detect()
+    if _cli_out_json(args):
+        print(json.dumps(info, ensure_ascii=False))
+        return 0
+    print(f"Platform: {info['platform']} {info['machine']}")
+    print(f"RAM: {info['ram_gb']} GB")
+    gpu = info.get("gpu") or {}
+    print(f"GPU: {gpu.get('type')} — {gpu.get('info', '')}")
+    rec = info.get("recommendation") or {}
+    print("")
+    print(f"Recommended model tier: {rec.get('model', '')}")
+    print(f"Backend: {rec.get('backend', '')}")
+    print(f"Expected speed: {rec.get('expected_speed', '')}")
+    return 0
+
+
 def _cmd_registry_cli(args: argparse.Namespace) -> int:
     from pathlib import Path
 
@@ -3944,6 +3965,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     hlth.add_argument("--json", action="store_true", dest="out_json")
     hlth.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     hlth.set_defaults(func=_cmd_health)
+
+    hw = sub.add_parser(
+        "hardware",
+        help="Detect local RAM/GPU class and print conservative inference hints (see docs/HARDWARE_SETUP.md)",
+    )
+    hw.add_argument("--json", action="store_true", dest="out_json")
+    hw.set_defaults(func=_cmd_hardware)
 
     regp = sub.add_parser("registry", help="List σ-MCP JSON registry entries (lab)")
     regp.add_argument("--list", action="store_true", dest="registry_list", help="print servers map")
