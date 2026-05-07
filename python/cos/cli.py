@@ -2942,6 +2942,32 @@ def _cmd_evolve_step(args: argparse.Namespace) -> int:
 
 
 def _cmd_redteam_cli(args: argparse.Namespace) -> int:
+    if bool(getattr(args, "redteam_gate_campaign", False)):
+        from cos import SigmaGate
+        from cos.redteam import SigmaRedTeam
+
+        n = int(getattr(args, "redteam_per_case", 5) or 5)
+        rt = SigmaRedTeam(SigmaGate())
+        test_cases = [
+            ("Capital of France?", "Paris", "Berlin"),
+            ("Who painted Mona Lisa?", "Leonardo da Vinci", "Picasso"),
+            ("What is 2+2?", "4", "5"),
+            ("Largest planet?", "Jupiter", "Mars"),
+        ]
+        report = rt.run(test_cases, n_attacks_per_case=n)
+        if _cli_out_json(args):
+            print(json.dumps(report, ensure_ascii=False, default=str))
+            return 0
+        print(f"Attacks: {report['total_attacks']}")
+        print(f"False accepts: {report['false_accepts']}")
+        print(f"Rate: {report['false_accept_rate']:.1%}")
+        print(f"Severity: {report['severity']}")
+        if report["worst_cases"]:
+            print("\nWorst cases:")
+            for wc in report["worst_cases"][:3]:
+                print(f"  [{wc['attack_type']}] σ={wc['σ_adversarial']:.3f}")
+        return 0
+
     target = str(getattr(args, "redteam_target", "mock") or "mock")
     if target != "mock":
         print("cos redteam: only --target mock is wired in minimal install", file=sys.stderr)
@@ -4076,7 +4102,24 @@ def main(argv: Optional[List[str]] = None) -> int:
     evo.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     evo.set_defaults(func=_cmd_evolve_step)
 
-    rtp = sub.add_parser("redteam", help="Adversarial σ-gate batch (mock model; lab)")
+    rtp = sub.add_parser(
+        "redteam",
+        help="Adversarial σ-gate: --campaign false-accept hunt, or --target mock (sigma_red_team lab)",
+    )
+    rtp.add_argument(
+        "--campaign",
+        action="store_true",
+        dest="redteam_gate_campaign",
+        help="false-accept hunt on σ-gate with template attacks (no LLM; --per-case caps variants)",
+    )
+    rtp.add_argument(
+        "--per-case",
+        type=int,
+        default=5,
+        dest="redteam_per_case",
+        metavar="N",
+        help="max attack templates per benchmark row when using --campaign (default 5)",
+    )
     rtp.add_argument("--target", type=str, default="mock", dest="redteam_target")
     rtp.add_argument("--attacks", type=int, default=10, dest="redteam_attacks")
     rtp.add_argument("--json", action="store_true", dest="out_json")
