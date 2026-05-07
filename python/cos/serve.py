@@ -44,7 +44,7 @@ try:
     )
     from fastapi.middleware.cors import CORSMiddleware
     from fastapi.responses import PlainTextResponse, StreamingResponse
-    from pydantic import BaseModel, ConfigDict, model_validator
+    from pydantic import BaseModel, ConfigDict, Field, model_validator
 
     HAS_FASTAPI = True
 except ImportError:  # pragma: no cover
@@ -129,7 +129,14 @@ class StreamRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     prompt: str
-    tokens: List[str]
+    tokens: List[str] = Field(
+        default_factory=list,
+        description="Token replay list when ``response`` is empty.",
+    )
+    response: str = Field(
+        default="",
+        description="Full assistant text; when non-empty, ``str.split()`` replaces ``tokens``.",
+    )
 
 
 class FeedbackRequest(BaseModel):
@@ -514,32 +521,60 @@ def create_app(gate: Any = None, config: Optional[SigmaConfig] = None) -> Any:
         nonlocal request_count
         _optional_bearer_auth(request.headers.get("Authorization"))
         request_count += 1
+        rt = str(req.response).strip()
+        toks: List[str] = rt.split() if rt else list(req.tokens)
+
+        sse_headers = {
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        }
 
         async def event_generator():
-            for event in stream_engine.score_stream(req.prompt, req.tokens):
-                payload = {
-                    "token": event.token,
-                    "index": event.index,
-                    "sigma": round(event.sigma, 4),
-                    "verdict": event.verdict,
+            t0 = time.monotonic()
+            accumulated = ""
+            for i, token in enumerate(toks):
+                accumulated = f"{accumulated} {token}".strip() if accumulated else str(token)
+                σ, verdict = active_gate.score(str(req.prompt), accumulated)
+                ev: Dict[str, Any] = {
+                    "token": token,
+                    "index": i,
+                    "σ": round(float(σ), 4),
+                    "verdict": str(verdict),
+                    "accumulated_length": len(accumulated),
+                    "done": False,
                 }
-                yield f"data: {json.dumps(payload)}\n\n"
+                yield f"data: {json.dumps(ev, ensure_ascii=False)}\n\n"
                 await asyncio.sleep(0)
 
-            full = " ".join(req.tokens)
-            sigma, verdict = active_gate.score(req.prompt, full)
-            final = json.dumps(
-                {
-                    "token": None,
-                    "index": len(req.tokens),
-                    "sigma": round(float(sigma), 4),
-                    "verdict": str(verdict),
-                    "is_final": True,
-                }
-            )
-            yield f"data: {final}\n\n"
+            final_σ, final_verdict = active_gate.score(str(req.prompt), accumulated)
+            end_ev = {
+                "done": True,
+                "σ_final": round(float(final_σ), 4),
+                "verdict_final": str(final_verdict),
+                "total_tokens": len(toks),
+            }
+            yield f"data: {json.dumps(end_ev, ensure_ascii=False)}\n\n"
 
-        return StreamingResponse(event_generator(), media_type="text/event-stream")
+            elapsed_ms = (time.monotonic() - t0) * 1000.0
+            if sigma_observe is not None:
+                sigma_observe.record(
+                    str(req.prompt),
+                    accumulated,
+                    float(final_σ),
+                    str(final_verdict),
+                    elapsed_ms,
+                    model=None,
+                    endpoint="/v1/stream",
+                    tokens=len(toks),
+                    cost=None,
+                )
+
+        return StreamingResponse(
+            event_generator(),
+            media_type="text/event-stream",
+            headers=sse_headers,
+        )
 
     @app.websocket("/v1/ws")
     async def websocket_sigma(ws: WebSocket) -> None:
