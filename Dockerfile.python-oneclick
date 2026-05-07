@@ -1,0 +1,32 @@
+# syntax=docker/dockerfile:1.6
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
+#
+# One-click σ-gate HTTP (``cos serve`` on :8000). Does not replace the C / v107
+# image at ./Dockerfile — that remains the binary distribution path.
+#
+#   docker build -f Dockerfile.python-oneclick -t creation-os-python:serve .
+#   docker compose -f docker-compose.python-oneclick.yml up -d
+
+FROM python:3.12-slim
+
+RUN apt-get update -qq \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY pyproject.toml README.md LICENSE LICENSE-AGPL-3.0.txt LICENSE-SCSL-1.0.md CHANGELOG.md ./
+COPY python ./python
+
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -e ".[serve]"
+
+EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
+    CMD curl -fsS http://127.0.0.1:8000/health || exit 1
+
+ENV PYTHONUNBUFFERED=1
+
+CMD ["cos", "serve", "--host", "0.0.0.0", "--port", "8000"]
