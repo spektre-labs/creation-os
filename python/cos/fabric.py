@@ -156,6 +156,10 @@ class Fabric:
             lambda: __import__("cos.observe", fromlist=["SigmaObserve"]).SigmaObserve(),
         )
         self._install_optional(
+            "self_model",
+            lambda: __import__("cos.self_model", fromlist=["SelfModel"]).SelfModel(gate=self.gate),
+        )
+        self._install_optional(
             "drift",
             lambda: __import__("cos.drift", fromlist=["SigmaDrift"]).SigmaDrift(),
         )
@@ -664,6 +668,12 @@ class SigmaFabric:
 
         self.layers["gate"] = gate
         self.layers["pipeline"] = pipeline
+        try:
+            from cos.self_model import SelfModel
+
+            self.layers["self_model"] = SelfModel(gate=gate)
+        except ImportError:
+            self._note_skip("self_model")
 
         try:
             from cos.stream import SigmaStream
