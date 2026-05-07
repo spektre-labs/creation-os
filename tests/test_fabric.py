@@ -7,10 +7,93 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from cos.fabric import FabricResult, SigmaFabric
+from cos.fabric import Fabric, FabricResult, SigmaFabric
 
 
-def test_boot() -> None:
+def test_boot_loads_core() -> None:
+    f = Fabric()
+    st = f.boot()
+    assert st["gate"] == "loaded"
+    assert st["config"] == "loaded"
+
+
+def test_boot_gate_always_loaded() -> None:
+    f = Fabric()
+    f.boot()
+    assert f.gate is f.get("gate")
+
+
+def test_status_shows_all_modules() -> None:
+    f = Fabric()
+    st = f.boot()
+    for name in (
+        "gate",
+        "config",
+        "graph",
+        "memory",
+        "symbolic",
+        "reason",
+        "world_model",
+        "drive",
+        "meta_goal",
+        "conscious",
+        "ttt",
+        "evolve",
+        "observe",
+        "drift",
+        "tool_safety",
+        "omega",
+    ):
+        assert name in st
+        assert st[name] in ("loaded", "missing")
+
+
+def test_process_returns_sigma() -> None:
+    f = Fabric()
+    f.boot()
+    r = f.process("plan review under σ policy")
+    assert "sigma" in r or "σ" in r
+    assert "verdict" in r
+
+
+def test_process_without_omega_falls_back() -> None:
+    f = Fabric()
+    f.boot()
+    f._modules["omega"] = None
+    r = f.process("fallback path")
+    assert "sigma" in r or "σ" in r
+    assert "verdict" in r
+
+
+def test_cognitive_state_snapshot() -> None:
+    f = Fabric()
+    f.boot()
+    snap = f.cognitive_state()
+    assert snap["booted"] is True
+    assert "modules" in snap
+    assert "claim" in snap
+    assert "NOT AGI" in snap["claim"].upper()
+
+
+def test_missing_module_does_not_crash() -> None:
+    f = Fabric()
+    f.boot()
+    f._modules["symbolic"] = None
+    snap = f.cognitive_state()
+    assert snap["modules"]["symbolic"] == "missing"
+
+
+def test_boot_idempotent() -> None:
+    f = Fabric()
+    a = f.boot()
+    b = f.boot()
+    assert a == b
+
+
+# --- SigmaFabric (pipeline orchestration) ---------------------------------
+
+
+def test_sigma_fabric_boot() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.boot()
     assert result["booted"]
@@ -18,7 +101,7 @@ def test_boot() -> None:
     assert "pipeline" in result["layers"]
 
 
-def test_process_score_only() -> None:
+def test_sigma_fabric_process_score_only() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.process("What is 2+2?", response="4")
     assert isinstance(result, FabricResult)
@@ -26,7 +109,7 @@ def test_process_score_only() -> None:
     assert result.verdict in ("ACCEPT", "RETHINK", "ABSTAIN", "CLARIFY")
 
 
-def test_process_traces() -> None:
+def test_sigma_fabric_process_traces() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.process("test", response="hello")
     trace = result.trace.to_dict()
@@ -34,7 +117,7 @@ def test_process_traces() -> None:
     assert "pipeline" in [s["layer"] for s in trace["steps"]]
 
 
-def test_process_with_metacog() -> None:
+def test_sigma_fabric_process_with_metacog() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.process(
         "What?",
@@ -45,7 +128,7 @@ def test_process_with_metacog() -> None:
     assert "metacog" in layers
 
 
-def test_process_with_reason() -> None:
+def test_sigma_fabric_process_with_reason() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.process(
         "capitals",
@@ -61,13 +144,13 @@ def test_process_with_reason() -> None:
     assert "reason" in layers
 
 
-def test_result_bool() -> None:
+def test_sigma_fabric_result_bool() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     result = fabric.process("What is 2+2?", response="4")
     assert isinstance(bool(result), bool)
 
 
-def test_status() -> None:
+def test_sigma_fabric_status() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     fabric.boot()
     status = fabric.status()
@@ -75,7 +158,7 @@ def test_status() -> None:
     assert status["layer_count"] >= 2
 
 
-def test_checkpoint_rollback() -> None:
+def test_sigma_fabric_checkpoint_rollback() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     fabric.boot()
     fabric.process("a", response="b")
@@ -89,7 +172,7 @@ def test_checkpoint_rollback() -> None:
     assert isinstance(rb, dict)
 
 
-def test_history_recorded() -> None:
+def test_sigma_fabric_history_recorded() -> None:
     fabric = SigmaFabric(snapshot_dir=Path(tempfile.mkdtemp()))
     fabric.boot()
     fabric.process("hello", response="world")

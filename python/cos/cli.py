@@ -3037,6 +3037,36 @@ def _cmd_fabric(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_cognitive_boot(_args: argparse.Namespace) -> int:
+    from cos.fabric import Fabric
+
+    f = Fabric()
+    status = f.boot()
+    for mod, st in sorted(status.items()):
+        mark = "[+]" if st == "loaded" else "[-]"
+        print(f"  {mark} {mod}: {st}")
+    return 0
+
+
+def _cmd_cognitive_status(_args: argparse.Namespace) -> int:
+    from cos.fabric import Fabric
+
+    f = Fabric()
+    f.boot()
+    print(json.dumps(f.cognitive_state(), indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def _cmd_cognitive_process(args: argparse.Namespace) -> int:
+    from cos.fabric import Fabric
+
+    f = Fabric()
+    f.boot()
+    result = f.process(str(getattr(args, "cognitive_input", "") or ""))
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
 def _cmd_silicon(args: argparse.Namespace) -> int:
     from cos.sigma_silicon import benchmark_targets_json, parse_sim_test, simulate_semantic
 
@@ -3820,6 +3850,22 @@ def main(argv: Optional[List[str]] = None) -> int:
     fab_pr.add_argument("--prompt", type=str, required=True, dest="fabric_prompt")
     fab_pr.add_argument("--response", type=str, default="", dest="fabric_response")
     fab_pr.set_defaults(func=_cmd_fabric)
+
+    bootp = sub.add_parser(
+        "boot",
+        help="Boot cognitive Fabric (Ω-loop modules; shows loaded vs missing — not AGI)",
+    )
+    bootp.set_defaults(func=_cmd_cognitive_boot)
+
+    cstat = sub.add_parser(
+        "status",
+        help="Cognitive snapshot JSON (Fabric modules + σ proxies — lab integration only)",
+    )
+    cstat.set_defaults(func=_cmd_cognitive_status)
+
+    cproc = sub.add_parser("process", help="One cognitive Fabric step (Ω-loop or gate-only fallback)")
+    cproc.add_argument("cognitive_input", type=str, help="input text / goal")
+    cproc.set_defaults(func=_cmd_cognitive_process)
 
     pip = sub.add_parser(
         "pipe",

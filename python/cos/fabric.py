@@ -27,10 +27,177 @@ from __future__ import annotations
 
 import os
 import tempfile
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from cos.config import DEFAULT_CONFIG, SigmaConfig
 from cos.pipeline import Pipeline, PipelineResult
+from cos.sigma_gate import SigmaGate
+
+
+class Fabric:
+    """Creation OS cognitive boot — load optional modules, run :class:`~cos.omega.OmegaLoop` when present.
+
+    This is **integration wiring**, not strong AGI. See ``docs/CLAIM_DISCIPLINE.md`` — **NOT AGI ACHIEVED**.
+
+    For heavy σ-pipeline orchestration (snapshots, RAG, MCP, …) use :class:`SigmaFabric`.
+    """
+
+    def __init__(self, config: Optional[SigmaConfig] = None) -> None:
+        self.config = config if config is not None else DEFAULT_CONFIG
+        ta = float(self.config.threshold_accept)
+        tb = float(self.config.threshold_abstain)
+        self.gate = SigmaGate(threshold_accept=ta, threshold_abstain=tb)
+        self._modules: Dict[str, Any] = {}
+        self._booted = False
+
+    def boot(self) -> Dict[str, str]:
+        """Load modules in dependency order; absent optional modules are marked *missing* in :meth:`status`."""
+        if self._booted:
+            return self.status()
+
+        self._modules.clear()
+
+        self._modules["gate"] = self.gate
+        self._modules["config"] = self.config
+
+        self._try_mod("graph", lambda: __import__("cos.graph", fromlist=["SigmaGraph"]).SigmaGraph(gate=self.gate))
+        try:
+            self._modules["memory"] = __import__("cos.memory", fromlist=["SigmaMemory"]).SigmaMemory(gate=self.gate)
+        except Exception:
+            self._modules["memory"] = None
+
+        self._try_mod(
+            "symbolic",
+            lambda: __import__("cos.symbolic", fromlist=["SigmaSymbolic"]).SigmaSymbolic(gate=self.gate),
+        )
+        self._try_mod("reason", lambda: __import__("cos.reason", fromlist=["SigmaReason"]).SigmaReason())
+
+        self._try_mod("world_model", lambda: __import__("cos.jepa", fromlist=["SigmaJEPA"]).SigmaJEPA(gate=self.gate))
+
+        self._try_mod("drive", lambda: __import__("cos.drive", fromlist=["SigmaDrive"]).SigmaDrive())
+        self._try_mod(
+            "meta_goal",
+            lambda: __import__("cos.meta_goal", fromlist=["SigmaMetaGoal"]).SigmaMetaGoal(gate=self.gate),
+        )
+
+        self._try_mod(
+            "conscious",
+            lambda: __import__("cos.conscious", fromlist=["SigmaConscious"]).SigmaConscious(gate=self.gate),
+        )
+
+        self._try_mod("ttt", lambda: __import__("cos.ttt", fromlist=["SigmaTTT"]).SigmaTTT(gate=self.gate))
+        self._try_mod("evolve", lambda: __import__("cos.evolve", fromlist=["SigmaEvolve"]).SigmaEvolve(gate=self.gate))
+
+        self._try_mod("observe", lambda: __import__("cos.observe", fromlist=["SigmaObserve"]).SigmaObserve())
+        self._try_mod("drift", lambda: __import__("cos.drift", fromlist=["SigmaDrift"]).SigmaDrift())
+
+        self._try_mod(
+            "tool_safety",
+            lambda: __import__("cos.tool_safety", fromlist=["ToolSafety"]).ToolSafety(gate=self.gate),
+        )
+
+        try:
+            OmegaLoop = __import__("cos.omega", fromlist=["OmegaLoop"]).OmegaLoop
+            self._modules["omega"] = OmegaLoop(
+                gate=self.gate,
+                memory=self._modules.get("memory"),
+                graph=self._modules.get("graph"),
+                config=self.config,
+                world_model=self._modules.get("world_model"),
+            )
+        except Exception:
+            self._modules["omega"] = None
+
+        self._booted = True
+        return self.status()
+
+    def _try_mod(self, name: str, factory: Any) -> None:
+        try:
+            self._modules[name] = factory()
+        except Exception:
+            self._modules[name] = None
+
+    def status(self) -> Dict[str, str]:
+        return {name: ("loaded" if mod is not None else "missing") for name, mod in self._modules.items()}
+
+    def get(self, module_name: str) -> Any:
+        return self._modules.get(module_name)
+
+    @staticmethod
+    def _result_body(result: Dict[str, Any]) -> str:
+        inner = result.get("result")
+        if isinstance(inner, dict):
+            return str(inner.get("reasoning", inner.get("result", inner)))
+        return str(inner or "")
+
+    def process(self, input_data: Any) -> Dict[str, Any]:
+        """One cognitive step: Ω-loop when available, else σ-gate reflex on mirrored text."""
+        if not self._booted:
+            self.boot()
+
+        t0 = time.perf_counter()
+        omega = self._modules.get("omega")
+        if omega is not None:
+            result: Dict[str, Any] = dict(omega.step(input_data))
+        else:
+            s = str(input_data)
+            sigma, verdict = self.gate.score(s, s)
+            vn = str(verdict.name) if hasattr(verdict, "name") else str(verdict)
+            result = {"result": None, "sigma": float(sigma), "σ": float(sigma), "verdict": vn, "step": 0}
+
+        if "σ" not in result and "sigma" in result:
+            result["σ"] = float(result["sigma"])
+        latency_ms = (time.perf_counter() - t0) * 1000.0
+
+        observe = self._modules.get("observe")
+        if observe is not None and hasattr(observe, "record"):
+            v = result.get("verdict", "RETHINK")
+            vs = v.name if hasattr(v, "name") else str(v)
+            observe.record(
+                prompt=str(input_data),
+                response=self._result_body(result),
+                sigma=float(result.get("σ", result.get("sigma", 0.5))),
+                verdict=vs,
+                latency_ms=latency_ms,
+            )
+
+        drive = self._modules.get("drive")
+        if drive is not None and hasattr(drive, "record"):
+            drive.record(float(result.get("σ", result.get("sigma", 0.5))))
+
+        meta = self._modules.get("meta_goal")
+        if meta is not None and hasattr(meta, "record"):
+            skill = "general"
+            if isinstance(input_data, str) and "skill:" in input_data.lower():
+                skill = "tagged"
+            meta.record(skill, float(result.get("σ", result.get("sigma", 0.5))))
+
+        return result
+
+    def cognitive_state(self) -> Dict[str, Any]:
+        """Snapshot for dashboards — proxies only; not a claim of mindedness."""
+        if not self._booted:
+            self.boot()
+        state: Dict[str, Any] = {
+            "booted": self._booted,
+            "modules": self.status(),
+            "claim": "NOT AGI ACHIEVED — lab cognitive wiring only; see docs/CLAIM_DISCIPLINE.md",
+        }
+        drive = self._modules.get("drive")
+        if drive is not None and hasattr(drive, "emotion"):
+            state["emotion"] = drive.emotion()
+        meta = self._modules.get("meta_goal")
+        if meta is not None and hasattr(meta, "next_goal"):
+            state["next_goal"] = meta.next_goal()
+        observe = self._modules.get("observe")
+        if observe is not None and hasattr(observe, "summary"):
+            state["observe"] = observe.summary(last_n=10)
+        conscious = self._modules.get("conscious")
+        if conscious is not None and hasattr(conscious, "σ_meta"):
+            state["σ_meta"] = conscious.σ_meta()
+        return state
 
 
 class SigmaTrace:
@@ -868,4 +1035,4 @@ class SigmaFabric:
         return {"error": "no snapshot manager"}
 
 
-__all__ = ["FabricResult", "SigmaFabric", "SigmaTrace"]
+__all__ = ["Fabric", "FabricResult", "SigmaFabric", "SigmaTrace"]
