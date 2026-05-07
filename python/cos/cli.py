@@ -1277,6 +1277,75 @@ def _cmd_constitution(args: argparse.Namespace) -> int:
     return 0 if result["compliant"] else 3
 
 
+def _cmd_mega(args: argparse.Namespace) -> int:
+    """Fabric boot + layer coverage + process + constitution probe (lab integration banner)."""
+
+    from cos.fabric import Fabric
+    from cos.zkp import SigmaConstitution
+
+    text = str(getattr(args, "mega_text", "") or "").strip()
+    if not text:
+        print("cos mega: INPUT text required", file=sys.stderr)
+        return 2
+
+    fab = Fabric()
+    status = fab.boot()
+    modules = status.get("modules", {})
+    loaded = sum(1 for m in modules.values() if m.get("state") == "loaded")
+    total = len(modules)
+    layers = fab.layer_status()
+    result = fab.process(text)
+    const_result = SigmaConstitution().check(fab.gate)
+
+    if _cli_out_json(args):
+        print(
+            json.dumps(
+                {
+                    "boot": {"loaded": loaded, "total_modules": total},
+                    "layer_status": layers,
+                    "process": result,
+                    "constitution": const_result,
+                },
+                ensure_ascii=False,
+                default=str,
+            )
+        )
+        return 0
+
+    print("\n╔══ CREATION OS MEGA ══╗")
+    print(f"║ Modules: {loaded}/{total} loaded ║")
+    print("╚══════════════════════╝\n")
+
+    for layer, info in sorted(layers.items()):
+        coverage = int(float(info["coverage"]) * 100)
+        filled = min(10, coverage // 10)
+        bar = "█" * filled + "░" * (10 - filled)
+        print(f"  {layer:15s} {bar} {coverage}%")
+
+    print(f"\n[Processing: {text}]\n")
+    sig = result.get("σ", result.get("sigma", 0.0))
+    print(f"  σ      = {float(sig):.4f}")
+    print(f"  σ_meta = {result.get('σ_meta', 'N/A')}")
+    print(f"  Verdict: {result.get('verdict', 'N/A')}")
+    print(f"  Latency: {result.get('latency_ms', 'N/A')}ms")
+    print(f"  Layers:  {result.get('layers_active', 'N/A')}")
+
+    trace = result.get("trace") or []
+    if trace:
+        print(f"\n  Trace ({len(trace)} steps):")
+        for t in trace:
+            layer = t.get("layer", "?")
+            print(f"    {layer:15s} → {t}")
+
+    c_line = "✓ compliant" if const_result["compliant"] else "✗ VIOLATION"
+    print(f"\n  Constitution: {c_line}")
+
+    print("\n  NOT AGI ACHIEVED")
+    print("  σ-AWARE ARCHITECTURE")
+    print("  1 = 1")
+    return 0
+
+
 def _cmd_mcp(args: argparse.Namespace) -> int:
     from cos.sigma_mcp_registry import SigmaMCPRegistry
 
@@ -4591,6 +4660,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     cst = sub.add_parser("constitution", help="σ constitution probe vs SigmaGate() (declarative lab checks)")
     cst.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
     cst.set_defaults(func=_cmd_constitution)
+
+    mega = sub.add_parser(
+        "mega",
+        help="σ-stack integration demo: Fabric boot + L0–L9 coverage + process + constitution (NOT AGI ACHIEVED)",
+    )
+    mega.add_argument("mega_text", metavar="INPUT", help="text passed to Fabric.process")
+    mega.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
+    mega.set_defaults(func=_cmd_mega)
 
     mcp = sub.add_parser(
         "mcp",
