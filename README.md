@@ -234,7 +234,7 @@ Creation OS ships with a broad **in-tree module surface** (documentation sometim
 - **Alignment**: value learning, human-in-the-loop escalation, explainability
 - **Embodiment**: sensorimotor loop lab, symbol grounding, physical world model
 - **Drives**: curiosity, competence, homeostasis (lab intrinsic signals)
-- **Consciousness**: Φ and integration **proxies only** — no phenomenal consciousness claim
+- **Metacognition / awareness metrics**: Φ and integration **proxies only** — no phenomenal-awareness claim
 - **Hardware**: RISC-V σ ISA lab mirrors, TinyML, Soul LED paths where present
 - **Deployment**: Docker, Helm, air-gap options per docs, sovereign accounting lab, pip install
 - **Ops**: registry, digital twin lab, observability hooks, cos-evolve RSI lab
@@ -360,7 +360,7 @@ Eight-layer map of the σ-aware system (narrative + lab — not every layer ship
 
 ### σ-Fabric: full system connection
 
-[`SigmaFabric`](python/cos/fabric.py) is the **wiring layer**: `boot()` loads available Python modules (gate, pipeline, stream, metacog, reason, snapshots, …) and `process()` runs a **traced** path with σ carried stage to stage. The map below is **conceptual** (not every box is present in a minimal `pip install`); **L9** stays a research-facing proxy — not a consciousness product claim (see [Claim discipline](#claim-discipline)).
+[`SigmaFabric`](python/cos/fabric.py) is the **wiring layer**: `boot()` loads available Python modules (gate, pipeline, stream, metacog, reason, snapshots, …) and `process()` runs a **traced** path with σ carried stage to stage. The lighter [`Fabric`](python/cos/fabric.py) class boots the Ω-loop cognitive map with **observable** per-module status (`loaded` / `missing` / `failed` / `disabled`). The map below is **conceptual** (not every box is present in a minimal `pip install`); **L9** stays a research-facing proxy — not a metacognition or awareness **product** claim (see [Claim discipline](#claim-discipline)).
 
 <p align="center">
 <table role="presentation" align="center" cellpadding="0" cellspacing="0" style="max-width:min(1200px,96%);width:96%;margin:0 auto;">

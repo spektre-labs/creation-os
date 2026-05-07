@@ -4,17 +4,24 @@
 
 from __future__ import annotations
 
+import builtins
 import tempfile
 from pathlib import Path
 
+import pytest
+
 from cos.fabric import Fabric, FabricResult, SigmaFabric
+
+
+def _module_entry(st: dict, name: str) -> dict:
+    return st["modules"][name]
 
 
 def test_boot_loads_core() -> None:
     f = Fabric()
     st = f.boot()
-    assert st["gate"] == "loaded"
-    assert st["config"] == "loaded"
+    assert _module_entry(st, "gate")["state"] == "loaded"
+    assert _module_entry(st, "config")["state"] == "loaded"
 
 
 def test_boot_gate_always_loaded() -> None:
@@ -44,8 +51,8 @@ def test_status_shows_all_modules() -> None:
         "tool_safety",
         "omega",
     ):
-        assert name in st
-        assert st[name] in ("loaded", "missing")
+        assert name in st["modules"]
+        assert _module_entry(st, name)["state"] in ("loaded", "missing", "failed", "disabled")
 
 
 def test_process_returns_sigma() -> None:
@@ -71,8 +78,8 @@ def test_cognitive_state_snapshot() -> None:
     snap = f.cognitive_state()
     assert snap["booted"] is True
     assert "modules" in snap
-    assert "claim" in snap
-    assert "NOT AGI" in snap["claim"].upper()
+    assert "note" in snap
+    assert "CLAIM_DISCIPLINE" in snap["note"]
 
 
 def test_missing_module_does_not_crash() -> None:
@@ -80,7 +87,7 @@ def test_missing_module_does_not_crash() -> None:
     f.boot()
     f._modules["symbolic"] = None
     snap = f.cognitive_state()
-    assert snap["modules"]["symbolic"] == "missing"
+    assert snap["modules"]["symbolic"]["state"] == "missing"
 
 
 def test_boot_idempotent() -> None:
@@ -88,6 +95,65 @@ def test_boot_idempotent() -> None:
     a = f.boot()
     b = f.boot()
     assert a == b
+
+
+def test_disabled_module_skipped() -> None:
+    f = Fabric(disabled_modules=["graph"])
+    st = f.boot()
+    assert _module_entry(st, "graph")["state"] == "disabled"
+    assert _module_entry(st, "graph")["error"] is None
+
+
+def test_failed_module_reports_error(monkeypatch: pytest.MonkeyPatch) -> None:
+    class BrokenGraph:
+        def __init__(self, *a: object, **k: object) -> None:
+            raise RuntimeError("graph init failed")
+
+    monkeypatch.setattr("cos.graph.SigmaGraph", BrokenGraph)
+    f = Fabric()
+    st = f.boot()
+    entry = _module_entry(st, "graph")
+    assert entry["state"] == "failed"
+    assert entry["error"] is not None
+    assert "graph init failed" in entry["error"]
+    assert "graph" in f._module_errors
+
+
+def test_status_distinguishes_missing_vs_failed(monkeypatch: pytest.MonkeyPatch) -> None:
+    real_import = builtins.__import__
+
+    def import_no_symbolic(
+        name: str,
+        globals_arg: dict | None = None,
+        locals_arg: dict | None = None,
+        fromlist: tuple = (),
+        level: int = 0,
+    ):
+        if name == "cos.symbolic" and fromlist and "SigmaSymbolic" in fromlist:
+            raise ImportError("package not available")
+        return real_import(name, globals_arg, locals_arg, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", import_no_symbolic)
+    f_miss = Fabric()
+    st_miss = f_miss.boot()
+    sym_miss = _module_entry(st_miss, "symbolic")
+    assert sym_miss["state"] == "missing"
+    assert sym_miss["error"] is None
+    assert "symbolic" not in f_miss._module_errors
+
+    monkeypatch.setattr(builtins, "__import__", real_import)
+
+    class BoomReason:
+        def __init__(self, *a: object, **k: object) -> None:
+            raise ValueError("reason ctor boom")
+
+    monkeypatch.setattr("cos.reason.SigmaReason", BoomReason)
+    f_fail = Fabric()
+    st_fail = f_fail.boot()
+    re = _module_entry(st_fail, "reason")
+    assert re["state"] == "failed"
+    assert re["error"] is not None
+    assert "boom" in re["error"]
 
 
 # --- SigmaFabric (pipeline orchestration) ---------------------------------

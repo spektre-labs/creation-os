@@ -15,8 +15,8 @@ Layer map (conceptual — not all code paths load in minimal installs)::
                     ΣRecursion / σ-spec lab hooks (no trained stacks)
   L2  Cognition   — Reason (FOL), Metacog, Calibrate
   L3  Memory      — SnapshotManager, ConversationHistory
-  L4–L9           — agency, learning, protocol, safety, deploy, “consciousness proxy”
-                    hooks live in other modules; wire them here as needed. **v226–v230:**
+  L4–L9           — agency, learning, protocol, safety, deploy, metacognition / awareness-metric
+                    proxies live in other modules; wire them here as needed. **v226–v230:**
                     ``SigmaSafety`` (first), ``SigmaMCPServer``, ``SigmaOffline``, ``SigmaCost``,
                     ``SigmaWatchdog`` when importable.
 
@@ -29,7 +29,7 @@ import os
 import tempfile
 import time
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, FrozenSet, Iterable, List, Optional, Union
 
 from cos.config import DEFAULT_CONFIG, SigmaConfig
 from cos.pipeline import Pipeline, PipelineResult
@@ -39,88 +39,159 @@ from cos.sigma_gate import SigmaGate
 class Fabric:
     """Creation OS cognitive boot — load optional modules, run :class:`~cos.omega.OmegaLoop` when present.
 
-    This is **integration wiring**, not strong AGI. See ``docs/CLAIM_DISCIPLINE.md`` — **NOT AGI ACHIEVED**.
+    **Diagnostic wiring:** :meth:`status` exposes *loaded* / *missing* / *failed* / *disabled* per module so
+    the architecture stays observable (no silent stub orchestration). For measured claims see
+    ``docs/CLAIM_DISCIPLINE.md``.
 
     For heavy σ-pipeline orchestration (snapshots, RAG, MCP, …) use :class:`SigmaFabric`.
     """
 
-    def __init__(self, config: Optional[SigmaConfig] = None) -> None:
+    def __init__(
+        self,
+        config: Optional[SigmaConfig] = None,
+        *,
+        disabled_modules: Optional[Iterable[str]] = None,
+    ) -> None:
         self.config = config if config is not None else DEFAULT_CONFIG
         ta = float(self.config.threshold_accept)
         tb = float(self.config.threshold_abstain)
         self.gate = SigmaGate(threshold_accept=ta, threshold_abstain=tb)
         self._modules: Dict[str, Any] = {}
+        self._module_errors: Dict[str, str] = {}
+        self._disabled_modules: FrozenSet[str] = frozenset(
+            str(x).strip() for x in (disabled_modules or ()) if str(x).strip()
+        )
         self._booted = False
 
-    def boot(self) -> Dict[str, str]:
-        """Load modules in dependency order; absent optional modules are marked *missing* in :meth:`status`."""
+    def _install_optional(self, name: str, loader: Callable[[], Any]) -> None:
+        """Load one optional module; ImportError → *missing*, other exceptions → *failed* with stored repr."""
+        if name in self._disabled_modules:
+            self._modules[name] = None
+            return
+        try:
+            self._modules[name] = loader()
+        except ImportError:
+            self._modules[name] = None
+        except Exception as e:  # noqa: BLE001 — intentional diagnostic surface
+            self._modules[name] = None
+            self._module_errors[name] = repr(e)
+
+    def boot(self) -> Dict[str, Any]:
+        """Load modules in dependency order; see :meth:`status` for per-module *state* and errors."""
         if self._booted:
             return self.status()
 
         self._modules.clear()
-
+        self._module_errors.clear()
         self._modules["gate"] = self.gate
         self._modules["config"] = self.config
 
-        self._try_mod("graph", lambda: __import__("cos.graph", fromlist=["SigmaGraph"]).SigmaGraph(gate=self.gate))
-        try:
-            self._modules["memory"] = __import__("cos.memory", fromlist=["SigmaMemory"]).SigmaMemory(gate=self.gate)
-        except Exception:
+        self._install_optional(
+            "graph",
+            lambda: __import__("cos.graph", fromlist=["SigmaGraph"]).SigmaGraph(gate=self.gate),
+        )
+        if "memory" in self._disabled_modules:
             self._modules["memory"] = None
+        else:
+            try:
+                self._modules["memory"] = __import__("cos.memory", fromlist=["SigmaMemory"]).SigmaMemory(
+                    gate=self.gate,
+                )
+            except ImportError:
+                self._modules["memory"] = None
+            except Exception as e:  # noqa: BLE001
+                self._modules["memory"] = None
+                self._module_errors["memory"] = repr(e)
 
-        self._try_mod(
+        self._install_optional(
             "symbolic",
             lambda: __import__("cos.symbolic", fromlist=["SigmaSymbolic"]).SigmaSymbolic(gate=self.gate),
         )
-        self._try_mod("reason", lambda: __import__("cos.reason", fromlist=["SigmaReason"]).SigmaReason())
-
-        self._try_mod("world_model", lambda: __import__("cos.jepa", fromlist=["SigmaJEPA"]).SigmaJEPA(gate=self.gate))
-
-        self._try_mod("drive", lambda: __import__("cos.drive", fromlist=["SigmaDrive"]).SigmaDrive())
-        self._try_mod(
+        self._install_optional(
+            "reason",
+            lambda: __import__("cos.reason", fromlist=["SigmaReason"]).SigmaReason(),
+        )
+        self._install_optional(
+            "world_model",
+            lambda: __import__("cos.jepa", fromlist=["SigmaJEPA"]).SigmaJEPA(gate=self.gate),
+        )
+        self._install_optional(
+            "drive",
+            lambda: __import__("cos.drive", fromlist=["SigmaDrive"]).SigmaDrive(),
+        )
+        self._install_optional(
             "meta_goal",
             lambda: __import__("cos.meta_goal", fromlist=["SigmaMetaGoal"]).SigmaMetaGoal(gate=self.gate),
         )
-
-        self._try_mod(
+        self._install_optional(
             "conscious",
             lambda: __import__("cos.conscious", fromlist=["SigmaConscious"]).SigmaConscious(gate=self.gate),
         )
-
-        self._try_mod("ttt", lambda: __import__("cos.ttt", fromlist=["SigmaTTT"]).SigmaTTT(gate=self.gate))
-        self._try_mod("evolve", lambda: __import__("cos.evolve", fromlist=["SigmaEvolve"]).SigmaEvolve(gate=self.gate))
-
-        self._try_mod("observe", lambda: __import__("cos.observe", fromlist=["SigmaObserve"]).SigmaObserve())
-        self._try_mod("drift", lambda: __import__("cos.drift", fromlist=["SigmaDrift"]).SigmaDrift())
-
-        self._try_mod(
+        self._install_optional(
+            "ttt",
+            lambda: __import__("cos.ttt", fromlist=["SigmaTTT"]).SigmaTTT(gate=self.gate),
+        )
+        self._install_optional(
+            "evolve",
+            lambda: __import__("cos.evolve", fromlist=["SigmaEvolve"]).SigmaEvolve(gate=self.gate),
+        )
+        self._install_optional(
+            "observe",
+            lambda: __import__("cos.observe", fromlist=["SigmaObserve"]).SigmaObserve(),
+        )
+        self._install_optional(
+            "drift",
+            lambda: __import__("cos.drift", fromlist=["SigmaDrift"]).SigmaDrift(),
+        )
+        self._install_optional(
             "tool_safety",
             lambda: __import__("cos.tool_safety", fromlist=["ToolSafety"]).ToolSafety(gate=self.gate),
         )
 
-        try:
-            OmegaLoop = __import__("cos.omega", fromlist=["OmegaLoop"]).OmegaLoop
-            self._modules["omega"] = OmegaLoop(
-                gate=self.gate,
-                memory=self._modules.get("memory"),
-                graph=self._modules.get("graph"),
-                config=self.config,
-                world_model=self._modules.get("world_model"),
-            )
-        except Exception:
+        if "omega" in self._disabled_modules:
             self._modules["omega"] = None
+        else:
+            try:
+                OmegaLoop = __import__("cos.omega", fromlist=["OmegaLoop"]).OmegaLoop
+                self._modules["omega"] = OmegaLoop(
+                    gate=self.gate,
+                    memory=self._modules.get("memory"),
+                    graph=self._modules.get("graph"),
+                    config=self.config,
+                    world_model=self._modules.get("world_model"),
+                )
+            except ImportError:
+                self._modules["omega"] = None
+            except Exception as e:  # noqa: BLE001
+                self._modules["omega"] = None
+                self._module_errors["omega"] = repr(e)
 
         self._booted = True
         return self.status()
 
-    def _try_mod(self, name: str, factory: Any) -> None:
-        try:
-            self._modules[name] = factory()
-        except Exception:
-            self._modules[name] = None
-
-    def status(self) -> Dict[str, str]:
-        return {name: ("loaded" if mod is not None else "missing") for name, mod in self._modules.items()}
+    def status(self) -> Dict[str, Any]:
+        """Module map with *loaded* / *missing* / *failed* / *disabled* and optional error strings."""
+        mods: Dict[str, Any] = {}
+        for name, mod in self._modules.items():
+            if name in self._disabled_modules:
+                state = "disabled"
+                err = None
+            elif mod is not None:
+                state = "loaded"
+                err = None
+            elif name in self._module_errors:
+                state = "failed"
+                err = self._module_errors.get(name)
+            else:
+                state = "missing"
+                err = None
+            entry: Dict[str, Any] = {
+                "state": state,
+                "class": type(mod).__name__ if mod is not None else None,
+                "error": err,
+            }
+            mods[name] = entry
+        return {"modules": mods, "booted": self._booted}
 
     def get(self, module_name: str) -> Any:
         return self._modules.get(module_name)
@@ -177,13 +248,17 @@ class Fabric:
         return result
 
     def cognitive_state(self) -> Dict[str, Any]:
-        """Snapshot for dashboards — proxies only; not a claim of mindedness."""
+        """Snapshot for dashboards — metacognition / awareness-metric proxies only (lab)."""
         if not self._booted:
             self.boot()
+        st = self.status()
         state: Dict[str, Any] = {
-            "booted": self._booted,
-            "modules": self.status(),
-            "claim": "NOT AGI ACHIEVED — lab cognitive wiring only; see docs/CLAIM_DISCIPLINE.md",
+            "booted": st["booted"],
+            "modules": st["modules"],
+            "note": (
+                "Architecture observability / lab integration only — see docs/CLAIM_DISCIPLINE.md "
+                "for evidence scope (not a product claim of general intelligence)."
+            ),
         }
         drive = self._modules.get("drive")
         if drive is not None and hasattr(drive, "emotion"):
@@ -196,7 +271,9 @@ class Fabric:
             state["observe"] = observe.summary(last_n=10)
         conscious = self._modules.get("conscious")
         if conscious is not None and hasattr(conscious, "σ_meta"):
-            state["σ_meta"] = conscious.σ_meta()
+            am = conscious.σ_meta()
+            state["awareness_metrics"] = am
+            state["σ_meta"] = am
         return state
 
 

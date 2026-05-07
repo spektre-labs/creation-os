@@ -3041,10 +3041,15 @@ def _cmd_cognitive_boot(_args: argparse.Namespace) -> int:
     from cos.fabric import Fabric
 
     f = Fabric()
-    status = f.boot()
-    for mod, st in sorted(status.items()):
-        mark = "[+]" if st == "loaded" else "[-]"
-        print(f"  {mark} {mod}: {st}")
+    st = f.boot()
+    for mod, info in sorted(st["modules"].items()):
+        mst = str(info.get("state", "?"))
+        mark = "[+]" if mst == "loaded" else "[-]"
+        extra = ""
+        if info.get("error"):
+            err = str(info["error"])
+            extra = f" — {err[:120]}{'…' if len(err) > 120 else ''}"
+        print(f"  {mark} {mod}: {mst}{extra}")
     return 0
 
 
@@ -3853,13 +3858,13 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     bootp = sub.add_parser(
         "boot",
-        help="Boot cognitive Fabric (Ω-loop modules; shows loaded vs missing — not AGI)",
+        help="Boot cognitive Fabric (Ω-loop wiring; module states: loaded/missing/failed/disabled)",
     )
     bootp.set_defaults(func=_cmd_cognitive_boot)
 
     cstat = sub.add_parser(
         "status",
-        help="Cognitive snapshot JSON (Fabric modules + σ proxies — lab integration only)",
+        help="Cognitive snapshot JSON (module diagnostics + metacognition / awareness_metrics)",
     )
     cstat.set_defaults(func=_cmd_cognitive_status)
 

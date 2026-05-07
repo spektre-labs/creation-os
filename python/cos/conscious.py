@@ -1,7 +1,11 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Gate-only façade for σ-consciousness **proxies** (audit / lab — not phenomenal awareness)."""
+"""Metacognition / awareness-metric façade (lab).
+
+Implements :class:`SigmaConscious` as a thin entry point over :class:`SigmaConsciousProxy`.
+This module is internal wiring; user-facing docs and CLI refer to *metacognition* /
+*awareness_metrics*, not colloquial “consciousness.” See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 from typing import Any, Dict
@@ -17,7 +21,7 @@ class _Stub:
 
 
 class SigmaConscious:
-    """Thin wrapper so :mod:`cos.fabric` can boot metacognition with ``gate=`` only."""
+    """Thin wrapper so :mod:`cos.fabric` can boot metacognition / awareness-metric proxies with ``gate=`` only."""
 
     def __init__(self, gate: Any = None) -> None:
         g = gate if gate is not None else SigmaGate()
