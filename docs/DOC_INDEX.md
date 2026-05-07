@@ -9,6 +9,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [QUICKSTART.md](QUICKSTART.md) | Integrators | Under 5 minutes: install → `cos score` → Python API → chat/serve pointers + verdict table |
 | [LOCAL_MODEL_SETUP.md](LOCAL_MODEL_SETUP.md) | Integrators | **cos chat** with llama.cpp, Ollama, LM Studio, or OpenAI-compatible endpoints |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Integrators | σ layers (L1 vs cascade), verdict thresholds, C kernel policy pointer |
+| [WOLFRAM.md](WOLFRAM.md) | Researchers / pedagogy | Wolfram Cloud σ-persistence lab (`scripts/wolfram/sigma_persistence.wl`) + mapping to Python `cos` |
 | [SUPPORTED_PATH.md](SUPPORTED_PATH.md) | Integrators | Supported `pip` surfaces + evidence rows + explicit non-claims |
 | [MCP_SIGMA.md](MCP_SIGMA.md) | Agent integrators | FastMCP LSD σ-gate stdio server, tool list, JSON response envelope |
 | [MCP_LISTING.md](MCP_LISTING.md) | Operators / marketplace | Draft marketplace copy + install JSON + submission checklist (evidence-backed numbers only) |

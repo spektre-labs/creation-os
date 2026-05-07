@@ -7,6 +7,7 @@
 ![Tests](https://img.shields.io/badge/tests-1028%20passed-brightgreen)
 ![Merge Gate](https://img.shields.io/badge/merge--gate-GREEN-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
+![Wolfram](https://img.shields.io/badge/Wolfram-Language-red)
 
 <p align="center">
   <a href="https://spektrelabs.org">
