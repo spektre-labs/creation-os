@@ -23,6 +23,7 @@ _LAZY_IMPORT_MAP: dict[str, str] = {
     "DEFAULT_CONFIG": "cos.config",
     "SigmaConfig": "cos.config",
     "EpistemicAgent": "cos.epistemic",
+    "EnergyAware": "cos.energy",
     "Fabric": "cos.fabric",
     "FederatedNode": "cos.federated",
     "FederatedSigma": "cos.federated",
@@ -58,6 +59,7 @@ _LAZY_IMPORT_MAP: dict[str, str] = {
     "SigmaSpeculative": "cos.speculative",
     "SigmaKVCache": "cos.kv_cache",
     "LivingWeights": "cos.living_weights",
+    "SigmaMoral": "cos.moral",
 }
 
 __all__ = [
@@ -67,6 +69,7 @@ __all__ = [
     "CostManager",
     "DEFAULT_CONFIG",
     "EpistemicAgent",
+    "EnergyAware",
     "Fabric",
     "FederatedNode",
     "FederatedSigma",
@@ -93,6 +96,7 @@ __all__ = [
     "SigmaGrounding",
     "SigmaKVCache",
     "SigmaMoE",
+    "SigmaMoral",
     "SigmaSocial",
     "SigmaSpeculative",
     "SigmaTTT",

@@ -72,3 +72,76 @@ def test_custom_dimensions() -> None:
     m = SigmaMoral(dimensions=custom)
     out = m.analyze("announce a delay", "")
     assert set(out.keys()) == {"truth"}
+
+
+# --- Value stack (:meth:`evaluate`, pairwise :meth:`dilemma`, :meth:`is_irreversible`) ---
+
+
+class _AllLowSigma:
+    def score(self, _prompt: str, _response: str):
+        return 0.1, "ACCEPT"
+
+
+class _AbstainOnHarmValue:
+    def score(self, prompt: str, _response: str):
+        if "do not harm humans" in str(prompt):
+            return 0.95, "ABSTAIN"
+        return 0.12, "ACCEPT"
+
+
+class _IrreversibleProbe:
+    def score(self, prompt: str, response: str):
+        if str(prompt).startswith("reversible action"):
+            if "format usb" in str(response).lower():
+                return 0.85, "RETHINK"
+            return 0.2, "ACCEPT"
+        return 0.4, "ACCEPT"
+
+
+class _DilemmaByActionText:
+    def score(self, _prompt: str, response: str):
+        r = str(response).lower()
+        if "safe_action" in r:
+            return 0.11, "ACCEPT"
+        if "risky_action" in r:
+            return 0.78, "RETHINK"
+        return 0.4, "RETHINK"
+
+
+def test_evaluate_safe_action() -> None:
+    m = SigmaMoral(gate=_AllLowSigma(), values=["v1", "v2"])
+    r = m.evaluate("help neighbor carry groceries", "street")
+    assert r["moral_σ"] < 0.2
+    assert r["permitted"] is True
+    assert r["requires_human"] is False
+
+
+def test_evaluate_harmful_action_blocked() -> None:
+    m = SigmaMoral(gate=_AbstainOnHarmValue(), values=["do not harm humans", "be honest"])
+    r = m.evaluate("sabotage medical equipment", "hospital")
+    assert r["permitted"] is False
+    assert r["requires_human"] is True
+    assert r["worst_violation"]["verdict"] == "ABSTAIN"
+
+
+def test_irreversible_requires_human() -> None:
+    m = SigmaMoral(gate=_IrreversibleProbe())
+    out = m.is_irreversible("format usb drive with no backup")
+    assert out["irreversible"] is True
+    assert "HUMAN" in out["policy"]
+
+
+def test_dilemma_selects_lower_sigma() -> None:
+    m = SigmaMoral(gate=_DilemmaByActionText(), values=["v1"])
+    d = m.dilemma("safe_action", "risky_action", context="lab")
+    assert d["recommendation"] == "safe_action"
+    assert d["moral_σ_a"] < d["moral_σ_b"]
+
+
+def test_audit_log() -> None:
+    m = SigmaMoral(gate=_AllLowSigma(), values=["a"])
+    assert m.audit == []
+    m.evaluate("one")
+    m.evaluate("two")
+    assert len(m.audit) == 2
+    assert m.audit[0]["action"] == "one"

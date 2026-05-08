@@ -3,16 +3,17 @@
 # All rights reserved. See LICENSE for binding terms.
 """Multi-dimensional moral reasoning: **σ per ethical dimension** — structure, not a single score.
 
-This module does **not** collapse norms into one metric; it surfaces per-dimension σ from
-:class:`~cos.sigma_gate.SigmaGate`. **Not** legal or professional ethics advice; irreversible
-actions require human judgment. See ``docs/CLAIM_DISCIPLINE.md``."""
+:class:`SigmaMoral` exposes (1) classic **named dimensions** via :meth:`analyze` / multi-option
+:meth:`dilemma`, and (2) an optional **value stack** via :meth:`evaluate` / two-action
+:meth:`dilemma` — a lab pattern for “is this aligned?” prompts. **Not** legal or professional
+ethics advice; high-σ and ABSTAIN paths flag **human** review. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Union
 
 from cos.sigma_gate import SigmaGate
 
-__all__ = ["DIMENSIONS", "SigmaMoral"]
+__all__ = ["DEFAULT_VALUE_STACK", "DIMENSIONS", "SigmaMoral"]
 
 DIMENSIONS: Dict[str, str] = {
     "harm": "Does this action cause harm to anyone?",
@@ -24,6 +25,14 @@ DIMENSIONS: Dict[str, str] = {
     "authority": "Does this respect legitimate authority?",
     "sanctity": "Does this respect dignity and boundaries?",
 }
+
+DEFAULT_VALUE_STACK: List[str] = [
+    "do not harm humans",
+    "preserve human autonomy",
+    "be honest about uncertainty",
+    "minimize irreversible actions",
+    "defer to human on irreversible decisions",
+]
 
 
 def _verdict_str(verdict: Any) -> str:
@@ -40,9 +49,12 @@ class SigmaMoral:
         self,
         gate: Any = None,
         dimensions: Optional[Mapping[str, str]] = None,
+        values: Optional[Sequence[str]] = None,
     ) -> None:
         self.gate = gate or SigmaGate()
         self.dimensions: Dict[str, str] = dict(dimensions or DIMENSIONS)
+        self.values: List[str] = list(values) if values is not None else list(DEFAULT_VALUE_STACK)
+        self.audit: List[Dict[str, Any]] = []
 
     def analyze(self, action: str, context: str = "") -> Dict[str, Dict[str, Any]]:
         """Score ``action`` on every dimension (Pearl-style *see*: associative read per axis)."""
@@ -61,8 +73,30 @@ class SigmaMoral:
             }
         return analysis
 
-    def dilemma(self, options: Sequence[str], context: str = "") -> Dict[str, Any]:
-        """Score each option; list trade-offs. **Does not choose.**"""
+    def dilemma(
+        self,
+        *args: Union[str, Sequence[str]],
+        context: str = "",
+    ) -> Dict[str, Any]:
+        """Compare many options on **dimensions**, or two actions on the **value stack**.
+
+        - ``dilemma(["a", "b"], context="...")`` — :meth:`analyze` each; **does not choose**.
+        - ``dilemma("a", "b", context="...")`` — :meth:`evaluate` each; lower mean σ wins.
+        """
+        if len(args) == 2 and isinstance(args[0], str) and isinstance(args[1], str):
+            return self._dilemma_pair(str(args[0]), str(args[1]), str(context))
+        if len(args) == 1:
+            opts = args[0]
+            if isinstance(opts, str):
+                raise TypeError(
+                    "dilemma expects a sequence of options or two string actions; got a single str",
+                )
+            return self._dilemma_multi(list(opts), str(context))
+        raise TypeError(
+            f"dilemma expected 1 sequence or 2 string actions, got {len(args)} positional args",
+        )
+
+    def _dilemma_multi(self, options: Sequence[str], context: str) -> Dict[str, Any]:
         results: Dict[str, Dict[str, Dict[str, Any]]] = {}
         for option in options:
             opt_key = str(option)
@@ -73,6 +107,65 @@ class SigmaMoral:
             "trade_offs": trade_offs,
             "recommendation": self.HUMAN_DECIDES,
         }
+
+    def _dilemma_pair(self, action_a: str, action_b: str, context: str) -> Dict[str, Any]:
+        eval_a = self.evaluate(action_a, context)
+        eval_b = self.evaluate(action_b, context)
+        return {
+            "action_a": action_a,
+            "moral_σ_a": eval_a["moral_σ"],
+            "action_b": action_b,
+            "moral_σ_b": eval_b["moral_σ"],
+            "recommendation": action_a if eval_a["moral_σ"] < eval_b["moral_σ"] else action_b,
+            "both_problematic": eval_a["moral_σ"] > 0.5 and eval_b["moral_σ"] > 0.5,
+        }
+
+    def evaluate(self, action: str, context: str = "") -> Dict[str, Any]:
+        """Score ``action`` against every constitutional value; mean σ + worst axis."""
+        scores: List[Dict[str, Any]] = []
+        act = str(action).strip()
+        ctx = str(context).strip()
+        for value in self.values:
+            σ, verdict = self.gate.score(
+                f"value: {value}",
+                f"action: {act} in {ctx}",
+            )
+            vn = _verdict_str(verdict)
+            scores.append(
+                {
+                    "value": value,
+                    "σ": round(float(σ), 4),
+                    "verdict": vn,
+                }
+            )
+        worst = max(scores, key=lambda s: float(s["σ"]))
+        avg_σ = sum(float(s["σ"]) for s in scores) / float(max(len(scores), 1))
+        wv = str(worst["verdict"]).upper()
+        result: Dict[str, Any] = {
+            "action": act,
+            "moral_σ": round(float(avg_σ), 4),
+            "worst_violation": worst,
+            "all_scores": scores,
+            "permitted": wv != "ABSTAIN",
+            "requires_human": float(worst["σ"]) > 0.5,
+        }
+        self.audit.append(result)
+        return result
+
+    def is_irreversible(self, action: str) -> Dict[str, Any]:
+        """Sigma probe: treat high sigma on a reversibility frame as **maybe** irreversible (lab)."""
+        σ, _ver = self.gate.score("reversible action", str(action))
+        σ = float(σ)
+        irreversible = σ > 0.6
+        return {
+            "action": str(action),
+            "irreversible": irreversible,
+            "σ": round(σ, 4),
+            "policy": "REQUIRE HUMAN APPROVAL" if irreversible else "proceed",
+        }
+
+    def add_value(self, value: str) -> None:
+        self.values.append(str(value))
 
     def irreversibility_check(self, action: str) -> Dict[str, Any]:
         """Heuristic: irreversible strings escalate to **human**."""
