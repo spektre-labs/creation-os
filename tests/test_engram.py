@@ -84,3 +84,38 @@ def test_end_session_records(tmp_path: Path) -> None:
     e.end_session("done")
     types = [row["type"] for row in e.narrative]
     assert "session_end" in types
+
+
+def test_identity_invariant_empty(tmp_path: Path) -> None:
+    e = Engram(path=tmp_path / "e.json")
+    inv = e.identity_invariant()
+    assert inv["identity_preserved"] is False
+
+
+def test_identity_invariant_preserved_stable_low_sigma(tmp_path: Path) -> None:
+    e = Engram(path=tmp_path / "e.json")
+    for i in range(12):
+        e.record_event("e", str(i), σ=0.1)
+    inv = e.identity_invariant()
+    assert inv["sigma_avg"] < 0.5
+    assert inv["drift"] < 0.3
+    assert inv["identity_preserved"] is True
+    assert inv["invariant"] == "σ"
+
+
+def test_identity_invariant_fails_high_drift(tmp_path: Path) -> None:
+    e = Engram(path=tmp_path / "e.json")
+    sigmas = [0.1] * 9 + [0.95]
+    for i, s in enumerate(sigmas):
+        e.record_event("e", str(i), σ=s)
+    inv = e.identity_invariant()
+    assert inv["identity_preserved"] is False
+    assert inv["drift"] >= 0.3
+
+
+def test_identity_invariant_fails_high_mean(tmp_path: Path) -> None:
+    e = Engram(path=tmp_path / "e.json")
+    for i in range(12):
+        e.record_event("e", str(i), σ=0.55)
+    inv = e.identity_invariant()
+    assert inv["identity_preserved"] is False

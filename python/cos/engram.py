@@ -12,6 +12,7 @@ import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from cos.identity import compute_identity_invariant
 from cos.sigma_gate import SigmaGate
 
 __all__ = ["Engram"]
@@ -116,6 +117,11 @@ class Engram:
         σ_consistency, _ = self.gate.score(invariant_str, recent_str)
 
         return round((avg_σ + float(σ_consistency)) / 2.0, 4)
+
+    def identity_invariant(self) -> Dict[str, Any]:
+        """Scalar σ invariant over narrative history (see :func:`cos.identity.compute_identity_invariant`)."""
+        hist = [float(e["σ"]) for e in self.narrative]
+        return compute_identity_invariant(hist)
 
     def continuity_check(self) -> Dict[str, Any]:
         """Five-axis narrative continuity (NCT-inspired lab checklist).

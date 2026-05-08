@@ -144,6 +144,11 @@ def _cmd_identity(args: argparse.Namespace) -> int:
     print(f"Sessions: {e.identity['sessions']}")
     print(f"Events: {len(e.narrative)}")
     print(f"Identity σ: {e.identity_σ()}")
+    inv = e.identity_invariant()
+    print(
+        f"Identity invariant (σ): preserved={inv['identity_preserved']} "
+        f"sigma_avg={inv.get('sigma_avg', 'N/A')} drift={inv.get('drift', 'N/A')}"
+    )
     cont = e.continuity_check()
     print(f"Continuity: {cont['continuity_score']}")
     for axis, val in cont["axes"].items():
