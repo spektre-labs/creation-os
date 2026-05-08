@@ -3546,6 +3546,52 @@ def _cmd_cognitive_process(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_genesis(args: argparse.Namespace) -> int:
+    from cos.eval.genesis import GenesisCheck
+
+    path = str(getattr(args, "genesis_engram", "") or "").strip()
+    g = GenesisCheck(engram_path=path if path else None)
+    result = g.run()
+    print(f"Genesis: {result['passed']}/{result['total']} stages passed")
+    for name, r in result["stages"].items():
+        mark = "ok" if r.get("passed") else "fail"
+        print(f"  [{mark}] {name}")
+    print(f"\n{result['note']}")
+    return 0
+
+
+def _cmd_repro(args: argparse.Namespace) -> int:
+    from cos.eval.repro_bundle import ReproBundle
+
+    name = str(getattr(args, "repro_name", "demo") or "demo").strip() or "demo"
+    out = str(getattr(args, "repro_output", "") or "").strip()
+    b = ReproBundle(name, output_dir=out if out else None)
+    b.claim("Template reproducibility bundle (replace with harness-bound claims)", 3)
+    b.result("template", "score", 0.75, 10, model_id="lab", config={"note": "replace with archived harness metric"})
+    b.negative(
+        "template_negative",
+        "score",
+        0.52,
+        "Mandatory negative row: example failing distribution (see HaluEval in CLAIM_DISCIPLINE).",
+    )
+    b.limitation("Not a published harness artifact until JSON + SHA + host metadata are archived.")
+    b.falsifier("Held-out evaluation contradicts the stated positive row at same metric → bundle invalid.")
+
+    v = b.validate()
+    if getattr(args, "repro_json", False):
+        if not v["valid"]:
+            print(json.dumps({"valid": False, "errors": v["errors"]}, indent=2), file=sys.stderr)
+            return 1
+        out_path = b.save()
+        print(json.dumps({**v, "saved": out_path}, indent=2))
+        return 0
+    if not v["valid"]:
+        print("repro validate failed:", "; ".join(v["errors"]), file=sys.stderr)
+        return 1
+    print(b.save())
+    return 0
+
+
 def _cmd_memory_cli(args: argparse.Namespace) -> int:
     from cos.memory import SigmaMemory
 
@@ -5436,6 +5482,36 @@ def main(argv: Optional[List[str]] = None) -> int:
     ag.add_argument("--mock", action="store_true", help="built-in mock planner + gate for CI smoke")
     ag.add_argument("--json", action="store_true", help="print full step list as JSON")
     ag.set_defaults(func=_cmd_agent)
+
+    gen = sub.add_parser(
+        "genesis",
+        help="Six-stage cognitive primitive smoke (boot→persist; NOT AGI ACHIEVED — see docs/CLAIM_DISCIPLINE.md)",
+    )
+    gen.add_argument(
+        "--engram-path",
+        type=str,
+        default="",
+        dest="genesis_engram",
+        metavar="PATH",
+        help="optional Engram JSON path (default: ~/.cos/engram.json)",
+    )
+    gen.set_defaults(func=_cmd_genesis)
+
+    rep = sub.add_parser(
+        "repro",
+        help="Build a claim-discipline repro bundle JSON (requires git checkout for SHA)",
+    )
+    rep.add_argument("--name", type=str, default="demo", dest="repro_name", metavar="NAME")
+    rep.add_argument(
+        "--output-dir",
+        type=str,
+        default="",
+        dest="repro_output",
+        metavar="DIR",
+        help="override eval_results/<name> parent",
+    )
+    rep.add_argument("--json", action="store_true", dest="repro_json", help="print validation + path as JSON")
+    rep.set_defaults(func=_cmd_repro)
 
     ns = ap.parse_args(argv)
     fn = getattr(ns, "func", None)
