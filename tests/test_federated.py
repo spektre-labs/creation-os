@@ -10,7 +10,12 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.federated import FederatedAggregator, FederatedClient  # noqa: E402
+from cos.federated import (  # noqa: E402
+    FederatedAggregator,
+    FederatedClient,
+    FederatedNode,
+    FederatedSigma,
+)
 
 
 class _FixedGate:
@@ -110,3 +115,87 @@ def test_multiple_rounds_improve() -> None:
     r2 = agg.run_round({"learn": [("good", "x"), ("good", "y")]})
     assert r2["accepted"] == 1 and r2["rejected"] == 0
     assert r2["round"] == 2
+
+
+# --- FederatedNode / FederatedSigma (scalar-only reports) ---
+
+
+def test_add_node() -> None:
+    fed = FederatedSigma()
+    n = fed.add_node("edge-1", gate=_FixedGate(0.2))
+    assert n.node_id == "edge-1"
+    assert "edge-1" in fed.nodes
+
+
+def test_measure_stays_local() -> None:
+    fed = FederatedSigma()
+    n1 = fed.add_node("a", gate=_FixedGate(0.15))
+    fed.add_node("b", gate=_FixedGate(0.2))
+    n1.measure("local-prompt", "local-response")
+    assert len(n1.local_sigma_history) == 1
+    assert len(fed.nodes["b"].local_sigma_history) == 0
+
+
+def test_report_only_sigma() -> None:
+    n = FederatedNode("solo", gate=_FixedGate(0.33))
+    n.measure("p", "r")
+    rep = n.report()
+    assert set(rep.keys()) == {"node", "avg_σ", "n"}
+    assert rep["n"] == 1
+
+
+def test_aggregate_weighted() -> None:
+    fed = FederatedSigma()
+    n_lo = fed.add_node("lo", gate=_FixedGate(0.2))
+    n_hi = fed.add_node("hi", gate=_FixedGate(0.4))
+    for _ in range(2):
+        n_lo.measure("p", "r")
+    for _ in range(4):
+        n_hi.measure("p", "r")
+    out = fed.aggregate()
+    expect = (0.2 * 2 + 0.4 * 4) / 6.0
+    assert abs(out["global_σ"] - round(expect, 4)) < 1e-6
+    assert out["total_samples"] == 6
+
+
+def test_detect_outlier_nodes() -> None:
+    fed = FederatedSigma()
+    for cid, sigma in [("h1", 0.1), ("h2", 0.1), ("h3", 0.1), ("bad", 0.95)]:
+        n = fed.add_node(cid, gate=_FixedGate(sigma))
+        for _ in range(3):
+            n.measure("x", "y")
+    fed.aggregate()
+    det = fed.detect_outlier_nodes(deviation=0.3)
+    assert det["n_outliers"] >= 1
+    assert any(o["node"] == "bad" for o in det["outliers"])
+
+
+def test_byzantine_robust() -> None:
+    fed = FederatedSigma()
+    for i in range(4):
+        n = fed.add_node(f"h{i}", gate=_FixedGate(0.1))
+        for _ in range(5):
+            n.measure("a", "b")
+    nb = fed.add_node("byz", gate=_FixedGate(0.99))
+    for _ in range(5):
+        nb.measure("a", "b")
+    plain = fed.aggregate()
+    fed2 = FederatedSigma()
+    for i in range(4):
+        n = fed2.add_node(f"h{i}", gate=_FixedGate(0.1))
+        for _ in range(5):
+            n.measure("a", "b")
+    nb2 = fed2.add_node("byz", gate=_FixedGate(0.99))
+    for _ in range(5):
+        nb2.measure("a", "b")
+    trimmed = fed2.byzantine_robust_aggregate()
+    assert trimmed["global_σ"] < plain["global_σ"]
+
+
+def test_global_threshold_distributed() -> None:
+    fed = FederatedSigma()
+    n1 = fed.add_node("x", gate=_FixedGate(0.2))
+    n1.measure("a", "b")
+    fed.aggregate()
+    thr = fed.global_threshold
+    assert all(abs(node.local_threshold - thr) < 1e-9 for node in fed.nodes.values())
