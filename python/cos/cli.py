@@ -1277,6 +1277,41 @@ def _cmd_constitution(args: argparse.Namespace) -> int:
     return 0 if result["compliant"] else 3
 
 
+def _cmd_space_check(args: argparse.Namespace) -> int:
+    from cos.space_grade import SpaceGradeChecker
+
+    checker = SpaceGradeChecker()
+    path_s = str(getattr(args, "space_check_file", "") or "").strip()
+    mod_dir = str(getattr(args, "space_check_module_dir", "") or "").strip()
+
+    if path_s:
+        result = checker.check_file(path_s)
+        if result.get("error"):
+            print(result["error"], file=sys.stderr)
+            return 1
+        rate = 1.0 if result.get("compliant") else 0.0
+        print(f"Compliance: {rate}")
+        for v in result.get("violations", [])[:50]:
+            print(f"  Rule {v['rule']}: {v['description']} (line {v['line']})")
+        return 0 if result.get("compliant") else 3
+
+    base = mod_dir or str(Path(__file__).resolve().parent)
+    result = checker.check_module(base)
+    cr = result.get("compliance_rate", 0.0)
+    print(
+        f"Compliance rate: {cr} ({result.get('compliant')}/{result.get('total_files')} files clean)"
+    )
+    all_v = result.get("all_violations", [])
+    for v in all_v[:20]:
+        fn = v.get("file", "")
+        print(
+            f"  Rule {v['rule']}: {v['description']} ({fn}:{v['line']})"
+        )
+    if len(all_v) > 20:
+        print(f"  … {len(all_v) - 20} more violations")
+    return 0
+
+
 def _cmd_mega(args: argparse.Namespace) -> int:
     """Fabric boot + layer coverage + process + constitution probe (lab integration banner)."""
 
@@ -4802,6 +4837,21 @@ def main(argv: Optional[List[str]] = None) -> int:
     cst = sub.add_parser("constitution", help="σ constitution probe vs SigmaGate() (declarative lab checks)")
     cst.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
     cst.set_defaults(func=_cmd_constitution)
+
+    spc = sub.add_parser(
+        "space-check",
+        help="Heuristic AST checks (Power-of-10 *themes*); see docs/SPACE_GRADE.md — not qualification",
+    )
+    spc.add_argument("--file", type=str, default="", dest="space_check_file", metavar="PATH")
+    spc.add_argument(
+        "--module-dir",
+        type=str,
+        default="",
+        dest="space_check_module_dir",
+        metavar="DIR",
+        help="directory to scan (default: cos package dir)",
+    )
+    spc.set_defaults(func=_cmd_space_check)
 
     mega = sub.add_parser(
         "mega",
