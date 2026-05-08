@@ -4,7 +4,9 @@
 """L2–L6 cascade signals for :meth:`~cos.sigma_gate.SigmaGate.score_cascade`.
 
 Layers map to probe families (lab): L2=HIDE, L3=ICR (cross-layer updates), L4=SEP/energy
-on last hidden, L5=spectral / stack structure, **L6=sink+spectral (+ optional compression)**. See ``docs/CLAIM_DISCIPLINE.md``."""
+on last hidden, L5=spectral / stack structure, **L6=sink+spectral (+ optional compression)**. See ``docs/CLAIM_DISCIPLINE.md``.
+
+For **multi-model cost routing** (FAST → VERIFY → RAG → ESCALATE), see ``cos.cascade_router``."""
 from __future__ import annotations
 
 from typing import Any
