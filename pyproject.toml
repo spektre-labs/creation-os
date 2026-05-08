@@ -10,7 +10,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "creation-os"
-version = "3.3.0"
+version = "3.3.1"
 description = "σ-gate cognitive architecture — hallucination detection for any LLM"
 readme = "README.md"
 license = "LicenseRef-SCSL-1.0 OR AGPL-3.0-only"
