@@ -222,6 +222,43 @@ class OmegaLoop:
             results.append(self.step(inp))
         return results
 
+    def run_safe(
+        self,
+        inputs: Sequence[Input],
+        max_steps: Optional[int] = None,
+        *,
+        conv: Optional[Any] = None,
+        **conv_kwargs: Any,
+    ) -> List[Dict[str, Any]]:
+        """Like :meth:`run`, but attach :class:`~cos.convergence.SigmaConvergence` and stop on LOOP / OSCILLATING / CONVERGED / HALT.
+
+        Each step's σ is the step's ``σ`` field (primary gate score). On halt, appends a ``HALT`` envelope.
+        """
+        from cos.convergence import SigmaConvergence
+
+        c = conv if conv is not None else SigmaConvergence(self.gate, **conv_kwargs)
+        c.begin()
+        results: List[Dict[str, Any]] = []
+        lim = len(inputs) if max_steps is None else min(len(inputs), int(max_steps))
+        for i, inp in enumerate(inputs):
+            if i >= lim:
+                break
+            out = self.step(inp)
+            c.record(float(out.get("σ", 0.0)))
+            diagnosis = c.check()
+            out = dict(out)
+            out["convergence"] = diagnosis
+            results.append(out)
+            if diagnosis["status"] in ("LOOP", "OSCILLATING"):
+                results.append({"HALT": diagnosis})
+                break
+            if diagnosis["status"] == "CONVERGED":
+                break
+            if diagnosis["status"] == "HALT":
+                results.append({"HALT": diagnosis})
+                break
+        return results
+
     def total_σ(self) -> float:
         """Average historical σ (discrete ∫σ dt proxy)."""
         if not self.σ_history:

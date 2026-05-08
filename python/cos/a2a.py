@@ -350,6 +350,52 @@ class SigmaA2ANetwork:
 
         return task.to_dict()
 
+    def delegate_iterative(
+        self,
+        description: str,
+        step_fn: Callable[[int], Mapping[str, Any]],
+        *,
+        conv: Optional[Any] = None,
+        **conv_kwargs: Any,
+    ) -> Dict[str, Any]:
+        """Multi-turn delegation with σ-convergence (per-task); ``step_fn(turn)`` must return a mapping with ``σ`` (float).
+
+        Stops on LOOP, OSCILLATING, CONVERGED, or HALT from :class:`~cos.convergence.SigmaConvergence`.
+        """
+        from cos.convergence import SigmaConvergence
+
+        agent = self.best_agent_for(description)
+        if agent is None:
+            return {"error": "No capable agent found", "σ": 1.0}
+
+        self.task_counter += 1
+        task = Task(f"task_{self.task_counter}", description, self.card.name, agent.name)
+        self.tasks[task.task_id] = task
+        task.status = "working"
+
+        c = conv if conv is not None else SigmaConvergence(self.gate, **conv_kwargs)
+        c.begin()
+        trace: List[Dict[str, Any]] = []
+        turn = 0
+        while True:
+            step_out = dict(step_fn(turn))
+            sig = float(step_out.get("σ", step_out.get("sigma", 0.5)))
+            c.record(sig)
+            diagnosis = c.check()
+            trace.append({"turn": turn, "step": step_out, "convergence": diagnosis})
+            st = diagnosis["status"]
+            if st in ("LOOP", "OSCILLATING"):
+                task.fail(f"convergence_{st}")
+                return {"task": task.to_dict(), "trace": trace, "HALT": diagnosis}
+            if st == "HALT":
+                task.fail(str(diagnosis.get("reason", "halt")))
+                return {"task": task.to_dict(), "trace": trace, "HALT": diagnosis}
+            if st == "CONVERGED":
+                res = step_out.get("result", step_out)
+                task.complete(res, sig)
+                return {"task": task.to_dict(), "trace": trace, "convergence": diagnosis}
+            turn += 1
+
     def receive_result(self, task_id: str, result: Any) -> Dict[str, Any]:
         task = self.tasks.get(str(task_id))
         if task is None:
