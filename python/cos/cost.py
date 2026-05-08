@@ -3,13 +3,138 @@
 # All rights reserved. See LICENSE for binding terms.
 """σ-cost — illustrative routing economics vs flat premium-model baselines.
 
-Currency rates are **configurable placeholders**, not live invoices. See
-``docs/CLAIM_DISCIPLINE.md`` — do not merge with harness benchmarks in headlines."""
+:class:`CostManager` adds **USD-shaped** placeholder tariffs and σ-driven model picking (lab).
+:class:`SigmaCost` keeps EUR-style bench hooks. Rates are **not** live invoices. See
+``docs/CLAIM_DISCIPLINE.md`` — do not merge placeholder savings with harness rows in headlines."""
 from __future__ import annotations
 
-from typing import Any, Callable, Dict, List, Optional
+import time
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
-__all__ = ["SigmaCost"]
+from cos.sigma_gate import SigmaGate
+
+__all__ = ["MODEL_COSTS", "CostManager", "SigmaCost"]
+
+
+MODEL_COSTS: Dict[str, Tuple[float, float]] = {
+    # model_name: (input_cost_per_1M, output_cost_per_1M) USD placeholders
+    "local_7b": (0.0, 0.0),
+    "local_3b": (0.0, 0.0),
+    "qwen3_a3b": (0.0, 0.0),
+    "gpt4o_mini": (0.15, 0.60),
+    "claude_haiku": (0.25, 1.25),
+    "gpt4o": (2.50, 10.00),
+    "claude_sonnet": (3.00, 15.00),
+    "gpt4_turbo": (10.00, 30.00),
+    "claude_opus": (15.00, 75.00),
+}
+
+
+class CostManager:
+    """σ-driven **lab** router: pick a placeholder-priced model; track token spend in USD."""
+
+    def __init__(
+        self,
+        gate: Any = None,
+        budget: float = 10.0,
+        models: Optional[Dict[str, Tuple[float, float]]] = None,
+    ) -> None:
+        self.gate = gate if gate is not None else SigmaGate()
+        self.budget = float(budget)
+        self.spent = 0.0
+        self.models: Dict[str, Tuple[float, float]] = dict(models) if models is not None else dict(MODEL_COSTS)
+        self.history: List[Dict[str, Any]] = []
+
+    def select_model(self, prompt: str, sigma_pre: Optional[float] = None) -> Dict[str, Any]:
+        """Pick the cheapest **policy** tier for ``σ_pre``; if budget is exhausted, force a $0 model."""
+        if sigma_pre is None:
+            sg, _v = self.gate.score("route", str(prompt))
+            sigma_pre = float(sg)
+        else:
+            sigma_pre = float(sigma_pre)
+
+        if sigma_pre < 0.2:
+            model = "local_3b"
+        elif sigma_pre < 0.4:
+            model = "qwen3_a3b"
+        elif sigma_pre < 0.6:
+            model = "gpt4o_mini"
+        elif sigma_pre < 0.8:
+            model = "gpt4o"
+        else:
+            model = "claude_opus"
+
+        c_in, _c_out = self.models.get(model, (0.0, 0.0))
+        if self.remaining() <= 0.0 and float(c_in) > 0.0:
+            model = "local_7b"
+
+        ci, co = self.models.get(model, (0.0, 0.0))
+        return {
+            "model": model,
+            "sigma_pre": round(float(sigma_pre), 4),
+            "cost_per_1M_in": float(ci),
+            "cost_per_1M_out": float(co),
+            "budget_remaining": round(float(self.remaining()), 4),
+        }
+
+    def record(self, model: str, input_tokens: int, output_tokens: int) -> Dict[str, Any]:
+        costs = self.models.get(str(model), (0.0, 0.0))
+        cost = float(input_tokens) * float(costs[0]) / 1_000_000.0 + float(output_tokens) * float(costs[1]) / 1_000_000.0
+        self.spent += cost
+        entry: Dict[str, Any] = {
+            "model": str(model),
+            "input_tokens": int(input_tokens),
+            "output_tokens": int(output_tokens),
+            "cost": round(float(cost), 6),
+            "cumulative": round(float(self.spent), 4),
+            "timestamp": time.time(),
+        }
+        self.history.append(entry)
+        return entry
+
+    def remaining(self) -> float:
+        return max(0.0, float(self.budget) - float(self.spent))
+
+    def reset(self) -> None:
+        """Clear spend and history (in-process session)."""
+        self.spent = 0.0
+        self.history.clear()
+
+    def summary(self) -> Dict[str, Any]:
+        by_model: Dict[str, Dict[str, Any]] = {}
+        for h in self.history:
+            m = str(h["model"])
+            row = by_model.setdefault(m, {"calls": 0, "cost": 0.0, "tokens": 0})
+            row["calls"] += 1
+            row["cost"] += float(h["cost"])
+            row["tokens"] += int(h["input_tokens"]) + int(h["output_tokens"])
+
+        n = len(self.history)
+        local_ratio = (
+            sum(1 for h in self.history if float(self.models.get(str(h["model"]), (0.0, 0.0))[0]) == 0.0) / float(max(n, 1))
+        )
+        return {
+            "total_spent": round(float(self.spent), 4),
+            "budget": float(self.budget),
+            "remaining": round(float(self.remaining()), 4),
+            "total_calls": n,
+            "local_ratio": round(float(local_ratio), 4),
+            "savings_vs_all_opus_percent": self._savings_vs_opus(),
+            "by_model": by_model,
+            "disclaimer": "Placeholder tariffs — not billing; savings are vs claude_opus table, lab only.",
+        }
+
+    def _savings_vs_opus(self) -> float:
+        """Percent saved vs replaying history at ``claude_opus`` list prices."""
+        opus_rates = self.models.get("claude_opus", (15.0, 75.0))
+        opus_cost = sum(
+            float(h["input_tokens"]) * float(opus_rates[0]) / 1_000_000.0
+            + float(h["output_tokens"]) * float(opus_rates[1]) / 1_000_000.0
+            for h in self.history
+        )
+        if opus_cost <= 0.0:
+            return 0.0
+        return round((1.0 - float(self.spent) / opus_cost) * 100.0, 1)
 
 
 class SigmaCost:
@@ -21,8 +146,6 @@ class SigmaCost:
         *,
         eur_per_1k_tokens: Optional[Dict[str, float]] = None,
     ) -> None:
-        from cos.sigma_gate import SigmaGate
-
         self.gate = gate or SigmaGate()
         self.eur_per_1k: Dict[str, float] = dict(
             eur_per_1k_tokens

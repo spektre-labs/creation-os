@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from cos.cost import SigmaCost
+from cos.cost import CostManager, SigmaCost
 from cos.fleet import SigmaFleet
 from cos.sigma_gate import SigmaGate
 
@@ -48,3 +48,56 @@ def test_comparison_has_disclaimer() -> None:
     c = SigmaCost()
     x = c.comparison(queries=10, tokens_per_query=200)
     assert "disclaimer" in x
+
+
+class _GateCheap:
+    def score(self, _p: str, _r: str):
+        return 0.1, "ACCEPT"
+
+
+class _GatePremium:
+    def score(self, _p: str, _r: str):
+        return 0.95, "ACCEPT"
+
+
+def test_select_model_low_sigma_local() -> None:
+    cm = CostManager(gate=_GateCheap())
+    r = cm.select_model("easy prompt")
+    assert r["model"] == "local_3b"
+    assert r["sigma_pre"] < 0.2
+
+
+def test_select_model_high_sigma_opus() -> None:
+    cm = CostManager(gate=_GatePremium())
+    r = cm.select_model("hard prompt")
+    assert r["model"] == "claude_opus"
+
+
+def test_record_tracks_cost() -> None:
+    cm = CostManager(budget=100.0)
+    e = cm.record("gpt4o_mini", 1_000_000, 500_000)
+    assert e["cost"] > 0 and cm.spent > 0
+
+
+def test_budget_exhausted_forces_local() -> None:
+    cm = CostManager(gate=_GatePremium(), budget=0.0)
+    cm.spent = 0.0
+    cm.budget = 0.0
+    r = cm.select_model("x", sigma_pre=0.99)
+    assert r["model"] == "local_7b"
+
+
+def test_summary_by_model() -> None:
+    cm = CostManager(budget=50.0)
+    cm.record("gpt4o_mini", 1000, 1000)
+    cm.record("local_7b", 5000, 5000)
+    s = cm.summary()
+    assert s["total_calls"] == 2
+    assert "gpt4o_mini" in s["by_model"] and "local_7b" in s["by_model"]
+
+
+def test_savings_vs_opus() -> None:
+    cm = CostManager(budget=1000.0)
+    cm.record("gpt4o_mini", 2_000_000, 1_000_000)
+    s = cm.summary()
+    assert s["savings_vs_all_opus_percent"] > 0.0

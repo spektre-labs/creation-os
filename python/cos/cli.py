@@ -2681,6 +2681,34 @@ def _cmd_registry_cli(args: argparse.Namespace) -> int:
 
 
 def _cmd_cost_cli(args: argparse.Namespace) -> int:
+    act = getattr(args, "cost_action", None)
+    if act in ("summary", "budget", "reset"):
+        from cos.cost import CostManager
+
+        bm = float(getattr(args, "cost_manager_budget", 10.0) or 10.0)
+        cm = CostManager(budget=bm)
+        if act == "summary":
+            out = cm.summary()
+            if _cli_out_json(args):
+                print(json.dumps(out, default=str, ensure_ascii=False))
+            else:
+                print(json.dumps(out, ensure_ascii=False, indent=2))
+            return 0
+        if act == "budget":
+            if _cli_out_json(args):
+                print(json.dumps({"budget": cm.budget, "remaining": cm.remaining()}, ensure_ascii=False))
+            else:
+                print(f"Budget: ${cm.budget:.2f}")
+                print(f"Remaining: ${cm.remaining():.2f}")
+            return 0
+        cm.reset()
+        body = {"ok": True, "budget": cm.budget, "spent": cm.spent, "history_entries": len(cm.history)}
+        if _cli_out_json(args):
+            print(json.dumps(body, ensure_ascii=False))
+        else:
+            print(json.dumps(body, ensure_ascii=False, indent=2))
+        return 0
+
     if bool(getattr(args, "cost_route", False)):
         from cos.sigma_cost import LabCostGate, SigmaBillingMeter, SigmaCost, save_lab_state
 
@@ -2705,7 +2733,7 @@ def _cmd_cost_cli(args: argparse.Namespace) -> int:
         return 0
 
     if not bool(getattr(args, "cost_report", False)):
-        print("cos cost: pass --report or --route", file=sys.stderr)
+        print("cos cost: pass summary|budget|reset (and optional --budget USD), or --report or --route", file=sys.stderr)
         return 1
     from cos.bench import SigmaBench
 
@@ -4181,7 +4209,25 @@ def main(argv: Optional[List[str]] = None) -> int:
     regp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     regp.set_defaults(func=_cmd_registry_cli)
 
-    cstp = sub.add_parser("cost", help="Stub cost report hook on SigmaBench")
+    cstp = sub.add_parser(
+        "cost",
+        help="σ-cost: CostManager session (summary|budget|reset) or legacy --report / sigma_cost --route",
+    )
+    cstp.add_argument(
+        "cost_action",
+        nargs="?",
+        default=None,
+        choices=["summary", "budget", "reset"],
+        help="optional session action (omit for legacy --report / --route)",
+    )
+    cstp.add_argument(
+        "--budget",
+        type=float,
+        default=10.0,
+        dest="cost_manager_budget",
+        metavar="USD",
+        help="session budget for CostManager actions (default 10)",
+    )
     cstp.add_argument("--route", action="store_true", dest="cost_route", help="cheapest σ-first routing JSON + --state snapshot")
     cstp.add_argument("--prompt", type=str, default="", dest="cost_route_prompt", help="with --route")
     cstp.add_argument("--models", type=str, default="", dest="cost_models", help="comma-separated model ids (with --route)")
