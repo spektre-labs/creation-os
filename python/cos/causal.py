@@ -5,13 +5,16 @@
 
 **Three levels (lab mapping):** observe parents/children (*see*), :meth:`CausalGraph.do` (*do*),
 :meth:`CausalGraph.counterfactual` (*imagine*). This is not a substitute for full SCM identification;
-see ``docs/CLAIM_DISCIPLINE.md``."""
+see ``docs/CLAIM_DISCIPLINE.md``.
+
+:class:`PearlLadder` + :class:`PearlDAG` provide a **second, gate-scored narrative** over Pearl’s
+see / do / imagine tallness (lab pedagogy only — not an identification proof)."""
 from __future__ import annotations
 
 from collections import deque
 from typing import Any, Dict, List, Optional, Set
 
-__all__ = ["CausalEdge", "CausalGraph"]
+__all__ = ["CausalEdge", "CausalGraph", "PearlDAG", "PearlLadder"]
 
 
 def _norm_node(x: str) -> str:
@@ -304,3 +307,143 @@ class CausalGraph:
     ) -> Any:
         del exogenous
         return state.get(outcome_var)
+
+
+def _verdict_str(v: Any) -> str:
+    raw = str(getattr(v, "name", v))
+    return raw.split(".")[-1] if "." in raw else raw
+
+
+class PearlDAG:
+    """Lightweight cause → effect adjacency + confounder pairs (for :class:`PearlLadder` demos)."""
+
+    def __init__(self) -> None:
+        self.edges: Dict[str, List[Dict[str, Any]]] = {}
+        self.confounders: Dict[Any, Any] = {}
+
+    def add(self, cause: str, effect: str, σ: Optional[float] = None) -> None:
+        c, e = str(cause).strip(), str(effect).strip()
+        self.edges.setdefault(c, []).append({"effect": e, "σ": σ})
+
+    def add_confounder(self, var_a: str, var_b: str, confounder: str) -> None:
+        a, b = str(var_a).strip(), str(var_b).strip()
+        cf = str(confounder).strip()
+        self.confounders[(a, b)] = cf
+        self.confounders[(b, a)] = cf
+
+    def effects_of(self, cause: str) -> List[Dict[str, Any]]:
+        return list(self.edges.get(str(cause).strip(), []))
+
+    def causes_of(self, effect: str) -> List[Dict[str, Any]]:
+        eff = str(effect).strip()
+        causes: List[Dict[str, Any]] = []
+        for cause, outs in self.edges.items():
+            for row in outs:
+                if row.get("effect") == eff:
+                    causes.append({"cause": cause, "σ": row.get("σ")})
+        return causes
+
+    def has_confounder(self, a: str, b: str) -> bool:
+        return (str(a).strip(), str(b).strip()) in self.confounders
+
+
+class PearlLadder:
+    """Pearl-style SEE / DO / IMAGINE hooks scored only via :class:`~cos.sigma_gate.SigmaGate`."""
+
+    def __init__(self, gate: Any = None, graph: Optional[PearlDAG] = None) -> None:
+        from cos.sigma_gate import SigmaGate
+
+        self.gate = gate or SigmaGate()
+        self.graph = graph or PearlDAG()
+
+    def see(self, x: str, y: str) -> Dict[str, Any]:
+        σ, verdict = self.gate.score(f"observe {x}", f"correlates with {y}")
+        confounded = self.graph.has_confounder(x, y)
+        cf_name = self.graph.confounders.get((str(x).strip(), str(y).strip()))
+        return {
+            "rung": 1,
+            "query": f"P({y}|{x})",
+            "type": "association",
+            "σ": round(float(σ), 4),
+            "σ_see": round(float(σ), 4),
+            "verdict": _verdict_str(verdict),
+            "confounded": confounded,
+            "warning": (f"Confounded by {cf_name}" if confounded else None),
+            "interpretation": (
+                f"Observing {x} correlates with {y} (association only)"
+                if not confounded
+                else f"Association between {x} and {y} may be confounded — do not infer effect"
+            ),
+        }
+
+    def do(self, x: str, y: str) -> Dict[str, Any]:
+        σ_see = float(self.see(x, y)["σ"])
+        σ_do_raw, verdict = self.gate.score(f"intervene: set {x}", f"effect on {y}")
+        σ_do = float(σ_do_raw)
+        confounded = self.graph.has_confounder(x, y)
+        if confounded:
+            σ_do = min(σ_do + 0.1, 1.0)
+        return {
+            "rung": 2,
+            "query": f"P({y}|do({x}))",
+            "type": "intervention",
+            "σ_see": round(σ_see, 4),
+            "σ_do": round(σ_do, 4),
+            "verdict": _verdict_str(verdict),
+            "causal": True,
+            "confounded": confounded,
+            "do_calculus_applied": confounded,
+            "interpretation": f"If we SET {x}, stress on effect {y} is summarized by σ_do≈{σ_do:.3f} (lab)",
+        }
+
+    def imagine(self, x_actual: str, y_actual: str, x_counterfactual: str) -> Dict[str, Any]:
+        σ_see = float(self.see(x_actual, y_actual)["σ"])
+        σ_do = float(self.do(x_counterfactual, y_actual)["σ_do"])
+        σ_cf_raw, verdict = self.gate.score(
+            f"given {x_actual}→{y_actual}, what if {x_counterfactual}?",
+            f"counterfactual {y_actual}",
+        )
+        σ_cf = max(float(σ_cf_raw), σ_do)
+        return {
+            "rung": 3,
+            "query": f"P({y_actual}_{x_counterfactual}|{x_actual},{y_actual})",
+            "type": "counterfactual",
+            "σ_see": round(σ_see, 4),
+            "σ_do": round(σ_do, 4),
+            "σ_imagine": round(σ_cf, 4),
+            "verdict": _verdict_str(verdict),
+            "interpretation": (
+                f"Counterfactual stress (vs do-bound) σ_imagine≈{σ_cf:.3f} — harder than association alone (lab)"
+            ),
+        }
+
+    def root_cause(self, effect: str, max_depth: int = 5) -> Dict[str, Any]:
+        path: List[Dict[str, Any]] = []
+        current = str(effect).strip()
+        visited: Set[str] = set()
+
+        for _ in range(int(max_depth)):
+            if current in visited:
+                break
+            visited.add(current)
+            causes = self.graph.causes_of(current)
+            if not causes:
+                break
+            best = min(causes, key=lambda c: float(c.get("σ") if c.get("σ") is not None else 1.0))
+            path.append({"from": best["cause"], "to": current, "σ": best.get("σ")})
+            current = str(best["cause"])
+
+        return {
+            "effect": effect,
+            "root_cause": current,
+            "path": path,
+            "depth": len(path),
+        }
+
+    def ladder_summary(self, x: str, y: str) -> Dict[str, Any]:
+        return {
+            "L1_see": self.see(x, y),
+            "L2_do": self.do(x, y),
+            "L3_imagine": self.imagine(x, y, f"not_{x}"),
+            "note": "σ typically rises from see→do→imagine in this lab sketch; bind claims to harness or SCM ID.",
+        }
