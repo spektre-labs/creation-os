@@ -3563,19 +3563,18 @@ def _cmd_fabric(args: argparse.Namespace) -> int:
     return 2
 
 
-def _cmd_cognitive_boot(_args: argparse.Namespace) -> int:
-    from cos.fabric import Fabric
+def _cmd_cognitive_boot(args: argparse.Namespace) -> int:
+    from cos.boot import Boot
 
-    f = Fabric()
-    st = f.boot()
-    for mod, info in sorted(st["modules"].items()):
-        mst = str(info.get("state", "?"))
-        mark = "[+]" if mst == "loaded" else "[-]"
-        extra = ""
-        if info.get("error"):
-            err = str(info["error"])
-            extra = f" — {err[:120]}{'…' if len(err) > 120 else ''}"
-        print(f"  {mark} {mod}: {mst}{extra}")
+    result = Boot().run()
+    if _cli_out_json(args):
+        print(json.dumps(result, ensure_ascii=False, default=str))
+        return 0
+    print(result["message"])
+    for name, step in result["steps"].items():
+        ok = step.get("status") == "OK"
+        icon = "✓" if ok else "·"
+        print(f"  {icon} {name}: {step.get('status', '?')}")
     return 0
 
 
@@ -4646,8 +4645,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     bootp = sub.add_parser(
         "boot",
-        help="Boot cognitive Fabric (Ω-loop wiring; module states: loaded/missing/failed/disabled)",
+        help="Startup: kernel σ-check, engram, Fabric, Mega, cascade (partial boot is OK; NOT AGI ACHIEVED)",
     )
+    bootp.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
     bootp.set_defaults(func=_cmd_cognitive_boot)
 
     cstat = sub.add_parser(

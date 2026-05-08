@@ -334,7 +334,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
 			"$(CURDIR)/tests/test_omega.py" "$(CURDIR)/tests/test_omega_loop.py" "$(CURDIR)/tests/test_active_inference.py" "$(CURDIR)/tests/test_blanket.py" "$(CURDIR)/tests/test_autopoiesis.py" "$(CURDIR)/tests/test_phi_proxy.py" "$(CURDIR)/tests/test_channel.py" "$(CURDIR)/tests/test_dissipative.py" "$(CURDIR)/tests/test_fitness.py" "$(CURDIR)/tests/test_noether.py" "$(CURDIR)/tests/test_factor_graph.py" "$(CURDIR)/tests/test_predictive.py" "$(CURDIR)/tests/test_grounding.py" "$(CURDIR)/tests/test_quantum_cognition.py" "$(CURDIR)/tests/test_category.py" "$(CURDIR)/tests/test_topology.py" "$(CURDIR)/tests/test_geometry.py" "$(CURDIR)/tests/test_space_grade.py" "$(CURDIR)/tests/test_living_weights.py" \
 			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
-			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_evolve_v2.py" "$(CURDIR)/tests/test_mega.py" "$(CURDIR)/tests/test_bench.py" \
+			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_evolve_v2.py" "$(CURDIR)/tests/test_mega.py" "$(CURDIR)/tests/test_boot.py" "$(CURDIR)/tests/test_bench.py" \
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
 			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
@@ -370,7 +370,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_rag.py" "$(CURDIR)/tests/test_ttt.py" \
 			"$(CURDIR)/tests/test_omega.py" "$(CURDIR)/tests/test_omega_loop.py" "$(CURDIR)/tests/test_active_inference.py" "$(CURDIR)/tests/test_blanket.py" "$(CURDIR)/tests/test_autopoiesis.py" "$(CURDIR)/tests/test_phi_proxy.py" "$(CURDIR)/tests/test_channel.py" "$(CURDIR)/tests/test_dissipative.py" "$(CURDIR)/tests/test_fitness.py" "$(CURDIR)/tests/test_noether.py" "$(CURDIR)/tests/test_factor_graph.py" "$(CURDIR)/tests/test_predictive.py" "$(CURDIR)/tests/test_grounding.py" "$(CURDIR)/tests/test_quantum_cognition.py" "$(CURDIR)/tests/test_category.py" "$(CURDIR)/tests/test_topology.py" "$(CURDIR)/tests/test_geometry.py" "$(CURDIR)/tests/test_space_grade.py" "$(CURDIR)/tests/test_living_weights.py" \
 			"$(CURDIR)/tests/test_split.py" "$(CURDIR)/tests/test_fleet.py" \
-			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_evolve_v2.py" "$(CURDIR)/tests/test_mega.py" "$(CURDIR)/tests/test_bench.py" \
+			"$(CURDIR)/tests/test_evolve.py" "$(CURDIR)/tests/test_evolve_v2.py" "$(CURDIR)/tests/test_mega.py" "$(CURDIR)/tests/test_boot.py" "$(CURDIR)/tests/test_bench.py" \
 			"$(CURDIR)/tests/test_voice.py" "$(CURDIR)/tests/test_index.py" \
 			"$(CURDIR)/tests/test_mcp.py" "$(CURDIR)/tests/test_mcp_server.py" "$(CURDIR)/tests/test_tool_safety.py" \
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
