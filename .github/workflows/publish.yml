@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Trusted Publishing (OIDC): PyPI → project → Publishing → trusted publisher:
 # owner spektre-labs, repo creation-os, workflow publish.yml, environment pypi.
+#
+# NOTE: pushes to main may also run `.github/workflows/pypi-semantic-release.yml`, which uploads
+# the same version via Trusted Publishing. For a manual release-only upload path, keep this file
+# and adjust triggers or disable one workflow to avoid duplicate "file already exists" errors.
 name: Publish to PyPI
 
 on:

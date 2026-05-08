@@ -1,0 +1,70 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
+#
+# Conventional-Commits-driven PyPI releases via python-semantic-release.
+# Config: [tool.semantic_release] in pyproject.toml.
+#
+# PyPI "Trusted Publishing": register this workflow + the `pypi` environment on
+# https://pypi.org (in addition to any existing `publish.yml` registration).
+#
+# Tag/binary (macOS/Linux tarballs + Docker): .github/workflows/release.yml (unchanged).
+
+name: Release (Python / PyPI)
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-python-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      released: ${{ steps.psr.outputs.released }}
+      tag: ${{ steps.psr.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Semantic release
+        id: psr
+        uses: python-semantic-release/python-semantic-release@v10.5.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          git_committer_name: "github-actions[bot]"
+          git_committer_email: "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Upload sdist and wheel
+        if: steps.psr.outputs.released == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+          if-no-files-found: error
+
+  publish-pypi:
+    needs: release
+    runs-on: ubuntu-latest
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      contents: read
+      id-token: write
+    environment: pypi
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: python-dist
+          path: dist/
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
