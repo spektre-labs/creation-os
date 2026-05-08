@@ -69,4 +69,70 @@ def sigma_completion_with_fallback(
     return last
 
 
-__all__ = ["sigma_completion", "sigma_completion_with_fallback"]
+def _latency_ms(start: Any, end: Any) -> float:
+    try:
+        delta = end - start
+        if hasattr(delta, "total_seconds"):
+            return float(delta.total_seconds()) * 1000.0
+        return float(delta) * 1000.0
+    except Exception:
+        return 0.0
+
+
+class SigmaLiteLLMCallback:
+    """LiteLLM-style callback: σ-gate on successful completions (no ``litellm`` import required)."""
+
+    def __init__(self, gate: Any = None) -> None:
+        self.gate = gate or _get_gate()
+        self.trace: List[Dict[str, Any]] = []
+
+    def log_success_event(  # noqa: PLR0913
+        self,
+        kwargs: Any,
+        response_obj: Any,
+        start_time: Any,
+        end_time: Any,
+    ) -> None:
+        messages = list(kwargs.get("messages") or [])
+        user_prompt = _last_user_prompt(messages)
+        if not user_prompt and messages:
+            last = messages[-1]
+            if isinstance(last, dict):
+                user_prompt = str(last.get("content") or "")
+            else:
+                c = getattr(last, "content", last)
+                user_prompt = str(c) if c is not None else ""
+        text = _response_text(response_obj)
+        sigma, verdict = self.gate.score(user_prompt, text)
+        self.trace.append(
+            {
+                "model": str(kwargs.get("model", "unknown")),
+                "sigma": round(float(sigma), 4),
+                "verdict": str(verdict),
+                "latency_ms": round(_latency_ms(start_time, end_time), 1),
+            }
+        )
+
+    def log_failure_event(  # noqa: PLR0913
+        self,
+        kwargs: Any,
+        response_obj: Any,
+        start_time: Any,
+        end_time: Any,
+    ) -> None:
+        del response_obj, start_time, end_time
+        self.trace.append(
+            {
+                "model": str(kwargs.get("model", "unknown")),
+                "sigma": 1.0,
+                "verdict": "ABSTAIN",
+                "error": True,
+            }
+        )
+
+
+__all__ = [
+    "SigmaLiteLLMCallback",
+    "sigma_completion",
+    "sigma_completion_with_fallback",
+]

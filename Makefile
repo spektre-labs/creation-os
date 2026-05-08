@@ -344,7 +344,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
 			"$(CURDIR)/tests/test_eval.py" \
-			"$(CURDIR)/tests/test_redteam.py" -q && \
+			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
@@ -371,7 +371,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
 			"$(CURDIR)/tests/test_eval.py" \
-			"$(CURDIR)/tests/test_redteam.py" -q && \
+			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \

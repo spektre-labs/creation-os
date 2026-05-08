@@ -17,12 +17,20 @@ F = TypeVar("F", bound=Callable[..., Any])
 class SigmaResult:
     """Text response plus σ metadata (truthy as string → ``text``)."""
 
-    __slots__ = ("text", "sigma", "verdict")
+    __slots__ = ("text", "sigma", "verdict", "prompt")
 
-    def __init__(self, text: str, sigma: float, verdict: str) -> None:
+    def __init__(
+        self,
+        text: str,
+        sigma: float,
+        verdict: str,
+        *,
+        prompt: str = "",
+    ) -> None:
         self.text = text
         self.sigma = float(sigma)
         self.verdict = str(verdict)
+        self.prompt = str(prompt)
 
     def __str__(self) -> str:
         return self.text
@@ -56,6 +64,7 @@ def sigma_gated(
     threshold_accept: float = ...,
     threshold_abstain: float = ...,
     raise_on_abstain: bool = ...,
+    block_abstain: bool = ...,
 ) -> Callable[[F], F]: ...
 
 
@@ -68,6 +77,7 @@ def sigma_gated(
     threshold_accept: float = 0.3,
     threshold_abstain: float = 0.8,
     raise_on_abstain: bool = False,
+    block_abstain: bool = False,
 ) -> Union[F, Callable[[F], F]]:
     """Decorator: first positional arg = prompt; score string-like return value."""
 
@@ -83,6 +93,13 @@ def sigma_gated(
                 response_text, payload = _coerce_response(result, args, kwargs)
                 sigma, verdict = g.score(prompt, response_text)
                 elapsed_ms = (time.monotonic() - t0) * 1000.0
+                if verdict == "ABSTAIN" and block_abstain:
+                    return {
+                        "result": "[BLOCKED: σ too high]",
+                        "sigma": float(sigma),
+                        "verdict": str(verdict),
+                        "elapsed_ms": round(elapsed_ms, 2),
+                    }
                 if verdict == "ABSTAIN" and on_abstain == "raise":
                     raise SigmaAbstainError(f"σ-gate ABSTAIN: σ={sigma:.3f}")
                 if verdict == "ABSTAIN" and on_abstain == "retry":
@@ -101,9 +118,16 @@ def sigma_gated(
             raw = fn(*args, **kwargs)
             text = raw if isinstance(raw, str) else str(raw)
             sigma, verdict = g.score(prompt2, text)
+            if verdict == "ABSTAIN" and block_abstain:
+                return SigmaResult(
+                    "[BLOCKED: σ too high]",
+                    float(sigma),
+                    str(verdict),
+                    prompt=prompt2,
+                )
             if verdict == "ABSTAIN" and raise_on_abstain:
                 raise SigmaAbstainError(f"σ-gate ABSTAIN (σ={sigma:.3f})")
-            return SigmaResult(text, sigma, verdict)
+            return SigmaResult(text, float(sigma), str(verdict), prompt=prompt2)
 
         return wrapper  # type: ignore[return-value]
 

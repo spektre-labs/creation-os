@@ -176,16 +176,47 @@ if BaseCallbackHandler is not None:
                     meta = getattr(gen0, "generation_info", None)
                     merged = dict(meta) if isinstance(meta, dict) else {}
                     merged["sigma"] = sigma
+                    merged["σ"] = round(float(sigma), 4)
                     merged["verdict"] = verdict
                     gen0.generation_info = merged  # type: ignore[misc]
                 except (AttributeError, IndexError, TypeError):
                     ...
+
+        def summary(self) -> Dict[str, Any]:
+            """Aggregate stats over :attr:`traces` (keys include Unicode ``σ_avg``)."""
+            if not self.traces:
+                return {"count": 0}
+            vals = [float(t["sigma"]) for t in self.traces]
+            n = len(self.traces)
+            accepts = sum(1 for t in self.traces if str(t.get("verdict", "")) == "ACCEPT")
+            return {
+                "count": n,
+                "σ_avg": round(sum(vals) / n, 4),
+                "accept_rate": round(accepts / n, 4),
+            }
 
         def on_llm_error(self, error: BaseException, **kwargs: Any) -> None:
             del error
             key = self._run_id_key(kwargs)
             if key and key in self._current_prompts:
                 self._current_prompts.pop(key, None)
+
+    class SigmaCallback(SigmaGateCallback):  # type: ignore[no-redef]
+        """LangChain callback alias with optional **block ABSTAIN** semantics.
+
+        When ``block_abstain=True``, ``on_abstain`` is forced to ``\"raise\"``.
+        """
+
+        def __init__(
+            self,
+            gate: Any = None,
+            *,
+            block_abstain: bool = False,
+            **kwargs: Any,
+        ) -> None:
+            if block_abstain:
+                kwargs["on_abstain"] = "raise"
+            super().__init__(gate=gate, **kwargs)
 
 else:  # pragma: no cover
 
@@ -196,16 +227,14 @@ else:  # pragma: no cover
                 "Install with: pip install 'creation-os[langchain]'"
             )
 
+    SigmaCallback = SigmaGateCallback
+
 
 def _first_prompt_kwargs_fallback(kwargs: Any) -> str:
     p = kwargs.get("prompts")
     if isinstance(p, list) and p:
         return str(p[0])
     return ""
-
-
-# v152 alias (user-facing name)
-SigmaCallback = SigmaGateCallback
 
 
 __all__ = [
