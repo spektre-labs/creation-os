@@ -4,9 +4,14 @@
 """σ-speculative — draft + verify with ``SigmaGate`` as the acceptance criterion.
 
 **Decode path:** cheap draft tokens are scored with :meth:`SigmaGate.score`; ACCEPT skips
-target verification, RETHINK runs ``verify_fn``, ABSTAIN hands off to the target. Legacy
-helpers (draft length from σ, prefix verify, tree draft) remain for harness experiments.
-No throughput claims without host metadata; see ``docs/CLAIM_DISCIPLINE.md``."""
+target verification, RETHINK runs ``verify_fn``, ABSTAIN hands off to the target.
+
+**Threshold path:** :meth:`speculate` accepts draft tokens while σ stays at or below
+``accept_threshold`` (σ pre-computed per step — informative vs raw reject sampling).
+Pyramid (:meth:`pyramid`) chains small/medium draft lists for harness experiments.
+
+No measured throughput multipliers without archived host metadata; see
+``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Optional, Sequence, Union
@@ -32,11 +37,18 @@ class SigmaSpeculative:
         *,
         min_draft: int = 1,
         max_draft: int = 8,
+        draft_k: int = 5,
+        accept_threshold: float = 0.3,
     ) -> None:
         self.gate = gate or SigmaGate()
         self.min_draft = max(1, int(min_draft))
         self.max_draft = max(self.min_draft, int(max_draft))
-        self.stats: Dict[str, int] = {
+        self.draft_k = max(2, min(12, int(draft_k)))
+        self.accept_threshold = float(accept_threshold)
+        self.total_proposed = 0
+        self.total_accepted = 0
+        self.total_rounds = 0
+        self.decode_stats: Dict[str, int] = {
             "drafted": 0,
             "accepted": 0,
             "verified": 0,
@@ -53,7 +65,7 @@ class SigmaSpeculative:
         k: int = 5,
     ) -> Dict[str, Any]:
         """Draft → σ-score → accept / verify / target; σ is the acceptance rule."""
-        self.stats = {
+        self.decode_stats = {
             "drafted": 0,
             "accepted": 0,
             "verified": 0,
@@ -77,7 +89,7 @@ class SigmaSpeculative:
                 dt = str(draft_token).strip()
                 if not dt:
                     continue
-                self.stats["drafted"] += 1
+                self.decode_stats["drafted"] += 1
                 σ, verdict = self.gate.score(current_prompt, dt)
                 v = _norm_verdict(verdict)
 
@@ -91,11 +103,11 @@ class SigmaSpeculative:
                         }
                     )
                     current_prompt = f"{current_prompt} {dt}".strip()
-                    self.stats["accepted"] += 1
-                    self.stats["output_tokens"] += 1
+                    self.decode_stats["accepted"] += 1
+                    self.decode_stats["output_tokens"] += 1
                     accepted_in_batch += 1
                 elif v == "RETHINK":
-                    self.stats["verified"] += 1
+                    self.decode_stats["verified"] += 1
                     verified = verify_fn(current_prompt, dt)
                     if verified:
                         vt = str(verified).strip()
@@ -108,14 +120,14 @@ class SigmaSpeculative:
                             }
                         )
                         current_prompt = f"{current_prompt} {vt}".strip()
-                        self.stats["output_tokens"] += 1
+                        self.decode_stats["output_tokens"] += 1
                         accepted_in_batch += 1
                     else:
-                        self.stats["rejected"] += 1
+                        self.decode_stats["rejected"] += 1
                         break
                 else:
-                    self.stats["rejected"] += 1
-                    self.stats["verified"] += 1
+                    self.decode_stats["rejected"] += 1
+                    self.decode_stats["verified"] += 1
                     verified = verify_fn(current_prompt, None)
                     if verified:
                         vt = str(verified).strip()
@@ -128,14 +140,14 @@ class SigmaSpeculative:
                             }
                         )
                         current_prompt = f"{current_prompt} {vt}".strip()
-                        self.stats["output_tokens"] += 1
+                        self.decode_stats["output_tokens"] += 1
                         accepted_in_batch += 1
                     break
 
             if len(output) >= cap:
                 break
             if accepted_in_batch == 0:
-                self.stats["verified"] += 1
+                self.decode_stats["verified"] += 1
                 verified = verify_fn(current_prompt, None)
                 if verified:
                     vt = str(verified).strip()
@@ -148,7 +160,7 @@ class SigmaSpeculative:
                         }
                     )
                     current_prompt = f"{current_prompt} {vt}".strip()
-                    self.stats["output_tokens"] += 1
+                    self.decode_stats["output_tokens"] += 1
                 else:
                     break
 
@@ -160,32 +172,136 @@ class SigmaSpeculative:
 
     def efficiency(self) -> Dict[str, Any]:
         """Rough compute mix: draft 1×, verify / target steps 10× (lab estimate only)."""
-        total = int(self.stats["drafted"])
+        total = int(self.decode_stats["drafted"])
         if total == 0:
             return {
                 "draft_accept_rate": 0.0,
                 "verify_rate": 0.0,
                 "reject_rate": 0.0,
                 "speedup_estimate": 1.0,
-                "tokens_generated": int(self.stats.get("output_tokens", 0)),
+                "tokens_generated": int(self.decode_stats.get("output_tokens", 0)),
             }
 
-        draft_rate = self.stats["accepted"] / total
-        verify_rate = self.stats["verified"] / total
-        reject_rate = self.stats["rejected"] / total
+        draft_rate = self.decode_stats["accepted"] / total
+        verify_rate = self.decode_stats["verified"] / total
+        reject_rate = self.decode_stats["rejected"] / total
         draft_cost = total * 1
-        verify_cost = self.stats["verified"] * 10
-        target_cost = self.stats["rejected"] * 10
+        verify_cost = self.decode_stats["verified"] * 10
+        target_cost = self.decode_stats["rejected"] * 10
         total_cost = draft_cost + verify_cost + target_cost
         baseline_cost = total * 10
         speedup = baseline_cost / max(total_cost, 1)
-        out_tok = int(self.stats.get("output_tokens", 0))
+        out_tok = int(self.decode_stats.get("output_tokens", 0))
         return {
             "draft_accept_rate": round(draft_rate, 4),
             "verify_rate": round(verify_rate, 4),
             "reject_rate": round(reject_rate, 4),
             "speedup_estimate": round(float(speedup), 2),
             "tokens_generated": out_tok,
+        }
+
+    def speculate(
+        self,
+        context: str,
+        draft_tokens: Sequence[str],
+        verify_fn: Optional[Callable[[str, Sequence[str]], Any]] = None,
+    ) -> Dict[str, Any]:
+        """Score each draft extension; accept while σ ≤ ``accept_threshold``."""
+        self.total_rounds += 1
+        accepted: List[str] = []
+        rejected_at: Optional[Dict[str, Any]] = None
+        ctx_base = str(context).strip()
+
+        for i, token in enumerate(draft_tokens):
+            self.total_proposed += 1
+            tok = str(token).strip()
+            extended_parts = [ctx_base] + accepted + [tok]
+            extended = " ".join(p for p in extended_parts if p)
+
+            σ, verdict = self.gate.score(ctx_base, extended)
+
+            if float(σ) <= self.accept_threshold:
+                accepted.append(tok)
+                self.total_accepted += 1
+            else:
+                rejected_at = {
+                    "position": i,
+                    "token": tok,
+                    "σ": round(float(σ), 4),
+                    "reason": verdict,
+                }
+                break
+
+        verified: Any = True
+        if verify_fn and accepted:
+            verified = verify_fn(ctx_base, accepted)
+
+        n_prop = len(draft_tokens)
+        return {
+            "accepted": accepted,
+            "n_accepted": len(accepted),
+            "n_proposed": n_prop,
+            "acceptance_rate": round(len(accepted) / max(n_prop, 1), 4),
+            "rejected_at": rejected_at,
+            "speedup": len(accepted) if accepted else 1,
+            "verified": bool(verified),
+        }
+
+    def adaptive_k(self) -> int:
+        """Raise ``draft_k`` when acceptance is high; lower it when drafts mismatch."""
+        if self.total_rounds < 5:
+            return self.draft_k
+
+        rate = self.total_accepted / max(self.total_proposed, 1)
+
+        if rate > 0.8:
+            self.draft_k = min(self.draft_k + 1, 12)
+        elif rate < 0.4:
+            self.draft_k = max(self.draft_k - 1, 2)
+
+        return self.draft_k
+
+    def pyramid(
+        self,
+        context: str,
+        draft_small: Sequence[str],
+        draft_medium: Sequence[str],
+    ) -> Dict[str, Any]:
+        """Small draft round, then medium continuation when the small prefix is not fully accepted."""
+        result_small = self.speculate(context, draft_small)
+        if result_small["n_accepted"] == len(draft_small):
+            return {**result_small, "stage": "small_accepted"}
+
+        remaining = list(draft_medium[int(result_small["n_accepted"]) :])
+        if remaining:
+            ctx_base = str(context).strip()
+            ctx2 = ctx_base
+            if result_small["accepted"]:
+                ctx2 = f"{ctx_base} {' '.join(result_small['accepted'])}".strip()
+            result_medium_r = self.speculate(ctx2, remaining)
+            total_accepted = list(result_small["accepted"]) + list(result_medium_r["accepted"])
+            return {
+                "accepted": total_accepted,
+                "n_accepted": len(total_accepted),
+                "stage": "pyramid",
+                "small_accepted": result_small["n_accepted"],
+                "medium_accepted": result_medium_r["n_accepted"],
+            }
+
+        return {**result_small, "stage": "small_partial"}
+
+    def stats(self) -> Dict[str, Any]:
+        """Aggregate counts for threshold speculative rounds (:meth:`speculate`)."""
+        rate = self.total_accepted / max(self.total_proposed, 1)
+        per_round = self.total_accepted / max(self.total_rounds, 1)
+        return {
+            "total_rounds": self.total_rounds,
+            "total_proposed": self.total_proposed,
+            "total_accepted": self.total_accepted,
+            "acceptance_rate": round(rate, 4),
+            "current_k": self.draft_k,
+            "avg_speedup": round(per_round, 2),
+            "effective_tokens_per_round": round(per_round, 1),
         }
 
     def draft(

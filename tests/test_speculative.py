@@ -195,3 +195,96 @@ def test_empty_draft_stops() -> None:
     out = spec.decode("p", draft_fn, verify_fn, max_tokens=5, k=3)
     assert out["tokens"] == []
     assert out["text"] == ""
+
+
+class _SigmaSubstringGate:
+    """High σ when ``mark`` appears in the candidate extension (see :meth:`speculate`)."""
+
+    def __init__(self, mark: str) -> None:
+        self.mark = str(mark)
+
+    def score(self, _prompt: str, extended: str) -> tuple[float, str]:
+        if self.mark in extended:
+            return (0.95, "RETHINK")
+        return (0.05, "ACCEPT")
+
+
+class _SigmaAlways:
+    def __init__(self, sigma: float) -> None:
+        self.sigma = float(sigma)
+
+    def score(self, _prompt: str, _extended: str) -> tuple[float, str]:
+        v = "ACCEPT" if self.sigma <= 0.5 else "RETHINK"
+        return (self.sigma, v)
+
+
+def test_speculate_accepts_good_tokens() -> None:
+    spec = SigmaSpeculative(
+        gate=_SigmaSubstringGate("___bad___"),
+        accept_threshold=0.3,
+    )
+    r = spec.speculate("hello", ["a", "b", "c"])
+    assert r["accepted"] == ["a", "b", "c"]
+    assert r["rejected_at"] is None
+    assert r["acceptance_rate"] == 1.0
+
+
+def test_speculate_rejects_at_bad_token() -> None:
+    spec = SigmaSpeculative(gate=_SigmaSubstringGate("BAD"), accept_threshold=0.3)
+    r = spec.speculate("x", ["ok", "BADTOK"])
+    assert r["accepted"] == ["ok"]
+    assert r["rejected_at"] is not None
+    assert r["rejected_at"]["position"] == 1
+
+
+def test_acceptance_rate() -> None:
+    spec = SigmaSpeculative(gate=_SigmaSubstringGate("!!"), accept_threshold=0.3)
+    r = spec.speculate("p", ["a", "b", "c!!"])
+    assert r["n_proposed"] == 3
+    assert r["acceptance_rate"] == round(2 / 3, 4)
+
+
+def test_adaptive_k_increases() -> None:
+    spec = SigmaSpeculative(
+        gate=_SigmaSubstringGate("___no___"),
+        draft_k=5,
+        accept_threshold=0.5,
+    )
+    for _ in range(6):
+        spec.speculate("hi", ["w1", "w2", "w3", "w4", "w5"])
+    prev = spec.draft_k
+    spec.adaptive_k()
+    assert spec.draft_k == min(prev + 1, 12)
+
+
+def test_adaptive_k_decreases() -> None:
+    spec = SigmaSpeculative(gate=_SigmaAlways(1.0), draft_k=5, accept_threshold=0.3)
+    for _ in range(6):
+        spec.speculate("hi", ["only"])
+    prev = spec.draft_k
+    spec.adaptive_k()
+    assert spec.draft_k == max(prev - 1, 2)
+
+
+def test_pyramid_three_stage() -> None:
+    spec = SigmaSpeculative(
+        gate=_SigmaSubstringGate("REJECT"),
+        accept_threshold=0.5,
+    )
+    out = spec.pyramid("ctx", ["a", "b", "REJECT"], ["m0", "m1", "m2", "m3"])
+    assert out["stage"] == "pyramid"
+    assert out["small_accepted"] == 2
+    assert out["medium_accepted"] >= 1
+    assert len(out["accepted"]) == out["n_accepted"]
+
+
+def test_stats_speedup() -> None:
+    spec = SigmaSpeculative(gate=_SigmaSubstringGate("___x___"), accept_threshold=0.4)
+    spec.speculate("start", ["t1", "t2", "t3"])
+    st = spec.stats()
+    assert st["total_rounds"] == 1
+    assert st["total_accepted"] == 3
+    assert st["acceptance_rate"] == 1.0
+    assert st["current_k"] == spec.draft_k
+    assert st["avg_speedup"] == 3.0
+    assert st["effective_tokens_per_round"] == 3.0
