@@ -344,7 +344,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
-			"$(CURDIR)/tests/test_eval.py" \
+			"$(CURDIR)/tests/test_eval.py" "$(CURDIR)/tests/test_eval_mtier.py" \
 			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
@@ -372,7 +372,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
-			"$(CURDIR)/tests/test_eval.py" \
+			"$(CURDIR)/tests/test_eval.py" "$(CURDIR)/tests/test_eval_mtier.py" \
 			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \

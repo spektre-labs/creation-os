@@ -2503,9 +2503,20 @@ def _cmd_bench(args: argparse.Namespace) -> int:
     from cos.bench import DATASET_NAMES, SigmaBench
 
     if bool(getattr(args, "bench_mtier", False)):
-        bench = SigmaBench()
-        payload = bench.mtier_v2()
-        print(json.dumps(payload, ensure_ascii=False, indent=2) if _cli_out_json(args) else _fmt_mtier_text(payload))
+        from cos.eval.mtier import mtier_payload, print_mtier
+
+        snap = SigmaBench().mtier_v2()
+        if _cli_out_json(args):
+            bundle = {
+                "not_agi_achieved": True,
+                "benchmark_strategy": mtier_payload(),
+                "harness_mtier_v2": snap,
+            }
+            print(json.dumps(bundle, ensure_ascii=False, indent=2))
+            return 0
+        print_mtier()
+        print("\n--- Harness rows (md) ---\n")
+        print(_fmt_mtier_text(snap))
         return 0
 
     ds = str(getattr(args, "bench_dataset", "") or "").strip()

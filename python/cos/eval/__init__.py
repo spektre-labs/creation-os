@@ -4,8 +4,8 @@
 """Eval loaders and runners (lab stubs + JSONL ingest).
 
 Canonical **M-tier disclosure** (incl. TruthfulQA saturation + HaluEval 0.514) lives in
-``cos.bench.default_mtier_rows``. This package wires harness-shaped loaders; archive JSON per
-``docs/CLAIM_DISCIPLINE.md``."""
+``cos.bench.default_mtier_rows`` and the public strategy frame in ``cos.eval.mtier``. This package
+wires harness-shaped loaders; archive JSON per ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 from cos.eval.checkpoint_eval import CheckpointEval, iter_checkpoint_results, load_checkpoint_meta
