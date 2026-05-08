@@ -5,6 +5,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | Document | Audience | Purpose |
 |----------|----------|---------|
 | [README.md](../README.md) | Everyone | Slim (~530 lines) front door: Try-it, Measured, Architecture, Build, Proofs, Docs hub, Limitations, License |
+| [MANIFESTO.md](MANIFESTO.md) | Integrators, reviewers | Post-transformer positioning: σ as meta-architecture coordinator; claim-disciplined evidence table |
 | [evidence_ladder.png](evidence_ladder.png) | Everyone, reviewers | Visual evidence classification (primitive → roadmap); complements [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 | [QUICKSTART.md](QUICKSTART.md) | Integrators | Under 5 minutes: install → `cos score` → Python API → chat/serve pointers + verdict table |
 | [LOCAL_MODEL_SETUP.md](LOCAL_MODEL_SETUP.md) | Integrators | **cos chat** with llama.cpp, Ollama, LM Studio, or OpenAI-compatible endpoints |
