@@ -1,51 +1,48 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # SPDX-Copyright-Identifier: 2024-2026 Lauri Elias Rainio · Spektre Labs Oy
 #
-# Default image: GHCR tag ``*-fastapi`` (see .github/workflows/docker-fastapi-serve.yml).
-# Override for the C HTTP image: --set image.repository=... --set image.tag=...
+# Default container port 8000 matches ``Dockerfile.python-oneclick`` / ``cos serve``.
+# GHCR FastAPI image (``*-fastapi``) listens on 8420 — set service.targetPort + health.port to 8420.
+# GPU: ``helm install … --set gpu.enabled=true``
+# KEDA queue-depth autoscaling: install KEDA separately; add a ScaledObject (custom metrics) alongside or instead of CPU HPA.
 
-replicaCount: 2
+replicaCount: 1
+
+nameOverride: ""
+fullnameOverride: ""
 
 image:
-  repository: ghcr.io/spektre-labs/creation-os
-  # Pinned example; CI publishes ``<git-tag>-fastapi`` and ``fastapi-latest``.
-  tag: "fastapi-latest"
+  repository: spektrelabs/creation-os
+  tag: latest
   pullPolicy: IfNotPresent
 
 service:
   type: ClusterIP
-  port: 80
-  targetPort: 8420
+  port: 8000
+  targetPort: 8000
 
 resources:
-  requests:
-    cpu: "100m"
-    memory: "128Mi"
   limits:
+    cpu: "2"
+    memory: "4Gi"
+  requests:
     cpu: "500m"
-    memory: "512Mi"
+    memory: "1Gi"
 
 autoscaling:
   enabled: true
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 10
-  targetCPUUtilization: 70
+  targetCPUUtilizationPercentage: 70
 
-probes:
-  liveness:
-    path: /health
-    port: 8420
-    initialDelaySeconds: 10
-    periodSeconds: 30
-  readiness:
-    path: /health
-    port: 8420
-    initialDelaySeconds: 5
-    periodSeconds: 10
+health:
+  path: /health
+  port: 8000
 
-env:
-  - name: COS_LOG_LEVEL
-    value: "info"
+gpu:
+  enabled: false
+  count: 1
+  type: "nvidia.com/gpu"
 
 podSecurityContext:
   runAsUser: 10001
@@ -59,3 +56,7 @@ containerSecurityContext:
   capabilities:
     drop:
       - ALL
+
+env:
+  - name: COS_LOG_LEVEL
+    value: "info"

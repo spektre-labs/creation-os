@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 apiVersion: v2
 name: creation-os
-description: FastAPI σ-gate (hallucination firewall) for LLMs — ASGI service on port 8420
+description: σ-gate cognitive architecture — HTTP serve (`/health`), horizontal scale optional
 type: application
-version: 0.1.0
-appVersion: "0.1.0"
+version: 1.0.0
+appVersion: "1.0.0"
 keywords:
   - llm
   - hallucination

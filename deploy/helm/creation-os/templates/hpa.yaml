@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 {{- if .Values.autoscaling.enabled }}
+{{- $cpuPct := .Values.autoscaling.targetCPUUtilizationPercentage | default .Values.autoscaling.targetCPUUtilization | default 70 }}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -19,5 +20,5 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: {{ .Values.autoscaling.targetCPUUtilization }}
+          averageUtilization: {{ $cpuPct }}
 {{- end }}
