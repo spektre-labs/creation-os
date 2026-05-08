@@ -20,7 +20,7 @@ jobs:
         run: PYTHONPATH=python python3 -m cos bench --mock --suite truthfulqa,triviaqa,mmlu --output-dir benchmarks/results_ci
       - name: σ-bench CI (regression vs previous)
         run: PYTHONPATH=python python3 -m cos bench --ci --mock --suite truthfulqa,triviaqa,mmlu --output-dir benchmarks/results_ci
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: bench-receipts
           path: benchmarks/results_ci/
