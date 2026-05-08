@@ -146,7 +146,7 @@ all = [
 ]
 
 [project.scripts]
-cos = "cos.cli:main"
+cos = "cos.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/spektre-labs/creation-os"

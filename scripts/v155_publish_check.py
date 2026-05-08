@@ -64,10 +64,10 @@ def check_pypi() -> None:
     if not proj_root.get("version"):
         fail("P0b", "repo root project.version missing")
     scripts = proj_root.get("scripts") or {}
-    if scripts.get("cos") != "cos.cli:main":
+    if scripts.get("cos") != "cos.__main__:main":
         fail(
             "P0c",
-            "repo root [project.scripts] must map cos -> cos.cli:main "
+            "repo root [project.scripts] must map cos -> cos.__main__:main "
             f"(got {scripts.get('cos')!r})",
         )
 

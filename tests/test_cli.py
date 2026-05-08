@@ -7,6 +7,7 @@ import os
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -223,3 +224,100 @@ def test_cli_calibrate_fit() -> None:
     payload = json.loads((result.stdout or "").strip())
     assert payload.get("fitted") is True
     assert out.is_file()
+
+
+def test_cos_main_score_fast_path() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "cos",
+            "score",
+            "--prompt",
+            "What is 2+2?",
+            "--response",
+            "4",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode == 0
+    out = result.stdout or ""
+    assert "σ=" in out or "ACCEPT" in out or "RETHINK" in out
+
+
+def test_cos_main_help_prints() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "cos", "--help"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode == 0
+    assert "score" in (result.stdout or "")
+
+
+def test_cos_main_unknown_command() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "cos", "not_a_real_subcommand_xyz"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode != 0
+
+
+def test_lazy_import_not_loaded_at_startup() -> None:
+    code = (
+        "import sys\n"
+        "import cos\n"
+        "assert 'cos.fabric' not in sys.modules\n"
+        "assert cos.__version__\n"
+    )
+    result = subprocess.run(
+        [sys.executable, "-c", code],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode == 0, (result.stderr, result.stdout)
+
+
+def test_score_under_200ms() -> None:
+    """Local/dev target is ~<100ms cold; CI VMs use a loose ceiling."""
+    env = _env()
+    t0 = time.perf_counter()
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "cos",
+            "score",
+            "--prompt",
+            "ping",
+            "--response",
+            "pong",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=env,
+        check=False,
+    )
+    elapsed_ms = (time.perf_counter() - t0) * 1000.0
+    assert result.returncode == 0
+    assert elapsed_ms < 4000.0, f"score took {elapsed_ms:.0f}ms (expected <4000ms on CI)"

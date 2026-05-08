@@ -14,7 +14,7 @@ has something to lint offline.
 `scripts/v155_publish_check.py` asserts:
 
 - Repo root `pyproject.toml` parses as TOML and names
-  `project.name = "creation-os"`, a non-empty version, and `cos` → `cos.cli:main`.
+  `project.name = "creation-os"`, a non-empty version, and `cos` → `cos.__main__:main`.
 - `python/pyproject.toml` parses as TOML and names
   `project.name = "creation-os-interop-sdk"` and a non-empty version.
 - `python/creation_os/__init__.py` exists and exports `COS`.
