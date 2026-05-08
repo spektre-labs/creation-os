@@ -1,17 +1,19 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Open-ended goal discovery over σ-shaped graph frontiers (lab).
+"""Open-ended discovery lab: graph frontiers (:class:`SigmaOpenEnded`) + MAP-Elites-style archives.
 
-Expands the *objective space* from uncertain triples (medium σ), not a fixed reward.
-Complements :mod:`cos.meta_goal` and the Ω-loop in :mod:`cos.omega`.
-
-**NOT AGI ACHIEVED** — intrinsic exploration hooks only; see ``docs/CLAIM_DISCIPLINE.md``."""
+:class:`SigmaOpenEnded` expands objective space from uncertain triples on a graph.
+:class:`DiscoveryArchive` is a small σ-scored **quality--diversity** toy (lower σ = higher nominal
+quality in this lab). **Not** a proof that σ avoids Goodhart effects or that search never stalls —
+see ``docs/CLAIM_DISCIPLINE.md``. **NOT AGI ACHIEVED**."""
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple
 
-__all__ = ["SigmaOpenEnded"]
+from cos.sigma_gate import SigmaGate
+
+__all__ = ["DiscoveryArchive", "SigmaOpenEnded"]
 
 
 class SigmaOpenEnded:
@@ -23,8 +25,6 @@ class SigmaOpenEnded:
         graph: Any = None,
         meta_goal: Any = None,
     ) -> None:
-        from cos.sigma_gate import SigmaGate
-
         self.gate = gate or SigmaGate()
         self.graph = graph
         self.meta_goal = meta_goal
@@ -165,3 +165,177 @@ class SigmaOpenEnded:
         if avg_frontier_σ > 0.5:
             return "explore"
         return "exploit"
+
+
+def _fnv1a_32(data: bytes) -> int:
+    h = 2166136261
+    for b in data:
+        h ^= b
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h
+
+
+GenerateFn = Callable[[int, Dict[str, Any]], Tuple[Any, Any]]
+
+
+class DiscoveryArchive:
+    """MAP-Elites-style **toy** archive: one cell per behavior bucket, σ as nominal quality."""
+
+    def __init__(self, gate: Optional[Any] = None, grid_size: int = 10) -> None:
+        self.gate = gate if gate is not None else SigmaGate()
+        self.grid_size = max(1, int(grid_size))
+        self.archive: Dict[Tuple[int, int], Dict[str, Any]] = {}
+        self.total_discoveries = 0
+        self.frontier_history: List[int] = []
+
+    @staticmethod
+    def _behavior_to_cell(behavior: Any, grid_size: int) -> Tuple[int, int]:
+        raw = str(behavior).encode("utf-8", errors="replace")
+        h = _fnv1a_32(raw)
+        x = int(h % grid_size)
+        y = int((h // grid_size) % grid_size)
+        return (x, y)
+
+    def _cell(self, behavior: Any) -> Tuple[int, int]:
+        return self._behavior_to_cell(behavior, self.grid_size)
+
+    def attempt(
+        self,
+        solution: Any,
+        behavior_descriptor: Any,
+        context: str = "",
+    ) -> Dict[str, Any]:
+        cell = self._cell(behavior_descriptor)
+        σ, _verdict = self.gate.score(context or "quality", str(solution))
+        σ = float(σ)
+
+        novelty = self._compute_novelty(behavior_descriptor)
+        interestingness = novelty * 0.5 + σ * 0.5
+
+        result: Dict[str, Any] = {
+            "cell": cell,
+            "σ": round(σ, 4),
+            "novelty": round(novelty, 4),
+            "interestingness": round(interestingness, 4),
+            "accepted": False,
+        }
+
+        if cell not in self.archive:
+            self.archive[cell] = {
+                "solution": solution,
+                "σ": σ,
+                "novelty": novelty,
+                "behavior": behavior_descriptor,
+            }
+            result["accepted"] = True
+            result["reason"] = "new cell discovered"
+            self.total_discoveries += 1
+        elif σ < self.archive[cell]["σ"]:
+            improvement = float(self.archive[cell]["σ"]) - σ
+            self.archive[cell] = {
+                "solution": solution,
+                "σ": σ,
+                "novelty": novelty,
+                "behavior": behavior_descriptor,
+            }
+            result["accepted"] = True
+            result["reason"] = f"improved cell by Δσ={improvement:.3f}"
+        else:
+            result["reason"] = "existing solution is better"
+
+        return result
+
+    def _compute_novelty(self, behavior: Any) -> float:
+        if not self.archive:
+            return 1.0
+        cell = self._cell(behavior)
+        nearby = 0
+        for dx in range(-2, 3):
+            for dy in range(-2, 3):
+                if (cell[0] + dx, cell[1] + dy) in self.archive:
+                    nearby += 1
+        max_nearby = 25
+        return round(max(0.0, min(1.0, 1.0 - nearby / float(max_nearby))), 4)
+
+    def frontier(self) -> Dict[str, Any]:
+        all_cells = {(x, y) for x in range(self.grid_size) for y in range(self.grid_size)}
+        empty = all_cells - set(self.archive.keys())
+
+        frontier: List[Dict[str, Any]] = []
+        for cell in empty:
+            nearby_σ: List[float] = []
+            for dx in range(-1, 2):
+                for dy in range(-1, 2):
+                    neighbor = (cell[0] + dx, cell[1] + dy)
+                    if neighbor in self.archive:
+                        nearby_σ.append(float(self.archive[neighbor]["σ"]))
+
+            if nearby_σ:
+                avg_neighbor_σ = sum(nearby_σ) / float(len(nearby_σ))
+                frontier.append(
+                    {
+                        "cell": cell,
+                        "neighbor_avg_σ": round(avg_neighbor_σ, 4),
+                        "n_neighbors": len(nearby_σ),
+                    }
+                )
+
+        frontier.sort(key=lambda f: f["neighbor_avg_σ"])
+        self.frontier_history.append(len(frontier))
+        return {
+            "frontier_cells": frontier[:10],
+            "total_empty": len(empty),
+            "coverage": round(len(self.archive) / float(self.grid_size**2), 4),
+        }
+
+    def explore(
+        self,
+        generate_fn: GenerateFn,
+        n_attempts: int = 100,
+        context: str = "",
+    ) -> Dict[str, Any]:
+        results: Dict[str, Any] = {
+            "accepted": 0,
+            "rejected": 0,
+            "history": [],
+        }
+        for i in range(int(n_attempts)):
+            solution, behavior = generate_fn(i, self.frontier())
+            attempt_res = self.attempt(solution, behavior, context)
+            if attempt_res["accepted"]:
+                results["accepted"] += 1
+            else:
+                results["rejected"] += 1
+            if i % 10 == 0:
+                results["history"].append(
+                    {
+                        "step": i,
+                        "coverage": round(len(self.archive) / float(self.grid_size**2), 4),
+                        "discoveries": self.total_discoveries,
+                    }
+                )
+
+        results["final_coverage"] = round(len(self.archive) / float(self.grid_size**2), 4)
+        results["total_discoveries"] = self.total_discoveries
+        return results
+
+    def quality_diversity_score(self) -> float:
+        if not self.archive:
+            return 0.0
+        return round(sum(1.0 - float(e["σ"]) for e in self.archive.values()), 2)
+
+    def status(self) -> Dict[str, Any]:
+        n = len(self.archive)
+        return {
+            "archive_size": n,
+            "grid_size": self.grid_size,
+            "coverage": round(n / float(self.grid_size**2), 4),
+            "qd_score": self.quality_diversity_score(),
+            "total_discoveries": self.total_discoveries,
+            "avg_σ": round(
+                sum(float(e["σ"]) for e in self.archive.values()) / float(max(n, 1)),
+                4,
+            )
+            if self.archive
+            else 0.5,
+        }

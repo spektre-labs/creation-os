@@ -21,6 +21,7 @@ __version__ = "1.0.0"
 
 _LAZY_IMPORT_MAP: dict[str, str] = {
     "DEFAULT_CONFIG": "cos.config",
+    "DiscoveryArchive": "cos.openended",
     "SigmaConfig": "cos.config",
     "EmbodiedController": "cos.embodied",
     "SensorFusion": "cos.embodied",
@@ -57,6 +58,7 @@ _LAZY_IMPORT_MAP: dict[str, str] = {
     "AutonomousAgent": "cos.autonomous",
     "ThinkBudget": "cos.think_budget",
     "SigmaMoE": "cos.sigma_moe",
+    "SigmaOpenEnded": "cos.openended",
     "CostManager": "cos.cost",
     "SigmaSpeculative": "cos.speculative",
     "SigmaKVCache": "cos.kv_cache",
@@ -70,6 +72,7 @@ __all__ = [
     "Autopoietic",
     "CostManager",
     "DEFAULT_CONFIG",
+    "DiscoveryArchive",
     "EmbodiedController",
     "EpistemicAgent",
     "EnergyAware",
@@ -101,6 +104,7 @@ __all__ = [
     "SigmaKVCache",
     "SigmaMoE",
     "SigmaMoral",
+    "SigmaOpenEnded",
     "SigmaSocial",
     "SigmaSpeculative",
     "SigmaTTT",
