@@ -141,6 +141,10 @@ class SigmaSAE:
             "all": associations,
         }
 
+    def analyze_σ_drivers(self, test_cases: Sequence[TrainCase]) -> Dict[str, Any]:
+        """Alias for :meth:`analyze_sigma_drivers` (σ-attribution vocabulary)."""
+        return self.analyze_sigma_drivers(test_cases)
+
     def steer(
         self,
         activation: Sequence[float],
