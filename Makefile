@@ -348,6 +348,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_conscious_v2.py" \
 			"$(CURDIR)/tests/test_causal_v2.py" \
 			"$(CURDIR)/tests/test_drive_v2.py" \
+			"$(CURDIR)/tests/test_social_v2.py" \
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
@@ -383,6 +384,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_conscious_v2.py" \
 			"$(CURDIR)/tests/test_causal_v2.py" \
 			"$(CURDIR)/tests/test_drive_v2.py" \
+			"$(CURDIR)/tests/test_social_v2.py" \
 			"$(CURDIR)/tests/test_watchdog.py" \
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
