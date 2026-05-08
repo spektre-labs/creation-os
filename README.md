@@ -382,6 +382,10 @@ Eight-layer map of the σ-aware system (narrative + lab — not every layer ship
 </table>
 </p>
 
+### Boundary-first semantics (holographic view)
+
+σ is scored on what the operator **actually couples to** — the **(prompt, response)** seam and optional probes on that same interface — rather than on latent “everything inside the model.” That boundary-first stance is **pedagogically** aligned with how physics and inference literature often foreground **surface / blanket** degrees of freedom, but it is **not** a claim that this codebase reproduces Bekenstein–Hawking entropy or proves the holographic principle. Full scope, limits, and literature framing: **[`docs/ARCHITECTURE.md` — Holographic boundary interpretation (pedagogical)](docs/ARCHITECTURE.md#holographic-boundary-interpretation-pedagogical)** · [Claim discipline](docs/CLAIM_DISCIPLINE.md).
+
 Deeper ULTRA / BSC / silicon map: [Architecture](#architecture) · [`docs/DOC_INDEX.md`](docs/DOC_INDEX.md).
 
 <a id="continuous-omega-loop"></a>
