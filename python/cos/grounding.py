@@ -1,86 +1,148 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Factual grounding lab — context attention mass, FFN-norm proxy, span overlap (no retriever).
+"""**Symbol grounding** sketch: treat :class:`~cos.sigma_gate.SigmaGate` σ as a *compatibility*
+score between a **symbol** (or utterance) and a **referent** (evidence, denotation, outcome).
 
-For production RAG, wire real chunks and logits. See ``docs/CLAIM_DISCIPLINE.md``."""
+Harnad’s formulation asks how intrinsic semantics could emerge for an artificial system. This
+module does **not** close that philosophical problem and does **not** replace world models or
+sensorimotor learning — it is a **discrete, σ-gated** lab story: low σ with an acceptable
+verdict **stands in for** “grounded”; high σ / ABSTAIN **stands in for** an “ungrounded” or
+hallucination-leaning gap. **Zero** extra dependencies. **Not AGI achieved.** See
+``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
-import re
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Sequence, Tuple, Union
+
+from cos.sigma_gate import ACCEPT, ABSTAIN, SigmaGate
 
 __all__ = ["SigmaGrounding"]
 
 
 class SigmaGrounding:
-    """Heuristic grounding checks layered on :class:`cos.sigma_gate.SigmaGate` when needed."""
+    """Symbol–referent checks through :class:`SigmaGate` (verdict + σ)."""
 
     def __init__(self, gate: Any = None) -> None:
-        from cos.sigma_gate import SigmaGate
-
         self.gate = gate or SigmaGate()
-
-    def ground_check(self, prompt: str, response: str, context: str) -> Dict[str, Any]:
-        packed = f"CONTEXT:\n{context}\n\nPROMPT:\n{prompt}\n\nRESPONSE:\n{response}"
-        sigma, verdict = self.gate.score("grounding_check", packed)
-        return {"sigma": float(sigma), "verdict": verdict}
-
-    def attention_to_context_ratio(
-        self,
-        attention_maps: Any,
-        *,
-        context_len: int,
-        seq_len: Optional[int] = None,
-    ) -> float:
-        """Average per-row mass on context positions ``[0, context_len)``."""
-        from cos.sink_probe import SigmaSinkProbe
-
-        layers = SigmaSinkProbe._normalize_attention_maps(attention_maps)
-        if not layers or context_len <= 0:
-            return 0.0
-        if seq_len is None:
-            seq_len = len(layers[0][0])
-        ctx_end = min(context_len, seq_len)
-        fracs: List[float] = []
-        for layer in layers:
-            for head in layer:
-                for i in range(len(head)):
-                    row = head[i]
-                    sctx = sum(float(row[j]) for j in range(ctx_end))
-                    fracs.append(float(sctx))
-        if not fracs:
-            return 0.0
-        return float(min(1.0, max(0.0, sum(fracs) / len(fracs))))
+        self.groundings: Dict[str, Dict[str, Any]] = {}
 
     @staticmethod
-    def ffn_activation_score(ffn_outputs: Sequence[float]) -> float:
-        """Mean absolute activation magnitude → proxy parametric memory pressure."""
-        if not ffn_outputs:
-            return 0.0
-        xs = [abs(float(x)) for x in ffn_outputs]
-        return float(min(1.0, sum(xs) / len(xs)))
+    def _sym_key(symbol: Any) -> str:
+        return str(symbol)
 
-    def source_attribution(self, response: str, context_chunks: Sequence[str]) -> Dict[str, Any]:
-        """Greedy word-overlap score per chunk (lab)."""
-        rw = set(re.findall(r"\w+", response.lower()))
-        scores: List[Tuple[int, float]] = []
-        for i, ch in enumerate(context_chunks):
-            cw = set(re.findall(r"\w+", ch.lower()))
-            inter = len(rw & cw)
-            union = len(rw | cw) or 1
-            scores.append((i, inter / union))
-        best = max(scores, key=lambda x: x[1]) if scores else (-1, 0.0)
-        return {"best_chunk": best[0], "score": round(best[1], 6), "all": scores}
+    def ground(self, symbol: Any, referent: Any) -> Dict[str, Any]:
+        """Score ``symbol`` vs ``referent``; cache result under ``str(symbol)``."""
+        key = self._sym_key(symbol)
+        sigma, verdict = self.gate.score(str(symbol), str(referent))
+        sigma_f = float(sigma)
+        grounded = verdict == ACCEPT
 
-    def ungrounded_spans(self, response: str, context: str, *, min_words: int = 2) -> Dict[str, Any]:
-        """Mark sentence fragments with no token overlap with context."""
-        ctx = set(re.findall(r"\w+", context.lower()))
-        parts = re.split(r"(?<=[.!?])\s+", str(response).strip())
-        bad: List[str] = []
-        for p in parts:
-            words = re.findall(r"\w+", p.lower())
-            if len(words) < min_words:
-                continue
-            if not (set(words) & ctx):
-                bad.append(p.strip())
-        return {"ungrounded": bad, "count": len(bad)}
+        self.groundings[key] = {
+            "symbol": key,
+            "referent": referent,
+            "σ": round(sigma_f, 4),
+            "sigma": round(sigma_f, 4),
+            "grounded": grounded,
+            "verdict": verdict,
+        }
+        return dict(self.groundings[key])
+
+    def is_grounded(self, symbol: Any) -> Dict[str, Any]:
+        """Return cached grounding record, or a never-grounded placeholder."""
+        key = self._sym_key(symbol)
+        if key not in self.groundings:
+            return {"grounded": False, "reason": "never grounded", "symbol": key}
+        return dict(self.groundings[key])
+
+    def hallucination_check(self, statement: Any, evidence: Any) -> Dict[str, Any]:
+        """σ(evidence, statement): does evidence support the statement (lite pair ordering)?"""
+        sigma, verdict = self.gate.score(str(evidence), str(statement))
+        sigma_f = float(sigma)
+        return {
+            "statement": str(statement)[:100],
+            "σ": round(sigma_f, 4),
+            "sigma": round(sigma_f, 4),
+            "grounded": verdict == ACCEPT,
+            "hallucinating": verdict == ABSTAIN,
+            "verdict": verdict,
+        }
+
+    def ground_hierarchy(
+        self, concept_chain: Sequence[Tuple[Any, Any]]
+    ) -> Dict[str, Any]:
+        """Chain local (symbol → referent) checks; strength ≈ weakest σ link."""
+        chain_results: List[Dict[str, Any]] = []
+        cumulative = 0.0
+
+        for symbol, referent in concept_chain:
+            result = self.ground(symbol, referent)
+            cumulative += float(result["σ"])
+            chain_results.append(
+                {
+                    "symbol": str(symbol),
+                    "referent": referent,
+                    "σ": result["σ"],
+                    "grounded": result["grounded"],
+                    "cumulative_σ": round(cumulative, 4),
+                    "cumulative_sigma": round(cumulative, 4),
+                }
+            )
+
+        weakest = max(chain_results, key=lambda x: x["σ"])
+        all_grounded = all(r["grounded"] for r in chain_results)
+        n = max(len(chain_results), 1)
+
+        return {
+            "chain": chain_results,
+            "all_grounded": all_grounded,
+            "weakest_link": weakest["symbol"],
+            "weakest_σ": weakest["σ"],
+            "weakest_sigma": weakest["σ"],
+            "avg_σ": round(cumulative / n, 4),
+            "avg_sigma": round(cumulative / n, 4),
+        }
+
+    def sensorimotor_ground(self, symbol: Any, action_result: Any) -> Dict[str, Any]:
+        """Embodied toy: score predicted framing vs observed action outcome."""
+        left = f"action '{symbol}' should produce"
+        sigma, verdict = self.gate.score(left, str(action_result))
+        sigma_f = float(sigma)
+        return {
+            "symbol": str(symbol),
+            "action_result": str(action_result)[:100],
+            "σ": round(sigma_f, 4),
+            "sigma": round(sigma_f, 4),
+            "embodied": True,
+            "grounded": verdict == ACCEPT,
+            "verdict": verdict,
+        }
+
+    def drift_check(self, symbol: Any) -> Dict[str, Any]:
+        """Re-score cached pair; positive Δσ above tolerance ⇒ drift flag."""
+        key = self._sym_key(symbol)
+        if key not in self.groundings:
+            return {"drifted": False, "reason": "not grounded", "symbol": key}
+
+        original = self.groundings[key]
+        sigma_now, _verdict = self.gate.score(str(key), str(original["referent"]))
+        sigma_now_f = float(sigma_now)
+        orig_sigma = float(original["σ"])
+        drift = sigma_now_f - orig_sigma
+
+        return {
+            "symbol": key,
+            "σ_original": original["σ"],
+            "sigma_original": original["σ"],
+            "σ_now": round(sigma_now_f, 4),
+            "sigma_now": round(sigma_now_f, 4),
+            "drift": round(drift, 4),
+            "drifted": drift > 0.1,
+        }
+
+    def ungrounded_symbols(self) -> List[Dict[str, Union[str, float]]]:
+        """Symbols whose last cached check was not ACCEPT."""
+        return [
+            {"symbol": s, "σ": g["σ"], "sigma": g["σ"]}
+            for s, g in self.groundings.items()
+            if not g["grounded"]
+        ]
