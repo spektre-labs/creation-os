@@ -26,6 +26,7 @@ dist/
 
 # Attestations / SBOM / provenance (generated locally; CI emits canonical)
 SBOM.json
+sbom.json
 ATTESTATION.json
 ATTESTATION.sig
 PROVENANCE.json

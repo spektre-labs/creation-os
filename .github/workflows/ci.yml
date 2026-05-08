@@ -70,13 +70,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Generate sbom/creation-os.cdx.json
+      - name: Install cyclonedx + editable package (base deps are empty)
+        run: |
+          python -m pip install -q -U pip cyclonedx-bom
+          python -m pip install -q -e .
+      - name: Generate sbom.json (environment + pyproject)
+        run: |
+          cyclonedx-py environment --pyproject pyproject.toml --of JSON -o sbom.json "$(which python)"
+      - name: Generate sbom/creation-os.cdx.json (reproducible + dev extra)
         run: bash scripts/sbom/generate_creation_os_cdx.sh
-      - name: Upload SBOM artifact
+      - name: Upload SBOM artifacts
         uses: actions/upload-artifact@v4
         with:
           name: sbom
-          path: sbom/
+          path: |
+            sbom/
+            sbom.json
 
   ubuntu-python-dev-matrix:
     runs-on: ubuntu-latest

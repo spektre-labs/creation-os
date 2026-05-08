@@ -12,6 +12,22 @@ SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 
 ---
 
+## Supply chain security and SBOM
+
+| Item | In-repo practice |
+|------|------------------|
+| **Python base install** | `[project] dependencies = []` in `pyproject.toml` (runtime third-party wheels are **not** required for the core `cos` package). |
+| **Optional installs** | Declared under `[project.optional-dependencies]` (voice, probes, serve, dev, etc.). |
+| **CycloneDX (Python env)** | `make sbom-env` → `sbom.json` (active interpreter + `pyproject.toml`). Reproducible dev-inclusive SBOM: `make sbom-cdx` → `sbom/creation-os.cdx.json`. |
+| **CycloneDX-lite (native C)** | `make sbom` → `SBOM.json` (subsystems under `src/v*`, no PyPI; see `scripts/security/sbom.sh`). |
+| **CI** | Workflow job `cyclonedx-sbom` uploads `sbom/` and root `sbom.json` as artifacts. |
+
+Regulators and customers increasingly expect an SBOM alongside the product. **EU Cyber Resilience Act (CRA)** timelines apply to **your** product and distribution; this repo publishes SBOM **artifacts** and mappings for integrators — **not** a claim that a downstream product is CRA-certified.
+
+**σ-gate and model outputs:** the gate scores prompt–response pairs (lab / harness depending on configuration). It is **one** operational control for *detecting* high-stress or inconsistent generations — **not** a guarantee against compromised models, data poisoning, or adversarial supply-chain attacks, and **not** a replacement for vendor diligence, provenance, and your own risk assessment.
+
+---
+
 ## EU AI Act (high-level themes)
 
 | Theme | In-repo hooks (illustrative) |
@@ -51,6 +67,20 @@ SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 | **MAP** | [python/cos/fabric.py](../python/cos/fabric.py) `layer_status`, self-model and graph modules where loaded |
 | **MEASURE** | σ-gate probes, eval harnesses (where run), [python/cos/observe.py](../python/cos/observe.py) — each claim needs an evidence class |
 | **MANAGE** | Drift, red team, formal hooks, tool safety tiers — all **integration / lab** unless you archive production evidence |
+
+---
+
+## Regulatory and standards mapping (illustrative)
+
+**Not legal advice.** Rows link governance language to **in-repo** tools only.
+
+| Source | Topic | Creation OS (pointers) |
+|--------|--------|------------------------|
+| EU AI Act (themes) | Risk management, transparency | σ-gate + safety modules; see [EU AI Act](#eu-ai-act-high-level-themes) above |
+| EU CRA | SBOM / vulnerability handling | CycloneDX outputs (`make sbom-env`, `make sbom-cdx`, `make sbom`); operator process required for your shipped product |
+| NIST SSDF / SP 800-218 (themes) | Secure SDLC practices | SPDX in headers; CI, review, and `make space-check` (where used) — not a NIST “compliance” attestation |
+| OWASP LLM Top 10 | LLM abuse classes | [OWASP LLM Top 10](#owasp-llm-top-10-2025--mitigation-mapping-illustrative) above; `python/cos/prompt_guard.py` |
+| NIST AI RMF | AI risk management | [NIST AI RMF](#nist-ai-rmf--function-mapping-illustrative) above |
 
 ---
 
