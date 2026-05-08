@@ -9,7 +9,8 @@ In Creation OS lab notation, σ is a **scalar coherence / prediction-error proxy
 energy, for routing and tracing — **not** a neuroscience claim and **not** “AGI achieved”.
 
 The loop encourages **action selection** that reduces anticipated mismatch against preferences
-when a world model is absent or present. See corpus paper #86 for the theoretical mapping;
+when a world model is absent or present. Optional :meth:`act_factor_graph` routes the same
+choice through a tiny σ-factor graph (VFE proxy). See corpus paper #86 for the theoretical mapping;
 this module is an explicit, testable harness.
 """
 from __future__ import annotations
@@ -139,6 +140,55 @@ class ActiveInference:
             "sigma": round(ex, 4),
             "alternatives": len(evaluated) - 1,
             "reason": f"minimizes expected σ ({ex:.3f})",
+        }
+
+    def act_factor_graph(self, candidate_actions: List[Any]) -> Dict[str, Any]:
+        """Pick action via :class:`~cos.factor_graph.SigmaFactorGraph.active_infer` (VFE proxy)."""
+        from cos.factor_graph import SigmaFactorGraph
+
+        if not candidate_actions:
+            return {
+                "chosen_action": None,
+                "action": None,
+                "expected_σ": 1.0,
+                "expected_vfe": 1.0,
+                "σ": 1.0,
+                "sigma": 1.0,
+                "reason": "no actions",
+                "alternatives": 0,
+                "factor_graph": None,
+            }
+
+        fg = SigmaFactorGraph(gate=self.gate)
+        fg.add_variable("observation", str(self.beliefs.get("last_observation", "")))
+        fg.add_variable("action", "")
+        fg.add_factor("policy", ["observation", "action"])
+        raw = fg.active_infer([str(a) for a in candidate_actions], "action", infer_iter=8)
+
+        best_action = raw.get("best_action")
+        best_vfe = float(raw.get("best_vfe", 1.0))
+
+        pred: Dict[str, Any]
+        if best_action is not None:
+            pred = self.predict(best_action)
+            self.beliefs["last_prediction"] = pred.get("predicted", pred)
+        else:
+            pred = {"predicted": "", "σ": 0.5, "sigma": 0.5}
+
+        self.beliefs["last_factor_graph"] = raw
+        self._append_sigma("act_factor_graph", best_vfe, action=best_action)
+
+        return {
+            "chosen_action": best_action,
+            "action": best_action,
+            "expected_vfe": round(best_vfe, 4),
+            "expected_σ": round(best_vfe, 4),
+            "σ": round(best_vfe, 4),
+            "sigma": round(best_vfe, 4),
+            "alternatives": len(candidate_actions) - 1,
+            "reason": f"minimizes factor-graph VFE proxy ({best_vfe:.3f})",
+            "factor_graph": raw,
+            "prediction": pred,
         }
 
     def update(self, observation_after_action: Any) -> Dict[str, Any]:

@@ -196,12 +196,24 @@ class OmegaLoop:
                 "input": str(input_data)[:100],
             }
         )
+        factor_graph_mp: Dict[str, Any]
+        try:
+            from cos.factor_graph import SigmaFactorGraph
+
+            fg = SigmaFactorGraph(gate=self.gate)
+            fg.add_variable("perceived", perceived[:800])
+            fg.add_variable("reasoning", reasoning[:800])
+            fg.add_factor("omega_align", ["perceived", "reasoning"])
+            factor_graph_mp = fg.infer(max_iterations=12, tolerance=0.02)
+        except Exception as exc:  # noqa: BLE001 — optional tracing layer
+            factor_graph_mp = {"error": repr(exc), "not_agi": True}
         out: Dict[str, Any] = {
             "result": result,
             "σ": float(σ),
             "σ_meta": float(σ_meta),
             "verdict": str(vn),
             "step": len(self.σ_history),
+            "factor_graph_mp": factor_graph_mp,
         }
         ai = getattr(self, "active_inference", None)
         if ai is not None:
