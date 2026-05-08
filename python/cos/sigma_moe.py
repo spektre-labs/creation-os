@@ -5,6 +5,10 @@
 σ-MoE — Mixture of Experts where the **σ-gate** selects outputs by reliability, not a softmax router.
 
 Does not modify ``sigma_gate.h``. Lab code: experts expose ``generate``; layer experts expose ``forward``.
+
+**Token router (content gating):** :class:`SigmaMoETokenRouter` + :class:`MoETokenExpert` score each
+(specialty, token) pair with the same gate — top-k by lowest σ, inverse-σ weights. Distinct from
+:class:`SigmaMoE` generate-based routing above.
 """
 from __future__ import annotations
 
@@ -289,8 +293,143 @@ def save_registry(path: Path, reg: Mapping[str, str]) -> None:
     path.write_text(json.dumps(dict(reg), indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
+class MoETokenExpert:
+    """Token-routing expert: specialty string + per-call σ stats (lab)."""
+
+    def __init__(self, expert_id: int, specialty: str, gate: Any) -> None:
+        self.id = int(expert_id)
+        self.specialty = str(specialty)
+        self.gate = gate
+        self.calls = 0
+        self.total_σ = 0.0
+
+    def process(self, token: str, context: str = "") -> Dict[str, Any]:
+        σ, verdict = _gate_score(self.gate, f"{self.specialty}: {context}", str(token))
+        self.calls += 1
+        self.total_σ += float(σ)
+        return {
+            "token": token,
+            "σ": float(σ),
+            "verdict": _normalize_verdict(verdict),
+            "expert": self.id,
+        }
+
+    def avg_σ(self) -> float:
+        return round(float(self.total_σ) / max(self.calls, 1), 4)
+
+
+class SigmaMoETokenRouter:
+    """σ-gate scores each (specialty, token) pair; lowest-σ experts win top-k (no auxiliary loss)."""
+
+    def __init__(self, gate: Any = None, top_k: int = 2) -> None:
+        from cos.sigma_gate import SigmaGate
+
+        self.gate = gate if gate is not None else SigmaGate()
+        self.experts: List[MoETokenExpert] = []
+        self.top_k = max(1, int(top_k))
+        self.routing_history: List[Dict[str, Any]] = []
+
+    def add_expert(self, specialty: str) -> MoETokenExpert:
+        ex = MoETokenExpert(len(self.experts), specialty, self.gate)
+        self.experts.append(ex)
+        return ex
+
+    def route(self, token: str, context: str = "") -> Dict[str, Any]:
+        if not self.experts:
+            return {"error": "no experts"}
+
+        scores: List[Dict[str, Any]] = []
+        for expert in self.experts:
+            σ, _verdict = _gate_score(
+                self.gate,
+                f"{expert.specialty} handles",
+                f"{token} in {context}",
+            )
+            scores.append({"expert_id": expert.id, "σ": float(σ), "specialty": expert.specialty})
+
+        scores.sort(key=lambda s: float(s["σ"]))
+        selected = scores[: self.top_k]
+
+        results: List[Dict[str, Any]] = []
+        for s in selected:
+            expert = self.experts[int(s["expert_id"])]
+            result = expert.process(str(token), str(context))
+            results.append(result)
+
+        total_inv_σ = sum(1.0 / max(float(r["σ"]), 0.001) for r in results)
+        for r in results:
+            r["weight"] = round((1.0 / max(float(r["σ"]), 0.001)) / total_inv_σ, 4)
+
+        best = min(results, key=lambda r: float(r["σ"]))
+        routing: Dict[str, Any] = {
+            "token": token,
+            "selected_experts": [int(s["expert_id"]) for s in selected],
+            "best_expert": best["expert"],
+            "best_σ": round(float(best["σ"]), 4),
+            "all_results": results,
+        }
+        self.routing_history.append(routing)
+        return routing
+
+    def load_balance(self) -> Dict[str, Any]:
+        if not self.experts:
+            return {"balanced": True, "per_expert": [], "imbalance": 0.0, "total_tokens": 0}
+
+        calls = [int(e.calls) for e in self.experts]
+        max_calls = max(calls) if calls else 0
+        min_calls = min(calls) if calls else 0
+        imbalance = (max_calls - min_calls) / max(max_calls, 1)
+
+        return {
+            "per_expert": [
+                {"id": e.id, "specialty": e.specialty, "calls": e.calls, "avg_σ": e.avg_σ()}
+                for e in self.experts
+            ],
+            "imbalance": round(float(imbalance), 4),
+            "balanced": bool(imbalance < 0.5),
+            "total_tokens": int(sum(calls)),
+        }
+
+    def expert_utilization(self) -> Dict[str, Any]:
+        if not self.experts:
+            return {
+                "total": 0,
+                "active": 0,
+                "dead": [],
+                "overloaded": [],
+                "utilization": 1.0,
+            }
+        dead = [e for e in self.experts if e.calls == 0]
+        mean_calls = sum(ex.calls for ex in self.experts) / max(len(self.experts), 1)
+        overloaded = [e for e in self.experts if e.calls > mean_calls * 2]
+        return {
+            "total": len(self.experts),
+            "active": len(self.experts) - len(dead),
+            "dead": [e.id for e in dead],
+            "overloaded": [e.id for e in overloaded],
+            "utilization": round((len(self.experts) - len(dead)) / max(len(self.experts), 1), 4),
+        }
+
+    def dynamic_add_expert(self, sigma_trace: List[float], threshold: float = 0.6) -> Dict[str, Any]:
+        """Heuristic: high recent σ ⇒ add an auto-tagged expert (lab hook)."""
+        if not sigma_trace:
+            return {"added": False}
+        tail = [float(x) for x in sigma_trace[-20:]]
+        avg = sum(tail) / max(len(tail), 1)
+        if avg > float(threshold):
+            new_expert = self.add_expert(f"auto_expert_{len(self.experts)}")
+            return {
+                "added": True,
+                "expert_id": new_expert.id,
+                "reason": f"avg σ={avg:.3f} > {threshold} → new expert needed",
+            }
+        return {"added": False, "avg_σ": round(avg, 4)}
+
+
 __all__ = [
     "SigmaMoE",
+    "MoETokenExpert",
+    "SigmaMoETokenRouter",
     "LabExpert",
     "LabMoEGate",
     "default_moe_state_path",
