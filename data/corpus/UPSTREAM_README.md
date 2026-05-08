@@ -77,7 +77,7 @@ This table is a **pedagogical map**: independent historical threads summarized w
 
 IIT identifies consciousness with **integrated information** Φ — how much the system is “more than the sum of its parts” in a causal sense. Exact Φ is **computationally intractable** in general formulations; the repo does **not** solve that problem.
 
-**Empirical bridge (not a Creation OS measurement claim):** Mayama *et al.* (`arXiv:2510.04084`) report that a **proxy for integrated information** in living neuronal cultures correlates **strongly and positively** with **Bayesian surprise** under an FEP-style variational decomposition, with Φ-related trajectories described as **hill-shaped** during perceptual learning (exploration → exploitation framing in the paper). Those findings motivate a **computable laboratory surrogate**: track σ over time and use **mean \|Δσ\|** as a **Φ-proxy** — a **discrete analogy** only, documented in `python/cos/phi_proxy.py`.
+**Empirical bridge (not a Creation OS measurement claim):** Mayama *et al.* ([arXiv:2510.04084](https://arxiv.org/abs/2510.04084)) report that a **proxy for integrated information** in living neuronal cultures correlates **strongly and positively** with **Bayesian surprise** under an FEP-style variational decomposition, with Φ-related trajectories described as **hill-shaped** during perceptual learning (exploration → exploitation framing in the paper). Those findings motivate a **computable laboratory surrogate**: track σ over time and use **mean \|Δσ\|** as a **Φ-proxy** — a **discrete analogy** only, documented in `python/cos/phi_proxy.py`.
 
 *IWMT (Safron, 2020) argues for compatibility between IIT, global workspace accounts, and FEP-style active inference; this repository does not implement IWMT.*
 
