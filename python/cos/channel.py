@@ -8,6 +8,15 @@ story: :math:`C \\approx 1 - H(\\sigma)` when :math:`\\sigma \\in (0,1)` is the 
 probability, with **noiseless** (:math:`\\sigma \\rightarrow 0`) mapped to **capacity 1**
 and **useless** (:math:`\\sigma \\ge 1` on this scale) to **capacity 0**.
 
+**Information-theoretic vocabulary (pedagogical):** when ``H(declared)`` is a source entropy
+estimate in bits and ``I(declared; realized)`` is mutual information in bits, the closure
+ratio :math:`R \\equiv I/H` captures how much of the source passes the channel; the lab
+identity :math:`\\sigma \\equiv 1 - R` (clamped to ``[0, 1]``) is the **fraction “lost”** to
+mismatch. The gate’s runtime σ is **not** automatically ``1 - I/H`` for that pair unless you
+plug in measured ``I`` and ``H``; use :meth:`SigmaChannel.sigma_from_mi_ratio` for the toy
+normalization. The noisy-channel coding theorem’s “rate below capacity ⇒ low error” is **not**
+proven for cognition here—only named as a **design metaphor** (thresholds vs hallucination).
+
 This is a **pedagogical isomorphism** — not a claim that :class:`~cos.sigma_gate.SigmaGate`
 is a Shannon-optimal physical channel, that the gate achieves channel capacity, or that
 cognitive errors satisfy the noisy-channel coding theorem literally. **Not AGI achieved.**
@@ -39,6 +48,19 @@ class SigmaChannel:
     def __init__(self, gate: Any = None) -> None:
         self.gate = gate or SigmaGate()
         self.transmissions: List[Dict[str, Any]] = []
+
+    @staticmethod
+    def sigma_from_mi_ratio(h_declared: float, mutual_information: float) -> float:
+        """Return :math:`\\sigma \\equiv 1 - I(X;Y)/H(X)` with ``H(X) > 0`` (else **1.0**).
+
+        ``mutual_information`` is clamped to ``[0, h_declared]``. Result clamped to ``[0, 1]``.
+        """
+        h = float(h_declared)
+        if h <= 0.0:
+            return 1.0
+        ixy = max(0.0, min(float(mutual_information), h))
+        s = 1.0 - ixy / h
+        return round(max(0.0, min(1.0, s)), 4)
 
     def capacity(self, sigma: float) -> float:
         """BSC-style capacity: :math:`C \\approx 1 - H(\\sigma)` on :math:`\\sigma \\in (0,1)`.

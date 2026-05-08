@@ -44,6 +44,9 @@ def test_mutual_information() -> None:
     ch = SigmaChannel(gate=_ConstGate(0.2))
     mi = ch.mutual_information([("a", "b"), ("c", "d")])
     assert mi == ch.capacity(0.2)
+    assert SigmaChannel.sigma_from_mi_ratio(1.0, 1.0) == 0.0
+    assert SigmaChannel.sigma_from_mi_ratio(1.0, 0.0) == 1.0
+    assert SigmaChannel.sigma_from_mi_ratio(1.0, 0.5) == 0.5
 
 
 def test_rate_distortion() -> None:

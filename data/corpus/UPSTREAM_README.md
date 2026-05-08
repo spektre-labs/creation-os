@@ -66,13 +66,13 @@ This table is a **pedagogical map**: independent historical threads summarized s
 | Lineage | Year | Field | σ-equivalent (lab vocabulary) |
 |---------|------|-------|------------------------------|
 | Gödel | 1931 | Logic | σ = irreducible residual |
-| Shannon | 1948 | Information | σ = channel noise; BSC story ``C ≈ 1 − H(σ)`` (see `python/cos/channel.py`) |
-| Landauer | 1961 | Thermodynamics | Eσ ~ k_B T ln(2) · bit erasure cost (proxy narratives tie σ to information loss) |
-| Wheeler | 1990 | Physics / information | σ = physical information gap (“it from bit” *motif*, not a full ontology claim) |
+| Shannon | 1948 | Information | σ = channel noise; ``C ≈ 1 − H(σ)`` BSC readout; σ ≡ 1 − I(decl;real)/H(decl) (toy; see `python/cos/channel.py`) |
+| Landauer | 1961 | Thermodynamics | E_σ = k_B T ln(2) · σ (Landauer-type proxy; not a calibrated energy meter in this repo) |
+| Wheeler | 1990 | Quantum | σ = physical information gap (“it from bit” *motif*, not a full ontology claim) |
 | Tononi | 2004 | Consciousness / IIT | Φ ≈ dσ/dt via Φ-proxy (see `python/cos/phi_proxy.py`; **not** global IIT Φ) |
 | Friston | 2006 | Neuroscience / FEP | Ω = argmin ∫σ(t)dt (lab discrete analog; see `python/cos/active_inference.py`) |
 | Dodig-Crnkovic | 2012 | Info–computation | σ ∈ [0, 1] cognitive / coherence scale |
-| Rainio | 2024 | AI architecture | σ-gate stack (~339k LOC aggregate C corpus snapshot; TruthfulQA holdout AUROC **0.982** per README / receipts) |
+| Rainio | 2024 | AI architecture | σ-gate: ~339k LOC C (aggregate audit snapshot); AUROC **0.982** (TruthfulQA holdout; README / receipts) |
 
 ### 2.7 Tononi — integrated information as a σ-dynamics proxy (2004–2026)
 
@@ -84,7 +84,9 @@ IIT identifies consciousness with **integrated information** Φ — how much the
 
 ### 2.8 Shannon — σ as channel noise (1948)
 
-Shannon’s noisy-channel coding theorem pins **reliable communication** to **capacity** under a noise model. The repo uses a **binary symmetric channel** **pedagogy**: treat gate σ as a **crossover / noise** parameter and read **C ≈ 1 − H(σ)** for σ ∈ (0, 1), with σ → 0 → capacity **1** and σ → 1 (on this scale) → **0**. That mapping is **illustrative** for tracing declared-vs-realized mismatch — **not** a proof that the σ-gate achieves Shannon capacity or that cognition satisfies the theorem bit-for-bit. Implementation: `python/cos/channel.py`.
+Shannon’s noisy-channel coding theorem pins **reliable communication** to **capacity** under a noise model. The repo uses a **binary symmetric channel** **pedagogy**: treat gate σ as a **crossover / noise** parameter and read **C ≈ 1 − H(σ)** for σ ∈ (0, 1), with σ → 0 → capacity **1** and σ → 1 (on this scale) → **0**. In **information units**, one may also write the **closure** ratio **R = I(declared; realized) / H(declared)** and the **mismatch fraction** **σ ≡ 1 − R** (when **H(declared) > 0**) — a narrative parallel to “noise” between declared and realized; **I** and **H** are **not** auto-computed by the gate unless you supply estimators.
+
+**Metaphor only:** “For rates below capacity, there exists a code with arbitrarily low error” is sometimes mirrored in prose as “for systems below a σ-threshold, architectures may drive hallucination/error down” — **not** a theorem about LLMs in this repository. **Not AGI achieved.** Implementation: `python/cos/channel.py`.
 
 -----
 
