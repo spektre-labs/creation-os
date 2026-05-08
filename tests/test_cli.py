@@ -7,7 +7,6 @@ import os
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 
 _REPO = Path(__file__).resolve().parents[1]
@@ -226,7 +225,7 @@ def test_cli_calibrate_fit() -> None:
     assert out.is_file()
 
 
-def test_cos_main_score_fast_path() -> None:
+def test_score_fast_path() -> None:
     result = subprocess.run(
         [
             sys.executable,
@@ -246,11 +245,10 @@ def test_cos_main_score_fast_path() -> None:
         check=False,
     )
     assert result.returncode == 0
-    out = result.stdout or ""
-    assert "σ=" in out or "ACCEPT" in out or "RETHINK" in out
+    assert "σ=" in (result.stdout or "") or "ACCEPT" in (result.stdout or "") or "RETHINK" in (result.stdout or "")
 
 
-def test_cos_main_help_prints() -> None:
+def test_help_prints() -> None:
     result = subprocess.run(
         [sys.executable, "-m", "cos", "--help"],
         capture_output=True,
@@ -261,12 +259,13 @@ def test_cos_main_help_prints() -> None:
         check=False,
     )
     assert result.returncode == 0
-    assert "score" in (result.stdout or "")
+    out = result.stdout or ""
+    assert "score" in out and "boot" in out
 
 
-def test_cos_main_unknown_command() -> None:
+def test_unknown_command() -> None:
     result = subprocess.run(
-        [sys.executable, "-m", "cos", "not_a_real_subcommand_xyz"],
+        [sys.executable, "-m", "cos", "not_a_real_command_xyz"],
         capture_output=True,
         text=True,
         timeout=120,
@@ -282,7 +281,9 @@ def test_lazy_import_not_loaded_at_startup() -> None:
         "import sys\n"
         "import cos\n"
         "assert 'cos.fabric' not in sys.modules\n"
-        "assert cos.__version__\n"
+        "assert 'cos.pipeline' not in sys.modules\n"
+        "assert hasattr(cos, 'SigmaGate')\n"
+        "print('ok')\n"
     )
     result = subprocess.run(
         [sys.executable, "-c", code],
@@ -293,12 +294,16 @@ def test_lazy_import_not_loaded_at_startup() -> None:
         env=_env(),
         check=False,
     )
-    assert result.returncode == 0, (result.stderr, result.stdout)
+    assert result.returncode == 0
+    assert "ok" in (result.stdout or "")
 
 
 def test_score_under_200ms() -> None:
-    """Local/dev target is ~<100ms cold; CI VMs use a loose ceiling."""
-    env = _env()
+    """Development target for ``cos score`` fast path (skipped on hosted CI runners)."""
+    if os.environ.get("GITHUB_ACTIONS") == "true" or os.environ.get("COS_SKIP_TIMING") == "1":
+        return
+    import time
+
     t0 = time.perf_counter()
     result = subprocess.run(
         [
@@ -315,9 +320,9 @@ def test_score_under_200ms() -> None:
         text=True,
         timeout=120,
         cwd=str(_REPO),
-        env=env,
+        env=_env(),
         check=False,
     )
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
     assert result.returncode == 0
-    assert elapsed_ms < 4000.0, f"score took {elapsed_ms:.0f}ms (expected <4000ms on CI)"
+    assert elapsed_ms < 200.0

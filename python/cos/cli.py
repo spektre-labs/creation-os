@@ -4141,8 +4141,80 @@ def _cmd_twin(args: argparse.Namespace) -> int:
     return 2
 
 
+def _fast_cli_value_is_dangling_flag(val: str) -> bool:
+    """True when the token after ``--prompt``/``--response`` is clearly another option, not text."""
+    if val.startswith("--"):
+        return True
+    if val in ("-v", "-h"):
+        return True
+    return False
+
+
+def _try_fast_cli_dispatch(argv: List[str]) -> Optional[int]:
+    """Skip full argparse for unambiguous hot paths (``score`` / ``gate``, plain ``boot``).
+
+    Falls back to the full parser when the token after a required flag looks like another option.
+    """
+    if not argv:
+        return None
+    cmd = argv[0]
+
+    if cmd in ("score", "gate"):
+        if "--prompt" not in argv or "--response" not in argv:
+            return None
+        pi = argv.index("--prompt")
+        ri = argv.index("--response")
+        if pi + 1 >= len(argv) or ri + 1 >= len(argv):
+            return None
+        prompt_v = argv[pi + 1]
+        response_v = argv[ri + 1]
+        if _fast_cli_value_is_dangling_flag(prompt_v) or _fast_cli_value_is_dangling_flag(response_v):
+            return None
+        from cos.sigma_gate import SigmaGate
+
+        gate = SigmaGate()
+        sigma, verdict = gate.score(prompt_v, response_v)
+        if "-v" in argv or "--verbose" in argv:
+            print(
+                f"[cos] lite_mode={gate._mode!r} threshold_accept={gate.threshold_accept} "
+                f"threshold_abstain={gate.threshold_abstain}",
+                file=sys.stderr,
+            )
+        vd = str(verdict)
+        if "--json" in argv:
+            print(json.dumps({"sigma": float(sigma), "verdict": vd}, ensure_ascii=False))
+            return 2 if vd == "ABSTAIN" else 0
+        print(f"σ={float(sigma):.4f} {vd}")
+        return 2 if vd == "ABSTAIN" else 0
+
+    if cmd == "boot":
+        if len(argv) == 1:
+            pass
+        elif len(argv) == 2 and argv[1] == "--json":
+            pass
+        else:
+            return None
+        from cos.boot import Boot
+
+        result = Boot().run()
+        if len(argv) == 2 and argv[1] == "--json":
+            print(json.dumps(result, ensure_ascii=False, default=str))
+            return 0
+        print(result["message"])
+        for name, step in result["steps"].items():
+            ok = step.get("status") == "OK"
+            icon = "✓" if ok else "·"
+            print(f"  {icon} {name}: {step.get('status', '?')}")
+        return 0
+
+    return None
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
+    fast = _try_fast_cli_dispatch(argv)
+    if fast is not None:
+        return int(fast)
     ap = argparse.ArgumentParser(
         prog="cos",
         description="Creation OS cos CLI — σ-gate-first helpers and lab commands.",
