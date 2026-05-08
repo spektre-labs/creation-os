@@ -187,6 +187,26 @@ markers = [
   "integration: may require optional third-party packages (langchain-core, litellm, …)",
 ]
 
+# pytest-cov defaults: branch coverage; 70% gate applies via Makefile / CI on σ-core modules
+# (see `COS_COV_FLAGS`), not on the full `python/cos` lab tree.
+[tool.coverage.run]
+branch = true
+relative_files = true
+
+[tool.coverage.report]
+show_missing = true
+exclude_lines = [
+  "pragma: no cover",
+  "if __name__",
+  "if TYPE_CHECKING",
+  "raise NotImplementedError",
+  "pass",
+  "\\.\\.\\.",
+]
+
+[tool.coverage.html]
+directory = "htmlcov"
+
 # python-semantic-release (PSR v10): Conventional Commits → pyproject version + CHANGELOG.md.
 # CI: .github/workflows/pypi-semantic-release.yml (PyPI). Tag/binary releases: .github/workflows/release.yml.
 [tool.semantic_release]

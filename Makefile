@@ -379,6 +379,52 @@ check-cos-moe:
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
 	fi
 
+# pytest-cov quality gate: **σ-core** modules only (see COS_COV_FLAGS). The full `python/cos`
+# tree is far larger — use `make coverage-full` for an exploratory HTML report without fail-under.
+COS_COV_FLAGS = --cov=cos.sigma_gate --cov=cos.config --cov=cos.exceptions --cov=cos.decorators --cov=cos.pipeline --cov=cos.sigma_theory --cov=cos.structured --cov=cos.watchdog --cov=cos.integrations.decorator
+
+.PHONY: coverage coverage-check coverage-full coverage-badge
+coverage:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest tests/ $(COS_COV_FLAGS) --cov-branch \
+			--cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml:coverage.xml; \
+	elif python3 -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest tests/ $(COS_COV_FLAGS) --cov-branch \
+			--cov-report=term-missing --cov-report=html:htmlcov --cov-report=xml:coverage.xml; \
+	else \
+		echo "coverage: SKIP (pytest + pytest-cov + coverage not available)"; \
+	fi
+
+coverage-check:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest tests/ $(COS_COV_FLAGS) --cov-branch --cov-fail-under=70; \
+	elif python3 -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest tests/ $(COS_COV_FLAGS) --cov-branch --cov-fail-under=70; \
+	else \
+		echo "coverage-check: SKIP (pytest + pytest-cov + coverage not available)"; \
+		exit 1; \
+	fi
+
+coverage-full:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest tests/ --cov=cos --cov-branch \
+			--cov-report=html:htmlcov-full --cov-report=term-missing; \
+	elif python3 -c "import pytest, coverage" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" python3 -m pytest tests/ --cov=cos --cov-branch \
+			--cov-report=html:htmlcov-full --cov-report=term-missing; \
+	else \
+		echo "coverage-full: SKIP"; \
+	fi
+
+coverage-badge: coverage
+	@mkdir -p badges
+	@if command -v uv >/dev/null 2>&1; then \
+		uv run --with 'genbadge[coverage]' genbadge coverage -i coverage.xml -o badges/coverage-badge.svg; \
+	else \
+		python3 -m pip install -q 'genbadge[coverage]' || python3 -m pip install -q 'genbadge[coverage]' --break-system-packages; \
+		genbadge coverage -i coverage.xml -o badges/coverage-badge.svg; \
+	fi
+
 # Portable kernel test + all standalone --self-test matrices (184 @ v26; +70 @ v27; +29 @ v28; +22 @ v29). CI and publish script use this.
 merge-gate:
 	@$(MAKE) check

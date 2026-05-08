@@ -3,6 +3,8 @@
 
 [![PyPI](https://img.shields.io/pypi/v/creation-os)](https://pypi.org/project/creation-os/)
 [![CI](https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml/badge.svg)](https://github.com/spektre-labs/creation-os/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/spektre-labs/creation-os/graph/badge.svg)](https://codecov.io/gh/spektre-labs/creation-os)
+[![σ-core coverage](badges/coverage-badge.svg)](https://github.com/spektre-labs/creation-os/blob/main/Makefile)
 [![License](https://img.shields.io/badge/license-SCSL--1.0%20OR%20AGPL--3.0--only-blue)](./LICENSE)
 ![Tests](https://img.shields.io/badge/tests-1028%20passed-brightgreen)
 ![Merge Gate](https://img.shields.io/badge/merge--gate-GREEN-brightgreen)

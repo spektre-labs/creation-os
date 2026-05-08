@@ -98,6 +98,13 @@ metrics/session_*.jsonl
 __pycache__/
 .pytest_cache/
 .tmp_pytest_*/
+
+# pytest-cov / coverage.py (make coverage)
+htmlcov/
+htmlcov-full/
+coverage.xml
+.coverage
+.coverage.*
 .venv*/
 
 # Local full-tree audits (often huge; not source)

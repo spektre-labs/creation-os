@@ -102,6 +102,23 @@ jobs:
         run: ruff check python/cos/
       - name: Pytest (full tests/)
         run: pytest tests/ -v --tb=short
+
+      - name: Coverage (σ-core, branch, fail under 70%)
+        env:
+          PYTHONPATH: ${{ github.workspace }}/python
+        run: >
+          pytest tests/
+          --cov=cos.sigma_gate --cov=cos.config --cov=cos.exceptions
+          --cov=cos.decorators --cov=cos.pipeline --cov=cos.sigma_theory
+          --cov=cos.structured --cov=cos.watchdog --cov=cos.integrations.decorator
+          --cov-branch --cov-report=xml --cov-fail-under=70
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+
       - name: make check
         run: make check
 
