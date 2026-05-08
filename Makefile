@@ -340,7 +340,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
 			"$(CURDIR)/tests/test_hypervector.py" \
 			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_ui.py" "$(CURDIR)/tests/test_safety.py" \
-			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_helm.py" "$(CURDIR)/tests/test_convergence.py" "$(CURDIR)/tests/test_steer.py" "$(CURDIR)/tests/test_steer_v2.py" "$(CURDIR)/tests/test_sae.py" "$(CURDIR)/tests/test_sae_v2.py" "$(CURDIR)/tests/test_cost.py" \
+			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_helm.py" "$(CURDIR)/tests/test_convergence.py" "$(CURDIR)/tests/test_steer.py" "$(CURDIR)/tests/test_steer_v2.py" "$(CURDIR)/tests/test_sae.py" "$(CURDIR)/tests/test_sae_v2.py" "$(CURDIR)/tests/test_scaling.py" "$(CURDIR)/tests/test_cost.py" \
 			"$(CURDIR)/tests/test_repro_bundle.py" "$(CURDIR)/tests/test_lm_eval_bridge.py" "$(CURDIR)/tests/test_genesis.py" \
 			"$(CURDIR)/tests/test_cascade.py" \
 			"$(CURDIR)/tests/test_ttt_v2.py" \
@@ -376,7 +376,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_dream.py" "$(CURDIR)/tests/test_ingest.py" "$(CURDIR)/tests/test_graph_export.py" "$(CURDIR)/tests/test_graph_export_viz.py" \
 			"$(CURDIR)/tests/test_hypervector.py" \
 			"$(CURDIR)/tests/test_voice_local.py" "$(CURDIR)/tests/test_ui_app.py" "$(CURDIR)/tests/test_ui.py" "$(CURDIR)/tests/test_safety.py" \
-			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_helm.py" "$(CURDIR)/tests/test_convergence.py" "$(CURDIR)/tests/test_steer.py" "$(CURDIR)/tests/test_steer_v2.py" "$(CURDIR)/tests/test_sae.py" "$(CURDIR)/tests/test_sae_v2.py" "$(CURDIR)/tests/test_cost.py" \
+			"$(CURDIR)/tests/test_offline.py" "$(CURDIR)/tests/test_helm.py" "$(CURDIR)/tests/test_convergence.py" "$(CURDIR)/tests/test_steer.py" "$(CURDIR)/tests/test_steer_v2.py" "$(CURDIR)/tests/test_sae.py" "$(CURDIR)/tests/test_sae_v2.py" "$(CURDIR)/tests/test_scaling.py" "$(CURDIR)/tests/test_cost.py" \
 			"$(CURDIR)/tests/test_repro_bundle.py" "$(CURDIR)/tests/test_lm_eval_bridge.py" "$(CURDIR)/tests/test_genesis.py" \
 			"$(CURDIR)/tests/test_cascade.py" \
 			"$(CURDIR)/tests/test_ttt_v2.py" \
