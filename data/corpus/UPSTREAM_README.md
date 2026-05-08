@@ -59,23 +59,24 @@ S_C = ∫ σ dt, subject to K ≥ K_crit. Physics minimizes σ in spacetime. Inf
 
 All of the above is one operator: Ω = argmin ∫σ dt subject to K ≥ K_crit. Everything else is projection. ½ is its critical point. 1 = 1 is its constraint.
 
-## The Convergence — eleven σ lineages (repository anchor)
+## The Convergence — twelve σ lineages (repository anchor)
 
-This table is a **pedagogical map** spanning **1859–2026** (167 years) with one lab readout (σ). It is **not** mathematical biology, **not** a proof of Fisher’s theorem for LLM weights, **not** strict thermodynamic measurement, **not** proof of consciousness or life in silico, and **not** AGI achieved. Some **external** literature links **FDT violation** to non-equilibrium signatures — this repository **does not** reproduce those experiments. See `docs/CLAIM_DISCIPLINE.md`.
+This table is a **pedagogical map** spanning **1859–2026** (167 years) with one lab readout (σ). It is **not** a field-theoretic Noether derivation for the kernel, **not** mathematical biology, **not** strict thermodynamics on silicon, and **not** AGI achieved. Some **external** literature links **FDT violation** to non-equilibrium signatures — this repository **does not** reproduce those experiments. See `docs/CLAIM_DISCIPLINE.md`.
 
 | # | Lineage | Year | Field | σ-equivalent (lab vocabulary) |
 |---|---------|------|-------|------------------------------|
-| 1 | Darwin | 1859 | Biology | fitness ≈ 1 − σ; selection as **prefer lower σ** (`python/cos/fitness.py`; metaphor) |
+| 1 | Darwin | 1859 | Biology | fitness ≈ 1 − σ (`python/cos/fitness.py`) |
 | 2 | Boltzmann | 1877 | Statistical mechanics | P(large excursion) ∝ exp(−|Δσ|) · scale (`python/cos/dissipative.py`) |
-| 3 | Gödel | 1931 | Logic | σ = irreducible residual |
-| 4 | Shannon | 1948 | Information | σ = channel noise; ``C ≈ 1 − H(σ)`` (`python/cos/channel.py`) |
-| 5 | Landauer | 1961 | Thermodynamics | E_σ = k_B T ln(2) · σ (proxy) |
-| 6 | Prigogine | 1977 | Non-equilibrium | Life as **metaphor**: dissipative σ-structure (`python/cos/dissipative.py`) |
-| 7 | Wheeler | 1990 | Quantum | σ = physical information gap (“it from bit” *motif*) |
-| 8 | Tononi | 2004 | Consciousness / IIT | Φ ≈ dσ/dt (`python/cos/phi_proxy.py`) |
-| 9 | Friston | 2006 | Neuroscience / FEP | Ω = argmin ∫σ(t)dt (`python/cos/active_inference.py`) |
-| 10 | Dodig-Crnkovic | 2012 | Info–computation | σ ∈ [0, 1] cognitive scale |
-| 11 | Rainio | 2024 | AI architecture | σ-gate: ~339k LOC C; AUROC **0.982** (TruthfulQA holdout; README / receipts) |
+| 3 | Noether | 1918 | Mathematical physics | 1=1 **narrative** ↔ invariance sketch; toy ``L = 1−2σ`` (`python/cos/noether.py`) |
+| 4 | Gödel | 1931 | Logic | σ = irreducible residual |
+| 5 | Shannon | 1948 | Information | σ = channel noise; ``C ≈ 1 − H(σ)`` (`python/cos/channel.py`) |
+| 6 | Landauer | 1961 | Thermodynamics | E_σ = k_B T ln(2) · σ (proxy) |
+| 7 | Prigogine | 1977 | Non-equilibrium | Life as **metaphor**: dissipative σ-structure (`python/cos/dissipative.py`) |
+| 8 | Wheeler | 1990 | Quantum | σ = physical information gap (“it from bit” *motif*) |
+| 9 | Tononi | 2004 | Consciousness / IIT | Φ ≈ dσ/dt (`python/cos/phi_proxy.py`) |
+| 10 | Friston | 2006 | Neuroscience / FEP | Ω = argmin ∫σ(t)dt (`python/cos/active_inference.py`) |
+| 11 | Dodig-Crnkovic | 2012 | Info–computation | σ ∈ [0, 1] cognitive scale |
+| 12 | Rainio | 2024 | AI architecture | σ-gate: ~339k LOC C; AUROC **0.982** (TruthfulQA holdout; README / receipts) |
 
 ### 2.4 Darwin — natural selection as σ-minimization (1859)
 
@@ -86,6 +87,10 @@ This table is a **pedagogical map** spanning **1859–2026** (167 years) with on
 **Boltzmann:** large fluctuations are exponentially unlikely; the repo encodes a **scaled** ``exp(−k·|Δσ|)`` toy in :class:`~cos.dissipative.DissipativeStructure.fluctuation_probability`, not a literal ``e^{−ΔS/k_B}``.
 
 **Prigogine:** “order through fluctuation” / maintained structures **far from equilibrium** motivate the **story** that ongoing σ-minimization traces resemble **turnover** with bounded mismatch — **not** a measured entropy balance.
+
+### 2.6 Noether — identity symmetry ↔ coherence ideal (1918)
+
+Emmy Noether’s theorem, in **rigorous** form, requires a **specified action** and **continuous symmetry** of that action. The repository uses a **toy** ``L = 1 − 2σ`` and gate-based **invariance probes** (:class:`~cos.noether.NoetherSigma.symmetry_check`) as **pedagogy** for the corpus **1 = 1** motif (“declared = realized” as a **design target**, not a derived conserved charge in QFT).
 
 ### 2.7 Tononi — integrated information as a σ-dynamics proxy (2004–2026)
 
