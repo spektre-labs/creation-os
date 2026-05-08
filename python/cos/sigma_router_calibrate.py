@@ -5,3 +5,5 @@
 # Commercial:    spektre.labs@proton.me
 # License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+

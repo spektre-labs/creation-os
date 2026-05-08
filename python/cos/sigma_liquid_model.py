@@ -10,6 +10,8 @@ This is a **research adapter** around any object exposing ``__call__``, ``save_s
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Any, Callable, Optional, Protocol, Tuple, TypeVar
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update

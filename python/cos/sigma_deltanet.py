@@ -17,6 +17,8 @@ See ``docs/CLAIM_DISCIPLINE.md`` — no throughput or downstream headline withou
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Callable, Optional, Tuple
 
 try:

@@ -7,6 +7,8 @@ Low σ suggests calmer activations in this proxy; high σ keeps more bits. Not a
 PTQ run; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Dict
 
 __all__ = ["SigmaQuantize"]

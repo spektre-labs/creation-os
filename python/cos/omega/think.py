@@ -4,6 +4,8 @@
 """THINK: σ-governed reasoning (:class:`cos.sigma_reasoning.SigmaReasoning`) or stub."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from typing import Any, List, Tuple
 

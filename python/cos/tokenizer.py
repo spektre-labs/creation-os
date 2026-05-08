@@ -8,6 +8,8 @@ optional **input stress** scalar. Not a substitute for a production tokenizer au
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import math
 import re
 import unicodedata

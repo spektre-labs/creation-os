@@ -10,6 +10,8 @@ training claims without measured JSON. See ``docs/CLAIM_DISCIPLINE.md``.
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass, field
 from typing import Any, Callable, Iterable, Optional, Tuple
 

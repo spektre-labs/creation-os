@@ -4,6 +4,8 @@
 """REFLECT: lightweight meta-cognition over per-turn σ records."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from statistics import mean
 from typing import Any, Dict, List, Tuple

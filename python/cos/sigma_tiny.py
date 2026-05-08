@@ -4,6 +4,8 @@
 """v160 σ-tiny lab: TinyML paths, footprint JSON, sensor σ demo (Python mirror)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from pathlib import Path
 from typing import Any, Dict
 

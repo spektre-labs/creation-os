@@ -6,6 +6,8 @@
 Wire ``deliver_*`` in your worker to POST signed payloads. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import hashlib
 import hmac
 import json

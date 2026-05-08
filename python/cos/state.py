@@ -6,6 +6,8 @@
 σ on each entry is **staleness / trust** metadata (lab). Use with :class:`cos.workflow.SigmaWorkflow`."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import time
 import uuid
 from typing import Any, Dict, Mapping, Optional

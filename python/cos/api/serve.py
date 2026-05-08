@@ -7,6 +7,8 @@ The canonical implementation lives in :mod:`cos.serve` (REST, WebSocket, SSE).
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from cos.serve import HAS_FASTAPI, create_app
 
 if HAS_FASTAPI:

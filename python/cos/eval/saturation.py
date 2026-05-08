@@ -4,6 +4,8 @@
 """Benchmark saturation and contamination lab hooks (honest defaults, no false certainty)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import re
 from typing import Any, Dict, Mapping, Optional
 

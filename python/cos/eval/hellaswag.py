@@ -4,6 +4,8 @@
 """HellaSwag-shaped loader (pending full corpus)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import json
 from pathlib import Path
 from typing import Dict, List, Optional

@@ -4,6 +4,8 @@
 """Allow ``python -m cos …`` (see :mod:`cos.cli`)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from .cli import main
 
 if __name__ == "__main__":

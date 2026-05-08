@@ -10,6 +10,8 @@ This module does **not** run benchmarks; see ``docs/HARDWARE_SETUP.md`` and
 ``docs/CLAIM_DISCIPLINE.md`` for evidence hygiene on tokens/s claims."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import os
 import platform
 import subprocess

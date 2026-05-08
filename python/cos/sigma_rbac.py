@@ -8,6 +8,8 @@ Lab governance helper for :mod:`cos.sigma_team`. Not a substitute for enterprise
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Any, Dict, List, Optional
 
 

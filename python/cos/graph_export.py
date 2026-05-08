@@ -4,6 +4,8 @@
 """Export :class:`~cos.graph.SigmaGraph` to JSON and Obsidian-flavoured Markdown."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import json
 import re
 from pathlib import Path

@@ -11,6 +11,8 @@ See ``docs/CLAIM_DISCIPLINE.md`` before conflating this module with certified co
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import io
 import json
 import os

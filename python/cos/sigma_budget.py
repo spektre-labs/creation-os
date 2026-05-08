@@ -10,6 +10,8 @@ See ``docs/CLAIM_DISCIPLINE.md`` — tier names are placeholders, not benchmark 
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from typing import Any, Callable, Optional
 

@@ -7,6 +7,8 @@ Does **not** ship learned transformer probes; weights are **operator-set** or fr
 ``adaptive_weights`` on toy calibration rows. See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import statistics
 from typing import Any, Dict, Mapping, Optional, Sequence, Tuple
 

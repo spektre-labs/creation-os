@@ -9,6 +9,8 @@ state names for lab JSON without implying full Google A2A transport compliance.
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from enum import Enum
 from typing import Any, Dict
 

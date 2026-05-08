@@ -12,6 +12,8 @@ This is not a faithful reproduction of any commercial ``o*`` stack; see
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from typing import Callable, List, Optional, Sequence
 

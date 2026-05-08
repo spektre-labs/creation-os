@@ -7,6 +7,8 @@ Pairs with :mod:`cos.recursion` only at the conceptual level (selective KV). No 
 replay numbers; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 

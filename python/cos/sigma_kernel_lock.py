@@ -4,6 +4,8 @@
 """Kernel-shaped lock metadata for ``cos resolve`` (lab; no CBS search)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import hashlib
 import json
 from typing import Any, Dict, Sequence, Tuple

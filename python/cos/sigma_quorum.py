@@ -4,6 +4,8 @@
 """Quorum over swarm agent proposals (σ-threshold vote; lab)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import List, Sequence
 
 from cos.sigma_swarm_agent import SigmaSwarmAgent, SwarmTask

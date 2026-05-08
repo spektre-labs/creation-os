@@ -4,6 +4,8 @@
 """Node state machine labels for ``cos resolve --verify-trace`` (lab)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import List, Tuple
 
 

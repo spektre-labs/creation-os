@@ -11,6 +11,8 @@ Import ``SigmaPrecheck`` from here or from ``cos.sigma_gate_precheck`` interchan
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from .sigma_gate_precheck import SigmaPrecheck
 
 __all__ = ["SigmaPrecheck"]

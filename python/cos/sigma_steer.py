@@ -10,6 +10,8 @@ known risky coordinates, zero those dictionary entries and decode back to activa
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Any, Optional
 
 from .sigma_gate_core import SigmaState, Verdict, sigma_gate, sigma_update

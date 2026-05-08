@@ -4,6 +4,8 @@
 """Minimal stdlib HTTP surface for ``cos federation --server`` (lab only)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import json
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path

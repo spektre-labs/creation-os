@@ -9,6 +9,8 @@ See ``docs/CLAIM_DISCIPLINE.md`` — no Mem0 / GAAMA reproduction claims.
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import re
 import time
 from dataclasses import dataclass

@@ -4,6 +4,8 @@
 """ACT: execute only when master coherence is above ``K_CRIT`` (harness mirror)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass
 from typing import Any, Optional, Tuple
 

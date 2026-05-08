@@ -7,6 +7,8 @@ Replace heuristics with your data-stewardship pipeline. Never treat AUROC as tru
 provenance is unknown (see ``docs/CLAIM_DISCIPLINE.md``)."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import math
 from datetime import datetime
 from typing import Any, Dict, List, Mapping, Sequence, Tuple

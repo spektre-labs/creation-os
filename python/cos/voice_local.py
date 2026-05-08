@@ -4,6 +4,8 @@
 """Backward-compatible import path — implementations live in :mod:`cos.voice`."""
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from cos.voice import (
     ABSTAIN_SPOKEN,
     SigmaVoice,

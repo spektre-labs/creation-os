@@ -11,6 +11,8 @@ Integrates as **L6** via :func:`cos.cascade.cascade_L6`.
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import math
 from typing import Any, Dict, List
 

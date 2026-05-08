@@ -6,6 +6,8 @@ Shared Ω-loop context and phase index (14 lanes, aligned with ``omega_phase_gat
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Any, Dict, List

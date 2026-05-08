@@ -8,6 +8,8 @@ OpenTelemetry SDK; exports dicts you can POST to a collector if you add transpor
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 import json
 import time
 import uuid

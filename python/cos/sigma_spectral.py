@@ -26,6 +26,8 @@ Scalars are for fusion experiments — validate before external claims.
 """
 from __future__ import annotations
 
+from cos.sigma_gate import SigmaGate  # noqa: F401 — σ kernel anchor (sigma_gate.h / Python lite)
+
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
