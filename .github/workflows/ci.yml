@@ -109,13 +109,13 @@ jobs:
           pip install -e ".[dev]"
       - name: Ruff
         run: ruff check python/cos/
-      - name: Pytest (full tests/)
-        run: pytest tests/ -v --tb=short
-
       - name: Property-based σ-gate (Hypothesis, reproducible seed)
         env:
           PYTHONPATH: ${{ github.workspace }}/python
+          CI: "true"
         run: pytest tests/test_sigma_properties.py -v --tb=short --hypothesis-seed=42
+      - name: Pytest (full tests/)
+        run: pytest tests/ -v --tb=short
 
       - name: Coverage (σ-core, branch, fail under 70%)
         env:

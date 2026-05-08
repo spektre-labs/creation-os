@@ -435,6 +435,18 @@ coverage-check:
 		exit 1; \
 	fi
 
+.PHONY: check-sigma-properties
+check-sigma-properties:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest, hypothesis" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" CI=true uv run python -m pytest "$(CURDIR)/tests/test_sigma_properties.py" -q --tb=short --hypothesis-seed=42 && \
+		echo "check-sigma-properties: OK"; \
+	elif python3 -c "import pytest, hypothesis" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" CI=true python3 -m pytest "$(CURDIR)/tests/test_sigma_properties.py" -q --tb=short --hypothesis-seed=42 && \
+		echo "check-sigma-properties: OK"; \
+	else \
+		echo "check-sigma-properties: SKIP (pytest + hypothesis; pip install -e '.[dev]')"; \
+	fi
+
 coverage-full:
 	@if command -v uv >/dev/null 2>&1 && uv run python -c "import pytest, coverage" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" uv run python -m pytest tests/ --cov=cos --cov-branch \

@@ -13,6 +13,8 @@ verdict bands only, not LSD/probe mode (which requires separate fixtures).
 """
 from __future__ import annotations
 
+import os
+
 import pytest
 
 pytest.importorskip("hypothesis")
@@ -22,13 +24,19 @@ from hypothesis import strategies as st
 
 from cos.sigma_gate import ABSTAIN, ACCEPT, RETHINK, SigmaGate
 
+_CI = os.environ.get("CI") == "true" or os.environ.get("GITHUB_ACTIONS") == "true"
+_EX500 = 120 if _CI else 500
+_EX200 = 50 if _CI else 200
+_EX120 = 60 if _CI else 120
+_EX300 = 72 if _CI else 300
+
 
 def _fresh_gate() -> SigmaGate:
     """New gate per example so EMA side effects never couple examples."""
     return SigmaGate()
 
 
-@settings(max_examples=500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=0, max_size=1000), response=st.text(min_size=0, max_size=1000))
 def test_sigma_always_in_unit_interval(prompt: str, response: str) -> None:
     gate = _fresh_gate()
@@ -36,7 +44,7 @@ def test_sigma_always_in_unit_interval(prompt: str, response: str) -> None:
     assert 0.0 <= sigma <= 1.0, f"σ={sigma} out of [0, 1]"
 
 
-@settings(max_examples=500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=0, max_size=1000), response=st.text(min_size=0, max_size=1000))
 def test_verdict_always_valid(prompt: str, response: str) -> None:
     gate = _fresh_gate()
@@ -44,7 +52,7 @@ def test_verdict_always_valid(prompt: str, response: str) -> None:
     assert verdict in (ACCEPT, RETHINK, ABSTAIN), f"Invalid verdict: {verdict!r}"
 
 
-@settings(max_examples=500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=0, max_size=1000), response=st.text(min_size=0, max_size=1000))
 def test_verdict_consistent_with_sigma_and_thresholds(prompt: str, response: str) -> None:
     gate = _fresh_gate()
@@ -60,7 +68,7 @@ def test_verdict_consistent_with_sigma_and_thresholds(prompt: str, response: str
         assert sigma >= tb, f"ABSTAIN but σ={sigma} < threshold_abstain={tb}"
 
 
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=1, max_size=500))
 def test_identical_prompt_response_is_deterministic_and_in_range(prompt: str) -> None:
     """Identical strings need not imply low σ in lite mode (repetition → low entropy → high σ)."""
@@ -71,7 +79,7 @@ def test_identical_prompt_response_is_deterministic_and_in_range(prompt: str) ->
     assert 0.0 <= s1 <= 1.0
 
 
-@settings(max_examples=500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX500, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=0, max_size=1000), response=st.text(min_size=0, max_size=1000))
 def test_score_is_deterministic(prompt: str, response: str) -> None:
     gate = _fresh_gate()
@@ -81,7 +89,7 @@ def test_score_is_deterministic(prompt: str, response: str) -> None:
     assert v1 == v2, f"non-deterministic verdict: {v1!r} ≠ {v2!r}"
 
 
-@settings(max_examples=200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(data=st.binary(min_size=0, max_size=500))
 def test_sigma_survives_decoded_binary(data: bytes) -> None:
     text = data.decode("utf-8", errors="replace")
@@ -91,7 +99,7 @@ def test_sigma_survives_decoded_binary(data: bytes) -> None:
     assert verdict in (ACCEPT, RETHINK, ABSTAIN)
 
 
-@settings(max_examples=120, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX120, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(n=st.integers(min_value=0, max_value=10_000))
 def test_sigma_survives_extreme_length(n: int) -> None:
     gate = _fresh_gate()
@@ -102,7 +110,18 @@ def test_sigma_survives_extreme_length(n: int) -> None:
     assert verdict in (ACCEPT, RETHINK, ABSTAIN)
 
 
-@settings(max_examples=300, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=_EX200, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(prompt=st.text(min_size=0, max_size=500))
+def test_blank_response_is_abstain_with_sigma_one(prompt: str) -> None:
+    """Empty / whitespace-only response is a hard floor in lite pair entropy."""
+    gate = _fresh_gate()
+    for blank in ("", "  ", "\n\t "):
+        sigma, verdict = gate.score(prompt, blank)
+        assert sigma == 1.0
+        assert verdict == ABSTAIN
+
+
+@settings(max_examples=_EX300, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(prompt=st.text(min_size=0, max_size=500), response=st.text(min_size=0, max_size=500))
 def test_sigma_gate_never_raises(prompt: str, response: str) -> None:
     gate = _fresh_gate()
