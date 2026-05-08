@@ -9,7 +9,9 @@ import os
 import tempfile
 from pathlib import Path
 
-from cos.offline import SigmaOffline
+import pytest
+
+from cos.offline import OfflineVerifier, SigmaOffline
 
 
 def test_package_manifest_sha256() -> None:
@@ -73,3 +75,26 @@ def test_bundle_trust_sigma() -> None:
     b = o.package({"a": 1}, {}, {}, {})
     t = o.bundle_trust_sigma(b)
     assert "sigma" in t and "verdict" in t
+
+
+def test_verify_returns_status(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COS_FORCE_AIRGAP_OK", "1")
+    r = OfflineVerifier().verify()
+    assert isinstance(r.get("checks"), dict)
+    assert "air_gapped" in r
+    assert r.get("verdict") == "OFFLINE"
+    assert r.get("air_gapped") is True
+
+
+def test_modules_check(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COS_FORCE_AIRGAP_OK", "1")
+    r = OfflineVerifier().verify()
+    assert "modules" in (r.get("checks") or {})
+    assert isinstance(r["checks"]["modules"], dict)
+
+
+def test_verdict_field(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("COS_FORCE_AIRGAP_OK", "1")
+    r = OfflineVerifier().verify()
+    assert r.get("verdict") in ("OFFLINE", "CONNECTED")
+    assert "disclaimer" in r

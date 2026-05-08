@@ -2618,6 +2618,24 @@ def _cmd_health(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_offline(args: argparse.Namespace) -> int:
+    if not bool(getattr(args, "offline_verify", False)):
+        print("cos offline: pass --verify to run air-gap heuristics (DNS + TCP probes + Fabric.boot)", file=sys.stderr)
+        return 2
+    from cos.offline import OfflineVerifier
+
+    result = OfflineVerifier().verify()
+    if _cli_out_json(args):
+        print(json.dumps(result, ensure_ascii=False, default=str))
+        return 0 if result.get("verdict") == "OFFLINE" else 1
+    print(f"Status: {result.get('verdict')}")
+    print(f"Air-gapped (heuristic): {result.get('air_gapped')}")
+    disc = result.get("disclaimer") or ""
+    if disc:
+        print(f"Note: {disc}")
+    return 0 if result.get("verdict") == "OFFLINE" else 1
+
+
 def _cmd_hardware(args: argparse.Namespace) -> int:
     import json
 
@@ -4181,6 +4199,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     hlth.add_argument("--json", action="store_true", dest="out_json")
     hlth.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     hlth.set_defaults(func=_cmd_health)
+
+    offp = sub.add_parser(
+        "offline",
+        help="Air-gap connectivity heuristics (--verify: DNS name resolution + TCP probe + Fabric.boot; not formal certification)",
+    )
+    offp.add_argument("--verify", action="store_true", dest="offline_verify", help="run probes (see docs/AIRGAP.md)")
+    offp.add_argument("--json", action="store_true", dest="out_json")
+    offp.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
+    offp.set_defaults(func=_cmd_offline)
 
     hw = sub.add_parser(
         "hardware",

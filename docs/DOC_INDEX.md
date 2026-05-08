@@ -8,6 +8,7 @@ Single entry point for humans and automation. **All committed prose here is Engl
 | [evidence_ladder.png](evidence_ladder.png) | Everyone, reviewers | Visual evidence classification (primitive → roadmap); complements [CLAIM_DISCIPLINE.md](CLAIM_DISCIPLINE.md) |
 | [QUICKSTART.md](QUICKSTART.md) | Integrators | Under 5 minutes: install → `cos score` → Python API → chat/serve pointers + verdict table |
 | [LOCAL_MODEL_SETUP.md](LOCAL_MODEL_SETUP.md) | Integrators | **cos chat** with llama.cpp, Ollama, LM Studio, or OpenAI-compatible endpoints |
+| [AIRGAP.md](AIRGAP.md) | Operators / integrators | Air-gapped deployment: staged wheels and models, `cos offline --verify` heuristics, explicit non-certification scope |
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Integrators | σ layers (L1 vs cascade), verdict thresholds, C kernel policy pointer |
 | [WOLFRAM.md](WOLFRAM.md) | Researchers / pedagogy | Wolfram Cloud σ-persistence lab (`scripts/wolfram/sigma_persistence.wl`) + mapping to Python `cos` |
 | [SUPPORTED_PATH.md](SUPPORTED_PATH.md) | Integrators | Supported `pip` surfaces + evidence rows + explicit non-claims |

@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""σ-offline — air-gap bundle manifests (SHA-256) and lab deploy helpers.
+"""σ-offline — air-gap bundle manifests (SHA-256), lab deploy helpers, and ``OfflineVerifier``.
 
 Does not embed a full model packager; records paths + hashes for audit. See
-``docs/CLAIM_DISCIPLINE.md``."""
+``docs/AIRGAP.md`` and ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
 import hashlib
@@ -16,7 +16,51 @@ import time
 from pathlib import Path
 from typing import Any, Dict
 
-__all__ = ["SigmaOffline"]
+__all__ = ["OfflineVerifier", "SigmaOffline"]
+
+
+class OfflineVerifier:
+    """Best-effort connectivity heuristics + Fabric boot status (not a formal certification)."""
+
+    def verify(self) -> Dict[str, Any]:
+        """Probe likely public endpoints; inspect Fabric module map. See :envvar:`COS_FORCE_AIRGAP_OK`."""
+        checks: Dict[str, Any] = {}
+        skip_net = (os.environ.get("COS_FORCE_AIRGAP_OK") or "").strip() == "1"
+
+        if not skip_net:
+            try:
+                socket.getaddrinfo("google.com", 443, socket.AF_INET, socket.SOCK_STREAM)
+                checks["dns"] = {"connected": True, "warning": "resolved public DNS name"}
+            except socket.gaierror:
+                checks["dns"] = {"connected": False, "status": "no_public_dns_resolution"}
+            try:
+                s = socket.create_connection(("8.8.8.8", 53), timeout=2.0)
+                s.close()
+                checks["network"] = {"connected": True, "warning": "outbound TCP to public resolver port"}
+            except (TimeoutError, OSError, socket.timeout):
+                checks["network"] = {"connected": False, "status": "no_tcp_to_8.8.8.8:53"}
+        else:
+            checks["dns"] = {"connected": False, "skipped": True, "note": "COS_FORCE_AIRGAP_OK=1"}
+            checks["network"] = {"connected": False, "skipped": True, "note": "COS_FORCE_AIRGAP_OK=1"}
+
+        from cos.fabric import Fabric
+
+        fab = Fabric()
+        checks["modules"] = fab.boot()
+
+        any_connected = False
+        for key, body in checks.items():
+            if key == "modules":
+                continue
+            if isinstance(body, dict) and body.get("connected") is True:
+                any_connected = True
+
+        return {
+            "air_gapped": not any_connected,
+            "checks": checks,
+            "verdict": "OFFLINE" if not any_connected else "CONNECTED",
+            "disclaimer": "Heuristic probes only; internal DNS routes may still exist. Operators must validate with site policy.",
+        }
 
 
 class SigmaOffline:
