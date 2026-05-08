@@ -353,7 +353,8 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
 			"$(CURDIR)/tests/test_eval.py" "$(CURDIR)/tests/test_eval_mtier.py" \
-			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" -q && \
+			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" \
+			"$(CURDIR)/tests/test_sigma_properties.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
@@ -389,10 +390,23 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_probe_v2.py" "$(CURDIR)/tests/test_calibrate_v2.py" \
 			"$(CURDIR)/tests/test_eval.py" "$(CURDIR)/tests/test_eval_mtier.py" \
-			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" -q && \
+			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" \
+			"$(CURDIR)/tests/test_sigma_properties.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
+	fi
+
+# Optional mutation testing (mutmut 3; Linux-friendly; slow). Install: `uv pip install mutmut`.
+.PHONY: mutation
+mutation:
+	@if command -v uv >/dev/null 2>&1 && uv run python -c "import mutmut" >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" uv run mutmut run --max-children 4 && \
+		uv run mutmut results && echo "mutation: OK"; \
+	elif command -v mutmut >/dev/null 2>&1; then \
+		PYTHONPATH="$(CURDIR)/python" mutmut run --max-children 4 && mutmut results && echo "mutation: OK"; \
+	else \
+		echo "mutation: SKIP (uv pip install mutmut)"; \
 	fi
 
 # pytest-cov quality gate: **σ-core** modules only (see COS_COV_FLAGS). The full `python/cos`

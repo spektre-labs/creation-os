@@ -112,6 +112,11 @@ jobs:
       - name: Pytest (full tests/)
         run: pytest tests/ -v --tb=short
 
+      - name: Property-based σ-gate (Hypothesis, reproducible seed)
+        env:
+          PYTHONPATH: ${{ github.workspace }}/python
+        run: pytest tests/test_sigma_properties.py -v --tb=short --hypothesis-seed=42
+
       - name: Coverage (σ-core, branch, fail under 70%)
         env:
           PYTHONPATH: ${{ github.workspace }}/python

@@ -24,6 +24,9 @@ dist/
 # Local σ-runtime scratch (memory logs, CLI defaults)
 .cos/
 
+# mutmut working tree / mutation artefacts (local + CI workspace)
+mutants/
+
 # Attestations / SBOM / provenance (generated locally; CI emits canonical)
 SBOM.json
 sbom.json

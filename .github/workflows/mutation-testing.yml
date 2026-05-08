@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# mutmut 3 uses multiprocessing/fork; runner-only — not part of the default PR path (too slow).
+name: Mutation testing (mutmut)
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1"
+
+jobs:
+  mutmut-sigma-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install package + mutmut
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]" mutmut
+      - name: Run mutmut (see pyproject.toml [tool.mutmut])
+        env:
+          PYTHONPATH: ${{ github.workspace }}/python
+        run: mutmut run --max-children 2
+      - name: mutmut results
+        run: mutmut results
