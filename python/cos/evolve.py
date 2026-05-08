@@ -6,9 +6,13 @@
 ``SigmaEvolve.evolve_safe`` adds a **lab** cumulative-risk budget over σ-margin
 proposals (bounded-risk scaffolding; not a proof of external theorems).
 
+**σ-bounded RSI (firmware-only):** :meth:`SigmaEvolve.propose` and
+:meth:`SigmaEvolve.evolve_loop` score candidate code with :meth:`SigmaGate.score`;
+lower σ on the candidate is treated as improvement, with a per-step ``risk_budget``
+slack for tiny regressions. The C kernel (``sigma_gate.h``) stays immutable by policy.
+
 This is **not** recursive self-improvement in the strong sense and **not** an AGI claim.
-Each accepted change is gated by σ movement and optional safety caps. See
-``docs/CLAIM_DISCIPLINE.md`` and README evidence ladder: **NOT AGI ACHIEVED**."""
+See ``docs/CLAIM_DISCIPLINE.md`` and README evidence ladder: **NOT AGI ACHIEVED**."""
 from __future__ import annotations
 
 import copy
@@ -84,10 +88,15 @@ class SigmaEvolve:
         "code",
     )
 
-    def __init__(self, gate: Any = None) -> None:
+    def __init__(self, gate: Any = None, *, risk_budget: float = 0.1) -> None:
         from cos.sigma_gate import SigmaGate
 
         self.gate = gate or SigmaGate()
+        self.risk_budget = float(risk_budget)
+        self.generation = 0
+        self.archive: List[Dict[str, Any]] = []
+        self.rejected: List[Dict[str, Any]] = []
+        self.σ_baseline = 0.5
         self.improvement_archive: List[Dict[str, Any]] = []
         self.audit_log: List[Dict[str, Any]] = []
         self.domain_sigma_ceiling: Dict[str, float] = {}
@@ -539,4 +548,134 @@ class SigmaEvolve:
             "risk_budget_remaining": round(float(risk_budget) - cumulative_risk, 4),
             "steps_taken": len(history),
             "accepted": sum(1 for h in history if h.get("action") == "ACCEPT"),
+        }
+
+    def propose(self, component_name: str, current_code: Any, improved_code: Any) -> Dict[str, Any]:
+        """Propose a firmware change; accept iff σ does not rise beyond ``risk_budget`` slack."""
+        σ_current, _ = self.gate.score(
+            f"quality of {component_name}",
+            str(current_code),
+        )
+        σ_improved, _ = self.gate.score(
+            f"quality of {component_name}",
+            str(improved_code),
+        )
+        improvement = float(σ_current) - float(σ_improved)
+        accepted = bool(improvement > -self.risk_budget)
+
+        proposal: Dict[str, Any] = {
+            "component": str(component_name),
+            "generation": self.generation,
+            "σ_before": round(float(σ_current), 4),
+            "σ_after": round(float(σ_improved), 4),
+            "Δσ": round(float(improvement), 4),
+            "accepted": accepted,
+            "reason": (
+                "σ improved"
+                if improvement > 0
+                else "within risk budget"
+                if accepted
+                else "σ regression exceeds risk budget → REJECTED"
+            ),
+        }
+
+        if accepted:
+            self.archive.append(proposal)
+            self.generation += 1
+        else:
+            self.rejected.append(proposal)
+
+        return proposal
+
+    def evolve_loop(
+        self,
+        components: Dict[str, Any],
+        improve_fn: Callable[[str, Any], Any],
+        max_generations: int = 10,
+    ) -> Dict[str, Any]:
+        """RSI-style sweep: ``improve_fn(name, code) -> code'`` then :meth:`propose`."""
+        history: List[Dict[str, Any]] = []
+
+        for gen in range(max(1, int(max_generations))):
+            any_improved = False
+            for name, code in list(components.items()):
+                improved = improve_fn(str(name), code)
+                result = self.propose(str(name), code, improved)
+                history.append(result)
+
+                if result["accepted"] and float(result["Δσ"]) > 0:
+                    components[str(name)] = improved
+                    any_improved = True
+
+            if not any_improved:
+                history.append(
+                    {
+                        "generation": gen,
+                        "converged": True,
+                        "reason": "no improvements found → stopping",
+                    },
+                )
+                break
+
+        last = history[-1] if history else {}
+        return {
+            "generations": self.generation,
+            "history": history,
+            "accepted": len(self.archive),
+            "rejected": len(self.rejected),
+            "final_components": list(components.keys()),
+            "convergence": bool(last.get("converged", False)),
+        }
+
+    def safety_invariants(self) -> Dict[str, Any]:
+        """Policy boundaries: immutable kernel vs mutable Python firmware (lab docs)."""
+        return {
+            "immutable": [
+                "sigma_gate.h — kernel boundary; never modified by evolve hooks",
+                "σ ∈ [0, 1] always",
+                "ABSTAIN on high σ",
+                "Evidence ladder includes negatives",
+                "NOT AGI ACHIEVED",
+                "SCSL-1.0 OR AGPL-3.0-only",
+                "Human decides on irreversible actions",
+            ],
+            "mutable": [
+                "Python modules (above sigma_gate.h policy boundary)",
+                "Probe configurations",
+                "Threshold values",
+                "Routing decisions",
+                "Documentation",
+            ],
+            "principle": (
+                "The kernel is the constitution. "
+                "The firmware is the legislation. "
+                "Legislation can change; the constitution does not."
+            ),
+        }
+
+    def godel_check(self) -> Dict[str, Any]:
+        """Consistency is not provable from within; σ is still a measurable stress signal."""
+        σ_self, _ = self.gate.score(
+            "can I prove my own consistency?",
+            "no, but I can measure my own σ",
+        )
+        return {
+            "godel": "system cannot prove own consistency",
+            "σ_solution": "but can measure own σ",
+            "triangulation": "1=1 between systems covers blind spots",
+            "σ_self": round(float(σ_self), 4),
+        }
+
+    def scrivens_risk(self) -> Dict[str, Any]:
+        """Summarize rejected vs accepted σ deltas (GEPA-style lab bookkeeping)."""
+        total_regression = sum(abs(float(r["Δσ"])) for r in self.rejected)
+        total_improvement = sum(float(r["Δσ"]) for r in self.archive if float(r["Δσ"]) > 0)
+        denom = max(self.risk_budget * 100, 1e-9)
+        return {
+            "improvements": len(self.archive),
+            "rejections": len(self.rejected),
+            "total_σ_gained": round(float(total_improvement), 4),
+            "total_σ_risked": round(float(total_regression), 4),
+            "risk_budget": self.risk_budget,
+            "budget_used": round(float(total_regression) / float(denom), 4),
         }
