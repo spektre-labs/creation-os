@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
+# Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
+# Example systemd unit: σ-gate API with hardware watchdog (sd_watchdog_enabled).
+#
+# Type=notify and WatchdogSec= require the daemon to call sd_notify(READY=1) and
+# periodically sd_notify(WATCHDOG=1). If cos serve does not implement that yet, use
+# Type=simple and rely on SigmaWatchdog σ-probes inside the process instead.
+#
+# Install: sudo cp deploy/systemd/creation-os.service /etc/systemd/system/creation-os.service
+
+[Unit]
+Description=Creation OS σ-gate API
+After=network.target
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/cos serve --host 0.0.0.0 --port 8000
+WatchdogSec=60
+Restart=on-watchdog
+RestartSec=5
+StartLimitBurst=5
+StartLimitIntervalSec=300
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target

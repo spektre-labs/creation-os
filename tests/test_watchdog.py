@@ -1,60 +1,70 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-
+"""Tests for :mod:`cos.watchdog` (σ-based health probes)."""
 from __future__ import annotations
 
-import time
+from typing import Tuple
 
 from cos.watchdog import SigmaWatchdog
 
 
-def test_health_check_shape() -> None:
-    w = SigmaWatchdog()
-    h = w.health_check()
-    assert h["gate_ok"] is True
+class _FakeGateGood:
+    def score(self, prompt: str, response: str) -> Tuple[float, str]:
+        del prompt, response
+        return (0.1, "ACCEPT")
 
 
-def test_sigma_drift_monitor() -> None:
-    w = SigmaWatchdog()
-    w.set_baseline_from_samples([0.2, 0.22, 0.21])
-    w.record_sigma(0.55)
-    w.record_sigma(0.56)
-    d = w.sigma_drift_monitor(window_minutes=60.0)
-    assert "drift" in d
+class _FakeGateBad:
+    def score(self, prompt: str, response: str) -> Tuple[float, str]:
+        del prompt, response
+        return (0.95, "ABSTAIN")
 
 
-def test_auto_alert_triggers() -> None:
-    w = SigmaWatchdog()
-    fired = w.auto_alert({"drift": 0.5}, threshold=0.2)
-    assert fired is True
-    assert len(w.alerts) >= 1
+def test_health_check_healthy() -> None:
+    wd = SigmaWatchdog(gate=_FakeGateGood(), sigma_threshold=0.8)
+    r = wd.health_check()
+    assert r["healthy"] is True
+    assert r["sigma"] < wd.sigma_threshold
+    assert r["sigma"] == r["σ"]
+    assert r["latency_ms"] < 5000.0
+    assert wd.consecutive_failures == 0
 
 
-def test_auto_rollback_flag() -> None:
-    class _Fab:
-        def rollback(self, _t: object) -> dict[str, bool]:
-            return {"ok": True}
-
-    w = SigmaWatchdog(fabric=_Fab())
-    out = w.auto_rollback({"drift": 0.9}, critical=0.3)
-    assert out["would_rollback"] is True
+def test_consecutive_failures_tracked() -> None:
+    wd = SigmaWatchdog(gate=_FakeGateBad(), max_consecutive_failures=5, sigma_threshold=0.8)
+    wd.health_check()
+    assert wd.consecutive_failures == 1
+    wd.health_check()
+    assert wd.consecutive_failures == 2
 
 
-def test_heartbeat_deadman() -> None:
-    w = SigmaWatchdog()
-    w.heartbeat()
-    assert w.deadman_expired(timeout_seconds=3600.0) is False
+def test_needs_restart_after_max_failures() -> None:
+    wd = SigmaWatchdog(gate=_FakeGateBad(), max_consecutive_failures=3, sigma_threshold=0.8)
+    for _ in range(2):
+        wd.health_check()
+        assert wd.needs_restart() is False
+    wd.health_check()
+    assert wd.needs_restart() is True
 
 
-def test_resource_monitor_keys() -> None:
-    w = SigmaWatchdog()
-    r = w.resource_monitor()
-    assert "cpu_percent" in r
+def test_status_report() -> None:
+    wd = SigmaWatchdog(gate=_FakeGateGood(), max_consecutive_failures=3, sigma_threshold=0.8)
+    wd.health_check()
+    wd.health_check()
+    st = wd.status()
+    assert st["total_checks"] == 2
+    assert st["healthy_rate"] == 1.0
+    assert st["consecutive_failures"] == 0
+    assert st["needs_restart"] is False
 
 
-def test_background_start_stop() -> None:
-    w = SigmaWatchdog()
-    w.start_background(interval_seconds=0.05)
-    time.sleep(0.12)
-    w.stop_background()
+def test_healthy_resets_counter() -> None:
+    wd = SigmaWatchdog(gate=_FakeGateBad(), max_consecutive_failures=3, sigma_threshold=0.8)
+    wd.health_check()
+    wd.health_check()
+    assert wd.consecutive_failures == 2
+    wd.gate = _FakeGateGood()  # type: ignore[assignment]
+    wd.health_check()
+    assert wd.consecutive_failures == 0
+    assert wd.needs_restart() is False
