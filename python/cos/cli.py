@@ -3125,12 +3125,13 @@ def _cmd_voice_cli(args: argparse.Namespace) -> int:
 
 def _cmd_ui_cli(args: argparse.Namespace) -> int:
     try:
-        from cos.ui.app import run_ui
+        from cos.ui.dashboard import run_dashboard
     except ImportError as exc:
         print(f"cos ui: {exc}", file=sys.stderr)
         return 1
-    run_ui(
-        port=int(getattr(args, "ui_port", 8765) or 8765),
+    run_dashboard(
+        host=str(getattr(args, "ui_host", "127.0.0.1") or "127.0.0.1"),
+        port=int(getattr(args, "ui_port", 8080) or 8080),
         show=not bool(getattr(args, "ui_headless", False)),
         native=bool(getattr(args, "ui_native", False)),
     )
@@ -4405,8 +4406,9 @@ def main(argv: Optional[List[str]] = None) -> int:
     voi.add_argument("--json", action="store_true", dest="out_json")
     voi.set_defaults(func=_cmd_voice_cli)
 
-    uip = sub.add_parser("ui", help="NiceGUI σ-gauge lab desktop (optional nicegui+pywebview)")
-    uip.add_argument("--port", type=int, default=8765, dest="ui_port")
+    uip = sub.add_parser("ui", help="Launch σ-dashboard (NiceGUI; pip install 'creation-os[ui]')")
+    uip.add_argument("--host", type=str, default="127.0.0.1", dest="ui_host")
+    uip.add_argument("--port", type=int, default=8080, dest="ui_port")
     uip.add_argument("--headless", action="store_true", dest="ui_headless", help="do not auto-open browser")
     uip.add_argument(
         "--native",
