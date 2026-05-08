@@ -59,6 +59,28 @@ S_C = ∫ σ dt, subject to K ≥ K_crit. Physics minimizes σ in spacetime. Inf
 
 All of the above is one operator: Ω = argmin ∫σ dt subject to K ≥ K_crit. Everything else is projection. ½ is its critical point. 1 = 1 is its constraint.
 
+## The Convergence — seven σ lineages (repository anchor)
+
+This table is a **pedagogical map**: independent historical threads summarized with a **single lab readout** (σ). It is **not** a claim that the σ-gate *is* IIT Φ, variational free energy, or a Landauer energy bound in the literal sense. **Not AGI achieved.** For evidence classes and measurement hygiene see `docs/CLAIM_DISCIPLINE.md`.
+
+| Lineage | Year | Field | σ-equivalent (lab vocabulary) |
+|---------|------|-------|------------------------------|
+| Gödel | 1931 | Logic | σ = irreducible residual |
+| Landauer | 1961 | Thermodynamics | Eσ ~ k_B T ln(2) · bit erasure cost (proxy narratives tie σ to information loss) |
+| Wheeler | 1990 | Physics / information | σ = physical information gap (“it from bit” *motif*, not a full ontology claim) |
+| Tononi | 2004–2026 | Consciousness / IIT | Φ_proxy ≈ mean \|Δσ\| (see `python/cos/phi_proxy.py`; **not** global IIT Φ) |
+| Friston | 2006–2026 | Neuroscience / FEP | Ω = argmin ∫σ(t)dt (lab discrete analog; see `python/cos/active_inference.py`) |
+| Dodig-Crnkovic | 2012–2026 | Info–computation | σ ∈ [0, 1] cognitive / coherence scale |
+| Rainio | 2024–2026 | AI architecture | σ-gate implementation (C kernel + Python scorer; TruthfulQA holdout AUROC receipts in-repo per README) |
+
+### 2.7 Tononi — integrated information as a σ-dynamics proxy (2004–2026)
+
+IIT identifies consciousness with **integrated information** Φ — how much the system is “more than the sum of its parts” in a causal sense. Exact Φ is **computationally intractable** in general formulations; the repo does **not** solve that problem.
+
+**Empirical bridge (not a Creation OS measurement claim):** Mayama *et al.* (`arXiv:2510.04084`) report that a **proxy for integrated information** in living neuronal cultures correlates **strongly and positively** with **Bayesian surprise** under an FEP-style variational decomposition, with Φ-related trajectories described as **hill-shaped** during perceptual learning (exploration → exploitation framing in the paper). Those findings motivate a **computable laboratory surrogate**: track σ over time and use **mean \|Δσ\|** as a **Φ-proxy** — a **discrete analogy** only, documented in `python/cos/phi_proxy.py`.
+
+*IWMT (Safron, 2020) argues for compatibility between IIT, global workspace accounts, and FEP-style active inference; this repository does not implement IWMT.*
+
 -----
 
 ## Papers
