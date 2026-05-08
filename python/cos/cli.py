@@ -818,6 +818,36 @@ def _cmd_agent(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_autonomous(args: argparse.Namespace) -> int:
+    """σ-gated persistent loop lab (until CONVERGED / HALT / caps)."""
+    from cos.autonomous import AutonomousAgent
+
+    goal = str(getattr(args, "autonomous_goal", "") or "").strip()
+    if not goal:
+        print("cos autonomous: pass GOAL text", file=sys.stderr)
+        return 2
+
+    agent = AutonomousAgent(
+        max_steps=int(getattr(args, "autonomous_max_steps", 20) or 20),
+        timeout_s=float(getattr(args, "autonomous_timeout", 300) or 300),
+        drift_threshold=float(getattr(args, "drift_threshold", 0.3) or 0.3),
+    )
+    agent.set_goal(goal)
+
+    def _action(g: Any, ctx: str, step: int) -> str:
+        _ = ctx
+        return f"step {step} toward: {g}"
+
+    result = agent.run(action_fn=_action, correct_fn=None)
+    if result.get("error"):
+        print(json.dumps(result, ensure_ascii=False), file=sys.stderr)
+        return 1
+    print(f"Result: {result['reason']} in {result['steps']} steps")
+    print(f"σ: avg={result['avg_σ']} final={result['final_σ']}")
+    print(f"Self-corrections: {result['self_corrections']}")
+    return 0
+
+
 def _cmd_omega(args: argparse.Namespace) -> int:
     from cos.omega import OmegaLoop, OmegaPhaseHarness
 
@@ -5556,6 +5586,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     ag.add_argument("--mock", action="store_true", help="built-in mock planner + gate for CI smoke")
     ag.add_argument("--json", action="store_true", help="print full step list as JSON")
     ag.set_defaults(func=_cmd_agent)
+
+    auton = sub.add_parser(
+        "autonomous",
+        help="σ-gated autonomous loop until converge or halt (lab; not cos agent SigmaAgent)",
+    )
+    auton.add_argument("autonomous_goal", type=str, metavar="GOAL", help="task goal string")
+    auton.add_argument("--max-steps", type=int, default=20, dest="autonomous_max_steps")
+    auton.add_argument("--timeout", type=int, default=300, dest="autonomous_timeout")
+    auton.add_argument("--drift-threshold", type=float, default=0.3, dest="drift_threshold")
+    auton.set_defaults(func=_cmd_autonomous)
 
     gen = sub.add_parser(
         "genesis",
