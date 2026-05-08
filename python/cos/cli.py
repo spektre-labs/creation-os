@@ -3138,12 +3138,17 @@ def _cmd_voice_cli(args: argparse.Namespace) -> int:
 
     if act == "status":
         v = SigmaVoice(whisper_model=whisper_model, kokoro_voice=kokoro_voice)
-        out = v.available()
+        v.boot()
+        out = dict(v.available())
+        out.update(v.status())
         if _cli_out_json(args):
             print(json.dumps(out, ensure_ascii=False))
         else:
             print(json.dumps(out, indent=2, ensure_ascii=False))
         return 0
+
+    if act == "listen":
+        act = "transcribe"
 
     if act == "transcribe":
         p = vin or audio
@@ -3209,7 +3214,7 @@ def _cmd_voice_cli(args: argparse.Namespace) -> int:
         out = sigma_before_speak(check_txt)
     else:
         print(
-            "cos voice: use ACTION transcribe|speak|chat|status | "
+            "cos voice: use ACTION transcribe|listen|speak|chat|status | "
             "legacy: --listen-mock TEXT | --audio PATH | --speak TEXT | --check TEXT",
             file=sys.stderr,
         )
@@ -4535,7 +4540,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         "voice_action",
         nargs="?",
         default=None,
-        choices=["transcribe", "speak", "chat", "status"],
+        choices=["transcribe", "speak", "chat", "status", "listen"],
         help="optional: transcribe | speak | chat | status (else use legacy flags)",
     )
     voi.add_argument("--input", type=str, default="", dest="voice_input", metavar="PATH", help="audio path for transcribe/chat")

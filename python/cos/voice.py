@@ -3,11 +3,13 @@
 """σ-gated local voice loop: STT → gate → LLM → gate → TTS.
 
 :class:`SigmaVoice` (extends :class:`SigmaVoiceLab`) wires optional **faster-whisper** + **Kokoro**
-with σ on transcription text and synthesis text. :class:`SigmaVoiceLab` supplies Fabric-facing
-:meth:`~SigmaVoiceLab.realtime_stream` without heavy engines.
+(:class:`~kokoro.KPipeline`) with σ on **both** user text (input) and assistant text (output).
+:class:`SigmaVoiceLab` supplies Fabric-facing :meth:`~SigmaVoiceLab.realtime_stream` without heavy engines.
+V2 helpers: :meth:`~SigmaVoice.boot`, :meth:`~SigmaVoice.respond`, :meth:`~SigmaVoice.turn`,
+:meth:`~SigmaVoice.status` (loop metrics).
 
 :class:`CosVoice` is the full microphone REPL (separate code path). Engines load lazily; remote
-cloud APIs are not wired here — see ``docs/CLAIM_DISCIPLINE.md``.
+cloud APIs are not wired here — see ``docs/CLAIM_DISCIPLINE.md`` (no SOTA ms / throughput claims).
 """
 from __future__ import annotations
 
@@ -247,6 +249,74 @@ class SigmaVoice(SigmaVoiceLab):
             self._stt = WhisperModel(str(whisper_model), device=dev, compute_type=str(compute_type))
         if _HAS_KOKORO:
             self._tts = KPipeline(lang_code=self.kokoro_lang_code)
+        self.conversation: List[Dict[str, Any]] = []
+
+    def boot(self) -> Dict[str, bool]:
+        """Report whether STT/TTS engines are loaded (optional deps)."""
+        return {
+            "stt": bool(_HAS_WHISPER and self._stt is not None),
+            "tts": bool(_HAS_KOKORO and self._tts is not None),
+        }
+
+    def status(self) -> Dict[str, Any]:
+        """Loop metrics: engine presence, turn count, mean output σ from :meth:`respond`."""
+        avg = 0.5
+        if self.conversation:
+            avg = sum(float(c["σ_out"]) for c in self.conversation) / len(self.conversation)
+        return {
+            "stt": bool(_HAS_WHISPER and self._stt is not None),
+            "tts": bool(_HAS_KOKORO and self._tts is not None),
+            "turns": len(self.conversation),
+            "avg_σ": round(float(avg), 4),
+        }
+
+    def respond(self, user_text: str, think_fn: Optional[Callable[[str], str]] = None) -> Dict[str, Any]:
+        """σ-gate user text, generate reply, σ-gate reply; append to :attr:`conversation`."""
+        σ_in, _ = self.gate.score("user said", str(user_text))
+        if think_fn is not None:
+            response = think_fn(str(user_text))
+        else:
+            response = f"I heard: {user_text}"
+        σ_out, v_out = self.gate.score(str(user_text), str(response))
+        vn = _voice_verdict_str(v_out)
+        self.conversation.append(
+            {
+                "user": str(user_text),
+                "σ_in": float(σ_in),
+                "response": str(response),
+                "σ_out": float(σ_out),
+            },
+        )
+        return {
+            "response": str(response),
+            "σ_in": round(float(σ_in), 4),
+            "σ_out": round(float(σ_out), 4),
+            "verdict": vn,
+            "speak": vn != "ABSTAIN",
+        }
+
+    def turn(self, audio_path: str, think_fn: Optional[Callable[[str], str]] = None) -> Dict[str, Any]:
+        """One sweep: transcribe → :meth:`respond` → :meth:`synthesize` when not ABSTAIN."""
+        transcript = self.transcribe(str(audio_path))
+        if transcript.get("error"):
+            return {**transcript, "action": "could not understand"}
+        if str(transcript.get("verdict", "")) == "ABSTAIN":
+            return {**transcript, "action": "could not understand"}
+        response = self.respond(str(transcript["text"]), think_fn)
+        if not response["speak"]:
+            return {**response, "action": "ABSTAIN — not confident enough to speak"}
+        spoken = self.synthesize(response["response"])
+        sig_h = transcript.get("sigma", transcript.get("σ"))
+        path_ok = bool(spoken.get("path"))
+        return {
+            "heard": str(transcript["text"]),
+            "σ_heard": sig_h,
+            "said": response["response"],
+            "σ_said": response["σ_out"],
+            "spoken": path_ok,
+            "action": "spoke" if path_ok else "silent",
+            "synthesis": spoken,
+        }
 
     def available(self) -> Dict[str, bool]:
         return {"stt": bool(_HAS_WHISPER and self._stt is not None), "tts": bool(_HAS_KOKORO and self._tts is not None), "gate": True}

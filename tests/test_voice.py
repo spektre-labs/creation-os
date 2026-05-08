@@ -113,3 +113,47 @@ def test_voice_status() -> None:
     assert r.returncode == 0, r.stderr
     body = json.loads(r.stdout.strip())
     assert body.get("gate") is True
+    assert "turns" in body and "avg_σ" in body
+
+
+def test_status_without_deps(monkeypatch: pytest.MonkeyPatch) -> None:
+    import cos.voice as vm
+
+    monkeypatch.setattr(vm, "_HAS_WHISPER", False)
+    monkeypatch.setattr(vm, "_HAS_KOKORO", False)
+    v = SigmaVoice()
+    assert v.boot() == {"stt": False, "tts": False}
+    s = v.status()
+    assert s["stt"] is False and s["tts"] is False
+    assert s["turns"] == 0
+
+
+def test_respond_scores_both_directions() -> None:
+    v = SigmaVoice()
+    r = v.respond("hello there")
+    assert "σ_in" in r and "σ_out" in r
+    assert r["response"]
+    assert r["verdict"] in ("ACCEPT", "RETHINK", "ABSTAIN")
+
+
+class _GateAbstainOnReply:
+    def score(self, prompt: str, response: str) -> tuple[float, str]:
+        _ = response
+        if str(prompt).startswith("user said"):
+            return (0.08, "ACCEPT")
+        return (0.95, "ABSTAIN")
+
+
+def test_respond_abstains_on_high_sigma() -> None:
+    v = SigmaVoice(gate=_GateAbstainOnReply())
+    r = v.respond("hi")
+    assert r["speak"] is False
+    assert r["verdict"] == "ABSTAIN"
+
+
+def test_conversation_tracked() -> None:
+    v = SigmaVoice()
+    v.respond("a")
+    v.respond("b")
+    assert len(v.conversation) == 2
+    assert v.status()["turns"] == 2
