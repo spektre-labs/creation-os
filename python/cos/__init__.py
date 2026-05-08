@@ -22,6 +22,7 @@ __version__ = "1.0.0"
 _LAZY_IMPORT_MAP: dict[str, str] = {
     "DEFAULT_CONFIG": "cos.config",
     "SigmaConfig": "cos.config",
+    "EpistemicAgent": "cos.epistemic",
     "Fabric": "cos.fabric",
     "FederatedNode": "cos.federated",
     "FederatedSigma": "cos.federated",
@@ -65,6 +66,7 @@ __all__ = [
     "Autopoietic",
     "CostManager",
     "DEFAULT_CONFIG",
+    "EpistemicAgent",
     "Fabric",
     "FederatedNode",
     "FederatedSigma",
