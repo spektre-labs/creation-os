@@ -159,6 +159,75 @@ class SigmaSteer:
             "action": "steer toward ideal trajectory" if needs_correction else "on track",
         }
 
+    def per_token_steer(self, tokens: Sequence[str], gate: Optional[Any] = None) -> Dict[str, Any]:
+        """CRL-inspired lab scaffold: per-token σ score, optional SAE target, intervention log.
+
+        Each token is scored as a mini (prompt, response) pair against a fixed context label.
+        This is a **representation lab** hook only; not a claim about a deployed policy."""
+        g = gate if gate is not None else self.gate
+        log: List[Dict[str, Any]] = []
+        ctx = "token context"
+
+        for i, token in enumerate(tokens):
+            raw_sigma, raw_verdict = g.score(str(ctx), str(token))
+            σ = float(raw_sigma)
+            verdict = _normalize_verdict(raw_verdict)
+
+            entry: Dict[str, Any] = {
+                "position": i,
+                "token": str(token),
+                "σ": round(σ, 4),
+                "verdict": verdict,
+                "steered": False,
+                "feature_id": None,
+                "action": None,
+            }
+
+            if verdict != "ACCEPT" and self.sae is not None:
+                target = self.identify_target(ctx, str(token))
+                if target.get("target") is not None:
+                    entry["steered"] = True
+                    entry["feature_id"] = int(target["target"])
+                    entry["action"] = target["action"]
+
+            log.append(entry)
+
+        branch_points = [e for e in log if e["steered"]]
+        n_tok = len(tokens)
+        n_steer = len(branch_points)
+
+        return {
+            "log": log,
+            "total_tokens": n_tok,
+            "steered_tokens": n_steer,
+            "steer_rate": round(n_steer / max(n_tok, 1), 4),
+            "branch_points": branch_points,
+        }
+
+    def critic_trajectory(self, σ_trace: Sequence[float]) -> Dict[str, Any]:
+        """Rough policy check: does 'low sigma means no need to improve next step' line up with sigma drops?
+
+        Lab-only diagnostic; separate from deployed value estimation."""
+        trace = [float(x) for x in σ_trace]
+        if len(trace) < 3:
+            return {"analysis": "insufficient data"}
+
+        predictions_correct = 0
+        for i in range(len(trace) - 1):
+            predicted_good = trace[i] < 0.3
+            actually_improved = trace[i + 1] < trace[i]
+            if predicted_good == actually_improved:
+                predictions_correct += 1
+
+        denom = max(len(trace) - 1, 1)
+        accuracy = predictions_correct / denom
+
+        return {
+            "prediction_accuracy": round(accuracy, 4),
+            "policy_reliable": accuracy > 0.7,
+            "n_steps": len(trace),
+        }
+
     def report(self) -> Dict[str, Any]:
         return {
             "total_interventions": len(self.interventions),
