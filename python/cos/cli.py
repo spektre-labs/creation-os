@@ -1313,33 +1313,98 @@ def _cmd_space_check(args: argparse.Namespace) -> int:
 
 
 def _cmd_mega(args: argparse.Namespace) -> int:
-    """Fabric boot + layer coverage + process + constitution probe (lab integration banner)."""
+    """Default: :class:`~cos.mega.Mega` σ-sweep. With ``--fabric``, legacy Fabric demo."""
 
-    from cos.fabric import Fabric
-    from cos.zkp import SigmaConstitution
+    if bool(getattr(args, "mega_fabric", False)):
+        from cos.fabric import Fabric
+        from cos.zkp import SigmaConstitution
 
-    text = str(getattr(args, "mega_text", "") or "").strip()
-    if not text:
-        print("cos mega: INPUT text required", file=sys.stderr)
+        text = str(getattr(args, "mega_text", "") or "").strip()
+        if not text:
+            print("cos mega: INPUT text required (--fabric)", file=sys.stderr)
+            return 2
+
+        fab = Fabric()
+        status = fab.boot()
+        modules = status.get("modules", {})
+        loaded = sum(1 for m in modules.values() if m.get("state") == "loaded")
+        total = len(modules)
+        layers = fab.layer_status()
+        result = fab.process(text)
+        const_result = SigmaConstitution().check(fab.gate)
+
+        if _cli_out_json(args):
+            print(
+                json.dumps(
+                    {
+                        "boot": {"loaded": loaded, "total_modules": total},
+                        "layer_status": layers,
+                        "process": result,
+                        "constitution": const_result,
+                    },
+                    ensure_ascii=False,
+                    default=str,
+                )
+            )
+            return 0
+
+        print("\n╔══ CREATION OS MEGA (FABRIC) ══╗")
+        print(f"║ Modules: {loaded}/{total} loaded ║")
+        print("╚══════════════════════════════╝\n")
+
+        for layer, info in sorted(layers.items()):
+            coverage = int(float(info["coverage"]) * 100)
+            filled = min(10, coverage // 10)
+            bar = "█" * filled + "░" * (10 - filled)
+            print(f"  {layer:15s} {bar} {coverage}%")
+
+        print(f"\n[Processing: {text}]\n")
+        sig = result.get("σ", result.get("sigma", 0.0))
+        print(f"  σ      = {float(sig):.4f}")
+        print(f"  σ_meta = {result.get('σ_meta', 'N/A')}")
+        print(f"  Verdict: {result.get('verdict', 'N/A')}")
+        print(f"  Latency: {result.get('latency_ms', 'N/A')}ms")
+        print(f"  Layers:  {result.get('layers_active', 'N/A')}")
+
+        trace = result.get("trace") or []
+        if trace:
+            print(f"\n  Trace ({len(trace)} steps):")
+            for t in trace:
+                layer = t.get("layer", "?")
+                print(f"    {layer:15s} → {t}")
+
+        c_line = "✓ compliant" if const_result["compliant"] else "✗ VIOLATION"
+        print(f"\n  Constitution: {c_line}")
+
+        print("\n  NOT AGI ACHIEVED")
+        print("  σ-AWARE ARCHITECTURE")
+        print("  1 = 1")
+        return 0
+
+    from cos.mega import Mega
+
+    obs = str(getattr(args, "mega_text", "") or "").strip()
+    if not obs:
+        print("cos mega: OBSERVATION text required", file=sys.stderr)
         return 2
-
-    fab = Fabric()
-    status = fab.boot()
-    modules = status.get("modules", {})
-    loaded = sum(1 for m in modules.values() if m.get("state") == "loaded")
-    total = len(modules)
-    layers = fab.layer_status()
-    result = fab.process(text)
-    const_result = SigmaConstitution().check(fab.gate)
+    goal = getattr(args, "mega_goal", None)
+    if goal is not None:
+        goal = str(goal).strip() or None
+    cycles = max(1, int(getattr(args, "mega_cycles", 1) or 1))
+    m = Mega()
+    all_out: List[Dict[str, Any]] = []
+    for _ in range(cycles):
+        all_out.append(m.step(obs, goal))
+    last = all_out[-1]
 
     if _cli_out_json(args):
         print(
             json.dumps(
                 {
-                    "boot": {"loaded": loaded, "total_modules": total},
-                    "layer_status": layers,
-                    "process": result,
-                    "constitution": const_result,
+                    "cycles": cycles,
+                    "last": last,
+                    "status": m.status(),
+                    "dream": m.dream() if cycles > 1 else None,
                 },
                 ensure_ascii=False,
                 default=str,
@@ -1347,37 +1412,24 @@ def _cmd_mega(args: argparse.Namespace) -> int:
         )
         return 0
 
-    print("\n╔══ CREATION OS MEGA ══╗")
-    print(f"║ Modules: {loaded}/{total} loaded ║")
-    print("╚══════════════════════╝\n")
-
-    for layer, info in sorted(layers.items()):
-        coverage = int(float(info["coverage"]) * 100)
-        filled = min(10, coverage // 10)
-        bar = "█" * filled + "░" * (10 - filled)
-        print(f"  {layer:15s} {bar} {coverage}%")
-
-    print(f"\n[Processing: {text}]\n")
-    sig = result.get("σ", result.get("sigma", 0.0))
-    print(f"  σ      = {float(sig):.4f}")
-    print(f"  σ_meta = {result.get('σ_meta', 'N/A')}")
-    print(f"  Verdict: {result.get('verdict', 'N/A')}")
-    print(f"  Latency: {result.get('latency_ms', 'N/A')}ms")
-    print(f"  Layers:  {result.get('layers_active', 'N/A')}")
-
-    trace = result.get("trace") or []
-    if trace:
-        print(f"\n  Trace ({len(trace)} steps):")
-        for t in trace:
-            layer = t.get("layer", "?")
-            print(f"    {layer:15s} → {t}")
-
-    c_line = "✓ compliant" if const_result["compliant"] else "✗ VIOLATION"
-    print(f"\n  Constitution: {c_line}")
-
-    print("\n  NOT AGI ACHIEVED")
-    print("  σ-AWARE ARCHITECTURE")
-    print("  1 = 1")
+    for row in all_out:
+        print(f"Cycle {row['cycle']}: σ_cycle={row.get('σ_cycle')}")
+        for stage, data in row["stages"].items():
+            if not isinstance(data, dict):
+                continue
+            marker = data.get("verdict", data.get("action", data.get("status", "")))
+            σv = data.get("σ", data.get("σ_meta", ""))
+            if σv != "" and marker != "":
+                print(f"  {stage}: {marker} (σ={σv})")
+            elif marker != "":
+                print(f"  {stage}: {marker}")
+            elif σv != "":
+                print(f"  {stage}: σ={σv}")
+    if cycles > 1:
+        print()
+        print(json.dumps(m.dream(), ensure_ascii=False, indent=2))
+        print(f"\nStatus: {json.dumps(m.status(), ensure_ascii=False)}")
+    print("\nNOT AGI ACHIEVED")
     return 0
 
 
@@ -4912,9 +4964,21 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     mega = sub.add_parser(
         "mega",
-        help="σ-stack integration demo: Fabric boot + L0–L9 coverage + process + constitution (NOT AGI ACHIEVED)",
+        help="Unified σ cognitive sweep (Mega.step) or --fabric for legacy Fabric demo (NOT AGI ACHIEVED)",
     )
-    mega.add_argument("mega_text", metavar="INPUT", help="text passed to Fabric.process")
+    mega.add_argument(
+        "mega_text",
+        metavar="OBSERVATION",
+        help="observation text (passed to Mega.step; Fabric INPUT when --fabric)",
+    )
+    mega.add_argument("--goal", type=str, default=None, dest="mega_goal", help="optional goal string")
+    mega.add_argument("--cycles", type=int, default=1, dest="mega_cycles", help="repeat Mega.step; dream + status when >1")
+    mega.add_argument(
+        "--fabric",
+        action="store_true",
+        dest="mega_fabric",
+        help="legacy: Fabric boot + layer bars + process + constitution",
+    )
     mega.add_argument("--json", action="store_true", dest="out_json", help="machine-readable output")
     mega.set_defaults(func=_cmd_mega)
 

@@ -1,42 +1,57 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Tests for ``cos mega`` Fabric integration demo."""
+
 from __future__ import annotations
 
-import sys
-from pathlib import Path
-
-import pytest
-
-_REPO = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(_REPO / "python"))
-
-from cos.fabric import FABRIC_LAYER_MAP, Fabric  # noqa: E402
-from cos.zkp import SigmaConstitution  # noqa: E402
+from cos.mega import Mega
+from cos.sigma_gate import ABSTAIN
 
 
-@pytest.fixture(scope="module")
-def booted_fabric() -> Fabric:
-    fab = Fabric()
-    fab.boot()
-    return fab
+class _AlwaysAbstainGate:
+    def score(self, _p: str, _r: str) -> tuple[float, str]:
+        return (0.99, ABSTAIN)
 
 
-def test_mega_boots_and_processes(booted_fabric: Fabric) -> None:
-    body = booted_fabric.process("hello mega lab")
-    assert "verdict" in body
-    assert "σ" in body or "sigma" in body
+def test_step_returns_all_stages() -> None:
+    m = Mega()
+    out = m.step("observe temperature is 21C", goal="stay safe")
+    assert out["cycle"] == 1
+    st = out["stages"]
+    for key in (
+        "perceive",
+        "act",
+        "learn",
+    ):
+        assert key in st
+    assert "σ_cycle" in out
 
 
-def test_mega_constitution_check(booted_fabric: Fabric) -> None:
-    r = SigmaConstitution().check(booted_fabric.gate)
-    assert r["compliant"] is True
-    assert r["rules"] == 10
+def test_step_abstains_on_high_sigma() -> None:
+    m = Mega(gate=_AlwaysAbstainGate())
+    out = m.step("anything")
+    assert out["stages"]["act"]["action"] == "ABSTAIN"
 
 
-def test_mega_layer_status(booted_fabric: Fabric) -> None:
-    layers = booted_fabric.layer_status()
-    assert set(layers.keys()) == set(FABRIC_LAYER_MAP.keys())
-    for row in layers.values():
-        assert "coverage" in row
+def test_dream_consolidates() -> None:
+    m = Mega()
+    r = m.dream()
+    assert isinstance(r, dict)
+    if m._modules.get("world") is not None:
+        assert "world" in r
+
+
+def test_status_reports_modules() -> None:
+    m = Mega()
+    s = m.status()
+    assert s["modules_total"] > 0
+    assert s["modules_loaded"] >= 0
+    assert isinstance(s["modules"], dict)
+    assert "avg_σ" in s and "σ_trend" in s
+
+
+def test_multi_cycle_sigma_tracking() -> None:
+    m = Mega()
+    m.step("a")
+    m.step("b")
+    assert len(m.σ_trace) >= 2
