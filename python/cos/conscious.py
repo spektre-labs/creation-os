@@ -6,14 +6,17 @@
 
 σ here tracks **miscalibration / distortion** of self-assessment signals — **not** a
 consciousness meter. **NOT AGI ACHIEVED.** mPCAB / Φ names are **inspired** sketches only;
-see ``docs/CLAIM_DISCIPLINE.md``."""
+see ``docs/CLAIM_DISCIPLINE.md``.
+
+:class:`SigmaConsciousV2` adds a five-scalar “metacognitive vector” sketch gated entirely by
+:class:`~cos.sigma_gate.SigmaGate` — pedagogy only; not a MEDLEY-BENCH replication."""
 from __future__ import annotations
 
 from typing import Any, Callable, Dict, List, Sequence, Tuple
 
 from cos.sigma_gate import SigmaGate
 
-__all__ = ["SigmaConscious"]
+__all__ = ["SigmaConscious", "SigmaConsciousV2"]
 
 
 def _verdict_str(verdict: Any) -> str:
@@ -141,3 +144,146 @@ class SigmaConscious:
         if recent[-1] > recent[0]:
             return "degrading"
         return "stable"
+
+
+class SigmaConsciousV2:
+    """Lab “metacognitive vector” built only from repeated :meth:`~cos.sigma_gate.SigmaGate.score` calls.
+
+    **NOT AGI ACHIEVED** — no clinical or MEDLEY-BENCH submission; operator policy still maps verdicts."""
+
+    def __init__(self, gate: Any = None) -> None:
+        self.gate = gate or SigmaGate()
+        self.σ_predictions: List[float] = []
+        self.σ_actuals: List[float] = []
+
+    def metacognitive_vector(self, prompt: str, response: str) -> Dict[str, Any]:
+        """Five σ-derived scalars plus aggregate ``σ_meta`` and a recommended **action** label."""
+        σ_coherence, _ = self.gate.score(str(response), str(response))
+        σ_confidence, _ = self.gate.score("I am confident", str(response))
+        σ_novelty, _ = self.gate.score("familiar topic", str(prompt))
+        σ_complexity, _ = self.gate.score("simple task", str(prompt))
+        σ_alignment, _ = self.gate.score(str(prompt), str(response))
+
+        c0 = float(σ_coherence)
+        c1 = float(σ_confidence)
+        c4 = float(σ_alignment)
+        n0 = float(σ_novelty)
+        x0 = float(σ_complexity)
+
+        vector: Dict[str, Any] = {
+            "coherence": round(1.0 - c0, 4),
+            "confidence": round(1.0 - c1, 4),
+            "novelty": round(n0, 4),
+            "complexity": round(x0, 4),
+            "alignment": round(1.0 - c4, 4),
+        }
+
+        σ_meta = (c0 + c1 + c4) / 3.0
+        vector["σ_meta"] = round(σ_meta, 4)
+
+        if σ_meta < 0.2:
+            vector["action"] = "proceed_confidently"
+        elif σ_meta < 0.4:
+            vector["action"] = "proceed_with_caution"
+        elif σ_meta < 0.6:
+            vector["action"] = "think_more_carefully"
+        elif σ_meta < 0.8:
+            vector["action"] = "seek_help_or_defer"
+        else:
+            vector["action"] = "abstain_and_explain"
+
+        return vector
+
+    def predict_own_σ(self, prompt: str, response: str) -> Dict[str, Any]:
+        """Prompt-only difficulty guess vs measured σ — gap as metacognitive error signal."""
+        predicted_σ = self._estimate_difficulty(str(prompt))
+        self.σ_predictions.append(predicted_σ)
+
+        actual_σ, verdict = self.gate.score(str(prompt), str(response))
+        act = float(actual_σ)
+        self.σ_actuals.append(act)
+
+        gap = abs(predicted_σ - act)
+
+        return {
+            "predicted_σ": round(predicted_σ, 4),
+            "actual_σ": round(act, 4),
+            "gap": round(gap, 4),
+            "σ_meta": round(gap, 4),
+            "verdict": _verdict_str(verdict),
+            "well_calibrated": gap < 0.15,
+            "overconfident": predicted_σ < act - 0.2,
+            "underconfident": predicted_σ > act + 0.2,
+        }
+
+    def calibration_score(self) -> Dict[str, Any]:
+        """Average |predicted − actual| over accumulated V2 samples."""
+        n = len(self.σ_predictions)
+        if n < 5:
+            return {"calibration": 0.5, "n_samples": n, "avg_gap": None, "well_calibrated": False}
+
+        gaps = [abs(float(p) - float(a)) for p, a in zip(self.σ_predictions, self.σ_actuals)]
+        avg_gap = sum(gaps) / len(gaps)
+
+        interp = (
+            "excellent calibration — knows what it knows"
+            if avg_gap < 0.1
+            else "good calibration — mostly accurate self-assessment"
+            if avg_gap < 0.2
+            else "poor calibration — doesn't know what it doesn't know"
+        )
+
+        return {
+            "calibration": round(1.0 - avg_gap, 4),
+            "avg_gap": round(avg_gap, 4),
+            "n_samples": len(gaps),
+            "well_calibrated": avg_gap < 0.15,
+            "interpretation": interp,
+        }
+
+    def selective_engagement(self, prompt: str, response: str) -> Dict[str, Any]:
+        """Combine vector stress with primary pair score — **verdict** is the stop signal (lab)."""
+        vector = self.metacognitive_vector(prompt, response)
+        σ_meta = float(vector["σ_meta"])
+        engaged = σ_meta < 0.5
+        σ, verdict = self.gate.score(str(prompt), str(response))
+        vn = _verdict_str(verdict)
+
+        return {
+            "engaged": engaged,
+            "verdict": vn,
+            "σ": round(float(σ), 4),
+            "σ_meta": σ_meta,
+            "action": vector["action"],
+            "note": (
+                "Lab framing: gate score + verdict operationalize when to emit vs hold (cf. calibration-without-control discussion)."
+            ),
+        }
+
+    def dunning_kruger_check(self) -> Dict[str, Any]:
+        if len(self.σ_predictions) < 10:
+            return {"check": "insufficient data"}
+
+        overconfident = sum(1 for p, a in zip(self.σ_predictions, self.σ_actuals) if p < a - 0.2)
+        underconfident = sum(1 for p, a in zip(self.σ_predictions, self.σ_actuals) if p > a + 0.2)
+        n = len(self.σ_predictions)
+        dk = overconfident > n * 0.3
+
+        return {
+            "overconfident_count": overconfident,
+            "underconfident_count": underconfident,
+            "total": n,
+            "dunning_kruger": dk,
+            "interpretation": (
+                "Dunning-Kruger pattern — many under-estimated difficulty vs measured σ"
+                if dk
+                else "Well calibrated — appropriate confidence levels"
+            ),
+        }
+
+    @staticmethod
+    def _estimate_difficulty(prompt: str) -> float:
+        words = str(prompt).split()
+        length_factor = min(len(words) / 50.0, 1.0) * 0.3
+        question_factor = 0.2 if "?" in prompt else 0.0
+        return min(0.3 + length_factor + question_factor, 0.9)
