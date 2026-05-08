@@ -50,6 +50,8 @@ class OmegaLoop:
                 self.open_ended = SigmaOpenEnded(gate=self.gate, graph=self.graph, meta_goal=meta_goal)
             except ImportError:
                 self.open_ended = None
+        # Optional :class:`~cos.active_inference.ActiveInference` instance (set by e.g. :class:`~cos.fabric.SigmaFabric`).
+        self.active_inference: Optional[Any] = None
         self.σ_history: List[Dict[str, Any]] = []
         self._last_jepa: Optional[Dict[str, Any]] = None
 
@@ -201,6 +203,21 @@ class OmegaLoop:
             "verdict": str(vn),
             "step": len(self.σ_history),
         }
+        ai = getattr(self, "active_inference", None)
+        if ai is not None:
+            try:
+                p_ai = ai.perceive(perceived)
+                act_ai = ai.act(["proceed", "rethink", "halt"])
+                upd_ai = ai.update(reasoning)
+                out["active_inference"] = {
+                    "perception": p_ai,
+                    "act": act_ai,
+                    "update": upd_ai,
+                    "free_energy": ai.free_energy(),
+                    "not_agi": True,
+                }
+            except Exception as exc:  # noqa: BLE001 — lab harness must not break Ω-step
+                out["active_inference"] = {"error": repr(exc)}
         if self.open_ended is not None:
             try:
                 out["open_ended"] = {

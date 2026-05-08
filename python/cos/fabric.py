@@ -928,6 +928,18 @@ class SigmaFabric:
         except ImportError:
             self._note_skip("omega")
         try:
+            from cos.active_inference import ActiveInference
+
+            self.layers["active_inference"] = ActiveInference(
+                gate=gate,
+                world_model=self.layers.get("jepa_wm"),
+            )
+            om = self.layers.get("omega")
+            if om is not None:
+                om.active_inference = self.layers["active_inference"]
+        except ImportError:
+            self._note_skip("active_inference")
+        try:
             from cos.recursion import SigmaRecursion
 
             self.layers["recursion"] = SigmaRecursion(gate=gate)
