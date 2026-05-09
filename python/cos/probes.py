@@ -10,9 +10,11 @@ L1 uses an **NLI-inspired, zero-dependency** blend: prompt–response *relevance
 proxy plus **BM25-style** term weighting on content tokens), character entropy, and shallow
 *quality* checks. Optional ``logprobs``,
 ``embeddings``, and ``attention`` sharpen L2–L5; there is no runtime NLI model here.
+L3’s default path uses **SIF-weighted hash pseudo-embeddings** (no GloVe, no torch).
 """
 from __future__ import annotations
 
+import hashlib
 import math
 import re
 from typing import Dict, Mapping, MutableMapping, Optional, Sequence, Set, Tuple
@@ -321,6 +323,117 @@ class L1EntropyProbe:
         return float(min(1.0, sigma))
 
 
+class HashEmbedding:
+    """Deterministic hash → vector pseudo-embeddings with SIF-style rare-word up-weighting."""
+
+    DIM: int = 32
+    SIF_A: float = 0.001
+    FREQ: Dict[str, float] = {
+        "the": 0.07,
+        "be": 0.04,
+        "to": 0.03,
+        "of": 0.03,
+        "and": 0.03,
+        "a": 0.02,
+        "in": 0.02,
+        "that": 0.01,
+        "have": 0.01,
+        "i": 0.01,
+        "it": 0.01,
+        "for": 0.01,
+        "not": 0.01,
+        "on": 0.01,
+        "with": 0.009,
+        "he": 0.009,
+        "as": 0.008,
+        "you": 0.008,
+        "do": 0.007,
+        "at": 0.007,
+        "this": 0.006,
+        "but": 0.006,
+        "his": 0.005,
+        "by": 0.005,
+        "from": 0.005,
+        "they": 0.004,
+        "we": 0.004,
+        "say": 0.004,
+        "her": 0.003,
+        "she": 0.003,
+        "or": 0.003,
+        "an": 0.003,
+        "will": 0.003,
+        "my": 0.003,
+        "all": 0.003,
+        "would": 0.002,
+        "there": 0.002,
+        "their": 0.002,
+        "what": 0.002,
+        "so": 0.002,
+        "up": 0.002,
+        "out": 0.002,
+        "if": 0.002,
+        "about": 0.002,
+        "who": 0.002,
+        "get": 0.002,
+        "which": 0.002,
+        "go": 0.002,
+        "when": 0.002,
+        "can": 0.001,
+        "no": 0.001,
+        "is": 0.02,
+        "are": 0.01,
+        "was": 0.01,
+        "were": 0.005,
+    }
+
+    @classmethod
+    def word_to_vec(cls, word: str) -> list[float]:
+        """Map a word to a pseudo-vector via SHA-256 (stable across runs and machines)."""
+        w = word.lower()
+        vec: list[float] = [0.0] * cls.DIM
+        for i in range(cls.DIM):
+            h = hashlib.sha256(f"{w}\0{i}".encode("utf-8")).digest()
+            x = int.from_bytes(h[:2], "little", signed=False)
+            vec[i] = (x / 65535.0) * 2.0 - 1.0
+        return vec
+
+    @classmethod
+    def sif_weight(cls, word: str) -> float:
+        p = cls.FREQ.get(word.lower(), 0.0001)
+        return float(cls.SIF_A / (cls.SIF_A + p))
+
+    @classmethod
+    def sentence_embedding(cls, text: str) -> list[float]:
+        words = re.findall(r"\w+", text.lower())
+        if not words:
+            return [0.0] * cls.DIM
+        vec = [0.0] * cls.DIM
+        total_w = 0.0
+        for word in words:
+            sw = cls.sif_weight(word)
+            wv = cls.word_to_vec(word)
+            for j in range(cls.DIM):
+                vec[j] += sw * wv[j]
+            total_w += sw
+        if total_w > 0:
+            inv = 1.0 / total_w
+            vec = [v * inv for v in vec]
+        return vec
+
+    @classmethod
+    def cosine_similarity(cls, vec_a: Sequence[float], vec_b: Sequence[float]) -> float:
+        dot = sum(a * b for a, b in zip(vec_a, vec_b))
+        mag_a = math.sqrt(sum(a * a for a in vec_a))
+        mag_b = math.sqrt(sum(b * b for b in vec_b))
+        if mag_a == 0.0 or mag_b == 0.0:
+            return 0.0
+        return float(dot / (mag_a * mag_b))
+
+    @classmethod
+    def similarity(cls, text_a: str, text_b: str) -> float:
+        return cls.cosine_similarity(cls.sentence_embedding(text_a), cls.sentence_embedding(text_b))
+
+
 class L2LogProbVariance:
     """Variance of per-token log-probabilities (reference-free). Falls back to text heuristics."""
 
@@ -358,7 +471,7 @@ class L2LogProbVariance:
 
 
 class L3HiddenStateDivergence:
-    """Semantic divergence (HIDE): embedding cosine distance or n-gram Jaccard fallback."""
+    """HIDE: real embeddings when provided; else SIF-weighted hash similarity (zero deps)."""
 
     def score(
         self,
@@ -368,26 +481,9 @@ class L3HiddenStateDivergence:
     ) -> float:
         if embeddings:
             return self._embedding_score(embeddings)
-        return self._ngram_divergence(prompt, response)
-
-    def _ngram_divergence(self, prompt: str, response: str, n: int = 3) -> float:
-        def ngrams(text: str, ngram: int) -> set[tuple[str, ...]]:
-            words = text.lower().split()
-            if len(words) < ngram:
-                return set()
-            return {tuple(words[i : i + ngram]) for i in range(len(words) - ngram + 1)}
-
-        p_ng = ngrams(prompt, n)
-        r_ng = ngrams(response, n)
-        if not p_ng and not r_ng:
-            return 0.5
-        if not p_ng or not r_ng:
-            return 0.7
-
-        intersection = len(p_ng & r_ng)
-        union = len(p_ng | r_ng)
-        similarity = intersection / max(union, 1)
-        return float(round(1.0 - similarity, 4))
+        sim = HashEmbedding.similarity(prompt, response)
+        raw = 1.0 - (sim + 1.0) / 2.0
+        return round(max(0.05, min(1.0, raw)), 4)
 
     def _embedding_score(self, embeddings: Mapping[str, Sequence[float]]) -> float:
         if "prompt" in embeddings and "response" in embeddings:
@@ -546,23 +642,27 @@ class SigmaFusion:
 
 
 class SigmaGateV2:
-    """σ gate using only the improved L1 (NLI-inspired heuristic); optional lab baseline."""
+    """Lab gate: L1 (relevance / entropy / quality) + L3 (SIF hash pseudo-embedding similarity)."""
 
     def __init__(self) -> None:
-        self.probe = L1EntropyProbe()
+        self.l1 = L1EntropyProbe()
+        self.l3 = L3HiddenStateDivergence()
 
     def score(self, prompt: str, response: str) -> Tuple[float, str]:
-        sigma = float(self.probe.score(prompt, response))
+        s1 = float(self.l1.score(prompt, response))
+        s3 = float(self.l3.score(prompt, response))
+        sigma = round(min(1.0, max(0.0, s1 * 0.65 + s3 * 0.35)), 4)
         if sigma < 0.2:
             verdict = "ACCEPT"
         elif sigma < 0.5:
             verdict = "RETHINK"
         else:
             verdict = "ABSTAIN"
-        return round(sigma, 4), verdict
+        return sigma, verdict
 
 
 __all__ = [
+    "HashEmbedding",
     "L1EntropyProbe",
     "L2LogProbVariance",
     "L3HiddenStateDivergence",

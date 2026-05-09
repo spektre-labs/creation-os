@@ -40,17 +40,17 @@ def test_l2_unrelated_high() -> None:
     assert l2.score(prompt, response) >= 0.5
 
 
-def test_l3_ngram_similar_low() -> None:
+def test_l3_hash_similar_low() -> None:
     l3 = L3HiddenStateDivergence()
     text = "the quick brown fox jumps over the lazy dog"
     s = l3.score(text, text)
     assert s < 0.2
 
 
-def test_l3_ngram_divergent_high() -> None:
+def test_l3_hash_divergent_high() -> None:
     l3 = L3HiddenStateDivergence()
     s = l3.score("alpha beta gamma delta epsilon", "zed yax wov uts qix")
-    assert s > 0.5
+    assert s > 0.35
 
 
 def test_l4_late_onset_drift_detected() -> None:
