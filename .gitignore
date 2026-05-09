@@ -24,6 +24,9 @@ dist/
 # Local σ-runtime scratch (memory logs, CLI defaults)
 .cos/
 
+# Host eval JSON (e.g. cos eval-gemma); never commit tokens or raw API payloads
+eval_results/
+
 # mutmut working tree / mutation artefacts (local + CI workspace)
 mutants/
 

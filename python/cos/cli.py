@@ -1799,6 +1799,35 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_eval_gemma(args: argparse.Namespace) -> int:
+    """σ-gate + Gemma (Inference API or mock) on synthetic reference probes — lab JSON only."""
+    from cos.eval.gemma_eval import GemmaEval, default_gemma_eval_output_path
+
+    hf = str(getattr(args, "eval_gemma_hf_token", "") or "").strip() or None
+    out_s = str(getattr(args, "eval_gemma_out", "") or "").strip()
+    model = str(getattr(args, "eval_gemma_model", "") or "google/gemma-2-9b-it").strip()
+    n = max(0, int(getattr(args, "eval_gemma_n", 30)))
+    mock = bool(getattr(args, "eval_gemma_mock", False))
+
+    ge = GemmaEval(hf_token=hf, model=model, mock=mock)
+    result = ge.run(n=n)
+    out_path = Path(out_s) if out_s else default_gemma_eval_output_path()
+    ge.save(out_path)
+
+    if _cli_out_json(args):
+        payload = {**result, "saved_to": str(out_path)}
+        print(json.dumps(payload, ensure_ascii=False, default=str))
+    else:
+        print(f"Model: {result['model']}")
+        print(f"mock_mode: {result.get('mock_mode')}")
+        print(f"reference_discrimination_rate: {result['hallucination_catch_rate']}")
+        print(f"avg_discrimination_Δσ: {result['avg_discrimination']}")
+        print(f"avg_σ_on_model_answer: {result['avg_σ']}")
+        print(result.get("conclusion", ""))
+        print(f"Wrote: {out_path}", file=sys.stderr)
+    return 0
+
+
 def _parse_predict_actions_csv(s: str) -> List[str]:
     return [p.strip() for p in str(s).split(",") if p.strip()]
 
@@ -5469,6 +5498,44 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="emit JSON energy ratio lab model (Python only — no Makefile)",
     )
     bmk.set_defaults(func=_cmd_benchmark)
+
+    eg = sub.add_parser(
+        "eval-gemma",
+        help="Gemma (HF Inference API) + σ-gate synthetic probe lab — archive JSON for M-tier tables",
+    )
+    eg.add_argument(
+        "--model",
+        type=str,
+        default="google/gemma-2-9b-it",
+        dest="eval_gemma_model",
+        metavar="REPO_ID",
+        help="HF model id for InferenceClient (override for Gemma 3/4 when available on endpoint)",
+    )
+    eg.add_argument("--n", type=int, default=30, dest="eval_gemma_n", help="max probes (default 30)")
+    eg.add_argument(
+        "--hf-token",
+        type=str,
+        default="",
+        dest="eval_gemma_hf_token",
+        metavar="TOKEN",
+        help="optional token; else env HUGGINGFACE_HUB_TOKEN or HF_TOKEN (never commit secrets)",
+    )
+    eg.add_argument(
+        "--out",
+        type=str,
+        default="",
+        dest="eval_gemma_out",
+        metavar="PATH",
+        help=f"default: <repo>/eval_results/gemma_eval.json",
+    )
+    eg.add_argument(
+        "--mock",
+        action="store_true",
+        dest="eval_gemma_mock",
+        help="stub generations (no huggingface_hub call); still scores σ",
+    )
+    eg.add_argument("--json", action="store_true", dest="out_json", help="print summary JSON to stdout")
+    eg.set_defaults(func=_cmd_eval_gemma)
 
     spk = sub.add_parser(
         "spike",
