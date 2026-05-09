@@ -7,7 +7,8 @@
 """σ-gate L1–L5 probes: lightweight detection signals for ``SigmaGate``.
 
 L1 uses an **NLI-inspired, zero-dependency** blend: prompt–response *relevance* (entailment
-proxy), character entropy, and shallow *quality* checks. Optional ``logprobs``,
+proxy plus **BM25-style** term weighting on content tokens), character entropy, and shallow
+*quality* checks. Optional ``logprobs``,
 ``embeddings``, and ``attention`` sharpen L2–L5; there is no runtime NLI model here.
 """
 from __future__ import annotations
@@ -91,9 +92,12 @@ _STOP: Set[str] = {
     "why",
 }
 
+# Single-response BM25 uses a fixed length prior so ``b`` can normalize doc length.
+_REF_AVG_RESP_TOKENS: float = 24.0
+
 
 class L1EntropyProbe:
-    """L1: relevance-weighted signal (entailment proxy) + entropy + shallow quality."""
+    """L1: BM25-style + heuristic relevance (QA first), entropy, and shallow quality."""
 
     def score(self, prompt: str, response: str) -> float:
         if not response or not str(response).strip():
@@ -131,6 +135,62 @@ class L1EntropyProbe:
         words = re.findall(r"\w+", text.lower())
         return {w for w in words if w not in _STOP}
 
+    def _bm25_relevance(self, prompt: str, response: str, k1: float = 1.5, b: float = 0.75) -> float:
+        """BM25-like term saturation on prompt content tokens (no corpus IDF; zero deps)."""
+        p_toks = re.findall(r"\w+", prompt.lower())
+        r_toks = re.findall(r"\w+", response.lower())
+        if not p_toks or not r_toks:
+            return 0.7
+
+        p_unique = {w for w in p_toks if w not in _STOP}
+        if not p_unique:
+            return 0.7
+
+        r_freq: dict[str, int] = {}
+        for w in r_toks:
+            r_freq[w] = r_freq.get(w, 0) + 1
+
+        doc_len = float(len(r_toks))
+        accum = 0.0
+        for term in p_unique:
+            if term not in r_freq:
+                continue
+            tf = float(r_freq[term])
+            length_factor = 1.0 - b + b * (doc_len / _REF_AVG_RESP_TOKENS)
+            tf_sat = (tf * (k1 + 1.0)) / (tf + k1 * length_factor)
+            accum += tf_sat
+
+        max_score = len(p_unique) * (k1 + 1.0)
+        normalized = accum / max(max_score, 1.0)
+        sigma = 1.0 - min(1.0, normalized * 2.0)
+        return float(max(0.05, sigma))
+
+    def _heuristic_relevance(
+        self,
+        pl: str,
+        r_words: list[str],
+        p_content: Set[str],
+        r_content: Set[str],
+    ) -> float:
+        overlap = len(p_content & r_content)
+        overlap_ratio = overlap / max(len(p_content), 1)
+        len_ratio = len(r_words) / max(len(pl.split()), 1)
+
+        sigma = 0.5
+        if overlap_ratio > 0.5:
+            sigma -= 0.25
+        elif overlap_ratio > 0.2:
+            sigma -= 0.1
+        elif overlap_ratio < 0.05:
+            sigma += 0.25
+
+        if len_ratio > 20:
+            sigma += 0.15
+        elif len_ratio < 0.05 and len(pl.split()) > 5:
+            sigma += 0.1
+
+        return float(min(1.0, max(0.0, sigma)))
+
     def _relevance(self, prompt: str, response: str) -> float:
         p = prompt.lower().strip()
         r = response.strip()
@@ -151,24 +211,9 @@ class L1EntropyProbe:
         if qa is not None:
             return float(qa)
 
-        overlap = len(p_content & r_content)
-        overlap_ratio = overlap / max(len(p_content), 1)
-        len_ratio = len(r_words) / max(len(pl.split()), 1)
-
-        sigma = 0.5
-        if overlap_ratio > 0.5:
-            sigma -= 0.25
-        elif overlap_ratio > 0.2:
-            sigma -= 0.1
-        elif overlap_ratio < 0.05:
-            sigma += 0.25
-
-        if len_ratio > 20:
-            sigma += 0.15
-        elif len_ratio < 0.05 and len(pl.split()) > 5:
-            sigma += 0.1
-
-        return float(min(1.0, max(0.0, sigma)))
+        bm25_sigma = self._bm25_relevance(prompt, response)
+        heuristic_sigma = self._heuristic_relevance(pl, r_words, p_content, r_content)
+        return float(bm25_sigma * 0.6 + heuristic_sigma * 0.4)
 
     def _qa_match(
         self,
