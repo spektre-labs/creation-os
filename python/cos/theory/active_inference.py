@@ -143,8 +143,8 @@ class ActiveInference:
         }
 
     def act_factor_graph(self, candidate_actions: List[Any]) -> Dict[str, Any]:
-        """Pick action via :class:`~cos.factor_graph.SigmaFactorGraph.active_infer` (VFE proxy)."""
-        from cos.factor_graph import SigmaFactorGraph
+        """Pick action via :class:`~cos.theory.factor_graph.SigmaFactorGraph.active_infer` (VFE proxy)."""
+        from cos.theory.factor_graph import SigmaFactorGraph
 
         if not candidate_actions:
             return {

@@ -8,8 +8,8 @@ errors**. Here :class:`~cos.sigma_gate.SigmaGate` scores ``prediction`` vs ``obs
 that σ **stands in for** an error channel in this **discrete** lab story.
 
 This is **not** a spiking neural implementation, **not** a proof about L0–L9 silicon, and
-**not** the complete “Friston stack” by itself — pair with :mod:`cos.factor_graph` and
-:mod:`cos.active_inference` only as **composable metaphors**, not as a single validated brain
+**not** the complete “Friston stack” by itself — pair with :mod:`cos.theory.factor_graph` and
+:mod:`cos.theory.active_inference` only as **composable metaphors**, not as a single validated brain
 model. **Zero** extra dependencies. **Not AGI achieved.** See ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 

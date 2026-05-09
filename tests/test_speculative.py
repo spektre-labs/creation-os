@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from cos.sigma_gate import SigmaGate
-from cos.speculative import SigmaSpeculative
+from cos.interp.speculative import SigmaSpeculative
 
 
 def test_draft_mock_model() -> None:

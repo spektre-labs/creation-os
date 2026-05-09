@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.phi_proxy import PhiProxy  # noqa: E402
+from cos.theory.phi_proxy import PhiProxy  # noqa: E402
 
 
 def test_phi_zero_when_stable() -> None:

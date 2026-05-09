@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.factor_graph import Factor, SigmaFactorGraph, Variable  # noqa: E402
+from cos.theory.factor_graph import Factor, SigmaFactorGraph, Variable  # noqa: E402
 
 
 class _ConstGate:

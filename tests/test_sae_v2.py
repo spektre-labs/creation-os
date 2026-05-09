@@ -2,7 +2,7 @@
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
 
-"""V2 tests for :mod:`cos.sae` — σ-driver lists, decode/reconstruct, dead features, Gini proxy."""
+"""V2 tests for :mod:`cos.interp.sae` — σ-driver lists, decode/reconstruct, dead features, Gini proxy."""
 from __future__ import annotations
 
 import sys
@@ -15,7 +15,7 @@ sys.path.insert(0, str(_REPO / "python"))
 
 pytest.importorskip("numpy")
 
-from cos.sae import SigmaSAE  # noqa: E402
+from cos.interp.sae import SigmaSAE  # noqa: E402
 
 
 class _PromptTagGate:

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Tests for :mod:`cos.sae` lab SAE scaffold (NumPy-backed)."""
+"""Tests for :mod:`cos.interp.sae` lab SAE scaffold (NumPy-backed)."""
 from __future__ import annotations
 
 import sys
@@ -14,7 +14,7 @@ sys.path.insert(0, str(_REPO / "python"))
 
 pytest.importorskip("numpy")
 
-from cos.sae import SigmaSAE  # noqa: E402
+from cos.interp.sae import SigmaSAE  # noqa: E402
 
 
 class _PromptTagGate:

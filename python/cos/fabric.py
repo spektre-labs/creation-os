@@ -217,7 +217,7 @@ class Fabric:
         )
         self._install_optional(
             "speculative",
-            lambda: __import__("cos.speculative", fromlist=["SigmaSpeculative"]).SigmaSpeculative(gate=self.gate),
+            lambda: __import__("cos.interp.speculative", fromlist=["SigmaSpeculative"]).SigmaSpeculative(gate=self.gate),
         )
         self._install_optional(
             "moe",
@@ -928,7 +928,7 @@ class SigmaFabric:
         except ImportError:
             self._note_skip("omega")
         try:
-            from cos.active_inference import ActiveInference
+            from cos.theory.active_inference import ActiveInference
 
             self.layers["active_inference"] = ActiveInference(
                 gate=gate,
@@ -968,7 +968,7 @@ class SigmaFabric:
         except ImportError:
             self._note_skip('embed')
         try:
-            from cos.speculative import SigmaSpeculative
+            from cos.interp.speculative import SigmaSpeculative
 
             self.layers["speculative"] = SigmaSpeculative()
         except ImportError:

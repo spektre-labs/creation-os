@@ -50,7 +50,7 @@ class OmegaLoop:
                 self.open_ended = SigmaOpenEnded(gate=self.gate, graph=self.graph, meta_goal=meta_goal)
             except ImportError:
                 self.open_ended = None
-        # Optional :class:`~cos.active_inference.ActiveInference` instance (set by e.g. :class:`~cos.fabric.SigmaFabric`).
+        # Optional :class:`~cos.theory.active_inference.ActiveInference` instance (set by e.g. :class:`~cos.fabric.SigmaFabric`).
         self.active_inference: Optional[Any] = None
         self.σ_history: List[Dict[str, Any]] = []
         self._last_jepa: Optional[Dict[str, Any]] = None
@@ -198,7 +198,7 @@ class OmegaLoop:
         )
         factor_graph_mp: Dict[str, Any]
         try:
-            from cos.factor_graph import SigmaFactorGraph
+            from cos.theory.factor_graph import SigmaFactorGraph
 
             fg = SigmaFactorGraph(gate=self.gate)
             fg.add_variable("perceived", perceived[:800])

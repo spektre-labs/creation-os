@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.category import Morphism, Object, SigmaFunctor  # noqa: E402
+from cos.theory.category import Morphism, Object, SigmaFunctor  # noqa: E402
 from cos.sigma_gate import ACCEPT  # noqa: E402
 
 

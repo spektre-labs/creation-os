@@ -46,9 +46,9 @@ class Mega:
     def _boot(self) -> None:
         """Load optional modules; failures become ``None`` (skipped in :meth:`step`)."""
         modules: Dict[str, tuple[str, str]] = {
-            "predictive": ("cos.predictive", "PredictiveCoding"),
+            "predictive": ("cos.theory.predictive", "PredictiveCoding"),
             "reason": ("cos.reason", "SigmaReason"),
-            "quantum": ("cos.quantum_cognition", "QuantumCognition"),
+            "quantum": ("cos.theory.quantum_cognition", "QuantumCognition"),
             "memory": ("cos.memory", "SigmaMemory"),
             "engram": ("cos.engram", "Engram"),
             "graph": ("cos.graph", "SigmaGraph"),
@@ -62,7 +62,7 @@ class Mega:
             "world": ("cos.world", "SigmaWorldV2"),
             "causal": ("cos.causal", "PearlLadder"),
             "convergence": ("cos.convergence", "SigmaConvergence"),
-            "grounding": ("cos.grounding", "SigmaGrounding"),
+            "grounding": ("cos.theory.grounding", "SigmaGrounding"),
         }
         for name, (mod_path, cls_name) in modules.items():
             try:

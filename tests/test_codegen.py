@@ -2,7 +2,7 @@
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
 
-"""Tests for :mod:`cos.codegen` — σ-gated code artifact checks."""
+"""Tests for :mod:`cos.genesis.codegen` — σ-gated code artifact checks."""
 from __future__ import annotations
 
 import sys
@@ -12,7 +12,7 @@ from typing import Any, Tuple
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.codegen import SigmaCodeGen  # noqa: E402
+from cos.genesis.codegen import SigmaCodeGen  # noqa: E402
 from cos.sigma_gate import ABSTAIN, ACCEPT  # noqa: E402
 
 

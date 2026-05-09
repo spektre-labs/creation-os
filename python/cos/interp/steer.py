@@ -2,7 +2,7 @@
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
 """Inference-time representation steering lab: σ from :class:`~cos.sigma_gate.SigmaGate`
-decides **when** to intervene; optional :class:`~cos.sae.SigmaSAE` proposes **which**
+decides **when** to intervene; optional :class:`~cos.interp.sae.SigmaSAE` proposes **which**
 latent direction to push. No fine-tuning / RLHF — scaffold only; see ``docs/CLAIM_DISCIPLINE.md``."""
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from cos.sigma_gate import SigmaGate
 __all__ = ["SigmaSteer"]
 
 try:
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     _HAS_SAE = True
 except ImportError:  # pragma: no cover

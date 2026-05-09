@@ -2,7 +2,7 @@
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
 
-"""Tests for :mod:`cos.architect` — σ-scored discrete architecture search (lab)."""
+"""Tests for :mod:`cos.genesis.architect` — σ-scored discrete architecture search (lab)."""
 from __future__ import annotations
 
 import random
@@ -13,7 +13,7 @@ from typing import Tuple
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.architect import ModuleSpec, SigmaArchitect  # noqa: E402
+from cos.genesis.architect import ModuleSpec, SigmaArchitect  # noqa: E402
 
 
 class _WinnerGate:

@@ -8,7 +8,7 @@ concatenated variable strings. This is **not** a general variational-Bayes facto
 guaranteed to converge to a Bethe free energy fixed point, and **not** the reactive message-passing
 engine of van de Laar *et al.* in full generality — it is a **discrete, σ-gated** sketch that
 lets Ω / active-inference layers share a **local parallel** narrative (**not** a monolithic
-pipeline claim in the strict sense). Factor graphs pair with :mod:`cos.predictive` only as
+pipeline claim in the strict sense). Factor graphs pair with :mod:`cos.theory.predictive` only as
 **composable illustrations** of message vs hierarchy-error stories — not a closed Friston
 implementation. **Zero** third-party deps beyond the gate. **Not AGI
 achieved.** See ``docs/CLAIM_DISCIPLINE.md``.

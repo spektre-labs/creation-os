@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Tests for :mod:`cos.toolgen` (runtime tool registration lab)."""
+"""Tests for :mod:`cos.genesis.toolgen` (runtime tool registration lab)."""
 from __future__ import annotations
 
 import sys
@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.toolgen import SigmaToolGen  # noqa: E402
+from cos.genesis.toolgen import SigmaToolGen  # noqa: E402
 
 
 class _NeedHigh:

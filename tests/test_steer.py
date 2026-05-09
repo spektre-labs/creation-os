@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 
 from cos.sigma_gate import SigmaGate
-from cos.steer import SigmaSteer
+from cos.interp.steer import SigmaSteer
 
 
 def test_should_steer_high_sigma() -> None:
@@ -29,7 +29,7 @@ def test_should_not_steer_low_sigma() -> None:
 
 def test_identify_target_hallucination(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("numpy")
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     gate = SigmaGate()
     sae = SigmaSAE(gate=gate, input_dim=16, hidden_dim=64)
@@ -51,7 +51,7 @@ def test_identify_target_hallucination(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_steer_full_pipeline(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("numpy")
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     gate = SigmaGate()
     sae = SigmaSAE(gate=gate, input_dim=8, hidden_dim=32)
@@ -90,7 +90,7 @@ def test_trajectory_correct_diverged() -> None:
 
 def test_report_counts(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("numpy")
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     gate = SigmaGate()
     sae = SigmaSAE(gate=gate, input_dim=6, hidden_dim=24)

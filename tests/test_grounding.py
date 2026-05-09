@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.grounding import SigmaGrounding  # noqa: E402
+from cos.theory.grounding import SigmaGrounding  # noqa: E402
 from cos.sigma_gate import ABSTAIN, ACCEPT, RETHINK  # noqa: E402
 
 

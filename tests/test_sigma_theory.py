@@ -1,10 +1,10 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
 # All rights reserved. See LICENSE for binding terms.
-"""Tests for :mod:`cos.sigma_theory` (corpus / pedagogical formalism)."""
+"""Tests for :mod:`cos.theory.sigma_theory` (corpus / pedagogical formalism)."""
 from __future__ import annotations
 
-from cos.sigma_theory import SigmaTheory
+from cos.theory.sigma_theory import SigmaTheory
 
 
 def test_godel_boundary_transparent() -> None:

@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 
 from cos.sigma_gate import SigmaGate
-from cos.steer import SigmaSteer
+from cos.interp.steer import SigmaSteer
 
 
 def test_per_token_steer_logs() -> None:
@@ -29,7 +29,7 @@ def test_per_token_steer_logs() -> None:
 
 def test_branch_point_detection(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("numpy")
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     gate = SigmaGate()
     sae = SigmaSAE(gate=gate, input_dim=8, hidden_dim=32)
@@ -56,7 +56,7 @@ def test_branch_point_detection(monkeypatch: pytest.MonkeyPatch) -> None:
 
 def test_steer_rate_calculation(monkeypatch: pytest.MonkeyPatch) -> None:
     pytest.importorskip("numpy")
-    from cos.sae import SigmaSAE
+    from cos.interp.sae import SigmaSAE
 
     gate = SigmaGate()
     sae = SigmaSAE(gate=gate, input_dim=8, hidden_dim=32)

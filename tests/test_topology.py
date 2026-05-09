@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.topology import SigmaTopology  # noqa: E402
+from cos.theory.topology import SigmaTopology  # noqa: E402
 
 
 def test_persistence_diagram_from_trace() -> None:

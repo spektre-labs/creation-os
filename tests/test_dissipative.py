@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.dissipative import DissipativeStructure  # noqa: E402
+from cos.theory.dissipative import DissipativeStructure  # noqa: E402
 
 
 class _DecreasingGate:

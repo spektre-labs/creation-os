@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.geometry import SigmaManifold  # noqa: E402
+from cos.theory.geometry import SigmaManifold  # noqa: E402
 
 
 def test_fisher_distance_zero_same_point() -> None:

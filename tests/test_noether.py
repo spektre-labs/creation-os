@@ -10,7 +10,7 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO / "python"))
 
-from cos.noether import NoetherSigma  # noqa: E402
+from cos.theory.noether import NoetherSigma  # noqa: E402
 
 
 class _ConstGate:
