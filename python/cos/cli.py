@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
-  CORE            score, chat, think, bench, serve, version, identity, agi-demo
+  CORE            setup, score, chat, think, bench, serve, version, identity, agi-demo
   ANALYSIS        explain, cascade, calibrate
   INFRASTRUCTURE  health, edge, plugins, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
@@ -2856,6 +2856,22 @@ def _cmd_plugins(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_setup(args: argparse.Namespace) -> int:
+    from cos.setup import setup as cos_setup
+
+    skip_pull = bool(getattr(args, "setup_skip_pull", False))
+    env = os.environ.get("COS_SETUP_SKIP_PULL", "").strip().lower()
+    if env in ("1", "true", "yes"):
+        skip_pull = True
+    return int(
+        cos_setup(
+            skip_ollama_pull=skip_pull,
+            skip_demo=bool(getattr(args, "setup_skip_demo", False)),
+            json_out=_cli_out_json(args),
+        )
+    )
+
+
 def _cmd_offline(args: argparse.Namespace) -> int:
     if not bool(getattr(args, "offline_verify", False)):
         print("cos offline: pass --verify to run air-gap heuristics (DNS + TCP probes + Fabric.boot)", file=sys.stderr)
@@ -4362,6 +4378,25 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     initp.add_argument("--dest", type=str, default=".", dest="init_dest", help="parent directory")
     initp.set_defaults(func=_cmd_init)
+
+    setupp = sub.add_parser(
+        "setup",
+        help="One-pass setup: hardware detect, Ollama model plan + optional pull, Boot, agi-demo (NOT AGI; use --skip-pull in CI)",
+    )
+    setupp.add_argument(
+        "--skip-pull",
+        action="store_true",
+        dest="setup_skip_pull",
+        help="skip `ollama pull` (also COS_SETUP_SKIP_PULL=1)",
+    )
+    setupp.add_argument(
+        "--skip-demo",
+        action="store_true",
+        dest="setup_skip_demo",
+        help="skip agi-demo after boot",
+    )
+    setupp.add_argument("--json", action="store_true", dest="out_json", help="machine-readable setup summary")
+    setupp.set_defaults(func=_cmd_setup)
 
     gatep = sub.add_parser("gate", help="Score --prompt + --response with σ-gate (entropy core; pass probe_path for LSD)")
     gatep.add_argument("--prompt", type=str, required=True)

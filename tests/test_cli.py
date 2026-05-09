@@ -117,6 +117,30 @@ def test_cli_plugins_json() -> None:
         assert "count" in data[key]
 
 
+def test_cli_setup_json_skip() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "cos.cli",
+            "setup",
+            "--json",
+            "--skip-pull",
+            "--skip-demo",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=180,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode == 0
+    data = json.loads((result.stdout or "").strip())
+    assert "boot" in data
+    assert data.get("demo", {}).get("skipped") is True
+
+
 def test_cli_pipe() -> None:
     result = subprocess.run(
         [
