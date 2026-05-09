@@ -19,6 +19,9 @@ Usage::
     from cos.sigma_gate import SigmaGate
     sigma, verdict = SigmaGate().score("What is 2+2?", "4")
 
+    # Optional: L1–L5 :class:`~cos.probes.SigmaFusion` in lite mode (opt-in).
+    sigma, verdict = SigmaGate(use_probe_fusion=True).score("What is 2+2?", "4")
+
     gate = SigmaGate("benchmarks/sigma_gate_lsd/results_full/sigma_gate_lsd.pkl")
     sigma, decision = gate(None, None, prompt, response)
 """
@@ -99,6 +102,7 @@ class SigmaGate:
         *,
         threshold_accept: Optional[float] = None,
         threshold_abstain: Optional[float] = None,
+        use_probe_fusion: bool = False,
     ) -> None:
         _bands = type(DEFAULT_CONFIG)(
             threshold_accept=float(threshold_accept if threshold_accept is not None else DEFAULT_CONFIG.threshold_accept),
@@ -125,6 +129,8 @@ class SigmaGate:
             self._inner = None
             self._mod = None
             self._expected_hf = ""
+            self._use_probe_fusion = bool(use_probe_fusion)
+            self._fusion = None
             return
 
         self._mode = "lsd"
@@ -140,6 +146,8 @@ class SigmaGate:
         self._expected_hf = (self._inner.manifest.get("hf_model") or "").strip()
         self._ema = 0.5
         self._count = 0
+        self._use_probe_fusion = False
+        self._fusion = None
 
     @property
     def threshold_accept(self) -> float:
@@ -220,14 +228,34 @@ class SigmaGate:
         response: str,
         *,
         reference: Optional[str] = None,
+        logprobs: Optional[list[float]] = None,
+        embeddings: Optional[dict[str, list[float]]] = None,
+        attention: Any = None,
+        per_token_sigma: Optional[list[float]] = None,
     ) -> float:
-        """Return sigma in ``[0, 1]`` (lite: entropy on ``response``; LSD: probe head)."""
+        """Return sigma in ``[0, 1]`` (lite: entropy pair or optional fusion; LSD: probe head)."""
         if self._mode == "lite":
-            del model, tokenizer, reference
+            del model, tokenizer
+            if self._use_probe_fusion:
+                if self._fusion is None:
+                    from cos.probes import SigmaFusion
+
+                    self._fusion = SigmaFusion()
+                sigma, _, _ = self._fusion.score(
+                    prompt,
+                    response,
+                    logprobs=logprobs,
+                    embeddings=embeddings,
+                    attention=attention,
+                    per_token_sigma=per_token_sigma,
+                )
+                del reference
+                return float(sigma)
+            del reference, logprobs, embeddings, attention, per_token_sigma
             return float(_lite_entropy_pair(prompt, response))
 
         self._warn_model_mismatch(model)
-        del tokenizer
+        del tokenizer, logprobs, embeddings, attention, per_token_sigma
         sigma, _ = self._inner.score(prompt, response, reference=reference)
         return float(sigma)
 
@@ -239,8 +267,22 @@ class SigmaGate:
         response: str,
         *,
         reference: Optional[str] = None,
+        logprobs: Optional[list[float]] = None,
+        embeddings: Optional[dict[str, list[float]]] = None,
+        attention: Any = None,
+        per_token_sigma: Optional[list[float]] = None,
     ) -> Tuple[float, str]:
-        sigma = self.compute_sigma(model, tokenizer, prompt, response, reference=reference)
+        sigma = self.compute_sigma(
+            model,
+            tokenizer,
+            prompt,
+            response,
+            reference=reference,
+            logprobs=logprobs,
+            embeddings=embeddings,
+            attention=attention,
+            per_token_sigma=per_token_sigma,
+        )
         if self._mode == "lite":
             self._lite_update_ema(sigma)
             return float(sigma), self._verdict(sigma)
@@ -256,9 +298,23 @@ class SigmaGate:
         response: str,
         *,
         reference: Optional[str] = None,
+        logprobs: Optional[list[float]] = None,
+        embeddings: Optional[dict[str, list[float]]] = None,
+        attention: Any = None,
+        per_token_sigma: Optional[list[float]] = None,
     ) -> Tuple[float, str]:
         """Score a pair; LSD mode uses the frozen probe only (no external HF model)."""
-        return self(None, None, prompt, response, reference=reference)
+        return self(
+            None,
+            None,
+            prompt,
+            response,
+            reference=reference,
+            logprobs=logprobs,
+            embeddings=embeddings,
+            attention=attention,
+            per_token_sigma=per_token_sigma,
+        )
 
     def score_cascade(
         self,
