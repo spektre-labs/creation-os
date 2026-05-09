@@ -1,3 +1,7 @@
+<div align="center">
+  <img src="docs/images/01-hero.png" alt="Creation OS — Measure First. Generate Second." width="100%">
+</div>
+
 <!-- README surface: shadcn-style zinc tokens (Card, Muted, radius ~12px, shadow-sm). -->
 <!-- Figure embeds: outer Card table (max-width…) + inner img width=100%, radius 8px. Dark rasters: optional soft depth shadow on img. After a closing </table>, leave a blank line before a GFM markdown table so GitHub parses the table. -->
 
@@ -124,6 +128,84 @@ def my_llm(prompt: str) -> str:
 result = my_llm("Explain gravity")
 print(result.sigma, result.verdict, result.text)
 ```
+
+## How σ-Gate Works
+
+Every output must pass the σ-Gate. Truth is measured. Uncertainty is contained.
+
+<div align="center">
+  <img src="docs/images/02-sigma-gate-flow.png" alt="σ-Gate Flow" width="100%">
+</div>
+
+- **ACCEPT** (σ ≥ τ_accept) — High coherence. Release to user.
+- **RETHINK** (τ_rethink ≤ σ < τ_accept) — Regenerate & refine.
+- **ABSTAIN** (σ < τ_reject) — Do not respond.
+
+## Architecture (L0 → L9)
+
+One system. Nine layers. One invariant. σ flows through every layer.
+
+<div align="center">
+  <img src="docs/images/03-architecture-stack.png" alt="Architecture Stack L0-L9" width="100%">
+</div>
+
+## Ω-Loop: 14-Stage Truth Cycle
+
+<div align="center">
+  <img src="docs/images/04-omega-loop.png" alt="Ω-Loop Cycle" width="100%">
+</div>
+
+Perceive → Predict → Remember → Think → Gate → Safety → Simulate → Prove → Learn → Reflect → Consolidate → Watchdog → Continue → Loop.
+
+## Engram Memory Hierarchy
+
+Store only what serves truth. Every memory is σ-tagged.
+
+<div align="center">
+  <img src="docs/images/05-engram-memory.png" alt="Engram Memory Hierarchy" width="100%">
+</div>
+
+Working (seconds) → Episodic (hours-years) → Semantic (years-lifetime) → Long-term (persistent, low σ only).
+
+## Signal Cascade: Cost-Aware Inference
+
+Cheapest first. Stop when verdict is clear. ~80-90% of queries resolve at Level 1-2.
+
+<div align="center">
+  <img src="docs/images/06-signal-cascade.png" alt="Signal Cascade" width="100%">
+</div>
+
+Entropy (free) → HIDE (~5x) → ICR (~20x) → LSD (~100x) → SAE (~1000x+). Early exit saves compute.
+
+## Genesis Flow: Recursive Self-Correction
+
+Every failure becomes training for the runtime.
+
+<div align="center">
+  <img src="docs/images/07-genesis-flow.png" alt="Genesis Flow" width="100%">
+</div>
+
+The system evolves by rejecting incoherence. Each loop lowers total σ.
+
+## Sovereign Network Architecture
+
+Sovereign intelligence. Collective strength. Individual freedom.
+
+<div align="center">
+  <img src="docs/images/08-sovereign-network.png" alt="Sovereign Network" width="100%">
+</div>
+
+Decentralized fleet. MCP + A2A. Gossip discovery. σ-scored routing. Every node is equal.
+
+## Security Model
+
+Expect attacks. Design defense. Remain σ-aware.
+
+<div align="center">
+  <img src="docs/images/09-security-threat-map.png" alt="Security Model" width="100%">
+</div>
+
+σ flows down. Verification flows up. We contain. We detect. We recover.
 
 ## Claim Discipline
 
