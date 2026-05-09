@@ -17,13 +17,13 @@ from cos.probes import (
 def test_l1_normal_text_low_sigma() -> None:
     p = L1EntropyProbe()
     s = p.score("What is the capital of France?", "Paris is the capital of France.")
-    assert s == 0.2
+    assert s < 0.35
 
 
 def test_l1_repetitive_text_high_sigma() -> None:
     p = L1EntropyProbe()
     s = p.score("x", "aaaaaa")
-    assert s == 0.7
+    assert s > 0.45
 
 
 def test_l2_related_prompt_response_low() -> None:

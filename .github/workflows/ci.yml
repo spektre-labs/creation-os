@@ -155,7 +155,7 @@ jobs:
           pip install -e ".[all]" pytest || pip install -e . pytest
       - name: PyPI / packaging acceptance tests
         run: >
-          python -m pytest tests/test_gate.py tests/test_probes.py tests/test_cli.py
+          python -m pytest tests/test_gate.py tests/test_probes.py tests/test_discrimination.py tests/test_cli.py
             tests/test_integrations.py tests/test_e2e.py tests/test_pipeline.py tests/test_probe.py
             tests/test_stream.py tests/test_snapshot.py tests/test_calibrate.py -v --tb=short
       - name: Smoke CLI (score)
@@ -227,7 +227,7 @@ jobs:
           pip install -e . pytest
       - name: pytest (core gate + integrations + CLI + e2e)
         run: >
-          python -m pytest tests/test_gate.py tests/test_probes.py tests/test_cli.py
+          python -m pytest tests/test_gate.py tests/test_probes.py tests/test_discrimination.py tests/test_cli.py
             tests/test_integrations.py tests/test_e2e.py tests/test_pipeline.py tests/test_probe.py
             tests/test_stream.py tests/test_snapshot.py tests/test_calibrate.py -v --tb=short
       - name: Import + CLI

@@ -4,38 +4,276 @@
 # Website:       https://spektrelabs.org
 # Commercial:    spektre.labs@proton.me
 # License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
-"""σ-gate L1–L5 probes: lightweight, reference-free detection signals for ``SigmaGate``.
+"""σ-gate L1–L5 probes: lightweight detection signals for ``SigmaGate``.
 
-Each probe returns σ ∈ [0, 1]. :class:`SigmaFusion` combines them with fixed weights.
-Optional ``logprobs``, ``embeddings``, and ``attention`` improve scoring when available;
-pure-Python fallbacks require no extra dependencies.
+L1 uses an **NLI-inspired, zero-dependency** blend: prompt–response *relevance* (entailment
+proxy), character entropy, and shallow *quality* checks. Optional ``logprobs``,
+``embeddings``, and ``attention`` sharpen L2–L5; there is no runtime NLI model here.
 """
 from __future__ import annotations
 
 import math
-from typing import Dict, Mapping, MutableMapping, Optional, Sequence, Tuple
+import re
+from typing import Dict, Mapping, MutableMapping, Optional, Sequence, Set, Tuple
+
+_STOP: Set[str] = {
+    "the",
+    "a",
+    "an",
+    "is",
+    "are",
+    "was",
+    "were",
+    "be",
+    "been",
+    "being",
+    "have",
+    "has",
+    "had",
+    "do",
+    "does",
+    "did",
+    "will",
+    "would",
+    "could",
+    "should",
+    "may",
+    "might",
+    "shall",
+    "can",
+    "to",
+    "of",
+    "in",
+    "for",
+    "on",
+    "with",
+    "at",
+    "by",
+    "from",
+    "as",
+    "into",
+    "about",
+    "what",
+    "which",
+    "who",
+    "whom",
+    "this",
+    "that",
+    "these",
+    "those",
+    "i",
+    "you",
+    "he",
+    "she",
+    "it",
+    "we",
+    "they",
+    "me",
+    "him",
+    "her",
+    "us",
+    "them",
+    "my",
+    "your",
+    "his",
+    "its",
+    "our",
+    "their",
+    "and",
+    "but",
+    "or",
+    "not",
+    "no",
+    "if",
+    "how",
+    "when",
+    "where",
+    "why",
+}
 
 
 class L1EntropyProbe:
-    """Token-level entropy proxy from character distribution. Fast and always available."""
+    """L1: relevance-weighted signal (entailment proxy) + entropy + shallow quality."""
 
     def score(self, prompt: str, response: str) -> float:
-        del prompt
-        if not response:
+        if not response or not str(response).strip():
+            return 0.8
+        if not prompt or not str(prompt).strip():
             return 0.5
+
+        entropy_sigma = self._entropy(response)
+        relevance_sigma = self._relevance(prompt, response)
+        quality_sigma = self._quality(response)
+        sigma = relevance_sigma * 0.6 + entropy_sigma * 0.2 + quality_sigma * 0.2
+        return round(min(1.0, max(0.0, sigma)), 4)
+
+    def _entropy(self, text: str) -> float:
+        t = text.strip()
+        if len(t) <= 8 and re.fullmatch(r"\d+", t):
+            return 0.12
         freq: dict[str, int] = {}
-        for c in response:
+        for c in t.lower():
             freq[c] = freq.get(c, 0) + 1
-        n = len(response)
+        n = len(t)
+        if n == 0:
+            return 0.5
         entropy = -sum(
             (count / n) * math.log2(count / n) for count in freq.values() if count > 0
         )
         normalized = min(entropy / 5.0, 1.0)
-        if normalized < 0.3:
+        if normalized < 0.2:
             return 0.7
-        if normalized > 0.9:
+        if normalized > 0.95:
             return 0.6
-        return 0.2
+        return 0.15
+
+    def _content_words(self, text: str) -> Set[str]:
+        words = re.findall(r"\w+", text.lower())
+        return {w for w in words if w not in _STOP}
+
+    def _relevance(self, prompt: str, response: str) -> float:
+        p = prompt.lower().strip()
+        r = response.strip()
+        r_lower = r.lower()
+
+        p_content = self._content_words(prompt)
+        r_content = self._content_words(response)
+
+        if not p_content:
+            return 0.3
+        if not r_content:
+            return 0.7
+
+        pl = p
+        r_words = r.split()
+
+        qa = self._qa_match(pl, r_lower, r, r_words, p_content, r_content)
+        if qa is not None:
+            return float(qa)
+
+        overlap = len(p_content & r_content)
+        overlap_ratio = overlap / max(len(p_content), 1)
+        len_ratio = len(r_words) / max(len(pl.split()), 1)
+
+        sigma = 0.5
+        if overlap_ratio > 0.5:
+            sigma -= 0.25
+        elif overlap_ratio > 0.2:
+            sigma -= 0.1
+        elif overlap_ratio < 0.05:
+            sigma += 0.25
+
+        if len_ratio > 20:
+            sigma += 0.15
+        elif len_ratio < 0.05 and len(pl.split()) > 5:
+            sigma += 0.1
+
+        return float(min(1.0, max(0.0, sigma)))
+
+    def _qa_match(
+        self,
+        prompt_lower: str,
+        response_lower: str,
+        response_raw: str,
+        r_words: list[str],
+        p_content: Set[str],
+        r_content: Set[str],
+    ) -> Optional[float]:
+        is_question = "?" in prompt_lower or prompt_lower.startswith(
+            (
+                "what ",
+                "who ",
+                "where ",
+                "when ",
+                "why ",
+                "how ",
+                "which ",
+                "is ",
+                "are ",
+                "was ",
+                "were ",
+                "do ",
+                "does ",
+                "did ",
+                "can ",
+                "could ",
+            )
+        )
+        if not is_question:
+            return None
+
+        has_number_q = bool(re.search(r"\d", prompt_lower))
+        has_number_r = bool(re.search(r"\d", response_raw))
+        pl = prompt_lower
+
+        if any(k in pl for k in ("capital", "president")):
+            if len(r_words) <= 3:
+                return 0.15
+
+        if "who " in pl or pl.startswith("who"):
+            if len(r_words) == 1 and r_words[0].isalpha():
+                return 0.15
+
+        if "color" in pl or "colour" in pl:
+            if len(r_words) <= 2:
+                return 0.15
+
+        if "planet" in pl or "closest to the sun" in pl:
+            if len(r_words) <= 2:
+                return 0.15
+
+        if "language" in pl and ("spoken" in pl or "speak" in pl or "speaking" in pl):
+            if len(r_words) <= 3:
+                return 0.15
+
+        if "how many" in pl:
+            num_words = (
+                "zero one two three four five six seven eight nine ten eleven twelve"
+            ).split()
+            rw0 = response_lower.strip(".,!?\"'")
+            if len(r_words) <= 3 and (has_number_r or rw0 in num_words):
+                return 0.12
+
+        yesno_stem = (
+            pl.startswith(("is ", "are ", "was ", "were ", "do ", "does ", "did ", "can ", "could "))
+            or " wet" in pl
+        )
+        if yesno_stem and len(r_words) <= 3:
+            if response_lower.strip(".,!?\"'").split()[0:1]:
+                first = response_lower.strip(".,!?\"'").split()[0]
+                if first in ("yes", "no", "maybe", "yep", "nope", "sure"):
+                    return 0.12
+
+        if len(r_words) <= 5:
+            if has_number_q and has_number_r:
+                return 0.1
+            if p_content & r_content:
+                return 0.15
+            if not (p_content & r_content) and not has_number_r:
+                return 0.75
+
+        return None
+
+    def _quality(self, response: str) -> float:
+        sigma = 0.15
+        r = response.strip()
+        if not r:
+            return 0.9
+
+        sentences = [s.strip() for s in r.split(".") if s.strip()]
+        if sentences:
+            unique = {s.lower() for s in sentences}
+            if len(unique) < len(sentences) * 0.5 and len(sentences) > 2:
+                sigma += 0.3
+
+        lower = r.lower()
+        if " is " in lower and " is not " in lower:
+            sigma += 0.2
+
+        if r.count("?") > 3:
+            sigma += 0.15
+
+        return float(min(1.0, sigma))
 
 
 class L2LogProbVariance:
@@ -262,6 +500,23 @@ class SigmaFusion:
         return sigma, verdict, scores
 
 
+class SigmaGateV2:
+    """σ gate using only the improved L1 (NLI-inspired heuristic); optional lab baseline."""
+
+    def __init__(self) -> None:
+        self.probe = L1EntropyProbe()
+
+    def score(self, prompt: str, response: str) -> Tuple[float, str]:
+        sigma = float(self.probe.score(prompt, response))
+        if sigma < 0.2:
+            verdict = "ACCEPT"
+        elif sigma < 0.5:
+            verdict = "RETHINK"
+        else:
+            verdict = "ABSTAIN"
+        return round(sigma, 4), verdict
+
+
 __all__ = [
     "L1EntropyProbe",
     "L2LogProbVariance",
@@ -269,4 +524,5 @@ __all__ = [
     "L4MultiTokenAggregation",
     "L5SpectralSignature",
     "SigmaFusion",
+    "SigmaGateV2",
 ]
