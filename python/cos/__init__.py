@@ -46,6 +46,8 @@ _LAZY_IMPORT_MAP: dict[str, str] = {
     "SigmaSocial": "cos.social",
     "PearlLadder": "cos.causal",
     "SigmaTTT": "cos.ttt",
+    "SigmaToolGen": "cos.toolgen",
+    "Tool": "cos.toolgen",
     "SigmaEvolve": "cos.evolve",
     "ActiveInference": "cos.active_inference",
     "PredictiveCoding": "cos.predictive",
@@ -110,10 +112,12 @@ __all__ = [
     "SigmaSocial",
     "SigmaSpeculative",
     "SigmaTTT",
+    "SigmaToolGen",
     "SigmaVoice",
     "SigmaWorld",
     "StrangeLoop",
     "ThinkBudget",
+    "Tool",
     "__version__",
 ]
 
