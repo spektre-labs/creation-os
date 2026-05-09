@@ -20,7 +20,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
   CORE            setup, score, chat, think, bench, serve, version, identity, agi-demo
-  ANALYSIS        explain, cascade, calibrate
+  ANALYSIS        explain, batch, cascade, calibrate
   INFRASTRUCTURE  health, edge, plugins, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
 
@@ -2371,6 +2371,40 @@ def _cmd_gate_score(args: argparse.Namespace) -> int:
     return 2 if verdict == "ABSTAIN" else 0
 
 
+def _cmd_batch(args: argparse.Namespace) -> int:
+    from cos.batch import SigmaBatch
+
+    in_path = str(getattr(args, "batch_input", "") or "").strip()
+    if not in_path:
+        print("cos batch: pass --input PATH.jsonl", file=sys.stderr)
+        return 1
+    out_raw = str(getattr(args, "batch_output", "") or "").strip()
+    out_path = out_raw or None
+    workers = getattr(args, "batch_workers", None)
+    w = int(workers) if workers is not None else None
+    try:
+        result = SigmaBatch(workers=w).score_jsonl(in_path, out_path)
+    except OSError as exc:
+        print(f"cos batch: {exc}", file=sys.stderr)
+        return 1
+    except ValueError as exc:
+        print(f"cos batch: {exc}", file=sys.stderr)
+        return 1
+
+    if _cli_out_json(args):
+        slim = {k: v for k, v in result.items() if k != "results"}
+        if out_path:
+            slim["output"] = out_path
+        print(json.dumps(slim, ensure_ascii=False))
+        return 0
+
+    print(f"Scored {result['total']} pairs in {result['elapsed_s']}s")
+    print(f"Throughput: {result['throughput']} pairs/sec")
+    print(f"ACCEPT: {result['accept']} RETHINK: {result['rethink']} ABSTAIN: {result['abstain']}")
+    print(f"Avg sigma: {result['avg_sigma']}")
+    return 0
+
+
 def _cmd_reason_cli(args: argparse.Namespace) -> int:
     from cos.symbolic import SigmaSymbolic
 
@@ -4427,6 +4461,28 @@ def main(argv: Optional[List[str]] = None) -> int:
     scr.add_argument("--json", action="store_true", dest="score_as_json", help="print JSON {\"sigma\", \"verdict\"} only")
     scr.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     scr.set_defaults(func=_cmd_gate_score)
+
+    batchp = sub.add_parser(
+        "batch",
+        help="Parallel σ-gate over JSONL (--input lines: {\"prompt\", \"response\"}; optional --output scored rows)",
+    )
+    batchp.add_argument("--input", type=str, required=True, dest="batch_input", metavar="PATH")
+    batchp.add_argument("--output", type=str, default="", dest="batch_output", metavar="PATH")
+    batchp.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        dest="batch_workers",
+        metavar="N",
+        help="process pool size (default: max(1, cpu_count-1))",
+    )
+    batchp.add_argument(
+        "--json",
+        action="store_true",
+        dest="out_json",
+        help="emit summary JSON only (scored rows go to --output when set)",
+    )
+    batchp.set_defaults(func=_cmd_batch)
 
     bench_hint = sub.add_parser(
         "bench",
