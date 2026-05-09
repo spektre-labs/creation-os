@@ -1799,6 +1799,22 @@ def _cmd_benchmark(args: argparse.Namespace) -> int:
     return 2
 
 
+def _cmd_eval_all(args: argparse.Namespace) -> int:
+    """Full host eval bundle (pytest, coverage, σ bench, …) — see cos.eval.run_all."""
+    from cos.eval.run_all import main as run_all_main
+
+    argv: List[str] = []
+    if getattr(args, "eval_all_quick", False):
+        argv.append("--quick")
+    argv.extend(["--pytest-timeout", str(float(getattr(args, "eval_all_pytest_timeout", 7200.0)))])
+    out = str(getattr(args, "eval_all_out", "") or "").strip()
+    if out:
+        argv.extend(["--out", out])
+    if getattr(args, "out_json", False):
+        argv.append("--json-summary")
+    return int(run_all_main(argv))
+
+
 def _cmd_eval_gemma(args: argparse.Namespace) -> int:
     """σ-gate + Gemma (Inference API or mock) on synthetic reference probes — lab JSON only."""
     from cos.eval.gemma_eval import GemmaEval, default_gemma_eval_output_path
@@ -5536,6 +5552,40 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     eg.add_argument("--json", action="store_true", dest="out_json", help="print summary JSON to stdout")
     eg.set_defaults(func=_cmd_eval_gemma)
+
+    eall = sub.add_parser(
+        "eval-all",
+        help="One host bundle: pytest, coverage, σ speed, σ pairs, build, module count, C/H lines → JSON",
+    )
+    eall.add_argument(
+        "--quick",
+        action="store_true",
+        dest="eval_all_quick",
+        help="small pytest subset (faster smoke; not merge-gate parity)",
+    )
+    eall.add_argument(
+        "--pytest-timeout",
+        type=float,
+        default=7200.0,
+        dest="eval_all_pytest_timeout",
+        metavar="SEC",
+        help="wall limit for pytest steps (default 7200)",
+    )
+    eall.add_argument(
+        "--out",
+        type=str,
+        default="",
+        dest="eval_all_out",
+        metavar="PATH",
+        help="default: <repo>/eval_results/full_eval.json",
+    )
+    eall.add_argument(
+        "--json",
+        action="store_true",
+        dest="out_json",
+        help="print machine summary JSON only",
+    )
+    eall.set_defaults(func=_cmd_eval_all)
 
     spk = sub.add_parser(
         "spike",
