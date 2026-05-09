@@ -27,7 +27,7 @@ jobs:
 
       - name: Zero-dep σ-gate tests (importable wheel story)
         run: |
-          PYTHONPATH=python python3 -m pytest tests/test_gate.py tests/test_probes.py tests/test_discrimination.py tests/test_hash_embedding.py tests/test_health.py tests/test_agi_demo.py tests/test_edge.py tests/test_criticality.py tests/test_cli.py \
+          PYTHONPATH=python python3 -m pytest tests/test_gate.py tests/test_probes.py tests/test_discrimination.py tests/test_hash_embedding.py tests/test_health.py tests/test_agi_demo.py tests/test_edge.py tests/test_criticality.py tests/test_plugins.py tests/test_cli.py \
             tests/test_integrations.py tests/test_e2e.py tests/test_pipeline.py tests/test_probe.py \
             tests/test_stream.py \
             tests/test_snapshot.py \

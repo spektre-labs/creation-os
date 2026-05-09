@@ -21,7 +21,7 @@ _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
   CORE            score, chat, think, bench, serve, version, identity, agi-demo
   ANALYSIS        explain, cascade, calibrate
-  INFRASTRUCTURE  health, edge, hardware, layers, registry, cost
+  INFRASTRUCTURE  health, edge, plugins, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
 
 Exit codes (where implemented): 0 ok, 1 error / usage, 2 σ-gate ABSTAIN (score/gate).
@@ -2841,6 +2841,21 @@ def _cmd_edge(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_plugins(args: argparse.Namespace) -> int:
+    from cos.plugins import PluginRegistry
+
+    reg = PluginRegistry()
+    all_plugins = reg.list_all()
+    if _cli_out_json(args):
+        print(json.dumps(all_plugins, ensure_ascii=False))
+        return 0
+    for group, info in all_plugins.items():
+        print(f"{group}: {info['count']} plugins")
+        for p in info["plugins"]:
+            print(f"  - {p['name']} ({p['module']})")
+    return 0
+
+
 def _cmd_offline(args: argparse.Namespace) -> int:
     if not bool(getattr(args, "offline_verify", False)):
         print("cos offline: pass --verify to run air-gap heuristics (DNS + TCP probes + Fabric.boot)", file=sys.stderr)
@@ -4561,6 +4576,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     )
     edgep.add_argument("--json", action="store_true", dest="out_json")
     edgep.set_defaults(func=_cmd_edge)
+
+    plugp = sub.add_parser(
+        "plugins",
+        help="List installed PEP 621 entry-point extensions (cos.probes, cos.modules, cos.cli); "
+        "pip install add-on wheels to register without forking",
+    )
+    plugp.add_argument("--json", action="store_true", dest="out_json")
+    plugp.set_defaults(func=_cmd_plugins)
 
     offp = sub.add_parser(
         "offline",

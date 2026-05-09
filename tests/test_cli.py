@@ -98,6 +98,25 @@ def test_cli_help() -> None:
     assert "score" in (result.stdout or "")
 
 
+def test_cli_plugins_json() -> None:
+    result = subprocess.run(
+        [sys.executable, "-m", "cos.cli", "plugins", "--json"],
+        capture_output=True,
+        text=True,
+        timeout=120,
+        cwd=str(_REPO),
+        env=_env(),
+        check=False,
+    )
+    assert result.returncode == 0
+    data = json.loads((result.stdout or "").strip())
+    assert "cos.probes" in data
+    assert "cos.modules" in data
+    assert "cos.cli" in data
+    for key in ("cos.probes", "cos.modules", "cos.cli"):
+        assert "count" in data[key]
+
+
 def test_cli_pipe() -> None:
     result = subprocess.run(
         [
