@@ -19,7 +19,7 @@ from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple
 
 _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
-  CORE            score, chat, think, bench, serve, version, identity
+  CORE            score, chat, think, bench, serve, version, identity, agi-demo
   ANALYSIS        explain, cascade, calibrate
   INFRASTRUCTURE  health, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
@@ -2817,6 +2817,13 @@ def _cmd_health(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_agi_demo(_args: argparse.Namespace) -> int:
+    from cos.agi_demo import run_demo
+
+    run_demo()
+    return 0
+
+
 def _cmd_offline(args: argparse.Namespace) -> int:
     if not bool(getattr(args, "offline_verify", False)):
         print("cos offline: pass --verify to run air-gap heuristics (DNS + TCP probes + Fabric.boot)", file=sys.stderr)
@@ -4525,6 +4532,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     hlth.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     hlth.set_defaults(func=_cmd_health)
 
+    agd = sub.add_parser(
+        "agi-demo",
+        help="Run cognitive loop demo (NOT AGI; boot + perceive + cascade + convergence + epistemic + dream)",
+    )
+    agd.set_defaults(func=_cmd_agi_demo)
+
     offp = sub.add_parser(
         "offline",
         help="Air-gap connectivity heuristics (--verify: DNS name resolution + TCP probe + Fabric.boot; not formal certification)",
@@ -5566,7 +5579,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         default="",
         dest="eval_gemma_out",
         metavar="PATH",
-        help=f"default: <repo>/eval_results/gemma_eval.json",
+        help="default: <repo>/eval_results/gemma_eval.json",
     )
     eg.add_argument(
         "--mock",

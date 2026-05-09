@@ -356,7 +356,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_sigma_properties.py" "$(CURDIR)/tests/test_federated.py" "$(CURDIR)/tests/test_epistemic.py" "$(CURDIR)/tests/test_embodied.py" "$(CURDIR)/tests/test_moral.py" "$(CURDIR)/tests/test_openended.py" 			"$(CURDIR)/tests/test_twin.py" "$(CURDIR)/tests/test_toolgen.py" \
 			"$(CURDIR)/tests/test_gemma_eval_lab.py" "$(CURDIR)/tests/test_run_all_smoke.py" "$(CURDIR)/tests/test_energy.py" \
-			"$(CURDIR)/tests/test_gate.py" "$(CURDIR)/tests/test_probes.py" "$(CURDIR)/tests/test_discrimination.py" "$(CURDIR)/tests/test_hash_embedding.py" "$(CURDIR)/tests/test_health.py" -q && \
+			"$(CURDIR)/tests/test_gate.py" "$(CURDIR)/tests/test_probes.py" "$(CURDIR)/tests/test_discrimination.py" "$(CURDIR)/tests/test_hash_embedding.py" "$(CURDIR)/tests/test_health.py" "$(CURDIR)/tests/test_agi_demo.py" -q && \
 		echo "check-cos-moe: OK"; \
 	elif python3 -c "import pytest" >/dev/null 2>&1; then \
 		PYTHONPATH="$(CURDIR)/python" python3 -m pytest \
@@ -395,7 +395,7 @@ check-cos-moe:
 			"$(CURDIR)/tests/test_redteam.py" "$(CURDIR)/tests/test_langchain_integration.py" "$(CURDIR)/tests/test_structured.py" "$(CURDIR)/tests/test_watchdog.py" "$(CURDIR)/tests/test_sigma_theory.py" \
 			"$(CURDIR)/tests/test_sigma_properties.py" "$(CURDIR)/tests/test_federated.py" "$(CURDIR)/tests/test_epistemic.py" "$(CURDIR)/tests/test_embodied.py" "$(CURDIR)/tests/test_moral.py" "$(CURDIR)/tests/test_openended.py" 			"$(CURDIR)/tests/test_twin.py" "$(CURDIR)/tests/test_toolgen.py" \
 			"$(CURDIR)/tests/test_gemma_eval_lab.py" "$(CURDIR)/tests/test_run_all_smoke.py" "$(CURDIR)/tests/test_energy.py" \
-			"$(CURDIR)/tests/test_gate.py" "$(CURDIR)/tests/test_probes.py" "$(CURDIR)/tests/test_discrimination.py" "$(CURDIR)/tests/test_hash_embedding.py" "$(CURDIR)/tests/test_health.py" -q && \
+			"$(CURDIR)/tests/test_gate.py" "$(CURDIR)/tests/test_probes.py" "$(CURDIR)/tests/test_discrimination.py" "$(CURDIR)/tests/test_hash_embedding.py" "$(CURDIR)/tests/test_health.py" "$(CURDIR)/tests/test_agi_demo.py" -q && \
 		echo "check-cos-moe: OK"; \
 	else \
 		echo "check-cos-moe: SKIP (pytest not available; install dev deps or uv)"; \
