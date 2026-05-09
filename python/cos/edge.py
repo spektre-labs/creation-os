@@ -1,153 +1,161 @@
 # SPDX-License-Identifier: LicenseRef-SCSL-1.0 OR AGPL-3.0-only
 # Copyright (c) 2024-2026 Lauri Elias Rainio and Spektre Labs Oy.
-# All rights reserved. See LICENSE for binding terms.
-"""σ-edge — on-device SLM deployment **profiles** (lab).
+# Source:        https://github.com/spektre-labs/creation-os-kernel
+# Website:       https://spektrelabs.org
+# Commercial:    spektre.labs@proton.me
+# License docs:  LICENSE · LICENSE-SCSL-1.0.md · LICENSE-AGPL-3.0.txt
+"""Edge-oriented hints for running the sigma-gate and optional Python probes by device tier.
 
-TOPS / backend claims are **not** benchmarked here; profiles are operator-facing caps.
-Wire ExecuTorch / llama.cpp / NPU SDKs outside this module. See ``docs/CLAIM_DISCIPLINE.md``."""
+The portable measurement core is ``sigma_gate.h`` (12-byte C89 wire shape); this module only
+summarizes **heuristic** RAM/tier labels and probe depth — not a hard real-time guarantee.
+See ``docs/CLAIM_DISCIPLINE.md``. **NOT AGI.**
+"""
 from __future__ import annotations
 
-from typing import Any, Dict, Mapping, Optional
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+from typing import Any, Dict, Optional, Tuple
 
-__all__ = ["SigmaEdge"]
+from cos.probes import L1EntropyProbe, L2LogProbVariance, SigmaFusion
+from cos.sigma_gate import SigmaGate
 
 
-class SigmaEdge:
-    """Device budgets, quantization hints, TTC schedule, battery-aware cascade skipping."""
+def _get_ram_mb() -> int:
+    """Best-effort physical RAM in MiB (may fall back to a conservative default)."""
+    try:
+        if sys.platform == "darwin":
+            sysctl_bin = shutil.which("sysctl") or "/usr/sbin/sysctl"
+            out = subprocess.check_output([sysctl_bin, "-n", "hw.memsize"], text=True, timeout=2)
+            bts = int(out.strip())
+            return max(1, bts // (1024 * 1024))
+        meminfo = Path("/proc/meminfo")
+        if meminfo.is_file():
+            for line in meminfo.read_text(encoding="utf-8", errors="replace").splitlines():
+                if line.startswith("MemTotal:"):
+                    kb = int(line.split()[1])
+                    return max(1, kb // 1024)
+        import os
 
-    @staticmethod
-    def deploy_profile(device_type: str) -> Dict[str, Any]:
-        dt = str(device_type).lower().strip()
-        profiles = {
-            "phone": {
-                "max_model_mb": 500,
-                "max_latency_ms": 100,
-                "battery_aware": True,
-                "offline": False,
-            },
-            "laptop": {
-                "max_model_mb": 4000,
-                "max_latency_ms": 200,
-                "battery_aware": False,
-                "offline": False,
-            },
-            "mcu": {
-                "max_model_mb": 2,
-                "max_latency_ms": 50,
-                "battery_aware": True,
-                "offline": True,
-                "llm": False,
-                "note": "σ-gate-only footprint path; pair with ``cos.tiny`` style C core.",
-            },
-            "automotive": {
-                "max_model_mb": 2000,
-                "max_latency_ms": 50,
-                "battery_aware": False,
-                "offline": True,
-            },
+        if hasattr(os, "sysconf"):
+            pages = int(os.sysconf("SC_PHYS_PAGES"))
+            page_size = int(os.sysconf("SC_PAGE_SIZE"))
+            return max(1, (pages * page_size) // (1024 * 1024))
+    except Exception:
+        pass
+    return 4096
+
+
+def _tier_config(tier: int) -> Dict[str, Any]:
+    """Recommended lab-style settings per tier (documentation / orchestration hints)."""
+    if tier <= 1:
+        return {
+            "model": "none (sigma_gate C core only)",
+            "probes": ["L1"],
+            "max_tokens": 64,
+            "cascade_depth": 1,
+            "quantization": "INT4",
+            "kv_cache": 128,
+            "note": "Tier 1: smallest footprint; flash C89 kernel to MCU class hardware.",
         }
-        if dt not in profiles:
-            return {**profiles["laptop"], "device_type": dt, "custom": True}
-        return {**profiles[dt], "device_type": dt}
+    if tier == 2:
+        return {
+            "model": "SmolLM2-135M or Qwen2.5-0.5B (local Q4_K_M class)",
+            "probes": ["L1", "L2"],
+            "max_tokens": 256,
+            "cascade_depth": 2,
+            "quantization": "Q4_K_M",
+            "kv_cache": 512,
+            "note": "Tier 2: phone / SBC class; Python probes + local inference, no cloud required.",
+        }
+    return {
+        "model": "Multi-B gate/host models (when RAM allows)",
+        "probes": ["L1", "L2", "L3", "L4", "L5"],
+        "max_tokens": 4096,
+        "cascade_depth": 5,
+        "quantization": "Q4_K_M to Q6_K",
+        "kv_cache": 4096,
+        "note": "Tier 3: laptop / server; full Python fusion stack (still zero-dep for probe fallbacks).",
+    }
+
+
+class EdgeProfile:
+    """Summarize host capabilities into coarse deployment tiers."""
 
     @staticmethod
-    def model_select(task: str, device_profile: Mapping[str, Any]) -> Dict[str, Any]:
-        """Return a **label** pick (no download). Names are common SLM families."""
-        t = str(task).lower()
-        cap_mb = float(device_profile.get("max_model_mb", 4000))
-        picks = [
-            ("code" in t or "sql" in t, "phi-4-mini"),
-            ("qwen" in t or "zh" in t, "qwen2.5-0.5b-instruct"),
-            ("reason" in t or "math" in t, "llama-3.2-1b-instruct"),
-            (cap_mb <= 400, "gemma-2-270m-it"),
-            (True, "llama-3.2-1b-instruct"),
-        ]
-        for cond, name in picks:
-            if cond:
-                return {"model": name, "rationale": "heuristic_keyword_and_cap", "cap_mb": cap_mb}
-        return {"model": "unknown", "rationale": "fallback", "cap_mb": cap_mb}
+    def detect() -> Dict[str, Any]:
+        import platform
 
-    @staticmethod
-    def quantize_for_device(_model: Any, device_profile: Mapping[str, Any]) -> Dict[str, Any]:
-        del _model
-        dt = str(device_profile.get("device_type", "laptop")).lower()
-        if dt == "phone":
-            q = "Q4_K_M"
-        elif dt == "mcu":
-            q = "Q2_K"
-        elif dt == "laptop":
-            q = "Q8_0"
+        total_ram = _get_ram_mb()
+        if total_ram < 256:
+            tier = 1
+        elif total_ram < 2048:
+            tier = 2
         else:
-            q = "Q4_K_M"
+            tier = 3
         return {
-            "quantization": q,
-            "device_type": dt,
-            "disclaimer": "GGUF-style label for planning; run real quants with your toolchain.",
+            "tier": tier,
+            "ram_mb": total_ram,
+            "cpu": platform.machine(),
+            "platform": platform.system(),
+            "python": f"{sys.version_info.major}.{sys.version_info.minor}",
+            "recommended": _tier_config(tier),
         }
 
-    @staticmethod
-    def sigma_gate_overhead(device: str) -> Dict[str, Any]:
-        """Planning numbers + **disclaimer** — not a profiler output."""
-        d = str(device).lower()
+
+class EdgeSigmaGate:
+    """Score (prompt, response) with probe depth chosen by tier (L1 only / L1+L2 / full fusion)."""
+
+    def __init__(self, tier: Optional[int] = None) -> None:
+        prof = EdgeProfile.detect()
+        self.tier = int(tier if tier is not None else prof["tier"])
+        self.config = _tier_config(self.tier)
+        self._gate = SigmaGate()
+        self._l1 = L1EntropyProbe()
+        self._l2 = L2LogProbVariance()
+        self._fusion: Optional[SigmaFusion] = None
+
+    def _verdict(self, sigma: float) -> str:
+        if sigma < 0.2:
+            return "ACCEPT"
+        if sigma < 0.5:
+            return "RETHINK"
+        return "ABSTAIN"
+
+    def score(self, prompt: str, response: str) -> Tuple[float, str]:
+        if self.tier <= 1:
+            s = float(self._l1.score(prompt, response))
+        elif self.tier == 2:
+            s1 = float(self._l1.score(prompt, response))
+            s2 = float(self._l2.score(prompt, response))
+            s = (s1 + s2) / 2.0
+        else:
+            if self._fusion is None:
+                self._fusion = SigmaFusion()
+            s, _, _ = self._fusion.score(prompt, response)
+            s = float(s)
+        s = round(min(1.0, max(0.0, s)), 4)
+        return s, self._verdict(s)
+
+    def can_run(self, model_size_b: float) -> Dict[str, Any]:
+        """Heuristic: Q4-class ~0.6 GiB per billion parameters (lab rule of thumb)."""
+        ram = int(EdgeProfile.detect()["ram_mb"])
+        need = int(float(model_size_b) * 600.0)
+        fits = ram > need
+        approx_b = max(ram // 600, 0) if ram >= 600 else 0
+        rec = (
+            f"fits in RAM ({ram} MiB > {need} MiB)"
+            if fits
+            else f"too large (need ~{need} MiB, have {ram} MiB) — try ~{approx_b}B or smaller Q4"
+        )
         return {
-            "device": d,
-            "c_core_sigma_gate_ms": "<1 (planning — C89 path separate binary)",
-            "probe_l1_l3_ms": "<10 (planning — edge SoC dependent)",
-            "probe_l4_l5": "cloud_or_skip",
-            "disclaimer": "Measure on-target; do not cite planning rows as benchmarks.",
+            "can_run": fits,
+            "ram_mb": ram,
+            "needed_mb": need,
+            "model_size_b": float(model_size_b),
+            "recommendation": rec,
         }
 
-    def test_time_compute(
-        self,
-        query: str,
-        model: Any,
-        gate: Any,
-        *,
-        difficulty: Optional[str] = None,
-    ) -> Dict[str, Any]:
-        """Easy → one draft; hard → N drafts + pick lowest σ (lab orchestration)."""
-        diff = str(difficulty or self._difficulty_heuristic(query)).lower()
-        n = 1 if diff == "easy" else max(2, min(8, len(query) // 80 + 2))
-        gen = getattr(model, "generate", None)
-        candidates: list[tuple[float, str]] = []
-        if not callable(gen):
-            text = str(model)
-            sigma, verdict = gate.score(str(query), text)
-            return {"n": 1, "chosen": text, "sigma": float(sigma), "verdict": str(verdict), "difficulty": diff}
-        for i in range(n):
-            cand = str(gen(f"{query} [ttc:{i}]"))
-            sigma, _ = gate.score(str(query), cand)
-            candidates.append((float(sigma), cand))
-        candidates.sort(key=lambda x: x[0])
-        best_s, best_t = candidates[0]
-        _, verdict = gate.score(str(query), best_t)
-        return {
-            "n": n,
-            "chosen": best_t,
-            "sigma": best_s,
-            "verdict": str(verdict),
-            "difficulty": diff,
-            "candidates": len(candidates),
-        }
 
-    @staticmethod
-    def _difficulty_heuristic(query: str) -> str:
-        q = str(query).strip()
-        if len(q) < 40 and q.count(" ") < 8:
-            return "easy"
-        if len(q) > 400 or q.count("?") > 2:
-            return "hard"
-        return "medium"
-
-    @staticmethod
-    def battery_budget(remaining_percent: float, queries_remaining: int) -> Dict[str, Any]:
-        rp = max(0.0, min(100.0, float(remaining_percent)))
-        qr = max(0, int(queries_remaining))
-        save = rp < 20.0
-        return {
-            "remaining_percent": rp,
-            "queries_remaining": qr,
-            "skip_probe_levels_l2_l5": save,
-            "lower_max_ttc_branches": save,
-            "note": "Policy hook for fleet policy engines — tune thresholds per OEM.",
-        }
+__all__ = ["EdgeProfile", "EdgeSigmaGate", "_get_ram_mb", "_tier_config"]

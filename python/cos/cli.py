@@ -21,7 +21,7 @@ _COS_HELP_EPILOG = """
 command groups (surface for first contact; many lab subcommands also exist):
   CORE            score, chat, think, bench, serve, version, identity, agi-demo
   ANALYSIS        explain, cascade, calibrate
-  INFRASTRUCTURE  health, hardware, layers, registry, cost
+  INFRASTRUCTURE  health, edge, hardware, layers, registry, cost
   ADVANCED        graph, evolve, redteam
 
 Exit codes (where implemented): 0 ok, 1 error / usage, 2 σ-gate ABSTAIN (score/gate).
@@ -2824,6 +2824,23 @@ def _cmd_agi_demo(_args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_edge(args: argparse.Namespace) -> int:
+    from cos.edge import EdgeProfile
+
+    profile = EdgeProfile.detect()
+    if _cli_out_json(args):
+        print(json.dumps(profile, ensure_ascii=False, default=str))
+        return 0
+    rec = profile["recommended"]
+    print(f"Tier: {profile['tier']}")
+    print(f"RAM: {profile['ram_mb']} MiB")
+    print(f"CPU: {profile['cpu']}")
+    print(f"Recommended model: {rec['model']}")
+    print(f"Probes: {rec['probes']}")
+    print(f"Note: {rec['note']}")
+    return 0
+
+
 def _cmd_offline(args: argparse.Namespace) -> int:
     if not bool(getattr(args, "offline_verify", False)):
         print("cos offline: pass --verify to run air-gap heuristics (DNS + TCP probes + Fabric.boot)", file=sys.stderr)
@@ -4537,6 +4554,13 @@ def main(argv: Optional[List[str]] = None) -> int:
         help="Run cognitive loop demo (NOT AGI; boot + perceive + cascade + convergence + epistemic + dream)",
     )
     agd.set_defaults(func=_cmd_agi_demo)
+
+    edgep = sub.add_parser(
+        "edge",
+        help="Edge tier heuristics (RAM class, recommended probe depth; NOT AGI)",
+    )
+    edgep.add_argument("--json", action="store_true", dest="out_json")
+    edgep.set_defaults(func=_cmd_edge)
 
     offp = sub.add_parser(
         "offline",
