@@ -2771,6 +2771,8 @@ def _cmd_cascade_cli(args: argparse.Namespace) -> int:
 def _cmd_health(args: argparse.Namespace) -> int:
     import platform
 
+    from cos.health import ProjectHealth
+
     try:
         from cos import __version__ as cos_ver
     except ImportError:
@@ -2782,17 +2784,36 @@ def _cmd_health(args: argparse.Namespace) -> int:
             deps[mod] = "import_ok"
         except ImportError:
             deps[mod] = "missing"
-    body = {
+    runtime = {
         "ok": True,
         "python": platform.python_version(),
         "platform": platform.platform(),
         "creation_os": cos_ver,
         "optional_deps": deps,
     }
+    project = ProjectHealth().scan()
+    body: Dict[str, Any] = {"runtime": runtime, "project": project}
+
     if _cli_out_json(args):
         print(json.dumps(body, ensure_ascii=False))
         return 0
-    print(json.dumps(body, ensure_ascii=False, indent=2))
+
+    c = project["complexity"]
+    conn = project["connectivity"]
+    dead = project["dead_code"]
+    tc = project["test_coverage"]
+    lc = project["line_count"]
+    print(f"Modules: {project['modules']}")
+    print(f"Lines: {lc['total_lines']}")
+    print(f"Health σ: {project['health_sigma']}")
+    print(f"Verdict: {project['verdict']}")
+    print(f"High complexity: {c['high_complexity']}")
+    print(f"Disconnected: {conn['disconnected']}")
+    print(f"Dead code: {dead['dead']}")
+    print(f"Untested: {tc['untested']}")
+    print("")
+    print(f"Runtime Python: {runtime['python']}")
+    print(f"Optional deps: {', '.join(f'{k}={v}' for k, v in deps.items())}")
     return 0
 
 
@@ -4496,7 +4517,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     casc.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     casc.set_defaults(func=_cmd_cascade_cli)
 
-    hlth = sub.add_parser("health", help="Python + optional dependency probe (offline)")
+    hlth = sub.add_parser(
+        "health",
+        help="Project static scan (complexity, σ-surface imports, dead-code heuristic, test file map) + runtime deps",
+    )
     hlth.add_argument("--json", action="store_true", dest="out_json")
     hlth.add_argument("-v", "--verbose", action="store_true", dest="cli_verbose")
     hlth.set_defaults(func=_cmd_health)

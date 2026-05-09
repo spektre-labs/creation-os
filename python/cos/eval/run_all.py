@@ -213,6 +213,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         "tests/test_probes.py",
         "tests/test_discrimination.py",
         "tests/test_hash_embedding.py",
+        "tests/test_health.py",
         "tests/test_sigma_gate_core.py",
         "tests/test_gemma_eval_lab.py",
     ]
