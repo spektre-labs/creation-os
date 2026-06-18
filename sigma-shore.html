@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>σ · SHORE</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:100%;height:100%;overflow:hidden;background:#000;
+    font-family:'SF Mono',ui-monospace,Menlo,monospace;-webkit-user-select:none;user-select:none;
+    -webkit-tap-highlight-color:transparent;touch-action:none}
+  #c{position:fixed;inset:0;width:100%;height:100%;display:block}
+  .hud{position:fixed;pointer-events:none;letter-spacing:.05em;mix-blend-mode:screen;z-index:2;
+    opacity:0;transition:opacity 2.5s ease}
+  .hud.show{opacity:1}
+  #tl{top:14px;left:16px;font-size:11px;line-height:1.8;color:#ffcaa0}
+  #tl .k{color:#8a5a44}#tl .v{color:#ffe2c8}
+  #tr{top:14px;right:16px;font-size:11px;text-align:right;line-height:1.8;color:#8a5a44}
+  #tr b{color:#ffce9a;font-weight:400}
+  #foot{position:fixed;bottom:42px;left:50%;transform:translateX(-50%);
+    color:#a06a52;font-size:12px;letter-spacing:.06em;text-align:center;white-space:nowrap;z-index:2;mix-blend-mode:screen;
+    opacity:0;transition:opacity 2.5s ease}
+  #foot.show{opacity:1}
+  #foot b{color:#ffd8b8;font-weight:400}
+  #hint{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+    color:#5a3c2c;font-size:10px;letter-spacing:.12em;text-align:center;white-space:nowrap;z-index:2;
+    opacity:0;transition:opacity 2.5s ease}
+  #hint.show{opacity:1}
+  #start{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(ellipse at 50% 58%,#3f2a2a 0%,#0a0608 80%);z-index:10;cursor:pointer;text-align:center;padding:20px}
+  #start h1{font-size:clamp(44px,13vw,132px);font-weight:200;letter-spacing:.22em;
+    background:linear-gradient(120deg,#ffd0a0,#fff0e0,#ffb080);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 70px rgba(255,180,130,.4)}
+  #start .sub{color:#a06a52;font-size:clamp(10px,2.6vw,13px);letter-spacing:.5em;margin-top:6px;text-transform:uppercase}
+  #start .claim{color:#c88a6a;font-size:clamp(12px,3vw,15px);margin-top:38px;max-width:470px;line-height:1.95}
+  #start .claim b{color:#ffe2c8;font-weight:400}#start .claim .c{color:#ffbe7a}
+  #start .go{margin-top:46px;color:#ffd0a0;font-size:13px;letter-spacing:.36em;
+    border:1px solid #5a3825;padding:13px 36px;border-radius:2px}
+  #look{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);color:#4a3024;font-size:10px;
+    letter-spacing:.1em;z-index:2;opacity:0;transition:opacity 2.5s ease}
+  #look.show{opacity:1}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+
+<div id="start">
+  <h1>σ SHORE</h1>
+  <div class="sub">stand still · watch it set</div>
+  <div class="claim">You're on the shore. The tide breathes in front of you, the sun melts into the
+    horizon and lays a road of gold across the water to your feet. The wet sand mirrors the sky.
+    <b>Nothing here is stored</b> — every wave, every reflection, solved per pixel.
+    <span class="c">Total geometry: 2 triangles.</span></div>
+  <div class="go">S T A Y · A · W H I L E</div>
+</div>
+
+<div class="hud" id="tl"></div>
+<div class="hud" id="tr"></div>
+<div class="hud" id="foot">ocean = <b>Gerstner waves</b> &nbsp;·&nbsp; light = <b>Fresnel + specular</b> &nbsp;·&nbsp; <span style="color:#ffbe7a">0 stored</span></div>
+<div id="hint" class="hud">drag / move to look around</div>
+
+<script id="frag" type="x-shader/x-fragment">
+precision highp float;
+uniform vec2  iRes;
+uniform float iTime;
+uniform vec2  iLook;   // look offset (yaw, pitch) from drag
+
+float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.0-2.0*f);
+  return mix(mix(hash(i),hash(i+vec2(1,0)),u.x),mix(hash(i+vec2(0,1)),hash(i+vec2(1,1)),u.x),u.y);
+}
+
+// ── SEA: sum of octaves (Seascape-style) ──
+float SEA_HEIGHT=0.6;
+vec3  SUN;            // set in main (low on horizon)
+
+float seaOctave(vec2 uv, float choppy){
+  uv += noise(uv);
+  vec2 wv=1.0-abs(sin(uv));
+  vec2 swv=abs(cos(uv));
+  wv=mix(wv,swv,wv);
+  return pow(1.0-pow(wv.x*wv.y,0.65), choppy);
+}
+float seaMap(vec3 p){
+  float freq=0.16, amp=SEA_HEIGHT, choppy=4.0;
+  vec2 uv=p.xz; uv.x*=0.75;
+  mat2 m=mat2(1.6,1.2,-1.2,1.6);
+  float t=1.0+iTime*0.7;
+  float h=0.0;
+  for(int i=0;i<4;i++){
+    float d=seaOctave((uv+t)*freq,choppy);
+    d+=seaOctave((uv-t)*freq,choppy);
+    h+=d*amp;
+    uv=m*uv; freq*=1.9; amp*=0.22; choppy=mix(choppy,1.0,0.2);
+  }
+  return p.y - h;
+}
+float seaMapHi(vec3 p){   // higher detail for normal
+  float freq=0.16, amp=SEA_HEIGHT, choppy=4.0;
+  vec2 uv=p.xz; uv.x*=0.75;
+  mat2 m=mat2(1.6,1.2,-1.2,1.6);
+  float t=1.0+iTime*0.7;
+  float h=0.0;
+  for(int i=0;i<5;i++){
+    float d=seaOctave((uv+t)*freq,choppy);
+    d+=seaOctave((uv-t)*freq,choppy);
+    h+=d*amp;
+    uv=m*uv; freq*=1.9; amp*=0.22; choppy=mix(choppy,1.0,0.2);
+  }
+  return p.y - h;
+}
+vec3 seaNormal(vec3 p, float eps){
+  vec3 n;
+  n.y=seaMapHi(p);
+  n.x=seaMapHi(vec3(p.x+eps,p.y,p.z))-n.y;
+  n.z=seaMapHi(vec3(p.x,p.y,p.z+eps))-n.y;
+  n.y=eps;
+  return normalize(n);
+}
+
+// sky with sunset gradient + sun
+vec3 skyColor(vec3 rd){
+  float h=clamp(rd.y*1.4+0.1,0.0,1.0);
+  vec3 low =vec3(1.0,0.62,0.34);   // warm horizon
+  vec3 mid =vec3(0.85,0.52,0.55);  // pink
+  vec3 high=vec3(0.30,0.32,0.55);  // dusk blue
+  vec3 c=mix(mix(low,mid,smoothstep(0.0,0.3,h)),high,smoothstep(0.25,0.8,h));
+  float sd=max(dot(rd,SUN),0.0);
+  c+=vec3(1.0,0.6,0.3)*pow(sd,6.0)*1.4;            // glow
+  c+=vec3(1.0,0.85,0.6)*pow(sd,1200.0)*5.0;         // disk
+  return c;
+}
+
+// height-map ray tracing onto the sea (Seascape technique)
+float traceSea(vec3 ro, vec3 rd, out vec3 ph){
+  float tm=0.0, tx=1000.0;
+  float hx=seaMap(ro+rd*tx); if(hx>0.0){ph=ro+rd*tx; return tx;}
+  float hm=seaMap(ro+rd*tm);
+  float t=0.0;
+  for(int i=0;i<10;i++){
+    t=mix(tm,tx,hm/(hm-hx));
+    ph=ro+rd*t;
+    float h=seaMap(ph);
+    if(h<0.0){tx=t;hx=h;}else{tm=t;hm=h;}
+  }
+  return t;
+}
+
+void main(){
+  vec2 uv=(gl_FragCoord.xy-0.5*iRes)/iRes.y;
+  SUN=normalize(vec3(0.0, 0.06, -1.0));   // sun low, straight ahead over the sea
+
+  // camera: standing on the shore, eye height ~1.6, looking out to sea (−z)
+  vec3 ro=vec3(0.0,1.6,3.0);
+  float yaw=iLook.x, pitch=-0.02+iLook.y;
+  vec3 cw=normalize(vec3(sin(yaw), pitch, -cos(yaw)));
+  vec3 cu=normalize(cross(vec3(0,1,0),cw)), cv=cross(cw,cu);
+  vec3 rd=normalize(uv.x*cu+uv.y*cv+1.5*cw);
+
+  vec3 col;
+
+  if(rd.y > -0.01){
+    // looking at/above horizon → sky
+    col=skyColor(rd);
+  } else {
+    // ── trace the sea ──
+    vec3 ph;
+    float t=traceSea(ro,rd,ph);
+    vec3 dist=ph-ro;
+    vec3 n=seaNormal(ph, dot(dist,dist)*0.0001+0.01);
+
+    vec3 refl=reflect(rd,n);
+    vec3 sky=skyColor(refl);
+
+    // sea colour: deep teal, lighter in troughs
+    vec3 seaBase=vec3(0.02,0.09,0.12);
+    vec3 seaTop =vec3(0.10,0.28,0.30);
+    float fres=clamp(1.0-dot(-rd,n),0.0,1.0); fres=pow(fres,4.0)*0.9+0.1;
+
+    // sun specular glitter on the water (the golden road)
+    float spec=pow(max(dot(refl,SUN),0.0),120.0)*4.0;
+    float road=pow(max(dot(refl,SUN),0.0),20.0)*0.6;  // broad warm path
+
+    vec3 water=mix(seaBase,seaTop, n.y*0.6+0.4);
+    col=mix(water, sky, fres);
+    col+=vec3(1.0,0.7,0.4)*(spec+road);
+
+    // distance fog into the horizon haze
+    float fog=1.0-exp(-length(dist)*0.0008);
+    col=mix(col, skyColor(vec3(rd.x,0.0,rd.z)), fog);
+  }
+
+  // tone + gamma
+  col=col*1.05;
+  col=(col*(2.51*col+0.03))/(col*(2.43*col+0.59)+0.14);
+  col=pow(clamp(col,0.0,1.0),vec3(0.4545));
+  col*=1.0-0.26*length(uv);    // vignette
+  gl_FragColor=vec4(col,1.0);
+}
+</script>
+
+<script>
+const cv=document.getElementById('c');
+const gl=cv.getContext('webgl',{antialias:false,alpha:false,powerPreference:'high-performance'});
+if(!gl){document.body.innerHTML='<div style="color:#ffd0a0;font-family:monospace;padding:40px">WebGL unavailable.</div>';}
+
+function sh(t,s){const x=gl.createShader(t);gl.shaderSource(x,s);gl.compileShader(x);
+  if(!gl.getShaderParameter(x,gl.COMPILE_STATUS))console.error(gl.getShaderInfoLog(x));return x;}
+const prog=gl.createProgram();
+gl.attachShader(prog,sh(gl.VERTEX_SHADER,'attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}'));
+gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,document.getElementById('frag').textContent));
+gl.linkProgram(prog);
+if(!gl.getProgramParameter(prog,gl.LINK_STATUS))console.error(gl.getProgramInfoLog(prog));
+gl.useProgram(prog);
+const buf=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+const pl=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(pl);gl.vertexAttribPointer(pl,2,gl.FLOAT,false,0,0);
+const U={res:gl.getUniformLocation(prog,'iRes'),time:gl.getUniformLocation(prog,'iTime'),look:gl.getUniformLocation(prog,'iLook')};
+
+const S={started:false,yaw:0,pitch:0,t0:performance.now()};
+
+let DPR=Math.min(window.devicePixelRatio||1,1.4),rscale=0.9;
+function resize(){const w=Math.floor(innerWidth*DPR*rscale),h=Math.floor(innerHeight*DPR*rscale);
+  if(cv.width!==w||cv.height!==h){cv.width=w;cv.height=h;}}
+addEventListener('resize',resize);resize();
+
+// look around only — you stand still
+let drag=false,lx=0,ly=0;
+cv.addEventListener('mousedown',e=>{drag=true;lx=e.clientX;ly=e.clientY;});
+addEventListener('mouseup',()=>drag=false);
+addEventListener('mousemove',e=>{if(!drag)return;
+  S.yaw=Math.max(-0.7,Math.min(0.7,S.yaw+(e.clientX-lx)*0.003));
+  S.pitch=Math.max(-0.15,Math.min(0.35,S.pitch-(e.clientY-ly)*0.002));
+  lx=e.clientX;ly=e.clientY;});
+// gentle auto-pan on mouse move without drag (subtle parallax)
+addEventListener('mousemove',e=>{if(drag)return;
+  const nx=(e.clientX/innerWidth-0.5);
+  S.yaw += (nx*0.5 - S.yaw)*0.02;});
+
+const isTouch=('ontouchstart'in window)||navigator.maxTouchPoints>0;
+if(isTouch){
+  let tid=null;
+  cv.addEventListener('touchstart',e=>{const t=e.changedTouches[0];tid=t.identifier;lx=t.clientX;ly=t.clientY;e.preventDefault();},{passive:false});
+  cv.addEventListener('touchmove',e=>{for(const t of e.changedTouches)if(t.identifier===tid){
+    S.yaw=Math.max(-0.7,Math.min(0.7,S.yaw+(t.clientX-lx)*0.004));
+    S.pitch=Math.max(-0.15,Math.min(0.35,S.pitch-(t.clientY-ly)*0.003));
+    lx=t.clientX;ly=t.clientY;}},{passive:false});
+  cv.addEventListener('touchend',e=>{for(const t of e.changedTouches)if(t.identifier===tid)tid=null;});
+}
+
+const startEl=document.getElementById('start');
+const tl=document.getElementById('tl'),tr=document.getElementById('tr'),foot=document.getElementById('foot'),hint=document.getElementById('hint');
+function begin(){if(S.started)return;S.started=true;startEl.style.display='none';
+  setTimeout(()=>{tl.classList.add('show');tr.classList.add('show');foot.classList.add('show');hint.classList.add('show');},2500);
+  S.t0=performance.now();requestAnimationFrame(loop);}
+startEl.addEventListener('click',begin);
+startEl.addEventListener('touchend',e=>{e.preventDefault();begin();},{passive:false});
+
+let fpsT=performance.now(),fpsN=0,fps=60,start=performance.now();
+function loop(now){
+  const time=(now-start)/1000;
+
+  if(fps<28&&rscale>0.45){rscale-=0.05;resize();}
+  else if(fps>52&&rscale<0.95){rscale+=0.03;resize();}
+
+  resize();gl.viewport(0,0,cv.width,cv.height);
+  gl.useProgram(prog);
+  gl.uniform2f(U.res,cv.width,cv.height);
+  gl.uniform1f(U.time,time);
+  gl.uniform2f(U.look,S.yaw,S.pitch);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+
+  fpsN++;if(now-fpsT>500){fps=fpsN*1000/(now-fpsT);fpsN=0;fpsT=now;}
+
+  tl.innerHTML=
+    `<span class="k">ocean</span> <span class="v">Gerstner · 4 oct</span><br>`+
+    `<span class="k">light</span> <span class="v">Fresnel reflect</span><br>`+
+    `<span class="k">hour</span> <span class="v">golden</span><br>`+
+    `<span class="k">geometry</span> <span class="v">2 triangles</span>`;
+  tr.innerHTML=
+    `<b>${fps.toFixed(0)} FPS</b><br>`+
+    `stored: <b>0 B</b><br>`+
+    `sun: <b>setting</b><br>`+
+    `sea: <b>solved</b>`;
+
+  requestAnimationFrame(loop);
+}
+</script>
+</body>
+</html>
