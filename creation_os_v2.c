@@ -243,7 +243,7 @@ static void oracle_learn(oracle_t *o, const char *ctx, int n, int next)
         if (s < 0.12f) {
             uint64_t merged[W];
             hv_maj3(merged, o->pattern[i], hv, o->pattern[i]);
-            memcpy(o->pattern[i], merged, B);
+            memcpy(o->pattern[i], merged, sizeof(o->pattern[i]));
             o->strength[i] += 1.0f;
             return;
         }
@@ -261,7 +261,7 @@ static void oracle_learn(oracle_t *o, const char *ctx, int n, int next)
         }
     }
     if (o->count < ORACLE_CODEBOOK) {
-        memcpy(o->pattern[o->count], hv, B);
+        memcpy(o->pattern[o->count], hv, sizeof(o->pattern[o->count]));
         o->next_char[o->count] = next;
         o->strength[o->count] = 1.0f;
         o->count++;
@@ -330,8 +330,7 @@ static void run_oracle(void)
     for (int p = 0; p < 10; p++) {
         char out[100];
         int ol = (int)strlen(seeds[p]);
-        strncpy(out, seeds[p], sizeof(out) - 1);
-        out[sizeof(out) - 1] = 0;
+        snprintf(out, sizeof(out), "%s", seeds[p]);
         for (int i = 0; i < 55 && ol < 95; i++) {
             int nextc = oracle_predict(&oracle, out, ol);
             out[ol] = (char)nextc;
@@ -489,8 +488,8 @@ static void run_jepa(void)
                 total_e += best_e;
                 steps++;
                 if (cb_n < JEPA_CB) {
-                    memcpy(cb_ctx[cb_n], ctx, B);
-                    memcpy(cb_tgt[cb_n], tgt, B);
+                    memcpy(cb_ctx[cb_n], ctx, sizeof(cb_ctx[cb_n]));
+                    memcpy(cb_tgt[cb_n], tgt, sizeof(cb_tgt[cb_n]));
                     cb_n++;
                 }
             }
@@ -707,7 +706,7 @@ static void emem_store(emotional_memory_t *e, const uint64_t *ctx, float valence
                 idx = i;
             }
     }
-    memcpy(e->context[idx], ctx, B);
+    memcpy(e->context[idx], ctx, sizeof(e->context[idx]));
     e->valence[idx] = valence;
     e->intensity[idx] = intensity;
     if (e->count < EMEM_SIZE)
